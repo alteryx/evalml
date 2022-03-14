@@ -1936,8 +1936,7 @@ def test_percent_better_than_baseline_in_rankings(
         pipelines_per_batch=5,
         ensembling=False,
         text_in_ensembling=False,
-        pipeline_params=pipeline_parameters,
-        custom_hyperparameters=None,
+        search_parameters=pipeline_parameters,
     )
     automl.automl_algorithm.allowed_pipelines = allowed_pipelines
     automl._SLEEP_TIME = 0.000001
@@ -2109,7 +2108,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         pipelines_per_batch=5,
         ensembling=False,
         text_in_ensembling=False,
-        pipeline_params={
+        search_parameters={
             "pipeline": {
                 "time_index": "date",
                 "gap": 1,
@@ -2117,7 +2116,6 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
                 "forecast_horizon": 2,
             }
         },
-        custom_hyperparameters=None,
     )
     automl.automl_algorithm.allowed_pipelines = [DummyPipeline(parameters)]
     automl._SLEEP_TIME = 0.00001
@@ -2160,7 +2158,9 @@ def test_time_series_regression_with_parameters(ts_data):
         problem_configuration=problem_configuration,
         max_batches=3,
     )
-    assert automl.automl_algorithm._pipeline_params["pipeline"] == problem_configuration
+    assert (
+        automl.automl_algorithm.search_parameters["pipeline"] == problem_configuration
+    )
 
 
 @pytest.mark.parametrize("graph_type", ["dict", "cg"])
@@ -2263,8 +2263,7 @@ def test_percent_better_than_baseline_scores_different_folds(
         pipelines_per_batch=5,
         ensembling=False,
         text_in_ensembling=False,
-        pipeline_params={},
-        custom_hyperparameters=None,
+        search_parameters={},
     )
     automl.automl_algorithm.allowed_pipelines = [DummyPipeline({})]
 
@@ -3044,7 +3043,7 @@ def test_automl_pipeline_params_simple(AutoMLTestEnv, X_y_binary):
         X_train=X,
         y_train=y,
         problem_type="binary",
-        pipeline_parameters=params,
+        search_parameters=params,
         optimize_thresholds=False,
         n_jobs=1,
     )
@@ -3085,7 +3084,7 @@ def test_automl_pipeline_params_multiple(AutoMLTestEnv, X_y_regression):
         X_train=X,
         y_train=y,
         problem_type="regression",
-        custom_hyperparameters=hyperparams,
+        search_parameters=hyperparams,
         optimize_thresholds=False,
         n_jobs=1,
     )
@@ -3113,31 +3112,6 @@ def test_automl_pipeline_params_multiple(AutoMLTestEnv, X_y_regression):
             ] == Categorical((0.01, 0.02, 0.03)).rvs(random_state=automl.random_seed)
 
 
-def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(
-    AutoMLTestEnv, X_y_binary
-):
-    X, y = X_y_binary
-    pipeline_parameters = {"Imputer": {"numeric_impute_strategy": "most_frequent"}}
-    custom_hyperparameters = {
-        "One Hot Encoder": {"top_n": Categorical([12, 10])},
-        "Imputer": {
-            "numeric_impute_strategy": Categorical(["median", "most_frequent"])
-        },
-    }
-
-    automl = AutoMLSearch(
-        X,
-        y,
-        problem_type="binary",
-        pipeline_parameters={"Imputer": {"numeric_impute_strategy": "most_frequent"}},
-        custom_hyperparameters=custom_hyperparameters,
-        optimize_thresholds=False,
-        max_batches=4,
-    )
-    assert automl.automl_algorithm._custom_hyperparameters == custom_hyperparameters
-    assert automl.automl_algorithm._pipeline_params == pipeline_parameters
-
-
 def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
     X, y = X_y_multi
     hyperparams = {
@@ -3151,7 +3125,7 @@ def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
         X_train=X,
         y_train=y,
         problem_type="multiclass",
-        custom_hyperparameters=hyperparams,
+        search_parameters=hyperparams,
         allowed_model_families=[ModelFamily.DECISION_TREE],
         n_jobs=1,
     )
@@ -4128,7 +4102,7 @@ def test_component_and_pipeline_warnings_surface_in_search(
             X_train=X,
             y_train=y,
             problem_type="regression",
-            pipeline_parameters={"Decision Tree Classifier": {"max_depth": 1}},
+            search_parameters={"Decision Tree Classifier": {"max_depth": 1}},
             max_batches=1,
             verbose=verbose,
         )

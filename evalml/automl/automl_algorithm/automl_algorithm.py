@@ -1,5 +1,8 @@
 """Base class for the AutoML algorithms which power EvalML."""
+import inspect
 from abc import ABC, abstractmethod
+
+from skopt.space import Categorical, Integer, Real
 
 from evalml.exceptions import PipelineNotFoundError
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
@@ -22,7 +25,7 @@ class AutoMLAlgorithm(ABC):
 
     Args:
         allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
-        custom_hyperparameters (dict): Custom hyperparameter ranges specified for pipelines to iterate over.
+        search_parameters (dict): Search parameter ranges specified for pipelines to iterate over.
         tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
         text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -31,7 +34,7 @@ class AutoMLAlgorithm(ABC):
     def __init__(
         self,
         allowed_pipelines=None,
-        custom_hyperparameters=None,
+        search_parameters=None,
         tuner_class=None,
         text_in_ensembling=False,
         random_seed=0,
@@ -45,9 +48,27 @@ class AutoMLAlgorithm(ABC):
         self.text_in_ensembling = text_in_ensembling
         self.n_jobs = n_jobs
         self._selected_cols = None
+        self.search_parameters = search_parameters or {}
+        self._hyperparameters = {}
+        self._pipeline_parameters = {}
+
+        # seperate out the parameter and hyperparameter values
+        for key, value in self.search_parameters.items():
+            hyperparam = {}
+            param = {}
+            for name, parameters in value.items():
+                if isinstance(parameters, (Integer, Categorical, Real)):
+                    hyperparam[name] = parameters
+                else:
+                    param[name] = parameters
+            if hyperparam:
+                self._hyperparameters[key] = hyperparam
+            if param:
+                self._pipeline_parameters[key] = param
+
         for pipeline in self.allowed_pipelines:
             pipeline_hyperparameters = pipeline.get_hyperparameter_ranges(
-                custom_hyperparameters
+                self._hyperparameters
             )
             self._tuners[pipeline.name] = self._tuner_class(
                 pipeline_hyperparameters, random_seed=self.random_seed
@@ -64,14 +85,54 @@ class AutoMLAlgorithm(ABC):
             list[PipelineBase]: A list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
 
-    @abstractmethod
     def _transform_parameters(self, pipeline, proposed_parameters):
-        """Given a pipeline parameters dict, make sure pipeline_params, custom_hyperparameters, n_jobs are set properly.
+        """Given a pipeline parameters dict, make sure pipeline_parameters, custom_hyperparameters, n_jobs are set properly.
 
         Arguments:
             pipeline (PipelineBase): The pipeline object to update the parameters.
             proposed_parameters (dict): Parameters to use when updating the pipeline.
         """
+        parameters = {}
+        if "pipeline" in self._pipeline_parameters:
+            parameters["pipeline"] = self._pipeline_parameters["pipeline"]
+
+        for (
+            name,
+            component_instance,
+        ) in pipeline.component_graph.component_instances.items():
+            component_class = type(component_instance)
+            component_parameters = proposed_parameters.get(name, {})
+            init_params = inspect.signature(component_class.__init__).parameters
+            # For first batch, pass the pipeline params to the components that need them
+            if name in self.search_parameters:
+                for param_name, value in self.search_parameters[name].items():
+                    if isinstance(value, (Integer, Real)):
+                        # get a random value in the space
+                        component_parameters[param_name] = value.rvs(
+                            random_state=self.random_seed
+                        )[0]
+                    elif isinstance(value, Categorical):
+                        # Categorical
+                        component_parameters[param_name] = value.rvs(
+                            random_state=self.random_seed
+                        )
+                    else:
+                        # we set the pipeline parameter value directly
+                        component_parameters[param_name] = value
+            # Inspects each component and adds the following parameters when needed
+            if "n_jobs" in init_params:
+                component_parameters["n_jobs"] = self.n_jobs
+            try:
+                if "number_features" in init_params:
+                    component_parameters["number_features"] = self.number_features
+            except AttributeError:
+                continue
+            if "pipeline" in self.search_parameters:
+                for param_name, value in self.search_parameters["pipeline"].items():
+                    if param_name in init_params:
+                        component_parameters[param_name] = value
+            parameters[name] = component_parameters
+        return parameters
 
     def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
         """Register results from evaluating a pipeline.
@@ -131,8 +192,8 @@ class AutoMLAlgorithm(ABC):
 
     def _set_additional_pipeline_params(self):
         drop_columns = (
-            self._pipeline_params["Drop Columns Transformer"]["columns"]
-            if "Drop Columns Transformer" in self._pipeline_params
+            self.search_parameters["Drop Columns Transformer"]["columns"]
+            if "Drop Columns Transformer" in self.search_parameters
             else None
         )
         index_and_unknown_columns = list(
@@ -140,22 +201,22 @@ class AutoMLAlgorithm(ABC):
         )
         unknown_columns = list(self.X.ww.select("unknown", return_schema=True).columns)
         if len(index_and_unknown_columns) > 0 and drop_columns is None:
-            self._pipeline_params["Drop Columns Transformer"] = {
+            self.search_parameters["Drop Columns Transformer"] = {
                 "columns": index_and_unknown_columns
             }
             if len(unknown_columns):
                 self.logger.info(
                     f"Removing columns {unknown_columns} because they are of 'Unknown' type"
                 )
-        kina_columns = self._pipeline_params.get("pipeline", {}).get(
+        kina_columns = self.search_parameters.get("pipeline", {}).get(
             "known_in_advance", []
         )
         if kina_columns:
             no_kin_columns = [c for c in self.X.columns if c not in kina_columns]
             kin_name = "Known In Advance Pipeline - Select Columns Transformer"
             no_kin_name = "Not Known In Advance Pipeline - Select Columns Transformer"
-            self._pipeline_params[kin_name] = {"columns": kina_columns}
-            self._pipeline_params[no_kin_name] = {"columns": no_kin_columns}
+            self.search_parameters[kin_name] = {"columns": kina_columns}
+            self.search_parameters[no_kin_name] = {"columns": no_kin_columns}
 
     def _filter_estimators(
         self,

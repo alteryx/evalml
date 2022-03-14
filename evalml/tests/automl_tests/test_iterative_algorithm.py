@@ -82,7 +82,7 @@ def test_iterative_algorithm_init(
     )
 
 
-def test_make_iterative_algorithm_custom_hyperparameters_error(
+def test_make_iterative_algorithm_search_parameters_error(
     dummy_binary_pipeline_classes, X_y_binary
 ):
     (
@@ -91,20 +91,20 @@ def test_make_iterative_algorithm_custom_hyperparameters_error(
     ) = dummy_binary_pipeline_classes()
     X, y = X_y_binary
 
-    custom_hyperparameters = [
+    search_parameters = [
         {"Imputer": {"numeric_imput_strategy": ["median"]}},
         {"One Hot Encoder": {"value1": ["value2"]}},
     ]
 
     with pytest.raises(
-        ValueError, match="If custom_hyperparameters provided, must be of type dict"
+        ValueError, match="If search_parameters provided, must be of type dict"
     ):
         IterativeAlgorithm(
             X=X,
             y=y,
             problem_type="binary",
             allowed_component_graphs=allowed_component_graphs,
-            custom_hyperparameters=custom_hyperparameters,
+            search_parameters=search_parameters,
         )
 
 
@@ -280,7 +280,7 @@ def test_iterative_algorithm_passes_pipeline_params(
         y=y,
         problem_type="binary",
         allowed_component_graphs=allowed_component_graphs,
-        pipeline_params={
+        search_parameters={
             "pipeline": {"gap": 2, "max_delay": 10, "forecast_horizon": 3}
         },
     )
@@ -556,9 +556,9 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(
 
 @pytest.mark.parametrize(
     "parameters",
-    [1, "hello", 1.3, -1.0006, Categorical([1, 3, 4]), Integer(2, 4), Real(2, 6)],
+    [1, "hello", 1.3, -1.0006],
 )
-def test_iterative_algorithm_pipeline_params(
+def test_iterative_algorithm_search_params(
     X_y_binary,
     parameters,
     dummy_binary_pipeline_classes,
@@ -570,35 +570,17 @@ def test_iterative_algorithm_pipeline_params(
         allowed_component_graphs,
     ) = dummy_binary_pipeline_classes(parameters)
 
-    if isinstance(parameters, (Categorical, Integer, Real)):
-        with pytest.raises(
-            ValueError,
-            match="Pipeline parameters should not contain skopt.Space variables",
-        ):
-            IterativeAlgorithm(
-                X=X,
-                y=y,
-                problem_type="binary",
-                allowed_component_graphs=allowed_component_graphs,
-                random_seed=0,
-                pipeline_params={
-                    "pipeline": {"gap": 2, "max_delay": 10, "forecast_horizon": 3},
-                    "Mock Classifier": {"dummy_parameter": parameters},
-                },
-            )
-        return
-    else:
-        algo = IterativeAlgorithm(
-            X=X,
-            y=y,
-            problem_type="binary",
-            allowed_component_graphs=allowed_component_graphs,
-            random_seed=0,
-            pipeline_params={
-                "pipeline": {"gap": 2, "max_delay": 10, "forecast_horizon": 3},
-                "Mock Classifier": {"dummy_parameter": parameters},
-            },
-        )
+    algo = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type="binary",
+        allowed_component_graphs=allowed_component_graphs,
+        random_seed=0,
+        search_parameters={
+            "pipeline": {"gap": 2, "max_delay": 10, "forecast_horizon": 3},
+            "Mock Classifier": {"dummy_parameter": parameters},
+        },
+    )
 
     parameter = parameters
     next_batch = algo.next_batch()
@@ -632,96 +614,7 @@ def test_iterative_algorithm_pipeline_params(
         )
 
 
-@pytest.mark.parametrize(
-    "parameters,hyperparameters",
-    [
-        (1, Categorical([1, 3, 4])),
-        (3, Integer(2, 4)),
-        (5, Categorical([1, 3, 4])),
-        (1, 1),
-    ],
-)
-def test_iterative_algorithm_custom_hyperparameters(
-    parameters,
-    hyperparameters,
-    X_y_binary,
-    dummy_binary_pipeline_classes,
-):
-    X, y = X_y_binary
-
-    (
-        dummy_binary_pipeline_classes,
-        allowed_component_graphs,
-    ) = dummy_binary_pipeline_classes(parameters)
-
-    if not isinstance(hyperparameters, (Categorical, Integer, Real)):
-        with pytest.raises(
-            ValueError, match="Custom hyperparameters should only contain skopt"
-        ):
-            IterativeAlgorithm(
-                X=X,
-                y=y,
-                problem_type="binary",
-                allowed_component_graphs=allowed_component_graphs,
-                random_seed=0,
-                pipeline_params={"Mock Classifier": {"dummy_parameter": parameters}},
-                custom_hyperparameters={
-                    "Mock Classifier": {"dummy_parameter": hyperparameters}
-                },
-            )
-        return
-    else:
-        algo = IterativeAlgorithm(
-            X=X,
-            y=y,
-            problem_type="binary",
-            allowed_component_graphs=allowed_component_graphs,
-            random_seed=0,
-            pipeline_params={"Mock Classifier": {"dummy_parameter": parameters}},
-            custom_hyperparameters={
-                "Mock Classifier": {"dummy_parameter": hyperparameters}
-            },
-        )
-
-    next_batch = algo.next_batch()
-
-    assert all([p.parameters["Mock Classifier"]["n_jobs"] == -1 for p in next_batch])
-    assert all(
-        [
-            p.parameters["Mock Classifier"]["dummy_parameter"] == parameters
-            for p in next_batch
-        ]
-    )
-
-    scores = np.arange(0, len(next_batch))
-
-    if parameters not in hyperparameters:
-        for score, pipeline in zip(scores, next_batch):
-            with pytest.raises(ValueError, match="Default parameters for components"):
-                algo.add_result(score, pipeline, {"id": algo.pipeline_number})
-    else:
-        for score, pipeline in zip(scores, next_batch):
-            algo.add_result(score, pipeline, {"id": algo.pipeline_number})
-
-        # make sure that future batches remain in the hyperparam range
-        all_dummies = set()
-        for i in range(1, 5):
-            next_batch = algo.next_batch()
-            for p in next_batch:
-                dummy = p.parameters["Mock Classifier"]["dummy_parameter"]
-                if dummy not in all_dummies:
-                    all_dummies.add(dummy)
-            assert all(
-                [
-                    p.parameters["Mock Classifier"]["dummy_parameter"]
-                    in hyperparameters
-                    for p in next_batch
-                ]
-            )
-        assert all_dummies == {1, 3, 4} if parameters == 1 else all_dummies == {2, 3, 4}
-
-
-def test_iterative_algorithm_pipeline_params_kwargs(
+def test_iterative_algorithm_search_params_kwargs(
     X_y_binary, dummy_binary_pipeline_classes
 ):
     X, y = X_y_binary
@@ -736,7 +629,7 @@ def test_iterative_algorithm_pipeline_params_kwargs(
         y=y,
         problem_type="binary",
         allowed_component_graphs=allowed_component_graphs,
-        pipeline_params={
+        search_parameters={
             "Mock Classifier": {"dummy_parameter": "dummy", "fake_param": "fake"}
         },
         random_seed=0,

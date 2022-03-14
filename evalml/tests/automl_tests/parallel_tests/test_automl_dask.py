@@ -205,8 +205,7 @@ def test_automl_immediate_quit(
         pipelines_per_batch=5,
         ensembling=False,
         text_in_ensembling=False,
-        pipeline_params={},
-        custom_hyperparameters=None,
+        search_parameters={},
     )
     automl.automl_algorithm.allowed_pipelines = pipelines
 

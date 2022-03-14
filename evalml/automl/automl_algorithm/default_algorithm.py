@@ -1,9 +1,7 @@
 """An automl algorithm that consists of two modes: fast and long, where fast is a subset of long."""
-import inspect
 import logging
 
 import numpy as np
-from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm
 
@@ -61,8 +59,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         sampler_name (BaseSampler): Sampler to use for preprocessing.
         tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
         random_seed (int): Seed for the random number generator. Defaults to 0.
-        pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines. Defaults to None.
-        custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
+        search_parameters (dict or None): Pipeline-level parameters and custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
         text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to False.
         top_n (int): top n number of pipelines to use for long mode.
@@ -81,8 +78,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         sampler_name,
         tuner_class=None,
         random_seed=0,
-        pipeline_params=None,
-        custom_hyperparameters=None,
+        search_parameters=None,
         n_jobs=-1,
         text_in_ensembling=False,
         top_n=3,
@@ -91,9 +87,14 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         allow_long_running_models=False,
         verbose=False,
     ):
+        if search_parameters and not isinstance(search_parameters, dict):
+            raise ValueError(
+                f"If search_parameters provided, must be of type dict. Received {type(search_parameters)}"
+            )
+
         super().__init__(
             allowed_pipelines=[],
-            custom_hyperparameters=custom_hyperparameters,
+            search_parameters=search_parameters,
             tuner_class=None,
             random_seed=random_seed,
         )
@@ -105,8 +106,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.n_jobs = n_jobs
         self._best_pipeline_info = {}
         self.text_in_ensembling = text_in_ensembling
-        self._pipeline_params = pipeline_params or {}
-        self._custom_hyperparameters = custom_hyperparameters or {}
+        self.search_parameters = search_parameters or {}
         self._top_n_pipelines = None
         self.num_long_explore_pipelines = num_long_explore_pipelines
         self.num_long_pipelines_per_batch = num_long_pipelines_per_batch
@@ -122,27 +122,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             self.logger = get_logger(f"{__name__}.verbose")
         else:
             self.logger = logging.getLogger(__name__)
-
         self._set_additional_pipeline_params()
-        if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
-            raise ValueError(
-                f"If custom_hyperparameters provided, must be of type dict. Received {type(custom_hyperparameters)}"
-            )
-
-        for param_name_val in self._pipeline_params.values():
-            for param_val in param_name_val.values():
-                if isinstance(param_val, (Integer, Real, Categorical)):
-                    raise ValueError(
-                        "Pipeline parameters should not contain skopt.Space variables, please pass them "
-                        "to custom_hyperparameters instead!"
-                    )
-        for hyperparam_name_val in self._custom_hyperparameters.values():
-            for hyperparam_val in hyperparam_name_val.values():
-                if not isinstance(hyperparam_val, (Integer, Real, Categorical)):
-                    raise ValueError(
-                        "Custom hyperparameters should only contain skopt.Space variables such as Categorical, Integer,"
-                        " and Real!"
-                    )
 
     @property
     def default_max_batches(self):
@@ -167,7 +147,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
 
     def _create_tuner(self, pipeline):
         pipeline_hyperparameters = pipeline.get_hyperparameter_ranges(
-            self._custom_hyperparameters
+            self._hyperparameters
         )
         self._tuners[pipeline.name] = self._tuner_class(
             pipeline_hyperparameters, random_seed=self.random_seed
@@ -205,8 +185,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 problem_type=self.problem_type,
                 sampler_name=self.sampler_name,
                 extra_components_after=feature_selector,
-                parameters=self._pipeline_params,
-                known_in_advance=self._pipeline_params.get("pipeline", {}).get(
+                parameters=self._pipeline_parameters,
+                known_in_advance=self._pipeline_parameters.get("pipeline", {}).get(
                     "known_in_advance", None
                 ),
             )
@@ -266,17 +246,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                             new_names[name] = old_names[component_name]
         return new_names
 
-    def _rename_pipeline_parameters_custom_hyperparameters(self, pipelines):
+    def _rename_pipeline_search_parameters(self, pipelines):
         names_to_value_pipeline_params = self._find_component_names_from_parameters(
-            self._pipeline_params, pipelines
+            self.search_parameters, pipelines
         )
-        names_to_value_custom_hyperparameters = (
-            self._find_component_names_from_parameters(
-                self._custom_hyperparameters, pipelines
-            )
-        )
-        self._pipeline_params.update(names_to_value_pipeline_params)
-        self._custom_hyperparameters.update(names_to_value_custom_hyperparameters)
+        self.search_parameters.update(names_to_value_pipeline_params)
 
     def _create_fast_final(self):
         estimators = [
@@ -295,7 +269,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         pipelines = self._make_pipelines_helper(estimators)
 
         if self._split:
-            self._rename_pipeline_parameters_custom_hyperparameters(pipelines)
+            self._rename_pipeline_search_parameters(pipelines)
 
         next_batch = []
         for pipeline in pipelines:
@@ -348,8 +322,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     estimator=estimator,
                     problem_type=self.problem_type,
                     sampler_name=self.sampler_name,
-                    parameters=self._pipeline_params,
-                    known_in_advance=self._pipeline_params.get("pipeline", {}).get(
+                    parameters=self._pipeline_parameters,
+                    known_in_advance=self.search_parameters.get("pipeline", {}).get(
                         "known_in_advance", None
                     ),
                 )
@@ -467,56 +441,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     }
                 }
             )
-
-    def _transform_parameters(self, pipeline, proposed_parameters):
-        """Given a pipeline parameters dict, make sure pipeline_params, custom_hyperparameters, n_jobs are set properly."""
-        parameters = {}
-        if "pipeline" in self._pipeline_params:
-            parameters["pipeline"] = self._pipeline_params["pipeline"]
-
-        for (
-            name,
-            component_instance,
-        ) in pipeline.component_graph.component_instances.items():
-            component_class = type(component_instance)
-            component_parameters = proposed_parameters.get(name, {})
-            init_params = inspect.signature(component_class.__init__).parameters
-            # For first batch, pass the pipeline params to the components that need them
-            if name in self._custom_hyperparameters and self._batch_number <= 2:
-                for param_name, value in self._custom_hyperparameters[name].items():
-                    if isinstance(value, (Integer, Real)):
-                        # get a random value in the space
-                        component_parameters[param_name] = value.rvs(
-                            random_state=self.random_seed
-                        )[0]
-                    # Categorical
-                    else:
-                        component_parameters[param_name] = value.rvs(
-                            random_state=self.random_seed
-                        )
-            if name in self._pipeline_params:
-                for param_name, value in self._pipeline_params[name].items():
-                    component_parameters[param_name] = value
-            # Inspects each component and adds the following parameters when needed
-            if "n_jobs" in init_params:
-                component_parameters["n_jobs"] = self.n_jobs
-            names_to_check = [
-                "Drop Columns Transformer",
-                "Known In Advance Pipeline - Select Columns Transformer",
-                "Not Known In Advance Pipeline - Select Columns Transformer",
-            ]
-            if (
-                name in self._pipeline_params
-                and name in names_to_check
-                and self._batch_number > 0
-            ):
-                component_parameters["columns"] = self._pipeline_params[name]["columns"]
-            if "pipeline" in self._pipeline_params:
-                for param_name, value in self._pipeline_params["pipeline"].items():
-                    if param_name in init_params:
-                        component_parameters[param_name] = value
-            parameters[name] = component_parameters
-        return parameters
 
     def _make_split_pipeline(self, estimator, pipeline_name=None):
         if self._X_with_cat_cols is None or self._X_without_cat_cols is None:
