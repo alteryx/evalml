@@ -59,7 +59,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         sampler_name (BaseSampler): Sampler to use for preprocessing.
         tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
         random_seed (int): Seed for the random number generator. Defaults to 0.
-        search_parameters (dict or None): Pipeline-level parameters and custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
+        search_parameters (dict or None): Pipeline-level parameters and custom hyperparameter ranges specified for pipelines to iterate over. Hyperparameter ranges
+            must be passed in as skopt.space objects. Defaults to None.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
         text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to False.
         top_n (int): top n number of pipelines to use for long mode.

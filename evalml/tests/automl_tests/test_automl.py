@@ -4459,3 +4459,42 @@ def test_cv_validation_scores_time_series(
     assert len(validation_vals) == 1
     assert validation_vals[0] == 0.5
     assert cv_vals[0] == validation_vals[0]
+
+
+@pytest.mark.parametrize(
+    "parameter,expected",
+    [("mean", ["mean", "median", "most_frequent"]), (Categorical(["mean"]), ["mean"])],
+)
+@pytest.mark.parametrize("problem_type", ["binary", "time series binary"])
+def test_search_parameters_held_automl(
+    problem_type, parameter, expected, X_y_binary, ts_data_binary, AutoMLTestEnv
+):
+    if problem_type == "binary":
+        X, y = X_y_binary
+        problem_configuration = None
+    else:
+        X, y = ts_data_binary
+        problem_configuration = {
+            "time_index": "date",
+            "gap": 0,
+            "max_delay": 0,
+            "forecast_horizon": 1,
+        }
+    allowed_component_graphs = {"cg": ["Imputer", "Decision Tree Classifier"]}
+    search_parameters = {"Imputer": {"numeric_impute_strategy": parameter}}
+    aml = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type=problem_type,
+        problem_configuration=problem_configuration,
+        allowed_component_graphs=allowed_component_graphs,
+        search_parameters=search_parameters,
+        max_batches=2,
+    )
+    env = AutoMLTestEnv(problem_type)
+    with env.test_context(score_return_value={"Log Loss Binary": 0.5}):
+        aml.search()
+    hyperparam_ranges = list(aml.automl_algorithm._tuners.values())[
+        0
+    ]._pipeline_hyperparameter_ranges
+    assert hyperparam_ranges["Imputer"]["numeric_impute_strategy"] == expected
