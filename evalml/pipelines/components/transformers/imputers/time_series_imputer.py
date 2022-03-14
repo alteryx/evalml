@@ -58,7 +58,11 @@ class TimeSeriesImputer(Transformer):
         )
 
     def fit(self, X, y=None):
-        """Fits imputer to data. 'None' values are converted to np.nan before imputation and are treated as the same.
+        """Fits imputer to data.
+
+        'None' values are converted to np.nan before imputation and are treated as the same.
+        If a value is missing at the beginning or end of a column, that value will be imputed using
+        backwards fill or forwards fill as necessary, respectively.
 
         Args:
             X (pd.DataFrame, np.ndarray): The input training data of shape [n_samples, n_features]
@@ -67,8 +71,16 @@ class TimeSeriesImputer(Transformer):
         Returns:
             self
         """
-        forwards_fill_cats = ["category", "boolean"] if self.parameters["categorical_impute_strategy"] == "forwards_fill" else []
-        backwards_fill_cats = ["category", "boolean"] if self.parameters["categorical_impute_strategy"] == "backwards_fill" else []
+        forwards_fill_cats = (
+            ["category", "boolean"]
+            if self.parameters["categorical_impute_strategy"] == "forwards_fill"
+            else []
+        )
+        backwards_fill_cats = (
+            ["category", "boolean"]
+            if self.parameters["categorical_impute_strategy"] == "backwards_fill"
+            else []
+        )
         interpolation_cats = []
         if self.parameters["numeric_impute_strategy"] == "forwards_fill":
             forwards_fill_cats.append("numeric")
@@ -78,24 +90,34 @@ class TimeSeriesImputer(Transformer):
             interpolation_cats.append("numeric")
 
         X = infer_feature_types(X)
-        forwards_cols = list(X.ww.select(forwards_fill_cats, return_schema=True).columns)
-        backwards_cols = list(X.ww.select(backwards_fill_cats, return_schema=True).columns)
-        interpolation_cols = list(X.ww.select(interpolation_cats, return_schema=True).columns)
+        forwards_cols = list(
+            X.ww.select(forwards_fill_cats, return_schema=True).columns
+        )
+        backwards_cols = list(
+            X.ww.select(backwards_fill_cats, return_schema=True).columns
+        )
+        interpolation_cols = list(
+            X.ww.select(interpolation_cats, return_schema=True).columns
+        )
 
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
-        X_forwards = [col for col in forwards_cols if col not in self._all_null_cols]
-        if len(X_forwards) > 0:
-            self._forwards_cols = X_forwards
+        X_forwards = X[[col for col in forwards_cols if col not in self._all_null_cols]]
+        if len(X_forwards.columns) > 0:
+            self._forwards_cols = X_forwards.columns
 
-        X_backwards = [col for col in backwards_cols if col not in self._all_null_cols]
-        if len(X_backwards) > 0:
-            self._backwards_cols = X_backwards
+        X_backwards = X[
+            [col for col in backwards_cols if col not in self._all_null_cols]
+        ]
+        if len(X_backwards.columns) > 0:
+            self._backwards_cols = X_backwards.columns
 
-        X_interpolate = [col for col in interpolation_cols if col not in self._all_null_cols]
-        if len(X_interpolate) > 0:
-            self._interpolate_cols = X_interpolate
+        X_interpolate = X[
+            [col for col in interpolation_cols if col not in self._all_null_cols]
+        ]
+        if len(X_interpolate.columns) > 0:
+            self._interpolate_cols = X_interpolate.columns
         return self
 
     def transform(self, X, y=None):
@@ -119,16 +141,19 @@ class TimeSeriesImputer(Transformer):
         if self._forwards_cols is not None:
             X_forward = X.ww[self._forwards_cols.tolist()]
             imputed = X_forward.pad()
-            X_no_all_null[X_forward] = imputed
+            imputed = imputed.bfill()  # Fill in the first value, if missing
+            X_no_all_null[X_forward.columns] = imputed
 
         if self._backwards_cols is not None:
             X_backward = X.ww[self._backwards_cols.tolist()]
             imputed = X_backward.bfill()
-            X_no_all_null[X_backward] = imputed
+            imputed = imputed.pad()  # Fill in the last value, if missing
+            X_no_all_null[X_backward.columns] = imputed
 
         if self._interpolate_cols is not None:
             X_interpolate = X.ww[self._interpolate_cols.tolist()]
-            imputed = X_interpolate.bfill()
-            X_no_all_null[X_interpolate] = imputed
+            imputed = X_interpolate.interpolate()
+            imputed = imputed.bfill()  # Fill in the first value, if missing
+            X_no_all_null[X_interpolate.columns] = imputed
 
         return X_no_all_null
