@@ -36,7 +36,6 @@ def test_split_data(
         ):
             split_data(X, y, problem_type)
         return
-
     test_pct = 0.25
     X_train, X_test, y_train, y_test = split_data(
         X,

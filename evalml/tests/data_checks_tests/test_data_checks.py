@@ -241,7 +241,7 @@ def get_expected_messages(problem_type):
         DataCheckError(
             message="'all_null', 'also_all_null' has 0 unique values.",
             data_check_name="NoVarianceDataCheck",
-            message_code=DataCheckMessageCode.NO_VARIANCE,
+            message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
             details={"columns": ["all_null", "also_all_null"]},
             action_options=[
                 DataCheckActionOption(
@@ -526,7 +526,7 @@ def test_default_data_checks_null_rows():
         DataCheckError(
             message="'all_null', 'also_all_null' has 0 unique values.",
             data_check_name="NoVarianceDataCheck",
-            message_code=DataCheckMessageCode.NO_VARIANCE,
+            message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
             details={"columns": ["all_null", "also_all_null"]},
             action_options=[
                 DataCheckActionOption(

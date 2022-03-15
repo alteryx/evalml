@@ -7,6 +7,7 @@ from .utils import (
     is_binary,
     is_multiclass,
     is_classification,
+    is_clustering,
     is_time_series,
     is_clustering,
 )
