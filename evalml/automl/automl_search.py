@@ -410,6 +410,10 @@ class AutoMLSearch:
             If a parallel engine is selected this way, the maximum amount of parallelism, as determined by the engine, will be used. Defaults to "sequential".
 
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
+
+    Raises:
+        ValueError: if the search configuration is invalid.
+        TypeError: if `max_time` is not an acceptable type.
     """
 
     _MAX_NAME_LEN = 40
