@@ -193,7 +193,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     self.random_seed,
                 )
             self._catch_warnings(w)
-
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
 
@@ -294,13 +293,14 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         next_batch = []
         if self._batch_number == 0:
-            next_batch = [
-                pipeline.new(
-                    parameters=self._transform_parameters(pipeline, {}),
-                    random_seed=self.random_seed,
+            for pipeline in self.allowed_pipelines:
+                starting_parameters = self._tuners[
+                    pipeline.name
+                ].get_starting_parameters()
+                parameters = self._transform_parameters(pipeline, starting_parameters)
+                next_batch.append(
+                    pipeline.new(parameters=parameters, random_seed=self.random_seed)
                 )
-                for pipeline in self.allowed_pipelines
-            ]
 
         # One after training all pipelines one round
         elif (

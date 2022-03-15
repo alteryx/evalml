@@ -88,11 +88,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         allow_long_running_models=False,
         verbose=False,
     ):
-        if search_parameters and not isinstance(search_parameters, dict):
-            raise ValueError(
-                f"If search_parameters provided, must be of type dict. Received {type(search_parameters)}"
-            )
-
         super().__init__(
             allowed_pipelines=[],
             search_parameters=search_parameters,
@@ -123,6 +118,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             self.logger = get_logger(f"{__name__}.verbose")
         else:
             self.logger = logging.getLogger(__name__)
+        if search_parameters and not isinstance(search_parameters, dict):
+            raise ValueError(
+                f"If search_parameters provided, must be of type dict. Received {type(search_parameters)}"
+            )
+
         self._set_additional_pipeline_params()
 
     @property
@@ -146,22 +146,16 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         ]
         return estimators
 
-    def _create_tuner(self, pipeline):
-        pipeline_hyperparameters = pipeline.get_hyperparameter_ranges(
-            self._hyperparameters
-        )
-        self._tuners[pipeline.name] = self._tuner_class(
-            pipeline_hyperparameters, random_seed=self.random_seed
-        )
-
     def _create_pipelines_with_params(self, pipelines, parameters={}):
-        return [
-            pipeline.new(
-                parameters=self._transform_parameters(pipeline, parameters),
-                random_seed=self.random_seed,
+        next_batch = []
+        for pipeline in pipelines:
+            self._create_tuner(pipeline)
+            starting_parameters = self._tuners[pipeline.name].get_starting_parameters()
+            parameters = self._transform_parameters(pipeline, starting_parameters)
+            next_batch.append(
+                pipeline.new(parameters=parameters, random_seed=self.random_seed)
             )
-            for pipeline in pipelines
-        ]
+        return next_batch
 
     def _create_naive_pipelines(self, use_features=False):
         feature_selector = None
@@ -272,14 +266,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         if self._split:
             self._rename_pipeline_search_parameters(pipelines)
 
-        next_batch = []
-        for pipeline in pipelines:
-            parameters = self._create_select_parameters()
-            pipeline = pipeline.new(
-                parameters=self._transform_parameters(pipeline, parameters),
-                random_seed=self.random_seed,
-            )
-            next_batch.append(pipeline)
+        next_batch = self._create_n_pipelines(pipelines, 1)
 
         for pipeline in next_batch:
             self._create_tuner(pipeline)

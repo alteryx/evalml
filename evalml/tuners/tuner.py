@@ -89,6 +89,30 @@ class Tuner(ABC):
             pipeline_parameters[component_name][parameter_name] = parameter_value
         return pipeline_parameters
 
+    def get_starting_parameters(self):
+        starting_parameters = {}
+        for name, param_dict in self._pipeline_hyperparameter_ranges.items():
+            component_parameters = {}
+            for param_name, value in param_dict.items():
+                if isinstance(value, (Integer, Real)):
+                    # get a random value in the space
+                    component_parameters[param_name] = value.rvs(
+                        random_state=self.random_seed
+                    )[0]
+                elif isinstance(value, Categorical):
+                    # Categorical
+                    component_parameters[param_name] = value.rvs(
+                        random_state=self.random_seed
+                    )
+                elif isinstance(value, (list, tuple)):
+                    # list value from our internal hyperparameter_ranges
+                    component_parameters[param_name] = value[0]
+                else:
+                    # should be singular value, in which case we don't provide any starting value
+                    continue
+            starting_parameters[name] = component_parameters
+        return starting_parameters
+
     @abstractmethod
     def add(self, pipeline_parameters, score):
         """Register a set of hyperparameters with the score obtained from training a pipeline with those hyperparameters.

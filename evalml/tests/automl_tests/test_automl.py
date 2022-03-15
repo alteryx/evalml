@@ -1939,7 +1939,8 @@ def test_percent_better_than_baseline_in_rankings(
         search_parameters=pipeline_parameters,
     )
     automl.automl_algorithm.allowed_pipelines = allowed_pipelines
-    automl._SLEEP_TIME = 0.000001
+    for pipeline in allowed_pipelines:
+        automl.automl_algorithm._create_tuner(pipeline)
     with patch(
         baseline_pipeline_class + ".score",
         return_value={objective.name: baseline_score},
@@ -2118,7 +2119,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         },
     )
     automl.automl_algorithm.allowed_pipelines = [DummyPipeline(parameters)]
-    automl._SLEEP_TIME = 0.00001
+    automl.automl_algorithm._create_tuner(DummyPipeline(parameters))
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
         automl.search()
         assert (
@@ -2266,6 +2267,7 @@ def test_percent_better_than_baseline_scores_different_folds(
         search_parameters={},
     )
     automl.automl_algorithm.allowed_pipelines = [DummyPipeline({})]
+    automl.automl_algorithm._create_tuner(DummyPipeline({}))
 
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 1, "F1": 1}):
@@ -3142,7 +3144,7 @@ def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
             assert (
                 0.1 < row["parameters"]["Decision Tree Classifier"]["ccp_alpha"] < 0.5
             )
-            assert row["parameters"]["Decision Tree Classifier"]["max_depth"] == 1
+            assert row["parameters"]["Decision Tree Classifier"]["max_depth"] == 2
 
 
 @pytest.mark.parametrize("random_seed", [0, 1, 9])

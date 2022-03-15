@@ -52,6 +52,29 @@ class AutoMLAlgorithm(ABC):
         self._hyperparameters = {}
         self._pipeline_parameters = {}
 
+        for pipeline in self.allowed_pipelines:
+            self._create_tuner(pipeline)
+        self._pipeline_number = 0
+        self._batch_number = 0
+        self._default_max_batches = 1
+
+    @abstractmethod
+    def next_batch(self):
+        """Get the next batch of pipelines to evaluate.
+
+        Returns:
+            list[PipelineBase]: A list of instances of PipelineBase subclasses, ready to be trained and evaluated.
+        """
+
+    def _create_tuner(self, pipeline):
+        pipeline_hyperparameters = pipeline.get_hyperparameter_ranges(
+            self._hyperparameters
+        )
+        self._tuners[pipeline.name] = self._tuner_class(
+            pipeline_hyperparameters, random_seed=self.random_seed
+        )
+
+    def _separate_hyperparameters_from_parameters(self):
         # seperate out the parameter and hyperparameter values
         for key, value in self.search_parameters.items():
             hyperparam = {}
@@ -65,25 +88,6 @@ class AutoMLAlgorithm(ABC):
                 self._hyperparameters[key] = hyperparam
             if param:
                 self._pipeline_parameters[key] = param
-
-        for pipeline in self.allowed_pipelines:
-            pipeline_hyperparameters = pipeline.get_hyperparameter_ranges(
-                self._hyperparameters
-            )
-            self._tuners[pipeline.name] = self._tuner_class(
-                pipeline_hyperparameters, random_seed=self.random_seed
-            )
-        self._pipeline_number = 0
-        self._batch_number = 0
-        self._default_max_batches = 1
-
-    @abstractmethod
-    def next_batch(self):
-        """Get the next batch of pipelines to evaluate.
-
-        Returns:
-            list[PipelineBase]: A list of instances of PipelineBase subclasses, ready to be trained and evaluated.
-        """
 
     def _transform_parameters(self, pipeline, proposed_parameters):
         """Given a pipeline parameters dict, make sure pipeline_parameters, custom_hyperparameters, n_jobs are set properly.
@@ -103,25 +107,11 @@ class AutoMLAlgorithm(ABC):
             component_class = type(component_instance)
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
-            # For first batch, pass the pipeline params to the components that need them
-            if component_parameters != {}:
-                print(component_parameters)
-            if name in self.search_parameters and name not in component_parameters:
-                # only write the value if the name is not existing in the proposed parameters
-                for param_name, value in self.search_parameters[name].items():
-                    if isinstance(value, (Integer, Real)):
-                        # get a random value in the space
-                        component_parameters[param_name] = value.rvs(
-                            random_state=self.random_seed
-                        )[0]
-                    elif isinstance(value, Categorical):
-                        # Categorical
-                        component_parameters[param_name] = value.rvs(
-                            random_state=self.random_seed
-                        )
-                    else:
-                        # we set the pipeline parameter value directly
-                        component_parameters[param_name] = value
+            # Only overwrite the parameters that were passed in on pipeline parameters
+            # if they don't exist in the propsed parameters
+            if name in self._pipeline_parameters and name not in component_parameters:
+                for param_name, value in self._pipeline_parameters[name].items():
+                    component_parameters[param_name] = value
             # Inspects each component and adds the following parameters when needed
             if "n_jobs" in init_params:
                 component_parameters["n_jobs"] = self.n_jobs
@@ -220,6 +210,7 @@ class AutoMLAlgorithm(ABC):
             no_kin_name = "Not Known In Advance Pipeline - Select Columns Transformer"
             self.search_parameters[kin_name] = {"columns": kina_columns}
             self.search_parameters[no_kin_name] = {"columns": no_kin_columns}
+        self._separate_hyperparameters_from_parameters()
 
     def _filter_estimators(
         self,
