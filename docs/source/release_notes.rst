@@ -13,6 +13,7 @@
     * Documentation Changes
         * Fixed documentation links to point to correct pages :pr:`3358`
     * Testing Changes
+        * Checkout main branch in build_conda_pkg job :pr:`3375`
 
 .. warning::
 
