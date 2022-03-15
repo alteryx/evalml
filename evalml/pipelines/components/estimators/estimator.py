@@ -92,8 +92,6 @@ class Estimator(ComponentBase):
         """
         try:
             X = infer_feature_types(X)
-            if isinstance(X.columns, range.RangeIndex):
-                X.columns = [x for x in X.columns]
             predictions = self._component_obj.predict(X)
         except AttributeError:
             raise MethodPropertyNotFoundError(
