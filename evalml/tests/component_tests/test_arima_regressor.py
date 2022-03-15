@@ -187,7 +187,7 @@ def test_fit_predict(
 
     fh_ = ForecastingHorizon([i + 1 for i in range(len(X_test))], is_relative=True)
 
-    a_clf = AutoARIMA()
+    a_clf = AutoARIMA(maxiter=10)
     clf = a_clf.fit(X=X_train, y=y_train)
     y_pred_sk = clf.predict(fh=fh_, X=X_test)
 
@@ -232,7 +232,7 @@ def test_fit_predict_sk_failure(
         test_features_index_dt,
     )
 
-    a_clf = AutoARIMA()
+    a_clf = AutoARIMA(maxiter=10)
     with pytest.raises(Exception):
         a_clf.fit(X=X_train, y=y_train)
 
@@ -259,7 +259,7 @@ def test_different_time_units_out_of_sample(
 
     fh_ = ForecastingHorizon([i + 1 for i in range(len(y[15:]))], is_relative=True)
 
-    a_clf = AutoARIMA()
+    a_clf = AutoARIMA(maxiter=10)
     clf = a_clf.fit(X=X[:15], y=y[:15])
     y_pred_sk = clf.predict(fh=fh_, X=X[15:])
 
