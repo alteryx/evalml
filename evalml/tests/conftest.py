@@ -454,6 +454,197 @@ def assert_allowed_pipelines_equal_helper():
 
 
 @pytest.fixture
+def missing_middle():
+    dates_1 = pd.date_range("2005-01-01 00:00:00", periods=20, freq="1H")
+    dates_2 = pd.date_range("2005-01-01 21:00:00", periods=30, freq="1H")
+    dates = dates_1.append(dates_2)
+    return dates
+
+
+@pytest.fixture
+def missing_beginning():
+    dates_1 = pd.DatetimeIndex(["2006-08-01"])
+    dates_2 = pd.date_range("2006-10-01", periods=30, freq="1MS")
+    dates = dates_1.append(dates_2)
+    return dates
+
+
+@pytest.fixture
+def missing_end():
+    dates_1 = pd.date_range("2006-10-01", periods=30, freq="1MS")
+    dates_2 = pd.DatetimeIndex(["2009-05-01"])
+    dates = dates_1.append(dates_2)
+    return dates
+
+
+@pytest.fixture
+def missing_scattered():
+    dates_1 = pd.date_range("2014-03-01", periods=27, freq="5D")
+    dates_2 = pd.date_range("2014-07-19", periods=9, freq="5D")
+    dates_3 = pd.date_range("2014-09-07", periods=15, freq="5D")
+    dates_4 = pd.date_range("2014-12-01", periods=11, freq="5D")
+    dates = dates_1.append(dates_2).append(dates_3).append(dates_4)
+    return dates
+
+
+@pytest.fixture
+def missing_continuous():
+    dates_1 = pd.date_range("2014-03-01", periods=22, freq="5D")
+    dates_2 = pd.date_range("2014-06-29", periods=13, freq="5D")
+    dates_3 = pd.date_range("2014-09-17", periods=31, freq="5D")
+    dates = dates_1.append(dates_2).append(dates_3)
+    return dates
+
+
+@pytest.fixture
+def uneven_middle():
+    dates_1 = pd.date_range("2005-01-01 00:00:00", periods=20, freq="10H")
+    dates_2 = pd.DatetimeIndex(["2005-01-09 12:00:00"])
+    dates_3 = pd.DatetimeIndex(["2005-01-09 20:00:00"])
+    dates_4 = pd.date_range("2005-01-10 04:00:00", periods=29, freq="10H")
+    dates = dates_1.append(dates_2).append(dates_3).append(dates_4)
+    return dates
+
+
+@pytest.fixture
+def uneven_beginning():
+    dates_1 = pd.DatetimeIndex(["2006-07-23", "2006-08-21"])
+    dates_2 = pd.date_range("2006-10-31", periods=30, freq="2M")
+    dates = dates_1.append(dates_2)
+    return dates
+
+
+@pytest.fixture
+def uneven_end():
+    dates_1 = pd.date_range("2006-10-01", periods=30, freq="1MS")
+    dates_2 = pd.DatetimeIndex(["2009-03-26"])
+    dates = dates_1.append(dates_2)
+    return dates
+
+
+@pytest.fixture
+def uneven_scattered():
+    dates_1 = pd.date_range("2014-03-01", periods=17, freq="5D")
+    dates_2 = pd.DatetimeIndex(["2014-05-23"])
+    dates_3 = pd.date_range("2014-05-30", periods=8, freq="5D")
+    dates_4 = pd.DatetimeIndex(["2014-07-11"])
+    dates_5 = pd.date_range("2014-07-14", periods=13, freq="5D")
+    dates_6 = pd.DatetimeIndex(["2014-09-13", "2014-09-18"])
+    dates_7 = pd.date_range("2014-09-27", periods=159, freq="5D")
+    dates = (
+        dates_1.append(dates_2)
+        .append(dates_3)
+        .append(dates_4)
+        .append(dates_5)
+        .append(dates_6)
+        .append(dates_7)
+    )
+    return dates
+
+
+@pytest.fixture
+def uneven_continuous():
+    dates_1 = pd.date_range("2014-01-01", periods=5, freq="2D")
+    dates_2 = pd.DatetimeIndex(["2014-01-10", "2014-01-12", "2014-01-14"])
+    dates_3 = pd.date_range("2014-01-15", periods=130, freq="2D")
+    dates = dates_1.append(dates_2).append(dates_3)
+    return dates
+
+
+@pytest.fixture
+def duplicate_beginning():
+    dates_1 = pd.DatetimeIndex(["2006-09-01"])
+    dates_2 = pd.date_range("2006-09-01", periods=30, freq="1MS")
+    dates = dates_1.append(dates_2)
+    return dates
+
+
+@pytest.fixture
+def duplicate_middle():
+    dates_1 = pd.date_range("2005-01-01", periods=10, freq="2MS")
+    dates_2 = pd.DatetimeIndex(["2006-07-01"])
+    dates_3 = pd.date_range("2006-09-01", periods=50, freq="2MS")
+    dates = dates_1.append(dates_2).append(dates_3)
+    return dates
+
+
+@pytest.fixture
+def duplicate_end():
+    dates_1 = pd.date_range("2001-01-07", periods=30, freq="3D")
+    dates_2 = pd.DatetimeIndex(["2001-04-10", "2001-04-10"])
+    dates = dates_1.append(dates_2)
+    return dates
+
+
+@pytest.fixture
+def duplicate_scattered():
+    dates_1 = pd.DatetimeIndex(["2001-01-01", "2001-01-01"])
+    dates_2 = pd.date_range("2001-01-01", periods=20, freq="1AS")
+    dates_3 = pd.DatetimeIndex(["2020-01-01"])
+    dates_4 = pd.date_range("2022-01-01", periods=5, freq="1AS")
+    dates_5 = pd.DatetimeIndex(["2026-01-01"])
+    dates = dates_1.append(dates_2).append(dates_3).append(dates_4).append(dates_5)
+    return dates
+
+
+@pytest.fixture
+def duplicate_continuous():
+    dates_1 = pd.date_range("2005-01-01", periods=10, freq="2MS")
+    dates_2 = pd.DatetimeIndex(["2006-07-01", "2006-07-01", "2006-07-01"])
+    dates_3 = pd.date_range("2006-09-01", periods=50, freq="2MS")
+    dates = dates_1.append(dates_2).append(dates_3)
+    return dates
+
+
+@pytest.fixture
+def combination():
+    dates_0 = pd.DatetimeIndex(["1/1/21", "1/3/21", "1/3/21", "1/3/21"])
+    dates_1 = pd.date_range("1/5/21", periods=8, freq="2D")
+    dates_2 = pd.DatetimeIndex(["1/19/21"])
+    dates_3 = pd.date_range("1/27/21", periods=7, freq="2D")
+    dates_4 = pd.date_range("2/12/21", periods=13, freq="2D")
+    dates_5 = pd.DatetimeIndex(
+        [
+            "3/09/21",
+            "3/10/21",
+            "3/12/21",
+            "3/14/21",
+            None,
+            "3/18/21",
+            "3/20/21",
+            "3/22/21",
+            "3/22/21",
+        ]
+    )
+    dates_6 = pd.date_range("3/22/21", periods=10, freq="2D")
+    dates_7 = pd.DatetimeIndex(["4/12/21", "4/14/21"])
+    dates_8 = pd.date_range("4/15/21", periods=5, freq="2D")
+    dates_9 = pd.DatetimeIndex(["4/24/21"])
+    dates_10 = pd.date_range("4/25/21", periods=3, freq="2D")
+    dates_11 = pd.DatetimeIndex([None, None, None])
+    dates_12 = pd.date_range("5/5/21", periods=300, freq="2D")
+
+    dates = pd.DatetimeIndex([])
+    for dates_ in [
+        dates_0,
+        dates_1,
+        dates_2,
+        dates_3,
+        dates_4,
+        dates_5,
+        dates_6,
+        dates_7,
+        dates_8,
+        dates_9,
+        dates_10,
+        dates_11,
+        dates_12,
+    ]:
+        dates = dates.append(dates_)
+    return dates
+
+
+@pytest.fixture
 def X_y_binary():
     X, y = datasets.make_classification(
         n_samples=100, n_features=20, n_informative=2, n_redundant=2, random_state=0
