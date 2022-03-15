@@ -2,7 +2,6 @@
 from abc import abstractmethod
 
 import pandas as pd
-from pandas.core.indexes import range
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
