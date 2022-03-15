@@ -4463,7 +4463,10 @@ def test_cv_validation_scores_time_series(
 
 @pytest.mark.parametrize(
     "parameter,expected",
-    [("mean", ["mean", "median", "most_frequent"]), (Categorical(["mean"]), ["mean"])],
+    [
+        ("mean", ["mean", "median", "most_frequent"]),
+        (Categorical(["mean"]), Categorical(["mean"])),
+    ],
 )
 @pytest.mark.parametrize("problem_type", ["binary", "time series binary"])
 def test_search_parameters_held_automl(
@@ -4480,8 +4483,13 @@ def test_search_parameters_held_automl(
             "max_delay": 0,
             "forecast_horizon": 1,
         }
-    allowed_component_graphs = {"cg": ["Imputer", "Decision Tree Classifier"]}
-    search_parameters = {"Imputer": {"numeric_impute_strategy": parameter}}
+    allowed_component_graphs = {
+        "cg": ["Imputer", "Label Encoder", "Decision Tree Classifier"]
+    }
+    search_parameters = {
+        "Imputer": {"numeric_impute_strategy": parameter},
+        "Label Encoder": {"positive_label": 0},
+    }
     aml = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -4498,3 +4506,5 @@ def test_search_parameters_held_automl(
         0
     ]._pipeline_hyperparameter_ranges
     assert hyperparam_ranges["Imputer"]["numeric_impute_strategy"] == expected
+    # make sure that there are no set hyperparameters when we don't have defaults
+    assert hyperparam_ranges["Label Encoder"] == {}
