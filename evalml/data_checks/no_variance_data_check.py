@@ -83,7 +83,7 @@ class NoVarianceDataCheck(DataCheck):
             ...         "data_check_name": "NoVarianceDataCheck",
             ...         "level": "error",
             ...         "details": {"columns": ["Y"], "rows": None},
-            ...         "code": "NO_VARIANCE",
+            ...         "code": "NO_VARIANCE_ZERO_UNIQUE",
             ...         "action_options":[]
             ...     }
             ... ]
@@ -181,7 +181,7 @@ class NoVarianceDataCheck(DataCheck):
                         (", ").join(["'{}'".format(str(col)) for col in zero_unique]),
                     ),
                     data_check_name=self.name,
-                    message_code=DataCheckMessageCode.NO_VARIANCE,
+                    message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
                     details={"columns": zero_unique},
                     action_options=[
                         DataCheckActionOption(
@@ -247,7 +247,7 @@ class NoVarianceDataCheck(DataCheck):
                 DataCheckError(
                     message=zero_unique_message.format(y_name),
                     data_check_name=self.name,
-                    message_code=DataCheckMessageCode.NO_VARIANCE,
+                    message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
                     details={"columns": [y_name]},
                 ).to_dict()
             )

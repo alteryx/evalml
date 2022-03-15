@@ -6,6 +6,7 @@
         * Added clustering as a problem type :pr:`3368`
         * Added ``TimeSeriesFeaturizer`` into ARIMA-based pipelines :pr:`3313`
         * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
+        * Added new error code for zero unique values in ``NoVarianceDataCheck`` :pr:`3372`
     * Fixes
         * Fixed ``get_pipelines`` to reset pipeline threshold for binary cases :pr:`3360`
     * Changes
@@ -13,6 +14,7 @@
     * Documentation Changes
         * Fixed documentation links to point to correct pages :pr:`3358`
     * Testing Changes
+        * Checkout main branch in build_conda_pkg job :pr:`3375`
 
 .. warning::
 
