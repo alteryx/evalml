@@ -4492,8 +4492,13 @@ def test_cv_validation_scores_time_series(
     "automl_algorithm",
     ["iterative", "default"],
 )
+@pytest.mark.parametrize(
+    "features",
+    ["with_features_provided", "without_features_provided"],
+)
 def test_automl_accepts_features(
     automl_algorithm,
+    features,
     X_y_binary,
     AutoMLTestEnv,
 ):
@@ -4502,13 +4507,16 @@ def test_automl_accepts_features(
     X_pd.columns = X_pd.columns.astype(str)
     X_transform = X_pd.iloc[len(X) // 3 :]
 
-    es = ft.EntitySet()
-    es = es.add_dataframe(
-        dataframe_name="X", dataframe=X_transform, index="index", make_index=True
-    )
-    _, features = ft.dfs(
-        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
-    )
+    if features == "with_features_provided":
+        es = ft.EntitySet()
+        es = es.add_dataframe(
+            dataframe_name="X", dataframe=X_transform, index="index", make_index=True
+        )
+        _, features = ft.dfs(
+            entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
+        )
+    else:
+        features = None
 
     automl = AutoMLSearch(
         X_train=X,
@@ -4519,13 +4527,20 @@ def test_automl_accepts_features(
         features=features,
         automl_algorithm=automl_algorithm,
     )
+
     assert automl.automl_algorithm.features == features
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={automl.objective.name: 1.0}):
         automl.search()
-    assert all(
-        [
-            p["DFS Transformer"]["features"] == features
-            for p in automl.full_rankings["parameters"][1:]
-        ]
-    )
+
+    if features:
+        assert all(
+            [
+                p["DFS Transformer"]["features"] == features
+                for p in automl.full_rankings["parameters"][1:]
+            ]
+        )
+    else:
+        assert all(
+            ["DFS Transformer" not in p for p in automl.full_rankings["parameters"][1:]]
+        )
