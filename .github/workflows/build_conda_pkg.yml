@@ -6,10 +6,10 @@ on:
       - main
   pull_request:
     types: [ opened, synchronize ]
-    paths:
-      - 'requirements.txt'
-      - 'core-requirements.txt'
-      - 'evalml/tests/dependency_update_check/*.txt'
+#    paths:
+#      - 'requirements.txt'
+#      - 'core-requirements.txt'
+#      - 'evalml/tests/dependency_update_check/*.txt'
 
 jobs:
   build_conda_pkg:
@@ -35,7 +35,7 @@ jobs:
           DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         run: |
-          git clone -b master --single-branch https://github.com/conda-forge/evalml-core-feedstock
+          git clone -b main --single-branch https://github.com/conda-forge/evalml-core-feedstock
           cp .github/meta.yaml ./evalml-core-feedstock/recipe/
           pip install virtualenv
           virtualenv test_python -q
