@@ -4,6 +4,7 @@
 **Future Releases**
     * Enhancements
         * Added clustering as a problem type :pr:`3368`
+        * Added clustering models ``DBSCAN``, ``KMeans``, ``KModes``, and ``KPrototypes`` :pr:`3379`
         * Added ``TimeSeriesFeaturizer`` into ARIMA-based pipelines :pr:`3313`
         * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
         * Added new error code for zero unique values in ``NoVarianceDataCheck`` :pr:`3372`
