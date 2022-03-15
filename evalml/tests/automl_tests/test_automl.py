@@ -4461,6 +4461,7 @@ def test_cv_validation_scores_time_series(
     assert cv_vals[0] == validation_vals[0]
 
 
+@pytest.mark.parametrize("algorithm,batches", [("iterative", 2), ("default", 3)])
 @pytest.mark.parametrize(
     "parameter,expected",
     [
@@ -4470,11 +4471,22 @@ def test_cv_validation_scores_time_series(
 )
 @pytest.mark.parametrize("problem_type", ["binary", "time series binary"])
 def test_search_parameters_held_automl(
-    problem_type, parameter, expected, X_y_binary, ts_data_binary, AutoMLTestEnv
+    problem_type, parameter, expected, algorithm, batches, X_y_binary, ts_data_binary
 ):
     if problem_type == "binary":
         X, y = X_y_binary
         problem_configuration = None
+        allowed_component_graphs = {
+            "cg": {
+                "Imputer": ["Imputer", "X", "y"],
+                "Label Encoder": ["Label Encoder", "Imputer.x", "y"],
+                "Decision Tree Classifier": [
+                    "Decision Tree Classifier",
+                    "Label Encoder.x",
+                    "Label Encoder.y",
+                ],
+            }
+        }
     else:
         X, y = ts_data_binary
         problem_configuration = {
@@ -4483,9 +4495,18 @@ def test_search_parameters_held_automl(
             "max_delay": 0,
             "forecast_horizon": 1,
         }
-    allowed_component_graphs = {
-        "cg": ["Imputer", "Label Encoder", "Decision Tree Classifier"]
-    }
+        allowed_component_graphs = {
+            "cg": {
+                "Imputer": ["Imputer", "X", "y"],
+                "Label Encoder": ["Label Encoder", "Imputer.x", "y"],
+                "TS": ["DateTime Featurizer", "Label Encoder.x", "Label Encoder.y"],
+                "Decision Tree Classifier": [
+                    "Decision Tree Classifier",
+                    "TS.x",
+                    "Label Encoder.y",
+                ],
+            }
+        }
     search_parameters = {
         "Imputer": {"numeric_impute_strategy": parameter},
         "Label Encoder": {"positive_label": 0},
@@ -4497,14 +4518,15 @@ def test_search_parameters_held_automl(
         problem_configuration=problem_configuration,
         allowed_component_graphs=allowed_component_graphs,
         search_parameters=search_parameters,
-        max_batches=2,
+        automl_algorithm=algorithm,
+        max_batches=batches,
     )
-    env = AutoMLTestEnv(problem_type)
-    with env.test_context(score_return_value={"Log Loss Binary": 0.5}):
-        aml.search()
-    hyperparam_ranges = list(aml.automl_algorithm._tuners.values())[
-        0
-    ]._pipeline_hyperparameter_ranges
-    assert hyperparam_ranges["Imputer"]["numeric_impute_strategy"] == expected
-    # make sure that there are no set hyperparameters when we don't have defaults
-    assert hyperparam_ranges["Label Encoder"] == {}
+    aml.search()
+    for tuners in aml.automl_algorithm._tuners.values():
+        assert (
+            tuners._pipeline_hyperparameter_ranges["Imputer"]["numeric_impute_strategy"]
+            == expected
+        )
+        # make sure that there are no set hyperparameters when we don't have defaults
+        assert tuners._pipeline_hyperparameter_ranges["Label Encoder"] == {}
+        assert tuners.propose()["Label Encoder"] == {}

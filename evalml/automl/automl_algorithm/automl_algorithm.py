@@ -104,7 +104,10 @@ class AutoMLAlgorithm(ABC):
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
             # For first batch, pass the pipeline params to the components that need them
-            if name in self.search_parameters:
+            if component_parameters != {}:
+                print(component_parameters)
+            if name in self.search_parameters and name not in component_parameters:
+                # only write the value if the name is not existing in the proposed parameters
                 for param_name, value in self.search_parameters[name].items():
                     if isinstance(value, (Integer, Real)):
                         # get a random value in the space
