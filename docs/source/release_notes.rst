@@ -6,6 +6,7 @@
         * Added ``TimeSeriesFeaturizer`` into ARIMA-based pipelines :pr:`3313`
         * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
         * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
+        * Added new error code for zero unique values in ``NoVarianceDataCheck`` :pr:`3372`
     * Fixes
         * Fixed ``get_pipelines`` to reset pipeline threshold for binary cases :pr:`3360`
         * Simplified internal ``AutoMLSearch`` API to rely on ``search_parameters`` :pr:`3373`
