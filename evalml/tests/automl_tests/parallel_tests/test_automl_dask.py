@@ -9,6 +9,7 @@ from evalml.automl.engine import CFEngine, DaskEngine, SequentialEngine
 from evalml.problem_types import (
     ProblemTypes,
     is_binary,
+    is_clustering,
     is_multiclass,
     is_time_series,
 )
@@ -293,6 +294,8 @@ def test_score_pipelines_passes_X_train_y_train(
     ts_data_multi,
     ts_data,
 ):
+    if is_clustering(problem_type):
+        pytest.skip("Skipping because clustering is not used in search")
     if is_binary(problem_type):
         if is_time_series(problem_type):
             X, y = ts_data_binary

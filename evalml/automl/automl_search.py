@@ -53,6 +53,7 @@ from evalml.problem_types import (
     handle_problem_types,
     is_binary,
     is_classification,
+    is_clustering,
     is_time_series,
 )
 from evalml.tuners import SKOptTuner
@@ -409,6 +410,10 @@ class AutoMLSearch:
             If a parallel engine is selected this way, the maximum amount of parallelism, as determined by the engine, will be used. Defaults to "sequential".
 
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
+
+    Raises:
+        ValueError: if the search configuration is invalid.
+        TypeError: if `max_time` is not an acceptable type.
     """
 
     _MAX_NAME_LEN = 40
@@ -475,6 +480,8 @@ class AutoMLSearch:
                 "Time series support in evalml is still in beta, which means we are still actively building "
                 "its core features. Please be mindful of that when running search()."
             )
+        if is_clustering(self.problem_type):
+            raise ValueError("AutoMLSearch cannot be run for clustering problems.")
         self._SLEEP_TIME = 0.1
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback
