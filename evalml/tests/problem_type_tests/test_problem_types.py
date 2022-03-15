@@ -8,6 +8,7 @@ from evalml.problem_types import (
     handle_problem_types,
     is_binary,
     is_classification,
+    is_clustering,
     is_multiclass,
     is_regression,
     is_time_series,
@@ -153,6 +154,7 @@ def test_all_problem_types():
         ProblemTypes.TIME_SERIES_REGRESSION,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.CLUSTERING,
     ]
     assert ProblemTypes.all_problem_types == expected
 
@@ -185,3 +187,4 @@ def test_type_checks(problem_type):
             ProblemTypes.TIME_SERIES_REGRESSION,
         ]
     )
+    assert is_clustering(problem_type) == (problem_type in [ProblemTypes.CLUSTERING])

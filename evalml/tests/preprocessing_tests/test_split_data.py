@@ -5,6 +5,7 @@ from evalml.preprocessing import split_data
 from evalml.problem_types import (
     ProblemTypes,
     is_binary,
+    is_clustering,
     is_multiclass,
     is_regression,
     is_time_series,
@@ -16,7 +17,7 @@ from evalml.problem_types import (
 def test_split_data(
     problem_type, data_type, X_y_binary, X_y_multi, X_y_regression, make_data_type
 ):
-    if is_binary(problem_type):
+    if is_binary(problem_type) or is_clustering(problem_type):
         X, y = X_y_binary
     if is_multiclass(problem_type):
         X, y = X_y_multi
@@ -29,6 +30,12 @@ def test_split_data(
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
+    if is_clustering(problem_type):
+        with pytest.raises(
+            ValueError, match="Cannot split data for clustering problems"
+        ):
+            split_data(X, y, problem_type)
+        return
     test_pct = 0.25
     X_train, X_test, y_train, y_test = split_data(
         X,
