@@ -23,12 +23,12 @@ class NoVarianceDataCheck(DataCheck):
     def __init__(self, count_nan_as_value=False):
         self._dropnan = not count_nan_as_value
 
-    def validate(self, X, y):
+    def validate(self, X, y=None):
         """Check if the target or any of the features have no variance (1 unique value).
 
         Args:
             X (pd.DataFrame, np.ndarray): The input features.
-            y (pd.Series, np.ndarray): The target data.
+            y (pd.Series, np.ndarray): Optional, the target data.
 
         Returns:
             dict: A dict of warnings/errors corresponding to features or target with no variance.
@@ -83,7 +83,7 @@ class NoVarianceDataCheck(DataCheck):
             ...         "data_check_name": "NoVarianceDataCheck",
             ...         "level": "error",
             ...         "details": {"columns": ["Y"], "rows": None},
-            ...         "code": "NO_VARIANCE",
+            ...         "code": "NO_VARIANCE_ZERO_UNIQUE",
             ...         "action_options":[]
             ...     }
             ... ]
@@ -153,7 +153,8 @@ class NoVarianceDataCheck(DataCheck):
         messages = []
 
         X = infer_feature_types(X)
-        y = infer_feature_types(y)
+        if y is not None:
+            y = infer_feature_types(y)
 
         unique_counts = X.nunique(dropna=self._dropnan).to_dict()
         any_nulls = (X.isnull().any()).to_dict()
@@ -180,7 +181,7 @@ class NoVarianceDataCheck(DataCheck):
                         (", ").join(["'{}'".format(str(col)) for col in zero_unique]),
                     ),
                     data_check_name=self.name,
-                    message_code=DataCheckMessageCode.NO_VARIANCE,
+                    message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
                     details={"columns": zero_unique},
                     action_options=[
                         DataCheckActionOption(
@@ -230,6 +231,9 @@ class NoVarianceDataCheck(DataCheck):
                 ).to_dict()
             )
 
+        if y is None:
+            return messages
+
         # Check target for variance
         y_name = getattr(y, "name")
         if not y_name:
@@ -243,7 +247,7 @@ class NoVarianceDataCheck(DataCheck):
                 DataCheckError(
                     message=zero_unique_message.format(y_name),
                     data_check_name=self.name,
-                    message_code=DataCheckMessageCode.NO_VARIANCE,
+                    message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
                     details={"columns": [y_name]},
                 ).to_dict()
             )

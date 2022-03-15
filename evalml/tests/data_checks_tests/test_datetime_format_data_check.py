@@ -279,17 +279,41 @@ def test_datetime_format_unusual_interval():
     assert datetime_format_check.validate(X, y) == expected
 
 
-def test_datetime_format_nan_data_check_error(ts_data):
-    X, y = ts_data
-    X.at[0, "date"] = np.NaN
-    dt_nan_check = DateTimeFormatDataCheck(datetime_column="date")
-    assert dt_nan_check.validate(X, y) == [
+def test_datetime_format_nan_data_check_error():
+    dates = pd.Series(pd.date_range(start="2021-01-01", periods=20))
+    dates[0] = np.NaN
+    X = pd.DataFrame(dates, columns=["date"])
+
+    expected = [
         DataCheckError(
             message="Input datetime column 'date' contains NaN values. Please impute NaN values or drop these rows.",
             data_check_name=DateTimeFormatDataCheck.name,
             message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
         ).to_dict()
     ]
+
+    dt_nan_check = DateTimeFormatDataCheck(datetime_column="date")
+    assert dt_nan_check.validate(X, pd.Series()) == expected
+
+    dates[5] = pd.to_datetime("2021-01-05")
+    X = pd.DataFrame(dates, columns=["date"])
+
+    expected.extend(
+        [
+            DataCheckError(
+                message=f"Column 'date' has more than one row with the same datetime value.",
+                data_check_name=datetime_format_check_name,
+                message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
+            ).to_dict(),
+            DataCheckError(
+                message=f"Column 'date' has datetime values missing between start and end date.",
+                data_check_name=datetime_format_check_name,
+                message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
+            ).to_dict(),
+        ]
+    )
+
+    assert dt_nan_check.validate(X, pd.Series()) == expected
 
 
 def test_datetime_nan_check_ww():

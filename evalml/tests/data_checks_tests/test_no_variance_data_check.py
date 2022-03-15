@@ -45,7 +45,7 @@ drop_feature_action_option = DataCheckActionOption(
 feature_0_unique = DataCheckError(
     message="'feature' has 0 unique values.",
     data_check_name=no_variance_data_check_name,
-    message_code=DataCheckMessageCode.NO_VARIANCE,
+    message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
     details={"columns": ["feature"]},
     action_options=[drop_feature_action_option],
 ).to_dict()
@@ -59,7 +59,7 @@ feature_1_unique = DataCheckError(
 labels_0_unique = DataCheckError(
     message="Y has 0 unique values.",
     data_check_name=no_variance_data_check_name,
-    message_code=DataCheckMessageCode.NO_VARIANCE,
+    message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
     details={"columns": ["Y"]},
 ).to_dict()
 labels_1_unique = DataCheckError(
@@ -152,7 +152,7 @@ cases = [
             DataCheckError(
                 message="Labels has 0 unique values.",
                 data_check_name=no_variance_data_check_name,
-                message_code=DataCheckMessageCode.NO_VARIANCE,
+                message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
                 details={"columns": ["Labels"]},
             ).to_dict()
         ],
@@ -182,6 +182,12 @@ cases = [
         two_distinct_with_nulls_y,
         False,
         [feature_1_unique, labels_1_unique],
+    ),
+    (
+        two_distinct_with_nulls_X,
+        None,
+        False,
+        [feature_1_unique],
     ),
 ]
 
