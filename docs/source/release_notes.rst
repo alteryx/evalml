@@ -19,6 +19,8 @@
 .. warning::
 
     **Breaking Changes**
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
+
 
 **v0.46.0 Mar. 03, 2022**
     * Enhancements
