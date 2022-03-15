@@ -550,6 +550,7 @@ def test_default_data_checks_across_problem_types(problem_type):
 
     if is_clustering(problem_type):
         pytest.skip("Skipping because clustering problems do not have data checks yet")
+
     if is_time_series(problem_type):
         if is_classification(problem_type):
             default_data_check_list = default_data_check_list + [

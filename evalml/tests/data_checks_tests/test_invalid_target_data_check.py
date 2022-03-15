@@ -624,8 +624,6 @@ def test_invalid_target_data_check_different_lengths():
 def test_invalid_target_data_check_numeric_binary_does_not_return_warnings(
     problem_type,
 ):
-    if is_clustering(problem_type):
-        pytest.skip("Skipping because clustering problems have no search objectives")
     y = pd.Series([1, 5, 1, 5, 1, 1])
     X = pd.DataFrame({"col": range(len(y))})
     invalid_targets_check = InvalidTargetDataCheck(

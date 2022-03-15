@@ -55,7 +55,6 @@ class KPrototypesClusterer(Estimator):
         self._component_obj.fit(X, categorical=cat_col_idxs)
         return self
 
-
     def predict(self, X=None):
         """Make predictions using selected features.
         Args:
