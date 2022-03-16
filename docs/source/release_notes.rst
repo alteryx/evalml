@@ -22,6 +22,7 @@
     * Fixes
         * Fixed ``get_pipelines`` to reset pipeline threshold for binary cases :pr:`3360`
     * Changes
+        * Update maintainers to add Frank :pr:`3367`
         * Update maintainers :pr:`3365`
         * Revert pandas 1.3.0 compatibility patch :pr:`3378`
     * Documentation Changes
