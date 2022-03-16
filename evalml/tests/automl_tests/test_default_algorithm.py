@@ -733,3 +733,28 @@ def test_default_algorithm_time_series_known_in_advance(
     long_estimators = set([pipeline.estimator.name for pipeline in long_2])
     assert len(long_2) == 30
     assert len(long_estimators) == 3
+
+
+def test_default_algorithm_add_result_cache(X_y_binary):
+    X, y = X_y_binary
+    algo = DefaultAlgorithm(
+        X=X,
+        y=y,
+        problem_type="binary",
+        sampler_name=None,
+    )
+
+    cache = {"some_cache_key": "some_cache_value"}
+    # initial batch contains one of each pipeline, with default parameters
+    next_batch = algo.next_batch()
+    scores = np.arange(0, len(next_batch))
+    for pipeline_num, (score, pipeline) in enumerate(zip(scores, next_batch)):
+        algo.add_result(
+            score,
+            pipeline,
+            {"id": algo.pipeline_number + pipeline_num},
+            cached_data=cache,
+        )
+
+    for values in algo._best_pipeline_info.values():
+        assert values["cached_data"] == cache

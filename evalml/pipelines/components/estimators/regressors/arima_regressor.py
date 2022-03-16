@@ -67,6 +67,7 @@ class ARIMARegressor(Estimator):
         seasonal=True,
         n_jobs=-1,
         random_seed=0,
+        maxiter=10,
         **kwargs,
     ):
         parameters = {
@@ -78,6 +79,7 @@ class ARIMARegressor(Estimator):
             "max_d": max_d,
             "max_q": max_q,
             "seasonal": seasonal,
+            "maxiter": maxiter,
             "n_jobs": n_jobs,
             "time_index": time_index,
         }
@@ -136,6 +138,8 @@ class ARIMARegressor(Estimator):
         Raises:
             ValueError: If X was passed to `fit` but not passed in `predict`.
         """
+        if X is not None:
+            X = X.fillna(X.mean())
         X, y = self._manage_woodwork(X, y)
         if y is None:
             raise ValueError("ARIMA Regressor requires y as input.")

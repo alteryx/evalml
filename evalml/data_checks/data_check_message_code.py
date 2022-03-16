@@ -73,6 +73,9 @@ class DataCheckMessageCode(Enum):
     NO_VARIANCE = "no_variance"
     """Message code for when data has no variance (1 unique value)."""
 
+    NO_VARIANCE_ZERO_UNIQUE = "no_variance_zero_unique"
+    """Message code for when data has no variance (0 unique value)"""
+
     NO_VARIANCE_WITH_NULL = "no_variance_with_null"
     """Message code for when data has one unique value and NaN values."""
 

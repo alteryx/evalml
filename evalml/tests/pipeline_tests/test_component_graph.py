@@ -2480,3 +2480,46 @@ def test_fit_transform_different_types(X_y_binary):
         ValueError, match="Input X data types are different from the input types"
     ):
         component_graph.transform(X2)
+
+
+def test_component_graph_cache():
+    X1 = pd.DataFrame({"a": [1, 2, 1, 0, 2, 2, 2], "b": [3, 2, 3, 1, 2, 1, 2]})
+    X2 = pd.DataFrame({"a": [0, 2, 1, 0, 2, 0, 2], "b": [1, 0, 2, 1, 2, 3, 3]})
+    y = pd.Series([0, 0, 1, 0, 1, 1, 0])
+    comp = LogisticRegressionClassifier()
+    comp.fit(X1, y)
+    preds = comp.predict(X1)
+    preds2 = comp.predict(X2)
+    # define the cache
+    hashes1 = hash(tuple(X1.index))
+    hashes2 = hash(tuple(X2.index))
+    # use the same component for both hashes
+    # allows us to determine whether we are using the cached data
+    cache = {
+        hashes1: {"Logistic Regression Classifier": comp},
+        hashes2: {"Logistic Regression Classifier": comp},
+    }
+
+    component_graph = {
+        "Logistic Regression Classifier": ["Logistic Regression Classifier", "X", "y"]
+    }
+    cg_cache = ComponentGraph(component_graph, cached_data=cache).instantiate()
+    cg_no_cache = ComponentGraph(component_graph).instantiate()
+
+    cg_cache.fit(X1, y)
+    preds_cg = cg_cache.predict(X1)
+    pd.testing.assert_series_equal(preds, preds_cg)
+    cg_no_cache.fit(X1, y)
+    preds_cg = cg_no_cache.predict(X1)
+    pd.testing.assert_series_equal(preds, preds_cg)
+
+    # expect the same hashed component to be called
+    cg_cache.fit(X2, y)
+    preds_cg = cg_cache.predict(X2)
+    pd.testing.assert_series_equal(preds2, preds_cg)
+
+    # expect this is not the same as without cache
+    cg_no_cache = ComponentGraph(component_graph).instantiate()
+    cg_no_cache.fit(X2, y)
+    preds_cg_no = cg_no_cache.predict(X2)
+    assert not (preds2 == preds_cg_no).all()
