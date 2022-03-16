@@ -112,3 +112,5 @@ def test_automl_algorithm_add_pipelines(dummy_binary_pipeline):
     # the tuner objects themselves are different so we cannot check for dictionary equality
     assert aml._tuners.keys() == aml_add_pipelines._tuners.keys()
     assert aml._tuner_class == aml_add_pipelines._tuner_class
+    aml.next_batch()
+    aml._transform_parameters(None, None)

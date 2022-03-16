@@ -112,9 +112,6 @@ class Tuner(ABC):
                 elif isinstance(value, (list, tuple)):
                     # list value from our internal hyperparameter_ranges
                     component_parameters[param_name] = value[0]
-                else:
-                    # should be singular value, in which case we don't provide any starting value
-                    continue
             starting_parameters[name] = component_parameters
         return starting_parameters
 
