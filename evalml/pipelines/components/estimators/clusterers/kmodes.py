@@ -1,10 +1,8 @@
 """K Modes Clusterer."""
-from kmodes.kmodes import KModes as SKKModes
-
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import infer_feature_types
+from evalml.utils import import_or_raise, infer_feature_types
 
 
 class KModesClusterer(Estimator):
@@ -34,7 +32,11 @@ class KModesClusterer(Estimator):
             "n_jobs": n_jobs,
         }
         parameters.update(kwargs)
-        kmodes_clusterer = SKKModes(**parameters, random_state=random_seed)
+        kmodes_error_msg = (
+            "KModes is not installed. Please install using `pip install kmodes.`"
+        )
+        kmodes = import_or_raise("kmodes", error_msg=kmodes_error_msg)
+        kmodes_clusterer = kmodes.kmodes.KModes(**parameters, random_state=random_seed)
         super().__init__(
             parameters=parameters,
             component_obj=kmodes_clusterer,
