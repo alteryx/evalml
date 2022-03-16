@@ -44,9 +44,9 @@ class ExponentialSmoothingRegressor(Estimator):
 
     def __init__(
         self,
-        trend="additive",
+        trend=None,
         damped_trend=False,
-        seasonal="additive",
+        seasonal=None,
         sp=2,
         n_jobs=-1,
         random_seed=0,
