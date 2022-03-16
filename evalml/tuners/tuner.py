@@ -90,6 +90,11 @@ class Tuner(ABC):
         return pipeline_parameters
 
     def get_starting_parameters(self):
+        """Gets the starting parameters given the pipeline hyperparameter range.
+
+        Returns:
+            dict: The starting parameters, randomly chosen, to initialize a pipeline with.
+        """
         starting_parameters = {}
         for name, param_dict in self._pipeline_hyperparameter_ranges.items():
             component_parameters = {}
