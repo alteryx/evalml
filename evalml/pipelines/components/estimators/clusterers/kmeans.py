@@ -9,6 +9,7 @@ from evalml.utils import infer_feature_types
 
 class KMeansClusterer(Estimator):
     """K Means Clusterer.
+
     Args:
         n_clusters (int): The number of clusters to form as well as the number of centroids to generate. Defaults to 8.
         max_iter (int): Maximum number of iterations of the k-means algorithm for a single run. Defaults to 300.
@@ -42,8 +43,10 @@ class KMeansClusterer(Estimator):
 
     def predict(self, X=None):
         """Make predictions using selected features.
+
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features]. Not used for clustering problems.
+
         Returns:
             pd.Series: Predicted values.
         """

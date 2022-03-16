@@ -9,6 +9,7 @@ from evalml.utils import infer_feature_types
 
 class KPrototypesClusterer(Estimator):
     """K Prototypes Clusterer.
+
     Args:
         n_clusters (int): The number of clusters to form as well as the number of centroids to generate. Defaults to 8.
         max_iter (int): Maximum number of iterations of the k-prototypes algorithm for a single run. Defaults to 300.
@@ -46,6 +47,7 @@ class KPrototypesClusterer(Estimator):
         Args:
             X (pd.DataFrame): The input training data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples]. Not necessary and ignored for clustering problems.
+
         Returns:
             self
         """
@@ -57,8 +59,10 @@ class KPrototypesClusterer(Estimator):
 
     def predict(self, X=None):
         """Make predictions using selected features.
+
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features]. Not used for clustering problems.
+
         Returns:
             pd.Series: Predicted values.
         """

@@ -9,6 +9,7 @@ from evalml.utils import infer_feature_types
 
 class DBSCANClusterer(Estimator):
     """DBSCAN Clusterer.
+
     Args:
         eps (float): The maximum distance between two samples for one to be considered as in the neighborhood of the other. Defaults to 0.5.
         min_samples (int): The number of samples in a neighborhood for a point to be considered as a core point. Defaults to 5.
@@ -42,8 +43,10 @@ class DBSCANClusterer(Estimator):
 
     def predict(self, X=None):
         """Make predictions using selected features.
+
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features]. Not used for clustering problems.
+
         Returns:
             pd.Series: Predicted values.
         """

@@ -9,5 +9,4 @@ from .utils import (
     is_classification,
     is_clustering,
     is_time_series,
-    is_clustering,
 )
