@@ -190,9 +190,11 @@ class TimeSeriesFeaturizer(Transformer):
             min_periods=size + 1,
         )
         rolling_mean = rolling_mean.get_function()
-        numerics = set(
-            X.ww.select(["numeric"], return_schema=True).columns
-        ).intersection(original_features)
+        numerics = sorted(
+            set(X.ww.select(["numeric"], return_schema=True).columns).intersection(
+                original_features
+            )
+        )
         data = pd.DataFrame(
             {f"{col}_rolling_mean": rolling_mean(X.index, X[col]) for col in numerics}
         )
