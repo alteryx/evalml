@@ -247,6 +247,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             self.search_parameters, pipelines
         )
         self.search_parameters.update(names_to_value_pipeline_params)
+        self._separate_hyperparameters_from_parameters()
 
     def _create_fast_final(self):
         estimators = [
