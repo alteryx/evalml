@@ -1,4 +1,4 @@
-"""K Means Clusterer."""
+"""KMeans Clusterer."""
 from sklearn.cluster import KMeans as SKKMeans
 
 from evalml.model_family import ModelFamily
@@ -8,7 +8,7 @@ from evalml.utils import infer_feature_types
 
 
 class KMeansClusterer(Estimator):
-    """K Means Clusterer.
+    """KMeans Clusterer.
 
     Args:
         n_clusters (int): The number of clusters to form as well as the number of centroids to generate. Defaults to 8.
@@ -31,7 +31,6 @@ class KMeansClusterer(Estimator):
         parameters = {
             "n_clusters": n_clusters,
             "max_iter": max_iter,
-            "n_jobs": n_jobs,
         }
         parameters.update(kwargs)
         kmeans_clusterer = SKKMeans(**parameters, random_state=random_seed)

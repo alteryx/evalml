@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from kmodes.kprototypes import KPrototypes as SKKPrototypes
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import KPrototypesClusterer

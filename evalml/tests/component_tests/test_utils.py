@@ -83,6 +83,8 @@ additional_requirements_set = set(
         "Exponential Smoothing Regressor",
         "CatBoost Classifier",
         "CatBoost Regressor",
+        "KModes Clusterer",
+        "KPrototypes Clusterer",
         "LightGBM Classifier",
         "LightGBM Regressor",
         "Oversampler",

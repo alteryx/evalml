@@ -1622,6 +1622,9 @@ def test_estimator_fit_respects_custom_indices(
     X = pd.DataFrame(X)
     y = pd.Series(y)
 
+    if estimator_class.__name__ == "KPrototypesClusterer":
+        X = infer_feature_types(X, feature_types={0: "Categorical"})
+
     if use_custom_index and ts_problem:
         X.index = pd.date_range("2020-10-01", "2020-10-31")
         y.index = pd.date_range("2020-10-01", "2020-10-31")
