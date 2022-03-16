@@ -35,8 +35,8 @@ class KModesClusterer(Estimator):
         kmodes_error_msg = (
             "KModes is not installed. Please install using `pip install kmodes.`"
         )
-        kmodes = import_or_raise("kmodes", error_msg=kmodes_error_msg)
-        kmodes_clusterer = kmodes.kmodes.KModes(**parameters, random_state=random_seed)
+        kmodes = import_or_raise("kmodes.kmodes", error_msg=kmodes_error_msg)
+        kmodes_clusterer = kmodes.KModes(**parameters, random_state=random_seed)
         super().__init__(
             parameters=parameters,
             component_obj=kmodes_clusterer,
