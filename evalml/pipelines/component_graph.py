@@ -97,6 +97,7 @@ class ComponentGraph:
 
         self.input_feature_names = {}
         self._feature_provenance = {}
+        self._feature_logical_types = {}
         self._i = 0
         self._compute_order = self.generate_order(self.component_dict)
         self._input_types = {}
@@ -460,6 +461,7 @@ class ComponentGraph:
                 output_cache[f"{component_name}.x"] = output_x
                 output_cache[f"{component_name}.y"] = output_y
             else:
+                self._feature_logical_types[component_name] = x_inputs.ww.logical_types
                 if fit and not component_instance._is_fitted:
                     component_instance.fit(x_inputs, y_input)
                 if fit and component_name == self.compute_order[-1]:
