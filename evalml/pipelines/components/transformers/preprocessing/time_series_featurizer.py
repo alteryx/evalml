@@ -195,6 +195,7 @@ class TimeSeriesFeaturizer(Transformer):
                 original_features
             )
         )
+
         data = pd.DataFrame(
             {f"{col}_rolling_mean": rolling_mean(X.index, X[col]) for col in numerics}
         )
