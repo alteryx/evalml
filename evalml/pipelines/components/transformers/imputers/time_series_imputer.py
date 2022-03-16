@@ -9,24 +9,35 @@ class TimeSeriesImputer(Transformer):
     """Imputes missing data according to a specified timeseries-specific imputation strategy.
 
     Args:
-        categorical_impute_strategy (string): Impute strategy to use for string, object, boolean, categorical dtypes. Valid values include "backwards_fill" and "forwards_fill".
-        numeric_impute_strategy (string): Impute strategy to use for numeric columns. Valid values include "backwards_fill", "forwards_fill", and "interpolate".
+        categorical_impute_strategy (string): Impute strategy to use for string, object, boolean, categorical dtypes.
+                                              Valid values include "backwards_fill" and "forwards_fill". Defaults to "forwards_fill".
+        numeric_impute_strategy (string): Impute strategy to use for numeric columns. Valid values include
+                                          "backwards_fill", "forwards_fill", and "interpolate". Defaults to "interpolate".
+        target_impute_strategy (string): Impute strategy to use for the target column. Valid values include "backwards_fill",
+                                         "forwards_fill", and "interpolate". Defaults to "forwards_fill".
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
+    modifies_features = True
+    modifies_target = True
     training_only = True
 
     name = "Time Series Imputer"
     hyperparameter_ranges = {
         "categorical_impute_strategy": ["backwards_fill", "forwards_fill"],
         "numeric_impute_strategy": ["backwards_fill", "forwards_fill", "interpolate"],
+        "target_impute_strategy": ["backwards_fill", "forwards_fill", "interpolate"],
     }
     """{
         "categorical_impute_strategy": ["backwards_fill", "forwards_fill"],
         "numeric_impute_strategy": ["backwards_fill", "forwards_fill", "interpolate"],
+        "target_impute_strategy": ["backwards_fill", "forwards_fill", "interpolate"],
     }"""
     _valid_categorical_impute_strategies = set(["backwards_fill", "forwards_fill"])
     _valid_numeric_impute_strategies = set(
+        ["backwards_fill", "forwards_fill", "interpolate"]
+    )
+    _valid_target_impute_strategies = set(
         ["backwards_fill", "forwards_fill", "interpolate"]
     )
 
@@ -34,6 +45,7 @@ class TimeSeriesImputer(Transformer):
         self,
         categorical_impute_strategy="forwards_fill",
         numeric_impute_strategy="interpolate",
+        target_impute_strategy="forwards_fill",
         random_seed=0,
         **kwargs,
     ):
@@ -45,16 +57,22 @@ class TimeSeriesImputer(Transformer):
             raise ValueError(
                 f"{numeric_impute_strategy} is an invalid parameter. Valid impute strategies are {', '.join(self._valid_numeric_impute_strategies)}"
             )
+        elif target_impute_strategy not in self._valid_target_impute_strategies:
+            raise ValueError(
+                f"{target_impute_strategy} is an invalid parameter. Valid impute strategies are {', '.join(self._valid_target_impute_strategies)}"
+            )
 
         parameters = {
             "categorical_impute_strategy": categorical_impute_strategy,
             "numeric_impute_strategy": numeric_impute_strategy,
+            "target_impute_strategy": target_impute_strategy,
         }
         parameters.update(kwargs)
         self._all_null_cols = None
         self._forwards_cols = None
         self._backwards_cols = None
         self._interpolate_cols = None
+        self._impute_target = None
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
@@ -120,6 +138,12 @@ class TimeSeriesImputer(Transformer):
         ]
         if len(X_interpolate.columns) > 0:
             self._interpolate_cols = X_interpolate.columns
+
+        if y is not None:
+            y = infer_feature_types(y)
+            if y.isnull().any():
+                self._impute_target = self.parameters["target_impute_strategy"]
+
         return self
 
     def transform(self, X, y=None):
@@ -136,7 +160,7 @@ class TimeSeriesImputer(Transformer):
         if len(self._all_null_cols) == X.shape[1]:
             df = pd.DataFrame(index=X.index)
             df.ww.init()
-            return df
+            return df, y
 
         X_no_all_null = X.ww.drop(self._all_null_cols)
 
@@ -158,4 +182,15 @@ class TimeSeriesImputer(Transformer):
             imputed = imputed.bfill()  # Fill in the first value, if missing
             X_no_all_null[X_interpolate.columns] = imputed
 
-        return X_no_all_null
+        y_imputed = y
+        if self._impute_target == "forwards_fill":
+            y_imputed = y.pad()
+            y_imputed = y_imputed.bfill()
+        elif self._impute_target == "backwards_fill":
+            y_imputed = y.bfill()
+            y_imputed = y_imputed.pad()
+        elif self._impute_target == "interpolate":
+            y_imputed = y.interpolate()
+            y_imputed = y_imputed.bfill()
+
+        return X_no_all_null, y_imputed
