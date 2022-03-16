@@ -18,7 +18,7 @@ def test_problem_types():
     assert KPrototypesClusterer.supported_problem_types == [ProblemTypes.CLUSTERING]
 
 
-def test_fit_predict():
+def test_fit_predict(kprototypes):
     X = pd.DataFrame(
         {
             "col_1": ["a", "b", "c", "d", "a", "a", "b", "a", "c", "d"],
@@ -28,7 +28,7 @@ def test_fit_predict():
     )
     X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical"})
 
-    sk_model = SKKPrototypes(n_clusters=2, max_iter=300, random_state=0)
+    sk_model = kprototypes.KPrototypes(n_clusters=2, max_iter=300, random_state=0)
     sk_model.fit(X, categorical=[0, 1])
     y_pred_sk = sk_model.labels_
 

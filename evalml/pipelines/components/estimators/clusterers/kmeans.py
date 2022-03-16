@@ -35,6 +35,7 @@ class KMeansClusterer(Estimator):
         }
         parameters.update(kwargs)
         kmeans_clusterer = SKKMeans(**parameters, random_state=random_seed)
+        parameters["n_jobs"] = n_jobs
         super().__init__(
             parameters=parameters,
             component_obj=kmeans_clusterer,

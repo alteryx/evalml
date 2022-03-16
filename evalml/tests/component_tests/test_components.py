@@ -39,6 +39,8 @@ from evalml.pipelines.components import (
     ExtraTreesRegressor,
     Imputer,
     KMeansClusterer,
+    KModesClusterer,
+    KPrototypesClusterer,
     LightGBMClassifier,
     LightGBMRegressor,
     LinearDiscriminantAnalysis,
@@ -97,6 +99,7 @@ from evalml.pipelines.components.utils import (
     generate_component_code,
 )
 from evalml.problem_types import ProblemTypes
+from evalml.utils import infer_feature_types
 
 
 @pytest.fixture(scope="module")
@@ -1251,6 +1254,8 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
             X, y = ts_data
         else:
             X, y = X_y_binary
+            if isinstance(component, KPrototypesClusterer):
+                X = infer_feature_types(X, feature_types={0: "Categorical"})
 
         component.fit(X, y)
 
@@ -1273,6 +1278,8 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                         TimeSeriesBaselineEstimator,
                         DBSCANClusterer,
                         KMeansClusterer,
+                        KModesClusterer,
+                        KPrototypesClusterer,
                     ),
                 )
             ):

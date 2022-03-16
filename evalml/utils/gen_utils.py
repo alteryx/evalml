@@ -242,6 +242,7 @@ def get_importable_subclasses(base_class, used_in_automl=True):
                 f"Could not import class {cls.__name__} in get_importable_subclasses"
             )
     if used_in_automl:
+        from evalml.pipelines import Transformer
         from evalml.problem_types import ProblemTypes
 
         classes = [
@@ -249,7 +250,10 @@ def get_importable_subclasses(base_class, used_in_automl=True):
             for cls in classes
             if (
                 cls.__name__ not in _not_used_in_automl
-                and ProblemTypes.CLUSTERING not in cls.supported_problem_types
+                and (
+                    issubclass(cls, Transformer)
+                    or ProblemTypes.CLUSTERING not in cls.supported_problem_types
+                )
             )
         ]
 

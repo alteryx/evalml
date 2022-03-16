@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-from kmodes.kmodes import KModes as SKKModes
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import KModesClusterer
@@ -17,10 +16,10 @@ def test_problem_types():
     assert KModesClusterer.supported_problem_types == [ProblemTypes.CLUSTERING]
 
 
-def test_fit_predict(X_y_regression):
+def test_fit_predict(X_y_regression, kmodes):
     X, y = X_y_regression
 
-    sk_model = SKKModes(n_clusters=8, max_iter=300, random_state=0)
+    sk_model = kmodes.KModes(n_clusters=8, max_iter=300, random_state=0)
     sk_model.fit(X, y)
     y_pred_sk = sk_model.labels_
 
