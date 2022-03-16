@@ -4,7 +4,6 @@ import warnings
 from operator import itemgetter
 
 import numpy as np
-from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
