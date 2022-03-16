@@ -399,12 +399,12 @@ class ComponentGraph:
         """
         X = infer_feature_types(X)
         if not fit:
-            X = (
-                self._return_non_engineered_features(X)
+            X_schema = (
+                self._return_non_engineered_features(X).ww.schema
                 if "DFS Transformer" in self.compute_order
-                else X
+                else X.ww.schema
             )
-            if not _schema_is_equal(X.ww.schema, self._input_types):
+            if not _schema_is_equal(X_schema, self._input_types):
                 raise ValueError(
                     "Input X data types are different from the input types the pipeline was fitted on."
                 )

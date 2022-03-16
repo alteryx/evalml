@@ -109,6 +109,7 @@ class DFSTransformer(Transformer):
             self._filter_features(X) if self._passed_in_features else self.features
         )
         all_identity = all([isinstance(f, IdentityFeature) for f in features_to_use])
+
         if not features_to_use or (all_identity and self._passed_in_features):
             return X_ww
         es = self._make_entity_set(X_ww)
