@@ -55,11 +55,11 @@ class TimeSeriesImputer(Transformer):
             )
         elif numeric_impute_strategy not in self._valid_numeric_impute_strategies:
             raise ValueError(
-                f"{numeric_impute_strategy} is an invalid parameter. Valid impute strategies are {', '.join(self._valid_numeric_impute_strategies)}"
+                f"{numeric_impute_strategy} is an invalid parameter. Valid numeric impute strategies are {', '.join(self._valid_numeric_impute_strategies)}"
             )
         elif target_impute_strategy not in self._valid_target_impute_strategies:
             raise ValueError(
-                f"{target_impute_strategy} is an invalid parameter. Valid impute strategies are {', '.join(self._valid_target_impute_strategies)}"
+                f"{target_impute_strategy} is an invalid parameter. Valid target column impute strategies are {', '.join(self._valid_target_impute_strategies)}"
             )
 
         parameters = {
