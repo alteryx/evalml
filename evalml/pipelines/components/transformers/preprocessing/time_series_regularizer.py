@@ -3,6 +3,7 @@ import pandas as pd
 from woodwork.statistics_utils.frequency_inference import infer_frequency
 
 from evalml.utils import infer_feature_types
+from woodwork.logical_types import Datetime
 
 
 def _realign_dates(cleaned_x, cleaned_y, X, y, time_index, issue_dates, error_dict):
@@ -60,6 +61,8 @@ class TimeSeriesRegularizer(Transformer):
     """
 
     name = "Time Series Regularizer"
+    hyperparameter_ranges = {}
+    """{}"""
 
     modifies_target = True
     training_only = True
@@ -93,6 +96,10 @@ class TimeSeriesRegularizer(Transformer):
             raise ValueError("The argument time_index cannot be None!")
 
         X_ww = infer_feature_types(X)
+
+        if not isinstance(X_ww.ww.logical_types[self.time_index], Datetime):
+            raise TypeError(f"The time_index column {self.time_index} must be of type Datetime.")
+
         if y is not None:
             y = infer_feature_types(y)
             if len(X_ww) != len(y):

@@ -6,7 +6,7 @@
         * Added ``TimeSeriesFeaturizer`` into ARIMA-based pipelines :pr:`3313`
         * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
         * Added new error code for zero unique values in ``NoVarianceDataCheck`` :pr:`3372`
-        * Added ``TimeSeriesRegularizer`` to handle uninferrable date ranges for time series problems :pr:``
+        * Added ``TimeSeriesRegularizer`` to handle uninferrable date ranges for time series problems :pr:`3376`
     * Fixes
         * Fixed ``get_pipelines`` to reset pipeline threshold for binary cases :pr:`3360`
     * Changes

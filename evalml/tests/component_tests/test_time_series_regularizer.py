@@ -52,7 +52,33 @@ def assert_features_and_length_equal(X, y, X_out, y_out, error_dict):
         )
 
 
+def test_imputer_init():
+
+    ts_regularizer = TimeSeriesRegularizer(time_index="dates")
+
+    assert ts_regularizer.name == "Time Series Regularizer"
+    assert ts_regularizer.parameters == {"time_index": "dates"}
+    assert ts_regularizer.hyperparameter_ranges == {}
+    assert ts_regularizer.modifies_target is True
+    assert ts_regularizer.training_only is True
+
+
 def test_ts_regularizer_no_time_index():
+    dates_1 = pd.date_range("1/1/21", periods=10)
+    dates_2 = pd.date_range("1/13/21", periods=10, freq="2D")
+    dates = dates_1.append(dates_2)
+
+    X, y = get_df(dates)
+
+    ts_regularizer = TimeSeriesRegularizer(time_index="ints")
+    with pytest.raises(
+        TypeError,
+        match="The time_index column ints must be of type Datetime.",
+    ):
+        ts_regularizer.fit(X, y)
+
+
+def test_ts_regularizer_time_index_not_datetime():
     dates_1 = pd.date_range("1/1/21", periods=10)
     dates_2 = pd.date_range("1/13/21", periods=10, freq="2D")
     dates = dates_1.append(dates_2)
