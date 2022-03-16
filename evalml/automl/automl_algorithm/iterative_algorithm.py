@@ -111,30 +111,14 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._estimator_family_order = (
             _estimator_family_order or _ESTIMATOR_FAMILY_ORDER
         )
-        self._hyperparameters = {}
-        self._pipeline_parameters = {}
         if search_parameters and not isinstance(search_parameters, dict):
             raise ValueError(
                 f"If search_parameters provided, must be of type dict. Received {type(search_parameters)}"
             )
-
-        # seperate out the parameter and hyperparameter values
-        for key, value in self.search_parameters.items():
-            hyperparam = {}
-            param = {}
-            for name, parameters in value.items():
-                if isinstance(parameters, (Integer, Categorical, Real)):
-                    hyperparam[name] = parameters
-                else:
-                    param[name] = parameters
-            if hyperparam:
-                self._hyperparameters[key] = hyperparam
-            if param:
-                self._pipeline_parameters[key] = param
+        self.allowed_pipelines = []
 
         self.allowed_component_graphs = allowed_component_graphs
         self._set_additional_pipeline_params()
-        self._create_pipelines()
 
         super().__init__(
             allowed_pipelines=self.allowed_pipelines,
@@ -144,6 +128,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             random_seed=random_seed,
             n_jobs=self.n_jobs,
         )
+        self._separate_hyperparameters_from_parameters()
+        self._create_pipelines()
+        self._set_allowed_pipelines(self.allowed_pipelines)
 
     def _create_pipelines(self):
         indices = []

@@ -124,6 +124,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             )
 
         self._set_additional_pipeline_params()
+        self._separate_hyperparameters_from_parameters()
 
     @property
     def default_max_batches(self):

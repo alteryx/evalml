@@ -41,7 +41,6 @@ class AutoMLAlgorithm(ABC):
         n_jobs=-1,
     ):
         self.random_seed = random_seed
-        self.allowed_pipelines = allowed_pipelines or []
         self._tuner_class = tuner_class or SKOptTuner
         self._tuners = {}
         self._best_pipeline_info = {}
@@ -51,9 +50,9 @@ class AutoMLAlgorithm(ABC):
         self.search_parameters = search_parameters or {}
         self._hyperparameters = {}
         self._pipeline_parameters = {}
-
-        for pipeline in self.allowed_pipelines:
-            self._create_tuner(pipeline)
+        self.allowed_pipelines = []
+        if allowed_pipelines is not None:
+            self._set_allowed_pipelines(allowed_pipelines)
         self._pipeline_number = 0
         self._batch_number = 0
         self._default_max_batches = 1
@@ -66,7 +65,14 @@ class AutoMLAlgorithm(ABC):
             list[PipelineBase]: A list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
 
+    def _set_allowed_pipelines(self, allowed_pipelines):
+        """Sets the allowed parameters and creates the tuners for the input pipelines."""
+        self.allowed_pipelines = allowed_pipelines
+        for pipeline in self.allowed_pipelines:
+            self._create_tuner(pipeline)
+
     def _create_tuner(self, pipeline):
+        """Creates a tuner given the input pipeline."""
         pipeline_hyperparameters = pipeline.get_hyperparameter_ranges(
             self._hyperparameters
         )
@@ -75,7 +81,7 @@ class AutoMLAlgorithm(ABC):
         )
 
     def _separate_hyperparameters_from_parameters(self):
-        # seperate out the parameter and hyperparameter values
+        """Seperate out the parameter and hyperparameter values from the search parameters dict."""
         for key, value in self.search_parameters.items():
             hyperparam = {}
             param = {}
@@ -99,7 +105,6 @@ class AutoMLAlgorithm(ABC):
         parameters = {}
         if "pipeline" in self._pipeline_parameters:
             parameters["pipeline"] = self._pipeline_parameters["pipeline"]
-
         for (
             name,
             component_instance,
@@ -210,7 +215,6 @@ class AutoMLAlgorithm(ABC):
             no_kin_name = "Not Known In Advance Pipeline - Select Columns Transformer"
             self.search_parameters[kin_name] = {"columns": kina_columns}
             self.search_parameters[no_kin_name] = {"columns": no_kin_columns}
-        self._separate_hyperparameters_from_parameters()
 
     def _filter_estimators(
         self,
