@@ -8,6 +8,7 @@
         * Added new error code for zero unique values in ``NoVarianceDataCheck`` :pr:`3372`
     * Fixes
         * Fixed ``get_pipelines`` to reset pipeline threshold for binary cases :pr:`3360`
+        * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`
     * Changes
         * Update maintainers :pr:`3365`
     * Documentation Changes

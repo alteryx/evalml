@@ -1584,3 +1584,51 @@ def test_time_index_cannot_be_none(time_series_regression_pipeline_class):
                 }
             }
         )
+
+
+def test_time_series_random_forest_transform_all_but_final(
+    ts_data, time_series_regression_pipeline_class
+):
+    X, y = ts_data
+    X = X[:10]
+    y = y[:10]
+    pipeline = time_series_regression_pipeline_class(
+        parameters={
+            "pipeline": {
+                "gap": 0,
+                "max_delay": 0,
+                "time_index": "date",
+                "forecast_horizon": 5,
+            },
+            "Time Series Featurizer": {
+                "gap": 0,
+                "max_delay": 0,
+                "time_index": "date",
+                "forecast_horizon": 5,
+            },
+        }
+    )
+    pipeline2 = time_series_regression_pipeline_class(
+        parameters={
+            "pipeline": {
+                "gap": 0,
+                "max_delay": 0,
+                "time_index": "date",
+                "forecast_horizon": 5,
+            },
+            "Time Series Featurizer": {
+                "gap": 0,
+                "max_delay": 0,
+                "time_index": "date",
+                "forecast_horizon": 5,
+            },
+        }
+    )
+    pipeline.fit(X, y)
+    pipeline2.fit(X, y)
+    transformed = pipeline.transform_all_but_final(X, y)
+    transformed2 = pipeline2.transform_all_but_final(X, y)
+    pd.testing.assert_frame_equal(transformed, transformed2)
+
+    transformed3 = pipeline.transform_all_but_final(X, y)
+    pd.testing.assert_frame_equal(transformed, transformed3)
