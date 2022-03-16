@@ -1590,6 +1590,8 @@ def test_time_series_random_forest_transform_all_but_final(
     ts_data, time_series_regression_pipeline_class
 ):
     X, y = ts_data
+    X = X[:10]
+    y = y[:10]
     pipeline = time_series_regression_pipeline_class(
         parameters={
             "pipeline": {
