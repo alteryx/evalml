@@ -30,3 +30,8 @@ def test_fit_predict(X_y_regression):
 
     assert len(set(y_pred)) > 1
     assert max(y_pred) > 0
+
+    no_y_model = KMeansClusterer()
+    no_y_model.fit(X)
+    y_pred = model.predict(X)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.values, decimal=5)

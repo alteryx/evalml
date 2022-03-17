@@ -8,7 +8,7 @@ from evalml.utils import infer_feature_types
 
 
 class KMeansClusterer(Estimator):
-    """KMeans Clusterer.
+    """KMeans Clusterer. Recommended for numeric-only datasets.
 
     Args:
         n_clusters (int): The number of clusters to form as well as the number of centroids to generate. Defaults to 8.

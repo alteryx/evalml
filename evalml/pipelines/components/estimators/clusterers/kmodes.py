@@ -6,11 +6,12 @@ from evalml.utils import import_or_raise, infer_feature_types
 
 
 class KModesClusterer(Estimator):
-    """KModes Clusterer.
+    """KModes Clusterer. Recommended for categorical-only datasets.
 
     Args:
         n_clusters (int): The number of clusters to form as well as the number of centroids to generate. Defaults to 8.
         max_iter (int): Maximum number of iterations of the k-modes algorithm for a single run. Defaults to 300.
+        n_init (int): Number of time the algorithm will be run with different centroid seeds. Defaults to 10.
         n_jobs (int or None): Number of jobs to run in parallel. -1 uses all processes. Defaults to -1.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -25,10 +26,11 @@ class KModesClusterer(Estimator):
         ProblemTypes.CLUSTERING
     ]"""
 
-    def __init__(self, n_clusters=8, max_iter=300, n_jobs=-1, random_seed=0, **kwargs):
+    def __init__(self, n_clusters=8, max_iter=300, n_init=10, n_jobs=-1, random_seed=0, **kwargs):
         parameters = {
             "n_clusters": n_clusters,
             "max_iter": max_iter,
+            "n_init": n_init,
             "n_jobs": n_jobs,
         }
         parameters.update(kwargs)
