@@ -23,18 +23,25 @@ def get_df(dates):
     return reg_X, reg_y
 
 
-def assert_features_and_length_equal(X, y, X_out, y_out, error_dict):
+def assert_features_and_length_equal(X, y, X_output, y_output, error_dict, has_target=True):
+    ww_payload = infer_frequency(X["dates"], debug=True)
+
+    assert isinstance(X_output, pd.DataFrame)
+    assert isinstance(y_output, pd.Series) if has_target else True
+    assert isinstance(X_output, pd.DataFrame)
+    assert pd.infer_freq(X_output["dates"]) == ww_payload[1]["estimated_freq"]
+
     length_mismatch = (
         len(error_dict["duplicate"])
         + len(error_dict["extra"])
         - len(error_dict["missing"])
         + len(error_dict["nan"])
     )
-    assert len(X) == len(X_out) + length_mismatch
-    assert len(y) == len(y_out) + length_mismatch
+    assert len(X) == len(X_output) + length_mismatch
+    assert len(y) == len(y_output) + length_mismatch if has_target else True
     # Randomly test 5 shared dates in the output dataframe and make sure their features match those of the same dates
     # in the input dataframe
-    non_nan_X = X_out.dropna()
+    non_nan_X = X_output.dropna()
     ignore_dates = set()
     for misaligned in error_dict[
         "misaligned"
@@ -52,7 +59,7 @@ def assert_features_and_length_equal(X, y, X_out, y_out, error_dict):
         )
 
 
-def test_imputer_init():
+def test_ts_regularizer_init():
 
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
 
@@ -60,6 +67,7 @@ def test_imputer_init():
     assert ts_regularizer.parameters == {"time_index": "dates"}
     assert ts_regularizer.hyperparameter_ranges == {}
     assert ts_regularizer.modifies_target is True
+    assert ts_regularizer.modifies_features is True
     assert ts_regularizer.training_only is True
 
 
@@ -78,12 +86,8 @@ def test_ts_regularizer_no_time_index():
         ts_regularizer.fit(X, y)
 
 
-def test_ts_regularizer_time_index_not_datetime():
-    dates_1 = pd.date_range("1/1/21", periods=10)
-    dates_2 = pd.date_range("1/13/21", periods=10, freq="2D")
-    dates = dates_1.append(dates_2)
-
-    X, y = get_df(dates)
+def test_ts_regularizer_time_index_not_datetime(duplicate_beginning):
+    X, y = get_df(duplicate_beginning)
 
     ts_regularizer = TimeSeriesRegularizer()
     with pytest.raises(
@@ -93,12 +97,8 @@ def test_ts_regularizer_time_index_not_datetime():
         ts_regularizer.fit(X, y)
 
 
-def test_ts_regularizer_mismatch_target_length():
-    dates_1 = pd.date_range("1/1/21", periods=10)
-    dates_2 = pd.date_range("1/13/21", periods=10, freq="2D")
-    dates = dates_1.append(dates_2)
-
-    X, _ = get_df(dates)
+def test_ts_regularizer_mismatch_target_length(duplicate_beginning):
+    X, _ = get_df(duplicate_beginning)
     y = pd.Series([i for i in range(25)])
 
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
@@ -122,6 +122,30 @@ def test_ts_regularizer_no_freq():
         match="The column dates does not have a frequency that can be inferred.",
     ):
         ts_regularizer.fit(X, y)
+
+
+def test_ts_regularizer_no_issues(ts_data):
+    X, y = ts_data
+
+    ts_regularizer = TimeSeriesRegularizer(time_index="date")
+    X_output, y_output = ts_regularizer.fit_transform(X, y)
+
+    assert ts_regularizer.inferred_freq is not None
+    assert len(ts_regularizer.error_dict) == 0
+    pd.testing.assert_frame_equal(X, X_output)
+    pd.testing.assert_series_equal(y, y_output)
+
+
+def test_ts_regularizer_X_only(combination):
+    X, y = get_df(combination)
+
+    ts_regularizer = TimeSeriesRegularizer(time_index="dates")
+    X_output, y_output = ts_regularizer.fit_transform(X)
+
+    assert y_output is None
+
+    error_dict = ts_regularizer.error_dict
+    assert_features_and_length_equal(X, y, X_output, y_output, error_dict, has_target=False)
 
 
 @pytest.mark.parametrize(
@@ -149,16 +173,11 @@ def test_ts_regularizer_duplicate(
 
     X, y = get_df(dates)
 
-    ww_payload = infer_frequency(X["dates"], debug=True)
-
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
-    ts_regularizer.fit(X, y)
-    X_out, y_out = ts_regularizer.transform(X, y)
-
-    assert pd.infer_freq(X_out["dates"]) == ww_payload[1]["estimated_freq"]
+    X_output, y_output = ts_regularizer.fit_transform(X, y)
 
     error_dict = ts_regularizer.error_dict
-    assert_features_and_length_equal(X, y, X_out, y_out, error_dict)
+    assert_features_and_length_equal(X, y, X_output, y_output, error_dict)
 
 
 @pytest.mark.parametrize(
@@ -186,16 +205,11 @@ def test_ts_regularizer_missing(
 
     X, y = get_df(dates)
 
-    ww_payload = infer_frequency(X["dates"], debug=True)
-
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
-    ts_regularizer.fit(X, y)
-    X_out, y_out = ts_regularizer.transform(X, y)
-
-    assert pd.infer_freq(X_out["dates"]) == ww_payload[1]["estimated_freq"]
+    X_output, y_output = ts_regularizer.fit_transform(X, y)
 
     error_dict = ts_regularizer.error_dict
-    assert_features_and_length_equal(X, y, X_out, y_out, error_dict)
+    assert_features_and_length_equal(X, y, X_output, y_output, error_dict)
 
 
 @pytest.mark.parametrize(
@@ -223,34 +237,25 @@ def test_ts_regularizer_uneven(
 
     X, y = get_df(dates)
 
-    ww_payload = infer_frequency(X["dates"], debug=True)
-
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
-    ts_regularizer.fit(X, y)
-    X_out, y_out = ts_regularizer.transform(X, y)
+    X_output, y_output = ts_regularizer.fit_transform(X, y)
 
-    assert pd.infer_freq(X_out["dates"]) == ww_payload[1]["estimated_freq"]
     if dataset == "beginning":
-        assert X.iloc[0]["dates"] not in X_out["dates"]
-        assert y.iloc[0] not in y_out.values
+        assert X.iloc[0]["dates"] not in X_output["dates"]
+        assert y.iloc[0] not in y_output.values
     elif dataset == "end":
-        assert X.iloc[-1]["dates"] not in X_out["dates"]
-        assert y.iloc[-1] not in y_out.values
+        assert X.iloc[-1]["dates"] not in X_output["dates"]
+        assert y.iloc[-1] not in y_output.values
 
     error_dict = ts_regularizer.error_dict
-    assert_features_and_length_equal(X, y, X_out, y_out, error_dict)
+    assert_features_and_length_equal(X, y, X_output, y_output, error_dict)
 
 
 def test_ts_regularizer_combination(combination):
     X, y = get_df(combination)
 
-    ww_payload = infer_frequency(X["dates"], debug=True)
-
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
-    ts_regularizer.fit(X, y)
-    X_out, y_out = ts_regularizer.transform(X, y)
-
-    assert pd.infer_freq(X_out["dates"]) == ww_payload[1]["estimated_freq"]
+    X_output, y_output = ts_regularizer.fit_transform(X, y)
 
     error_dict = ts_regularizer.error_dict
-    assert_features_and_length_equal(X, y, X_out, y_out, error_dict)
+    assert_features_and_length_equal(X, y, X_output, y_output, error_dict)

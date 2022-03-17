@@ -69,6 +69,7 @@ class TimeSeriesRegularizer(Transformer):
 
     def __init__(self, time_index=None, random_seed=0, **kwargs):
         self.time_index = time_index
+        self.error_dict = {}
         self.inferred_freq = None
         self.debug_payload = None
 
