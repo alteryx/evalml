@@ -12,6 +12,7 @@
         * Simplified internal ``AutoMLSearch`` API to rely on ``search_parameters`` :pr:`3373`
     * Changes
         * Update maintainers :pr:`3365`
+        * Revert pandas 1.3.0 compatibility patch :pr:`3378`
     * Documentation Changes
         * Fixed documentation links to point to correct pages :pr:`3358`
     * Testing Changes
