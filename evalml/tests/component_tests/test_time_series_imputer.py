@@ -15,11 +15,11 @@ from evalml.pipelines.components import TimeSeriesImputer
 
 
 def test_invalid_strategy_parameters():
-    with pytest.raises(ValueError, match="Valid impute strategies are"):
+    with pytest.raises(ValueError, match="Valid numeric impute strategies are"):
         TimeSeriesImputer(numeric_impute_strategy="mean")
     with pytest.raises(ValueError, match="Valid categorical impute strategies are"):
         TimeSeriesImputer(categorical_impute_strategy="interpolate")
-    with pytest.raises(ValueError, match="Valid impute strategies are"):
+    with pytest.raises(ValueError, match="Valid target column impute strategies are"):
         TimeSeriesImputer(target_impute_strategy="not a strategy")
 
 

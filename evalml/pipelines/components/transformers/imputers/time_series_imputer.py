@@ -182,7 +182,7 @@ class TimeSeriesImputer(Transformer):
             imputed = imputed.bfill()  # Fill in the first value, if missing
             X_no_all_null[X_interpolate.columns] = imputed
 
-        y_imputed = y
+        y_imputed = pd.Series(y)
         if self._impute_target == "forwards_fill":
             y_imputed = y.pad()
             y_imputed = y_imputed.bfill()

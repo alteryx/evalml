@@ -62,6 +62,7 @@ from evalml.pipelines.components import (
     TargetImputer,
     TimeSeriesBaselineEstimator,
     TimeSeriesFeaturizer,
+    TimeSeriesImputer,
     Transformer,
     Undersampler,
     XGBoostClassifier,
@@ -1646,6 +1647,7 @@ def test_component_modifies_feature_or_target():
                 DropRowsTransformer,
                 DropNaNRowsTransformer,
                 ReplaceNullableTypes,
+                TimeSeriesImputer,
             ]
         ):
             assert component_class.modifies_target
@@ -1670,6 +1672,7 @@ def test_component_parameters_supported_by_list_API():
                 DropRowsTransformer,
                 DropNaNRowsTransformer,
                 ReplaceNullableTypes,
+                TimeSeriesImputer,
             ]
         ):
             assert not component_class._supported_by_list_API
