@@ -461,6 +461,7 @@ def test_make_pipeline_from_actions_with_duplicate_actions(
     )
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "samplers",
     [
