@@ -194,6 +194,7 @@ def test_make_pipeline(
             ], test_description
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "sampler",
     ["Oversampler", "Undersampler"],
