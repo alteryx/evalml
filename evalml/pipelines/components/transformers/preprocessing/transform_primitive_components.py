@@ -73,12 +73,19 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
 
         es = self._make_entity_set(X_ww)
         features = ft.calculate_feature_matrix(features=self._features, entityset=es)
-        features.set_index(X_ww.index, inplace=True)
+
+        # Convert to object dtype so that pd.NA is converted to np.nan
+        # until sklearn imputer can handle pd.NA in release 1.1
+        # FT returns these as string types, currently there isn't much difference
+        # in terms of performance between object and string
+        # see https://pandas.pydata.org/docs/user_guide/text.html#text-data-types
+        # "Currently, the performance of object dtype arrays of strings
+        # "and arrays.StringArray are about the same."
+        features = features.astype(object, copy=False)
+        features.ww.init(logical_types={col_: "categorical" for col_ in features})
 
         X_ww = X_ww.ww.drop(self._columns)
-        features.ww.init(logical_types={col_: "categorical" for col_ in features})
-        for col in features:
-            X_ww.ww[col] = features[col]
+        X_ww = ww.concat_columns([X_ww, features])
 
         return X_ww
 
