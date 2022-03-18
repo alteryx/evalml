@@ -1,5 +1,6 @@
 """EvalML estimator components."""
 from .estimator import Estimator
+from .clusterer import Clusterer
 from .classifiers import (
     LogisticRegressionClassifier,
     RandomForestClassifier,

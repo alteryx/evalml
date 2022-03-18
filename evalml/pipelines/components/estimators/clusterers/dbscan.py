@@ -2,12 +2,11 @@
 from sklearn.cluster import DBSCAN as SKDBSCAN
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.estimators import Clusterer
 from evalml.problem_types import ProblemTypes
-from evalml.utils import infer_feature_types
 
 
-class DBSCANClusterer(Estimator):
+class DBSCANClusterer(Clusterer):
     """DBSCAN Clusterer.
 
     Args:
@@ -28,7 +27,9 @@ class DBSCANClusterer(Estimator):
         ProblemTypes.CLUSTERING
     ]"""
 
-    def __init__(self, eps=0.5, min_samples=5, leaf_size=30, n_jobs=-1, random_seed=0, **kwargs):
+    def __init__(
+        self, eps=0.5, min_samples=5, leaf_size=30, n_jobs=-1, random_seed=0, **kwargs
+    ):
         parameters = {
             "eps": eps,
             "min_samples": min_samples,
@@ -42,15 +43,3 @@ class DBSCANClusterer(Estimator):
             component_obj=dbscan_clusterer,
             random_seed=random_seed,
         )
-
-    def predict(self, X=None):
-        """Make predictions using selected features.
-
-        Args:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]. Not used for clustering problems.
-
-        Returns:
-            pd.Series: Predicted values.
-        """
-        predictions = self._component_obj.labels_
-        return infer_feature_types(predictions)

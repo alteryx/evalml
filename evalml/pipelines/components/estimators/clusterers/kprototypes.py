@@ -1,11 +1,11 @@
 """KPrototypes Clusterer."""
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.estimators import Clusterer
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise, infer_feature_types
 
 
-class KPrototypesClusterer(Estimator):
+class KPrototypesClusterer(Clusterer):
     """KPrototypes Clusterer. Recommended for mixed numeric and categorical datasets.
 
     Args:
@@ -26,7 +26,9 @@ class KPrototypesClusterer(Estimator):
         ProblemTypes.CLUSTERING
     ]"""
 
-    def __init__(self, n_clusters=8, max_iter=300, n_init=10, n_jobs=-1, random_seed=0, **kwargs):
+    def __init__(
+        self, n_clusters=8, max_iter=300, n_init=10, n_jobs=-1, random_seed=0, **kwargs
+    ):
         parameters = {
             "n_clusters": n_clusters,
             "max_iter": max_iter,
@@ -34,9 +36,7 @@ class KPrototypesClusterer(Estimator):
             "n_jobs": n_jobs,
         }
         parameters.update(kwargs)
-        kprototypes_error_msg = (
-            "KModes is not installed. Please install using `pip install kmodes` to run KPrototypes."
-        )
+        kprototypes_error_msg = "KModes is not installed. Please install using `pip install kmodes` to run KPrototypes."
         kmodes = import_or_raise("kmodes.kprototypes", error_msg=kprototypes_error_msg)
         kprototypes_clusterer = kmodes.KPrototypes(
             **parameters, random_state=random_seed
@@ -59,18 +59,10 @@ class KPrototypesClusterer(Estimator):
         """
         X = infer_feature_types(X)
         cat_col_names = list(X.ww.select("category", return_schema=True).columns)
-        cat_col_idxs = [col_idx for col_idx, col_name in enumerate(X.columns) if col_name in cat_col_names]
+        cat_col_idxs = [
+            col_idx
+            for col_idx, col_name in enumerate(X.columns)
+            if col_name in cat_col_names
+        ]
         self._component_obj.fit(X, categorical=cat_col_idxs)
         return self
-
-    def predict(self, X=None):
-        """Make predictions using selected features.
-
-        Args:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]. Not used for clustering problems.
-
-        Returns:
-            pd.Series: Predicted values.
-        """
-        predictions = self._component_obj.labels_
-        return infer_feature_types(predictions)

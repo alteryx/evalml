@@ -2,12 +2,11 @@
 from sklearn.cluster import KMeans as SKKMeans
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.estimators import Clusterer
 from evalml.problem_types import ProblemTypes
-from evalml.utils import infer_feature_types
 
 
-class KMeansClusterer(Estimator):
+class KMeansClusterer(Clusterer):
     """KMeans Clusterer. Recommended for numeric-only datasets.
 
     Args:
@@ -40,15 +39,3 @@ class KMeansClusterer(Estimator):
             component_obj=kmeans_clusterer,
             random_seed=random_seed,
         )
-
-    def predict(self, X=None):
-        """Make predictions using selected features.
-
-        Args:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]. Not used for clustering problems.
-
-        Returns:
-            pd.Series: Predicted values.
-        """
-        predictions = self._component_obj.labels_
-        return infer_feature_types(predictions)
