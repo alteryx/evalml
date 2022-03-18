@@ -170,8 +170,8 @@ def test_make_pipeline(
                     + delayed_features
                     + datetime
                     + ohe
-                    + standard_scaler
                     + drop_nan_rows_transformer
+                    + standard_scaler
                     + [estimator_class]
                 )
             else:
@@ -194,6 +194,10 @@ def test_make_pipeline(
             ], test_description
 
 
+@pytest.mark.parametrize(
+    "sampler",
+    ["Oversampler", "Undersampler"],
+)
 @pytest.mark.parametrize(
     "problem_type",
     [
@@ -226,7 +230,11 @@ def test_make_pipeline(
     ],
 )
 def test_make_pipeline_known_in_advance(
-    test_description, known_in_advance, problem_type, get_test_data_from_configuration
+    test_description,
+    known_in_advance,
+    problem_type,
+    sampler,
+    get_test_data_from_configuration,
 ):
     X, y = get_test_data_from_configuration(
         "ww",
@@ -261,14 +269,14 @@ def test_make_pipeline_known_in_advance(
             problem_type,
             parameters,
             known_in_advance=known_in_advance,
-            sampler_name="Undersampler" if is_classification(problem_type) else None,
+            sampler_name=sampler if is_classification(problem_type) else None,
         )
         expected_known_in_advance_components = _get_preprocessing_components(
             X.ww[known_in_advance],
             y,
             "regression",
             estimator_class,
-            sampler_name="Undersampler" if is_classification(problem_type) else None,
+            sampler_name=sampler if is_classification(problem_type) else None,
         )
         expected_known_in_advance_components = [
             c.name
@@ -296,10 +304,7 @@ def test_make_pipeline_known_in_advance(
                 len([c for c in pipeline.component_graph if "Label Encoder" in c.name])
                 == 2
             )
-            assert (
-                len([c for c in pipeline.component_graph if "Undersampler" in c.name])
-                == 2
-            )
+            assert len([c for c in pipeline.component_graph if sampler in c.name]) == 2
 
 
 def test_make_pipeline_problem_type_mismatch():
