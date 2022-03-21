@@ -2,11 +2,11 @@
 from sklearn.cluster import DBSCAN as SKDBSCAN
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components.estimators import Clusterer
+from evalml.pipelines.components.estimators import Unsupervised
 from evalml.problem_types import ProblemTypes
 
 
-class DBSCANClusterer(Clusterer):
+class DBSCANClusterer(Unsupervised):
     """DBSCAN Clusterer.
 
     Args:

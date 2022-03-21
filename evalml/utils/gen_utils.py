@@ -213,6 +213,10 @@ _not_used_in_automl = {
     "VowpalWabbitBinaryClassifier",
     "VowpalWabbitMulticlassClassifier",
     "VowpalWabbitRegressor",
+    "DBSCANClusterer",
+    "KMeansClusterer",
+    "KModesClusterer",
+    "KPrototypesClusterer",
 }
 
 
@@ -245,17 +249,7 @@ def get_importable_subclasses(base_class, used_in_automl=True):
         from evalml.pipelines import Transformer
         from evalml.problem_types import ProblemTypes
 
-        classes = [
-            cls
-            for cls in classes
-            if (
-                cls.__name__ not in _not_used_in_automl
-                and (
-                    issubclass(cls, Transformer)
-                    or ProblemTypes.CLUSTERING not in cls.supported_problem_types
-                )
-            )
-        ]
+        classes = [cls for cls in classes if (cls.__name__ not in _not_used_in_automl)]
 
     return classes
 

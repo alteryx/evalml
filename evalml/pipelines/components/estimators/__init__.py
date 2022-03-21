@@ -1,6 +1,6 @@
 """EvalML estimator components."""
 from .estimator import Estimator
-from .clusterer import Clusterer
+from .unsupervised import Unsupervised
 from .classifiers import (
     LogisticRegressionClassifier,
     RandomForestClassifier,

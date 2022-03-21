@@ -1,11 +1,11 @@
 """KPrototypes Clusterer."""
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components.estimators import Clusterer
+from evalml.pipelines.components.estimators import Unsupervised
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise, infer_feature_types
 
 
-class KPrototypesClusterer(Clusterer):
+class KPrototypesClusterer(Unsupervised):
     """KPrototypes Clusterer. Recommended for mixed numeric and categorical datasets.
 
     Args:

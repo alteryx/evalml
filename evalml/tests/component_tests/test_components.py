@@ -76,7 +76,7 @@ from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )
-from evalml.pipelines.components.estimators import Clusterer
+from evalml.pipelines.components.estimators import Unsupervised
 from evalml.pipelines.components.estimators.classifiers.vowpal_wabbit_classifiers import (
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
@@ -645,7 +645,7 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
 def test_missing_method_on_clustering(X_y_binary):
     X, _ = X_y_binary
 
-    class MockClusterer(Clusterer):
+    class MockClusterer(Unsupervised):
         name = "Mock Clusterer"
         model_family = ModelFamily.CENTROID
         supported_problem_types = [ProblemTypes.CLUSTERING]
@@ -654,7 +654,7 @@ def test_missing_method_on_clustering(X_y_binary):
     clusterer._is_fitted = True
     with pytest.raises(
         MethodPropertyNotFoundError,
-        match="Clusterer requires a predict method or a component_obj that contains labels",
+        match="Unsupervised component requires a predict method or a component_obj that contains labels",
     ):
         clusterer.predict(X)
 

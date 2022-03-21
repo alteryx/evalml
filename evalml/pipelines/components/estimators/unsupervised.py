@@ -7,15 +7,15 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.utils import infer_feature_types
 
 
-class Clusterer(Estimator):
+class Unsupervised(Estimator):
     """A component that fits and predicts given data in unsupervised contexts.
 
-    To implement a new Clusterer, define your own class which is a subclass of Clusterer, with a given name.
+    To implement a new unsupervised component, define your own class which is a subclass of Unsupervised, with a given name.
     Define an `__init__` method which sets up any necessary state and objects. Make sure your `__init__` only
     uses standard keyword arguments and calls `super().__init__()` with a parameters dict. You may also override the
     `fit`, `transform`, `fit_transform` and other methods in this class if appropriate.
 
-    To see some examples, check out the definitions of any Clusterer component subclass.
+    To see some examples, check out the definitions of any Unsupervised component subclass.
 
     Args:
         parameters (dict): Dictionary of parameters for the component. Defaults to None.
@@ -67,6 +67,6 @@ class Clusterer(Estimator):
             predictions = self._component_obj.labels_
         except AttributeError:
             raise MethodPropertyNotFoundError(
-                "Clusterer requires a predict method or a component_obj that contains labels"
+                "Unsupervised component requires a predict method or a component_obj that contains labels"
             )
         return infer_feature_types(predictions)

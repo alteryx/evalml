@@ -1,11 +1,11 @@
 """KModes Clusterer."""
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components.estimators import Clusterer
+from evalml.pipelines.components.estimators import Unsupervised
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise
 
 
-class KModesClusterer(Clusterer):
+class KModesClusterer(Unsupervised):
     """KModes Clusterer. Recommended for categorical-only datasets.
 
     Args:
