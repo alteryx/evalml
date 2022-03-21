@@ -3,6 +3,7 @@
 
 **Future Releases**
     * Enhancements
+        * Add support for oversampling in time series classification problems :pr:`3387`
     * Fixes
     * Changes
         * Update maintainers to add Frank :pr:`3382`
