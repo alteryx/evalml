@@ -50,6 +50,12 @@ class ModelFamily(Enum):
     VOWPAL_WABBIT = "vowpal_wabbit"
     """Vowpal Wabbit model family."""
 
+    DENSITY = "density"
+    """Density-based clustering model family."""
+
+    CENTROID = "centroid"
+    """Centroid clustering model family."""
+
     NONE = "none"
     """None"""
 
@@ -70,6 +76,8 @@ class ModelFamily(Enum):
             ModelFamily.EXPONENTIAL_SMOOTHING.name: "Exponential Smoothing",
             ModelFamily.ARIMA.name: "ARIMA",
             ModelFamily.PROPHET.name: "Prophet",
+            ModelFamily.DENSITY.name: "Density",
+            ModelFamily.CENTROID.name: "Centroid",
             ModelFamily.NONE.name: "None",
         }
 

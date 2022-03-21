@@ -4,6 +4,7 @@
 **Future Releases**
     * Enhancements
         * Added clustering as a problem type :pr:`3368`
+        * Added clustering models ``DBSCAN``, ``KMeans``, ``KModes``, and ``KPrototypes`` :pr:`3379`
     * Fixes
     * Changes
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`

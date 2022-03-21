@@ -213,6 +213,10 @@ _not_used_in_automl = {
     "VowpalWabbitBinaryClassifier",
     "VowpalWabbitMulticlassClassifier",
     "VowpalWabbitRegressor",
+    "DBSCANClusterer",
+    "KMeansClusterer",
+    "KModesClusterer",
+    "KPrototypesClusterer",
 }
 
 
@@ -242,7 +246,7 @@ def get_importable_subclasses(base_class, used_in_automl=True):
                 f"Could not import class {cls.__name__} in get_importable_subclasses"
             )
     if used_in_automl:
-        classes = [cls for cls in classes if cls.__name__ not in _not_used_in_automl]
+        classes = [cls for cls in classes if (cls.__name__ not in _not_used_in_automl)]
 
     return classes
 

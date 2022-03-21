@@ -92,6 +92,20 @@ def vw():
 
 
 @pytest.fixture(scope="session")
+def kmodes():
+    from kmodes import kmodes
+
+    return kmodes
+
+
+@pytest.fixture(scope="session")
+def kprototypes():
+    from kmodes import kprototypes
+
+    return kprototypes
+
+
+@pytest.fixture(scope="session")
 def graphviz():
     import graphviz
 

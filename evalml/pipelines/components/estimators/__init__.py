@@ -1,5 +1,6 @@
 """EvalML estimator components."""
 from .estimator import Estimator
+from .unsupervised import Unsupervised
 from .classifiers import (
     LogisticRegressionClassifier,
     RandomForestClassifier,
@@ -31,4 +32,10 @@ from .regressors import (
     ARIMARegressor,
     ProphetRegressor,
     VowpalWabbitRegressor,
+)
+from .clusterers import (
+    DBSCANClusterer,
+    KMeansClusterer,
+    KModesClusterer,
+    KPrototypesClusterer,
 )

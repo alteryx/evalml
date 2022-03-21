@@ -40,6 +40,10 @@ from .components import (
     VowpalWabbitMulticlassClassifier,
     VowpalWabbitRegressor,
     DropNaNRowsTransformer,
+    DBSCANClusterer,
+    KMeansClusterer,
+    KModesClusterer,
+    KPrototypesClusterer,
 )
 
 from .component_graph import ComponentGraph
