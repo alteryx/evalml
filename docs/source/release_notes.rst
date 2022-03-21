@@ -3,6 +3,7 @@
 
 **Future Releases**
     * Enhancements
+        * Add support for oversampling in time series classification problems :pr:`3387`
     * Fixes
     * Changes
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`

@@ -228,8 +228,8 @@ def _get_drop_nan_rows_transformer(
     X, y, problem_type, estimator_class, sampler_name=None
 ):
     components = []
-    if is_time_series(problem_type) and estimator_unable_to_handle_nans(
-        estimator_class
+    if is_time_series(problem_type) and (
+        estimator_unable_to_handle_nans(estimator_class) or sampler_name
     ):
         components.append(DropNaNRowsTransformer)
     return components
@@ -262,9 +262,9 @@ def _get_preprocessing_components(
             _get_time_series_featurizer,
             _get_datetime,
             _get_ohe,
+            _get_drop_nan_rows_transformer,
             _get_sampler,
             _get_standard_scaler,
-            _get_drop_nan_rows_transformer,
         ]
     else:
         components_functions = [
@@ -347,7 +347,10 @@ def _make_pipeline_time_series(
 
     if known_in_advance:
         preprocessing_components = [SelectColumns] + preprocessing_components
-        if DropNaNRowsTransformer in preprocessing_components:
+        if (
+            Oversampler not in preprocessing_components
+            and DropNaNRowsTransformer in preprocessing_components
+        ):
             preprocessing_components.remove(DropNaNRowsTransformer)
     else:
         preprocessing_components += [estimator]
