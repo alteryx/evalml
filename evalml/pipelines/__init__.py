@@ -42,6 +42,10 @@ from .components import (
     VowpalWabbitMulticlassClassifier,
     VowpalWabbitRegressor,
     DropNaNRowsTransformer,
+    DBSCANClusterer,
+    KMeansClusterer,
+    KModesClusterer,
+    KPrototypesClusterer,
     TimeSeriesRegularizer,
 )
 

@@ -26,6 +26,7 @@ from evalml.pipelines.components import (
     CatBoostRegressor,
     ComponentBase,
     DateTimeFeaturizer,
+    DBSCANClusterer,
     DFSTransformer,
     DropColumns,
     DropNaNRowsTransformer,
@@ -37,6 +38,9 @@ from evalml.pipelines.components import (
     ExtraTreesClassifier,
     ExtraTreesRegressor,
     Imputer,
+    KMeansClusterer,
+    KModesClusterer,
+    KPrototypesClusterer,
     LightGBMClassifier,
     LightGBMRegressor,
     LinearDiscriminantAnalysis,
@@ -74,6 +78,7 @@ from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )
+from evalml.pipelines.components.estimators import Unsupervised
 from evalml.pipelines.components.estimators.classifiers.vowpal_wabbit_classifiers import (
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
@@ -97,6 +102,7 @@ from evalml.pipelines.components.utils import (
     generate_component_code,
 )
 from evalml.problem_types import ProblemTypes
+from evalml.utils import infer_feature_types
 
 
 @pytest.fixture(scope="module")
@@ -623,6 +629,23 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
         match="Component requires a fit method or a component_obj that implements fit",
     ):
         transformer.fit_transform(X)
+
+
+def test_missing_method_on_clustering(X_y_binary):
+    X, _ = X_y_binary
+
+    class MockClusterer(Unsupervised):
+        name = "Mock Clusterer"
+        model_family = ModelFamily.CENTROID
+        supported_problem_types = [ProblemTypes.CLUSTERING]
+
+    clusterer = MockClusterer()
+    clusterer._is_fitted = True
+    with pytest.raises(
+        MethodPropertyNotFoundError,
+        match="Unsupervised component requires a predict method or a component_obj that contains labels",
+    ):
+        clusterer.predict(X)
 
 
 def test_component_fit(X_y_binary):
@@ -1248,6 +1271,8 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
             X, y = ts_data
         else:
             X, y = X_y_binary
+            if isinstance(component, KPrototypesClusterer):
+                X = infer_feature_types(X, feature_types={0: "Categorical"})
 
         component.fit(X, y)
 
@@ -1268,6 +1293,10 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                         VowpalWabbitMulticlassClassifier,
                         VowpalWabbitRegressor,
                         TimeSeriesBaselineEstimator,
+                        DBSCANClusterer,
+                        KMeansClusterer,
+                        KModesClusterer,
+                        KPrototypesClusterer,
                     ),
                 )
             ):
@@ -1609,6 +1638,9 @@ def test_estimator_fit_respects_custom_indices(
 
     X = pd.DataFrame(X)
     y = pd.Series(y)
+
+    if estimator_class.__name__ == "KPrototypesClusterer":
+        X = infer_feature_types(X, feature_types={0: "Categorical"})
 
     if use_custom_index and ts_problem:
         X.index = pd.date_range("2020-10-01", "2020-10-31")

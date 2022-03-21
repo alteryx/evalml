@@ -30,6 +30,10 @@ from .estimators import (
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
     VowpalWabbitRegressor,
+    DBSCANClusterer,
+    KMeansClusterer,
+    KModesClusterer,
+    KPrototypesClusterer,
 )
 from .transformers import (
     Transformer,

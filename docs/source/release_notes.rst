@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added clustering as a problem type :pr:`3368`
+        * Added clustering models ``DBSCAN``, ``KMeans``, ``KModes``, and ``KPrototypes`` :pr:`3379`
     * Fixes
         * Updated the Imputer and SimpleImputer to work with scikit-learn 1.1.1. :pr:`3525`
         * Bumped the minimum versions of scikit-learn to 1.1.1 and imbalanced-learn to 0.9.1. :pr:`3525`
