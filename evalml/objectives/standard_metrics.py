@@ -13,6 +13,7 @@ from .multiclass_classification_objective import (
 )
 from .regression_objective import RegressionObjective
 from .time_series_regression_objective import TimeSeriesRegressionObjective
+from .unsupervised_objective import UnsupervisedLearningObjective
 
 
 class AccuracyBinary(BinaryClassificationObjective):
@@ -899,6 +900,40 @@ class ExpVariance(RegressionObjective):
         return metrics.explained_variance_score(
             y_true, y_predicted, sample_weight=sample_weight
         )
+
+
+class SilhouetteCoefficient(UnsupervisedLearningObjective):
+    """Silhouette Coefficient for clustering. Does not require ground truth values."""
+
+    name = "Silhouette Coefficient"
+    greater_is_better = True
+    score_needs_proba = False
+    perfect_score = 1.0
+    is_bounded_like_percentage = False
+    expected_range = [-1, 1]
+    requires_y_true = False
+
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        """Objective function for silhouette coefficient for clustering."""
+        try:
+            return metrics.silhouette_score(X, y_predicted, metric="euclidean")
+        except ValueError:
+            return 0
+
+
+class AdjustedRandScore(UnsupervisedLearningObjective):
+    """Rand Score for clustering, adjusted for chance. Does require ground truth values."""
+
+    name = "Adjusted Rand Score"
+    greater_is_better = True
+    score_needs_proba = False
+    perfect_score = 1.0
+    is_bounded_like_percentage = True
+    expected_range = [0, 1]
+
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        """Objective function for rand score for clustering."""
+        return metrics.adjusted_rand_score(y_true, y_predicted)
 
 
 def _handle_predictions(y_true, y_pred):

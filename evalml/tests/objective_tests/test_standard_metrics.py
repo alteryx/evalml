@@ -10,6 +10,7 @@ from evalml.objectives import (
     MSE,
     AccuracyBinary,
     AccuracyMulticlass,
+    AdjustedRandScore,
     BalancedAccuracyBinary,
     BalancedAccuracyMulticlass,
     BinaryClassificationObjective,
@@ -32,6 +33,7 @@ from evalml.objectives import (
     RecallWeighted,
     RootMeanSquaredError,
     RootMeanSquaredLogError,
+    SilhouetteCoefficient,
 )
 from evalml.objectives.utils import (
     _all_objectives_dict,
@@ -57,8 +59,9 @@ def test_input_contains_nan():
     y_true = np.array([np.nan, 0, 0])
     y_predicted = np.array([1, 2, 0])
     for objective in all_automl_objectives.values():
-        with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
-            objective.score(y_true, y_predicted)
+        if objective.requires_y_true:
+            with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
+                objective.score(y_true, y_predicted)
 
     y_true = np.array([1, 0])
     y_predicted_proba = np.array([[1, np.nan], [0.1, 0]])
@@ -80,8 +83,9 @@ def test_input_contains_inf():
     y_true = np.array([np.inf, 0, 0])
     y_predicted = np.array([1, 0, 0])
     for objective in all_automl_objectives.values():
-        with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
-            objective.score(y_true, y_predicted)
+        if objective.requires_y_true:
+            with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
+                objective.score(y_true, y_predicted)
 
     y_true = np.array([1, 0])
     y_predicted_proba = np.array([[1, np.inf], [0.1, 0]])
@@ -97,14 +101,16 @@ def test_different_input_lengths():
     y_predicted = np.array([0, 0])
     y_true = np.array([1])
     for objective in all_automl_objectives.values():
-        with pytest.raises(ValueError, match="Inputs have mismatched dimensions"):
-            objective.score(y_true, y_predicted)
+        if objective.requires_y_true:
+            with pytest.raises(ValueError, match="Inputs have mismatched dimensions"):
+                objective.score(y_true, y_predicted)
 
     y_true = np.array([0, 0])
     y_predicted = np.array([1, 2, 0])
     for objective in all_automl_objectives.values():
-        with pytest.raises(ValueError, match="Inputs have mismatched dimensions"):
-            objective.score(y_true, y_predicted)
+        if objective.requires_y_true:
+            with pytest.raises(ValueError, match="Inputs have mismatched dimensions"):
+                objective.score(y_true, y_predicted)
 
 
 def test_zero_input_lengths():
@@ -696,6 +702,39 @@ def test_mape_time_series_model():
         )
         == pytest.approx(8 / 4 * 100)
     )
+
+
+def test_silhouette_coefficient():
+    obj = SilhouetteCoefficient()
+
+    X = pd.DataFrame({"f1": [1, 1, 1, 3, 3, 3], "f2": [1, 1, 1, 4, 4, 4]})
+    pred_good = np.array([0, 0, 0, 1, 1, 1])
+    pred_wrong = np.array([0, 1, 0, 1, 0, 1])
+    pred_bad = np.array([0, 0, 0, 0, 0, 0])
+
+    assert obj.score(y_true=None, y_predicted=pred_good, X=X) == 1.0
+    np.testing.assert_almost_equal(
+        obj.score(y_true=None, y_predicted=pred_wrong, X=X), -0.0555555
+    )
+    assert obj.score(y_true=None, y_predicted=pred_bad, X=X) == 0.0
+
+
+def test_adjusted_rand_score():
+    obj = AdjustedRandScore()
+
+    s1_actual = np.array([0, 1, 0, 1, 0, 1])
+    s1_pred_identical = np.array([0, 1, 0, 1, 0, 1])
+    s1_pred_opposite = np.array([1, 0, 1, 0, 1, 0])
+
+    s2_actual = np.array([1, 0, 1, 0, 1])
+    s2_pred = np.array([1, 0, 1, 0, 0])
+    s2_flat = np.array([0, 0, 0, 0, 0])
+
+    assert obj.score(s1_actual, s1_pred_identical) == 1.0
+    assert obj.score(s1_actual, s1_pred_opposite) == 1.0
+
+    np.testing.assert_almost_equal(obj.score(s2_actual, s2_pred), 0.1666666)
+    assert obj.score(s2_actual, s2_flat) == 0.0
 
 
 @pytest.mark.parametrize("objective_class", _all_objectives_dict().values())
