@@ -10,6 +10,7 @@
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
     * Documentation Changes
     * Testing Changes
+        * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`3395`)
 
 .. warning::
 
