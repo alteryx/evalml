@@ -170,8 +170,8 @@ def test_make_pipeline(
                     + delayed_features
                     + datetime
                     + ohe
-                    + standard_scaler
                     + drop_nan_rows_transformer
+                    + standard_scaler
                     + [estimator_class]
                 )
             else:
@@ -194,6 +194,10 @@ def test_make_pipeline(
             ], test_description
 
 
+@pytest.mark.parametrize(
+    "sampler",
+    ["Oversampler", "Undersampler"],
+)
 @pytest.mark.parametrize(
     "problem_type",
     [
@@ -226,8 +230,18 @@ def test_make_pipeline(
     ],
 )
 def test_make_pipeline_known_in_advance(
-    test_description, known_in_advance, problem_type, get_test_data_from_configuration
+    test_description,
+    known_in_advance,
+    problem_type,
+    sampler,
+    get_test_data_from_configuration,
+    has_minimal_dependencies,
 ):
+    if has_minimal_dependencies and sampler == "Oversampler":
+        pytest.skip(
+            "Skipping because oversampler test cases require imblearn (a noncore dependency)"
+        )
+
     X, y = get_test_data_from_configuration(
         "ww",
         problem_type,
@@ -261,14 +275,14 @@ def test_make_pipeline_known_in_advance(
             problem_type,
             parameters,
             known_in_advance=known_in_advance,
-            sampler_name="Undersampler" if is_classification(problem_type) else None,
+            sampler_name=sampler if is_classification(problem_type) else None,
         )
         expected_known_in_advance_components = _get_preprocessing_components(
             X.ww[known_in_advance],
             y,
             "regression",
             estimator_class,
-            sampler_name="Undersampler" if is_classification(problem_type) else None,
+            sampler_name=sampler if is_classification(problem_type) else None,
         )
         expected_known_in_advance_components = [
             c.name
@@ -296,10 +310,7 @@ def test_make_pipeline_known_in_advance(
                 len([c for c in pipeline.component_graph if "Label Encoder" in c.name])
                 == 2
             )
-            assert (
-                len([c for c in pipeline.component_graph if "Undersampler" in c.name])
-                == 2
-            )
+            assert len([c for c in pipeline.component_graph if sampler in c.name]) == 2
 
 
 def test_make_pipeline_problem_type_mismatch():
@@ -457,7 +468,7 @@ def test_make_pipeline_from_actions_with_duplicate_actions(
 
 
 @pytest.mark.parametrize(
-    "samplers",
+    "sampler",
     [
         None,
         "Undersampler",
@@ -467,12 +478,16 @@ def test_make_pipeline_from_actions_with_duplicate_actions(
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
 def test_make_pipeline_samplers(
     problem_type,
-    samplers,
+    sampler,
     X_y_binary,
     X_y_multi,
     X_y_regression,
     has_minimal_dependencies,
 ):
+    if has_minimal_dependencies and sampler == "Oversampler":
+        pytest.skip(
+            "Skipping because oversampler test cases require imblearn (a noncore dependency)"
+        )
     if problem_type == "binary":
         X, y = X_y_binary
     elif problem_type == "multiclass":
@@ -482,17 +497,15 @@ def test_make_pipeline_samplers(
     estimators = get_estimators(problem_type=problem_type)
 
     for estimator in estimators:
-        if problem_type == "regression" and samplers is not None:
+        if problem_type == "regression" and sampler is not None:
             with pytest.raises(ValueError, match="Sampling is unsupported for"):
-                make_pipeline(X, y, estimator, problem_type, sampler_name=samplers)
+                make_pipeline(X, y, estimator, problem_type, sampler_name=sampler)
         else:
             pipeline = make_pipeline(
-                X, y, estimator, problem_type, sampler_name=samplers
+                X, y, estimator, problem_type, sampler_name=sampler
             )
-            if has_minimal_dependencies and samplers is not None:
-                samplers = "Undersampler"
             # check that we do add the sampler properly
-            if samplers is not None and problem_type != "regression":
+            if sampler is not None and problem_type != "regression":
                 assert any("sampler" in comp.name for comp in pipeline.component_graph)
             else:
                 assert not any(

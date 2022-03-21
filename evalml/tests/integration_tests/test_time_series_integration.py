@@ -68,6 +68,7 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
     automl.best_pipeline.predict(X_valid, X_train=X, y_train=y)
 
 
+@pytest.mark.parametrize("sampler", ["Oversampler", "Undersampler"])
 @pytest.mark.parametrize(
     "problem_type",
     [
@@ -78,6 +79,7 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
 )
 def test_can_run_automl_for_time_series_known_in_advance(
     problem_type,
+    sampler,
 ):
 
     X = pd.DataFrame(
@@ -121,7 +123,7 @@ def test_can_run_automl_for_time_series_known_in_advance(
             "known_in_advance": ["bool_feature", "cat_feature"],
         },
         optimize_thresholds=False,
-        sampler_method="Undersampler",
+        sampler_method=sampler,
     )
     automl.search()
     automl.best_pipeline.fit(X, y)
