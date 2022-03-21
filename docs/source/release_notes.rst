@@ -5,6 +5,7 @@
     * Enhancements
         * Add support for oversampling in time series classification problems :pr:`3387`
     * Fixes
+        * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`
     * Changes
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
     * Documentation Changes
