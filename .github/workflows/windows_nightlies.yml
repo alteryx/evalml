@@ -6,6 +6,7 @@ on:
 
 jobs:
   win_unit_tests:
+    if: ${{ github.repository_owner == 'alteryx' }}
     name: Nightly ${{ matrix.python_version }} windows ${{ matrix.command}}
     runs-on: windows-latest
     strategy:
