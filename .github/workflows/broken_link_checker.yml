@@ -1,0 +1,53 @@
+name: Broken link check
+
+on:
+  schedule:
+      - cron: '0 7 * * *'
+
+jobs:
+  my-broken-link-checker:
+    name: Check for broken links (${{ matrix.page }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        page:
+          - index
+          - install
+          - start
+          - tutorials
+          - user_guide
+          - user_guide/automl
+          - user_guide/pipelines
+          - user_guide/component_graphs
+          - user_guide/components
+          - user_guide/objectives
+          - user_guide/model_understanding
+          - user_guide/data_checks
+          - user_guide/data_check_actions
+          - user_guide/utilities
+          - user_guide/timeseries
+          - user_guide/faq
+          - demos/fraud
+          - demos/lead_scoring
+          - demos/cost_benefit_matrix
+          - demos/text_input
+
+      fail-fast: false
+    steps:
+      - name: Check ${{ matrix }}
+        uses: ruzickap/action-my-broken-link-checker@v2
+        with:
+          url: https://evalml.alteryx.com/en/latest/${{matrix.page}}.html
+          cmd_params: '--one-page-only --max-connections=3 --color=always --ignore-fragments --buffer-size=8192 --exclude="(twitter)"'
+      - name: Notify on Slack
+        uses: 8398a7/action-slack@v3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        with:
+          job_name: Check for broken links (${{ matrix.page }})
+          status: ${{ job.status }}
+          fields: workflow,job,took
+          mention: channel
+          if_mention: failure,cancelled
+          text: ':elmofire:'
+        if: failure()
