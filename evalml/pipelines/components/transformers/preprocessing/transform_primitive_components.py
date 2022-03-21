@@ -82,6 +82,7 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
         # "Currently, the performance of object dtype arrays of strings
         # "and arrays.StringArray are about the same."
         features = features.astype(object, copy=False)
+        features.index = X_ww.index
         features.ww.init(logical_types={col_: "categorical" for col_ in features})
 
         X_ww = X_ww.ww.drop(self._columns)
