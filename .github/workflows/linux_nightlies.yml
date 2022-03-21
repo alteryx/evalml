@@ -6,7 +6,7 @@ on:
 
 jobs:
   unit_tests:
-    if: ${{ github.repository_owner == 'alteryx' }}
+    if: github.repository_owner == 'alteryx'
     name: Nightly ${{ matrix.python_version }} ${{matrix.command}}
     runs-on: ubuntu-latest
     strategy:
