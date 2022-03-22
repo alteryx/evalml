@@ -179,12 +179,26 @@ class DateTimeFormatDataCheck(DataCheck):
             )
             return messages
 
+        # Check if the data is monotonically increasing
+        datetime_values = datetime_values.dropna()
+        if not pd.DatetimeIndex(datetime_values).is_monotonic_increasing:
+            messages.append(
+                DataCheckError(
+                    message="Datetime values must be sorted in ascending order.",
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.DATETIME_IS_NOT_MONOTONIC,
+                ).to_dict()
+            )
+
         col_name = (
             self.datetime_column if self.datetime_column != "index" else "either index"
         )
 
-        nan_columns = datetime_values.isna().any()
-        if nan_columns:
+        infer_dict = X.ww.infer_temporal_frequencies(debug=True)
+        inferred_freq, debug_object = infer_dict[self.datetime_column]
+
+        # Check for NaN values
+        if len(debug_object["nan_values"]) > 0:
             messages.append(
                 DataCheckError(
                     message=f"Input datetime column '{col_name}' contains NaN values. Please impute NaN values or drop these rows.",
@@ -192,58 +206,44 @@ class DateTimeFormatDataCheck(DataCheck):
                     message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
                 ).to_dict()
             )
-            datetime_values = datetime_values.dropna()
 
-        is_increasing = pd.DatetimeIndex(datetime_values).is_monotonic_increasing
-
-        if not inferred_freq:
-
-            # Check for only one row per datetime
-            duplicate_dates = pd.Series(datetime_values).diff(1) == pd.Timedelta(0)
-            if duplicate_dates.any():
-                messages.append(
-                    DataCheckError(
-                        message=f"Column '{col_name}' has more than one row with the same datetime value.",
-                        data_check_name=self.name,
-                        message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
-                    ).to_dict()
-                )
-                # drop any duplicates before continuing
-                datetime_values = datetime_values[~duplicate_dates]
-
-            interval_size = 3
-            frequencies = []
-            for i in range(len(datetime_values) - (interval_size - 1)):
-                freq = pd.infer_freq(datetime_values[i : i + interval_size])
-                frequencies.append(freq)
-            num_disruptions = len(set(frequencies))
-
-            # Check for no date missing in ordered dates
-            if num_disruptions > 1 and is_increasing:
-                messages.append(
-                    DataCheckError(
-                        message=f"Column '{col_name}' has datetime values missing between start and end date.",
-                        data_check_name=self.name,
-                        message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
-                    ).to_dict()
-                )
-
-            # Give a generic uneven interval error if two or more frequencies are detected
-            if num_disruptions > 2 or (num_disruptions > 0 and not is_increasing):
-                messages.append(
-                    DataCheckError(
-                        message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
-                        data_check_name=self.name,
-                        message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-                    ).to_dict()
-                )
-
-        if not is_increasing:
+        # Check for only one row per datetime
+        if len(debug_object["duplicate_values"]) > 0:
             messages.append(
                 DataCheckError(
-                    message="Datetime values must be sorted in ascending order.",
+                    message=f"Column '{col_name}' has more than one row with the same datetime value.",
                     data_check_name=self.name,
-                    message_code=DataCheckMessageCode.DATETIME_IS_NOT_MONOTONIC,
+                    message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
+                ).to_dict()
+            )
+
+        # Check for no date missing in ordered dates
+        if len(debug_object["missing_values"]) > 0:
+            messages.append(
+                DataCheckError(
+                    message=f"Column '{col_name}' has datetime values missing between start and end date.",
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
+                ).to_dict()
+            )
+
+        # Check for dates that don't line up with the frequency
+        if len(debug_object["extra_values"]) > 0:
+            messages.append(
+                DataCheckError(
+                    message=f"Column '{col_name}' has datetime values that do not align with the inferred frequency.",
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.DATETIME_HAS_MISALIGNED_VALUES,
+                ).to_dict()
+            )
+
+        # Give a generic uneven interval error no frequency can be estimated by woodwork
+        if debug_object["estimated_freq"] is None:
+            messages.append(
+                DataCheckError(
+                    message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
                 ).to_dict()
             )
 
