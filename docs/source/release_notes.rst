@@ -11,6 +11,7 @@
     * Documentation Changes
         * Added section of AutoML Algorithms :pr:`3394`
     * Testing Changes
+        * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`3395`)
 
 .. warning::
 
@@ -63,6 +64,7 @@
         * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
         * Updated ``AutoMLSearch`` to use ``DefaultAlgorithm`` as the default automl algorithm :pr:`3261`, :pr:`3304`
         * Added more specific data check errors to ``DatetimeFormatDataCheck`` :pr:`3288`
+        * Added ``features`` as a parameter for ``AutoMLSearch`` and add ``DFSTransformer`` to pipelines when ``features`` are present :pr:`3309`
     * Fixes
         * Updated the binary classification pipeline's ``optimize_thresholds`` method to use Nelder-Mead :pr:`3280`
         * Fixed bug where feature importance on time series pipelines only showed 0 for time index :pr:`3285`

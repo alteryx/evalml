@@ -21,7 +21,7 @@ class DFSTransformer(Transformer):
     """{}"""
 
     def __init__(self, index="index", features=None, random_seed=0, **kwargs):
-        parameters = {"index": index}
+        parameters = {"index": index, "features": features}
         if not isinstance(index, str):
             raise TypeError(f"Index provided must be string, got {type(index)}")
 
@@ -49,8 +49,6 @@ class DFSTransformer(Transformer):
         features_to_use = []
         X_columns_set = set(X.columns)
         for feature in self.features:
-            input_cols = [f.column_name for f in feature.base_features]
-
             # If feature is an identity feature and the column doesn't exist, skip feature
             if (
                 isinstance(feature, IdentityFeature)
@@ -59,13 +57,17 @@ class DFSTransformer(Transformer):
                 continue
 
             # If feature's required columns doesn't exist, skip feature
-            if not set(input_cols).issubset(X_columns_set):
+            input_cols = [f.get_name() for f in feature.base_features]
+            if not isinstance(feature, IdentityFeature) and not set(
+                input_cols
+            ).issubset(X_columns_set):
                 continue
 
             # If feature's transformed columns already exist, skip feature
-            if not isinstance(feature, IdentityFeature) and set(
-                feature.get_feature_names()
-            ).intersection(X_columns_set):
+            if (
+                not isinstance(feature, IdentityFeature)
+                and feature.get_name() in X_columns_set
+            ):
                 continue
 
             features_to_use.append(feature)
@@ -107,6 +109,7 @@ class DFSTransformer(Transformer):
             self._filter_features(X) if self._passed_in_features else self.features
         )
         all_identity = all([isinstance(f, IdentityFeature) for f in features_to_use])
+
         if not features_to_use or (all_identity and self._passed_in_features):
             return X_ww
         es = self._make_entity_set(X_ww)
@@ -114,5 +117,7 @@ class DFSTransformer(Transformer):
             features=features_to_use, entityset=es
         )
         typed_columns = set(X_ww.columns).intersection(set(feature_matrix.columns))
-        feature_matrix.ww.init(schema=X_ww.ww.schema.get_subset_schema(typed_columns))
+        partial_schema = X_ww.ww.schema.get_subset_schema(typed_columns)
+        partial_schema.metadata = {}
+        feature_matrix.ww.init(schema=partial_schema)
         return feature_matrix
