@@ -12,6 +12,7 @@ class ObjectiveBase(ABC):
     """Base class for all objectives."""
 
     problem_types = None
+    requires_y_true = True
 
     @property
     @classmethod
@@ -131,16 +132,19 @@ class ObjectiveBase(ABC):
         Raises:
             ValueError: If the inputs are malformed.
         """
-        if y_predicted.shape[0] != y_true.shape[0]:
-            raise ValueError(
-                "Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(
-                    len(y_predicted), len(y_true)
+        if self.requires_y_true:
+            if y_predicted.shape[0] != y_true.shape[0]:
+                raise ValueError(
+                    "Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(
+                        len(y_predicted), len(y_true)
+                    )
                 )
-            )
-        if len(y_true) == 0:
+            if len(y_true) == 0:
+                raise ValueError("Length of inputs is 0")
+            if np.isnan(y_true).any() or np.isinf(y_true).any():
+                raise ValueError("y_true contains NaN or infinity")
+        if len(y_predicted) == 0:
             raise ValueError("Length of inputs is 0")
-        if np.isnan(y_true).any() or np.isinf(y_true).any():
-            raise ValueError("y_true contains NaN or infinity")
         # y_predicted could be a 1d vector (predictions) or a 2d vector (classifier predicted probabilities)
         y_pred_flat = y_predicted.to_numpy().flatten()
         if np.isnan(y_pred_flat).any() or np.isinf(y_pred_flat).any():

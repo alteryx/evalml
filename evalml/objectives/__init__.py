@@ -43,6 +43,8 @@ from .standard_metrics import (
     RecallMacro,
     RecallMicro,
     RecallWeighted,
+    SilhouetteCoefficient,
+    AdjustedRandScore,
 )
 from .utils import (
     get_objective,
