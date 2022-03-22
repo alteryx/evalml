@@ -4502,7 +4502,11 @@ def test_search_parameters_held_automl(
             "cg": {
                 "Imputer": ["Imputer", "X", "y"],
                 "Label Encoder": ["Label Encoder", "Imputer.x", "y"],
-                "DateTime Featurizer": ["DateTime Featurizer", "Label Encoder.x", "Label Encoder.y"],
+                "DateTime Featurizer": [
+                    "DateTime Featurizer",
+                    "Label Encoder.x",
+                    "Label Encoder.y",
+                ],
                 "Decision Tree Classifier": [
                     "Decision Tree Classifier",
                     "DateTime Featurizer.x",
@@ -4531,7 +4535,9 @@ def test_search_parameters_held_automl(
             tuners._pipeline_hyperparameter_ranges["Imputer"]["numeric_impute_strategy"]
             == expected
         )
-        assert tuners._pipeline_hyperparameter_ranges["Imputer"]["categorical_impute_strategy"] == ['most_frequent']
+        assert tuners._pipeline_hyperparameter_ranges["Imputer"][
+            "categorical_impute_strategy"
+        ] == ["most_frequent"]
         # make sure that there are no set hyperparameters when we don't have defaults
         assert tuners._pipeline_hyperparameter_ranges["Label Encoder"] == {}
         assert tuners.propose()["Label Encoder"] == {}

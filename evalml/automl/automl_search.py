@@ -635,7 +635,9 @@ class AutoMLSearch:
 
         self.features = features
         if self.features is not None:
-            internal_search_parameters.update({"DFS Transformer": {"features": self.features}})
+            internal_search_parameters.update(
+                {"DFS Transformer": {"features": self.features}}
+            )
 
         self.sampler_method = sampler_method
         self.sampler_balanced_ratio = sampler_balanced_ratio
