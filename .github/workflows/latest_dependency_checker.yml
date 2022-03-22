@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
 jobs:
   update-deps:
+    if: github.repository_owner == 'alteryx'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

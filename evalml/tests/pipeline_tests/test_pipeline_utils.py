@@ -996,3 +996,65 @@ def test_make_pipeline_from_multiple_graphs_with_sampler(X_y_binary):
         combined_pipeline.component_graph.get_inputs("Random Forest Classifier")[2]
         == second_pipeline_sampler
     )
+
+
+def test_make_pipeline_from_multiple_graphs_prior_components(X_y_binary):
+    X, y = X_y_binary
+    estimator = handle_component_class("Random Forest Classifier")
+    prior_components = {"DFS Transformer": ["DFS Transformer", "X", "y"]}
+    pipeline_1 = make_pipeline(
+        X,
+        y,
+        estimator,
+        ProblemTypes.BINARY,
+        sampler_name="Undersampler",
+        use_estimator=False,
+    )
+    pipeline_2 = make_pipeline(
+        X,
+        y,
+        estimator,
+        ProblemTypes.BINARY,
+        sampler_name="Undersampler",
+        use_estimator=False,
+    )
+
+    input_pipelines = [pipeline_1, pipeline_2]
+    pipeline_1._custom_name = "First"
+    pipeline_2._custom_name = "Second"
+    sub_pipeline_names = {
+        pipeline_1.name: "First",
+        pipeline_2.name: "Second",
+    }
+    combined_pipeline = _make_pipeline_from_multiple_graphs(
+        input_pipelines=input_pipelines,
+        estimator=estimator,
+        problem_type=ProblemTypes.BINARY,
+        prior_components=prior_components,
+        sub_pipeline_names=sub_pipeline_names,
+    )
+
+    assert (
+        combined_pipeline.component_graph.get_inputs("First Pipeline - Imputer")[0]
+        == "DFS Transformer.x"
+    )
+    assert (
+        combined_pipeline.component_graph.get_inputs("Second Pipeline - Imputer")[0]
+        == "DFS Transformer.x"
+    )
+
+
+def test_make_pipeline_features_and_dfs(X_y_binary):
+    X, y = X_y_binary
+    estimator = handle_component_class("Random Forest Classifier")
+    features = True
+    pipeline = make_pipeline(
+        X,
+        y,
+        estimator,
+        ProblemTypes.BINARY,
+        sampler_name="Undersampler",
+        features=features,
+    )
+
+    assert "DFS Transformer" == pipeline.component_graph.compute_order[0]
