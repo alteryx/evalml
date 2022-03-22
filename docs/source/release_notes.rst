@@ -8,6 +8,7 @@
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`
     * Changes
+        * Update maintainers to add Frank :pr:`3382`
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
     * Documentation Changes
     * Testing Changes

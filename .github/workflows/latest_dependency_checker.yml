@@ -32,4 +32,4 @@ jobs:
           delete-branch: true
           base: main
           assignees: machineFL
-          reviewers: machineAYX, dsherry, jeremyliweishih, freddyaboulton, bchen1116, chukarsten, ParthivNaresh, eccabay, christopherbunn
+          reviewers: machineAYX, dsherry, jeremyliweishih, freddyaboulton, bchen1116, chukarsten, ParthivNaresh, eccabay, christopherbunn, fjlanasa
