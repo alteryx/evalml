@@ -5,6 +5,7 @@ from itertools import product
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import cloudpickle
+import featuretools as ft
 import numpy as np
 import pandas as pd
 import pytest
@@ -4532,3 +4533,61 @@ def test_search_parameters_held_automl(
         # make sure that there are no set hyperparameters when we don't have defaults
         assert tuners._pipeline_hyperparameter_ranges["Label Encoder"] == {}
         assert tuners.propose()["Label Encoder"] == {}
+
+
+@pytest.mark.parametrize(
+    "automl_algorithm",
+    ["iterative", "default"],
+)
+@pytest.mark.parametrize(
+    "features",
+    ["with_features_provided", "without_features_provided"],
+)
+def test_automl_accepts_features(
+    automl_algorithm,
+    features,
+    X_y_binary,
+    AutoMLTestEnv,
+):
+    X, y = X_y_binary
+    X_pd = pd.DataFrame(X)
+    X_pd.columns = X_pd.columns.astype(str)
+    X_transform = X_pd.iloc[len(X) // 3 :]
+
+    if features == "with_features_provided":
+        es = ft.EntitySet()
+        es = es.add_dataframe(
+            dataframe_name="X", dataframe=X_transform, index="index", make_index=True
+        )
+        _, features = ft.dfs(
+            entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
+        )
+    else:
+        features = None
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        optimize_thresholds=False,
+        max_batches=3,
+        features=features,
+        automl_algorithm=automl_algorithm,
+    )
+
+    assert automl.automl_algorithm.features == features
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+
+    if features:
+        assert all(
+            [
+                p["DFS Transformer"]["features"] == features
+                for p in automl.full_rankings["parameters"][1:]
+            ]
+        )
+    else:
+        assert all(
+            ["DFS Transformer" not in p for p in automl.full_rankings["parameters"][1:]]
+        )

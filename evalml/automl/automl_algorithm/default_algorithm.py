@@ -68,6 +68,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         num_long_pipelines_per_batch (int): number of pipelines per batch for each top n pipeline through long mode.
         allow_long_running_models (bool): Whether or not to allow longer-running models for large multiclass problems. If False and no pipelines, component graphs, or model families are provided,
             AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass targets and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
+        features (list)[FeatureBase]: List of features to run DFS on in AutoML pipelines. Defaults to None. Features will only be computed if the columns used by the feature exist in the input and if the feature has not been computed yet.
         verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
     """
 
@@ -86,6 +87,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         num_long_explore_pipelines=50,
         num_long_pipelines_per_batch=10,
         allow_long_running_models=False,
+        features=None,
         verbose=False,
     ):
         super().__init__(
@@ -114,6 +116,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self._X_with_cat_cols = None
         self._X_without_cat_cols = None
         self._ensembling = True if not is_time_series(self.problem_type) else False
+        self.features = features
+
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
         else:
@@ -185,6 +189,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 known_in_advance=self._pipeline_parameters.get("pipeline", {}).get(
                     "known_in_advance", None
                 ),
+                features=self.features,
             )
             for estimator in estimators
         ]
@@ -316,6 +321,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     known_in_advance=self.search_parameters.get("pipeline", {}).get(
                         "known_in_advance", None
                     ),
+                    features=self.features,
                 )
                 for estimator in estimators
             ]
@@ -473,7 +479,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 extra_components_after=[SelectColumns],
                 use_estimator=False,
             )
-
+            prior_components = (
+                {"DFS Transformer": ["DFS Transformer", "X", "y"]}
+                if self.features
+                else {}
+            )
             input_pipelines = [numeric_pipeline, categorical_pipeline]
             sub_pipeline_names = {
                 numeric_pipeline.name: "Numeric",
@@ -486,6 +496,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 pipeline_name=pipeline_name,
                 random_seed=self.random_seed,
                 sub_pipeline_names=sub_pipeline_names,
+                prior_components=prior_components,
             )
         elif self._selected_cat_cols and not self._selected_cols:
             categorical_pipeline_parameters = {
@@ -499,6 +510,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 sampler_name=self.sampler_name,
                 parameters=categorical_pipeline_parameters,
                 extra_components_before=[SelectColumns],
+                features=self.features,
             )
             return categorical_pipeline
         else:
@@ -513,5 +525,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 sampler_name=self.sampler_name,
                 parameters=numeric_pipeline_parameters,
                 extra_components_after=[SelectColumns],
+                features=self.features,
             )
             return numeric_pipeline

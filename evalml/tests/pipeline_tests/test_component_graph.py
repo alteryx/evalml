@@ -3,6 +3,7 @@ import warnings
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
+import featuretools as ft
 import numpy as np
 import pandas as pd
 import pytest
@@ -13,6 +14,7 @@ from pandas.testing import (
 )
 from woodwork.logical_types import Double, Integer
 
+from evalml.demos import load_diabetes
 from evalml.exceptions import (
     MethodPropertyNotFoundError,
     MissingComponentError,
@@ -2523,3 +2525,45 @@ def test_component_graph_cache():
     cg_no_cache.fit(X2, y)
     preds_cg_no = cg_no_cache.predict(X2)
     assert not (preds2 == preds_cg_no).all()
+
+
+@patch("evalml.pipelines.components.transformers.preprocessing.featuretools.dfs")
+@patch(
+    "evalml.pipelines.components.transformers.preprocessing.featuretools.calculate_feature_matrix"
+)
+def test_component_graph_handles_engineered_features(
+    mock_calculate_feature_matrix, mock_dfs
+):
+    X, y = load_diabetes()
+    del X.ww
+
+    X_fit = X.iloc[: X.shape[0] // 2]
+    X_fit = X_fit.reset_index()
+    X_fit.ww.init(name="X", index="index")
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X", dataframe=X_fit, index="index", make_index=True
+    )
+    feature_matrix, _ = ft.dfs(
+        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
+    )
+
+    graph = {"DFS Transformer": ["DFS Transformer", "X", "y"]}
+    component_graph = ComponentGraph(graph)
+    component_graph.instantiate()
+    component_graph.fit(feature_matrix, y)
+
+    base_features = [
+        c
+        for c in X_fit.ww.columns
+        if X_fit.ww[c].ww.origin == "base" or X_fit.ww[c].ww.origin is None
+    ]
+    feature_matrix_base_only = X_fit.ww[base_features]
+    feature_matrix_base_only = feature_matrix_base_only.ww.drop("index")
+
+    component_graph.transform(X_fit.drop("index", axis=1))
+    assert (
+        component_graph._input_types.columns.keys()
+        == feature_matrix_base_only.ww.schema.columns.keys()
+    )

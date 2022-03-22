@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+import featuretools as ft
 import numpy as np
 import pandas as pd
 import pytest
@@ -944,6 +945,55 @@ def test_iterative_algorithm_allow_long_running_models_next_batch(
         next_batch = algo.next_batch()
         for pipeline in next_batch:
             assert all([m not in pipeline.name for m in models_missing])
+        scores = -np.arange(0, len(next_batch))
+        for score, pipeline in zip(scores, next_batch):
+            algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
+
+@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
+def test_iterative_algorithm_passes_features(
+    mock_opt_tell, X_y_binary, dummy_binary_pipeline_classes
+):
+    X, y = X_y_binary
+    X_pd = pd.DataFrame(X)
+    X_pd.columns = X_pd.columns.astype(str)
+    X_transform = X_pd.iloc[len(X) // 3 :]
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X", dataframe=X_transform, index="index", make_index=True
+    )
+    _, features = ft.dfs(
+        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
+    )
+
+    algo = IterativeAlgorithm(
+        X=X, y=y, problem_type="binary", ensembling=False, features=features
+    )
+    next_batch = algo.next_batch()
+    assert all(
+        ["DFS Transformer" in p.component_graph.compute_order for p in next_batch]
+    )
+    assert all(
+        [p.parameters["DFS Transformer"]["features"] == features for p in next_batch]
+    )
+
+    # the "best" score will be the 1st dummy pipeline
+    scores = np.arange(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
+    for i in range(1, 3):
+        next_batch = algo.next_batch()
+        assert all(
+            ["DFS Transformer" in p.component_graph.compute_order for p in next_batch]
+        )
+        assert all(
+            [
+                p.parameters["DFS Transformer"]["features"] == features
+                for p in next_batch
+            ]
+        )
         scores = -np.arange(0, len(next_batch))
         for score, pipeline in zip(scores, next_batch):
             algo.add_result(score, pipeline, {"id": algo.pipeline_number})
