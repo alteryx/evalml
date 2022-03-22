@@ -968,7 +968,7 @@ def test_iterative_algorithm_passes_features(
     )
 
     algo = IterativeAlgorithm(
-        X=X, y=y, problem_type="binary", ensembling=False, features=features
+        X=X, y=y, problem_type="binary", search_parameters={"DFS Transformer": {"features": features}}, ensembling=False, features=features
     )
     next_batch = algo.next_batch()
     assert all(

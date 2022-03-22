@@ -4502,16 +4502,17 @@ def test_search_parameters_held_automl(
             "cg": {
                 "Imputer": ["Imputer", "X", "y"],
                 "Label Encoder": ["Label Encoder", "Imputer.x", "y"],
-                "TS": ["DateTime Featurizer", "Label Encoder.x", "Label Encoder.y"],
+                "DateTime Featurizer": ["DateTime Featurizer", "Label Encoder.x", "Label Encoder.y"],
                 "Decision Tree Classifier": [
                     "Decision Tree Classifier",
-                    "TS.x",
+                    "DateTime Featurizer.x",
                     "Label Encoder.y",
                 ],
             }
         }
     search_parameters = {
         "Imputer": {"numeric_impute_strategy": parameter},
+        "DateTime Featurizer": {"features_to_extract": ["month", "day_of_week"]},
         "Label Encoder": {"positive_label": 0},
     }
     aml = AutoMLSearch(
@@ -4530,9 +4531,12 @@ def test_search_parameters_held_automl(
             tuners._pipeline_hyperparameter_ranges["Imputer"]["numeric_impute_strategy"]
             == expected
         )
+        assert tuners._pipeline_hyperparameter_ranges["Imputer"]["categorical_impute_strategy"] == ['most_frequent']
         # make sure that there are no set hyperparameters when we don't have defaults
         assert tuners._pipeline_hyperparameter_ranges["Label Encoder"] == {}
         assert tuners.propose()["Label Encoder"] == {}
+        if problem_type == "time series binary":
+            assert tuners._pipeline_hyperparameter_ranges["DateTime Featurizer"] == {}
 
 
 @pytest.mark.parametrize(

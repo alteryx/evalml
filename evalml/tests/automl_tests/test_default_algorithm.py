@@ -749,6 +749,7 @@ def test_default_algorithm_accept_features(mock_get_names, X_y_binary, split):
         y,
         problem_type,
         sampler_name,
+        search_parameters={"DFS Transformer": {"features": features}},
         num_long_explore_pipelines=1,
         num_long_pipelines_per_batch=1,
         features=features,

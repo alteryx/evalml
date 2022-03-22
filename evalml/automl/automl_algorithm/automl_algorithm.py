@@ -125,8 +125,6 @@ class AutoMLAlgorithm(ABC):
                     component_parameters["number_features"] = self.number_features
             except AttributeError:
                 continue
-            if name == "DFS Transformer" and self.features:
-                component_parameters["features"] = self.features
             if "pipeline" in self.search_parameters:
                 for param_name, value in self.search_parameters["pipeline"].items():
                     if param_name in init_params:
