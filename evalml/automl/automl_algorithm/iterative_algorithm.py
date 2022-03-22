@@ -165,7 +165,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         self.problem_type,
                         parameters=self._pipeline_parameters,
                         sampler_name=self.sampler_name,
-                        known_in_advance=self._pipeline_params.get("pipeline", {}).get(
+                        known_in_advance=self._pipeline_parameters.get("pipeline", {}).get(
                             "known_in_advance", None
                         ),
                         features=self.features,
