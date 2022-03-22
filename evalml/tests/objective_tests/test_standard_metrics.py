@@ -708,9 +708,9 @@ def test_silhouette_coefficient():
     obj = SilhouetteCoefficient()
 
     X = pd.DataFrame({"f1": [1, 1, 1, 3, 3, 3], "f2": [1, 1, 1, 4, 4, 4]})
-    pred_good = np.array([0, 0, 0, 1, 1, 1])
-    pred_wrong = np.array([0, 1, 0, 1, 0, 1])
-    pred_bad = np.array([0, 0, 0, 0, 0, 0])
+    pred_good = np.array([0, 0, 0, 1, 1, 1])  # What we would consider a "good" cluster
+    pred_wrong = np.array([0, 1, 0, 1, 0, 1])  # Some values off
+    pred_bad = np.array([0, 0, 0, 0, 0, 0])  # All points in the same cluster
 
     assert obj.score(y_true=None, y_predicted=pred_good, X=X) == 1.0
     np.testing.assert_almost_equal(
@@ -723,12 +723,14 @@ def test_adjusted_rand_score():
     obj = AdjustedRandScore()
 
     s1_actual = np.array([0, 1, 0, 1, 0, 1])
-    s1_pred_identical = np.array([0, 1, 0, 1, 0, 1])
-    s1_pred_opposite = np.array([1, 0, 1, 0, 1, 0])
+    s1_pred_identical = np.array([0, 1, 0, 1, 0, 1])  # Clusters are identical
+    s1_pred_opposite = np.array(
+        [1, 0, 1, 0, 1, 0]
+    )  # Groupings are idential, opposite labels
 
     s2_actual = np.array([1, 0, 1, 0, 1])
-    s2_pred = np.array([1, 0, 1, 0, 0])
-    s2_flat = np.array([0, 0, 0, 0, 0])
+    s2_pred = np.array([1, 0, 1, 0, 0])  # One incorrect value
+    s2_flat = np.array([0, 0, 0, 0, 0])  # All points in the same cluster
 
     assert obj.score(s1_actual, s1_pred_identical) == 1.0
     assert obj.score(s1_actual, s1_pred_opposite) == 1.0

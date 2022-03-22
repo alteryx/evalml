@@ -915,14 +915,13 @@ class SilhouetteCoefficient(UnsupervisedLearningObjective):
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Objective function for silhouette coefficient for clustering."""
-        try:
-            return metrics.silhouette_score(X, y_predicted, metric="euclidean")
-        except ValueError:
+        if len(set(y_predicted)) == 1:
             return 0
+        return metrics.silhouette_score(X, y_predicted, metric="euclidean")
 
 
 class AdjustedRandScore(UnsupervisedLearningObjective):
-    """Rand Score for clustering, adjusted for chance. Does require ground truth values."""
+    """Rand Score for clustering, adjusted for chance. Requires ground truth values."""
 
     name = "Adjusted Rand Score"
     greater_is_better = True
