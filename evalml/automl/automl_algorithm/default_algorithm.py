@@ -151,7 +151,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         ]
         return estimators
 
-    def _create_pipelines_with_params(self, pipelines, parameters={}):
+    def _init_pipelines_with_starter_params(self, pipelines):
         next_batch = []
         for pipeline in pipelines:
             self._create_tuner(pipeline)
@@ -194,7 +194,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             for estimator in estimators
         ]
 
-        pipelines = self._create_pipelines_with_params(pipelines, parameters={})
+        pipelines = self._init_pipelines_with_starter_params(pipelines)
         return pipelines
 
     def _find_component_names(self, original_name, pipeline):

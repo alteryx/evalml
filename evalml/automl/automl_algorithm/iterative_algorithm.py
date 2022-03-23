@@ -284,8 +284,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         next_batch = []
         if self._batch_number == 0:
             for pipeline in self.allowed_pipelines:
-                if pipeline.name not in self._tuners:
-                    self._create_tuner(pipeline)
                 starting_parameters = self._tuners[
                     pipeline.name
                 ].get_starting_parameters()
