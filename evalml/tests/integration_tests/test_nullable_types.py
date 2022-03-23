@@ -1,6 +1,9 @@
+import pandas as pd
 import pytest
 
 from evalml.automl import AutoMLSearch
+from evalml.pipelines import RegressionPipeline
+from evalml.pipelines.components import EmailFeaturizer, Imputer, URLFeaturizer
 from evalml.pipelines.components.transformers import ReplaceNullableTypes
 from evalml.problem_types import ProblemTypes, is_time_series
 
@@ -76,3 +79,29 @@ def test_nullable_types_builds_pipelines(
             assert all([ReplaceNullableTypes.name in pl for pl in pipelines])
     else:
         assert not any([ReplaceNullableTypes.name in pl for pl in pipelines])
+
+
+def test_imputer_can_impute_features_generated_from_null_email_url_features():
+    X = pd.DataFrame(
+        {
+            "email": ["me@email.com", "foo@bar.org", "baz@foo.gov", None],
+            "url": ["evalml.org", "woodwork.gov", None, "compose.edu"],
+            "number": [1, None, 3, 4],
+            "another number": [7, 8, 9, 10],
+            "categorical": ["boo", "bar", "baz", "go"],
+        }
+    )
+    X.ww.init(
+        logical_types={
+            "email": "EmailAddress",
+            "url": "URL",
+            "categorical": "categorical",
+        }
+    )
+    y = pd.Series([1, 2, 1, 3])
+
+    pl = RegressionPipeline([EmailFeaturizer, URLFeaturizer, Imputer])
+
+    pl.fit(X, y)
+    X_t = pl.transform(X, y)
+    assert not X_t.isna().any(axis=None)
