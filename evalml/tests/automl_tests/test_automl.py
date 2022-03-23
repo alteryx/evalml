@@ -4599,5 +4599,4 @@ def test_automl_accepts_features(
         )
     else:
         assert all(
-            ["DFS Transformer" not in p for p in automl.full_rankings["parameters"][1:]]
-        )
+            ["DFS Transformer" not in p for p in automl.full_rankings["parameters"][1:]])
