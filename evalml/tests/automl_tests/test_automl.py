@@ -2117,7 +2117,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
             }
         },
     )
-    automl.automl_algorithm._set_allowed_pipelines = ([DummyPipeline(parameters)])
+    automl.automl_algorithm._set_allowed_pipelines = [DummyPipeline(parameters)]
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
         automl.search()
         assert (
