@@ -6,11 +6,15 @@
         * Add support for oversampling in time series classification problems :pr:`3387`
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`
+        * Fixed bug where Email/URL features with missing values would cause the imputer to error out :pr:`3388`
     * Changes
+        * Update maintainers to add Frank :pr:`3382`
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
     * Documentation Changes
         * Added section of AutoML Algorithms :pr:`3394`
+        * Updated broken links and automated broken link detection :pr:`3398`
     * Testing Changes
+        * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`3395`)
 
 .. warning::
 
@@ -63,6 +67,7 @@
         * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
         * Updated ``AutoMLSearch`` to use ``DefaultAlgorithm`` as the default automl algorithm :pr:`3261`, :pr:`3304`
         * Added more specific data check errors to ``DatetimeFormatDataCheck`` :pr:`3288`
+        * Added ``features`` as a parameter for ``AutoMLSearch`` and add ``DFSTransformer`` to pipelines when ``features`` are present :pr:`3309`
     * Fixes
         * Updated the binary classification pipeline's ``optimize_thresholds`` method to use Nelder-Mead :pr:`3280`
         * Fixed bug where feature importance on time series pipelines only showed 0 for time index :pr:`3285`

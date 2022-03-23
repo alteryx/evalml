@@ -275,6 +275,10 @@ def test_dfs_missing_feature_column(mock_dfs, X_y_binary):
     assert "1" not in list(X_t.columns)
     assert "ABSOLUTE(1)" not in list(X_t.columns)
 
+    for col in X_pd.columns:
+        assert col in list(X_t.columns)
+        assert f"ABSOLUTE({col})" in list(X_t.columns)
+
 
 def test_transform_identity_and_non_identity():
     X, y = load_diabetes()

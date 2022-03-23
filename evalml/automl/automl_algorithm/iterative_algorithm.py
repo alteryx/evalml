@@ -62,6 +62,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         _estimator_family_order (list(ModelFamily) or None): specify the sort order for the first batch. Defaults to None, which uses _ESTIMATOR_FAMILY_ORDER.
         allow_long_running_models (bool): Whether or not to allow longer-running models for large multiclass problems. If False and no pipelines, component graphs, or model families are provided,
             AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass targets and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
+        features (list)[FeatureBase]: List of features to run DFS on in AutoML pipelines. Defaults to None. Features will only be computed if the columns used by the feature exist in the input and if the feature itself is not in input.
         verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
     """
 
@@ -86,6 +87,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         custom_hyperparameters=None,
         _estimator_family_order=None,
         allow_long_running_models=False,
+        features=None,
         verbose=False,
     ):
         self.X = infer_feature_types(X)
@@ -115,6 +117,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             _estimator_family_order or _ESTIMATOR_FAMILY_ORDER
         )
 
+        self.features = features
         self.allowed_component_graphs = allowed_component_graphs
         self._set_additional_pipeline_params()
         self._create_pipelines()
@@ -182,6 +185,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         known_in_advance=self._pipeline_params.get("pipeline", {}).get(
                             "known_in_advance", None
                         ),
+                        features=self.features,
                     )
                     for estimator in allowed_estimators
                 ]
@@ -422,6 +426,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 component_parameters["n_jobs"] = self.n_jobs
             if "number_features" in init_params:
                 component_parameters["number_features"] = self.number_features
+            if name == "DFS Transformer" and self.features:
+                component_parameters["features"] = self.features
             names_to_check = [
                 "Drop Columns Transformer",
                 "Known In Advance Pipeline - Select Columns Transformer",
