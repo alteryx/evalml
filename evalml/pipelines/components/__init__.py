@@ -46,6 +46,7 @@ from .transformers import (
     SimpleImputer,
     Imputer,
     StandardScaler,
+    MinMaxScaler,
     FeatureSelector,
     DropColumns,
     DropNullColumns,
