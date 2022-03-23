@@ -11,6 +11,7 @@
         * Update maintainers to add Frank :pr:`3382`
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
     * Documentation Changes
+        * Updated broken links and automated broken link detection :pr:`3398`
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`3395`)
 
