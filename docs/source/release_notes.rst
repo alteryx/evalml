@@ -6,6 +6,7 @@
         * Added clustering as a problem type :pr:`3368`
         * Added clustering models ``DBSCAN``, ``KMeans``, ``KModes``, and ``KPrototypes`` :pr:`3379`
         * Added clustering objectives ``Silhouette Coefficient`` and ``Adjusted Rand Score`` :pr:`3396`
+        * Added ``MinMaxScaler`` for normalization in clustering problems :pr:`3399`
         * Add support for oversampling in time series classification problems :pr:`3387`
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`
