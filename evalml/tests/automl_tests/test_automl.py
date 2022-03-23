@@ -1939,9 +1939,7 @@ def test_percent_better_than_baseline_in_rankings(
         text_in_ensembling=False,
         search_parameters=pipeline_parameters,
     )
-    automl.automl_algorithm.allowed_pipelines = allowed_pipelines
-    for pipeline in allowed_pipelines:
-        automl.automl_algorithm._create_tuner(pipeline)
+    automl.automl_algorithm._set_allowed_pipelines(allowed_pipelines)
     with patch(
         baseline_pipeline_class + ".score",
         return_value={objective.name: baseline_score},
@@ -2119,8 +2117,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
             }
         },
     )
-    automl.automl_algorithm.allowed_pipelines = [DummyPipeline(parameters)]
-    automl.automl_algorithm._create_tuner(DummyPipeline(parameters))
+    automl.automl_algorithm._set_allowed_pipelines = ([DummyPipeline(parameters)])
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
         automl.search()
         assert (
@@ -2267,8 +2264,7 @@ def test_percent_better_than_baseline_scores_different_folds(
         text_in_ensembling=False,
         search_parameters={},
     )
-    automl.automl_algorithm.allowed_pipelines = [DummyPipeline({})]
-    automl.automl_algorithm._create_tuner(DummyPipeline({}))
+    automl.automl_algorithm._set_allowed_pipelines([DummyPipeline({})])
 
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 1, "F1": 1}):
