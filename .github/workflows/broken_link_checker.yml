@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - name: Check ${{ matrix }}
+      - name: Check for broken links
         uses: ruzickap/action-my-broken-link-checker@v2
         with:
           url: https://evalml.alteryx.com/en/latest/index.html
