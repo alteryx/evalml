@@ -947,13 +947,13 @@ def test_automl_search_ratio_overrides_sampler_ratio(
     if has_minimal_dependencies and sampler == "Oversampler":
         pytest.skip("Skipping test with minimal dependencies")
     X, y = mock_imbalanced_data_X_y("binary", "none", "small")
-    pipeline_parameters = {sampler: {"sampling_ratio": sampling_ratio}}
+    search_parameters = {sampler: {"sampling_ratio": sampling_ratio}}
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type="binary",
         sampler_method=sampler,
-        pipeline_parameters=pipeline_parameters,
+        search_parameters=search_parameters,
         sampler_balanced_ratio=0.5,
     )
     # make sure that our sampling_balanced_ratio of 0.5 overrides the pipeline params passed in
@@ -998,14 +998,14 @@ def test_automl_search_dictionary_undersampler(
         y = pd.Series([0] * 900 + [1] * 300)
     else:
         y = pd.Series([0] * 900 + [1] * 150 + [2] * 150)
-    pipeline_parameters = {"Undersampler": {"sampling_ratio_dict": sampling_ratio_dict}}
+    search_parameters = {"Undersampler": {"sampling_ratio_dict": sampling_ratio_dict}}
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type=problem_type,
         optimize_thresholds=False,
         sampler_method="Undersampler",
-        pipeline_parameters=pipeline_parameters,
+        search_parameters=search_parameters,
         max_batches=3,
     )
     # check that the sampling dict got set properly
@@ -1054,14 +1054,14 @@ def test_automl_search_dictionary_oversampler(
     else:
         y = pd.Series([0] * 900 + [1] * 150 + [2] * 150)
 
-    pipeline_parameters = {"Oversampler": {"sampling_ratio_dict": sampling_ratio_dict}}
+    search_parameters = {"Oversampler": {"sampling_ratio_dict": sampling_ratio_dict}}
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type=problem_type,
         sampler_method="Oversampler",
         optimize_thresholds=False,
-        pipeline_parameters=pipeline_parameters,
+        search_parameters=search_parameters,
         max_batches=3,
     )
     # check that the sampling dict got set properly
@@ -1101,7 +1101,7 @@ def test_automl_search_sampler_dictionary_keys(
     # split this from the undersampler since the dictionaries are formatted differently
     X = pd.DataFrame({"a": [i for i in range(1200)], "b": [i % 3 for i in range(1200)]})
     y = pd.Series(["majority"] * 900 + ["minority"] * 300)
-    pipeline_parameters = {sampler: {"sampling_ratio_dict": sampling_ratio_dict}}
+    search_parameters = {sampler: {"sampling_ratio_dict": sampling_ratio_dict}}
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -1109,7 +1109,7 @@ def test_automl_search_sampler_dictionary_keys(
         error_callback=raise_error_callback,
         sampler_method=sampler,
         optimize_thresholds=False,
-        pipeline_parameters=pipeline_parameters,
+        search_parameters=search_parameters,
         max_batches=3,
     )
     if errors:
@@ -1128,14 +1128,14 @@ def test_automl_search_sampler_k_neighbors_param(sampler, has_minimal_dependenci
     # split this from the undersampler since the dictionaries are formatted differently
     X = pd.DataFrame({"a": [i for i in range(1200)], "b": [i % 3 for i in range(1200)]})
     y = pd.Series(["majority"] * 900 + ["minority"] * 300)
-    pipeline_parameters = {sampler: {"k_neighbors_default": 2}}
+    search_parameters = {sampler: {"k_neighbors_default": 2}}
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type="binary",
         sampler_method=sampler,
         sampler_balanced_ratio=0.5,
-        pipeline_parameters=pipeline_parameters,
+        search_parameters=search_parameters,
     )
     for pipeline in automl.allowed_pipelines:
         seen_under = False
@@ -1161,14 +1161,14 @@ def test_automl_search_sampler_k_neighbors_no_error(
         y_train=y,
         problem_type="binary",
         max_iterations=2,
-        pipeline_parameters=parameters,
+        search_parameters=parameters,
     )
     # check that the calling this doesn't fail
     automl.search()
 
 
 @pytest.mark.parametrize(
-    "pipeline_parameters,set_values",
+    "search_parameters,set_values",
     [
         ({"Logistic Regression Classifier": {"penalty": "l1"}}, {}),
         (
@@ -1181,9 +1181,9 @@ def test_automl_search_sampler_k_neighbors_no_error(
     ],
 )
 def test_time_series_pipeline_parameter_warnings(
-    pipeline_parameters, set_values, AutoMLTestEnv, ts_data_binary
+    search_parameters, set_values, AutoMLTestEnv, ts_data_binary
 ):
-    pipeline_parameters.update(
+    search_parameters.update(
         {
             "pipeline": {
                 "time_index": "date",
@@ -1210,7 +1210,7 @@ def test_time_series_pipeline_parameter_warnings(
             problem_type="time series binary",
             max_batches=1,
             n_jobs=1,
-            pipeline_parameters=pipeline_parameters,
+            search_parameters=search_parameters,
             problem_configuration=configuration,
             automl_algorithm="iterative",
         )
