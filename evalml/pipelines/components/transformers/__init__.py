@@ -11,7 +11,7 @@ from .feature_selection import (
     RFRegressorSelectFromModel,
 )
 from .imputers import PerColumnImputer, SimpleImputer, Imputer, TargetImputer
-from .scalers import StandardScaler
+from .scalers import StandardScaler, MinMaxScaler
 from .samplers import (
     Undersampler,
     Oversampler,

@@ -6,6 +6,7 @@ from .components import (
     SimpleImputer,
     PerColumnImputer,
     StandardScaler,
+    MinMaxScaler,
     Transformer,
     LightGBMClassifier,
     LightGBMRegressor,

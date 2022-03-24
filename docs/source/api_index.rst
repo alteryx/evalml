@@ -169,6 +169,7 @@ Transformers are components that take in data as input and output transformed da
     evalml.pipelines.components.Imputer
     evalml.pipelines.components.SimpleImputer
     evalml.pipelines.components.StandardScaler
+    evalml.pipelines.components.MinMaxScaler
     evalml.pipelines.components.RFRegressorSelectFromModel
     evalml.pipelines.components.RFClassifierSelectFromModel
     evalml.pipelines.components.DropNullColumns
@@ -229,6 +230,19 @@ Regressors are components that output a predicted target value.
     evalml.pipelines.components.LightGBMRegressor
     evalml.pipelines.components.SVMRegressor
     evalml.pipelines.components.VowpalWabbitRegressor
+
+
+Clusterers
+-----------
+
+Clusterers are components that output a predicted grouping without any ground truth knowledge.
+
+.. autoapisummary::
+
+    evalml.pipelines.components.DBSCANClusterer
+    evalml.pipelines.components.KMeansClusterer
+    evalml.pipelines.components.KModesClusterer
+    evalml.pipelines.components.KPrototypesClusterer
 
 
 Model Understanding
