@@ -171,8 +171,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                             "pipeline", {}
                         ).get("known_in_advance", None),
                         features=self.features,
+                        include_log_transformer=include_log
                     )
                     for estimator in allowed_estimators
+                    for include_log in [True, False]
                 ]
             self._catch_warnings(w)
         else:

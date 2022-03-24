@@ -202,8 +202,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     "known_in_advance", None
                 ),
                 features=self.features,
+                include_log_transformer=include_log,
             )
             for estimator in estimators
+            for include_log in [True, False]
         ]
 
         pipelines = self._init_pipelines_with_starter_params(pipelines)
@@ -339,12 +341,16 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                         "known_in_advance", None
                     ),
                     features=self.features,
+                    include_log_transformer=include_log,
                 )
                 for estimator in estimators
+                for include_log in [True, False]
             ]
         else:
             pipelines = [
-                self._make_split_pipeline(estimator) for estimator in estimators
+                self._make_split_pipeline(estimator, include_log=include_log)
+                for estimator in estimators
+                for include_log in [True, False]
             ]
         return pipelines
 
@@ -486,7 +492,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 }
             )
 
-    def _make_split_pipeline(self, estimator, pipeline_name=None):
+    def _make_split_pipeline(self, estimator, pipeline_name=None, include_log=True):
         if self._X_with_cat_cols is None or self._X_without_cat_cols is None:
             self._X_without_cat_cols = self.X.ww.drop(self._selected_cat_cols)
             self._X_with_cat_cols = self.X.ww[self._selected_cat_cols]
@@ -526,6 +532,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 extra_components_before=[SelectByType],
                 extra_components_after=[SelectColumns],
                 use_estimator=False,
+                include_log_transformer=include_log
             )
             prior_components = (
                 {"DFS Transformer": ["DFS Transformer", "X", "y"]}
@@ -559,6 +566,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 parameters=categorical_pipeline_parameters,
                 extra_components_before=[SelectColumns],
                 features=self.features,
+                include_log_transformer=include_log
             )
             return categorical_pipeline
         else:
@@ -574,5 +582,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 parameters=numeric_pipeline_parameters,
                 extra_components_after=[SelectColumns],
                 features=self.features,
+                include_log_transformer=include_log
             )
             return numeric_pipeline

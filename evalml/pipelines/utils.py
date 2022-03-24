@@ -61,20 +61,21 @@ from evalml.problem_types import (
     handle_problem_types,
     is_classification,
     is_time_series,
+    is_regression
 )
 from evalml.utils import import_or_raise, infer_feature_types
 
 logger = logging.getLogger(__name__)
 
 
-def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None):
+def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True):
     component = []
     if is_classification(problem_type):
         component.append(LabelEncoder)
     return component
 
 
-def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
+def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True):
     component = []
     non_index_unknown = X.ww.select(exclude=["index", "unknown"])
     all_null_cols = non_index_unknown.columns[non_index_unknown.isnull().all()]
@@ -83,7 +84,7 @@ def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
     return component
 
 
-def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
+def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True):
     component = []
     all_nullable_cols = X.ww.select(
         ["IntegerNullable", "AgeNullable", "BooleanNullable"], return_schema=True
@@ -101,7 +102,7 @@ def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
     return component
 
 
-def _get_drop_index_unknown(X, y, problem_type, estimator_class, sampler_name=None):
+def _get_drop_index_unknown(X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True):
     component = []
     index_and_unknown_columns = list(
         X.ww.select(["index", "unknown"], return_schema=True).columns
@@ -111,7 +112,7 @@ def _get_drop_index_unknown(X, y, problem_type, estimator_class, sampler_name=No
     return component
 
 
-def _get_url_email(X, y, problem_type, estimator_class, sampler_name=None):
+def _get_url_email(X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True):
     components = []
     email_columns = list(X.ww.select("EmailAddress", return_schema=True).columns)
     if len(email_columns) > 0:
@@ -124,7 +125,7 @@ def _get_url_email(X, y, problem_type, estimator_class, sampler_name=None):
     return components
 
 
-def _get_datetime(X, y, problem_type, estimator_class, sampler_name=None):
+def _get_datetime(X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True):
     components = []
     datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
 
@@ -137,7 +138,7 @@ def _get_datetime(X, y, problem_type, estimator_class, sampler_name=None):
     return components
 
 
-def _get_natural_language(X, y, problem_type, estimator_class, sampler_name=None):
+def _get_natural_language(X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True):
     components = []
     text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
     if len(text_columns) > 0:
@@ -145,7 +146,7 @@ def _get_natural_language(X, y, problem_type, estimator_class, sampler_name=None
     return components
 
 
-def _get_imputer(X, y, problem_type, estimator_class, sampler_name=None):
+def _get_imputer(X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True):
     components = []
 
     input_logical_types = {type(lt) for lt in X.ww.logical_types.values()}
@@ -172,7 +173,7 @@ def _get_imputer(X, y, problem_type, estimator_class, sampler_name=None):
     return components
 
 
-def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
+def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True):
     components = []
 
     # The URL and EmailAddress Featurizers will create categorical columns
@@ -189,7 +190,7 @@ def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
     return components
 
 
-def _get_sampler(X, y, problem_type, estimator_class, sampler_name=None):
+def _get_sampler(X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True):
     components = []
 
     sampler_components = {
@@ -210,14 +211,14 @@ def _get_sampler(X, y, problem_type, estimator_class, sampler_name=None):
     return components
 
 
-def _get_standard_scaler(X, y, problem_type, estimator_class, sampler_name=None):
+def _get_standard_scaler(X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True):
     components = []
     if estimator_class and estimator_class.model_family == ModelFamily.LINEAR_MODEL:
         components.append(StandardScaler)
     return components
 
 
-def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_name=None):
+def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True):
     components = []
     if is_time_series(problem_type):
         components.append(TimeSeriesFeaturizer)
@@ -225,7 +226,7 @@ def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_nam
 
 
 def _get_drop_nan_rows_transformer(
-    X, y, problem_type, estimator_class, sampler_name=None
+    X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True
 ):
     components = []
     if is_time_series(problem_type) and (
@@ -235,8 +236,15 @@ def _get_drop_nan_rows_transformer(
     return components
 
 
+def _get_log_transformer(X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True):
+    components = []
+    if is_regression(problem_type) and include_log_transformer:
+        components.append(LogTransformer)
+    return components
+
+
 def _get_preprocessing_components(
-    X, y, problem_type, estimator_class, sampler_name=None
+    X, y, problem_type, estimator_class, sampler_name=None, include_log_transformer=True
 ):
     """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
@@ -246,6 +254,7 @@ def _get_preprocessing_components(
         problem_type (ProblemTypes or str): Problem type.
         estimator_class (class): A class which subclasses Estimator estimator for pipeline.
         sampler_name (str): The name of the sampler component to add to the pipeline. Defaults to None.
+        include_log_transformer (bool): Whether or not to include the log transformer.
 
     Returns:
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
@@ -254,6 +263,7 @@ def _get_preprocessing_components(
         components_functions = [
             _get_label_encoder,
             _get_drop_all_null,
+            _get_log_transformer,
             _get_replace_null,
             _get_drop_index_unknown,
             _get_url_email,
@@ -269,6 +279,7 @@ def _get_preprocessing_components(
     else:
         components_functions = [
             _get_label_encoder,
+            _get_log_transformer,
             _get_drop_all_null,
             _get_replace_null,
             _get_drop_index_unknown,
@@ -282,7 +293,7 @@ def _get_preprocessing_components(
         ]
     components = []
     for function in components_functions:
-        components.extend(function(X, y, problem_type, estimator_class, sampler_name))
+        components.extend(function(X, y, problem_type, estimator_class, sampler_name, include_log_transformer))
 
     return components
 
@@ -312,6 +323,7 @@ def _make_pipeline_time_series(
     parameters=None,
     sampler_name=None,
     known_in_advance=None,
+    include_log_transformer=True,
 ):
     """Make a pipeline for time series problems.
 
@@ -342,7 +354,7 @@ def _make_pipeline_time_series(
         X_known_in_advance = None
 
     preprocessing_components = _get_preprocessing_components(
-        X_not_known_in_advance, y, problem_type, estimator, sampler_name
+        X_not_known_in_advance, y, problem_type, estimator, sampler_name, include_log_transformer
     )
 
     if known_in_advance:
@@ -414,6 +426,7 @@ def make_pipeline(
     use_estimator=True,
     known_in_advance=None,
     features=False,
+    include_log_transformer=True,
 ):
     """Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
@@ -455,11 +468,11 @@ def make_pipeline(
 
     if is_time_series(problem_type):
         pipeline = _make_pipeline_time_series(
-            X, y, estimator, problem_type, parameters, sampler_name, known_in_advance
+            X, y, estimator, problem_type, parameters, sampler_name, known_in_advance, include_log_transformer
         )
     else:
         preprocessing_components = _get_preprocessing_components(
-            X, y, problem_type, estimator, sampler_name
+            X, y, problem_type, estimator, sampler_name, include_log_transformer
         )
         extra_components_before = extra_components_before or []
         extra_components_after = extra_components_after or []
