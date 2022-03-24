@@ -519,6 +519,7 @@ def _make_stacked_ensemble_pipeline(
     n_jobs=-1,
     random_seed=0,
     cached_data=None,
+    label_encoder_params=None,
 ):
     """Creates a pipeline with a stacked ensemble estimator.
 
@@ -532,6 +533,7 @@ def _make_stacked_ensemble_pipeline(
         cached_data (dict): A dictionary of cached data, where the keys are the model family. Expected to be of format
             {model_family: {hash1: trained_component_graph, hash2: trained_component_graph...}...}.
             Defaults to None.
+        label_encoder_params (dict): The parameters passed in for the label encoder, used only for classification problems. Defaults to None.
 
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
@@ -560,14 +562,16 @@ def _make_stacked_ensemble_pipeline(
     )
     final_components = []
     used_model_families = []
-    parameters = {}
+    parameters = label_encoder_params or {}
     cached_data = cached_data or {}
     if is_classification(problem_type):
-        parameters = {
-            "Stacked Ensemble Classifier": {
-                "n_jobs": n_jobs,
+        parameters.update(
+            {
+                "Stacked Ensemble Classifier": {
+                    "n_jobs": n_jobs,
+                }
             }
-        }
+        )
         estimator = StackedEnsembleClassifier
         pipeline_name = "Stacked Ensemble Classification Pipeline"
     else:
