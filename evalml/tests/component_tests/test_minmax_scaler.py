@@ -6,6 +6,8 @@ from evalml.pipelines.components import MinMaxScaler
 def test_minmax_scaler_numeric_only(X_y_binary):
     X, y = X_y_binary
     scaler = MinMaxScaler()
+    for col in X:
+        assert min(col) < 0.0 or max(col) > 1.0
 
     scaler.fit(X, y)
     X_t = scaler.transform(X)
