@@ -14,6 +14,7 @@
         * Update maintainers to add Frank :pr:`3382`
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
     * Documentation Changes
+        * Added automl user guide section covering search algorithms :pr:`3394`
         * Updated broken links and automated broken link detection :pr:`3398`
         * Pinned jinja2 to 3.0.3 :pr:`3402`
     * Testing Changes
