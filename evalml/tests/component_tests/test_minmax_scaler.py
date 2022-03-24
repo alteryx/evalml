@@ -1,4 +1,6 @@
 import pandas as pd
+import pytest
+import woodwork as ww
 
 from evalml.pipelines.components import MinMaxScaler
 
@@ -53,4 +55,19 @@ def test_minmax_scaler_categorical_only():
     scaler.fit(X)
     X_t = scaler.transform(X)
 
+    assert scaler._is_fitted
     pd.testing.assert_frame_equal(X, X_t, check_dtype=False)
+
+
+def test_minmax_scaler_maintains_categorical_ww_schema():
+    X = pd.DataFrame(
+        {
+            "col_1": [1, -2, 5, 8, 0],
+            "col_2": ["a", "b", "a", "c", "b"],
+            "col_3": [0.2, 3.0, 4.7, 2.2, 0.9],
+        }
+    )
+    X.ww.init(logical_types={"col_2": "natural_language"})
+    scaler = MinMaxScaler()
+    X_t = scaler.fit_transform(X)
+    assert X_t.ww.logical_types["col_2"].type_string == "natural_language"
