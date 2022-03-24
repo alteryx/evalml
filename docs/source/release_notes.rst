@@ -3,15 +3,18 @@
 
 **Future Releases**
     * Enhancements
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
         * Add support for oversampling in time series classification problems :pr:`3387`
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`
         * Fixed bug where Email/URL features with missing values would cause the imputer to error out :pr:`3388`
+        * Simplified internal ``AutoMLSearch`` API to rely on ``search_parameters`` :pr:`3373`
     * Changes
         * Update maintainers to add Frank :pr:`3382`
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
         * Moved partial dependence functions from ``graph.py`` to their own file :pr:`3404`
     * Documentation Changes
+        * Added automl user guide section covering search algorithms :pr:`3394`
         * Updated broken links and automated broken link detection :pr:`3398`
         * Pinned jinja2 to 3.0.3 :pr:`3402`
     * Testing Changes
@@ -21,6 +24,7 @@
 
     **Breaking Changes**
         * Moved partial dependence functions from ``graph.py`` to ``partial_dependence.py`` :pr:`3404`
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
 
 
 **v0.47.0 Mar. 16, 2022**
