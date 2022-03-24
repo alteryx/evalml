@@ -47,6 +47,7 @@ from .transformers import (
     Imputer,
     TimeSeriesImputer,
     StandardScaler,
+    MinMaxScaler,
     FeatureSelector,
     DropColumns,
     DropNullColumns,

@@ -5,6 +5,7 @@ Release Notes
         * Added clustering as a problem type :pr:`3368`
         * Added clustering models ``DBSCAN``, ``KMeans``, ``KModes``, and ``KPrototypes`` :pr:`3379`
         * Added clustering objectives ``Silhouette Coefficient`` and ``Adjusted Rand Score`` :pr:`3396`
+        * Added ``MinMaxScaler`` for normalization in clustering problems :pr:`3399`
     * Fixes
         * Updated the Imputer and SimpleImputer to work with scikit-learn 1.1.1. :pr:`3525`
         * Bumped the minimum versions of scikit-learn to 1.1.1 and imbalanced-learn to 0.9.1. :pr:`3525`

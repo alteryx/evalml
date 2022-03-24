@@ -8,6 +8,7 @@ from .components import (
     Imputer,
     TimeSeriesImputer,
     StandardScaler,
+    MinMaxScaler,
     Transformer,
     LightGBMClassifier,
     LightGBMRegressor,

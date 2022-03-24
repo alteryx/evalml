@@ -17,7 +17,7 @@ from .imputers import (
     TargetImputer,
     TimeSeriesImputer,
 )
-from .scalers import StandardScaler
+from .scalers import StandardScaler, MinMaxScaler
 from .samplers import (
     Undersampler,
     Oversampler,
