@@ -15,6 +15,7 @@
         * Pinned jinja2 to 3.0.3 :pr:`3402`
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`3395`)
+        * Exclude documentation versions other than latest from broken link check :pr:`3401`
 
 .. warning::
 
