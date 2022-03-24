@@ -12,6 +12,7 @@
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
     * Documentation Changes
         * Updated broken links and automated broken link detection :pr:`3398`
+        * Pinned jinja2 to 3.0.3 :pr:`3402`
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`3395`)
 
