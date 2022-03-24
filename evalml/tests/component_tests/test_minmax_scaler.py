@@ -1,6 +1,4 @@
 import pandas as pd
-import pytest
-import woodwork as ww
 
 from evalml.pipelines.components import MinMaxScaler
 

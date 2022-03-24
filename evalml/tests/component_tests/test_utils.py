@@ -54,6 +54,7 @@ minimum_dependencies_set = set(
         "Linear Regressor",
         "Log Transformer",
         "Logistic Regression Classifier",
+        "MinMax Scaler",
         "One Hot Encoder",
         "PCA Transformer",
         "Per Column Imputer",
