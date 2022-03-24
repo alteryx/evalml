@@ -1,6 +1,6 @@
-"""Partial dependence implementation.
+"""Partial dependence implementation and utility functions.
 
-Borrows from sklearn "brute" calculation but with our
+Implementation borrows from sklearn "brute" calculation but with our
 own modification to better handle mixed data types in the grid
 as well as EvalML pipelines.
 """
@@ -10,6 +10,81 @@ import woodwork as ww
 from scipy.stats.mstats import mquantiles
 
 from evalml.problem_types import is_regression
+
+
+def _is_feature_of_type(feature, X, ltype):
+    """Determine whether the feature the user passed in to partial dependence is a Woodwork logical type."""
+    if isinstance(feature, int):
+        is_type = isinstance(X.ww.logical_types[X.columns[feature]], ltype)
+    else:
+        is_type = isinstance(X.ww.logical_types[feature], ltype)
+    return is_type
+
+
+def _is_feature_of_semantic_type(feature, X, stype):
+    """Determine whether the feature the user passed to partial dependence is a certain Woodwork semantic type."""
+    if isinstance(feature, int):
+        is_type = stype in X.ww.semantic_tags[X.columns[feature]]
+    else:
+        is_type = stype in X.ww.semantic_tags[feature]
+    return is_type
+
+
+def _put_categorical_feature_first(features, first_feature_categorical):
+    """If the user is doing a two-way partial dependence plot and one of the features is categorical, we need to ensure the categorical feature is the first element in the tuple that's passed to sklearn.
+
+    This is because in the two-way grid calculation, sklearn will try to coerce every element of the grid to the
+    type of the first feature in the tuple. If we put the categorical feature first, the grid will be of type 'object'
+    which can accommodate both categorical and numeric data. If we put the numeric feature first, the grid will be of
+    type float64 and we can't coerce categoricals to float64 dtype.
+    """
+    new_features = features if first_feature_categorical else (features[1], features[0])
+    return new_features
+
+
+def _get_feature_names_from_str_or_col_index(X, names_or_col_indices):
+    """Helper function to map the user-input features param to column names."""
+    feature_list = []
+    for name_or_index in names_or_col_indices:
+        if isinstance(name_or_index, int):
+            feature_list.append(X.columns[name_or_index])
+        else:
+            feature_list.append(name_or_index)
+    return feature_list
+
+
+def _raise_value_error_if_any_features_all_nan(df):
+    """Helper for partial dependence data validation."""
+    nan_pct = df.isna().mean()
+    all_nan = nan_pct[nan_pct == 1].index.tolist()
+    all_nan = [f"'{name}'" for name in all_nan]
+
+    if all_nan:
+        raise PartialDependenceError(
+            "The following features have all NaN values and so the "
+            f"partial dependence cannot be computed: {', '.join(all_nan)}",
+            PartialDependenceErrorCode.FEATURE_IS_ALL_NANS,
+        )
+
+
+def _raise_value_error_if_mostly_one_value(df, percentile):
+    """Helper for partial dependence data validation."""
+    one_value = []
+    values = []
+
+    for col in df.columns:
+        normalized_counts = df[col].value_counts(normalize=True) + 0.01
+        normalized_counts = normalized_counts[normalized_counts > percentile]
+        if not normalized_counts.empty:
+            one_value.append(f"'{col}'")
+            values.append(str(normalized_counts.index[0]))
+
+    if one_value:
+        raise PartialDependenceError(
+            f"Features ({', '.join(one_value)}) are mostly one value, ({', '.join(values)}), "
+            f"and cannot be used to compute partial dependence. Try raising the upper percentage value.",
+            PartialDependenceErrorCode.FEATURE_IS_MOSTLY_ONE_VALUE,
+        )
 
 
 def _range_for_dates(X_dt, percentiles, grid_resolution):
