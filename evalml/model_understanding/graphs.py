@@ -6,7 +6,6 @@ from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
-import woodwork as ww
 from sklearn.exceptions import NotFittedError
 from sklearn.manifold import TSNE
 from sklearn.metrics import auc as sklearn_auc
@@ -19,13 +18,7 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.tree import export_graphviz
 from sklearn.utils.multiclass import unique_labels
 
-import evalml
-from evalml.exceptions import (
-    NoPositiveLabelException,
-    NullsInColumnWarning,
-    PartialDependenceError,
-    PartialDependenceErrorCode,
-)
+from evalml.exceptions import NoPositiveLabelException
 from evalml.model_family import ModelFamily
 from evalml.model_understanding.permutation_importance import (
     calculate_permutation_importance,
@@ -501,38 +494,6 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     data = []
     data.append(_go.Scatter(x=df["threshold"], y=df["score"], line=dict(width=3)))
     return _go.Figure(layout=layout, data=data)
-
-
-def _add_ice_plot(_go, fig, ice_data, label=None, row=None, col=None):
-    x = ice_data["feature_values"]
-    y = ice_data
-    if "class_label" in ice_data.columns:
-        if label:
-            y = y[y["class_label"] == label]
-        y.drop(columns=["class_label"], inplace=True)
-    y = y.drop(columns=["feature_values"])
-    for i, sample in enumerate(y):
-        fig.add_trace(
-            _go.Scatter(
-                x=x,
-                y=y[sample],
-                line=dict(width=0.5, color="gray"),
-                name=f"Individual Conditional Expectation{': ' + label if label else ''}",
-                legendgroup="ICE" + label if label else "ICE",
-                showlegend=True if i == 0 else False,
-            ),
-            row=row,
-            col=col,
-        )
-    return fig
-
-
-def _calculate_axis_range(arr):
-    """Helper method to help calculate the appropriate range for an axis based on the data to graph."""
-    max_value = arr.max()
-    min_value = arr.min()
-    margins = abs(max_value - min_value) * 0.05
-    return [min_value - margins, max_value + margins]
 
 
 def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
@@ -1011,3 +972,11 @@ def graph_t_sne(
     fig.update_layout(title="t-SNE", yaxis_zeroline=False, xaxis_zeroline=False)
 
     return fig
+
+
+def _calculate_axis_range(arr):
+    """Helper method to help calculate the appropriate range for an axis based on the data to graph."""
+    max_value = arr.max()
+    min_value = arr.min()
+    margins = abs(max_value - min_value) * 0.05
+    return [min_value - margins, max_value + margins]

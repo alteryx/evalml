@@ -1,9 +1,20 @@
+"""Top level functions for running partial dependence."""
+import warnings
+
+import numpy as np
 import pandas as pd
 import woodwork as ww
 
+import evalml
+from evalml.exceptions import (
+    NullsInColumnWarning,
+    PartialDependenceError,
+    PartialDependenceErrorCode,
+)
+from evalml.model_family import ModelFamily
 from evalml.model_understanding._partial_dependence_utils import (
+    _add_ice_plot,
     _get_feature_names_from_str_or_col_index,
-    _grid_from_X,
     _is_feature_of_semantic_type,
     _is_feature_of_type,
     _partial_dependence,
@@ -12,6 +23,9 @@ from evalml.model_understanding._partial_dependence_utils import (
     _raise_value_error_if_mostly_one_value,
     _range_for_dates,
 )
+from evalml.model_understanding.graphs import _calculate_axis_range
+from evalml.utils import import_or_raise, infer_feature_types, jupyter_check
+
 
 def partial_dependence(
     pipeline, X, features, percentiles=(0.05, 0.95), grid_resolution=100, kind="average"

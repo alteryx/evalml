@@ -9,7 +9,35 @@ import pandas as pd
 import woodwork as ww
 from scipy.stats.mstats import mquantiles
 
+from evalml.exceptions import (
+    PartialDependenceError,
+    PartialDependenceErrorCode,
+)
 from evalml.problem_types import is_regression
+
+
+def _add_ice_plot(_go, fig, ice_data, label=None, row=None, col=None):
+    x = ice_data["feature_values"]
+    y = ice_data
+    if "class_label" in ice_data.columns:
+        if label:
+            y = y[y["class_label"] == label]
+        y.drop(columns=["class_label"], inplace=True)
+    y = y.drop(columns=["feature_values"])
+    for i, sample in enumerate(y):
+        fig.add_trace(
+            _go.Scatter(
+                x=x,
+                y=y[sample],
+                line=dict(width=0.5, color="gray"),
+                name=f"Individual Conditional Expectation{': ' + label if label else ''}",
+                legendgroup="ICE" + label if label else "ICE",
+                showlegend=True if i == 0 else False,
+            ),
+            row=row,
+            col=col,
+        )
+    return fig
 
 
 def _is_feature_of_type(feature, X, ltype):
