@@ -18,7 +18,7 @@ from .graphs import (
     roc_curve,
     t_sne,
 )
-from .partial_dependence import (
+from .partial_dependence_functions import (
     graph_partial_dependence,
     partial_dependence,
 )
