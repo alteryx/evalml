@@ -4544,3 +4544,42 @@ def test_automl_accepts_features(
         assert all(
             ["DFS Transformer" not in p for p in automl.full_rankings["parameters"][1:]]
         )
+
+
+def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
+    ts_data, AutoMLTestEnv
+):
+
+    X, y = ts_data
+
+    env = AutoMLTestEnv("time series regression")
+    automl = AutoMLSearch(
+        X,
+        y,
+        "time series regression",
+        max_iterations=5,
+        problem_configuration={
+            "max_delay": 5,
+            "gap": 0,
+            "forecast_horizon": 2,
+            "time_index": "Date",
+        },
+        verbose=True,
+        automl_algorithm="iterative",
+    )
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+
+    automl.search()
+    estimator_order = (
+        automl.full_rankings.sort_values("search_order")
+        .id.map(lambda id_: automl.get_pipeline(id_).estimator.name)
+        .tolist()
+    )
+    assert estimator_order == [
+        "Time Series Baseline Estimator",
+        "ARIMA Regressor",
+        "Exponential Smoothing Regressor",
+        "Elastic Net Regressor",
+        "XGBoost Regressor",
+    ]
