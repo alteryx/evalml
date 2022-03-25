@@ -1817,3 +1817,28 @@ def test_partial_dependence_does_not_return_all_nan_grid():
     dep = partial_dependence(pipeline, X_holdout, "a", grid_resolution=4)
     assert not dep.feature_values.isna().any()
     assert not dep.partial_dependence.isna().any()
+
+
+@pytest.mark.noncore_dependency
+@patch("evalml.model_understanding.partial_dependence_functions.jupyter_check")
+@patch("evalml.model_understanding.partial_dependence_functions.import_or_raise")
+def test_partial_dependence_jupyter_graph_check(
+    import_check,
+    jupyter_check,
+    X_y_binary,
+    X_y_regression,
+    logistic_regression_binary_pipeline,
+):
+    X, y = X_y_binary
+    X = X[:20, :5]
+    y = y[:20]
+    logistic_regression_binary_pipeline.fit(X, y)
+
+    jupyter_check.return_value = True
+    with pytest.warns(None) as graph_valid:
+        graph_partial_dependence(
+            logistic_regression_binary_pipeline, X, features=0, grid_resolution=20
+        )
+        assert len(graph_valid) == 0
+        import_check.assert_called_with("ipywidgets", warning=True)
+    
