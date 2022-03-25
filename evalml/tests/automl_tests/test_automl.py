@@ -4548,7 +4548,7 @@ def test_automl_accepts_features(
 
 @pytest.mark.noncore_dependency
 def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
-    ts_data, AutoMLTestEnv
+    ts_data, AutoMLTestEnv, is_using_windows
 ):
 
     X, y = ts_data
@@ -4577,10 +4577,20 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
         .id.map(lambda id_: automl.get_pipeline(id_).estimator.name)
         .tolist()
     )
-    assert estimator_order == [
+    if is_using_windows:
+        expected_order = [
+        "Time Series Baseline Estimator",
+        "ARIMA Regressor",
+        "Exponential Smoothing Regressor",
+        "Elastic Net Regressor",
+        "XGBoost Regressor"
+        ]
+    else:
+        expected_order = [
         "Time Series Baseline Estimator",
         "ARIMA Regressor",
         "Prophet Regressor",
         "Exponential Smoothing Regressor",
         "Elastic Net Regressor",
-    ]
+        ]
+    assert estimator_order == expected_order
