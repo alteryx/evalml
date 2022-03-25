@@ -4546,6 +4546,7 @@ def test_automl_accepts_features(
         )
 
 
+@pytest.mark.noncore_dependency
 def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
     ts_data, AutoMLTestEnv
 ):
@@ -4579,7 +4580,7 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
     assert estimator_order == [
         "Time Series Baseline Estimator",
         "ARIMA Regressor",
+        "Prophet Regressor",
         "Exponential Smoothing Regressor",
         "Elastic Net Regressor",
-        "XGBoost Regressor",
     ]
