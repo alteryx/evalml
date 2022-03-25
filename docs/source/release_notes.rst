@@ -3,11 +3,23 @@
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.48.0 Mar. 25, 2022**
+    * Enhancements
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
         * Add support for oversampling in time series classification problems :pr:`3387`
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`
         * Fixed bug where Email/URL features with missing values would cause the imputer to error out :pr:`3388`
-        * Reverted changes to group parameters and hyper-params into ``search_parameters`` :pr:`3410`
     * Changes
         * Update maintainers to add Frank :pr:`3382`
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
