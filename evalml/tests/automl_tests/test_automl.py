@@ -4579,18 +4579,18 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
     )
     if is_using_windows:
         expected_order = [
-        "Time Series Baseline Estimator",
-        "ARIMA Regressor",
-        "Exponential Smoothing Regressor",
-        "Elastic Net Regressor",
-        "XGBoost Regressor"
+            "Time Series Baseline Estimator",
+            "ARIMA Regressor",
+            "Exponential Smoothing Regressor",
+            "Elastic Net Regressor",
+            "XGBoost Regressor",
         ]
     else:
         expected_order = [
-        "Time Series Baseline Estimator",
-        "ARIMA Regressor",
-        "Prophet Regressor",
-        "Exponential Smoothing Regressor",
-        "Elastic Net Regressor",
+            "Time Series Baseline Estimator",
+            "ARIMA Regressor",
+            "Prophet Regressor",
+            "Exponential Smoothing Regressor",
+            "Elastic Net Regressor",
         ]
     assert estimator_order == expected_order
