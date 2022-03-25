@@ -15,7 +15,7 @@ jobs:
         uses: ruzickap/action-my-broken-link-checker@v2
         with:
           url: https://evalml.alteryx.com/en/latest/index.html
-          cmd_params: '--max-connections=10 --color=always --ignore-fragments --buffer-size=8192 --exclude="(twitter|github|cloudflare)"'
+          cmd_params: '--max-connections=10 --color=always --ignore-fragments --buffer-size=8192 --exclude="(twitter|github|cloudflare|evalml\\.alteryx\\.com\\/en\\/(stable|main|v.+).*)"'
       - name: Notify on Slack
         uses: 8398a7/action-slack@v3
         env:
