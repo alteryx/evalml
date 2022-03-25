@@ -4559,7 +4559,7 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
         "time series regression",
         max_iterations=5,
         problem_configuration={
-            "max_delay": 5,
+            "max_delay": 2,
             "gap": 0,
             "forecast_horizon": 2,
             "time_index": "Date",
