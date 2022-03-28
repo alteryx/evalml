@@ -1841,4 +1841,3 @@ def test_partial_dependence_jupyter_graph_check(
         )
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
-    
