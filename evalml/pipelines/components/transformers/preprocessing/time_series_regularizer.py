@@ -7,6 +7,20 @@ from evalml.utils import infer_feature_types
 
 
 def _realign_dates(cleaned_x, cleaned_y, X, y, time_index, issue_dates, error_dict):
+    """Realigns observations whose datetime values have been identified as misaligned.
+
+    Args:
+        cleaned_x (pd.DataFrame): The expected 'clean' training data.
+        cleaned_y (pd.Series, optional): The expected 'clean' target training data.
+        X (pd.DataFrame): The actual input training data of shape.
+        y (pd.Series): The actual target training data.
+        time_index (str): The column indicating the time index.
+        issue_dates (dict): Unmatched datetime values.
+        error_dict (dict): Dictionary of all faulty datetime values.
+
+    Returns:
+        (pd.DataFrame, pd.Series): Data with an inferrable `time_index` offset frequency with realigned observations.
+    """
     misaligned_ind_clean = {}
 
     for issue_ind, issue_val in issue_dates.items():
@@ -156,7 +170,6 @@ class TimeSeriesRegularizer(Transformer):
         Returns:
             (dict): A dictionary of the duplicate, missing, extra, and misaligned indices and their datetime values.
         """
-
         error_dict = {
             "duplicate": {},
             "missing": {},
@@ -296,7 +309,6 @@ class TimeSeriesRegularizer(Transformer):
         Returns:
             (pd.DataFrame, pd.Series): Data with an inferrable `time_index` offset frequency.
         """
-
         if self.inferred_freq is not None:
             return X, y
 
