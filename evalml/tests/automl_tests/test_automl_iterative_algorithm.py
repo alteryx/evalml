@@ -450,7 +450,7 @@ def test_pipeline_hyperparameters_make_pipeline_other_errors(
     mock_add, AutoMLTestEnv, X_y_multi
 ):
     X, y = X_y_multi
-    search_parameters = {
+    custom_hyperparameters = {
         "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", "mean"])}
     }
     estimators = get_estimators("multiclass", [ModelFamily.EXTRA_TREES])
@@ -464,7 +464,7 @@ def test_pipeline_hyperparameters_make_pipeline_other_errors(
         y_train=y,
         problem_type="multiclass",
         allowed_component_graphs=component_graphs,
-        search_parameters=search_parameters,
+        custom_hyperparameters=custom_hyperparameters,
         n_jobs=1,
         automl_algorithm="iterative",
     )
@@ -492,7 +492,8 @@ def test_pipeline_custom_hyperparameters_make_pipeline(
     X = pd.DataFrame(X, columns=[f"Column_{i}" for i in range(20)])
 
     component_graph_ = None
-    search_parameters_ = {}
+    automl_parameters_ = None
+    custom_hyperparameters_ = None
 
     if component_graphs:
         component_graph_ = {
@@ -504,28 +505,28 @@ def test_pipeline_custom_hyperparameters_make_pipeline(
         }
 
     if automl_parameters:
-        search_parameters_ = {
+        automl_parameters_ = {
             "Drop Columns Transformer": {
                 "columns": ["Column_0", "Column_1", "Column_2"]
-            }
+            },
+            "Random Forest Classifier": {"n_estimators": 201},
         }
     if custom_hyperparameters:
-        search_parameters_.update(
-            {
-                "Imputer": {"numeric_impute_strategy": Categorical(["mean"])},
-                "Random Forest Classifier": {
-                    "max_depth": Integer(4, 7),
-                    "n_estimators": Integer(190, 210),
-                },
-            }
-        )
+        custom_hyperparameters_ = {
+            "Imputer": {"numeric_impute_strategy": Categorical(["mean"])},
+            "Random Forest Classifier": {
+                "max_depth": Integer(4, 7),
+                "n_estimators": Integer(190, 210),
+            },
+        }
 
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type="multiclass",
         allowed_component_graphs=component_graph_,
-        search_parameters=search_parameters_,
+        pipeline_parameters=automl_parameters_,
+        custom_hyperparameters=custom_hyperparameters_,
         max_batches=4,
         automl_algorithm="iterative",
     )
@@ -538,25 +539,31 @@ def test_pipeline_custom_hyperparameters_make_pipeline(
             "Random Forest Classifier" in row["pipeline_name"]
             or "Name_0" in row["pipeline_name"]
         ):
-            if component_graph_ and automl_parameters:
+            if component_graph_ and automl_parameters_:
                 assert row["parameters"]["Drop Columns Transformer"]["columns"] == [
                     "Column_0",
                     "Column_1",
                     "Column_2",
                 ]
-            if custom_hyperparameters:
+            if custom_hyperparameters_:
                 assert (
                     row["parameters"]["Imputer"]["numeric_impute_strategy"]
-                    in search_parameters_["Imputer"]["numeric_impute_strategy"]
+                    in custom_hyperparameters_["Imputer"]["numeric_impute_strategy"]
                 )
                 assert (
                     4 <= row["parameters"]["Random Forest Classifier"]["max_depth"] <= 7
                 )
-                assert (
-                    190
-                    <= row["parameters"]["Random Forest Classifier"]["n_estimators"]
-                    <= 210
-                )
+                if automl_parameters_ and row["id"] == 1:
+                    assert (
+                        row["parameters"]["Random Forest Classifier"]["n_estimators"]
+                        == 201
+                    )
+                else:
+                    assert (
+                        190
+                        <= row["parameters"]["Random Forest Classifier"]["n_estimators"]
+                        <= 210
+                    )
             else:
                 assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in [
                     "mean",
@@ -568,11 +575,17 @@ def test_pipeline_custom_hyperparameters_make_pipeline(
                     <= row["parameters"]["Random Forest Classifier"]["max_depth"]
                     <= 10
                 )
-                assert (
-                    10
-                    <= row["parameters"]["Random Forest Classifier"]["n_estimators"]
-                    <= 1000
-                )
+                if automl_parameters_ and row["id"] == 1:
+                    assert (
+                        row["parameters"]["Random Forest Classifier"]["n_estimators"]
+                        == 201
+                    )
+                else:
+                    assert (
+                        10
+                        <= row["parameters"]["Random Forest Classifier"]["n_estimators"]
+                        <= 1000
+                    )
 
 
 def test_passes_njobs_to_pipelines(
@@ -797,7 +810,8 @@ def test_automl_respects_random_seed(X_y_binary, dummy_classifier_estimator_clas
         pipelines_per_batch=5,
         ensembling=False,
         text_in_ensembling=False,
-        search_parameters={},
+        pipeline_params={},
+        custom_hyperparameters=None,
     )
     automl.automl_algorithm.allowed_pipelines = pipelines
     assert automl.allowed_pipelines[0].random_seed == 42
@@ -819,7 +833,7 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
         y,
         problem_type="binary",
         allowed_component_graphs={"Pipeline from dict": component_graph_dict},
-        search_parameters={
+        pipeline_parameters={
             "Imputer": {"numeric_impute_strategy": "most_frequent"},
             "Imputer_1": {"numeric_impute_strategy": "median"},
         },
@@ -851,7 +865,7 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
         allowed_component_graphs={
             "Pipeline from dict": component_graph_dict,
         },
-        search_parameters={
+        pipeline_parameters={
             "One Hot Encoder": {"top_n": 15},
             "One Hot Encoder_1": {"top_n": 25},
         },
@@ -870,7 +884,7 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
     AutoMLTestEnv, X_y_binary
 ):
     X, y = X_y_binary
-    search_parameters = {
+    custom_hyperparameters = {
         "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", "mean"])},
         "Imputer_1": {"numeric_impute_strategy": Categorical(["median", "mean"])},
         "Random Forest Classifier": {"n_estimators": Categorical([50, 100])},
@@ -892,7 +906,7 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
         y,
         problem_type="binary",
         allowed_component_graphs=component_graph,
-        search_parameters=search_parameters,
+        custom_hyperparameters=custom_hyperparameters,
         optimize_thresholds=False,
         max_batches=5,
         automl_algorithm="iterative",
@@ -923,7 +937,7 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
     [None, {"graph": ["Imputer", "Logistic Regression Classifier"]}],
 )
 @pytest.mark.parametrize(
-    "search_parameters,set_values",
+    "pipeline_parameters,set_values",
     [
         ({"Logistic Regression Classifier": {"penalty": "l1"}}, {}),
         (
@@ -950,7 +964,7 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
     ],
 )
 def test_pipeline_parameter_warnings_component_graphs(
-    search_parameters, set_values, allowed_component_graphs, AutoMLTestEnv, X_y_binary
+    pipeline_parameters, set_values, allowed_component_graphs, AutoMLTestEnv, X_y_binary
 ):
     X, y = X_y_binary
     with warnings.catch_warnings(record=True) as w:
@@ -965,7 +979,7 @@ def test_pipeline_parameter_warnings_component_graphs(
             max_batches=2,
             n_jobs=1,
             allowed_component_graphs=allowed_component_graphs,
-            search_parameters=search_parameters,
+            pipeline_parameters=pipeline_parameters,
             automl_algorithm="iterative",
         )
         env = AutoMLTestEnv("binary")
@@ -1003,7 +1017,7 @@ def test_graph_automl(X_y_multi):
         y_train=y,
         problem_type="multiclass",
         allowed_component_graphs={"Name_0": ComponentGraph(component_graph)},
-        search_parameters=automl_parameters_,
+        pipeline_parameters=automl_parameters_,
         max_batches=2,
         automl_algorithm="iterative",
     )
