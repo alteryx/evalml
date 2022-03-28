@@ -11,6 +11,7 @@
     * Changes
         * Update maintainers to add Frank :pr:`3382`
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
+        * Moved partial dependence functions from ``graph.py`` to a separate file :pr:`3404`
         * Pin ``click`` at ``8.0.4`` due to incompatibility with ``black`` :pr:`3413`
     * Documentation Changes
         * Added automl user guide section covering search algorithms :pr:`3394`
@@ -23,6 +24,7 @@
 .. warning::
 
     **Breaking Changes**
+        * Moved partial dependence functions from ``graph.py`` to ``partial_dependence.py`` :pr:`3404`
 
 
 **v0.47.0 Mar. 16, 2022**
