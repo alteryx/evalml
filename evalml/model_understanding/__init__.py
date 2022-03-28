@@ -7,7 +7,6 @@ from .graphs import (
     get_prediction_vs_actual_over_time_data,
     graph_binary_objective_vs_threshold,
     graph_confusion_matrix,
-    graph_partial_dependence,
     graph_permutation_importance,
     graph_precision_recall_curve,
     graph_prediction_vs_actual,
@@ -15,10 +14,13 @@ from .graphs import (
     graph_roc_curve,
     graph_t_sne,
     normalize_confusion_matrix,
-    partial_dependence,
     precision_recall_curve,
     roc_curve,
     t_sne,
+)
+from .partial_dependence_functions import (
+    graph_partial_dependence,
+    partial_dependence,
 )
 from .prediction_explanations import explain_predictions, explain_predictions_best_worst
 from .permutation_importance import (
