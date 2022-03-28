@@ -1,6 +1,7 @@
+"""Transformer that regularizes a dataset with an uninferrable offset frequency for time series problems."""
 import pandas as pd
 from woodwork.logical_types import Datetime
-from woodwork.statistics_utils.frequency_inference import infer_frequency
+from woodwork.statistics_utils import infer_frequency
 
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import infer_feature_types
@@ -81,13 +82,21 @@ class TimeSeriesRegularizer(Transformer):
     modifies_target = True
     training_only = True
 
-    def __init__(self, time_index=None, random_seed=0, **kwargs):
+    def __init__(
+        self, time_index=None, window_length=5, threshold=0.8, random_seed=0, **kwargs
+    ):
         self.time_index = time_index
+        self.window_length = window_length
+        self.threshold = threshold
         self.error_dict = {}
         self.inferred_freq = None
         self.debug_payload = None
 
-        parameters = {"time_index": time_index}
+        parameters = {
+            "time_index": time_index,
+            "window_length": window_length,
+            "threshold": threshold,
+        }
         parameters.update(kwargs)
 
         super().__init__(parameters=parameters, random_seed=random_seed)
@@ -104,6 +113,7 @@ class TimeSeriesRegularizer(Transformer):
 
         Raises:
             ValueError: if self.time_index is None
+            TypeError: if the `time_index` column is not of type Datetime
             ValueError: if X and y have different lengths
             ValueError: if `time_index` in X does not have an offset frequency that can be estimated
         """
@@ -125,7 +135,10 @@ class TimeSeriesRegularizer(Transformer):
                 )
 
         ww_payload = infer_frequency(
-            X[self.time_index], debug=True, window_length=5, threshold=0.8
+            X[self.time_index],
+            debug=True,
+            window_length=self.window_length,
+            threshold=self.threshold,
         )
         self.inferred_freq = ww_payload[0]
         self.debug_payload = ww_payload[1]

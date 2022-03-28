@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from woodwork.statistics_utils.frequency_inference import infer_frequency
+from woodwork.statistics_utils import infer_frequency
 
 from evalml.pipelines import TimeSeriesRegularizer
 
