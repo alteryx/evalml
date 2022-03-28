@@ -413,7 +413,7 @@ def test_automl_oversampler_selection():
         y,
         "binary",
         allowed_component_graphs={"pipeline": allowed_component_graph},
-        search_parameters={"DropCols": {"columns": ["a"]}},
+        pipeline_parameters={"DropCols": {"columns": ["a"]}},
         error_callback=raise_error_callback,
         automl_algorithm="iterative",
     )
