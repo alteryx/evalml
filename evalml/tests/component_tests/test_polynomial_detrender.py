@@ -103,10 +103,10 @@ def test_polynomial_detrender_needs_monotonic_index(ts_data):
     with pytest.raises(Exception) as exec_info:
         y_shuffled = y.sample(frac=1, replace=False)
         detrender.fit_transform(X, y_shuffled)
-    assert "X must be in an sktime compatible format" in str(exec_info.value)
+    expected_errors = ["monotonically", "X must be in an sktime compatible format"]
+    assert any([error in str(exec_info.value) for error in expected_errors])
     with pytest.raises(
         Exception,
-        match="X must be in an sktime compatible format",
     ):
         y_string_index = pd.Series(np.arange(31), index=[f"row_{i}" for i in range(31)])
         detrender.fit_transform(X, y_string_index)
