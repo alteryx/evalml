@@ -70,6 +70,18 @@ def test_skopt_tuner_basic():
 
     tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_seed=random_seed)
     assert isinstance(tuner, Tuner)
+    first_params = tuner.get_starting_parameters()
+    assert first_params == {
+        "Mock Classifier": {
+            "parameter a": 5,
+            "parameter b": 5.488135039273248,
+            "parameter c": 0,
+            "parameter d": 0,
+            "parameter e": "option a",
+            "parameter f": "option a 💩",
+            "parameter g": "option a",
+        }
+    }
     proposed_params = tuner.propose()
     assert proposed_params == {
         "Mock Classifier": {
@@ -86,17 +98,6 @@ def test_skopt_tuner_basic():
 
 
 def test_skopt_tuner_invalid_ranges():
-    SKOptTuner(
-        {
-            "Mock Classifier": {
-                "param a": Integer(0, 10),
-                "param b": Real(0, 10),
-                "param c": ["option a", "option b", "option c"],
-            }
-        },
-        random_seed=random_seed,
-    )
-
     with pytest.raises(
         ValueError,
         match="Invalid dimension \\[\\]. Read the documentation for supported types.",
@@ -128,21 +129,12 @@ def test_skopt_tuner_invalid_ranges():
 
 
 def test_skopt_tuner_single_value():
-    SKOptTuner(
-        {
-            "Mock Classifier": {
-                "param a": Integer(0, 10),
-                "param b": Real(0, 10),
-                "param c": "Value",
-            }
-        },
-        random_seed=random_seed,
-    )
-
+    expected_params = {"Mock Classifier": {}}
     tuner = SKOptTuner({"Mock Classifier": {"param c": 10}}, random_seed=random_seed)
-
+    starting_params = tuner.get_starting_parameters()
+    assert starting_params == expected_params
     proposed_params = tuner.propose()
-    assert proposed_params == {"Mock Classifier": {}}
+    assert proposed_params == expected_params
 
 
 def test_skopt_tuner_invalid_parameters_score():
@@ -263,6 +255,14 @@ def test_skopt_tuner_propose():
         }
     }
     tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_seed=random_seed)
+    first_params = tuner.get_starting_parameters()
+    assert first_params == {
+        "Mock Classifier": {
+            "param a": 5,
+            "param b": 5.488135039273248,
+            "param c": "option a",
+        }
+    }
     tuner.add(
         {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}}, 0.5
     )
