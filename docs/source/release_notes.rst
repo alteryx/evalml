@@ -12,7 +12,7 @@
     * Changes
         * Update maintainers to add Frank :pr:`3382`
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
-        * Moved partial dependence functions from ``graph.py`` to their own file :pr:`3404`
+        * Moved partial dependence functions from ``graph.py`` to a separate file :pr:`3404`
     * Documentation Changes
         * Added automl user guide section covering search algorithms :pr:`3394`
         * Updated broken links and automated broken link detection :pr:`3398`
