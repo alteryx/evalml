@@ -23,12 +23,13 @@ def get_df(dates):
     return reg_X, reg_y
 
 
-def assert_features_and_length_equal(X, y, X_output, y_output, error_dict, has_target=True):
+def assert_features_and_length_equal(
+    X, y, X_output, y_output, error_dict, has_target=True
+):
     ww_payload = infer_frequency(X["dates"], debug=True)
 
     assert isinstance(X_output, pd.DataFrame)
     assert isinstance(y_output, pd.Series) if has_target else True
-    assert isinstance(X_output, pd.DataFrame)
     assert pd.infer_freq(X_output["dates"]) == ww_payload[1]["estimated_freq"]
 
     length_mismatch = (
@@ -145,7 +146,9 @@ def test_ts_regularizer_X_only(combination):
     assert y_output is None
 
     error_dict = ts_regularizer.error_dict
-    assert_features_and_length_equal(X, y, X_output, y_output, error_dict, has_target=False)
+    assert_features_and_length_equal(
+        X, y, X_output, y_output, error_dict, has_target=False
+    )
 
 
 @pytest.mark.parametrize(

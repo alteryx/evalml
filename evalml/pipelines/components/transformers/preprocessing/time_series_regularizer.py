@@ -99,7 +99,9 @@ class TimeSeriesRegularizer(Transformer):
         X_ww = infer_feature_types(X)
 
         if not isinstance(X_ww.ww.logical_types[self.time_index], Datetime):
-            raise TypeError(f"The time_index column {self.time_index} must be of type Datetime.")
+            raise TypeError(
+                f"The time_index column {self.time_index} must be of type Datetime."
+            )
 
         if y is not None:
             y = infer_feature_types(y)
