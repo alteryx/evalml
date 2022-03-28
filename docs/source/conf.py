@@ -287,6 +287,6 @@ def setup(app):
     app.add_js_file(
        "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
     )
-    app.add_stylesheet("style.css")
+    app.add_css_file("style.css")
     app.add_autodocumenter(AccessorCallableDocumenter)
     app.add_autodocumenter(AccessorMethodDocumenter)
