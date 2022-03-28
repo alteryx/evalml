@@ -1,5 +1,5 @@
 catboost==1.0.4
-click==8.1.0
+click==8.0.4
 cloudpickle==2.0.0
 colorama==0.4.4
 dask==2022.3.0
