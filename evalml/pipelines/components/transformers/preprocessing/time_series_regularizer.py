@@ -1,9 +1,9 @@
-from evalml.pipelines.components.transformers.transformer import Transformer
 import pandas as pd
+from woodwork.logical_types import Datetime
 from woodwork.statistics_utils.frequency_inference import infer_frequency
 
+from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import infer_feature_types
-from woodwork.logical_types import Datetime
 
 
 def _realign_dates(cleaned_x, cleaned_y, X, y, time_index, issue_dates, error_dict):
@@ -110,7 +110,9 @@ class TimeSeriesRegularizer(Transformer):
                     "If y has been passed, then it must be the same length as X."
                 )
 
-        ww_payload = infer_frequency(X[self.time_index], debug=True)
+        ww_payload = infer_frequency(
+            X[self.time_index], debug=True, window_length=5, threshold=0.8
+        )
         self.inferred_freq = ww_payload[0]
         self.debug_payload = ww_payload[1]
 

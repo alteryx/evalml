@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-
 from woodwork.statistics_utils.frequency_inference import infer_frequency
 
 from evalml.pipelines import TimeSeriesRegularizer
@@ -26,7 +25,7 @@ def get_df(dates):
 def assert_features_and_length_equal(
     X, y, X_output, y_output, error_dict, has_target=True
 ):
-    ww_payload = infer_frequency(X["dates"], debug=True)
+    ww_payload = infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8)
 
     assert isinstance(X_output, pd.DataFrame)
     assert isinstance(y_output, pd.Series) if has_target else True
