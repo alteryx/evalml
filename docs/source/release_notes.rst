@@ -9,14 +9,13 @@
         * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`
         * Fixed bug where Email/URL features with missing values would cause the imputer to error out :pr:`3388`
         * Simplified internal ``AutoMLSearch`` API to rely on ``search_parameters`` :pr:`3373`
-        * Removed Jinja2 dependency & upgraded nbconvert :pr:`3410`
     * Changes
         * Update maintainers to add Frank :pr:`3382`
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
     * Documentation Changes
         * Added automl user guide section covering search algorithms :pr:`3394`
         * Updated broken links and automated broken link detection :pr:`3398`
-        * Pinned jinja2 to 3.0.3 :pr:`3402`
+        * Upgraded nbconvert :pr:`3402`, :pr:`3410`
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`3395`)
         * Exclude documentation versions other than latest from broken link check :pr:`3401`
