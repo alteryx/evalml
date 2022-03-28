@@ -205,9 +205,10 @@ def test_automl_immediate_quit(
         pipelines_per_batch=5,
         ensembling=False,
         text_in_ensembling=False,
-        search_parameters={},
+        pipeline_params={},
+        custom_hyperparameters=None,
     )
-    automl.automl_algorithm._set_allowed_pipelines(pipelines)
+    automl.automl_algorithm.allowed_pipelines = pipelines
 
     # Ensure the broken pipeline raises the error
     with pytest.raises(Exception, match="Yikes"):
