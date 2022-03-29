@@ -22,7 +22,6 @@ from evalml.model_understanding.graphs import (
     get_prediction_vs_actual_over_time_data,
     graph_binary_objective_vs_threshold,
     graph_confusion_matrix,
-    graph_partial_dependence,
     graph_permutation_importance,
     graph_precision_recall_curve,
     graph_prediction_vs_actual,
@@ -831,12 +830,6 @@ def test_jupyter_graph_check(
         assert len(graph_valid) == 0
 
     jupyter_check.return_value = True
-    with pytest.warns(None) as graph_valid:
-        graph_partial_dependence(
-            logistic_regression_binary_pipeline, X, features=0, grid_resolution=20
-        )
-        assert len(graph_valid) == 0
-        import_check.assert_called_with("ipywidgets", warning=True)
     with pytest.warns(None) as graph_valid:
         graph_binary_objective_vs_threshold(
             logistic_regression_binary_pipeline, X, y, cbm, steps=5

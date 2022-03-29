@@ -338,6 +338,8 @@ class AutoMLSearch:
             to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
             this parameter will be ignored.
 
+        features (list)[FeatureBase]: List of features to run DFS on AutoML pipelines. Defaults to None. Features will only be computed if the columns used by the feature exist in the search input and if the feature itself is not in search input.
+
         data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
 
         tuner_class: The tuner class to use. Defaults to SKOptTuner.
@@ -426,6 +428,7 @@ class AutoMLSearch:
         data_splitter=None,
         allowed_component_graphs=None,
         allowed_model_families=None,
+        features=None,
         start_iteration_callback=None,
         add_result_callback=None,
         error_callback=None,
@@ -684,6 +687,7 @@ class AutoMLSearch:
             len(self.X_train.ww.select("natural_language", return_schema=True).columns)
             > 0
         )
+        self.features = features
 
         if automl_algorithm == "iterative":
             self.automl_algorithm = IterativeAlgorithm(
@@ -705,6 +709,7 @@ class AutoMLSearch:
                 pipeline_params=parameters,
                 custom_hyperparameters=custom_hyperparameters,
                 allow_long_running_models=allow_long_running_models,
+                features=features,
                 verbose=self.verbose,
             )
         elif automl_algorithm == "default":
@@ -719,6 +724,7 @@ class AutoMLSearch:
                 custom_hyperparameters=self.custom_hyperparameters,
                 text_in_ensembling=text_in_ensembling,
                 allow_long_running_models=allow_long_running_models,
+                features=features,
                 verbose=self.verbose,
             )
         else:
