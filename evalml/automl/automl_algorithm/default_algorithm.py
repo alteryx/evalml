@@ -236,7 +236,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 "columns": self._selected_cat_cols
             },
             "Numeric Pipeline - Select Columns By Type Transformer": {
-                "column_types": ["category"],
+                "column_types": ["Categorical", "EmailAddress", "URL"],
                 "exclude": True,
             },
             "Numeric Pipeline - Select Columns Transformer": {
@@ -453,6 +453,28 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                             self._selected_cols.remove(encoded_col)
                     if selected:
                         self._selected_cat_cols.append(original_col)
+            if list(self.X.ww.select("URL").columns):
+                url_featurizer = pipeline.get_component("URL Featurizer")
+                feature_provenance = url_featurizer._get_feature_provenance()
+                for original_col in feature_provenance:
+                    selected = False
+                    for encoded_col in feature_provenance[original_col]:
+                        if encoded_col in self._selected_cat_cols:
+                            selected = True
+                            self._selected_cat_cols.remove(encoded_col)
+                    if selected:
+                        self._selected_cat_cols.append(original_col)
+            if list(self.X.ww.select("EmailAddress").columns):
+                url_featurizer = pipeline.get_component("Email Featurizer")
+                feature_provenance = url_featurizer._get_feature_provenance()
+                for original_col in feature_provenance:
+                    selected = False
+                    for encoded_col in feature_provenance[original_col]:
+                        if encoded_col in self._selected_cat_cols:
+                            selected = True
+                            self._selected_cat_cols.remove(encoded_col)
+                    if selected:
+                        self._selected_cat_cols.append(original_col)
 
         current_best_score = self._best_pipeline_info.get(
             pipeline.model_family, {}
@@ -540,7 +562,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             numeric_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cols},
                 "Select Columns By Type Transformer": {
-                    "column_types": ["category"],
+                    "column_types": ["Categorical", "EmailAddress", "URL"],
                     "exclude": True,
                 },
             }
