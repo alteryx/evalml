@@ -146,10 +146,14 @@ def _compute_shap_values(pipeline, features, training_data=None):
         # this modifies the output to match the output format of other binary estimators.
         # Ok to fill values of negative class with zeros since the negative class will get dropped
         # in the UI anyways.
-        if estimator.model_family in {
-            ModelFamily.CATBOOST,
-            ModelFamily.XGBOOST,
-        } and is_binary(pipeline.problem_type):
+        if (
+            estimator.model_family
+            in {
+                ModelFamily.CATBOOST,
+                ModelFamily.XGBOOST,
+            }
+            and is_binary(pipeline.problem_type)
+        ):
             shap_values = [np.zeros(shap_values.shape), shap_values]
     else:
         if training_data is None:

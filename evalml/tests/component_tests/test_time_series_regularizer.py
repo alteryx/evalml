@@ -64,7 +64,11 @@ def test_ts_regularizer_init():
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
 
     assert ts_regularizer.name == "Time Series Regularizer"
-    assert ts_regularizer.parameters == {"time_index": "dates", "window_length": 5, "threshold": 0.8}
+    assert ts_regularizer.parameters == {
+        "time_index": "dates",
+        "window_length": 5,
+        "threshold": 0.8,
+    }
     assert ts_regularizer.hyperparameter_ranges == {}
     assert ts_regularizer.modifies_target is True
     assert ts_regularizer.modifies_features is True
