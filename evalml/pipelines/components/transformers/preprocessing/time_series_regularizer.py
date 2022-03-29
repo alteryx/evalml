@@ -54,7 +54,7 @@ def _realign_dates(cleaned_x, cleaned_y, X, y, time_index, issue_dates, error_di
 
 
 class TimeSeriesRegularizer(Transformer):
-    """Transformer that regularizes an inconsistently spaced datetime series.
+    """Transformer that regularizes an inconsistently spaced datetime column.
 
     If X is passed in to fit/transform, the column `time_index` will be checked for an inferrable offset frequency. If
     the `time_index` column is perfectly inferrable then this Transformer will do nothing and return the original X and y.
