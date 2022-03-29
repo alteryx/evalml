@@ -3,6 +3,7 @@
 
 **Future Releases**
     * Enhancements
+        * Added ``TimeSeriesRegularizer`` to handle uninferrable date ranges for time series problems :pr:`3376`
     * Fixes
     * Changes
     * Documentation Changes
@@ -16,8 +17,7 @@
 **v0.48.0 Mar. 25, 2022**
     * Enhancements
         * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
-        * Add support for oversampling in time series classification problems :pr:`3387`
-        * Added ``TimeSeriesRegularizer`` to handle uninferrable date ranges for time series problems :pr:`3376`
+        * Add support for oversampling in time series classification problems :pr:`3387
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`
         * Fixed bug where Email/URL features with missing values would cause the imputer to error out :pr:`3388`
