@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 from dask import distributed as dd
 from sklearn.model_selection import BaseCrossValidator
+from skopt.space import Categorical
 
 from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 
@@ -47,6 +48,7 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
+from evalml.pipelines.components import ARIMARegressor
 from evalml.pipelines.utils import make_timeseries_baseline_pipeline
 from evalml.problem_types import (
     ProblemTypes,
@@ -631,6 +633,19 @@ class AutoMLSearch:
         self.data_splitter = self.data_splitter or default_data_splitter
         self.pipeline_parameters = pipeline_parameters or {}
         self.custom_hyperparameters = custom_hyperparameters or {}
+        if is_time_series(problem_type) and self.X_train.shape[1] > 1:
+            user_arima_hyperparams = ARIMARegressor.name in self.custom_hyperparameters
+            if user_arima_hyperparams and not self.custom_hyperparameters[
+                ARIMARegressor.name
+            ].get("use_covariates"):
+                self.custom_hyperparameters[ARIMARegressor.name].update(
+                    {"use_covariates": Categorical([False])}
+                )
+            elif not user_arima_hyperparams:
+                self.custom_hyperparameters[ARIMARegressor.name] = {
+                    "use_covariates": Categorical([False])
+                }
+
         self.search_iteration_plot = None
         self._interrupted = False
 
@@ -707,7 +722,7 @@ class AutoMLSearch:
                 ensembling=self.ensembling,
                 text_in_ensembling=text_in_ensembling,
                 pipeline_params=parameters,
-                custom_hyperparameters=custom_hyperparameters,
+                custom_hyperparameters=self.custom_hyperparameters,
                 allow_long_running_models=allow_long_running_models,
                 features=features,
                 verbose=self.verbose,

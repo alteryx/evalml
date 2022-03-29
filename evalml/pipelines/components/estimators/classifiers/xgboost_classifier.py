@@ -53,8 +53,8 @@ class XGBoostClassifier(Estimator):
 
     # xgboost supports seeds from -2**31 to 2**31 - 1 inclusive. these limits ensure the random seed generated below
     # is within that range.
-    SEED_MIN = -(2**31)
-    SEED_MAX = 2**31 - 1
+    SEED_MIN = -(2 ** 31)
+    SEED_MAX = 2 ** 31 - 1
 
     def __init__(
         self,

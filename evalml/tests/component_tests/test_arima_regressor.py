@@ -303,3 +303,18 @@ def test_arima_supports_boolean_features():
     ar.fit(X, y)
     preds = ar.predict(X)
     assert not preds.isna().any()
+
+
+def test_arima_regressor_respects_use_covariates(ts_data):
+    X, y = ts_data
+    X_train, y_train = X.iloc[:25], y.iloc[:25]
+    X_test, y_test = X.iloc[25:], y.iloc[25:]
+    clf = ARIMARegressor(use_covariates=False)
+    with patch.object(clf, "_component_obj") as mock_obj:
+        clf.fit(X_train, y_train)
+        clf.predict(X_test)
+        mock_obj.fit.assert_called_once()
+        assert "X" not in mock_obj.fit.call_args.kwargs
+        assert "y" in mock_obj.fit.call_args.kwargs
+        mock_obj.predict.assert_called_once()
+        assert "X" not in mock_obj.predict.call_args.kwargs

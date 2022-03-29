@@ -90,7 +90,7 @@ def convert_to_seconds(input_str):
 # specifies the min and max values a seed to np.random.RandomState is allowed to take.
 # these limits were chosen to fit in the numpy.int32 datatype to avoid issues with 32-bit systems
 # see https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.random.RandomState.html
-SEED_BOUNDS = namedtuple("SEED_BOUNDS", ("min_bound", "max_bound"))(0, 2**31 - 1)
+SEED_BOUNDS = namedtuple("SEED_BOUNDS", ("min_bound", "max_bound"))(0, 2 ** 31 - 1)
 
 
 def get_random_state(seed):

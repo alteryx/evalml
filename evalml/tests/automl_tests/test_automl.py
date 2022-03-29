@@ -4571,7 +4571,6 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
     with env.test_context(score_return_value={automl.objective.name: 1.0}):
         automl.search()
 
-    automl.search()
     estimator_order = (
         automl.full_rankings.sort_values("search_order")
         .id.map(lambda id_: automl.get_pipeline(id_).estimator.name)
@@ -4594,3 +4593,92 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
             "Elastic Net Regressor",
         ]
     assert estimator_order == expected_order
+
+
+@pytest.mark.parametrize("automl_algo", ["iterative", "default"])
+@pytest.mark.parametrize(
+    "hyperparams",
+    [
+        None,
+        {"Imputer": {"numeric_impute_strategy": Categorical(["most_frequent"])}},
+    ],
+)
+def test_automl_restricts_use_covariates_for_arima(
+    hyperparams, automl_algo, AutoMLTestEnv, is_using_windows, X_y_binary
+):
+
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X["Date"] = pd.date_range("2010-01-01", periods=X.shape[0])
+
+    env = AutoMLTestEnv("time series regression")
+    automl = AutoMLSearch(
+        X,
+        y,
+        "time series regression",
+        problem_configuration={
+            "max_delay": 2,
+            "gap": 0,
+            "forecast_horizon": 2,
+            "time_index": "Date",
+        },
+        verbose=True,
+        custom_hyperparameters=hyperparams,
+        automl_algorithm=automl_algo,
+        max_batches=6,
+    )
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+
+    params = automl.full_rankings.parameters.map(
+        lambda p: p.get("ARIMA Regressor", {}).get("use_covariates")
+    ).tolist()
+    arima_params = [p for p in params if p is not None]
+    assert arima_params
+    assert all(not p for p in arima_params)
+
+
+@pytest.mark.parametrize("automl_algo", ["iterative", "default"])
+@pytest.mark.parametrize(
+    "hyperparams",
+    [
+        {"ARIMA Regressor": {"use_covariates": Categorical([True])}},
+        {
+            "ARIMA Regressor": {"use_covariates": Categorical([True])},
+            "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent"])},
+        },
+    ],
+)
+def test_automl_does_not_restrict_use_covariates_if_user_specified(
+    hyperparams, automl_algo, AutoMLTestEnv, is_using_windows, X_y_binary
+):
+
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X["Date"] = pd.date_range("2010-01-01", periods=X.shape[0])
+
+    env = AutoMLTestEnv("time series regression")
+    automl = AutoMLSearch(
+        X,
+        y,
+        "time series regression",
+        problem_configuration={
+            "max_delay": 2,
+            "gap": 0,
+            "forecast_horizon": 2,
+            "time_index": "Date",
+        },
+        verbose=True,
+        automl_algorithm=automl_algo,
+        custom_hyperparameters=hyperparams,
+        max_batches=6,
+    )
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+
+    params = automl.full_rankings.parameters.map(
+        lambda p: p.get("ARIMA Regressor", {}).get("use_covariates")
+    ).tolist()
+    arima_params = [p for p in params if p is not None]
+    assert arima_params
+    assert all(p for p in arima_params)
