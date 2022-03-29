@@ -5,7 +5,7 @@
     * Enhancements
     * Fixes
     * Changes
-        * Unpin ``click`` dependency :pr`3420`
+        * Unpin ``click`` dependency :pr:`3420`
     * Documentation Changes
     * Testing Changes
 
