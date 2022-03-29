@@ -482,7 +482,7 @@ def missing_scattered():
     dates_1 = pd.date_range("2014-03-01", periods=27, freq="5D")
     dates_2 = pd.date_range("2014-07-19", periods=9, freq="5D")
     dates_3 = pd.date_range("2014-09-07", periods=15, freq="5D")
-    dates_4 = pd.date_range("2014-12-01", periods=11, freq="5D")
+    dates_4 = pd.date_range("2014-12-01", periods=21, freq="5D")
     dates = dates_1.append(dates_2).append(dates_3).append(dates_4)
     return dates
 
