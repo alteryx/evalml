@@ -6,6 +6,7 @@
     * Fixes
     * Changes
         * Unpin ``click`` dependency :pr:`3420`
+        * Updated minimum version of featuretools to 1.7.0 and woodwork to 0.15.0 :pr:`3421`
     * Documentation Changes
     * Testing Changes
 
