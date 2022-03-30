@@ -6,6 +6,7 @@
     * Fixes
         * Fix ``DefaultAlgorithm`` not handling Email and URL features :pr:`3419`
     * Changes
+        * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
         * Unpin ``click`` dependency :pr:`3420`
     * Documentation Changes
     * Testing Changes
@@ -13,6 +14,7 @@
 .. warning::
 
     **Breaking Changes**
+        * Moved model understanding metrics from ``graph.py`` to ``metrics.py`` :pr:`3417`
 
 
 **v0.48.0 Mar. 25, 2022**
