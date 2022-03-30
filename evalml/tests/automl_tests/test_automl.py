@@ -4603,7 +4603,6 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
         None,
         {"Imputer": {"numeric_impute_strategy": Categorical(["most_frequent"])}},
         {"ARIMA Regressor": {"seasonal": Categorical([True])}},
-
     ],
 )
 def test_automl_restricts_use_covariates_for_arima(
