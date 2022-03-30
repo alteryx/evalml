@@ -439,6 +439,7 @@ class ComponentGraph:
                 output_cache, component_name, X, y
             )
             self.input_feature_names.update({component_name: list(x_inputs.columns)})
+            self._feature_logical_types[component_name] = x_inputs.ww.logical_types
             if isinstance(component_instance, Transformer):
                 if fit:
                     if component_instance._is_fitted:
@@ -461,7 +462,6 @@ class ComponentGraph:
                 output_cache[f"{component_name}.x"] = output_x
                 output_cache[f"{component_name}.y"] = output_y
             else:
-                self._feature_logical_types[component_name] = x_inputs.ww.logical_types
                 if fit and not component_instance._is_fitted:
                     component_instance.fit(x_inputs, y_input)
                 if fit and component_name == self.compute_order[-1]:
@@ -563,6 +563,30 @@ class ComponentGraph:
             for feature, children in provenance.items()
             if len(children)
         }
+
+    def get_component_input_logical_types(self, component_name):
+        """Get the logical types that are passed to the given component.
+
+        Args:
+            component_name (str): Name of component in the graph
+
+        Returns:
+            Dict - Mapping feature name to logical type instance.
+
+        Raises:
+            ValueError: If the component is not in the graph.
+            ValueError: If the component graph as not been fitted
+        """
+        if not self._feature_logical_types:
+            raise ValueError("Component Graph has not been fit.")
+        if component_name not in self._feature_logical_types:
+            raise ValueError(f"Component {component_name} is not in the graph")
+
+        return self._feature_logical_types[component_name]
+
+    @property
+    def last_component_input_logical_types(self):
+        return self.get_component_input_logical_types(self.compute_order[-1])
 
     def get_component(self, component_name):
         """Retrieves a single component object from the graph.

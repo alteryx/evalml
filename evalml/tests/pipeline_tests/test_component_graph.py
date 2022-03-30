@@ -12,7 +12,13 @@ from pandas.testing import (
     assert_index_equal,
     assert_series_equal,
 )
-from woodwork.logical_types import Double, Integer
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Double,
+    EmailAddress,
+    Integer,
+)
 
 from evalml.demos import load_diabetes
 from evalml.exceptions import (
@@ -2567,3 +2573,99 @@ def test_component_graph_handles_engineered_features(
         component_graph._input_types.columns.keys()
         == feature_matrix_base_only.ww.schema.columns.keys()
     )
+
+
+def test_get_component_input_logical_types():
+
+    X = pd.DataFrame(
+        {
+            "cat": pd.Series(["a"] * 50 + ["b"] * 50 + ["c"] * 50),
+            "numeric": pd.Series(range(150)),
+            "email": pd.Series(["foo@gmail.com"] * 50 + ["bar@yahoo.com"] * 100),
+        }
+    )
+    y = pd.Series(range(-300, -150))
+    X.ww.init(logical_types={"email": "EmailAddress", "numeric": "Integer"})
+
+    graph1 = ComponentGraph(
+        component_dict={
+            "Email": ["Email Featurizer", "X", "y"],
+            "OHE": ["One Hot Encoder", "Email.x", "y"],
+            "RF": [
+                "Random Forest Classifier",
+                "OHE.x",
+                "y",
+            ],
+        }
+    )
+    graph1.instantiate()
+    graph1.fit(X, y)
+    assert graph1.get_component_input_logical_types("OHE") == {
+        "numeric": Integer(),
+        "cat": Categorical(),
+        "EMAIL_ADDRESS_TO_DOMAIN(email)": Categorical(),
+        "IS_FREE_EMAIL_DOMAIN(email)": Categorical(),
+    }
+    assert graph1.last_component_input_logical_types == {
+        "numeric": Integer(),
+        "cat_a": Boolean(),
+        "cat_b": Boolean(),
+        "cat_c": Boolean(),
+        "EMAIL_ADDRESS_TO_DOMAIN(email)_gmail.com": Boolean(),
+        "IS_FREE_EMAIL_DOMAIN(email)_True": Boolean(),
+    }
+
+    ensemble = ComponentGraph(
+        component_dict={
+            "Email": ["Email Featurizer", "X", "y"],
+            "OHE": ["One Hot Encoder", "Email.x", "y"],
+            "RF": [
+                "Random Forest Regressor",
+                "OHE.x",
+                "y",
+            ],
+            "Email Catboost": ["Email Featurizer", "X", "y"],
+            "Catboost": [
+                "CatBoost Regressor",
+                "Email Catboost.x",
+                "y",
+            ],
+            "Estimator": ["Elastic Net Regressor", "Catboost.x", "RF.x", "y"],
+        }
+    )
+    ensemble.instantiate()
+    ensemble.fit(X, y)
+
+    assert ensemble.last_component_input_logical_types == {
+        "Catboost.x": Double(),
+        "RF.x": Double(),
+    }
+    assert ensemble.get_component_input_logical_types("Catboost") == {
+        "cat": Categorical(),
+        "numeric": Integer(),
+        "EMAIL_ADDRESS_TO_DOMAIN(email)": Categorical(),
+        "IS_FREE_EMAIL_DOMAIN(email)": Categorical(),
+    }
+
+    no_estimator = ComponentGraph(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+        }
+    )
+    no_estimator.instantiate()
+
+    with pytest.raises(ValueError, match="has not been fit"):
+        _ = no_estimator.last_component_input_logical_types
+
+    no_estimator.fit(X, y)
+
+    with pytest.raises(ValueError, match="not in the graph"):
+        _ = no_estimator.get_component_input_logical_types("Catboost")
+
+    no_estimator.fit(X, y)
+    assert no_estimator.last_component_input_logical_types == {
+        "cat": Categorical(),
+        "numeric": Integer(),
+        "email": EmailAddress(),
+    }
