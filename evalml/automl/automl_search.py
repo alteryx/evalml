@@ -633,7 +633,10 @@ class AutoMLSearch:
         self.data_splitter = self.data_splitter or default_data_splitter
         self.pipeline_parameters = pipeline_parameters or {}
         self.custom_hyperparameters = custom_hyperparameters or {}
-        if is_time_series(problem_type) and self.X_train.shape[1] > 5:
+        # Fitting takes a long time if the data is too wide or long.
+        if is_time_series(problem_type) and (
+            self.X_train.shape[1] >= 10 or self.X_train.shape[0] >= 10000
+        ):
             user_arima_hyperparams = ARIMARegressor.name in self.custom_hyperparameters
             if user_arima_hyperparams and not self.custom_hyperparameters[
                 ARIMARegressor.name

@@ -4595,6 +4595,7 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
     assert estimator_order == expected_order
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("automl_algo", ["iterative", "default"])
 @pytest.mark.parametrize(
     "hyperparams",
@@ -4638,6 +4639,7 @@ def test_automl_restricts_use_covariates_for_arima(
     assert all(not p for p in arima_params)
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("automl_algo", ["iterative", "default"])
 @pytest.mark.parametrize(
     "hyperparams",
@@ -4656,7 +4658,6 @@ def test_automl_does_not_restrict_use_covariates_if_user_specified(
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X["Date"] = pd.date_range("2010-01-01", periods=X.shape[0])
-
     env = AutoMLTestEnv("time series regression")
     automl = AutoMLSearch(
         X,

@@ -72,8 +72,8 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
 @pytest.mark.parametrize(
     "problem_type",
     [
-        # ProblemTypes.TIME_SERIES_BINARY,
-        # ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
         ProblemTypes.TIME_SERIES_REGRESSION,
     ],
 )
