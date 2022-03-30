@@ -3,7 +3,7 @@
 
 **Future Releases**
     * Enhancements
-        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`, :pr:`3427`
     * Fixes
     * Changes
         * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
