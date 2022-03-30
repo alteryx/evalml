@@ -8,6 +8,9 @@ from evalml.utils import infer_feature_types
 class TimeSeriesImputer(Transformer):
     """Imputes missing data according to a specified timeseries-specific imputation strategy.
 
+    This Transformer should be used after the `TimeSeriesRegularizer` in order to impute the missing values that were
+    added to X and y (if passed).
+
     Args:
         categorical_impute_strategy (string): Impute strategy to use for string, object, boolean, categorical dtypes.
                                               Valid values include "backwards_fill" and "forwards_fill". Defaults to "forwards_fill".
