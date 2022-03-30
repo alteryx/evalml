@@ -586,6 +586,15 @@ class ComponentGraph:
 
     @property
     def last_component_input_logical_types(self):
+        """Get the logical types that are passed to the last component in the pipeline.
+
+        Returns:
+            Dict - Mapping feature name to logical type instance.
+
+        Raises:
+            ValueError: If the component is not in the graph.
+            ValueError: If the component graph as not been fitted
+        """
         return self.get_component_input_logical_types(self.compute_order[-1])
 
     def get_component(self, component_name):
