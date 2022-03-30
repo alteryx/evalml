@@ -1,5 +1,6 @@
 """Data check that checks if the datetime column has equally spaced intervals and is monotonically increasing or decreasing in order to be supported by time series estimators."""
 import pandas as pd
+from woodwork.statistics_utils import infer_frequency
 
 from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode
 from evalml.utils import infer_feature_types
@@ -180,8 +181,8 @@ class DateTimeFormatDataCheck(DataCheck):
             return messages
 
         # Check if the data is monotonically increasing
-        datetime_values = datetime_values.dropna()
-        if not pd.DatetimeIndex(datetime_values).is_monotonic_increasing:
+        no_nan_datetime_values = datetime_values.dropna()
+        if not pd.DatetimeIndex(no_nan_datetime_values).is_monotonic_increasing:
             messages.append(
                 DataCheckError(
                     message="Datetime values must be sorted in ascending order.",
@@ -194,8 +195,15 @@ class DateTimeFormatDataCheck(DataCheck):
             self.datetime_column if self.datetime_column != "index" else "either index"
         )
 
-        infer_dict = X.ww.infer_temporal_frequencies(debug=True)
-        inferred_freq, debug_object = infer_dict[self.datetime_column]
+        ww_payload = infer_frequency(
+            pd.Series(datetime_values),
+            debug=True,
+            window_length=3,
+        )
+        inferred_freq = ww_payload[0]
+        debug_object = ww_payload[1]
+        if inferred_freq is not None:
+            return messages
 
         # Check for NaN values
         if len(debug_object["nan_values"]) > 0:
