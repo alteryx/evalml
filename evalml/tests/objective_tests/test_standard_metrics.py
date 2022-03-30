@@ -192,14 +192,11 @@ def test_accuracy_binary():
     assert obj.score(np.array([0, 0, 1, 1]), np.array([0, 0, 1, 1])) == pytest.approx(
         1.0, EPS
     )
-    assert (
-        obj.score(
-            np.array([0, 0, 1, 1]),
-            np.array([0, 1, 0, 1]),
-            sample_weight=np.array([0.5, 0, 0, 0.5]),
-        )
-        == pytest.approx(1.0, EPS)
-    )
+    assert obj.score(
+        np.array([0, 0, 1, 1]),
+        np.array([0, 1, 0, 1]),
+        sample_weight=np.array([0.5, 0, 0, 0.5]),
+    ) == pytest.approx(1.0, EPS)
 
 
 def test_accuracy_multi():
@@ -220,14 +217,11 @@ def test_accuracy_multi():
         np.array([0, 0, 0, 0, 0, 0]), np.array([0, 0, 1, 1, 2, 2])
     ) == pytest.approx(1 / 3.0, EPS)
 
-    assert (
-        obj.score(
-            np.array([0, 0, 1, 1]),
-            np.array([0, 1, 0, 1]),
-            sample_weight=np.array([0.5, 0, 0, 0.5]),
-        )
-        == pytest.approx(1.0, EPS)
-    )
+    assert obj.score(
+        np.array([0, 0, 1, 1]),
+        np.array([0, 1, 0, 1]),
+        sample_weight=np.array([0.5, 0, 0, 0.5]),
+    ) == pytest.approx(1.0, EPS)
 
 
 def test_balanced_accuracy_binary():
@@ -244,14 +238,11 @@ def test_balanced_accuracy_binary():
         np.array([0, 1, 0, 0, 1, 0]), np.array([1, 0, 1, 1, 0, 1])
     ) == pytest.approx(0.0, EPS)
 
-    assert (
-        obj.score(
-            np.array([0, 1, 0, 0, 1, 0]),
-            np.array([0, 1, 0, 0, 0, 1]),
-            sample_weight=np.array([0.25, 0.25, 0.25, 0.25, 0, 0]),
-        )
-        == pytest.approx(1.0, EPS)
-    )
+    assert obj.score(
+        np.array([0, 1, 0, 0, 1, 0]),
+        np.array([0, 1, 0, 0, 0, 1]),
+        sample_weight=np.array([0.25, 0.25, 0.25, 0.25, 0, 0]),
+    ) == pytest.approx(1.0, EPS)
 
 
 def test_balanced_accuracy_multi():
@@ -268,14 +259,11 @@ def test_balanced_accuracy_multi():
         np.array([0, 1, 2, 0, 1, 2, 3]), np.array([1, 0, 3, 1, 2, 1, 0])
     ) == pytest.approx(0.0, EPS)
 
-    assert (
-        obj.score(
-            np.array([0, 1, 2, 0, 1, 2, 3]),
-            np.array([0, 0, 2, 0, 0, 2, 3]),
-            sample_weight=np.array([0, 0.25, 0, 0, 0.25, 0, 0]),
-        )
-        == pytest.approx(0.0, EPS)
-    )
+    assert obj.score(
+        np.array([0, 1, 2, 0, 1, 2, 3]),
+        np.array([0, 0, 2, 0, 0, 2, 3]),
+        sample_weight=np.array([0, 0.25, 0, 0, 0.25, 0, 0]),
+    ) == pytest.approx(0.0, EPS)
 
 
 def test_f1_binary():
@@ -294,14 +282,11 @@ def test_f1_binary():
 
     assert obj.score(np.array([0, 0]), np.array([0, 0])) == pytest.approx(0.0, EPS)
 
-    assert (
-        obj.score(
-            np.array([0, 1, 0, 0, 1, 0]),
-            np.array([0, 1, 0, 0, 0, 1]),
-            sample_weight=np.array([0, 0, 0, 0, 1, 0]),
-        )
-        == pytest.approx(0.0, EPS)
-    )
+    assert obj.score(
+        np.array([0, 1, 0, 0, 1, 0]),
+        np.array([0, 1, 0, 0, 0, 1]),
+        sample_weight=np.array([0, 0, 0, 0, 1, 0]),
+    ) == pytest.approx(0.0, EPS)
 
 
 def test_f1_micro_multi():
@@ -320,14 +305,11 @@ def test_f1_micro_multi():
 
     assert obj.score(np.array([1, 2]), np.array([0, 0])) == pytest.approx(0.0, EPS)
 
-    assert (
-        obj.score(
-            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
-            np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
-            sample_weight=np.array([1, 0, 0, 1, 0, 0, 0, 0, 1]),
-        )
-        == pytest.approx(1 / 3.0, EPS)
-    )
+    assert obj.score(
+        np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
+        sample_weight=np.array([1, 0, 0, 1, 0, 0, 0, 0, 1]),
+    ) == pytest.approx(1 / 3.0, EPS)
 
 
 def test_f1_macro_multi():
@@ -346,14 +328,11 @@ def test_f1_macro_multi():
 
     assert obj.score(np.array([1, 2]), np.array([0, 0])) == pytest.approx(0.0, EPS)
 
-    assert (
-        obj.score(
-            np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
-            np.array([1, 0, 0, 1, 1, 1, 2, 2, 2]),
-            sample_weight=np.array([1, 0, 0, 0, 0, 0, 0, 0, 0]),
-        )
-        == pytest.approx(0.0, EPS)
-    )
+    assert obj.score(
+        np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
+        np.array([1, 0, 0, 1, 1, 1, 2, 2, 2]),
+        sample_weight=np.array([1, 0, 0, 0, 0, 0, 0, 0, 0]),
+    ) == pytest.approx(0.0, EPS)
 
 
 def test_f1_weighted_multi():
@@ -372,14 +351,11 @@ def test_f1_weighted_multi():
 
     assert obj.score(np.array([0, 0]), np.array([1, 2])) == pytest.approx(0.0, EPS)
 
-    assert (
-        obj.score(
-            np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
-            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
-            sample_weight=np.array([1, 0, 1, 0, 0, 0, 0, 0, 0]),
-        )
-        == pytest.approx(1.0, EPS)
-    )
+    assert obj.score(
+        np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
+        np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        sample_weight=np.array([1, 0, 1, 0, 0, 0, 0, 0, 0]),
+    ) == pytest.approx(1.0, EPS)
 
 
 def test_precision_binary():
@@ -400,14 +376,11 @@ def test_precision_binary():
         np.array([0, 0, 0, 0, 0, 0]), np.array([0, 0, 0, 0, 0, 0])
     ) == pytest.approx(0.0, EPS)
 
-    assert (
-        obj.score(
-            np.array([1, 1, 1, 1, 1, 1]),
-            np.array([0, 0, 0, 1, 1, 1]),
-            sample_weight=np.array([0, 100, 0, 0, 0, 0]),
-        )
-        == pytest.approx(0.0, EPS)
-    )
+    assert obj.score(
+        np.array([1, 1, 1, 1, 1, 1]),
+        np.array([0, 0, 0, 1, 1, 1]),
+        sample_weight=np.array([0, 100, 0, 0, 0, 0]),
+    ) == pytest.approx(0.0, EPS)
 
 
 def test_precision_micro_multi():
@@ -426,14 +399,11 @@ def test_precision_micro_multi():
 
     assert obj.score(np.array([0, 0]), np.array([1, 2])) == pytest.approx(0.0, EPS)
 
-    assert (
-        obj.score(
-            np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
-            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
-            sample_weight=np.array([100, 0, 0, 0, 0, 0, 0, 0, 0]),
-        )
-        == pytest.approx(1, EPS)
-    )
+    assert obj.score(
+        np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
+        np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        sample_weight=np.array([100, 0, 0, 0, 0, 0, 0, 0, 0]),
+    ) == pytest.approx(1, EPS)
 
 
 def test_precision_macro_multi():
@@ -452,14 +422,11 @@ def test_precision_macro_multi():
 
     assert obj.score(np.array([0, 0]), np.array([1, 2])) == pytest.approx(0.0, EPS)
 
-    assert (
-        obj.score(
-            np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
-            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
-            sample_weight=np.array([0, 0, 0, 0, 0, 0, 0, 5, 5]),
-        )
-        == pytest.approx(0.0, EPS)
-    )
+    assert obj.score(
+        np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
+        np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        sample_weight=np.array([0, 0, 0, 0, 0, 0, 0, 5, 5]),
+    ) == pytest.approx(0.0, EPS)
 
 
 def test_precision_weighted_multi():
@@ -478,14 +445,11 @@ def test_precision_weighted_multi():
 
     assert obj.score(np.array([0, 0]), np.array([1, 2])) == pytest.approx(0.0, EPS)
 
-    assert (
-        obj.score(
-            np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
-            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
-            sample_weight=np.array([5, 0, 0, 0, 0, 0, 0, 0, 5]),
-        )
-        == pytest.approx(1 / 4.0, EPS)
-    )
+    assert obj.score(
+        np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
+        np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        sample_weight=np.array([5, 0, 0, 0, 0, 0, 0, 0, 5]),
+    ) == pytest.approx(1 / 4.0, EPS)
 
 
 def test_recall_binary():
@@ -502,14 +466,11 @@ def test_recall_binary():
         np.array([1, 1, 1, 1, 1, 1]), np.array([0, 0, 0, 1, 1, 1])
     ) == pytest.approx(0.5, EPS)
 
-    assert (
-        obj.score(
-            np.array([0, 0, 0, 1, 1, 1]),
-            np.array([1, 1, 1, 1, 1, 1]),
-            sample_weight=np.array([1, 0, 1, 0, 0, 1]),
-        )
-        == pytest.approx(1.0, EPS)
-    )
+    assert obj.score(
+        np.array([0, 0, 0, 1, 1, 1]),
+        np.array([1, 1, 1, 1, 1, 1]),
+        sample_weight=np.array([1, 0, 1, 0, 0, 1]),
+    ) == pytest.approx(1.0, EPS)
 
 
 def test_recall_micro_multi():
@@ -528,14 +489,11 @@ def test_recall_micro_multi():
 
     assert obj.score(np.array([0, 0]), np.array([1, 2])) == pytest.approx(0.0, EPS)
 
-    assert (
-        obj.score(
-            np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
-            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
-            sample_weight=np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
-        )
-        == pytest.approx(0.0, EPS)
-    )
+    assert obj.score(
+        np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
+        np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        sample_weight=np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
+    ) == pytest.approx(0.0, EPS)
 
 
 def test_recall_macro_multi():
@@ -554,14 +512,11 @@ def test_recall_macro_multi():
 
     assert obj.score(np.array([0, 0]), np.array([1, 2])) == pytest.approx(0.0, EPS)
 
-    assert (
-        obj.score(
-            np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
-            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
-            sample_weight=np.array([0, 0, 0, 0, 0, 0, 0, 0, 1]),
-        )
-        == pytest.approx(0.0, EPS)
-    )
+    assert obj.score(
+        np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
+        np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        sample_weight=np.array([0, 0, 0, 0, 0, 0, 0, 0, 1]),
+    ) == pytest.approx(0.0, EPS)
 
 
 def test_recall_weighted_multi():
@@ -580,14 +535,11 @@ def test_recall_weighted_multi():
 
     assert obj.score(np.array([0, 0]), np.array([1, 2])) == pytest.approx(0.0, EPS)
 
-    assert (
-        obj.score(
-            np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
-            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
-            sample_weight=np.array([0, 0, 0, 0, 1, 0, 0, 0, 0]),
-        )
-        == pytest.approx(0.0, EPS)
-    )
+    assert obj.score(
+        np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]),
+        np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        sample_weight=np.array([0, 0, 0, 0, 1, 0, 0, 0, 0]),
+    ) == pytest.approx(0.0, EPS)
 
 
 def test_log_linear_model():
@@ -689,13 +641,10 @@ def test_mape_time_series_model():
     assert obj.score(
         pd.Series(s3_actual, index=range(-12, -6)), s3_predicted
     ) == pytest.approx(4 / 6 * 100)
-    assert (
-        obj.score(
-            pd.Series(s2_actual, index=range(10, 14)),
-            pd.Series(s2_predicted, index=range(20, 24)),
-        )
-        == pytest.approx(8 / 4 * 100)
-    )
+    assert obj.score(
+        pd.Series(s2_actual, index=range(10, 14)),
+        pd.Series(s2_predicted, index=range(20, 24)),
+    ) == pytest.approx(8 / 4 * 100)
 
 
 @pytest.mark.parametrize("objective_class", _all_objectives_dict().values())

@@ -184,6 +184,6 @@ class UniquenessDataCheck(DataCheck):
         norm_counts = (
             col.value_counts(dropna=drop_na) / col.value_counts(dropna=drop_na).sum()
         )
-        square_counts = norm_counts ** 2
+        square_counts = norm_counts**2
         score = 1 - square_counts.sum()
         return score

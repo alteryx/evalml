@@ -4,6 +4,44 @@
 **Future Releases**
     * Enhancements
         * Added ``TimeSeriesImputer`` component :pr:`3374`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.48.0 Mar. 25, 2022**
+    * Enhancements
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
+        * Add support for oversampling in time series classification problems :pr:`3387`
+    * Fixes
+        * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`
+        * Fixed bug where Email/URL features with missing values would cause the imputer to error out :pr:`3388`
+    * Changes
+        * Update maintainers to add Frank :pr:`3382`
+        * Allow woodwork version 0.14.0 to be installed :pr:`3381`
+        * Moved partial dependence functions from ``graph.py`` to a separate file :pr:`3404`
+        * Pin ``click`` at ``8.0.4`` due to incompatibility with ``black`` :pr:`3413`
+    * Documentation Changes
+        * Added automl user guide section covering search algorithms :pr:`3394`
+        * Updated broken links and automated broken link detection :pr:`3398`
+        * Upgraded nbconvert :pr:`3402`, :pr:`3411`
+    * Testing Changes
+        * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`3395`)
+        * Exclude documentation versions other than latest from broken link check :pr:`3401`
+
+.. warning::
+
+    **Breaking Changes**
+        * Moved partial dependence functions from ``graph.py`` to ``partial_dependence.py`` :pr:`3404`
+
+
+**v0.47.0 Mar. 16, 2022**
+    * Enhancements
         * Added ``TimeSeriesFeaturizer`` into ARIMA-based pipelines :pr:`3313`
         * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
         * Added new error code for zero unique values in ``NoVarianceDataCheck`` :pr:`3372`
@@ -11,14 +49,11 @@
         * Fixed ``get_pipelines`` to reset pipeline threshold for binary cases :pr:`3360`
     * Changes
         * Update maintainers :pr:`3365`
+        * Revert pandas 1.3.0 compatibility patch :pr:`3378`
     * Documentation Changes
         * Fixed documentation links to point to correct pages :pr:`3358`
     * Testing Changes
         * Checkout main branch in build_conda_pkg job :pr:`3375`
-
-.. warning::
-
-    **Breaking Changes**
 
 **v0.46.0 Mar. 03, 2022**
     * Enhancements
@@ -51,6 +86,7 @@
         * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
         * Updated ``AutoMLSearch`` to use ``DefaultAlgorithm`` as the default automl algorithm :pr:`3261`, :pr:`3304`
         * Added more specific data check errors to ``DatetimeFormatDataCheck`` :pr:`3288`
+        * Added ``features`` as a parameter for ``AutoMLSearch`` and add ``DFSTransformer`` to pipelines when ``features`` are present :pr:`3309`
     * Fixes
         * Updated the binary classification pipeline's ``optimize_thresholds`` method to use Nelder-Mead :pr:`3280`
         * Fixed bug where feature importance on time series pipelines only showed 0 for time index :pr:`3285`

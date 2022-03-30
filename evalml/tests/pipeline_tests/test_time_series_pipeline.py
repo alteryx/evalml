@@ -1584,3 +1584,48 @@ def test_time_index_cannot_be_none(time_series_regression_pipeline_class):
                 }
             }
         )
+
+
+def test_time_series_random_forest_transform_all_but_final(
+    time_series_regression_pipeline_class,
+):
+    X, y = (
+        pd.DataFrame(
+            {
+                "z_features": range(101, 132),
+                "features2": [["cat", "dog", "rabbit"][i % 3] for i in range(1, 32)],
+                "a_features3": range(201, 232),
+                "real_features4": range(102, 133),
+                "date": pd.date_range("2020-10-01", "2020-10-31"),
+            }
+        ),
+        pd.Series(range(1, 32)),
+    )
+    y.index = pd.date_range("2020-10-01", "2020-10-31")
+    X.index = pd.date_range("2020-10-01", "2020-10-31")
+    X.ww.init()
+    pipeline = time_series_regression_pipeline_class(
+        parameters={
+            "pipeline": {
+                "gap": 0,
+                "max_delay": 1,
+                "time_index": "date",
+                "forecast_horizon": 1,
+            },
+            "Time Series Featurizer": {
+                "gap": 0,
+                "max_delay": 1,
+                "time_index": "date",
+                "forecast_horizon": 1,
+            },
+        }
+    )
+    pipeline.fit(X, y)
+    transformed = pipeline.transform_all_but_final(X, y).columns
+    rolling = [c for c in transformed.tolist() if "rolling_mean" in c]
+    assert rolling == [
+        "a_features3_rolling_mean",
+        "real_features4_rolling_mean",
+        "z_features_rolling_mean",
+        "target_rolling_mean",
+    ]
