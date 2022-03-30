@@ -6,6 +6,7 @@
         * Added ``TimeSeriesRegularizer`` to handle uninferrable date ranges for time series problems :pr:`3376`
     * Fixes
     * Changes
+        * Unpin ``click`` dependency :pr:`3420`
     * Documentation Changes
     * Testing Changes
 
