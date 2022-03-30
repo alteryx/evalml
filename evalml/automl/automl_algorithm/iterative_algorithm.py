@@ -286,7 +286,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             for pipeline in self.allowed_pipelines:
                 starting_parameters = self._tuners[
                     pipeline.name
-                ].get_starting_parameters()
+                ].get_starting_parameters(self._hyperparameters)
                 parameters = self._transform_parameters(pipeline, starting_parameters)
                 next_batch.append(
                     pipeline.new(parameters=parameters, random_seed=self.random_seed)

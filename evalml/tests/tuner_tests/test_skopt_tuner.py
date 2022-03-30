@@ -70,7 +70,9 @@ def test_skopt_tuner_basic():
 
     tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_seed=random_seed)
     assert isinstance(tuner, Tuner)
-    first_params = tuner.get_starting_parameters()
+    first_params = tuner.get_starting_parameters({})
+    assert first_params == {}
+    first_params = tuner.get_starting_parameters(pipeline_hyperparameter_ranges)
     assert first_params == {
         "Mock Classifier": {
             "parameter a": 5,
