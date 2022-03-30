@@ -2575,6 +2575,7 @@ def test_component_graph_handles_engineered_features(
     )
 
 
+@pytest.mark.noncore_dependency
 def test_get_component_input_logical_types():
 
     X = pd.DataFrame(
