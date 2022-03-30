@@ -1,22 +1,24 @@
 """Model understanding tools."""
 from .graphs import (
     binary_objective_vs_threshold,
-    confusion_matrix,
     get_linear_coefficients,
     get_prediction_vs_actual_data,
     get_prediction_vs_actual_over_time_data,
     graph_binary_objective_vs_threshold,
-    graph_confusion_matrix,
     graph_permutation_importance,
-    graph_precision_recall_curve,
     graph_prediction_vs_actual,
     graph_prediction_vs_actual_over_time,
-    graph_roc_curve,
     graph_t_sne,
+    t_sne,
+)
+from .metrics import (
+    confusion_matrix,
+    graph_confusion_matrix,
+    graph_precision_recall_curve,
+    graph_roc_curve,
     normalize_confusion_matrix,
     precision_recall_curve,
     roc_curve,
-    t_sne,
 )
 from .partial_dependence_functions import (
     graph_partial_dependence,
