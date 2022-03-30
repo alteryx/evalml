@@ -7,52 +7,6 @@ from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import infer_feature_types
 
 
-def _realign_dates(cleaned_x, cleaned_y, X, y, time_index, issue_dates, error_dict):
-    """Realigns observations whose datetime values have been identified as misaligned.
-
-    Args:
-        cleaned_x (pd.DataFrame): The expected 'clean' training data.
-        cleaned_y (pd.Series, optional): The expected 'clean' target training data.
-        X (pd.DataFrame): The actual input training data of shape.
-        y (pd.Series): The actual target training data.
-        time_index (str): The column indicating the time index.
-        issue_dates (dict): Unmatched datetime values.
-        error_dict (dict): Dictionary of all faulty datetime values.
-
-    Returns:
-        (pd.DataFrame, pd.Series): Data with an inferrable `time_index` offset frequency with realigned observations.
-    """
-    misaligned_ind_clean = {}
-
-    for issue_ind, issue_val in issue_dates.items():
-        if issue_ind not in error_dict["missing"].keys():
-            misaligned_ind_clean[issue_ind] = issue_val
-
-    for misaligned_ind_original, each_misaligned_original in error_dict[
-        "misaligned"
-    ].items():
-        clean_x_date = pd.to_datetime(each_misaligned_original["correct"])
-        feature_values = X.loc[
-            X.index == misaligned_ind_original,
-            list(set(cleaned_x.columns) - {time_index}),
-        ].iloc[0]
-        cleaned_x.loc[
-            cleaned_x[time_index] == clean_x_date,
-            list(set(cleaned_x.columns) - {time_index}),
-        ] = feature_values.values
-
-        if cleaned_y is not None:
-            for (
-                misaligned_clean_ind,
-                misaligned_clean_val,
-            ) in misaligned_ind_clean.items():
-                if pd.to_datetime(misaligned_clean_val) == clean_x_date:
-                    cleaned_y.iloc[misaligned_clean_ind] = y.iloc[
-                        misaligned_ind_original
-                    ]
-    return cleaned_x, cleaned_y
-
-
 class TimeSeriesRegularizer(Transformer):
     """Transformer that regularizes an inconsistently spaced datetime column.
 
@@ -266,48 +220,6 @@ class TimeSeriesRegularizer(Transformer):
 
         return final_error_dict
 
-    def create_clean_x_y(self, X, y):
-        """Creates a clean X and y to repopulate with the original X and y values based off of an inferrable frequency.
-
-        Args:
-            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
-            y (pd.Series, optional): The target training data of length [n_samples].
-
-        Returns:
-            (pd.DataFrame, pd.Series, dict): X and y based off of an inferrable `time_index` range and a dict of
-            unmatched datetime values.
-        """
-        clean_x = pd.DataFrame(columns=X.columns)
-
-        expected_ts = pd.date_range(
-            start=self.debug_payload["estimated_range_start"],
-            end=self.debug_payload["estimated_range_end"],
-            freq=self.debug_payload["estimated_freq"],
-        )
-
-        issue_dates = {}
-
-        clean_x[self.time_index] = expected_ts
-        clean_y = pd.Series([None] * len(clean_x)) if y is not None else None
-
-        for ind_, datetime in enumerate(clean_x[self.time_index]):
-            if pd.Timestamp(datetime) in X[self.time_index].values:
-                # If the datetime value in the clean dataset is in X more than once, then select only the features of
-                # the first of these duplicate observations
-                feature_values = X.loc[
-                    X[self.time_index] == pd.Timestamp(datetime)
-                ].iloc[0]
-                clean_x.iloc[ind_] = feature_values.values
-                if clean_y is not None:
-                    clean_y.iloc[ind_] = y.iloc[feature_values.name]
-            else:
-                clean_x.loc[
-                    clean_x[self.time_index] == datetime,
-                    list(set(clean_x.columns) - {self.time_index}),
-                ] = None
-                issue_dates[ind_] = datetime
-        return clean_x, clean_y, issue_dates
-
     def transform(self, X, y=None):
         """Regularizes a dataframe and target data to an inferrable offset frequency.
 
@@ -325,12 +237,33 @@ class TimeSeriesRegularizer(Transformer):
         if self.inferred_freq is not None:
             return X, y
 
-        X_ww = infer_feature_types(X)
-        if y is not None:
-            y = infer_feature_types(y)
-
-        cleaned_x, cleaned_y, issue_dates = self.create_clean_x_y(X_ww, y)
-        cleaned_x, cleaned_y = _realign_dates(
-            cleaned_x, cleaned_y, X_ww, y, self.time_index, issue_dates, self.error_dict
+        cleaned_df = pd.DataFrame(
+            {
+                self.time_index: pd.date_range(
+                    self.debug_payload["estimated_range_start"],
+                    self.debug_payload["estimated_range_end"],
+                    freq=self.debug_payload["estimated_freq"],
+                )
+            }
         )
+
+        cleaned_x = cleaned_df.merge(X, on=[self.time_index], how="left")
+        cleaned_x = cleaned_x.groupby(self.time_index).first().reset_index()
+
+        cleaned_y = None
+        if y is not None:
+            y_dates = pd.DataFrame({self.time_index: X[self.time_index], "target": y})
+            cleaned_y = cleaned_df.merge(y_dates, on=[self.time_index], how="left")
+            cleaned_y = cleaned_y.groupby(self.time_index).first().reset_index()
+
+        for index, values in self.error_dict["misaligned"].items():
+            to_replace = X.iloc[index]
+            to_replace["dates"] = values["correct"]
+            cleaned_x.loc[cleaned_x.dates == values["correct"]] = to_replace.values
+            if y is not None:
+                cleaned_y.loc[cleaned_y.dates == values["correct"]] = y.iloc[index]
+
+        if cleaned_y is not None:
+            cleaned_y = cleaned_y["target"]
+
         return cleaned_x, cleaned_y
