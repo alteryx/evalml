@@ -6,6 +6,7 @@
     * Fixes
     * Changes
         * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
+        * Unpin ``click`` dependency :pr:`3420`
     * Documentation Changes
     * Testing Changes
 
