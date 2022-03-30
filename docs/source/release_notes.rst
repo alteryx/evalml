@@ -4,6 +4,7 @@
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fix ``DefaultAlgorithm`` not handling Email and URL features :pr:3419
     * Changes
         * Unpin ``click`` dependency :pr:`3420`
     * Documentation Changes
