@@ -68,6 +68,7 @@ class ARIMARegressor(Estimator):
         n_jobs=-1,
         random_seed=0,
         maxiter=10,
+        use_covariates=True,
         **kwargs,
     ):
         parameters = {
@@ -93,6 +94,9 @@ class ARIMARegressor(Estimator):
             "sktime.forecasting.arima", error_msg=arima_model_msg
         )
         arima_model = sktime_arima.AutoARIMA(**parameters)
+        parameters["use_covariates"] = use_covariates
+
+        self.use_covariates = use_covariates
 
         super().__init__(
             parameters=parameters, component_obj=arima_model, random_seed=random_seed
@@ -154,8 +158,7 @@ class ARIMARegressor(Estimator):
             )
         y = self._remove_datetime(y)
         X, y = self._match_indices(X, y)
-
-        if X is not None and not X.empty:
+        if X is not None and not X.empty and self.use_covariates:
             self._component_obj.fit(y=y, X=X)
         else:
             self._component_obj.fit(y=y)
@@ -183,8 +186,7 @@ class ARIMARegressor(Estimator):
                 for col in X.ww.select(["Boolean"], return_schema=True).columns
             }
         )
-
-        if not X.empty:
+        if not X.empty and self.use_covariates:
             y_pred = self._component_obj.predict(fh=fh_, X=X)
         else:
             y_pred = self._component_obj.predict(fh=fh_)
