@@ -17,7 +17,6 @@ from evalml.exceptions import (
 from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,
-    TimeSeriesRegularizer,
 )
 from evalml.pipelines.components import (
     LSA,
@@ -65,6 +64,7 @@ from evalml.pipelines.components import (
     TargetImputer,
     TimeSeriesBaselineEstimator,
     TimeSeriesFeaturizer,
+    TimeSeriesRegularizer,
     Transformer,
     Undersampler,
     XGBoostClassifier,
