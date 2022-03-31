@@ -3,6 +3,17 @@
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.49.0 Mar. 31, 2022**
+    * Enhancements
         * Added ``use_covariates`` parameter to ``ARIMARegressor`` :pr:`3407`
         * ``AutoMLSearch`` will set ``use_covariates`` to ``False`` for ARIMA when dataset is large :pr:`3407`
         * Add ability to retrieve logical types to a component in the graph via ``get_component_input_logical_types`` :pr:`3428`
