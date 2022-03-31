@@ -94,53 +94,30 @@ class TimeSeriesImputer(Transformer):
         Returns:
             self
         """
-        forwards_fill_cats = (
-            ["category", "boolean"]
-            if self.parameters["categorical_impute_strategy"] == "forwards_fill"
-            else []
-        )
-        backwards_fill_cats = (
-            ["category", "boolean"]
-            if self.parameters["categorical_impute_strategy"] == "backwards_fill"
-            else []
-        )
-        interpolation_cats = []
-        if self.parameters["numeric_impute_strategy"] == "forwards_fill":
-            forwards_fill_cats.append("numeric")
-        elif self.parameters["numeric_impute_strategy"] == "backwards_fill":
-            backwards_fill_cats.append("numeric")
-        else:
-            interpolation_cats.append("numeric")
-
         X = infer_feature_types(X)
-        forwards_cols = list(
-            X.ww.select(forwards_fill_cats, return_schema=True).columns
-        )
-        backwards_cols = list(
-            X.ww.select(backwards_fill_cats, return_schema=True).columns
-        )
-        interpolation_cols = list(
-            X.ww.select(interpolation_cats, return_schema=True).columns
-        )
 
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
-        X_forwards = X[[col for col in forwards_cols if col not in self._all_null_cols]]
-        if len(X_forwards.columns) > 0:
-            self._forwards_cols = X_forwards.columns
+        def _filter_cols(impute_strat, X):
+            cats = (
+                ["category", "boolean"]
+                if self.parameters["categorical_impute_strategy"] == impute_strat
+                else []
+            )
+            if self.parameters["numeric_impute_strategy"] == impute_strat:
+                cats.append("numeric")
+            cols = list(
+                X.ww.select(cats, return_schema=True).columns
+            )
+            X = X[[col for col in cols if col not in self._all_null_cols]]
 
-        X_backwards = X[
-            [col for col in backwards_cols if col not in self._all_null_cols]
-        ]
-        if len(X_backwards.columns) > 0:
-            self._backwards_cols = X_backwards.columns
+            if len(X.columns) > 0:
+                return X.columns
 
-        X_interpolate = X[
-            [col for col in interpolation_cols if col not in self._all_null_cols]
-        ]
-        if len(X_interpolate.columns) > 0:
-            self._interpolate_cols = X_interpolate.columns
+        self._forwards_cols = _filter_cols("forward_fill", X)
+        self._backwards_cols = _filter_cols("backwards_fill", X)
+        self._interpolate_cols = _filter_cols("interpolation", X)
 
         if y is not None:
             y = infer_feature_types(y)
