@@ -18,6 +18,9 @@ from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
 _ESTIMATOR_FAMILY_ORDER = [
+    ModelFamily.ARIMA,
+    ModelFamily.PROPHET,
+    ModelFamily.EXPONENTIAL_SMOOTHING,
     ModelFamily.LINEAR_MODEL,
     ModelFamily.XGBOOST,
     ModelFamily.LIGHTGBM,
@@ -25,7 +28,6 @@ _ESTIMATOR_FAMILY_ORDER = [
     ModelFamily.RANDOM_FOREST,
     ModelFamily.DECISION_TREE,
     ModelFamily.EXTRA_TREES,
-    ModelFamily.ARIMA,
 ]
 
 
