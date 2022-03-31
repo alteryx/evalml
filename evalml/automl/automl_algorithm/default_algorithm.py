@@ -423,21 +423,21 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 to_be_added.append(original_col)
 
     def _parse_selected_categorical_features(self, pipeline):
-        if list(self.X.ww.select("categorical").columns):
+        if list(self.X.ww.select("categorical", return_schema=True).columns):
             self._get_feature_provenance_and_remove_engineered_features(
                 pipeline,
                 "One Hot Encoder",
                 self._selected_cols,
                 self._selected_cat_cols,
             )
-        if list(self.X.ww.select("URL").columns):
+        if list(self.X.ww.select("URL", return_schema=True).columns):
             self._get_feature_provenance_and_remove_engineered_features(
                 pipeline,
                 "URL Featurizer",
                 self._selected_cat_cols,
                 self._selected_cat_cols,
             )
-        if list(self.X.ww.select("EmailAddress").columns):
+        if list(self.X.ww.select("EmailAddress", return_schema=True).columns):
             self._get_feature_provenance_and_remove_engineered_features(
                 pipeline,
                 "Email Featurizer",
