@@ -3,6 +3,30 @@
 
 **Future Releases**
     * Enhancements
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`, :pr:`3427`
+        * Added ``use_covariates`` parameter to ``ARIMARegressor`` :pr:`3407`
+        * ``AutoMLSearch`` will set ``use_covariates`` to ``False`` for ARIMA when dataset is large :pr:`3407`
+        * Add ability to retrieve logical types to a component in the graph via ``get_component_input_logical_types`` :pr:`3428`
+        * Add ability to get logical types passed to the last component via ``last_component_input_logical_types`` :pr:`3428`
+    * Fixes
+        * Fix conda build after PR `3407` :pr:`3429`
+    * Changes
+        * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
+        * Unpin ``click`` dependency :pr:`3420`
+        * For ``IterativeAlgorithm``, put time series algorithms first :pr:`3407`
+        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407`
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Moved model understanding metrics from ``graph.py`` to ``metrics.py`` :pr:`3417`
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
+
+
+**v0.48.0 Mar. 25, 2022**
+    * Enhancements
         * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
         * Add support for oversampling in time series classification problems :pr:`3387`
     * Fixes
@@ -13,10 +37,12 @@
     * Changes
         * Update maintainers to add Frank :pr:`3382`
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
+        * Moved partial dependence functions from ``graph.py`` to a separate file :pr:`3404`
+        * Pin ``click`` at ``8.0.4`` due to incompatibility with ``black`` :pr:`3413`
     * Documentation Changes
         * Added automl user guide section covering search algorithms :pr:`3394`
         * Updated broken links and automated broken link detection :pr:`3398`
-        * Pinned jinja2 to 3.0.3 :pr:`3402`
+        * Upgraded nbconvert :pr:`3402`, :pr:`3411`
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`3395`)
         * Exclude documentation versions other than latest from broken link check :pr:`3401`
@@ -24,7 +50,7 @@
 .. warning::
 
     **Breaking Changes**
-        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
+        * Moved partial dependence functions from ``graph.py`` to ``partial_dependence.py`` :pr:`3404`
 
 
 **v0.47.0 Mar. 16, 2022**

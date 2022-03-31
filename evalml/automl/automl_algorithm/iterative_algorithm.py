@@ -16,6 +16,9 @@ from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
 _ESTIMATOR_FAMILY_ORDER = [
+    ModelFamily.ARIMA,
+    ModelFamily.PROPHET,
+    ModelFamily.EXPONENTIAL_SMOOTHING,
     ModelFamily.LINEAR_MODEL,
     ModelFamily.XGBOOST,
     ModelFamily.LIGHTGBM,
@@ -23,7 +26,6 @@ _ESTIMATOR_FAMILY_ORDER = [
     ModelFamily.RANDOM_FOREST,
     ModelFamily.DECISION_TREE,
     ModelFamily.EXTRA_TREES,
-    ModelFamily.ARIMA,
 ]
 
 
@@ -286,7 +288,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             for pipeline in self.allowed_pipelines:
                 starting_parameters = self._tuners[
                     pipeline.name
-                ].get_starting_parameters()
+                ].get_starting_parameters(self._hyperparameters, self.random_seed)
                 parameters = self._transform_parameters(pipeline, starting_parameters)
                 next_batch.append(
                     pipeline.new(parameters=parameters, random_seed=self.random_seed)

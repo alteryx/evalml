@@ -155,7 +155,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         next_batch = []
         for pipeline in pipelines:
             self._create_tuner(pipeline)
-            starting_parameters = self._tuners[pipeline.name].get_starting_parameters()
+            starting_parameters = self._tuners[pipeline.name].get_starting_parameters(
+                self._hyperparameters, self.random_seed
+            )
             parameters = self._transform_parameters(pipeline, starting_parameters)
             next_batch.append(
                 pipeline.new(parameters=parameters, random_seed=self.random_seed)
@@ -274,9 +276,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             self._rename_pipeline_search_parameters(pipelines)
 
         next_batch = self._create_n_pipelines(pipelines, 1)
-
-        for pipeline in next_batch:
-            self._create_tuner(pipeline)
         return next_batch
 
     def _create_n_pipelines(self, pipelines, n):
@@ -287,8 +286,14 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     self._create_tuner(pipeline)
 
                 select_parameters = self._create_select_parameters()
-                proposed_parameters = self._tuners[pipeline.name].propose()
-                parameters = self._transform_parameters(pipeline, proposed_parameters)
+                parameters = (
+                    self._tuners[pipeline.name].get_starting_parameters(
+                        self._hyperparameters, self.random_seed
+                    )
+                    if n == 1
+                    else self._tuners[pipeline.name].propose()
+                )
+                parameters = self._transform_parameters(pipeline, parameters)
                 parameters.update(select_parameters)
                 next_batch.append(
                     pipeline.new(parameters=parameters, random_seed=self.random_seed)

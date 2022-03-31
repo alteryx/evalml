@@ -70,7 +70,9 @@ def test_skopt_tuner_basic():
 
     tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_seed=random_seed)
     assert isinstance(tuner, Tuner)
-    first_params = tuner.get_starting_parameters()
+    first_params = tuner.get_starting_parameters({})
+    assert first_params == {}
+    first_params = tuner.get_starting_parameters(pipeline_hyperparameter_ranges)
     assert first_params == {
         "Mock Classifier": {
             "parameter a": 5,
@@ -130,8 +132,9 @@ def test_skopt_tuner_invalid_ranges():
 
 def test_skopt_tuner_single_value():
     expected_params = {"Mock Classifier": {}}
-    tuner = SKOptTuner({"Mock Classifier": {"param c": 10}}, random_seed=random_seed)
-    starting_params = tuner.get_starting_parameters()
+    params = {"Mock Classifier": {"param c": 10}}
+    tuner = SKOptTuner(params, random_seed=random_seed)
+    starting_params = tuner.get_starting_parameters(params)
     assert starting_params == expected_params
     proposed_params = tuner.propose()
     assert proposed_params == expected_params
@@ -255,7 +258,7 @@ def test_skopt_tuner_propose():
         }
     }
     tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_seed=random_seed)
-    first_params = tuner.get_starting_parameters()
+    first_params = tuner.get_starting_parameters(pipeline_hyperparameter_ranges)
     assert first_params == {
         "Mock Classifier": {
             "param a": 5,
