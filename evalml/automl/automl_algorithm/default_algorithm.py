@@ -13,7 +13,7 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
-    URLFeaturizer
+    URLFeaturizer,
 )
 from evalml.pipelines.components.transformers.column_selectors import (
     SelectByType,
