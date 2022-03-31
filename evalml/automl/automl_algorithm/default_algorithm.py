@@ -9,8 +9,11 @@ from .automl_algorithm import AutoMLAlgorithm
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
+    EmailFeaturizer,
+    OneHotEncoder,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
+    URLFeaturizer
 )
 from evalml.pipelines.components.transformers.column_selectors import (
     SelectByType,
@@ -426,21 +429,21 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         if list(self.X.ww.select("categorical", return_schema=True).columns):
             self._get_feature_provenance_and_remove_engineered_features(
                 pipeline,
-                "One Hot Encoder",
+                OneHotEncoder.name,
                 self._selected_cols,
                 self._selected_cat_cols,
             )
         if list(self.X.ww.select("URL", return_schema=True).columns):
             self._get_feature_provenance_and_remove_engineered_features(
                 pipeline,
-                "URL Featurizer",
+                URLFeaturizer.name,
                 self._selected_cat_cols,
                 self._selected_cat_cols,
             )
         if list(self.X.ww.select("EmailAddress", return_schema=True).columns):
             self._get_feature_provenance_and_remove_engineered_features(
                 pipeline,
-                "Email Featurizer",
+                EmailFeaturizer.name,
                 self._selected_cat_cols,
                 self._selected_cat_cols,
             )
