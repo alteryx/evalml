@@ -100,6 +100,7 @@ class TimeSeriesImputer(Transformer):
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
         def _filter_cols(impute_strat, X):
+            """Function to return which columns of the dataset to impute given the impute strategy."""
             cats = (
                 ["category", "boolean"]
                 if self.parameters["categorical_impute_strategy"] == impute_strat
@@ -107,17 +108,15 @@ class TimeSeriesImputer(Transformer):
             )
             if self.parameters["numeric_impute_strategy"] == impute_strat:
                 cats.append("numeric")
-            cols = list(
-                X.ww.select(cats, return_schema=True).columns
-            )
+            cols = list(X.ww.select(cats, return_schema=True).columns)
             X = X[[col for col in cols if col not in self._all_null_cols]]
 
             if len(X.columns) > 0:
                 return X.columns
 
-        self._forwards_cols = _filter_cols("forward_fill", X)
+        self._forwards_cols = _filter_cols("forwards_fill", X)
         self._backwards_cols = _filter_cols("backwards_fill", X)
-        self._interpolate_cols = _filter_cols("interpolation", X)
+        self._interpolate_cols = _filter_cols("interpolate", X)
 
         if y is not None:
             y = infer_feature_types(y)
