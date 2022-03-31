@@ -7,6 +7,7 @@
         * ``AutoMLSearch`` will set ``use_covariates`` to ``False`` for ARIMA when dataset is large :pr:`3407`
         * Add ability to retrieve logical types to a component in the graph via ``get_component_input_logical_types`` :pr:`3428`
         * Add ability to get logical types passed to the last component via ``last_component_input_logical_types`` :pr:`3428`
+        * Enabled ensembling as a parameter for ``DefaultAlgorithm`` :pr:`3435`
     * Fixes
         * Fix conda build after PR `3407` :pr:`3429`
     * Changes
