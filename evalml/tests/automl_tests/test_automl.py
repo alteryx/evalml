@@ -3141,7 +3141,7 @@ def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
             assert (
                 0.1 < row["parameters"]["Decision Tree Classifier"]["ccp_alpha"] < 0.5
             )
-            assert row["parameters"]["Decision Tree Classifier"]["max_depth"] == 2
+            assert row["parameters"]["Decision Tree Classifier"]["max_depth"] == 1
 
 
 @pytest.mark.parametrize("random_seed", [0, 1, 9])
