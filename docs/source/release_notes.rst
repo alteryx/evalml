@@ -25,8 +25,6 @@
         * Unpin ``click`` dependency :pr:`3420`
         * For ``IterativeAlgorithm``, put time series algorithms first :pr:`3407`
         * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407`
-    * Documentation Changes
-    * Testing Changes
 
 .. warning::
 
