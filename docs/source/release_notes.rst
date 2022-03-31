@@ -3,17 +3,23 @@
 
 **Future Releases**
     * Enhancements
+        * Added ``use_covariates`` parameter to ``ARIMARegressor`` :pr:`3407`
+        * ``AutoMLSearch`` will set ``use_covariates`` to ``False`` for ARIMA when dataset is large :pr:`3407`
         * Added ``TimeSeriesRegularizer`` to smooth uninferrable date ranges for time series problems :pr:`3376`
     * Fixes
     * Changes
-        * Raised minimum dependency for ``woodwork`` and ``featuretools`` to ``0.15.0`` and ``1.7.0`` respectively :pr:`3376`
+        * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
         * Unpin ``click`` dependency :pr:`3420`
+        * For ``IterativeAlgorithm``, put time series algorithms first :pr:`3407`
+        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407`
+        * Raised minimum dependency for ``woodwork`` and ``featuretools`` to ``0.15.0`` and ``1.7.0`` respectively :pr:`3376`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Moved model understanding metrics from ``graph.py`` to ``metrics.py`` :pr:`3417`
 
 
 **v0.48.0 Mar. 25, 2022**
