@@ -1,15 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_series_equal
-from woodwork.logical_types import (
-    Boolean,
-    Categorical,
-    Double,
-    Integer,
-    NaturalLanguage,
-)
 
 from evalml.pipelines.components import TimeSeriesImputer
 
@@ -388,6 +380,71 @@ def test_imputer_bool_dtype_object(data_type, make_data_type):
     assert_frame_equal(X_expected_arr, X_t)
 
 
+def test_imputer_unusual_types_as_categorical():
+    X = pd.DataFrame(
+        {
+            "urls": ["google.com", "github.com", None, "evalml.alteryx.com"] * 4,
+            "emails": [None, "neil@gmail.com", "sally@aol.com", "yuri@university.edu"]
+            * 4,
+        }
+    )
+    X.ww.init(logical_types={"urls": "url"})
+    y = pd.Series()
+
+    X_expected = pd.DataFrame(
+        {
+            "urls": [
+                "google.com",
+                "github.com",
+                "evalml.alteryx.com",
+                "evalml.alteryx.com",
+            ]
+            * 4,
+            "emails": [
+                "neil@gmail.com",
+                "neil@gmail.com",
+                "sally@aol.com",
+                "yuri@university.edu",
+            ]
+            * 4,
+        }
+    )
+    imputer = TimeSeriesImputer(categorical_impute_strategy="backwards_fill")
+    imputer.fit(X, y)
+    X_t, _ = imputer.transform(X)
+    assert_frame_equal(X_expected, X_t, check_dtype=False)
+
+    X["categorical"] = pd.Series(["a", "b", "c", None] * 4, dtype="category")
+    X["numeric"] = pd.Series([2, np.NaN, 3, 4] * 4)
+    X.ww.init(logical_types={"urls": "url"})
+
+    X_expected = pd.DataFrame(
+        {
+            "urls": ["google.com", "github.com", "github.com", "evalml.alteryx.com"]
+            * 4,
+            "emails": [
+                "neil@gmail.com",
+                "neil@gmail.com",
+                "sally@aol.com",
+                "yuri@university.edu",
+            ]
+            + [
+                "yuri@university.edu",
+                "neil@gmail.com",
+                "sally@aol.com",
+                "yuri@university.edu",
+            ]
+            * 3,
+            "categorical": pd.Series(["a", "b", "c", "c"] * 4, dtype="category"),
+            "numeric": pd.Series([2, 2.5, 3, 4] * 4),
+        }
+    )
+    imputer = TimeSeriesImputer(categorical_impute_strategy="forwards_fill")
+    imputer.fit(X, y)
+    X_t, _ = imputer.transform(X)
+    assert_frame_equal(X_expected, X_t, check_dtype=False)
+
+
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_imputer_multitype_with_one_bool(data_type, make_data_type):
     X_multi = pd.DataFrame(
@@ -420,59 +477,30 @@ def test_imputer_multitype_with_one_bool(data_type, make_data_type):
 
 
 @pytest.mark.parametrize(
-    "data",
-    [
-        "int col",
-        "float col",
-        "categorical col",
-        "bool col",
-    ],
-)
-@pytest.mark.parametrize(
-    "logical_type", ["Integer", "Double", "Categorical", "NaturalLanguage", "Boolean"]
-)
-@pytest.mark.parametrize("has_nan", ["has_nan", "no_nans"])
-@pytest.mark.parametrize(
     "numeric_impute_strategy", ["forwards_fill", "backwards_fill", "interpolate"]
 )
 def test_imputer_woodwork_custom_overrides_returned_by_components(
-    data, logical_type, has_nan, numeric_impute_strategy, imputer_test_data
+    numeric_impute_strategy, imputer_test_data
 ):
-    X_df = {
-        "int col": imputer_test_data[["int col"]],
-        "float col": imputer_test_data[["float col"]],
-        "categorical col": imputer_test_data[["categorical col"]],
-        "bool col": imputer_test_data[["bool col"]],
-    }[data]
-    logical_type = {
-        "Integer": Integer,
-        "Double": Double,
-        "Categorical": Categorical,
-        "NaturalLanguage": NaturalLanguage,
-        "Boolean": Boolean,
-    }[logical_type]
-    y = pd.Series([1, 2, 1])
+    X = imputer_test_data
+    y = pd.Series()
 
-    # Column with Nans to boolean used to fail. Now it doesn't but it should.
-    if has_nan == "has_nan" and logical_type == Boolean:
-        return
-    try:
-        X = X_df.copy()
-        if has_nan == "has_nan":
-            X.iloc[len(X_df) - 1, 0] = np.nan
-        X.ww.init(logical_types={data: logical_type})
-    except ww.exceptions.TypeConversionError:
-        return
+    X.ww.init(
+        logical_types={
+            "int with nan": "postal_code",
+            "categorical with nan": "natural_language",
+        }
+    )
 
     imputer = TimeSeriesImputer(numeric_impute_strategy=numeric_impute_strategy)
     imputer.fit(X, y)
     transformed, _ = imputer.transform(X, y)
     assert isinstance(transformed, pd.DataFrame)
-    if logical_type in [Categorical, NaturalLanguage] or has_nan == "no_nans":
-        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            data: logical_type
-        }
-    else:
-        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            data: Double
-        }
+    assert (
+        transformed.ww.logical_types["int with nan"]
+        == X.ww.logical_types["int with nan"]
+    )
+    assert (
+        transformed.ww.logical_types["categorical with nan"]
+        == X.ww.logical_types["categorical with nan"]
+    )
