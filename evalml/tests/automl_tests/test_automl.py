@@ -14,6 +14,8 @@ from joblib import hash as joblib_hash
 from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
+from .test_automl_iterative_algorithm import _get_first_stacked_classifier_no
+
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.automl_search import build_engine_from_str
@@ -73,8 +75,6 @@ from evalml.tests.automl_tests.parallel_tests.test_automl_dask import (
 )
 from evalml.tests.conftest import CustomClassificationObjectiveRanges
 from evalml.tuners import NoParamsException, RandomSearchTuner, SKOptTuner
-
-from .test_automl_iterative_algorithm import _get_first_stacked_classifier_no
 
 
 @pytest.mark.parametrize(
