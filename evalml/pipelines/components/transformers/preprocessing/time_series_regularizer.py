@@ -71,7 +71,7 @@ class TimeSeriesRegularizer(Transformer):
 
         Raises:
             ValueError: if self.time_index is None, if X and y have different lengths, if `time_index` in X does not
-            have an offset frequency that can be estimated
+                        have an offset frequency that can be estimated
             TypeError: if the `time_index` column is not of type Datetime
             KeyError: if the `time_index` column doesn't exist
         """
