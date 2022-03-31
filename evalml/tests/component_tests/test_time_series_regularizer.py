@@ -151,9 +151,7 @@ def test_ts_regularizer_no_issues(ts_data):
     pd.testing.assert_series_equal(y, y_output)
 
 
-@pytest.mark.parametrize(
-    "y_passed", [True, False]
-)
+@pytest.mark.parametrize("y_passed", [True, False])
 def test_ts_regularizer_X_only(y_passed, combination_of_faulty_datetime):
     X, y = get_df(combination_of_faulty_datetime)
 

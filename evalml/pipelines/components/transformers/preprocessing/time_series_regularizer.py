@@ -78,7 +78,9 @@ class TimeSeriesRegularizer(Transformer):
         if self.time_index is None:
             raise ValueError("The argument time_index cannot be None!")
         elif self.time_index not in X.columns:
-            raise KeyError(f"The time_index column `{self.time_index}` does not exist in X!")
+            raise KeyError(
+                f"The time_index column `{self.time_index}` does not exist in X!"
+            )
 
         X_ww = infer_feature_types(X)
 
