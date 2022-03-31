@@ -156,7 +156,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         for pipeline in pipelines:
             self._create_tuner(pipeline)
             starting_parameters = self._tuners[pipeline.name].get_starting_parameters(
-                self._hyperparameters
+                self._hyperparameters, self.random_seed
             )
             parameters = self._transform_parameters(pipeline, starting_parameters)
             next_batch.append(

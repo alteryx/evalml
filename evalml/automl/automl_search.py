@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 from dask import distributed as dd
 from sklearn.model_selection import BaseCrossValidator
+from skopt.space import Categorical
 
 from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 
@@ -47,6 +48,7 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
+from evalml.pipelines.components import ARIMARegressor
 from evalml.pipelines.utils import make_timeseries_baseline_pipeline
 from evalml.problem_types import (
     ProblemTypes,
@@ -626,6 +628,22 @@ class AutoMLSearch:
         )
         self.data_splitter = self.data_splitter or default_data_splitter
         self.search_parameters = search_parameters or {}
+        # Fitting takes a long time if the data is too wide or long.
+        if is_time_series(problem_type) and (
+            self.X_train.shape[1] >= 10 or self.X_train.shape[0] >= 10000
+        ):
+            user_arima_hyperparams = ARIMARegressor.name in self.search_parameters
+            if user_arima_hyperparams and not self.search_parameters[
+                ARIMARegressor.name
+            ].get("use_covariates"):
+                self.search_parameters[ARIMARegressor.name].update(
+                    {"use_covariates": Categorical([False])}
+                )
+            elif not user_arima_hyperparams:
+                self.search_parameters[ARIMARegressor.name] = {
+                    "use_covariates": Categorical([False])
+                }
+
         self.search_iteration_plot = None
         self._interrupted = False
         internal_search_parameters = copy.copy(self.search_parameters)

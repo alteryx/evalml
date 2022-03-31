@@ -89,11 +89,12 @@ class Tuner(ABC):
             pipeline_parameters[component_name][parameter_name] = parameter_value
         return pipeline_parameters
 
-    def get_starting_parameters(self, hyperparameter_ranges):
+    def get_starting_parameters(self, hyperparameter_ranges, random_seed=0):
         """Gets the starting parameters given the pipeline hyperparameter range.
 
         Arguments:
             hyperparameter_ranges (dict): The custom hyperparameter ranges passed in during search. Used to determine the starting parameters.
+            random_seed (int): The random seed to use. Defaults to 0.
 
         Returns:
             dict: The starting parameters, randomly chosen, to initialize a pipeline with.
@@ -105,12 +106,12 @@ class Tuner(ABC):
                 if isinstance(value, (Integer, Real)):
                     # get a random value in the space
                     component_parameters[param_name] = value.rvs(
-                        random_state=self.random_seed
+                        random_state=random_seed
                     )[0]
                 elif isinstance(value, Categorical):
                     # Categorical
                     component_parameters[param_name] = value.rvs(
-                        random_state=self.random_seed
+                        random_state=random_seed
                     )
                 elif isinstance(value, (list, tuple)):
                     # list value from our internal hyperparameter_ranges
