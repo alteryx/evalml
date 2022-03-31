@@ -87,6 +87,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         n_jobs=-1,
         text_in_ensembling=False,
         top_n=3,
+        ensembling=True,
         num_long_explore_pipelines=50,
         num_long_pipelines_per_batch=10,
         allow_long_running_models=False,
@@ -119,8 +120,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.allow_long_running_models = allow_long_running_models
         self._X_with_cat_cols = None
         self._X_without_cat_cols = None
-        self._ensembling = True if not is_time_series(self.problem_type) else False
         self.features = features
+        self.ensembling = ensembling
+        if is_time_series(self.problem_type):
+            self.ensembling = False
 
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
@@ -373,7 +376,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
-        if self._ensembling:
+        if self.ensembling:
             if self._batch_number == 0:
                 next_batch = self._create_naive_pipelines()
             elif self._batch_number == 1:

@@ -743,6 +743,7 @@ class AutoMLSearch:
                 text_in_ensembling=text_in_ensembling,
                 allow_long_running_models=allow_long_running_models,
                 features=features,
+                ensembling=self.ensembling,
                 verbose=self.verbose,
             )
         else:
