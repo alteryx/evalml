@@ -15,9 +15,7 @@ from evalml.exceptions import (
     MethodPropertyNotFoundError,
 )
 from evalml.model_family import ModelFamily
-from evalml.pipelines import (
-    BinaryClassificationPipeline,
-)
+from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import (
     LSA,
     PCA,
