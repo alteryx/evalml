@@ -74,6 +74,8 @@ from evalml.tests.automl_tests.parallel_tests.test_automl_dask import (
 from evalml.tests.conftest import CustomClassificationObjectiveRanges
 from evalml.tuners import NoParamsException, RandomSearchTuner, SKOptTuner
 
+from .test_automl_iterative_algorithm import _get_first_stacked_classifier_no
+
 
 @pytest.mark.parametrize(
     "automl_type,objective",
@@ -4687,3 +4689,29 @@ def test_automl_does_not_restrict_use_covariates_if_user_specified(
     arima_params = [p for p in params if p is not None]
     assert arima_params
     assert all(p for p in arima_params)
+
+
+@pytest.mark.parametrize("automl_algo", ["iterative", "default"])
+def test_automl_passes_down_ensembling(automl_algo, AutoMLTestEnv, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    env = AutoMLTestEnv("binary")
+    max_batches = 4 if automl_algo == "default" else None
+    max_iterations = (
+        None if automl_algo == "default" else _get_first_stacked_classifier_no()
+    )
+    automl = AutoMLSearch(
+        X,
+        y,
+        "binary",
+        verbose=True,
+        automl_algorithm=automl_algo,
+        ensembling=True,
+        max_batches=max_batches,
+        max_iterations=max_iterations,
+    )
+
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+    pipeline_names = automl.rankings["pipeline_name"]
+    assert pipeline_names.str.contains("Ensemble").any()
