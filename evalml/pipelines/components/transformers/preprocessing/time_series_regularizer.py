@@ -41,7 +41,7 @@ class TimeSeriesRegularizer(Transformer):
     training_only = True
 
     def __init__(
-        self, time_index, window_length=5, threshold=0.8, random_seed=0, **kwargs
+        self, time_index=None, window_length=5, threshold=0.8, random_seed=0, **kwargs
     ):
         self.time_index = time_index
         self.window_length = window_length
