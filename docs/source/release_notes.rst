@@ -3,9 +3,10 @@
 
 **Future Releases**
     * Enhancements
-        * Added ``TimeSeriesRegularizer`` to handle uninferrable date ranges for time series problems :pr:`3376`
+        * Added ``TimeSeriesRegularizer`` to smooth uninferrable date ranges for time series problems :pr:`3376`
     * Fixes
     * Changes
+        * Raised minimum dependency for ``woodwork`` and ``featuretools`` to ``0.15.0`` and ``1.7.0`` respectively :pr:`3376`
         * Unpin ``click`` dependency :pr:`3420`
     * Documentation Changes
     * Testing Changes

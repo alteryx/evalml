@@ -597,7 +597,7 @@ def duplicate_continuous():
 
 
 @pytest.fixture
-def combination():
+def combination_of_faulty_datetime():
     dates_0 = pd.DatetimeIndex(["1/1/21", "1/3/21", "1/3/21", "1/3/21"])
     dates_1 = pd.date_range("1/5/21", periods=8, freq="2D")
     dates_2 = pd.DatetimeIndex(["1/19/21"])

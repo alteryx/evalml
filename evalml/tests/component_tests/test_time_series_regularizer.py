@@ -75,7 +75,7 @@ def test_ts_regularizer_init():
     assert ts_regularizer.training_only is True
 
 
-def test_ts_regularizer_no_time_index():
+def test_ts_regularizer_time_index_not_datetime():
     dates_1 = pd.date_range("1/1/21", periods=10)
     dates_2 = pd.date_range("1/13/21", periods=10, freq="2D")
     dates = dates_1.append(dates_2)
@@ -85,15 +85,26 @@ def test_ts_regularizer_no_time_index():
     ts_regularizer = TimeSeriesRegularizer(time_index="ints")
     with pytest.raises(
         TypeError,
-        match="The time_index column ints must be of type Datetime.",
+        match="The time_index column `ints` must be of type Datetime.",
     ):
         ts_regularizer.fit(X, y)
 
 
-def test_ts_regularizer_time_index_not_datetime(duplicate_beginning):
+def test_ts_regularizer_time_index_doesnt_exist(duplicate_beginning):
     X, y = get_df(duplicate_beginning)
 
-    ts_regularizer = TimeSeriesRegularizer()
+    ts_regularizer = TimeSeriesRegularizer(time_index="blah")
+    with pytest.raises(
+        KeyError,
+        match="The time_index column `blah` does not exist in X!",
+    ):
+        ts_regularizer.fit(X, y)
+
+
+def test_ts_regularizer_time_index_is_None(duplicate_beginning):
+    X, y = get_df(duplicate_beginning)
+
+    ts_regularizer = TimeSeriesRegularizer(time_index=None)
     with pytest.raises(
         ValueError,
         match="The argument time_index cannot be None!",
@@ -140,25 +151,29 @@ def test_ts_regularizer_no_issues(ts_data):
     pd.testing.assert_series_equal(y, y_output)
 
 
-def test_ts_regularizer_X_only(combination):
-    X, y = get_df(combination)
+@pytest.mark.parametrize(
+    "y_passed", [True, False]
+)
+def test_ts_regularizer_X_only(y_passed, combination_of_faulty_datetime):
+    X, y = get_df(combination_of_faulty_datetime)
 
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
-    X_output, y_output = ts_regularizer.fit_transform(X)
+    X_output, y_output = ts_regularizer.fit_transform(X, y=y if y_passed else None)
 
-    assert y_output is None
+    if not y_passed:
+        assert y_output is None
 
     error_dict = ts_regularizer.error_dict
     assert_features_and_length_equal(
-        X, y, X_output, y_output, error_dict, has_target=False
+        X, y, X_output, y_output, error_dict, has_target=True if y_passed else False
     )
 
 
 @pytest.mark.parametrize(
-    "dataset", ["beginning", "middle", "end", "scattered", "continuous"]
+    "duplicate_location", ["beginning", "middle", "end", "scattered", "continuous"]
 )
 def test_ts_regularizer_duplicate(
-    dataset,
+    duplicate_location,
     duplicate_beginning,
     duplicate_middle,
     duplicate_end,
@@ -166,13 +181,13 @@ def test_ts_regularizer_duplicate(
     duplicate_continuous,
 ):
 
-    if dataset == "beginning":
+    if duplicate_location == "beginning":
         dates = duplicate_beginning
-    elif dataset == "middle":
+    elif duplicate_location == "middle":
         dates = duplicate_middle
-    elif dataset == "end":
+    elif duplicate_location == "end":
         dates = duplicate_end
-    elif dataset == "scattered":
+    elif duplicate_location == "scattered":
         dates = duplicate_scattered
     else:
         dates = duplicate_continuous
@@ -187,10 +202,10 @@ def test_ts_regularizer_duplicate(
 
 
 @pytest.mark.parametrize(
-    "dataset", ["beginning", "middle", "end", "scattered", "continuous"]
+    "missing_location", ["beginning", "middle", "end", "scattered", "continuous"]
 )
 def test_ts_regularizer_missing(
-    dataset,
+    missing_location,
     missing_beginning,
     missing_middle,
     missing_end,
@@ -198,13 +213,13 @@ def test_ts_regularizer_missing(
     missing_continuous,
 ):
 
-    if dataset == "beginning":
+    if missing_location == "beginning":
         dates = missing_beginning
-    elif dataset == "middle":
+    elif missing_location == "middle":
         dates = missing_middle
-    elif dataset == "end":
+    elif missing_location == "end":
         dates = missing_end
-    elif dataset == "scattered":
+    elif missing_location == "scattered":
         dates = missing_scattered
     else:
         dates = missing_continuous
@@ -219,10 +234,10 @@ def test_ts_regularizer_missing(
 
 
 @pytest.mark.parametrize(
-    "dataset", ["beginning", "middle", "end", "scattered", "continuous"]
+    "uneven_location", ["beginning", "middle", "end", "scattered", "continuous"]
 )
 def test_ts_regularizer_uneven(
-    dataset,
+    uneven_location,
     uneven_beginning,
     uneven_middle,
     uneven_end,
@@ -230,38 +245,30 @@ def test_ts_regularizer_uneven(
     uneven_continuous,
 ):
 
-    if dataset == "beginning":
+    if uneven_location == "beginning":
         dates = uneven_beginning
-    elif dataset == "middle":
+    elif uneven_location == "middle":
         dates = uneven_middle
-    elif dataset == "end":
+    elif uneven_location == "end":
         dates = uneven_end
-    elif dataset == "scattered":
+    elif uneven_location == "scattered":
         dates = uneven_scattered
     else:
         dates = uneven_continuous
 
     X, y = get_df(dates)
-
+    print(infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8))
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
     X_output, y_output = ts_regularizer.fit_transform(X, y)
 
-    if dataset == "beginning":
+    if uneven_location == "beginning":
         assert X.iloc[0]["dates"] not in X_output["dates"]
+        assert X.iloc[1]["dates"] not in X_output["dates"]
         assert y.iloc[0] not in y_output.values
-    elif dataset == "end":
+        assert y.iloc[1] not in y_output.values
+    elif uneven_location == "end":
         assert X.iloc[-1]["dates"] not in X_output["dates"]
         assert y.iloc[-1] not in y_output.values
-
-    error_dict = ts_regularizer.error_dict
-    assert_features_and_length_equal(X, y, X_output, y_output, error_dict)
-
-
-def test_ts_regularizer_combination(combination):
-    X, y = get_df(combination)
-
-    ts_regularizer = TimeSeriesRegularizer(time_index="dates")
-    X_output, y_output = ts_regularizer.fit_transform(X, y)
 
     error_dict = ts_regularizer.error_dict
     assert_features_and_length_equal(X, y, X_output, y_output, error_dict)

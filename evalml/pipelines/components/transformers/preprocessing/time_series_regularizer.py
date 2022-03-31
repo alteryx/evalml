@@ -27,6 +27,10 @@ class TimeSeriesRegularizer(Transformer):
     Args:
         time_index (string): Name of the column containing the datetime information used to order the data.
         random_seed (int): Seed for the random number generator. This transformer performs the same regardless of the random seed provided.
+        window_length (int): The size of the rolling window over which inference is conducted to determine the prevalence of uninferrable frequencies.
+        Lower values make this component more sensitive to recognizing numerous faulty datetime values.
+        threshold (float): The minimum percentage of windows that need to have been able to infer a frequency. Lower values make this component more
+        sensitive to recognizing numerous faulty datetime values.
     """
 
     name = "Time Series Regularizer"
@@ -37,7 +41,7 @@ class TimeSeriesRegularizer(Transformer):
     training_only = True
 
     def __init__(
-        self, time_index=None, window_length=5, threshold=0.8, random_seed=0, **kwargs
+        self, time_index, window_length=5, threshold=0.8, random_seed=0, **kwargs
     ):
         self.time_index = time_index
         self.window_length = window_length
@@ -66,19 +70,21 @@ class TimeSeriesRegularizer(Transformer):
             self
 
         Raises:
-            ValueError: if self.time_index is None
+            ValueError: if self.time_index is None, if X and y have different lengths, if `time_index` in X does not
+            have an offset frequency that can be estimated
             TypeError: if the `time_index` column is not of type Datetime
-            ValueError: if X and y have different lengths
-            ValueError: if `time_index` in X does not have an offset frequency that can be estimated
+            KeyError: if the `time_index` column doesn't exist
         """
         if self.time_index is None:
             raise ValueError("The argument time_index cannot be None!")
+        elif self.time_index not in X.columns:
+            raise KeyError(f"The time_index column `{self.time_index}` does not exist in X!")
 
         X_ww = infer_feature_types(X)
 
         if not isinstance(X_ww.ww.logical_types[self.time_index], Datetime):
             raise TypeError(
-                f"The time_index column {self.time_index} must be of type Datetime."
+                f"The time_index column `{self.time_index}` must be of type Datetime."
             )
 
         if y is not None:
@@ -223,7 +229,7 @@ class TimeSeriesRegularizer(Transformer):
     def transform(self, X, y=None):
         """Regularizes a dataframe and target data to an inferrable offset frequency.
 
-        A 'clean' X and y (if passed) are created based on an inferrable offset frequency and matching datetime values
+        A 'clean' X and y (if y was passed in) are created based on an inferrable offset frequency and matching datetime values
         with the original X and y are imputed into the clean X and y. Datetime values identified as misaligned are
         shifted into their appropriate position.
 
