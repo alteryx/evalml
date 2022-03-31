@@ -14,11 +14,11 @@ class TimeSeriesRegularizer(Transformer):
     the `time_index` column is perfectly inferrable then this Transformer will do nothing and return the original X and y.
 
     If X does not have a perfectly inferrable frequency but one can be estimated, then X and y will be reformatted based
-    on the estimated frequency for `time_index`. In the original X and y passed;
-     - Missing datetime values will be added and will have their corresponding columns in X and y set to None.
-     - Duplicate datetime values will be dropped.
-     - Extra datetime values will be dropped.
-     - If it can be determined that a duplicate or extra value is misaligned, then it will be repositioned to take the
+    on the estimated frequency for `time_index`. In the original X and y passed:
+    - Missing datetime values will be added and will have their corresponding columns in X and y set to None.
+    - Duplicate datetime values will be dropped.
+    - Extra datetime values will be dropped.
+    - If it can be determined that a duplicate or extra value is misaligned, then it will be repositioned to take the
     place of a missing value.
 
     This Transformer should be used before the `TimeSeriesImputer` in order to impute the missing values that were
