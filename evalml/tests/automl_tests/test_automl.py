@@ -4546,6 +4546,7 @@ def test_automl_accepts_features(
         )
 
 
+@pytest.mark.skip_during_conda
 @pytest.mark.noncore_dependency
 def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
     ts_data, AutoMLTestEnv, is_using_windows
@@ -4595,6 +4596,7 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
     assert estimator_order == expected_order
 
 
+@pytest.mark.skip_during_conda
 @pytest.mark.noncore_dependency
 @pytest.mark.parametrize("automl_algo", ["iterative", "default"])
 @pytest.mark.parametrize(
@@ -4640,6 +4642,7 @@ def test_automl_restricts_use_covariates_for_arima(
     assert all(not p for p in arima_params)
 
 
+@pytest.mark.skip_during_conda
 @pytest.mark.noncore_dependency
 @pytest.mark.parametrize("automl_algo", ["iterative", "default"])
 @pytest.mark.parametrize(
