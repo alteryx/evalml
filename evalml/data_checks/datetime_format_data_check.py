@@ -37,14 +37,6 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
-            ...         "message": "Column 'dates' has datetime values missing between start and end date.",
-            ...         "data_check_name": "DateTimeFormatDataCheck",
-            ...         "level": "error",
-            ...         "code": "DATETIME_IS_MISSING_VALUES",
-            ...         "details": {"columns": None, "rows": None},
-            ...         "action_options": []
-            ...      },
-            ...     {
             ...         "message": "No frequency could be detected in column 'dates', possibly due to uneven intervals.",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
@@ -54,9 +46,9 @@ class DateTimeFormatDataCheck(DataCheck):
             ...      }
             ... ]
 
-            The column "dates" has the date 2021-01-31 appended to the end, which implies there are many dates missing.
+            The column "dates" has a gap in the values, which implies there are many dates missing.
 
-            >>> X = pd.DataFrame(pd.date_range("2021-01-01", periods=9).append(pd.date_range("2021-01-31", periods=1)), columns=["dates"])
+            >>> X = pd.DataFrame(pd.date_range("2021-01-01", periods=9).append(pd.date_range("2021-01-31", periods=50)), columns=["dates"])
             >>> y = pd.Series([0, 1, 0, 1, 1, 0, 0, 0, 1, 0])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
@@ -82,6 +74,21 @@ class DateTimeFormatDataCheck(DataCheck):
             ...         "level": "error",
             ...         "code": "DATETIME_HAS_REDUNDANT_ROW",
             ...         "details": {"columns": None, "rows": None},
+            ...         "action_options": []
+            ...      }
+            ... ]
+
+            The column "Weeks" has a date that does not follow the weekly pattern, which is considered misaligned.
+
+            >>> X = pd.DataFrame(pd.date_range("2021-01-01", freq="W", periods=12).append(pd.date_range("2021-03-22", periods=1)), columns=["Weeks"])
+            >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
+            >>> assert datetime_format_dc.validate(X, y) == [
+            ...     {
+            ...         "message": "Column 'Weeks' has datetime values that do not align with the inferred frequency.",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "details": {"columns": None, "rows": None},
+            ...         "code": "DATETIME_HAS_MISALIGNED_VALUES",
             ...         "action_options": []
             ...      }
             ... ]

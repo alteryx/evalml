@@ -240,6 +240,27 @@ def test_datetime_format_data_check_multiple_errors():
         ).to_dict(),
     ]
 
+    dates = (
+        pd.date_range("2021-01-01", periods=15, freq="2D")
+        .drop("2021-01-07")
+        .append(pd.date_range("2021-01-30", periods=1))
+        .append(pd.date_range("2021-01-31", periods=86, freq="2D"))
+    )
+    X = pd.DataFrame({"dates": dates})
+
+    assert datetime_format_check.validate(X, y) == [
+        DataCheckError(
+            message=f"Column 'dates' has datetime values missing between start and end date.",
+            data_check_name=datetime_format_check_name,
+            message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
+        ).to_dict(),
+        DataCheckError(
+            message=f"Column 'dates' has datetime values that do not align with the inferred frequency.",
+            data_check_name=datetime_format_check_name,
+            message_code=DataCheckMessageCode.DATETIME_HAS_MISALIGNED_VALUES,
+        ).to_dict(),
+    ]
+
 
 def test_datetime_format_unusual_interval():
     dates = pd.date_range(start="2021-01-01", periods=100, freq="4D")
