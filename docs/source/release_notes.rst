@@ -6,6 +6,7 @@
     * Fixes
     * Changes
         * Unpin ``click`` dependency :pr:`3420`
+        * Updated ``DateTimeFormatDataCheck`` to use woodwork's ``infer_frequency`` function :pr:`3425`
     * Documentation Changes
     * Testing Changes
 
