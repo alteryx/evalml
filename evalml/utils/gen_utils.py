@@ -235,7 +235,10 @@ def get_importable_subclasses(base_class, used_in_automl=True):
         if "evalml.pipelines" not in cls.__module__:
             continue
         try:
-            cls()
+            if cls.name == "Time Series Regularizer":
+                cls(time_index="date")
+            else:
+                cls()
             classes.append(cls)
         except (ImportError, MissingComponentError, TypeError):
             logger.debug(
