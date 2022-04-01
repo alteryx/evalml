@@ -34,7 +34,7 @@ def test_default_algorithm_init(X_y_binary):
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == []
     assert algo.verbose is True
-    assert algo.ensembling == True
+    assert algo.ensembling is True
     assert algo.default_max_batches == 4
 
     algo = DefaultAlgorithm(
