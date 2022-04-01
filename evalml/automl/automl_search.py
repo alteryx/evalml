@@ -208,7 +208,7 @@ def search(
         if data_check_result["level"] == DataCheckMessageType.ERROR.value:
             return None, data_check_results
 
-    automl = AutoMLSearch(automl_algorithm="default", **automl_config)
+    automl = AutoMLSearch(automl_algorithm="default", ensembling=True, **automl_config)
     automl.search()
     return automl, data_check_results
 
