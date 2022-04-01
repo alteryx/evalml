@@ -1,5 +1,5 @@
 """Model understanding tools."""
-from .graphs import (
+from .visualizations import (
     binary_objective_vs_threshold,
     get_linear_coefficients,
     get_prediction_vs_actual_data,

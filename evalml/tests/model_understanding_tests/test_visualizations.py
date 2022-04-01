@@ -8,7 +8,7 @@ import pytest
 import woodwork as ww
 from sklearn.exceptions import NotFittedError
 
-from evalml.model_understanding.graphs import (
+from evalml.model_understanding.visualizations import (
     binary_objective_vs_threshold,
     calculate_permutation_importance,
     decision_tree_data_from_estimator,
@@ -69,7 +69,7 @@ def test_graph_permutation_importance(
 
 
 @pytest.mark.noncore_dependency
-@patch("evalml.model_understanding.graphs.calculate_permutation_importance")
+@patch("evalml.model_understanding.visualizations.calculate_permutation_importance")
 def test_graph_permutation_importance_show_all_features(
     mock_perm_importance, logistic_regression_binary_pipeline, go
 ):
@@ -91,7 +91,7 @@ def test_graph_permutation_importance_show_all_features(
 
 
 @pytest.mark.noncore_dependency
-@patch("evalml.model_understanding.graphs.calculate_permutation_importance")
+@patch("evalml.model_understanding.visualizations.calculate_permutation_importance")
 def test_graph_permutation_importance_threshold(
     mock_perm_importance, go, logistic_regression_binary_pipeline
 ):
@@ -199,7 +199,7 @@ def test_binary_objective_vs_threshold_steps(
 
 @pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-@patch("evalml.model_understanding.graphs.binary_objective_vs_threshold")
+@patch("evalml.model_understanding.visualizations.binary_objective_vs_threshold")
 def test_graph_binary_objective_vs_threshold(
     mock_cb_thresholds,
     data_type,
@@ -233,8 +233,8 @@ def test_graph_binary_objective_vs_threshold(
 
 
 @pytest.mark.noncore_dependency
-@patch("evalml.model_understanding.graphs.jupyter_check")
-@patch("evalml.model_understanding.graphs.import_or_raise")
+@patch("evalml.model_understanding.visualizations.jupyter_check")
+@patch("evalml.model_understanding.visualizations.import_or_raise")
 def test_jupyter_graph_check(
     import_check,
     jupyter_check,
