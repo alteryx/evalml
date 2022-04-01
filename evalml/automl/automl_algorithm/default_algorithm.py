@@ -9,8 +9,11 @@ from .automl_algorithm import AutoMLAlgorithm
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
+    EmailFeaturizer,
+    OneHotEncoder,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
+    URLFeaturizer,
 )
 from evalml.pipelines.components.transformers.column_selectors import (
     SelectByType,
@@ -239,7 +242,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 "columns": self._selected_cat_cols
             },
             "Numeric Pipeline - Select Columns By Type Transformer": {
-                "column_types": ["category"],
+                "column_types": ["Categorical", "EmailAddress", "URL"],
                 "exclude": True,
             },
             "Numeric Pipeline - Select Columns Transformer": {
@@ -411,6 +414,43 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self._batch_number += 1
         return next_batch
 
+    def _get_feature_provenance_and_remove_engineered_features(
+        self, pipeline, component_name, to_be_removed, to_be_added
+    ):
+        component = pipeline.get_component(component_name)
+        feature_provenance = component._get_feature_provenance()
+        for original_col in feature_provenance:
+            selected = False
+            for encoded_col in feature_provenance[original_col]:
+                if encoded_col in to_be_removed:
+                    selected = True
+                    to_be_removed.remove(encoded_col)
+            if selected:
+                to_be_added.append(original_col)
+
+    def _parse_selected_categorical_features(self, pipeline):
+        if list(self.X.ww.select("categorical", return_schema=True).columns):
+            self._get_feature_provenance_and_remove_engineered_features(
+                pipeline,
+                OneHotEncoder.name,
+                self._selected_cols,
+                self._selected_cat_cols,
+            )
+        if list(self.X.ww.select("URL", return_schema=True).columns):
+            self._get_feature_provenance_and_remove_engineered_features(
+                pipeline,
+                URLFeaturizer.name,
+                self._selected_cat_cols,
+                self._selected_cat_cols,
+            )
+        if list(self.X.ww.select("EmailAddress", return_schema=True).columns):
+            self._get_feature_provenance_and_remove_engineered_features(
+                pipeline,
+                EmailFeaturizer.name,
+                self._selected_cat_cols,
+                self._selected_cat_cols,
+            )
+
     def add_result(
         self, score_to_minimize, pipeline, trained_pipeline_results, cached_data=None
     ):
@@ -445,17 +485,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     "RF Classifier Select From Model"
                 ).get_names()
 
-            if list(self.X.ww.select("categorical").columns):
-                ohe = pipeline.get_component("One Hot Encoder")
-                feature_provenance = ohe._get_feature_provenance()
-                for original_col in feature_provenance:
-                    selected = False
-                    for encoded_col in feature_provenance[original_col]:
-                        if encoded_col in self._selected_cols:
-                            selected = True
-                            self._selected_cols.remove(encoded_col)
-                    if selected:
-                        self._selected_cat_cols.append(original_col)
+            self._parse_selected_categorical_features(pipeline)
 
         current_best_score = self._best_pipeline_info.get(
             pipeline.model_family, {}
@@ -543,7 +573,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             numeric_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cols},
                 "Select Columns By Type Transformer": {
-                    "column_types": ["category"],
+                    "column_types": ["Categorical", "EmailAddress", "URL"],
                     "exclude": True,
                 },
             }
