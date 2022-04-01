@@ -85,22 +85,8 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
                     message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
                 ).to_dict()
             ]
-        elif issue == "uneven":
-            assert datetime_format_check.validate(X, y) == [
-                DataCheckError(
-                    message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
-                    data_check_name=datetime_format_check_name,
-                    message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-                ).to_dict(),
-            ]
         else:
-            col_name = datetime_loc if datetime_loc == 1 else "either index"
             assert datetime_format_check.validate(X, y) == [
-                DataCheckError(
-                    message=f"Column '{col_name}' has datetime values missing between start and end date.",
-                    data_check_name=datetime_format_check_name,
-                    message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
-                ).to_dict(),
                 DataCheckError(
                     message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
                     data_check_name=datetime_format_check_name,
@@ -167,8 +153,8 @@ def test_datetime_format_data_check_multiple_missing(n_missing):
     else:
         # Some chunks missing and some alone missing
         dates = dates.append(pd.date_range("2021-01-20", periods=88)).drop("2021-01-27")
-        dates = dates.drop("2021-01-22")
-        dates = dates.drop("2021-01-05")
+        dates = dates.drop("2021-02-22")
+        dates = dates.drop("2021-01-11")
 
     X["dates"] = dates
     datetime_format_check = DateTimeFormatDataCheck(datetime_column="dates")
@@ -222,7 +208,7 @@ def test_datetime_format_data_check_multiple_errors():
 
     dates = (
         pd.date_range("2021-01-01", periods=15)
-        .drop("2021-01-05")
+        .drop("2021-01-10")
         .append(pd.date_range("2021-01-15", periods=86))
     )
     X = pd.DataFrame({"dates": dates})
@@ -242,7 +228,7 @@ def test_datetime_format_data_check_multiple_errors():
 
     dates = (
         pd.date_range("2021-01-01", periods=15, freq="2D")
-        .drop("2021-01-07")
+        .drop("2021-01-13")
         .append(pd.date_range("2021-01-30", periods=1))
         .append(pd.date_range("2021-01-31", periods=86, freq="2D"))
     )
@@ -316,7 +302,7 @@ def test_datetime_format_nan_data_check_error():
 
     dates = pd.Series(pd.date_range(start="2021-01-01", periods=100))
     dates[0] = np.NaN
-    dates[5] = pd.to_datetime("2021-01-05")
+    dates[20] = pd.to_datetime("2021-01-20")
     X = pd.DataFrame(dates, columns=["date"])
 
     expected.extend(

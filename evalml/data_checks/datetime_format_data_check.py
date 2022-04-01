@@ -205,7 +205,8 @@ class DateTimeFormatDataCheck(DataCheck):
         ww_payload = infer_frequency(
             pd.Series(datetime_values),
             debug=True,
-            window_length=3,
+            window_length=5,
+            threshold=0.8,
         )
         inferred_freq = ww_payload[0]
         debug_object = ww_payload[1]
