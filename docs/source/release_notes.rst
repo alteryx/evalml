@@ -5,11 +5,28 @@
     * Enhancements
     * Fixes
     * Changes
-        * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
-        * Unpin ``click`` dependency :pr:`3420`
         * Updated ``DateTimeFormatDataCheck`` to use woodwork's ``infer_frequency`` function :pr:`3425`
     * Documentation Changes
     * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.49.0 Mar. 31, 2022**
+    * Enhancements
+        * Added ``use_covariates`` parameter to ``ARIMARegressor`` :pr:`3407`
+        * ``AutoMLSearch`` will set ``use_covariates`` to ``False`` for ARIMA when dataset is large :pr:`3407`
+        * Add ability to retrieve logical types to a component in the graph via ``get_component_input_logical_types`` :pr:`3428`
+        * Add ability to get logical types passed to the last component via ``last_component_input_logical_types`` :pr:`3428`
+    * Fixes
+        * Fix ``DefaultAlgorithm`` not handling Email and URL features :pr:`3419`
+        * Fix conda build after PR `3407` :pr:`3429`
+    * Changes
+        * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
+        * Unpin ``click`` dependency :pr:`3420`
+        * For ``IterativeAlgorithm``, put time series algorithms first :pr:`3407`
+        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407`
 
 .. warning::
 
