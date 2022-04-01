@@ -157,7 +157,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
     @property
     def default_max_batches(self):
         """Returns the number of max batches AutoMLSearch should run by default."""
-        return 4 if not is_time_series(self.problem_type) else 3
+        return 4 if self.ensembling else 3
 
     def _naive_estimators(self):
         if is_regression(self.problem_type):
