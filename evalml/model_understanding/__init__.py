@@ -5,7 +5,6 @@ from .visualizations import (
     get_prediction_vs_actual_data,
     get_prediction_vs_actual_over_time_data,
     graph_binary_objective_vs_threshold,
-    graph_permutation_importance,
     graph_prediction_vs_actual,
     graph_prediction_vs_actual_over_time,
     graph_t_sne,
@@ -28,6 +27,7 @@ from .prediction_explanations import explain_predictions, explain_predictions_be
 from .permutation_importance import (
     calculate_permutation_importance,
     calculate_permutation_importance_one_column,
+    graph_permutation_importance,
 )
 from .feature_explanations import readable_explanation, get_influential_features
 from .decision_boundary import find_confusion_matrix_per_thresholds
