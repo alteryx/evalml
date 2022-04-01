@@ -302,11 +302,11 @@ def test_pipeline_limits(
         automl.search()
     out = caplog.text
     if verbose:
-        assert "Using default limit of max_batches=4." in out
-        assert "Searching up to 4 batches for a total of" in out
+        assert "Using default limit of max_batches=3." in out
+        assert "Searching up to 3 batches for a total of" in out
     else:
-        assert "Using default limit of max_batches=4." not in out
-        assert "Searching up to 4 batches for a total of" not in out
+        assert "Using default limit of max_batches=3." not in out
+        assert "Searching up to 3 batches for a total of" not in out
     assert len(automl.results["pipeline_results"]) > 0
 
     caplog.clear()
