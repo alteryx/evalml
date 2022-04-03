@@ -20,6 +20,7 @@
         * Add ability to retrieve logical types to a component in the graph via ``get_component_input_logical_types`` :pr:`3428`
         * Add ability to get logical types passed to the last component via ``last_component_input_logical_types`` :pr:`3428`
     * Fixes
+        * Fix ``DefaultAlgorithm`` not handling Email and URL features :pr:`3419`
         * Fix conda build after PR `3407` :pr:`3429`
     * Changes
         * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
