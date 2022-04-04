@@ -3,6 +3,7 @@
 
 **Future Releases**
     * Enhancements
+        * Added ``TimeSeriesRegularizer`` to smooth uninferrable date ranges for time series problems :pr:`3376`
         * Enabled ensembling as a parameter for ``DefaultAlgorithm`` :pr:`3435`
     * Fixes
         * Fix ``DefaultAlgorithm`` not handling Email and URL features :pr:`3419`
@@ -26,7 +27,7 @@
         * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
         * Unpin ``click`` dependency :pr:`3420`
         * For ``IterativeAlgorithm``, put time series algorithms first :pr:`3407`
-        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407`
+        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407` 
 
 .. warning::
 
