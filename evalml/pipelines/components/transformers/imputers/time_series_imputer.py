@@ -12,13 +12,16 @@ class TimeSeriesImputer(Transformer):
     added to X and y (if passed).
 
     Args:
-        categorical_impute_strategy (string): Impute strategy to use for string, object, boolean, categorical dtypes.
-                                              Valid values include "backwards_fill" and "forwards_fill". Defaults to "forwards_fill".
-        numeric_impute_strategy (string): Impute strategy to use for numeric columns. Valid values include
-                                          "backwards_fill", "forwards_fill", and "interpolate". Defaults to "interpolate".
-        target_impute_strategy (string): Impute strategy to use for the target column. Valid values include "backwards_fill",
-                                         "forwards_fill", and "interpolate". Defaults to "forwards_fill".
+        categorical_impute_strategy (string): Impute strategy to use for string, object, boolean, categorical dtypes. 
+            Valid values include "backwards_fill" and "forwards_fill". Defaults to "forwards_fill".
+        numeric_impute_strategy (string): Impute strategy to use for numeric columns. Valid values include 
+            "backwards_fill", "forwards_fill", and "interpolate". Defaults to "interpolate".
+        target_impute_strategy (string): Impute strategy to use for the target column. Valid values include 
+            "backwards_fill", "forwards_fill", and "interpolate". Defaults to "forwards_fill".
         random_seed (int): Seed for the random number generator. Defaults to 0.
+
+    Raises:
+        ValueError: If categorical_impute_strategy, numeric_impute_strategy, or target_impute_strategy is not one of the valid values.
     """
 
     modifies_features = True
@@ -141,35 +144,35 @@ class TimeSeriesImputer(Transformer):
             df.ww.init()
             return df, y
 
-        X_no_all_null = X.ww.drop(self._all_null_cols)
+        X_not_all_null = X.ww.drop(self._all_null_cols)
 
         if self._forwards_cols is not None:
             X_forward = X.ww[self._forwards_cols]
             imputed = X_forward.pad()
             imputed.bfill(inplace=True)  # Fill in the first value, if missing
-            X_no_all_null[X_forward.columns] = imputed
+            X_not_all_null[X_forward.columns] = imputed
 
         if self._backwards_cols is not None:
             X_backward = X.ww[self._backwards_cols]
             imputed = X_backward.bfill()
             imputed.pad(inplace=True)  # Fill in the last value, if missing
-            X_no_all_null[X_backward.columns] = imputed
+            X_not_all_null[X_backward.columns] = imputed
 
         if self._interpolate_cols is not None:
             X_interpolate = X.ww[self._interpolate_cols]
             imputed = X_interpolate.interpolate()
             imputed.bfill(inplace=True)  # Fill in the first value, if missing
-            X_no_all_null[X_interpolate.columns] = imputed
+            X_not_all_null[X_interpolate.columns] = imputed
 
         y_imputed = pd.Series(y)
         if self._impute_target == "forwards_fill":
             y_imputed = y.pad()
-            y_imputed = y_imputed.bfill()
+            y_imputed.bfill(inplace=True)
         elif self._impute_target == "backwards_fill":
             y_imputed = y.bfill()
-            y_imputed = y_imputed.pad()
+            y_imputed.pad(inplace=True)
         elif self._impute_target == "interpolate":
             y_imputed = y.interpolate()
-            y_imputed = y_imputed.bfill()
+            y_imputed.bfill(inplace=True)
 
-        return X_no_all_null, y_imputed
+        return X_not_all_null, y_imputed

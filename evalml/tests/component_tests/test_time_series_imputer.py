@@ -128,6 +128,7 @@ def test_categorical_only_input(imputer_test_data):
     imputer = TimeSeriesImputer()
     transformed, _ = imputer.fit_transform(X, y)
     assert_frame_equal(transformed, expected, check_dtype=False)
+    assert "all nan cat" not in transformed.columns
 
     expected["categorical with nan"] = pd.Series(
         ["1", "1", "0", "0", "3"] * 4, dtype="category"
@@ -209,7 +210,7 @@ def test_impute_target():
     assert_series_equal(y_t, expected, check_dtype=False)
 
 
-def test_drop_all_columns(imputer_test_data):
+def test_imputer_drops_columns_with_all_nan(imputer_test_data):
     X = imputer_test_data[["all nan cat", "all nan"]]
     y = pd.Series([0, 0, 1, 0, 1] * 4)
     X.ww.init()
@@ -293,7 +294,7 @@ def test_imputer_does_not_reset_index():
 
 
 def test_imputer_no_nans(imputer_test_data):
-    X = imputer_test_data[["categorical col", "object col", "bool col"]]
+    X = imputer_test_data[["categorical col", "int col", "object col", "float col", "bool col"]]
     y = pd.Series([0, 0, 1, 0, 1] * 4)
     imputer = TimeSeriesImputer(
         categorical_impute_strategy="backwards_fill",
@@ -306,7 +307,9 @@ def test_imputer_no_nans(imputer_test_data):
             "categorical col": pd.Series(
                 ["zero", "one", "two", "zero", "two"] * 4, dtype="category"
             ),
+            "int col": [0, 1, 2, 0, 3] * 4,
             "object col": pd.Series(["b", "b", "a", "c", "d"] * 4, dtype="category"),
+            "float col": [0.0, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
         }
     )
