@@ -1,3 +1,4 @@
+import inspect
 import os
 import warnings
 from collections import OrderedDict, defaultdict
@@ -57,6 +58,7 @@ from evalml.pipelines import (
     RegressionPipeline,
     StackedEnsembleClassifier,
 )
+from evalml.pipelines.components import DecisionTreeClassifier
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_stacked_ensemble_pipeline,
@@ -4526,6 +4528,23 @@ def test_search_parameters_held_automl(
         max_batches=batches,
     )
     aml.search()
+    estimator_args = inspect.getargspec(DecisionTreeClassifier)
+    # estimator_args[0] gives the parameter names, while [3] gives the associated values
+    # estimator_args[0][i + 1] to skip 'self' in the estimator
+    # we do len - 1 in order to skip the random seed, which isn't present in the row['parameters']
+    expected_params = {
+        estimator_args[0][i + 1]: estimator_args[3][i]
+        for i in range(len(estimator_args[3]) - 1)
+    }
+    sorted_full_rank = aml.full_rankings.sort_values(by="id")
+    found_dtc = False
+    for _, row in sorted_full_rank.iterrows():
+        # we check the initial decision tree classifier parameters.
+        if "Decision Tree Classifier" in row["parameters"]:
+            assert expected_params == row["parameters"]["Decision Tree Classifier"]
+            found_dtc = True
+            break
+    assert found_dtc
     for tuners in aml.automl_algorithm._tuners.values():
         assert (
             tuners._pipeline_hyperparameter_ranges["Imputer"]["numeric_impute_strategy"]

@@ -293,7 +293,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     self._tuners[pipeline.name].get_starting_parameters(
                         self._hyperparameters, self.random_seed
                     )
-                    if n == 1
+                    if n <= 2
                     else self._tuners[pipeline.name].propose()
                 )
                 parameters = self._transform_parameters(pipeline, parameters)
