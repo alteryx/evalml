@@ -7,6 +7,7 @@
         * Added ``TimeSeriesRegularizer`` to smooth uninferrable date ranges for time series problems :pr:`3376`
     * Fixes
     * Changes
+        * Renamed ``graphs.py`` to ``visualizations.py`` :pr:`3439`
     * Documentation Changes
     * Testing Changes
 
@@ -14,6 +15,7 @@
 
     **Breaking Changes**
         * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
+        * Renamed ``graphs.py`` to ``visualizations.py`` :pr:`3439`
 
 **v0.49.0 Mar. 31, 2022**
     * Enhancements
