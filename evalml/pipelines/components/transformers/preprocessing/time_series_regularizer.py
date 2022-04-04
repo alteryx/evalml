@@ -245,6 +245,8 @@ class TimeSeriesRegularizer(Transformer):
         if self.inferred_freq is not None:
             return X, y
 
+        # The cleaned df will begin at the range determined by estimated_range_start, which will result
+        # in dropping of the first consecutive faulty values in the dataset.
         cleaned_df = pd.DataFrame(
             {
                 self.time_index: pd.date_range(
