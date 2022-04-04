@@ -294,7 +294,9 @@ def test_imputer_does_not_reset_index():
 
 
 def test_imputer_no_nans(imputer_test_data):
-    X = imputer_test_data[["categorical col", "int col", "object col", "float col", "bool col"]]
+    X = imputer_test_data[
+        ["categorical col", "int col", "object col", "float col", "bool col"]
+    ]
     y = pd.Series([0, 0, 1, 0, 1] * 4)
     imputer = TimeSeriesImputer(
         categorical_impute_strategy="backwards_fill",

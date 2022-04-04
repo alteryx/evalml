@@ -12,11 +12,11 @@ class TimeSeriesImputer(Transformer):
     added to X and y (if passed).
 
     Args:
-        categorical_impute_strategy (string): Impute strategy to use for string, object, boolean, categorical dtypes. 
+        categorical_impute_strategy (string): Impute strategy to use for string, object, boolean, categorical dtypes.
             Valid values include "backwards_fill" and "forwards_fill". Defaults to "forwards_fill".
-        numeric_impute_strategy (string): Impute strategy to use for numeric columns. Valid values include 
+        numeric_impute_strategy (string): Impute strategy to use for numeric columns. Valid values include
             "backwards_fill", "forwards_fill", and "interpolate". Defaults to "interpolate".
-        target_impute_strategy (string): Impute strategy to use for the target column. Valid values include 
+        target_impute_strategy (string): Impute strategy to use for the target column. Valid values include
             "backwards_fill", "forwards_fill", and "interpolate". Defaults to "forwards_fill".
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
