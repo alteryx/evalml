@@ -3,6 +3,7 @@
 
 **Future Releases**
     * Enhancements
+        * Added ``TimeSeriesRegularizer`` to smooth uninferrable date ranges for time series problems :pr:`3376`
     * Fixes
     * Changes
         * Updated ``DateTimeFormatDataCheck`` to use woodwork's ``infer_frequency`` function :pr:`3425`
@@ -26,7 +27,7 @@
         * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
         * Unpin ``click`` dependency :pr:`3420`
         * For ``IterativeAlgorithm``, put time series algorithms first :pr:`3407`
-        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407`
+        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407` 
 
 .. warning::
 
