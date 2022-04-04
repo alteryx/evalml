@@ -38,4 +38,5 @@ from .preprocessing import (
     DropRowsTransformer,
     ReplaceNullableTypes,
     DropNaNRowsTransformer,
+    TimeSeriesRegularizer,
 )

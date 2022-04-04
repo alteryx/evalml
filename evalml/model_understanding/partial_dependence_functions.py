@@ -23,7 +23,7 @@ from evalml.model_understanding._partial_dependence_utils import (
     _raise_value_error_if_mostly_one_value,
     _range_for_dates,
 )
-from evalml.model_understanding.graphs import _calculate_axis_range
+from evalml.model_understanding.visualizations import _calculate_axis_range
 from evalml.utils import import_or_raise, infer_feature_types, jupyter_check
 
 

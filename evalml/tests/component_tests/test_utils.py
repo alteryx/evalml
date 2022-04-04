@@ -72,6 +72,7 @@ minimum_dependencies_set = set(
         "Natural Language Featurizer",
         "Time Series Baseline Estimator",
         "Time Series Imputer",
+        "Time Series Regularizer",
         "URL Featurizer",
         "Undersampler",
     ]

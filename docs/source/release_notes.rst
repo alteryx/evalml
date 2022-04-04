@@ -4,14 +4,17 @@
 **Future Releases**
     * Enhancements
         * Added ``TimeSeriesImputer`` component :pr:`3374`
+        * Added ``TimeSeriesRegularizer`` to smooth uninferrable date ranges for time series problems :pr:`3376`
     * Fixes
     * Changes
+        * Renamed ``graphs.py`` to ``visualizations.py`` :pr:`3439`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``graphs.py`` to ``visualizations.py`` :pr:`3439`
 
 **v0.49.0 Mar. 31, 2022**
     * Enhancements
@@ -26,7 +29,7 @@
         * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
         * Unpin ``click`` dependency :pr:`3420`
         * For ``IterativeAlgorithm``, put time series algorithms first :pr:`3407`
-        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407`
+        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407` 
 
 .. warning::
 

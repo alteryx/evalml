@@ -8,16 +8,14 @@ import pytest
 import woodwork as ww
 from sklearn.exceptions import NotFittedError
 
-from evalml.model_understanding.graphs import (
+from evalml.model_understanding.visualizations import (
     binary_objective_vs_threshold,
-    calculate_permutation_importance,
     decision_tree_data_from_estimator,
     decision_tree_data_from_pipeline,
     get_linear_coefficients,
     get_prediction_vs_actual_data,
     get_prediction_vs_actual_over_time_data,
     graph_binary_objective_vs_threshold,
-    graph_permutation_importance,
     graph_prediction_vs_actual,
     graph_prediction_vs_actual_over_time,
     graph_t_sne,
@@ -35,93 +33,6 @@ from evalml.pipelines import (
 )
 from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_state, infer_feature_types
-
-
-@pytest.mark.noncore_dependency
-def test_graph_permutation_importance(
-    X_y_binary, logistic_regression_binary_pipeline, go
-):
-
-    X, y = X_y_binary
-    logistic_regression_binary_pipeline.fit(X, y)
-    fig = graph_permutation_importance(
-        logistic_regression_binary_pipeline, X, y, "Log Loss Binary"
-    )
-    assert isinstance(fig, go.Figure)
-    fig_dict = fig.to_dict()
-    assert (
-        fig_dict["layout"]["title"]["text"] == "Permutation Importance<br><sub>"
-        "The relative importance of each input feature's overall "
-        "influence on the pipelines' predictions, computed using the "
-        "permutation importance algorithm.</sub>"
-    )
-    assert len(fig_dict["data"]) == 1
-
-    perm_importance_data = calculate_permutation_importance(
-        logistic_regression_binary_pipeline, X, y, "Log Loss Binary"
-    )
-    assert np.array_equal(
-        fig_dict["data"][0]["x"][::-1], perm_importance_data["importance"].values
-    )
-    assert np.array_equal(
-        fig_dict["data"][0]["y"][::-1], perm_importance_data["feature"]
-    )
-
-
-@pytest.mark.noncore_dependency
-@patch("evalml.model_understanding.graphs.calculate_permutation_importance")
-def test_graph_permutation_importance_show_all_features(
-    mock_perm_importance, logistic_regression_binary_pipeline, go
-):
-
-    mock_perm_importance.return_value = pd.DataFrame(
-        {"feature": ["f1", "f2"], "importance": [0.0, 0.6]}
-    )
-
-    figure = graph_permutation_importance(
-        logistic_regression_binary_pipeline,
-        pd.DataFrame(),
-        pd.Series(),
-        "Log Loss Binary",
-    )
-    assert isinstance(figure, go.Figure)
-
-    data = figure.data[0]
-    assert np.any(data["x"] == 0.0)
-
-
-@pytest.mark.noncore_dependency
-@patch("evalml.model_understanding.graphs.calculate_permutation_importance")
-def test_graph_permutation_importance_threshold(
-    mock_perm_importance, go, logistic_regression_binary_pipeline
-):
-
-    mock_perm_importance.return_value = pd.DataFrame(
-        {"feature": ["f1", "f2"], "importance": [0.0, 0.6]}
-    )
-
-    with pytest.raises(
-        ValueError,
-        match="Provided importance threshold of -0.1 must be greater than or equal to 0",
-    ):
-        graph_permutation_importance(
-            logistic_regression_binary_pipeline,
-            pd.DataFrame(),
-            pd.Series(),
-            "Log Loss Binary",
-            importance_threshold=-0.1,
-        )
-    fig = graph_permutation_importance(
-        logistic_regression_binary_pipeline,
-        pd.DataFrame(),
-        pd.Series(),
-        "Log Loss Binary",
-        importance_threshold=0.5,
-    )
-    assert isinstance(fig, go.Figure)
-
-    data = fig.data[0]
-    assert np.all(data["x"] >= 0.5)
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
@@ -199,7 +110,7 @@ def test_binary_objective_vs_threshold_steps(
 
 @pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-@patch("evalml.model_understanding.graphs.binary_objective_vs_threshold")
+@patch("evalml.model_understanding.visualizations.binary_objective_vs_threshold")
 def test_graph_binary_objective_vs_threshold(
     mock_cb_thresholds,
     data_type,
@@ -233,8 +144,8 @@ def test_graph_binary_objective_vs_threshold(
 
 
 @pytest.mark.noncore_dependency
-@patch("evalml.model_understanding.graphs.jupyter_check")
-@patch("evalml.model_understanding.graphs.import_or_raise")
+@patch("evalml.model_understanding.visualizations.jupyter_check")
+@patch("evalml.model_understanding.visualizations.import_or_raise")
 def test_jupyter_graph_check(
     import_check,
     jupyter_check,
@@ -249,23 +160,10 @@ def test_jupyter_graph_check(
     cbm = CostBenefitMatrix(
         true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2
     )
-    jupyter_check.return_value = False
-    with pytest.warns(None) as graph_valid:
-        graph_permutation_importance(
-            logistic_regression_binary_pipeline, X, y, "log loss binary"
-        )
-        assert len(graph_valid) == 0
-
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
         graph_binary_objective_vs_threshold(
             logistic_regression_binary_pipeline, X, y, cbm, steps=5
-        )
-        assert len(graph_valid) == 0
-        import_check.assert_called_with("ipywidgets", warning=True)
-    with pytest.warns(None) as graph_valid:
-        graph_permutation_importance(
-            logistic_regression_binary_pipeline, X, y, "log loss binary"
         )
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
