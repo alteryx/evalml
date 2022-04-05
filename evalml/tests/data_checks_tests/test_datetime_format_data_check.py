@@ -27,7 +27,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
         dates = pd.date_range("2021-01-01", periods=30)
 
     if issue == "missing":
-        # Skips 2021-01-30 and appends 2021-01-31, skipping a date and triggering the error
+        # Skips 2021-01-25 and starts again at 2021-01-27, skipping a date and triggering the error
         dates = pd.date_range("2021-01-01", periods=25).append(
             pd.date_range("2021-01-27", periods=5)
         )
