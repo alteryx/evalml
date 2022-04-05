@@ -10,7 +10,13 @@ from .feature_selection import (
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
 )
-from .imputers import PerColumnImputer, SimpleImputer, Imputer, TargetImputer
+from .imputers import (
+    PerColumnImputer,
+    SimpleImputer,
+    Imputer,
+    TargetImputer,
+    TimeSeriesImputer,
+)
 from .scalers import StandardScaler
 from .samplers import (
     Undersampler,
