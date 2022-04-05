@@ -281,10 +281,12 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         if self._split:
             self._rename_pipeline_search_parameters(pipelines)
 
-        next_batch = self._create_n_pipelines(pipelines, 1)
+        next_batch = self._create_n_pipelines(
+            pipelines, 1, create_starting_parameters=True
+        )
         return next_batch
 
-    def _create_n_pipelines(self, pipelines, n):
+    def _create_n_pipelines(self, pipelines, n, create_starting_parameters=False):
         next_batch = []
         for _ in range(n):
             for pipeline in pipelines:
@@ -296,7 +298,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     self._tuners[pipeline.name].get_starting_parameters(
                         self._hyperparameters, self.random_seed
                     )
-                    if n <= 2
+                    if create_starting_parameters
                     else self._tuners[pipeline.name].propose()
                 )
                 parameters = self._transform_parameters(pipeline, parameters)
