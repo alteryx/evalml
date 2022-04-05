@@ -43,49 +43,25 @@ def test_default_algorithm_init(X_y_binary):
     assert algo.default_max_batches == 3
 
 
-def test_default_algorithm_custom_hyperparameters_error(X_y_binary):
+def test_default_algorithm_search_parameters_error(X_y_binary):
     X, y = X_y_binary
     problem_type = ProblemTypes.BINARY
     sampler_name = "Undersampler"
 
-    custom_hyperparameters = [
+    search_parameters = [
         {"Imputer": {"numeric_impute_strategy": ["median"]}},
         {"One Hot Encoder": {"value1": ["value2"]}},
     ]
 
     with pytest.raises(
-        ValueError, match="If custom_hyperparameters provided, must be of type dict"
+        ValueError, match="If search_parameters provided, must be of type dict"
     ):
         DefaultAlgorithm(
             X,
             y,
             problem_type,
             sampler_name,
-            custom_hyperparameters=custom_hyperparameters,
-        )
-
-    with pytest.raises(
-        ValueError, match="Custom hyperparameters should only contain skopt"
-    ):
-        DefaultAlgorithm(
-            X,
-            y,
-            problem_type,
-            sampler_name,
-            random_seed=0,
-            custom_hyperparameters={"Imputer": {"impute_strategy": (1, 2)}},
-        )
-
-    with pytest.raises(
-        ValueError, match="Pipeline parameters should not contain skopt.Space variables"
-    ):
-        DefaultAlgorithm(
-            X,
-            y,
-            problem_type,
-            sampler_name,
-            random_seed=0,
-            pipeline_params={"Imputer": {"impute_strategy": Categorical([1, 3, 4])}},
+            search_parameters=search_parameters,
         )
 
 
@@ -228,13 +204,13 @@ def test_default_algorithm(
 
 
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
-def test_evalml_algo_pipeline_params(mock_get_names, X_y_binary):
+def test_evalml_algo_search_params(mock_get_names, X_y_binary):
     X, y = X_y_binary
     mock_get_names.return_value = ["0", "1", "2"]
 
     problem_type = ProblemTypes.BINARY
     sampler_name = None
-    pipeline_params = {
+    search_params = {
         "pipeline": {"gap": 2, "max_delay": 10},
         "Logistic Regression Classifier": {"C": 5},
     }
@@ -243,7 +219,7 @@ def test_evalml_algo_pipeline_params(mock_get_names, X_y_binary):
         y,
         problem_type,
         sampler_name,
-        pipeline_params=pipeline_params,
+        search_parameters=search_params,
         num_long_explore_pipelines=1,
         num_long_pipelines_per_batch=1,
     )
@@ -260,7 +236,7 @@ def test_evalml_algo_pipeline_params(mock_get_names, X_y_binary):
 
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
 @patch("evalml.pipelines.components.OneHotEncoder._get_feature_provenance")
-def test_evalml_algo_custom_hyperparameters(
+def test_evalml_algo_search_hyperparameters(
     mock_get_feature_provenance, mock_get_names, X_y_categorical_classification
 ):
     X, y = X_y_categorical_classification
@@ -275,7 +251,7 @@ def test_evalml_algo_custom_hyperparameters(
     problem_type = ProblemTypes.BINARY
     sampler_name = None
     impute_strategy = Categorical(["mean", "median"])
-    custom_hyperparameters = {
+    search_parameters = {
         "Random Forest Classifier": {
             "n_estimators": Integer(5, 7),
             "max_depth": Categorical([5, 6, 7]),
@@ -288,7 +264,7 @@ def test_evalml_algo_custom_hyperparameters(
         y,
         problem_type,
         sampler_name,
-        custom_hyperparameters=custom_hyperparameters,
+        search_parameters=search_parameters,
         num_long_explore_pipelines=3,
         num_long_pipelines_per_batch=3,
     )
@@ -337,7 +313,7 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
 
     algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)
 
-    assert algo._pipeline_params["Drop Columns Transformer"]["columns"] == columns
+    assert algo.search_parameters["Drop Columns Transformer"]["columns"] == columns
 
     for _ in range(2):
         batch = algo.next_batch()
@@ -355,7 +331,7 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
         for component_name in pipeline.component_graph.compute_order:
             split = component_name.split(" - ")
             if "Drop Columns Transformer" in split:
-                assert algo._pipeline_params[component_name]["columns"] == columns
+                assert algo.search_parameters[component_name]["columns"] == columns
                 assert pipeline.parameters[component_name]["columns"] == columns
 
 
@@ -569,7 +545,7 @@ def test_default_algorithm_time_series(
     mock_get_names.return_value = ["0", "1", "2"]
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
     sampler_name = None
-    pipeline_params = {
+    search_parameters = {
         "pipeline": {
             "time_index": "date",
             "gap": 1,
@@ -580,7 +556,7 @@ def test_default_algorithm_time_series(
     }
 
     algo = DefaultAlgorithm(
-        X, y, problem_type, sampler_name, pipeline_params=pipeline_params
+        X, y, problem_type, sampler_name, search_parameters=search_parameters
     )
     naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
 
@@ -588,7 +564,7 @@ def test_default_algorithm_time_series(
     assert len(first_batch) == 2
     assert {p.model_family for p in first_batch} == naive_model_families
     for pipeline in first_batch:
-        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
         assert pipeline.parameters["DateTime Featurizer"]["time_index"]
     add_result(algo, first_batch)
 
@@ -596,7 +572,7 @@ def test_default_algorithm_time_series(
     assert len(second_batch) == 2
     assert {p.model_family for p in second_batch} == naive_model_families
     for pipeline in second_batch:
-        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
         assert pipeline.parameters["DateTime Featurizer"]["time_index"]
     add_result(algo, second_batch)
 
@@ -607,7 +583,7 @@ def test_default_algorithm_time_series(
         ):
             assert pipeline.model_family not in naive_model_families
         assert algo._tuners[pipeline.name]
-        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
         if not isinstance(pipeline.estimator, (ARIMARegressor, ProphetRegressor)):
             assert pipeline.parameters["DateTime Featurizer"]["time_index"]
     add_result(algo, final_batch)
@@ -656,7 +632,7 @@ def test_default_algorithm_time_series_known_in_advance(
     mock_get_names.return_value = ["0", "1", "2"]
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
     sampler_name = None
-    pipeline_params = {
+    search_parameters = {
         "pipeline": {
             "time_index": "date",
             "gap": 1,
@@ -668,7 +644,7 @@ def test_default_algorithm_time_series_known_in_advance(
     }
 
     algo = DefaultAlgorithm(
-        X, y, problem_type, sampler_name, pipeline_params=pipeline_params
+        X, y, problem_type, sampler_name, search_parameters=search_parameters
     )
     naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
 
@@ -709,7 +685,7 @@ def test_default_algorithm_time_series_known_in_advance(
         ):
             assert pipeline.model_family not in naive_model_families
         assert algo._tuners[pipeline.name]
-        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
         assert (
             pipeline.parameters[
                 "Known In Advance Pipeline - Select Columns Transformer"
@@ -774,6 +750,7 @@ def test_default_algorithm_accept_features(mock_get_names, X_y_binary, split):
         y,
         problem_type,
         sampler_name,
+        search_parameters={"DFS Transformer": {"features": features}},
         num_long_explore_pipelines=1,
         num_long_pipelines_per_batch=1,
         features=features,

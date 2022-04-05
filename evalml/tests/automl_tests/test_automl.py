@@ -1,3 +1,4 @@
+import inspect
 import os
 import warnings
 from collections import OrderedDict, defaultdict
@@ -59,6 +60,7 @@ from evalml.pipelines import (
     RegressionPipeline,
     StackedEnsembleClassifier,
 )
+from evalml.pipelines.components import DecisionTreeClassifier
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_stacked_ensemble_pipeline,
@@ -1939,11 +1941,9 @@ def test_percent_better_than_baseline_in_rankings(
         pipelines_per_batch=5,
         ensembling=False,
         text_in_ensembling=False,
-        pipeline_params=pipeline_parameters,
-        custom_hyperparameters=None,
+        search_parameters=pipeline_parameters,
     )
-    automl.automl_algorithm.allowed_pipelines = allowed_pipelines
-    automl._SLEEP_TIME = 0.000001
+    automl.automl_algorithm._set_allowed_pipelines(allowed_pipelines)
     with patch(
         baseline_pipeline_class + ".score",
         return_value={objective.name: baseline_score},
@@ -2112,7 +2112,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         pipelines_per_batch=5,
         ensembling=False,
         text_in_ensembling=False,
-        pipeline_params={
+        search_parameters={
             "pipeline": {
                 "time_index": "date",
                 "gap": 1,
@@ -2120,10 +2120,8 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
                 "forecast_horizon": 2,
             }
         },
-        custom_hyperparameters=None,
     )
-    automl.automl_algorithm.allowed_pipelines = [DummyPipeline(parameters)]
-    automl._SLEEP_TIME = 0.00001
+    automl.automl_algorithm._set_allowed_pipelines([DummyPipeline(parameters)])
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
         automl.search()
         assert (
@@ -2163,7 +2161,9 @@ def test_time_series_regression_with_parameters(ts_data):
         problem_configuration=problem_configuration,
         max_batches=3,
     )
-    assert automl.automl_algorithm._pipeline_params["pipeline"] == problem_configuration
+    assert (
+        automl.automl_algorithm.search_parameters["pipeline"] == problem_configuration
+    )
 
 
 @pytest.mark.parametrize("graph_type", ["dict", "cg"])
@@ -2266,10 +2266,9 @@ def test_percent_better_than_baseline_scores_different_folds(
         pipelines_per_batch=5,
         ensembling=False,
         text_in_ensembling=False,
-        pipeline_params={},
-        custom_hyperparameters=None,
+        search_parameters={},
     )
-    automl.automl_algorithm.allowed_pipelines = [DummyPipeline({})]
+    automl.automl_algorithm._set_allowed_pipelines([DummyPipeline({})])
 
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 1, "F1": 1}):
@@ -3047,7 +3046,7 @@ def test_automl_pipeline_params_simple(AutoMLTestEnv, X_y_binary):
         X_train=X,
         y_train=y,
         problem_type="binary",
-        pipeline_parameters=params,
+        search_parameters=params,
         optimize_thresholds=False,
         n_jobs=1,
     )
@@ -3088,7 +3087,7 @@ def test_automl_pipeline_params_multiple(AutoMLTestEnv, X_y_regression):
         X_train=X,
         y_train=y,
         problem_type="regression",
-        custom_hyperparameters=hyperparams,
+        search_parameters=hyperparams,
         optimize_thresholds=False,
         n_jobs=1,
     )
@@ -3116,31 +3115,6 @@ def test_automl_pipeline_params_multiple(AutoMLTestEnv, X_y_regression):
             ] == Categorical((0.01, 0.02, 0.03)).rvs(random_state=automl.random_seed)
 
 
-def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(
-    AutoMLTestEnv, X_y_binary
-):
-    X, y = X_y_binary
-    pipeline_parameters = {"Imputer": {"numeric_impute_strategy": "most_frequent"}}
-    custom_hyperparameters = {
-        "One Hot Encoder": {"top_n": Categorical([12, 10])},
-        "Imputer": {
-            "numeric_impute_strategy": Categorical(["median", "most_frequent"])
-        },
-    }
-
-    automl = AutoMLSearch(
-        X,
-        y,
-        problem_type="binary",
-        pipeline_parameters={"Imputer": {"numeric_impute_strategy": "most_frequent"}},
-        custom_hyperparameters=custom_hyperparameters,
-        optimize_thresholds=False,
-        max_batches=4,
-    )
-    assert automl.automl_algorithm._custom_hyperparameters == custom_hyperparameters
-    assert automl.automl_algorithm._pipeline_params == pipeline_parameters
-
-
 def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
     X, y = X_y_multi
     hyperparams = {
@@ -3154,7 +3128,7 @@ def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
         X_train=X,
         y_train=y,
         problem_type="multiclass",
-        custom_hyperparameters=hyperparams,
+        search_parameters=hyperparams,
         allowed_model_families=[ModelFamily.DECISION_TREE],
         n_jobs=1,
     )
@@ -4131,7 +4105,7 @@ def test_component_and_pipeline_warnings_surface_in_search(
             X_train=X,
             y_train=y,
             problem_type="regression",
-            pipeline_parameters={"Decision Tree Classifier": {"max_depth": 1}},
+            search_parameters={"Decision Tree Classifier": {"max_depth": 1}},
             max_batches=1,
             verbose=verbose,
         )
@@ -4490,6 +4464,104 @@ def test_cv_validation_scores_time_series(
     assert cv_vals[0] == validation_vals[0]
 
 
+@pytest.mark.parametrize("algorithm,batches", [("iterative", 2), ("default", 3)])
+@pytest.mark.parametrize(
+    "parameter,expected",
+    [
+        ("mean", ["mean", "median", "most_frequent"]),
+        (Categorical(["mean"]), Categorical(["mean"])),
+    ],
+)
+@pytest.mark.parametrize("problem_type", ["binary", "time series binary"])
+def test_search_parameters_held_automl(
+    problem_type, parameter, expected, algorithm, batches, X_y_binary, ts_data_binary
+):
+    if problem_type == "binary":
+        X, y = X_y_binary
+        problem_configuration = None
+        allowed_component_graphs = {
+            "cg": {
+                "Imputer": ["Imputer", "X", "y"],
+                "Label Encoder": ["Label Encoder", "Imputer.x", "y"],
+                "Decision Tree Classifier": [
+                    "Decision Tree Classifier",
+                    "Label Encoder.x",
+                    "Label Encoder.y",
+                ],
+            }
+        }
+    else:
+        X, y = ts_data_binary
+        problem_configuration = {
+            "time_index": "date",
+            "gap": 0,
+            "max_delay": 0,
+            "forecast_horizon": 1,
+        }
+        allowed_component_graphs = {
+            "cg": {
+                "Imputer": ["Imputer", "X", "y"],
+                "Label Encoder": ["Label Encoder", "Imputer.x", "y"],
+                "DateTime Featurizer": [
+                    "DateTime Featurizer",
+                    "Label Encoder.x",
+                    "Label Encoder.y",
+                ],
+                "Decision Tree Classifier": [
+                    "Decision Tree Classifier",
+                    "DateTime Featurizer.x",
+                    "Label Encoder.y",
+                ],
+            }
+        }
+    search_parameters = {
+        "Imputer": {"numeric_impute_strategy": parameter},
+        "DateTime Featurizer": {"features_to_extract": ["month", "day_of_week"]},
+        "Label Encoder": {"positive_label": 0},
+    }
+    aml = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type=problem_type,
+        problem_configuration=problem_configuration,
+        allowed_component_graphs=allowed_component_graphs,
+        search_parameters=search_parameters,
+        automl_algorithm=algorithm,
+        max_batches=batches,
+    )
+    aml.search()
+    estimator_args = inspect.getargspec(DecisionTreeClassifier)
+    # estimator_args[0] gives the parameter names, while [3] gives the associated values
+    # estimator_args[0][i + 1] to skip 'self' in the estimator
+    # we do len - 1 in order to skip the random seed, which isn't present in the row['parameters']
+    expected_params = {
+        estimator_args[0][i + 1]: estimator_args[3][i]
+        for i in range(len(estimator_args[3]) - 1)
+    }
+    sorted_full_rank = aml.full_rankings.sort_values(by="id")
+    found_dtc = False
+    for _, row in sorted_full_rank.iterrows():
+        # we check the initial decision tree classifier parameters.
+        if "Decision Tree Classifier" in row["parameters"]:
+            assert expected_params == row["parameters"]["Decision Tree Classifier"]
+            found_dtc = True
+            break
+    assert found_dtc
+    for tuners in aml.automl_algorithm._tuners.values():
+        assert (
+            tuners._pipeline_hyperparameter_ranges["Imputer"]["numeric_impute_strategy"]
+            == expected
+        )
+        assert tuners._pipeline_hyperparameter_ranges["Imputer"][
+            "categorical_impute_strategy"
+        ] == ["most_frequent"]
+        # make sure that there are no set hyperparameters when we don't have defaults
+        assert tuners._pipeline_hyperparameter_ranges["Label Encoder"] == {}
+        assert tuners.propose()["Label Encoder"] == {}
+        if problem_type == "time series binary":
+            assert tuners._pipeline_hyperparameter_ranges["DateTime Featurizer"] == {}
+
+
 @pytest.mark.parametrize(
     "automl_algorithm",
     ["iterative", "default"],
@@ -4629,7 +4701,7 @@ def test_automl_restricts_use_covariates_for_arima(
             "time_index": "Date",
         },
         verbose=True,
-        custom_hyperparameters=hyperparams,
+        search_parameters=hyperparams,
         automl_algorithm=automl_algo,
         max_batches=6,
     )
@@ -4677,7 +4749,7 @@ def test_automl_does_not_restrict_use_covariates_if_user_specified(
         },
         verbose=True,
         automl_algorithm=automl_algo,
-        custom_hyperparameters=hyperparams,
+        search_parameters=hyperparams,
         max_batches=6,
     )
     with env.test_context(score_return_value={automl.objective.name: 1.0}):
