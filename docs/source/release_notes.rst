@@ -18,8 +18,8 @@
 .. warning::
 
     **Breaking Changes**
-        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
         * Renamed ``graphs.py`` to ``visualizations.py`` :pr:`3439`
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
 
 **v0.49.0 Mar. 31, 2022**
     * Enhancements
@@ -39,7 +39,6 @@
 
     **Breaking Changes**
         * Moved model understanding metrics from ``graph.py`` to ``metrics.py`` :pr:`3417`
-        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
 
 
 **v0.48.0 Mar. 25, 2022**
@@ -48,7 +47,6 @@
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`
         * Fixed bug where Email/URL features with missing values would cause the imputer to error out :pr:`3388`
-        * Simplified internal ``AutoMLSearch`` API to rely on ``search_parameters`` :pr:`3373`
     * Changes
         * Update maintainers to add Frank :pr:`3382`
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
