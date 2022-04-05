@@ -143,7 +143,7 @@ def test_default_algorithm(
 
     problem_type = automl_type
     sampler_name = None
-    algo = DefaultAlgorithm(X, y, problem_type, sampler_name)
+    algo = DefaultAlgorithm(X, y, problem_type, sampler_name, ensembling=True)
     naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
 
     first_batch = algo.next_batch()
