@@ -26,6 +26,17 @@ class DummyAlgorithm(AutoMLAlgorithm):
         pass
 
 
+class AllowedPipelinesAlgorithm(AutoMLAlgorithm):
+    def __init__(self, allowed_pipelines=None, random_seed=0):
+        super().__init__(allowed_pipelines=allowed_pipelines, random_seed=random_seed)
+
+    def next_batch(self):
+        pass
+
+    def _transform_parameters(self, pipeline, proposed_parameters):
+        pass
+
+
 def test_automl_algorithm_dummy():
     algo = DummyAlgorithm()
     assert algo.pipeline_number == 0
@@ -89,3 +100,17 @@ def test_automl_algorithm_create_ensemble_cache():
         }
     }
     assert pipelines.component_graph.cached_data == expected_comp_graph
+
+
+def test_automl_algorithm_add_pipelines(dummy_binary_pipeline):
+    allowed_pipelines = [dummy_binary_pipeline]
+    aml = AllowedPipelinesAlgorithm(allowed_pipelines=allowed_pipelines)
+    aml_add_pipelines = AllowedPipelinesAlgorithm()
+    aml_add_pipelines._set_allowed_pipelines(allowed_pipelines)
+
+    assert aml.allowed_pipelines == aml_add_pipelines.allowed_pipelines
+    # the tuner objects themselves are different so we cannot check for dictionary equality
+    assert aml._tuners.keys() == aml_add_pipelines._tuners.keys()
+    assert aml._tuner_class == aml_add_pipelines._tuner_class
+    aml.next_batch()
+    aml._transform_parameters(None, None)
