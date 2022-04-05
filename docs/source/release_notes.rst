@@ -3,6 +3,7 @@
 
 **Future Releases**
     * Enhancements
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`, :pr:`3427`
         * Added ``TimeSeriesRegularizer`` to smooth uninferrable date ranges for time series problems :pr:`3376`
         * Enabled ensembling as a parameter for ``DefaultAlgorithm`` :pr:`3435`
     * Fixes
@@ -15,6 +16,7 @@
 .. warning::
 
     **Breaking Changes**
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
         * Renamed ``graphs.py`` to ``visualizations.py`` :pr:`3439`
 
 **v0.49.0 Mar. 31, 2022**
@@ -39,7 +41,6 @@
 
 **v0.48.0 Mar. 25, 2022**
     * Enhancements
-        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
         * Add support for oversampling in time series classification problems :pr:`3387`
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`
