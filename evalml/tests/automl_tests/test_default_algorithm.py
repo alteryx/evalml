@@ -737,6 +737,24 @@ def test_default_algorithm_time_series_known_in_advance(
     assert len(long_estimators) == 3
 
 
+@pytest.mark.parametrize(
+    "automl_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ],
+)
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_default_algorithm_time_series_ensembling(mock_get_names, automl_type, ts_data):
+    X, y = ts_data
+    with pytest.raises(
+        ValueError,
+        match="Ensembling is not available for time series problems in DefaultAlgorithm.",
+    ):
+        DefaultAlgorithm(X, y, automl_type, None, ensembling=True)
+
+
 @pytest.mark.parametrize("split", ["split", "numeric-only", "categorical-only"])
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
 def test_default_algorithm_accept_features(mock_get_names, X_y_binary, split):

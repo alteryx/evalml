@@ -90,7 +90,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         n_jobs=-1,
         text_in_ensembling=False,
         top_n=3,
-        ensembling=True,
+        ensembling=False,
         num_long_explore_pipelines=50,
         num_long_pipelines_per_batch=10,
         allow_long_running_models=False,
@@ -125,8 +125,12 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self._X_without_cat_cols = None
         self.features = features
         self.ensembling = ensembling
-        if is_time_series(self.problem_type):
-            self.ensembling = False
+
+        # TODO remove on resolution of 3186
+        if is_time_series(self.problem_type) and self.ensembling:
+            raise ValueError(
+                "Ensembling is not available for time series problems in DefaultAlgorithm."
+            )
 
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
