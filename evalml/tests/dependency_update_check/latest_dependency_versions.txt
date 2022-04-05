@@ -16,7 +16,7 @@ networkx==2.5.1
 nlp-primitives==2.4.0
 numpy==1.21.5
 pandas==1.4.2
-plotly==5.6.0
+plotly==5.7.0
 pmdarima==1.8.5
 pyzmq==22.3.0
 requirements-parser==0.5.0
