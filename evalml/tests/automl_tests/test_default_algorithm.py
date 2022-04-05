@@ -34,6 +34,7 @@ def test_default_algorithm_init(X_y_binary):
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == []
     assert algo.verbose is True
+    assert algo.ensembling is True
     assert algo.default_max_batches == 4
 
     algo = DefaultAlgorithm(
@@ -801,6 +802,21 @@ def test_default_algorithm_add_result_cache(X_y_binary):
 
     for values in algo._best_pipeline_info.values():
         assert values["cached_data"] == cache
+
+
+def test_default_algorithm_ensembling_off(X_y_binary):
+    X, y = X_y_binary
+    algo = DefaultAlgorithm(
+        X=X, y=y, problem_type="binary", sampler_name=None, ensembling=False
+    )
+
+    for i in range(10):
+        next_batch = algo.next_batch()
+        for pipeline in next_batch:
+            assert (
+                "Stacked Ensemble Classifier"
+                not in pipeline.component_graph.compute_order
+            )
 
 
 @patch("evalml.pipelines.components.URLFeaturizer._get_feature_provenance")

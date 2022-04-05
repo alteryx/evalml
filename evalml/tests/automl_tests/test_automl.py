@@ -15,6 +15,8 @@ from joblib import hash as joblib_hash
 from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
+from .test_automl_iterative_algorithm import _get_first_stacked_classifier_no
+
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.automl_search import build_engine_from_str
@@ -302,11 +304,11 @@ def test_pipeline_limits(
         automl.search()
     out = caplog.text
     if verbose:
-        assert "Using default limit of max_batches=4." in out
-        assert "Searching up to 4 batches for a total of" in out
+        assert "Using default limit of max_batches=3." in out
+        assert "Searching up to 3 batches for a total of" in out
     else:
-        assert "Using default limit of max_batches=4." not in out
-        assert "Searching up to 4 batches for a total of" not in out
+        assert "Using default limit of max_batches=3." not in out
+        assert "Searching up to 3 batches for a total of" not in out
     assert len(automl.results["pipeline_results"]) > 0
 
     caplog.clear()
@@ -4759,3 +4761,29 @@ def test_automl_does_not_restrict_use_covariates_if_user_specified(
     arima_params = [p for p in params if p is not None]
     assert arima_params
     assert all(p for p in arima_params)
+
+
+@pytest.mark.parametrize("automl_algo", ["iterative", "default"])
+def test_automl_passes_down_ensembling(automl_algo, AutoMLTestEnv, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    env = AutoMLTestEnv("binary")
+    max_batches = 4 if automl_algo == "default" else None
+    max_iterations = (
+        None if automl_algo == "default" else _get_first_stacked_classifier_no()
+    )
+    automl = AutoMLSearch(
+        X,
+        y,
+        "binary",
+        verbose=True,
+        automl_algorithm=automl_algo,
+        ensembling=True,
+        max_batches=max_batches,
+        max_iterations=max_iterations,
+    )
+
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+    pipeline_names = automl.rankings["pipeline_name"]
+    assert pipeline_names.str.contains("Ensemble").any()
