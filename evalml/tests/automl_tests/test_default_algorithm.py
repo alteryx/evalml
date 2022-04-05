@@ -35,12 +35,17 @@ def test_default_algorithm_init(X_y_binary):
     assert algo.allowed_pipelines == []
     assert algo.verbose is True
     assert algo.ensembling is False
-    assert algo.default_max_batches == 4
+    assert algo.default_max_batches == 3
 
     algo = DefaultAlgorithm(
         X, y, ProblemTypes.TIME_SERIES_BINARY, sampler_name, verbose=True
     )
     assert algo.default_max_batches == 3
+
+    algo = DefaultAlgorithm(
+        X, y, ProblemTypes.BINARY, sampler_name, verbose=True, ensembling=True
+    )
+    assert algo.default_max_batches == 4
 
 
 def test_default_algorithm_search_parameters_error(X_y_binary):
