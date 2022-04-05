@@ -7,8 +7,11 @@ from .automl_algorithm import AutoMLAlgorithm
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
+    EmailFeaturizer,
+    OneHotEncoder,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
+    URLFeaturizer,
 )
 from evalml.pipelines.components.transformers.column_selectors import (
     SelectByType,
@@ -84,6 +87,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         n_jobs=-1,
         text_in_ensembling=False,
         top_n=3,
+        ensembling=True,
         num_long_explore_pipelines=50,
         num_long_pipelines_per_batch=10,
         allow_long_running_models=False,
@@ -115,8 +119,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.allow_long_running_models = allow_long_running_models
         self._X_with_cat_cols = None
         self._X_without_cat_cols = None
-        self._ensembling = True if not is_time_series(self.problem_type) else False
         self.features = features
+        self.ensembling = ensembling
+        if is_time_series(self.problem_type):
+            self.ensembling = False
 
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
@@ -133,7 +139,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
     @property
     def default_max_batches(self):
         """Returns the number of max batches AutoMLSearch should run by default."""
-        return 4 if not is_time_series(self.problem_type) else 3
+        return 4 if self.ensembling else 3
 
     def _naive_estimators(self):
         if is_regression(self.problem_type):
@@ -214,7 +220,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 "columns": self._selected_cat_cols
             },
             "Numeric Pipeline - Select Columns By Type Transformer": {
-                "column_types": ["category"],
+                "column_types": ["Categorical", "EmailAddress", "URL"],
                 "exclude": True,
             },
             "Numeric Pipeline - Select Columns Transformer": {
@@ -275,10 +281,12 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         if self._split:
             self._rename_pipeline_search_parameters(pipelines)
 
-        next_batch = self._create_n_pipelines(pipelines, 1)
+        next_batch = self._create_n_pipelines(
+            pipelines, 1, create_starting_parameters=True
+        )
         return next_batch
 
-    def _create_n_pipelines(self, pipelines, n):
+    def _create_n_pipelines(self, pipelines, n, create_starting_parameters=False):
         next_batch = []
         for _ in range(n):
             for pipeline in pipelines:
@@ -290,7 +298,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     self._tuners[pipeline.name].get_starting_parameters(
                         self._hyperparameters, self.random_seed
                     )
-                    if n == 1
+                    if create_starting_parameters
                     else self._tuners[pipeline.name].propose()
                 )
                 parameters = self._transform_parameters(pipeline, parameters)
@@ -342,7 +350,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
-        if self._ensembling:
+        if self.ensembling:
             if self._batch_number == 0:
                 next_batch = self._create_naive_pipelines()
             elif self._batch_number == 1:
@@ -381,6 +389,43 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self._batch_number += 1
         return next_batch
 
+    def _get_feature_provenance_and_remove_engineered_features(
+        self, pipeline, component_name, to_be_removed, to_be_added
+    ):
+        component = pipeline.get_component(component_name)
+        feature_provenance = component._get_feature_provenance()
+        for original_col in feature_provenance:
+            selected = False
+            for encoded_col in feature_provenance[original_col]:
+                if encoded_col in to_be_removed:
+                    selected = True
+                    to_be_removed.remove(encoded_col)
+            if selected:
+                to_be_added.append(original_col)
+
+    def _parse_selected_categorical_features(self, pipeline):
+        if list(self.X.ww.select("categorical", return_schema=True).columns):
+            self._get_feature_provenance_and_remove_engineered_features(
+                pipeline,
+                OneHotEncoder.name,
+                self._selected_cols,
+                self._selected_cat_cols,
+            )
+        if list(self.X.ww.select("URL", return_schema=True).columns):
+            self._get_feature_provenance_and_remove_engineered_features(
+                pipeline,
+                URLFeaturizer.name,
+                self._selected_cat_cols,
+                self._selected_cat_cols,
+            )
+        if list(self.X.ww.select("EmailAddress", return_schema=True).columns):
+            self._get_feature_provenance_and_remove_engineered_features(
+                pipeline,
+                EmailFeaturizer.name,
+                self._selected_cat_cols,
+                self._selected_cat_cols,
+            )
+
     def add_result(
         self, score_to_minimize, pipeline, trained_pipeline_results, cached_data=None
     ):
@@ -415,17 +460,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     "RF Classifier Select From Model"
                 ).get_names()
 
-            if list(self.X.ww.select("categorical").columns):
-                ohe = pipeline.get_component("One Hot Encoder")
-                feature_provenance = ohe._get_feature_provenance()
-                for original_col in feature_provenance:
-                    selected = False
-                    for encoded_col in feature_provenance[original_col]:
-                        if encoded_col in self._selected_cols:
-                            selected = True
-                            self._selected_cols.remove(encoded_col)
-                    if selected:
-                        self._selected_cat_cols.append(original_col)
+            self._parse_selected_categorical_features(pipeline)
 
         current_best_score = self._best_pipeline_info.get(
             pipeline.model_family, {}
@@ -461,7 +496,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             numeric_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cols},
                 "Select Columns By Type Transformer": {
-                    "column_types": ["category"],
+                    "column_types": ["Categorical", "EmailAddress", "URL"],
                     "exclude": True,
                 },
             }

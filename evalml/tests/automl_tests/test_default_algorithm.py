@@ -34,6 +34,7 @@ def test_default_algorithm_init(X_y_binary):
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == []
     assert algo.verbose is True
+    assert algo.ensembling is True
     assert algo.default_max_batches == 4
 
     algo = DefaultAlgorithm(
@@ -365,7 +366,7 @@ def test_make_split_pipeline(X_y_binary):
     assert pipeline.name == "test_pipeline"
     assert pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][
         "column_types"
-    ] == ["category"]
+    ] == ["Categorical", "EmailAddress", "URL"]
     assert pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][
         "exclude"
     ]
@@ -436,7 +437,7 @@ def test_select_cat_cols(
         if "Numeric Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cols
         elif "Numeric Pipeline - Select Columns By Type Transformer" in component:
-            assert value["column_types"] == ["category"]
+            assert value["column_types"] == ["Categorical", "EmailAddress", "URL"]
             assert value["exclude"]
         elif "Categorical Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cat_cols
@@ -447,7 +448,7 @@ def test_select_cat_cols(
         if "Numeric Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cols
         elif "Numeric Pipeline - Select Columns By Type Transformer" in component:
-            assert value["column_types"] == ["category"]
+            assert value["column_types"] == ["Categorical", "EmailAddress", "URL"]
             assert value["exclude"]
         elif "Categorical Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cat_cols
@@ -801,3 +802,61 @@ def test_default_algorithm_add_result_cache(X_y_binary):
 
     for values in algo._best_pipeline_info.values():
         assert values["cached_data"] == cache
+
+
+def test_default_algorithm_ensembling_off(X_y_binary):
+    X, y = X_y_binary
+    algo = DefaultAlgorithm(
+        X=X, y=y, problem_type="binary", sampler_name=None, ensembling=False
+    )
+
+    for i in range(10):
+        next_batch = algo.next_batch()
+        for pipeline in next_batch:
+            assert (
+                "Stacked Ensemble Classifier"
+                not in pipeline.component_graph.compute_order
+            )
+
+
+@patch("evalml.pipelines.components.URLFeaturizer._get_feature_provenance")
+@patch("evalml.pipelines.components.EmailFeaturizer._get_feature_provenance")
+@patch("evalml.pipelines.components.OneHotEncoder._get_feature_provenance")
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_default_algorithm_accepts_URL_email_features(
+    mock_get_names,
+    mock_ohe_get_feature_provenance,
+    mock_email_get_feature_provenance,
+    mock_url_get_feature_provenance,
+    df_with_url_and_email,
+):
+    X = df_with_url_and_email
+    y = pd.Series(range(len(X)))
+
+    mock_ohe_get_feature_provenance.return_value = {
+        "URL_TO_DOMAIN(url)": ["URL_TO_DOMAIN(url)_alteryx.com"],
+        "EMAIL_ADDRESS_TO_DOMAIN(email)": ["EMAIL_ADDRESS_TO_DOMAIN(email)_gmail.com"],
+    }
+    mock_url_get_feature_provenance.return_value = {"url": ["URL_TO_DOMAIN(url)"]}
+    mock_email_get_feature_provenance.return_value = {
+        "email": ["EMAIL_ADDRESS_TO_DOMAIN(email)"]
+    }
+
+    mock_get_names.return_value = [
+        "numeric",
+        "EMAIL_ADDRESS_TO_DOMAIN(email)_gmail.com",
+        "URL_TO_DOMAIN(url)_alteryx.com",
+    ]
+    algo = DefaultAlgorithm(X, y, ProblemTypes.REGRESSION, sampler_name=None)
+    for _ in range(2):
+        batch = algo.next_batch()
+        add_result(algo, batch)
+
+    assert algo._selected_cat_cols == ["url", "email"]
+
+    batch = algo.next_batch()
+    for pipeline in batch:
+        pipeline.fit(X, y)
+        assert pipeline.parameters["Categorical Pipeline - Select Columns Transformer"][
+            "columns"
+        ] == ["url", "email"]

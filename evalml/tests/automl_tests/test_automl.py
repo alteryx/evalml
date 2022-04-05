@@ -1,3 +1,4 @@
+import inspect
 import os
 import warnings
 from collections import OrderedDict, defaultdict
@@ -13,6 +14,8 @@ import woodwork as ww
 from joblib import hash as joblib_hash
 from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
+
+from .test_automl_iterative_algorithm import _get_first_stacked_classifier_no
 
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
@@ -57,6 +60,7 @@ from evalml.pipelines import (
     RegressionPipeline,
     StackedEnsembleClassifier,
 )
+from evalml.pipelines.components import DecisionTreeClassifier
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_stacked_ensemble_pipeline,
@@ -300,11 +304,11 @@ def test_pipeline_limits(
         automl.search()
     out = caplog.text
     if verbose:
-        assert "Using default limit of max_batches=4." in out
-        assert "Searching up to 4 batches for a total of" in out
+        assert "Using default limit of max_batches=3." in out
+        assert "Searching up to 3 batches for a total of" in out
     else:
-        assert "Using default limit of max_batches=4." not in out
-        assert "Searching up to 4 batches for a total of" not in out
+        assert "Using default limit of max_batches=3." not in out
+        assert "Searching up to 3 batches for a total of" not in out
     assert len(automl.results["pipeline_results"]) > 0
 
     caplog.clear()
@@ -4526,6 +4530,23 @@ def test_search_parameters_held_automl(
         max_batches=batches,
     )
     aml.search()
+    estimator_args = inspect.getargspec(DecisionTreeClassifier)
+    # estimator_args[0] gives the parameter names, while [3] gives the associated values
+    # estimator_args[0][i + 1] to skip 'self' in the estimator
+    # we do len - 1 in order to skip the random seed, which isn't present in the row['parameters']
+    expected_params = {
+        estimator_args[0][i + 1]: estimator_args[3][i]
+        for i in range(len(estimator_args[3]) - 1)
+    }
+    sorted_full_rank = aml.full_rankings.sort_values(by="id")
+    found_dtc = False
+    for _, row in sorted_full_rank.iterrows():
+        # we check the initial decision tree classifier parameters.
+        if "Decision Tree Classifier" in row["parameters"]:
+            assert expected_params == row["parameters"]["Decision Tree Classifier"]
+            found_dtc = True
+            break
+    assert found_dtc
     for tuners in aml.automl_algorithm._tuners.values():
         assert (
             tuners._pipeline_hyperparameter_ranges["Imputer"]["numeric_impute_strategy"]
@@ -4740,3 +4761,29 @@ def test_automl_does_not_restrict_use_covariates_if_user_specified(
     arima_params = [p for p in params if p is not None]
     assert arima_params
     assert all(p for p in arima_params)
+
+
+@pytest.mark.parametrize("automl_algo", ["iterative", "default"])
+def test_automl_passes_down_ensembling(automl_algo, AutoMLTestEnv, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    env = AutoMLTestEnv("binary")
+    max_batches = 4 if automl_algo == "default" else None
+    max_iterations = (
+        None if automl_algo == "default" else _get_first_stacked_classifier_no()
+    )
+    automl = AutoMLSearch(
+        X,
+        y,
+        "binary",
+        verbose=True,
+        automl_algorithm=automl_algo,
+        ensembling=True,
+        max_batches=max_batches,
+        max_iterations=max_iterations,
+    )
+
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+    pipeline_names = automl.rankings["pipeline_name"]
+    assert pipeline_names.str.contains("Ensemble").any()

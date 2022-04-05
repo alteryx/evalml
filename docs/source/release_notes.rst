@@ -4,6 +4,24 @@
 **Future Releases**
     * Enhancements
         * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`, :pr:`3427`
+        * Added ``TimeSeriesRegularizer`` to smooth uninferrable date ranges for time series problems :pr:`3376`
+        * Enabled ensembling as a parameter for ``DefaultAlgorithm`` :pr:`3435`
+    * Fixes
+        * Fix ``DefaultAlgorithm`` not handling Email and URL features :pr:`3419`
+        * Added test to ensure ``LabelEncoder`` parameters preserved during ``AutoMLSearch`` :pr:`3326`
+    * Changes
+        * Renamed ``graphs.py`` to ``visualizations.py`` :pr:`3439`
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
+        * Renamed ``graphs.py`` to ``visualizations.py`` :pr:`3439`
+
+**v0.49.0 Mar. 31, 2022**
+    * Enhancements
         * Added ``use_covariates`` parameter to ``ARIMARegressor`` :pr:`3407`
         * ``AutoMLSearch`` will set ``use_covariates`` to ``False`` for ARIMA when dataset is large :pr:`3407`
         * Add ability to retrieve logical types to a component in the graph via ``get_component_input_logical_types`` :pr:`3428`
@@ -14,9 +32,7 @@
         * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
         * Unpin ``click`` dependency :pr:`3420`
         * For ``IterativeAlgorithm``, put time series algorithms first :pr:`3407`
-        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407`
-    * Documentation Changes
-    * Testing Changes
+        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407` 
 
 .. warning::
 
@@ -27,13 +43,11 @@
 
 **v0.48.0 Mar. 25, 2022**
     * Enhancements
-        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
         * Add support for oversampling in time series classification problems :pr:`3387`
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`
         * Fixed bug where Email/URL features with missing values would cause the imputer to error out :pr:`3388`
         * Simplified internal ``AutoMLSearch`` API to rely on ``search_parameters`` :pr:`3373`
-        * Added test to ensure ``LabelEncoder`` parameters preserved during ``AutoMLSearch`` :pr:`3326`
     * Changes
         * Update maintainers to add Frank :pr:`3382`
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`

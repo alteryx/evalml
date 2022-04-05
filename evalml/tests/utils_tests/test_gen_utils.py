@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 from evalml.exceptions import ValidationErrorCode
-from evalml.model_understanding.graphs import visualize_decision_tree
+from evalml.model_understanding.visualizations import visualize_decision_tree
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
