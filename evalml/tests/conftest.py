@@ -1924,6 +1924,7 @@ def dummy_data_check_validate_output_errors():
 def imputer_test_data():
     return pd.DataFrame(
         {
+            "dates": pd.date_range("01-01-2022", periods=20),
             "categorical col": pd.Series(
                 ["zero", "one", "two", "zero", "two"] * 4, dtype="category"
             ),
