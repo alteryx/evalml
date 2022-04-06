@@ -3,9 +3,10 @@
 
 **Future Releases**
     * Enhancements
+        * Added ``TimeSeriesImputer`` component :pr:`3374`
         * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`, :pr:`3427`
         * Added ``TimeSeriesRegularizer`` to smooth uninferrable date ranges for time series problems :pr:`3376`
-        * Enabled ensembling as a parameter for ``DefaultAlgorithm`` :pr:`3435`
+        * Enabled ensembling as a parameter for ``DefaultAlgorithm`` :pr:`3435`, :pr:`3444`
     * Fixes
         * Fix ``DefaultAlgorithm`` not handling Email and URL features :pr:`3419`
     * Changes
