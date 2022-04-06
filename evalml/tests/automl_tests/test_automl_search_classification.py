@@ -1296,3 +1296,36 @@ def test_automl_threshold_score(fraud_100):
     manual_score = pl.score(X_valid, y_valid, objectives=["F1"])
     assert bp.name == pl.name
     assert best_pipeline_score == manual_score
+
+
+@pytest.mark.parametrize(
+    "automl_algorithm,batches", [("iterative", 10), ("default", 6)]
+)
+@pytest.mark.parametrize("positive_label", [True, False])
+def test_automl_binary_label_encoder(
+    positive_label,
+    automl_algorithm,
+    batches,
+    fraud_100,
+    AutoMLTestEnv,
+):
+    X, y = fraud_100
+    pipeline_parameters = {"Label Encoder": {"positive_label": positive_label}}
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        search_parameters=pipeline_parameters,
+        automl_algorithm=automl_algorithm,
+        ensembling=True,
+        max_batches=batches,
+    )
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+    assert all(
+        [
+            p["Label Encoder"]["positive_label"] == positive_label
+            for p in automl.full_rankings["parameters"][1:]
+        ]
+    )

@@ -362,11 +362,15 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             elif self._batch_number == 2:
                 next_batch = self._create_fast_final()
             elif self.batch_number == 3:
-                next_batch = self._create_ensemble()
+                next_batch = self._create_ensemble(
+                    self._pipeline_parameters.get("Label Encoder", {})
+                )
             elif self.batch_number == 4:
                 next_batch = self._create_long_exploration(n=self.top_n)
             elif self.batch_number % 2 != 0:
-                next_batch = self._create_ensemble()
+                next_batch = self._create_ensemble(
+                    self._pipeline_parameters.get("Label Encoder", {})
+                )
             else:
                 next_batch = self._create_n_pipelines(
                     self._top_n_pipelines, self.num_long_pipelines_per_batch

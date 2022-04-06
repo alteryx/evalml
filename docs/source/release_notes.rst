@@ -9,6 +9,7 @@
         * Enabled ensembling as a parameter for ``DefaultAlgorithm`` :pr:`3435`, :pr:`3444`
     * Fixes
         * Fix ``DefaultAlgorithm`` not handling Email and URL features :pr:`3419`
+        * Added test to ensure ``LabelEncoder`` parameters preserved during ``AutoMLSearch`` :pr:`3326`
     * Changes
         * Updated ``DateTimeFormatDataCheck`` to use woodwork's ``infer_frequency`` function :pr:`3425`
         * Renamed ``graphs.py`` to ``visualizations.py`` :pr:`3439`
@@ -18,8 +19,8 @@
 .. warning::
 
     **Breaking Changes**
-        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
         * Renamed ``graphs.py`` to ``visualizations.py`` :pr:`3439`
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
 
 **v0.49.0 Mar. 31, 2022**
     * Enhancements
