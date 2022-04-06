@@ -300,7 +300,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             and self._batch_number != 1
             and (self._batch_number) % (len(self._first_batch_results) + 1) == 0
         ):
-            next_batch = self._create_ensemble()
+            next_batch = self._create_ensemble(
+                self._pipeline_parameters.get("Label Encoder", {})
+            )
         else:
             num_pipelines = (
                 (len(self._first_batch_results) + 1)

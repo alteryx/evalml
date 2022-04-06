@@ -164,7 +164,7 @@ class AutoMLAlgorithm(ABC):
         """Returns the number of max batches AutoMLSearch should run by default."""
         return 1
 
-    def _create_ensemble(self):
+    def _create_ensemble(self, label_encoder_params=None):
         next_batch = []
         best_pipelines = list(self._best_pipeline_info.values())
         problem_type = best_pipelines[0]["pipeline"].problem_type
@@ -178,12 +178,18 @@ class AutoMLAlgorithm(ABC):
             pipeline = pipeline_dict["pipeline"]
             input_pipelines.append(pipeline)
 
+        if label_encoder_params is not None:
+            label_encoder_params = {"Label Encoder": label_encoder_params}
+        else:
+            label_encoder_params = {}
+
         ensemble = _make_stacked_ensemble_pipeline(
             input_pipelines,
             problem_type,
             random_seed=self.random_seed,
             n_jobs=n_jobs_ensemble,
             cached_data=cached_data,
+            label_encoder_params=label_encoder_params,
         )
         next_batch.append(ensemble)
         return next_batch
