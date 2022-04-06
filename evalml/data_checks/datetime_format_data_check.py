@@ -17,7 +17,10 @@ class DateTimeFormatDataCheck(DataCheck):
         self.datetime_column = datetime_column
 
     def validate(self, X, y):
-        """Checks if the target data has equal intervals and is sorted.
+        """Checks if the target data has equal intervals and is monotonically increasing.
+
+        Will return a DataCheckError if the data is not a datetime type, is not increasing, has redundant or missing row(s),
+        contains invalid (NaN or None) values, or has values that don't align with the assumed frequency.
 
         Args:
             X (pd.DataFrame, np.ndarray): Features.
