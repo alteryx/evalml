@@ -5,6 +5,8 @@ from .components import (
     TargetEncoder,
     SimpleImputer,
     PerColumnImputer,
+    Imputer,
+    TimeSeriesImputer,
     StandardScaler,
     Transformer,
     LightGBMClassifier,

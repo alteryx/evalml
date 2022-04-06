@@ -34,13 +34,18 @@ def test_default_algorithm_init(X_y_binary):
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == []
     assert algo.verbose is True
-    assert algo.ensembling is True
-    assert algo.default_max_batches == 4
+    assert algo.ensembling is False
+    assert algo.default_max_batches == 3
 
     algo = DefaultAlgorithm(
         X, y, ProblemTypes.TIME_SERIES_BINARY, sampler_name, verbose=True
     )
     assert algo.default_max_batches == 3
+
+    algo = DefaultAlgorithm(
+        X, y, ProblemTypes.BINARY, sampler_name, verbose=True, ensembling=True
+    )
+    assert algo.default_max_batches == 4
 
 
 def test_default_algorithm_search_parameters_error(X_y_binary):
@@ -119,7 +124,7 @@ def test_default_algorithm(
 
     problem_type = automl_type
     sampler_name = None
-    algo = DefaultAlgorithm(X, y, problem_type, sampler_name)
+    algo = DefaultAlgorithm(X, y, problem_type, sampler_name, ensembling=True)
     naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
 
     first_batch = algo.next_batch()
@@ -711,6 +716,24 @@ def test_default_algorithm_time_series_known_in_advance(
     long_estimators = set([pipeline.estimator.name for pipeline in long_2])
     assert len(long_2) == 30
     assert len(long_estimators) == 3
+
+
+@pytest.mark.parametrize(
+    "automl_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ],
+)
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_default_algorithm_time_series_ensembling(mock_get_names, automl_type, ts_data):
+    X, y = ts_data
+    with pytest.raises(
+        ValueError,
+        match="Ensembling is not available for time series problems in DefaultAlgorithm.",
+    ):
+        DefaultAlgorithm(X, y, automl_type, None, ensembling=True)
 
 
 @pytest.mark.parametrize("split", ["split", "numeric-only", "categorical-only"])
