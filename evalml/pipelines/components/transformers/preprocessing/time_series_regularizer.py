@@ -268,10 +268,14 @@ class TimeSeriesRegularizer(Transformer):
 
         for index, values in self.error_dict["misaligned"].items():
             to_replace = X.iloc[index]
-            to_replace["dates"] = values["correct"]
-            cleaned_x.loc[cleaned_x.dates == values["correct"]] = to_replace.values
+            to_replace[self.time_index] = values["correct"]
+            cleaned_x.loc[
+                cleaned_x[self.time_index] == values["correct"]
+            ] = to_replace.values
             if y is not None:
-                cleaned_y.loc[cleaned_y.dates == values["correct"]] = y.iloc[index]
+                cleaned_y.loc[cleaned_y[self.time_index] == values["correct"]] = y.iloc[
+                    index
+                ]
 
         if cleaned_y is not None:
             cleaned_y = cleaned_y["target"]

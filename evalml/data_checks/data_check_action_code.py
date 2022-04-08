@@ -19,6 +19,9 @@ class DataCheckActionCode(Enum):
     TRANSFORM_TARGET = "transform_target"
     """Action code for transforming the target data."""
 
+    REGULARIZE_AND_IMPUTE_DATASET = "regularize_and_impute_dataset"
+    """Action code for regularizing and imputing all features and target time series data."""
+
     @classproperty
     def _all_values(cls):
         return {code.value.upper(): code for code in list(cls)}
@@ -30,5 +33,6 @@ class DataCheckActionCode(Enum):
             DataCheckActionCode.DROP_ROWS.name: "drop_rows",
             DataCheckActionCode.IMPUTE_COL.name: "impute_col",
             DataCheckActionCode.TRANSFORM_TARGET.name: "transform_target",
+            DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET.name: "regularize_and_impute_dataset",
         }
         return datacheck_action_code_dict[self.name]

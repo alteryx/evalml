@@ -2,7 +2,14 @@
 import pandas as pd
 from woodwork.statistics_utils import infer_frequency
 
-from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckActionCode,
+    DataCheckActionOption,
+    DataCheckError,
+    DataCheckMessageCode,
+    DCAOParameterType,
+)
 from evalml.utils import infer_feature_types
 
 
@@ -43,7 +50,7 @@ class DateTimeFormatDataCheck(DataCheck):
             ...         "message": "No frequency could be detected in column 'dates', possibly due to uneven intervals.",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
-            ...         "code": "DATETIME_HAS_UNEVEN_INTERVALS",
+            ...         "code": "DATETIME_NO_FREQUENCY_OBSERVED",
             ...         "details": {"columns": None, "rows": None},
             ...         "action_options": []
             ...      }
@@ -62,7 +69,32 @@ class DateTimeFormatDataCheck(DataCheck):
             ...         "code": "DATETIME_IS_MISSING_VALUES",
             ...         "details": {"columns": None, "rows": None},
             ...         "action_options": []
-            ...      }
+            ...      },
+            ...     {
+            ...         "message": "A frequency was detected in column 'dates', but there are faulty datetime values that need to be addressed.",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "code": "DATETIME_HAS_UNEVEN_INTERVALS",
+            ...         "details": {'columns': None, 'rows': None},
+            ...         "action_options": [
+            ...             {
+            ...                 'code': 'REGULARIZE_AND_IMPUTE_DATASET',
+            ...                 'data_check_name': 'DateTimeFormatDataCheck',
+            ...                 'metadata': {
+            ...                         'columns': None,
+            ...                         'is_target': True,
+            ...                         'rows': None
+            ...                 },
+            ...                 'parameters': {
+            ...                         'time_index': {
+            ...                             'default_value': 'dates',
+            ...                             'parameter_type': 'global',
+            ...                             'type': 'str'
+            ...                         }
+            ...                 }
+            ...             }
+            ...         ]
+            ...     }
             ... ]
 
             The column "dates" has a repeat of the date 2021-01-09 appended to the end, which is considered redundant and will raise an error.
@@ -78,7 +110,32 @@ class DateTimeFormatDataCheck(DataCheck):
             ...         "code": "DATETIME_HAS_REDUNDANT_ROW",
             ...         "details": {"columns": None, "rows": None},
             ...         "action_options": []
-            ...      }
+            ...      },
+            ...     {
+            ...         "message": "A frequency was detected in column 'dates', but there are faulty datetime values that need to be addressed.",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "code": "DATETIME_HAS_UNEVEN_INTERVALS",
+            ...         "details": {'columns': None, 'rows': None},
+            ...         "action_options": [
+            ...             {
+            ...                 'code': 'REGULARIZE_AND_IMPUTE_DATASET',
+            ...                 'data_check_name': 'DateTimeFormatDataCheck',
+            ...                 'metadata': {
+            ...                         'columns': None,
+            ...                         'is_target': True,
+            ...                         'rows': None
+            ...                 },
+            ...                 'parameters': {
+            ...                         'time_index': {
+            ...                             'default_value': 'dates',
+            ...                             'parameter_type': 'global',
+            ...                             'type': 'str'
+            ...                         }
+            ...                 }
+            ...             }
+            ...         ]
+            ...     }
             ... ]
 
             The column "Weeks" has a date that does not follow the weekly pattern, which is considered misaligned.
@@ -93,7 +150,72 @@ class DateTimeFormatDataCheck(DataCheck):
             ...         "details": {"columns": None, "rows": None},
             ...         "code": "DATETIME_HAS_MISALIGNED_VALUES",
             ...         "action_options": []
-            ...      }
+            ...      },
+            ...     {
+            ...         "message": "A frequency was detected in column 'Weeks', but there are faulty datetime values that need to be addressed.",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "code": "DATETIME_HAS_UNEVEN_INTERVALS",
+            ...         "details": {'columns': None, 'rows': None},
+            ...         "action_options": [
+            ...             {
+            ...                 'code': 'REGULARIZE_AND_IMPUTE_DATASET',
+            ...                 'data_check_name': 'DateTimeFormatDataCheck',
+            ...                 'metadata': {
+            ...                         'columns': None,
+            ...                         'is_target': True,
+            ...                         'rows': None
+            ...                 },
+            ...                 'parameters': {
+            ...                         'time_index': {
+            ...                             'default_value': 'Weeks',
+            ...                             'parameter_type': 'global',
+            ...                             'type': 'str'
+            ...                         }
+            ...                 }
+            ...             }
+            ...         ]
+            ...     }
+            ... ]
+
+            The column "Weeks" has a date that does not follow the weekly pattern, which is considered misaligned.
+
+            >>> X = pd.DataFrame(pd.date_range("2021-01-01", freq="W", periods=12).append(pd.date_range("2021-03-22", periods=1)), columns=["Weeks"])
+            >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
+            >>> assert datetime_format_dc.validate(X, y) == [
+            ...     {
+            ...         "message": "Column 'Weeks' has datetime values that do not align with the inferred frequency.",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "details": {"columns": None, "rows": None},
+            ...         "code": "DATETIME_HAS_MISALIGNED_VALUES",
+            ...         "action_options": []
+            ...      },
+            ...     {
+            ...         "message": "A frequency was detected in column 'Weeks', but there are faulty datetime values that need to be addressed.",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "code": "DATETIME_HAS_UNEVEN_INTERVALS",
+            ...         "details": {'columns': None, 'rows': None},
+            ...         "action_options": [
+            ...             {
+            ...                 'code': 'REGULARIZE_AND_IMPUTE_DATASET',
+            ...                 'data_check_name': 'DateTimeFormatDataCheck',
+            ...                 'metadata': {
+            ...                         'columns': None,
+            ...                         'is_target': True,
+            ...                         'rows': None
+            ...                 },
+            ...                 'parameters': {
+            ...                         'time_index': {
+            ...                             'default_value': 'Weeks',
+            ...                             'parameter_type': 'global',
+            ...                             'type': 'str'
+            ...                         }
+            ...                 }
+            ...             }
+            ...         ]
+            ...     }
             ... ]
 
             The column "Weeks" passed integers instead of datetime data, which will raise an error.
@@ -163,6 +285,31 @@ class DateTimeFormatDataCheck(DataCheck):
             ...         "details": {"columns": None, "rows": None},
             ...         "code": "DATETIME_HAS_NAN",
             ...         "action_options": []
+            ...      },
+            ...     {
+            ...         "message": "A frequency was detected in column 'days', but there are faulty datetime values that need to be addressed.",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "code": "DATETIME_HAS_UNEVEN_INTERVALS",
+            ...         "details": {'columns': None, 'rows': None},
+            ...         "action_options": [
+            ...             {
+            ...                 'code': 'REGULARIZE_AND_IMPUTE_DATASET',
+            ...                 'data_check_name': 'DateTimeFormatDataCheck',
+            ...                 'metadata': {
+            ...                         'columns': None,
+            ...                         'is_target': True,
+            ...                         'rows': None
+            ...                 },
+            ...                 'parameters': {
+            ...                         'time_index': {
+            ...                             'default_value': 'days',
+            ...                             'parameter_type': 'global',
+            ...                             'type': 'str'
+            ...                         }
+            ...                 }
+            ...             }
+            ...         ]
             ...     }
             ... ]
             ...
@@ -270,7 +417,29 @@ class DateTimeFormatDataCheck(DataCheck):
                 DataCheckError(
                     message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
                     data_check_name=self.name,
+                    message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_OBSERVED,
+                ).to_dict()
+            )
+        else:
+            messages.append(
+                DataCheckError(
+                    message=f"A frequency was detected in column '{col_name}', but there are faulty datetime values that need to be addressed.",
+                    data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
+                    action_options=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
+                            data_check_name=self.name,
+                            parameters={
+                                "time_index": {
+                                    "parameter_type": DCAOParameterType.GLOBAL,
+                                    "type": "str",
+                                    "default_value": col_name,
+                                }
+                            },
+                            metadata={"is_target": True},
+                        )
+                    ],
                 ).to_dict()
             )
 
