@@ -204,8 +204,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 features=self.features,
                 include_log_transformer=include_log,
             )
+            for include_log in [False, True]
             for estimator in estimators
-            for include_log in [True, False]
         ]
 
         pipelines = self._init_pipelines_with_starter_params(pipelines)
@@ -342,14 +342,14 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     features=self.features,
                     include_log_transformer=include_log,
                 )
+                for include_log in [False, True]
                 for estimator in estimators
-                for include_log in [True, False]
             ]
         else:
             pipelines = [
                 self._make_split_pipeline(estimator, include_log=include_log)
+                for include_log in [False, True]
                 for estimator in estimators
-                for include_log in [True, False]
             ]
         return pipelines
 

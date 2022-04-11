@@ -173,8 +173,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         features=self.features,
                         include_log_transformer=include_log
                     )
+                    for include_log in [False, True]
                     for estimator in allowed_estimators
-                    for include_log in [True, False]
                 ]
             self._catch_warnings(w)
         else:
