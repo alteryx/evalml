@@ -229,6 +229,9 @@ inheritance_graph_attrs = dict(rankdir="TB", dpi=192.0, ranksep=0.02)
 inheritance_node_attrs = dict(fontsize=6, height=0.15, width=5, fixedsize=True)
 inheritance_edge_attrs = dict(arrowsize=0.1)
 
+# Needed to render plotly correctly in docs
+import plotly.io as pio
+pio.renderers.default = 'sphinx_gallery'
 
 class AccessorLevelDocumenter(Documenter):
     """Documenter subclass for objects on accessor level (methods, attributes).
