@@ -47,8 +47,8 @@ class LogTransformer(Transformer):
         y_ww = infer_feature_types(y)
         self.min = y_ww.min()
         if self.min <= 0:
-            y_ww = y_ww.apply(lambda x: x + abs(self.min) + 1)
-        y_t = infer_feature_types(y_ww.apply(np.log))
+            y_ww = y_ww + abs(self.min) + 1
+        y_t = infer_feature_types(np.log(y_ww))
         return X, y_t
 
     def fit_transform(self, X, y=None):
@@ -75,9 +75,9 @@ class LogTransformer(Transformer):
 
         """
         y_ww = infer_feature_types(y)
-        y_inv = y_ww.apply(np.exp)
+        y_inv = np.exp(y_ww)
         if self.min <= 0:
-            y_inv = y_inv.apply(lambda x: x - abs(self.min) - 1)
+            y_inv = y_inv - abs(self.min) - 1
 
         y_inv = infer_feature_types(pd.Series(y_inv, index=y_ww.index))
         return y_inv
