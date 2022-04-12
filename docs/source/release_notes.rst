@@ -15,6 +15,7 @@
         * Renamed ``graphs.py`` to ``visualizations.py`` :pr:`3439`
     * Documentation Changes
         * Updated the model understanding section of the user guide to include missing functions :pr:`3446`
+        * Rearranged the user guide model understanding page for easier navigation :pr:`3457`
     * Testing Changes
 
 .. warning::
