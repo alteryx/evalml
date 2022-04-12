@@ -15,6 +15,34 @@ from evalml.data_checks import (
 datetime_format_check_name = DateTimeFormatDataCheck.name
 
 
+def get_uneven_error(col_name, ww_payload):
+    error = DataCheckError(
+        message=f"A frequency was detected in column '{col_name}', but there are faulty datetime values that need to be addressed.",
+        data_check_name=datetime_format_check_name,
+        message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
+        action_options=[
+            DataCheckActionOption(
+                DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
+                data_check_name=datetime_format_check_name,
+                parameters={
+                    "time_index": {
+                        "parameter_type": DCAOParameterType.GLOBAL,
+                        "type": "str",
+                        "default_value": col_name,
+                    },
+                    "frequency_payload": {
+                        "default_value": ww_payload,
+                        "parameter_type": "global",
+                        "type": "tuple",
+                    },
+                },
+                metadata={"is_target": True},
+            )
+        ],
+    ).to_dict()
+    return error
+
+
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize(
     "issue", ["redundant", "missing", "uneven", "type_errors", None]
@@ -88,30 +116,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
                     data_check_name=datetime_format_check_name,
                     message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
                 ).to_dict(),
-                DataCheckError(
-                    message=f"A frequency was detected in column '{col_name}', but there are faulty datetime values that need to be addressed.",
-                    data_check_name=datetime_format_check_name,
-                    message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-                    action_options=[
-                        DataCheckActionOption(
-                            DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
-                            data_check_name=datetime_format_check_name,
-                            parameters={
-                                "time_index": {
-                                    "parameter_type": DCAOParameterType.GLOBAL,
-                                    "type": "str",
-                                    "default_value": col_name,
-                                },
-                                "frequency_payload": {
-                                    "default_value": ww_payload,
-                                    "parameter_type": "global",
-                                    "type": "tuple",
-                                },
-                            },
-                            metadata={"is_target": True},
-                        )
-                    ],
-                ).to_dict(),
+                get_uneven_error(col_name, ww_payload)
             ]
         elif issue == "redundant":
             assert datetime_format_check.validate(X, y) == [
@@ -120,37 +125,14 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
                     data_check_name=datetime_format_check_name,
                     message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
                 ).to_dict(),
-                DataCheckError(
-                    message=f"A frequency was detected in column '{col_name}', but there are faulty datetime values that need to be addressed.",
-                    data_check_name=datetime_format_check_name,
-                    message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-                    action_options=[
-                        DataCheckActionOption(
-                            DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
-                            data_check_name=datetime_format_check_name,
-                            parameters={
-                                "time_index": {
-                                    "parameter_type": DCAOParameterType.GLOBAL,
-                                    "type": "str",
-                                    "default_value": col_name,
-                                },
-                                "frequency_payload": {
-                                    "default_value": ww_payload,
-                                    "parameter_type": "global",
-                                    "type": "tuple",
-                                },
-                            },
-                            metadata={"is_target": True},
-                        )
-                    ],
-                ).to_dict(),
+                get_uneven_error(col_name, ww_payload)
             ]
         else:
             assert datetime_format_check.validate(X, y) == [
                 DataCheckError(
                     message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
                     data_check_name=datetime_format_check_name,
-                    message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_OBSERVED,
+                    message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_INFERRED,
                 ).to_dict()
             ]
 
@@ -186,7 +168,7 @@ def test_datetime_format_data_check_monotonic(datetime_loc, sort_order):
         freq_error = DataCheckError(
             message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
             data_check_name=datetime_format_check_name,
-            message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_OBSERVED,
+            message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_INFERRED,
         ).to_dict()
         mono_error = DataCheckError(
             message="Datetime values must be sorted in ascending order.",
@@ -227,30 +209,7 @@ def test_datetime_format_data_check_multiple_missing(n_missing):
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
-        DataCheckError(
-            message=f"A frequency was detected in column 'dates', but there are faulty datetime values that need to be addressed.",
-            data_check_name=datetime_format_check_name,
-            message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-            action_options=[
-                DataCheckActionOption(
-                    DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
-                    data_check_name=datetime_format_check_name,
-                    parameters={
-                        "time_index": {
-                            "parameter_type": DCAOParameterType.GLOBAL,
-                            "type": "str",
-                            "default_value": "dates",
-                        },
-                        "frequency_payload": {
-                            "default_value": ww_payload,
-                            "parameter_type": "global",
-                            "type": "tuple",
-                        },
-                    },
-                    metadata={"is_target": True},
-                )
-            ],
-        ).to_dict(),
+        get_uneven_error("dates", ww_payload)
     ]
 
 
@@ -272,30 +231,7 @@ def test_datetime_format_data_check_multiple_errors():
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
-        DataCheckError(
-            message=f"A frequency was detected in column 'dates', but there are faulty datetime values that need to be addressed.",
-            data_check_name=datetime_format_check_name,
-            message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-            action_options=[
-                DataCheckActionOption(
-                    DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
-                    data_check_name=datetime_format_check_name,
-                    parameters={
-                        "time_index": {
-                            "parameter_type": DCAOParameterType.GLOBAL,
-                            "type": "str",
-                            "default_value": "dates",
-                        },
-                        "frequency_payload": {
-                            "default_value": ww_payload,
-                            "parameter_type": "global",
-                            "type": "tuple",
-                        },
-                    },
-                    metadata={"is_target": True},
-                )
-            ],
-        ).to_dict(),
+        get_uneven_error("dates", ww_payload)
     ]
 
     dates = (
@@ -318,30 +254,7 @@ def test_datetime_format_data_check_multiple_errors():
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
-        DataCheckError(
-            message=f"A frequency was detected in column 'dates', but there are faulty datetime values that need to be addressed.",
-            data_check_name=datetime_format_check_name,
-            message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-            action_options=[
-                DataCheckActionOption(
-                    DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
-                    data_check_name=datetime_format_check_name,
-                    parameters={
-                        "time_index": {
-                            "parameter_type": DCAOParameterType.GLOBAL,
-                            "type": "str",
-                            "default_value": "dates",
-                        },
-                        "frequency_payload": {
-                            "default_value": ww_payload,
-                            "parameter_type": "global",
-                            "type": "tuple",
-                        },
-                    },
-                    metadata={"is_target": True},
-                )
-            ],
-        ).to_dict(),
+        get_uneven_error("dates", ww_payload)
     ]
 
     dates = (
@@ -364,30 +277,7 @@ def test_datetime_format_data_check_multiple_errors():
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
-        DataCheckError(
-            message=f"A frequency was detected in column 'dates', but there are faulty datetime values that need to be addressed.",
-            data_check_name=datetime_format_check_name,
-            message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-            action_options=[
-                DataCheckActionOption(
-                    DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
-                    data_check_name=datetime_format_check_name,
-                    parameters={
-                        "time_index": {
-                            "parameter_type": DCAOParameterType.GLOBAL,
-                            "type": "str",
-                            "default_value": "dates",
-                        },
-                        "frequency_payload": {
-                            "default_value": ww_payload,
-                            "parameter_type": "global",
-                            "type": "tuple",
-                        },
-                    },
-                    metadata={"is_target": True},
-                )
-            ],
-        ).to_dict(),
+        get_uneven_error("dates", ww_payload)
     ]
 
     dates = (
@@ -411,30 +301,7 @@ def test_datetime_format_data_check_multiple_errors():
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_HAS_MISALIGNED_VALUES,
         ).to_dict(),
-        DataCheckError(
-            message=f"A frequency was detected in column 'dates', but there are faulty datetime values that need to be addressed.",
-            data_check_name=datetime_format_check_name,
-            message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-            action_options=[
-                DataCheckActionOption(
-                    DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
-                    data_check_name=datetime_format_check_name,
-                    parameters={
-                        "time_index": {
-                            "parameter_type": DCAOParameterType.GLOBAL,
-                            "type": "str",
-                            "default_value": "dates",
-                        },
-                        "frequency_payload": {
-                            "default_value": ww_payload,
-                            "parameter_type": "global",
-                            "type": "tuple",
-                        },
-                    },
-                    metadata={"is_target": True},
-                )
-            ],
-        ).to_dict(),
+        get_uneven_error("dates", ww_payload)
     ]
 
     dates = (
@@ -458,30 +325,7 @@ def test_datetime_format_data_check_multiple_errors():
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_HAS_MISALIGNED_VALUES,
         ).to_dict(),
-        DataCheckError(
-            message=f"A frequency was detected in column 'dates', but there are faulty datetime values that need to be addressed.",
-            data_check_name=datetime_format_check_name,
-            message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-            action_options=[
-                DataCheckActionOption(
-                    DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
-                    data_check_name=datetime_format_check_name,
-                    parameters={
-                        "time_index": {
-                            "parameter_type": DCAOParameterType.GLOBAL,
-                            "type": "str",
-                            "default_value": "dates",
-                        },
-                        "frequency_payload": {
-                            "default_value": ww_payload,
-                            "parameter_type": "global",
-                            "type": "tuple",
-                        },
-                    },
-                    metadata={"is_target": True},
-                )
-            ],
-        ).to_dict(),
+        get_uneven_error("dates", ww_payload)
     ]
 
 
@@ -503,30 +347,7 @@ def test_datetime_format_unusual_interval():
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
-        DataCheckError(
-            message=f"A frequency was detected in column 'dates', but there are faulty datetime values that need to be addressed.",
-            data_check_name=datetime_format_check_name,
-            message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-            action_options=[
-                DataCheckActionOption(
-                    DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
-                    data_check_name=datetime_format_check_name,
-                    parameters={
-                        "time_index": {
-                            "parameter_type": DCAOParameterType.GLOBAL,
-                            "type": "str",
-                            "default_value": "dates",
-                        },
-                        "frequency_payload": {
-                            "default_value": ww_payload,
-                            "parameter_type": "global",
-                            "type": "tuple",
-                        },
-                    },
-                    metadata={"is_target": True},
-                )
-            ],
-        ).to_dict(),
+        get_uneven_error("dates", ww_payload)
     ]
 
     assert datetime_format_check.validate(X, y) == expected
@@ -546,30 +367,7 @@ def test_datetime_format_unusual_interval():
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
-        DataCheckError(
-            message=f"A frequency was detected in column 'dates', but there are faulty datetime values that need to be addressed.",
-            data_check_name=datetime_format_check_name,
-            message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-            action_options=[
-                DataCheckActionOption(
-                    DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
-                    data_check_name=datetime_format_check_name,
-                    parameters={
-                        "time_index": {
-                            "parameter_type": DCAOParameterType.GLOBAL,
-                            "type": "str",
-                            "default_value": "dates",
-                        },
-                        "frequency_payload": {
-                            "default_value": ww_payload,
-                            "parameter_type": "global",
-                            "type": "tuple",
-                        },
-                    },
-                    metadata={"is_target": True},
-                )
-            ],
-        ).to_dict(),
+        get_uneven_error("dates", ww_payload)
     ]
     assert datetime_format_check.validate(X, y) == expected
 
@@ -587,30 +385,7 @@ def test_datetime_format_nan_data_check_error():
             data_check_name=DateTimeFormatDataCheck.name,
             message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
         ).to_dict(),
-        DataCheckError(
-            message=f"A frequency was detected in column 'date', but there are faulty datetime values that need to be addressed.",
-            data_check_name=datetime_format_check_name,
-            message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-            action_options=[
-                DataCheckActionOption(
-                    DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
-                    data_check_name=datetime_format_check_name,
-                    parameters={
-                        "time_index": {
-                            "parameter_type": DCAOParameterType.GLOBAL,
-                            "type": "str",
-                            "default_value": "date",
-                        },
-                        "frequency_payload": {
-                            "default_value": ww_payload,
-                            "parameter_type": "global",
-                            "type": "tuple",
-                        },
-                    },
-                    metadata={"is_target": True},
-                )
-            ],
-        ).to_dict(),
+        get_uneven_error("date", ww_payload)
     ]
 
     dt_nan_check = DateTimeFormatDataCheck(datetime_column="date")
@@ -637,30 +412,7 @@ def test_datetime_format_nan_data_check_error():
                 data_check_name=datetime_format_check_name,
                 message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
             ).to_dict(),
-            DataCheckError(
-                message=f"A frequency was detected in column 'date', but there are faulty datetime values that need to be addressed.",
-                data_check_name=datetime_format_check_name,
-                message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-                action_options=[
-                    DataCheckActionOption(
-                        DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
-                        data_check_name=datetime_format_check_name,
-                        parameters={
-                            "time_index": {
-                                "parameter_type": DCAOParameterType.GLOBAL,
-                                "type": "str",
-                                "default_value": "date",
-                            },
-                            "frequency_payload": {
-                                "default_value": ww_payload,
-                                "parameter_type": "global",
-                                "type": "tuple",
-                            },
-                        },
-                        metadata={"is_target": True},
-                    )
-                ],
-            ).to_dict(),
+            get_uneven_error("date", ww_payload)
         ]
     )
     assert dt_nan_check.validate(X, pd.Series()) == expected
@@ -685,30 +437,7 @@ def test_datetime_nan_check_ww():
             data_check_name=DateTimeFormatDataCheck.name,
             message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
         ).to_dict(),
-        DataCheckError(
-            message=f"A frequency was detected in column 'dates', but there are faulty datetime values that need to be addressed.",
-            data_check_name=datetime_format_check_name,
-            message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-            action_options=[
-                DataCheckActionOption(
-                    DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET,
-                    data_check_name=datetime_format_check_name,
-                    parameters={
-                        "time_index": {
-                            "parameter_type": DCAOParameterType.GLOBAL,
-                            "type": "str",
-                            "default_value": "dates",
-                        },
-                        "frequency_payload": {
-                            "default_value": ww_payload,
-                            "parameter_type": "global",
-                            "type": "tuple",
-                        },
-                    },
-                    metadata={"is_target": True},
-                )
-            ],
-        ).to_dict(),
+        get_uneven_error("dates", ww_payload)
     ]
 
     assert dt_nan_check.validate(ww_input, y) == expected

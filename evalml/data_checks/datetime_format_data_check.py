@@ -50,7 +50,7 @@ class DateTimeFormatDataCheck(DataCheck):
             ...         "message": "No frequency could be detected in column 'dates', possibly due to uneven intervals.",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
-            ...         "code": "DATETIME_NO_FREQUENCY_OBSERVED",
+            ...         "code": "DATETIME_NO_FREQUENCY_INFERRED",
             ...         "details": {"columns": None, "rows": None},
             ...         "action_options": []
             ...      }
@@ -447,7 +447,7 @@ class DateTimeFormatDataCheck(DataCheck):
                 DataCheckError(
                     message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
                     data_check_name=self.name,
-                    message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_OBSERVED,
+                    message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_INFERRED,
                 ).to_dict()
             )
         else:
