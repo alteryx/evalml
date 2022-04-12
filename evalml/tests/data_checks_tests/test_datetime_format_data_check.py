@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+from woodwork.statistics_utils import infer_frequency
 
 from evalml.data_checks import (
     DataCheckActionCode,
@@ -69,6 +70,14 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
             ).to_dict()
         ]
     else:
+        if datetime_loc == "X_index":
+            dates = pd.Series(X.index)
+        elif datetime_loc == "y_index":
+            dates = pd.Series(y.index)
+        else:
+            dates = X[datetime_column]
+        ww_payload = infer_frequency(dates, debug=True, window_length=5, threshold=0.8)
+
         col_name = datetime_loc if datetime_loc == 1 else "either index"
         if issue is None:
             assert datetime_format_check.validate(X, y) == []
@@ -92,7 +101,12 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
                                     "parameter_type": DCAOParameterType.GLOBAL,
                                     "type": "str",
                                     "default_value": col_name,
-                                }
+                                },
+                                "frequency_payload": {
+                                    "default_value": ww_payload,
+                                    "parameter_type": "global",
+                                    "type": "tuple",
+                                },
                             },
                             metadata={"is_target": True},
                         )
@@ -119,7 +133,12 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
                                     "parameter_type": DCAOParameterType.GLOBAL,
                                     "type": "str",
                                     "default_value": col_name,
-                                }
+                                },
+                                "frequency_payload": {
+                                    "default_value": ww_payload,
+                                    "parameter_type": "global",
+                                    "type": "tuple",
+                                },
                             },
                             metadata={"is_target": True},
                         )
@@ -200,6 +219,8 @@ def test_datetime_format_data_check_multiple_missing(n_missing):
     X["dates"] = dates
     datetime_format_check = DateTimeFormatDataCheck(datetime_column="dates")
 
+    ww_payload = infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8)
+
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
             message=f"Column 'dates' has datetime values missing between start and end date.",
@@ -219,7 +240,12 @@ def test_datetime_format_data_check_multiple_missing(n_missing):
                             "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "str",
                             "default_value": "dates",
-                        }
+                        },
+                        "frequency_payload": {
+                            "default_value": ww_payload,
+                            "parameter_type": "global",
+                            "type": "tuple",
+                        },
                     },
                     metadata={"is_target": True},
                 )
@@ -238,6 +264,8 @@ def test_datetime_format_data_check_multiple_errors():
     y = pd.Series(range(21))
     datetime_format_check = DateTimeFormatDataCheck(datetime_column="dates")
 
+    ww_payload = infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8)
+
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
             message=f"Column 'dates' has datetime values missing between start and end date.",
@@ -257,7 +285,12 @@ def test_datetime_format_data_check_multiple_errors():
                             "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "str",
                             "default_value": "dates",
-                        }
+                        },
+                        "frequency_payload": {
+                            "default_value": ww_payload,
+                            "parameter_type": "global",
+                            "type": "tuple",
+                        },
                     },
                     metadata={"is_target": True},
                 )
@@ -272,6 +305,8 @@ def test_datetime_format_data_check_multiple_errors():
     )
     X = pd.DataFrame({"dates": dates})
 
+    ww_payload = infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8)
+
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
             message=f"Column 'dates' has more than one row with the same datetime value.",
@@ -296,7 +331,12 @@ def test_datetime_format_data_check_multiple_errors():
                             "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "str",
                             "default_value": "dates",
-                        }
+                        },
+                        "frequency_payload": {
+                            "default_value": ww_payload,
+                            "parameter_type": "global",
+                            "type": "tuple",
+                        },
                     },
                     metadata={"is_target": True},
                 )
@@ -311,6 +351,8 @@ def test_datetime_format_data_check_multiple_errors():
     )
     X = pd.DataFrame({"dates": dates})
 
+    ww_payload = infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8)
+
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
             message=f"Column 'dates' has more than one row with the same datetime value.",
@@ -335,7 +377,12 @@ def test_datetime_format_data_check_multiple_errors():
                             "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "str",
                             "default_value": "dates",
-                        }
+                        },
+                        "frequency_payload": {
+                            "default_value": ww_payload,
+                            "parameter_type": "global",
+                            "type": "tuple",
+                        },
                     },
                     metadata={"is_target": True},
                 )
@@ -350,6 +397,8 @@ def test_datetime_format_data_check_multiple_errors():
         .append(pd.date_range("2021-01-31", periods=86, freq="2D"))
     )
     X = pd.DataFrame({"dates": dates})
+
+    ww_payload = infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8)
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
@@ -375,7 +424,12 @@ def test_datetime_format_data_check_multiple_errors():
                             "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "str",
                             "default_value": "dates",
-                        }
+                        },
+                        "frequency_payload": {
+                            "default_value": ww_payload,
+                            "parameter_type": "global",
+                            "type": "tuple",
+                        },
                     },
                     metadata={"is_target": True},
                 )
@@ -390,6 +444,8 @@ def test_datetime_format_data_check_multiple_errors():
         .append(pd.date_range("2021-01-31", periods=86, freq="2D"))
     )
     X = pd.DataFrame({"dates": dates})
+
+    ww_payload = infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8)
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
@@ -415,7 +471,12 @@ def test_datetime_format_data_check_multiple_errors():
                             "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "str",
                             "default_value": "dates",
-                        }
+                        },
+                        "frequency_payload": {
+                            "default_value": ww_payload,
+                            "parameter_type": "global",
+                            "type": "tuple",
+                        },
                     },
                     metadata={"is_target": True},
                 )
@@ -432,6 +493,10 @@ def test_datetime_format_unusual_interval():
     datetime_format_check = DateTimeFormatDataCheck(datetime_column="dates")
     assert datetime_format_check.validate(X, y) == []
 
+    dates = dates.drop("2021-01-21")
+    X = pd.DataFrame({"dates": dates})
+    ww_payload = infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8)
+
     expected = [
         DataCheckError(
             message=f"Column 'dates' has datetime values missing between start and end date.",
@@ -451,16 +516,24 @@ def test_datetime_format_unusual_interval():
                             "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "str",
                             "default_value": "dates",
-                        }
+                        },
+                        "frequency_payload": {
+                            "default_value": ww_payload,
+                            "parameter_type": "global",
+                            "type": "tuple",
+                        },
                     },
                     metadata={"is_target": True},
                 )
             ],
         ).to_dict(),
     ]
-    dates = dates.drop("2021-01-21")
-    X = pd.DataFrame({"dates": dates})
+
     assert datetime_format_check.validate(X, y) == expected
+
+    dates = dates.append(pd.date_range(dates[-1], periods=2, freq="4D"))
+    X = pd.DataFrame({"dates": dates})
+    ww_payload = infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8)
 
     expected = [
         DataCheckError(
@@ -486,15 +559,18 @@ def test_datetime_format_unusual_interval():
                             "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "str",
                             "default_value": "dates",
-                        }
+                        },
+                        "frequency_payload": {
+                            "default_value": ww_payload,
+                            "parameter_type": "global",
+                            "type": "tuple",
+                        },
                     },
                     metadata={"is_target": True},
                 )
             ],
         ).to_dict(),
     ]
-    dates = dates.append(pd.date_range(dates[-1], periods=2, freq="4D"))
-    X = pd.DataFrame({"dates": dates})
     assert datetime_format_check.validate(X, y) == expected
 
 
@@ -502,6 +578,8 @@ def test_datetime_format_nan_data_check_error():
     dates = pd.Series(pd.date_range(start="2021-01-01", periods=20))
     dates[0] = np.NaN
     X = pd.DataFrame(dates, columns=["date"])
+
+    ww_payload = infer_frequency(X["date"], debug=True, window_length=5, threshold=0.8)
 
     expected = [
         DataCheckError(
@@ -522,7 +600,12 @@ def test_datetime_format_nan_data_check_error():
                             "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "str",
                             "default_value": "date",
-                        }
+                        },
+                        "frequency_payload": {
+                            "default_value": ww_payload,
+                            "parameter_type": "global",
+                            "type": "tuple",
+                        },
                     },
                     metadata={"is_target": True},
                 )
@@ -539,6 +622,8 @@ def test_datetime_format_nan_data_check_error():
     X = pd.DataFrame(dates, columns=["date"])
 
     del expected[-1]
+
+    ww_payload = infer_frequency(X["date"], debug=True, window_length=5, threshold=0.8)
 
     expected.extend(
         [
@@ -565,7 +650,12 @@ def test_datetime_format_nan_data_check_error():
                                 "parameter_type": DCAOParameterType.GLOBAL,
                                 "type": "str",
                                 "default_value": "date",
-                            }
+                            },
+                            "frequency_payload": {
+                                "default_value": ww_payload,
+                                "parameter_type": "global",
+                                "type": "tuple",
+                            },
                         },
                         metadata={"is_target": True},
                     )
@@ -579,6 +669,15 @@ def test_datetime_format_nan_data_check_error():
 def test_datetime_nan_check_ww():
     dt_nan_check = DateTimeFormatDataCheck(datetime_column="dates")
     y = pd.Series()
+
+    dates = np.arange(np.datetime64("2017-01-01"), np.datetime64("2017-01-08"))
+    dates[0] = np.datetime64("NaT")
+
+    ww_input = pd.DataFrame(dates, columns=["dates"])
+    ww_input.ww.init()
+    ww_payload = infer_frequency(
+        ww_input["dates"], debug=True, window_length=5, threshold=0.8
+    )
 
     expected = [
         DataCheckError(
@@ -599,7 +698,12 @@ def test_datetime_nan_check_ww():
                             "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "str",
                             "default_value": "dates",
-                        }
+                        },
+                        "frequency_payload": {
+                            "default_value": ww_payload,
+                            "parameter_type": "global",
+                            "type": "tuple",
+                        },
                     },
                     metadata={"is_target": True},
                 )
@@ -607,9 +711,4 @@ def test_datetime_nan_check_ww():
         ).to_dict(),
     ]
 
-    dates = np.arange(np.datetime64("2017-01-01"), np.datetime64("2017-01-08"))
-    dates[0] = np.datetime64("NaT")
-
-    ww_input = pd.DataFrame(dates, columns=["dates"])
-    ww_input.ww.init()
     assert dt_nan_check.validate(ww_input, y) == expected
