@@ -116,7 +116,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
                     data_check_name=datetime_format_check_name,
                     message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
                 ).to_dict(),
-                get_uneven_error(col_name, ww_payload)
+                get_uneven_error(col_name, ww_payload),
             ]
         elif issue == "redundant":
             assert datetime_format_check.validate(X, y) == [
@@ -125,7 +125,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
                     data_check_name=datetime_format_check_name,
                     message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
                 ).to_dict(),
-                get_uneven_error(col_name, ww_payload)
+                get_uneven_error(col_name, ww_payload),
             ]
         else:
             assert datetime_format_check.validate(X, y) == [
@@ -209,7 +209,7 @@ def test_datetime_format_data_check_multiple_missing(n_missing):
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
-        get_uneven_error("dates", ww_payload)
+        get_uneven_error("dates", ww_payload),
     ]
 
 
@@ -231,7 +231,7 @@ def test_datetime_format_data_check_multiple_errors():
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
-        get_uneven_error("dates", ww_payload)
+        get_uneven_error("dates", ww_payload),
     ]
 
     dates = (
@@ -254,7 +254,7 @@ def test_datetime_format_data_check_multiple_errors():
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
-        get_uneven_error("dates", ww_payload)
+        get_uneven_error("dates", ww_payload),
     ]
 
     dates = (
@@ -277,7 +277,7 @@ def test_datetime_format_data_check_multiple_errors():
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
-        get_uneven_error("dates", ww_payload)
+        get_uneven_error("dates", ww_payload),
     ]
 
     dates = (
@@ -301,7 +301,7 @@ def test_datetime_format_data_check_multiple_errors():
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_HAS_MISALIGNED_VALUES,
         ).to_dict(),
-        get_uneven_error("dates", ww_payload)
+        get_uneven_error("dates", ww_payload),
     ]
 
     dates = (
@@ -325,7 +325,7 @@ def test_datetime_format_data_check_multiple_errors():
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_HAS_MISALIGNED_VALUES,
         ).to_dict(),
-        get_uneven_error("dates", ww_payload)
+        get_uneven_error("dates", ww_payload),
     ]
 
 
@@ -347,7 +347,7 @@ def test_datetime_format_unusual_interval():
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
-        get_uneven_error("dates", ww_payload)
+        get_uneven_error("dates", ww_payload),
     ]
 
     assert datetime_format_check.validate(X, y) == expected
@@ -367,7 +367,7 @@ def test_datetime_format_unusual_interval():
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
-        get_uneven_error("dates", ww_payload)
+        get_uneven_error("dates", ww_payload),
     ]
     assert datetime_format_check.validate(X, y) == expected
 
@@ -385,7 +385,7 @@ def test_datetime_format_nan_data_check_error():
             data_check_name=DateTimeFormatDataCheck.name,
             message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
         ).to_dict(),
-        get_uneven_error("date", ww_payload)
+        get_uneven_error("date", ww_payload),
     ]
 
     dt_nan_check = DateTimeFormatDataCheck(datetime_column="date")
@@ -412,7 +412,7 @@ def test_datetime_format_nan_data_check_error():
                 data_check_name=datetime_format_check_name,
                 message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
             ).to_dict(),
-            get_uneven_error("date", ww_payload)
+            get_uneven_error("date", ww_payload),
         ]
     )
     assert dt_nan_check.validate(X, pd.Series()) == expected
@@ -437,7 +437,7 @@ def test_datetime_nan_check_ww():
             data_check_name=DateTimeFormatDataCheck.name,
             message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
         ).to_dict(),
-        get_uneven_error("dates", ww_payload)
+        get_uneven_error("dates", ww_payload),
     ]
 
     assert dt_nan_check.validate(ww_input, y) == expected
