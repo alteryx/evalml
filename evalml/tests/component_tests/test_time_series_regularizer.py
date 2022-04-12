@@ -186,10 +186,14 @@ def test_ts_regularizer_X_only(y_passed, combination_of_faulty_datetime):
         threshold=0.8,
     )
 
-    ts_regularizer_with_payload = TimeSeriesRegularizer(time_index="dates", frequency_payload=ww_payload)
+    ts_regularizer_with_payload = TimeSeriesRegularizer(
+        time_index="dates", frequency_payload=ww_payload
+    )
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
 
-    X_output_payload, y_output_payload = ts_regularizer_with_payload.fit_transform(X, y=y if y_passed else None)
+    X_output_payload, y_output_payload = ts_regularizer_with_payload.fit_transform(
+        X, y=y if y_passed else None
+    )
     X_output, y_output = ts_regularizer.fit_transform(X, y=y if y_passed else None)
 
     if not y_passed:
