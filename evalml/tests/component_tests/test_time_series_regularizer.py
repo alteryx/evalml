@@ -160,23 +160,7 @@ def test_ts_regularizer_no_issues(ts_data):
 
 
 @pytest.mark.parametrize("y_passed", [True, False])
-def test_ts_regularizer_X_only(y_passed, combination_of_faulty_datetime):
-    X, y = get_df(combination_of_faulty_datetime)
-
-    ts_regularizer = TimeSeriesRegularizer(time_index="dates")
-    X_output, y_output = ts_regularizer.fit_transform(X, y=y if y_passed else None)
-
-    if not y_passed:
-        assert y_output is None
-
-    error_dict = ts_regularizer.error_dict
-    assert_features_and_length_equal(
-        X, y, X_output, y_output, error_dict, has_target=True if y_passed else False
-    )
-
-
-@pytest.mark.parametrize("y_passed", [True, False])
-def test_ts_regularizer_X_only(y_passed, combination_of_faulty_datetime):
+def test_ts_regularizer_X_only_equal_payload(y_passed, combination_of_faulty_datetime):
     X, y = get_df(combination_of_faulty_datetime)
 
     ww_payload = infer_frequency(
