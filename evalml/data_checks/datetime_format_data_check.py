@@ -60,6 +60,7 @@ class DateTimeFormatDataCheck(DataCheck):
 
             >>> X = pd.DataFrame(pd.date_range("2021-01-01", periods=9).append(pd.date_range("2021-01-31", periods=50)), columns=["dates"])
             >>> y = pd.Series([0, 1, 0, 1, 1, 0, 0, 0, 1, 0])
+            >>> ww_payload = infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8)
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
@@ -90,6 +91,11 @@ class DateTimeFormatDataCheck(DataCheck):
             ...                             'default_value': 'dates',
             ...                             'parameter_type': 'global',
             ...                             'type': 'str'
+            ...                         },
+            ...                         'frequency_payload': {
+            ...                             'default_value': ww_payload,
+            ...                             'parameter_type': 'global',
+            ...                             'type': 'tuple'
             ...                         }
             ...                 }
             ...             }
@@ -101,6 +107,7 @@ class DateTimeFormatDataCheck(DataCheck):
 
             >>> X = pd.DataFrame(pd.date_range("2021-01-01", periods=9).append(pd.date_range("2021-01-09", periods=1)), columns=["dates"])
             >>> y = pd.Series([0, 1, 0, 1, 1, 0, 0, 0, 1, 0])
+            >>> ww_payload = infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8)
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
@@ -131,6 +138,11 @@ class DateTimeFormatDataCheck(DataCheck):
             ...                             'default_value': 'dates',
             ...                             'parameter_type': 'global',
             ...                             'type': 'str'
+            ...                         },
+            ...                         'frequency_payload': {
+            ...                             'default_value': ww_payload,
+            ...                             'parameter_type': 'global',
+            ...                             'type': 'tuple'
             ...                         }
             ...                 }
             ...             }
@@ -141,6 +153,7 @@ class DateTimeFormatDataCheck(DataCheck):
             The column "Weeks" has a date that does not follow the weekly pattern, which is considered misaligned.
 
             >>> X = pd.DataFrame(pd.date_range("2021-01-01", freq="W", periods=12).append(pd.date_range("2021-03-22", periods=1)), columns=["Weeks"])
+            >>> ww_payload = infer_frequency(X["Weeks"], debug=True, window_length=5, threshold=0.8)
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
@@ -171,6 +184,11 @@ class DateTimeFormatDataCheck(DataCheck):
             ...                             'default_value': 'Weeks',
             ...                             'parameter_type': 'global',
             ...                             'type': 'str'
+            ...                         },
+            ...                         'frequency_payload': {
+            ...                             'default_value': ww_payload,
+            ...                             'parameter_type': 'global',
+            ...                             'type': 'tuple'
             ...                         }
             ...                 }
             ...             }
@@ -181,6 +199,7 @@ class DateTimeFormatDataCheck(DataCheck):
             The column "Weeks" has a date that does not follow the weekly pattern, which is considered misaligned.
 
             >>> X = pd.DataFrame(pd.date_range("2021-01-01", freq="W", periods=12).append(pd.date_range("2021-03-22", periods=1)), columns=["Weeks"])
+            >>> ww_payload = infer_frequency(X["Weeks"], debug=True, window_length=5, threshold=0.8)
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
@@ -211,6 +230,11 @@ class DateTimeFormatDataCheck(DataCheck):
             ...                             'default_value': 'Weeks',
             ...                             'parameter_type': 'global',
             ...                             'type': 'str'
+            ...                         },
+            ...                         'frequency_payload': {
+            ...                             'default_value': ww_payload,
+            ...                             'parameter_type': 'global',
+            ...                             'type': 'tuple'
             ...                         }
             ...                 }
             ...             }
@@ -276,6 +300,7 @@ class DateTimeFormatDataCheck(DataCheck):
             ...         ["2-12-21", "3-12-21"]]
             >>> dates[0][0] = None
             >>> df = pd.DataFrame(dates, columns=["days", "days2"])
+            >>> ww_payload = infer_frequency(pd.to_datetime(df["days"]), debug=True, window_length=5, threshold=0.8)
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="days")
             >>> assert datetime_format_dc.validate(df, y) == [
             ...     {
@@ -306,6 +331,11 @@ class DateTimeFormatDataCheck(DataCheck):
             ...                             'default_value': 'days',
             ...                             'parameter_type': 'global',
             ...                             'type': 'str'
+            ...                         },
+            ...                         'frequency_payload': {
+            ...                             'default_value': ww_payload,
+            ...                             'parameter_type': 'global',
+            ...                             'type': 'tuple'
             ...                         }
             ...                 }
             ...             }
@@ -435,7 +465,12 @@ class DateTimeFormatDataCheck(DataCheck):
                                     "parameter_type": DCAOParameterType.GLOBAL,
                                     "type": "str",
                                     "default_value": col_name,
-                                }
+                                },
+                                "frequency_payload": {
+                                    "parameter_type": DCAOParameterType.GLOBAL,
+                                    "type": "tuple",
+                                    "default_value": ww_payload,
+                                },
                             },
                             metadata={"is_target": True},
                         )

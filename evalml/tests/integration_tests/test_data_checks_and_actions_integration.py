@@ -80,9 +80,16 @@ def test_data_checks_ts_regularizer_imputer(uneven_continuous):
     data_check = DateTimeFormatDataCheck(datetime_column="Dates")
     data_checks_output = data_check.validate(X, y)
 
+    ww_payload = None
+    for output in data_checks_output:
+        if output["code"] == "DATETIME_HAS_UNEVEN_INTERVALS":
+            ww_payload = output["action_options"][0]["parameters"]["frequency_payload"]["default_value"]
+            break
+
     action_pipeline = make_pipeline_from_data_check_output(
         "time series regression", data_checks_output, problem_config
     )
+
     assert action_pipeline == TimeSeriesRegressionPipeline(
         component_graph={
             "Time Series Regularizer": [TimeSeriesRegularizer, "X", "y"],
@@ -95,6 +102,7 @@ def test_data_checks_ts_regularizer_imputer(uneven_continuous):
         parameters={
             "Time Series Regularizer": {
                 "time_index": "Dates",
+                "frequency_payload": ww_payload,
                 "window_length": 5,
                 "threshold": 0.8,
             },

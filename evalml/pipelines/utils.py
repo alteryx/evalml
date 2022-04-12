@@ -833,7 +833,10 @@ def _make_component_list_from_actions(actions):
             parameters = metadata.get("parameters", {})
             components.extend(
                 [
-                    TimeSeriesRegularizer(time_index=parameters["time_index"]),
+                    TimeSeriesRegularizer(
+                        time_index=parameters["time_index"],
+                        frequency_payload=parameters["frequency_payload"],
+                    ),
                     TimeSeriesImputer(),
                 ]
             )
