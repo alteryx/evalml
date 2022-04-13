@@ -1,7 +1,17 @@
 ﻿Release Notes
 -------------
-
 **Future Releases**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.50.0 Apr. 12, 2022**
     * Enhancements
         * Added ``TimeSeriesImputer`` component :pr:`3374`
         * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`, :pr:`3427`
