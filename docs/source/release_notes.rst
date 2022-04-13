@@ -3,6 +3,7 @@
 **Future Releases**
     * Enhancements
     * Fixes
+        * Changed ``PipelineBase.graph_json()`` to return a python dictionary to allow users to handle complex datatypes :pr:`3463`
     * Changes
     * Documentation Changes
     * Testing Changes
