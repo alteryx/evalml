@@ -1,7 +1,6 @@
 """Base machine learning pipeline class."""
 import copy
 import inspect
-import json
 import logging
 import os
 import sys

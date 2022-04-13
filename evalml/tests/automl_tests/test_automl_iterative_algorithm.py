@@ -1,4 +1,3 @@
-import json
 import warnings
 from unittest.mock import MagicMock, patch
 
