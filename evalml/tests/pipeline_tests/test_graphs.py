@@ -196,18 +196,18 @@ def test_component_as_json(
 
     pipeline_parameters = pipeline_.parameters
     expected_nodes = pipeline_.component_graph.component_dict
-    dag_json = pipeline_.graph_dict()
+    dag_dict = pipeline_.graph_dict()
 
-    assert isinstance(dag_json, dict)
-    assert dag_json["x_edges"][0]["from"] == "X"
-    assert len(expected_nodes.keys()) == len(dag_json["Nodes"].keys()) - 2
-    assert dag_json["Nodes"].keys() - expected_nodes.keys() == {"X", "y"}
+    assert isinstance(dag_dict, dict)
+    assert dag_dict["x_edges"][0]["from"] == "X"
+    assert len(expected_nodes.keys()) == len(dag_dict["Nodes"].keys()) - 2
+    assert dag_dict["Nodes"].keys() - expected_nodes.keys() == {"X", "y"}
     x_edges_expected = []
     y_edges_expected = []
     for node_, graph_ in expected_nodes.items():
-        assert node_ in dag_json["Nodes"]
+        assert node_ in dag_dict["Nodes"]
         comp_name = graph_[0].name if graph_type == "list" else graph_[0]
-        assert comp_name == dag_json["Nodes"][node_]["Name"]
+        assert comp_name == dag_dict["Nodes"][node_]["Name"]
         for comp_ in graph_[1:]:
             if comp_ == "X":
                 x_edges_expected.append({"from": "X", "to": node_})
@@ -220,13 +220,13 @@ def test_component_as_json(
     for node_, params_ in pipeline_parameters.items():
         for key_, val_ in params_.items():
             assert (
-                dag_json["Nodes"][node_]["Parameters"][key_]
+                dag_dict["Nodes"][node_]["Parameters"][key_]
                 == pipeline_parameters[node_][key_]
             )
-    assert len(x_edges_expected) == len(dag_json["x_edges"])
-    assert [edge in dag_json["x_edges"] for edge in x_edges_expected]
-    assert len(y_edges_expected) == len(dag_json["y_edges"])
-    assert [edge in dag_json["y_edges"] for edge in y_edges_expected]
+    assert len(x_edges_expected) == len(dag_dict["x_edges"])
+    assert [edge in dag_dict["x_edges"] for edge in x_edges_expected]
+    assert len(y_edges_expected) == len(dag_dict["y_edges"])
+    assert [edge in dag_dict["y_edges"] for edge in y_edges_expected]
 
 
 def test_ensemble_as_json():
@@ -273,6 +273,6 @@ def test_ensemble_as_json():
         "Random Forest Pipeline - Random Forest Classifier": {"max_depth": np.int64(7)}
     }
     pipeline = BinaryClassificationPipeline(component_graph, parameters=parameters)
-    dag_json = pipeline.graph_dict()
+    dag_dict = pipeline.graph_dict()
 
-    assert list(dag_json["Nodes"].keys()) == list(component_graph.keys()) + ["X", "y"]
+    assert list(dag_dict["Nodes"].keys()) == list(component_graph.keys()) + ["X", "y"]

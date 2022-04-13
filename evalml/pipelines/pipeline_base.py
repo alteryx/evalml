@@ -439,7 +439,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         "y_edges": [[from_component_name, to_component_name], [from_component_name, to_component_name], ...]}
 
         Returns:
-            dag_dict (dict): A serialized JSON representation of a DAG structure.
+            dag_dict (dict): A dictionary of the DAG structure.
         """
         nodes = {}
         for comp_, att_ in self.component_graph.component_instances.items():
