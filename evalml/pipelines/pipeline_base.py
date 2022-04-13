@@ -440,7 +440,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         "y_edges": [[from_component_name, to_component_name], [from_component_name, to_component_name], ...]}
 
         Returns:
-            dag_json (str): A serialized JSON representation of a DAG structure.
+            dag_json (dict): A serialized JSON representation of a DAG structure.
         """
         nodes = {}
         for comp_, att_ in self.component_graph.component_instances.items():
@@ -483,7 +483,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 graph_as_json["x_edges"].remove(x_edge)
                 graph_as_json["x_edges"].insert(0, x_edge)
 
-        return json.dumps(graph_as_json, indent=4)
+        return graph_as_json
 
     def graph(self, filepath=None):
         """Generate an image representing the pipeline graph.
