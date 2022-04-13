@@ -1008,7 +1008,7 @@ def test_graph_automl(X_y_multi):
         automl_algorithm="iterative",
     )
 
-    dag_json = automl.allowed_pipelines[0].graph_json()
+    dag_json = automl.allowed_pipelines[0].graph_dict()
     for node_, params_ in automl_parameters_.items():
         for key_, val_ in params_.items():
             assert (

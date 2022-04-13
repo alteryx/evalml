@@ -197,7 +197,7 @@ def test_component_as_json(
 
     pipeline_parameters = pipeline_.parameters
     expected_nodes = pipeline_.component_graph.component_dict
-    dag_json = pipeline_.graph_json()
+    dag_json = pipeline_.graph_dict()
 
     assert isinstance(dag_json, dict)
     assert dag_json["x_edges"][0]["from"] == "X"
@@ -274,6 +274,6 @@ def test_ensemble_as_json():
         "Random Forest Pipeline - Random Forest Classifier": {"max_depth": np.int64(7)}
     }
     pipeline = BinaryClassificationPipeline(component_graph, parameters=parameters)
-    dag_json = pipeline.graph_json()
+    dag_json = pipeline.graph_dict()
 
     assert list(dag_json["Nodes"].keys()) == list(component_graph.keys()) + ["X", "y"]

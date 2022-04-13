@@ -3,7 +3,7 @@
 **Future Releases**
     * Enhancements
     * Fixes
-        * Changed ``PipelineBase.graph_json()`` to return a python dictionary to allow users to handle complex datatypes :pr:`3463`
+        * Changed ``PipelineBase.graph_json()`` to return a python dictionary and renamed as ``graph_dict()``:pr:`3463`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -11,6 +11,7 @@
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``PipelineBase.graph_json()`` to ``PipelineBase.graph_dict()``
 
 **v0.50.0 Apr. 12, 2022**
     * Enhancements
