@@ -40,8 +40,8 @@ class DefaultDataChecks(DataChecks):
         problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
         objective (str or ObjectiveBase): Name or instance of the objective class.
         n_splits (int): The number of splits as determined by the data splitter being used. Defaults to 3.
-        datetime_column (str): The name of the column containing datetime information to be used for time series problems.
-        Default to "index" indicating that the datetime information is in the index of X or y.
+        problem_configuration (dict): Required for time series problem types. Values should be passed in for time_index,
+        gap, forecast_horizon, and max_delay.
     """
 
     _DEFAULT_DATA_CHECK_CLASSES = [

@@ -109,6 +109,9 @@ class DataCheckMessageCode(Enum):
     DATETIME_INFORMATION_NOT_FOUND = "datetime_information_not_found"
     """Message code for when datetime information can not be found or is in an unaccepted format."""
 
+    DATETIME_NO_FREQUENCY_INFERRED = "datetime_no_frequency_inferred"
+    """Message code for when no frequency can be inferred in the datetime values through Woodwork's infer_frequency."""
+
     DATETIME_HAS_UNEVEN_INTERVALS = "datetime_has_uneven_intervals"
     """Message code for when the datetime values have uneven intervals."""
 
