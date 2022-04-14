@@ -4,6 +4,7 @@
     * Enhancements
         * Updated ``make_pipeline_from_data_check_output`` to work with time series problems. :pr:`3454`
     * Fixes
+        * Changed ``PipelineBase.graph_json()`` to return a python dictionary and renamed as ``graph_dict()``:pr:`3463`
     * Changes
     * Documentation Changes
         * Fixed broken link in contributing guide :pr:`3464`
@@ -12,6 +13,7 @@
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``PipelineBase.graph_json()`` to ``PipelineBase.graph_dict()``
 
 **v0.50.0 Apr. 12, 2022**
     * Enhancements

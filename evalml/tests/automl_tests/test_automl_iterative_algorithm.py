@@ -1,4 +1,3 @@
-import json
 import warnings
 from unittest.mock import MagicMock, patch
 
@@ -1008,12 +1007,11 @@ def test_graph_automl(X_y_multi):
         automl_algorithm="iterative",
     )
 
-    dag_str = automl.allowed_pipelines[0].graph_json()
-    dag_json = json.loads(dag_str)
+    dag_dict = automl.allowed_pipelines[0].graph_dict()
     for node_, params_ in automl_parameters_.items():
         for key_, val_ in params_.items():
             assert (
-                dag_json["Nodes"][node_]["Parameters"][key_]
+                dag_dict["Nodes"][node_]["Parameters"][key_]
                 == automl_parameters_[node_][key_]
             )
 
