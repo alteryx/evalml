@@ -1,17 +1,13 @@
 ## Contributing to the Codebase
 
-#### 0. Access ZenHub
-We currently utilize ZenHub as our project management tool for EvalML. Please do the following:
-* Access ZenHub directly through GitHub (using the [extension](https://www.zenhub.com/extension)) or [here](https://app.zenhub.com/)
-* Be assigned or assign yourself work from the `Sprint Backlog` and then `Development Backlog`
-* Connect your PR to your issue so it behaves as one
-    * Hit `Connect this pull request with an existing issue` at the bottom of the PR and attach the issue
-* Move your issue to the correct pipeline(column)
-    * In Progress for issues in progress (including work after review)
-    * Review/QA when needing review or QA
-    * Closed when finished
-
-More details about ZenHub and its best practices can be found [here](https://bit.ly/379iFB9).
+#### 0. Look at Open Issues 
+We currently utilize GitHub Issues as our project management tool for EvalML. Please do the following:
+* Look at our [open issues](https://github.com/alteryx/evalml/issues)
+* Find an unclaimed issue by looking for an empty `Assignees` field.
+* If this is your first time contributing, issues labeled ``good first issue`` are a good place to start.
+* If your issue is labeled `needs design` or `spike` it is recommended you provide a design document for your feature
+  prior to submitting a pull request (PR).
+* Connect your PR to your issue by adding the following comment in the PR body: `Fixes #<issue-number>`
 
 
 #### 1. Clone repo
