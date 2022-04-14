@@ -834,7 +834,7 @@ def _make_component_list_from_actions(actions):
             components.extend(
                 [
                     TimeSeriesRegularizer(
-                        time_index=parameters["time_index"],
+                        time_index=parameters.get("time_index", None),
                         frequency_payload=parameters["frequency_payload"],
                     ),
                     TimeSeriesImputer(),

@@ -25,13 +25,14 @@ class TimeSeriesRegularizer(Transformer):
     added to X and y (if passed).
 
     Args:
-        time_index (string): Name of the column containing the datetime information used to order the data.
-        frequency_payload (tuple): Payload returned from Woodwork's infer_frequency function where debug is True.
-        random_seed (int): Seed for the random number generator. This transformer performs the same regardless of the random seed provided.
+        time_index (string): Name of the column containing the datetime information used to order the data, required. Defaults to None.
+        frequency_payload (tuple): Payload returned from Woodwork's infer_frequency function where debug is True. Defaults to None.
         window_length (int): The size of the rolling window over which inference is conducted to determine the prevalence of uninferrable frequencies.
-        Lower values make this component more sensitive to recognizing numerous faulty datetime values.
+        Lower values make this component more sensitive to recognizing numerous faulty datetime values. Defaults to 5.
         threshold (float): The minimum percentage of windows that need to have been able to infer a frequency. Lower values make this component more
-        sensitive to recognizing numerous faulty datetime values.
+        sensitive to recognizing numerous faulty datetime values. Defaults to 0.8.
+        random_seed (int): Seed for the random number generator. This transformer performs the same regardless of the random seed provided.
+        Defaults to 0.
 
     Raises:
         ValueError: if the frequency_payload parameter has not been passed a tuple
