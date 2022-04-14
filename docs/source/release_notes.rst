@@ -6,6 +6,7 @@
     * Fixes
     * Changes
     * Documentation Changes
+        * Fixed broken link in contributing guide :pr:`3464`
     * Testing Changes
 
 .. warning::
