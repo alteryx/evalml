@@ -75,6 +75,14 @@ def test_ts_regularizer_init():
     assert ts_regularizer.training_only is True
 
 
+def test_ts_regularizer_invalid_frequency_payload():
+    with pytest.raises(
+        ValueError,
+        match="The frequency_payload parameter must be a tuple",
+    ):
+        _ = TimeSeriesRegularizer(time_index="ints", frequency_payload="This is wrong")
+
+
 def test_ts_regularizer_time_index_not_datetime():
     dates_1 = pd.date_range("1/1/21", periods=10)
     dates_2 = pd.date_range("1/13/21", periods=10, freq="2D")
@@ -152,10 +160,24 @@ def test_ts_regularizer_no_issues(ts_data):
 
 
 @pytest.mark.parametrize("y_passed", [True, False])
-def test_ts_regularizer_X_only(y_passed, combination_of_faulty_datetime):
+def test_ts_regularizer_X_only_equal_payload(y_passed, combination_of_faulty_datetime):
     X, y = get_df(combination_of_faulty_datetime)
 
+    ww_payload = infer_frequency(
+        X["dates"],
+        debug=True,
+        window_length=5,
+        threshold=0.8,
+    )
+
+    ts_regularizer_with_payload = TimeSeriesRegularizer(
+        time_index="dates", frequency_payload=ww_payload
+    )
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
+
+    X_output_payload, y_output_payload = ts_regularizer_with_payload.fit_transform(
+        X, y=y if y_passed else None
+    )
     X_output, y_output = ts_regularizer.fit_transform(X, y=y if y_passed else None)
 
     if not y_passed:
@@ -165,6 +187,9 @@ def test_ts_regularizer_X_only(y_passed, combination_of_faulty_datetime):
     assert_features_and_length_equal(
         X, y, X_output, y_output, error_dict, has_target=True if y_passed else False
     )
+    pd.testing.assert_frame_equal(X_output, X_output_payload)
+    if y_passed:
+        pd.testing.assert_series_equal(y_output, y_output_payload)
 
 
 @pytest.mark.parametrize(

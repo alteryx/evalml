@@ -25,12 +25,17 @@ class TimeSeriesRegularizer(Transformer):
     added to X and y (if passed).
 
     Args:
-        time_index (string): Name of the column containing the datetime information used to order the data.
-        random_seed (int): Seed for the random number generator. This transformer performs the same regardless of the random seed provided.
+        time_index (string): Name of the column containing the datetime information used to order the data, required. Defaults to None.
+        frequency_payload (tuple): Payload returned from Woodwork's infer_frequency function where debug is True. Defaults to None.
         window_length (int): The size of the rolling window over which inference is conducted to determine the prevalence of uninferrable frequencies.
-        Lower values make this component more sensitive to recognizing numerous faulty datetime values.
+        Lower values make this component more sensitive to recognizing numerous faulty datetime values. Defaults to 5.
         threshold (float): The minimum percentage of windows that need to have been able to infer a frequency. Lower values make this component more
-        sensitive to recognizing numerous faulty datetime values.
+        sensitive to recognizing numerous faulty datetime values. Defaults to 0.8.
+        random_seed (int): Seed for the random number generator. This transformer performs the same regardless of the random seed provided.
+        Defaults to 0.
+
+    Raises:
+        ValueError: if the frequency_payload parameter has not been passed a tuple
     """
 
     name = "Time Series Regularizer"
@@ -41,14 +46,26 @@ class TimeSeriesRegularizer(Transformer):
     training_only = True
 
     def __init__(
-        self, time_index=None, window_length=5, threshold=0.8, random_seed=0, **kwargs
+        self,
+        time_index=None,
+        frequency_payload=None,
+        window_length=5,
+        threshold=0.8,
+        random_seed=0,
+        **kwargs,
     ):
         self.time_index = time_index
+        self.frequency_payload = frequency_payload
         self.window_length = window_length
         self.threshold = threshold
         self.error_dict = {}
         self.inferred_freq = None
         self.debug_payload = None
+
+        if self.frequency_payload and not isinstance(self.frequency_payload, tuple):
+            raise ValueError(
+                "The frequency_payload parameter must be a tuple returned from Woodwork's infer_frequency function where debug is True."
+            )
 
         parameters = {
             "time_index": time_index,
@@ -96,12 +113,15 @@ class TimeSeriesRegularizer(Transformer):
                     "If y has been passed, then it must be the same length as X."
                 )
 
-        ww_payload = infer_frequency(
-            X[self.time_index],
-            debug=True,
-            window_length=self.window_length,
-            threshold=self.threshold,
-        )
+        if self.frequency_payload:
+            ww_payload = self.frequency_payload
+        else:
+            ww_payload = infer_frequency(
+                X[self.time_index],
+                debug=True,
+                window_length=self.window_length,
+                threshold=self.threshold,
+            )
         self.inferred_freq = ww_payload[0]
         self.debug_payload = ww_payload[1]
 
@@ -268,10 +288,14 @@ class TimeSeriesRegularizer(Transformer):
 
         for index, values in self.error_dict["misaligned"].items():
             to_replace = X.iloc[index]
-            to_replace["dates"] = values["correct"]
-            cleaned_x.loc[cleaned_x.dates == values["correct"]] = to_replace.values
+            to_replace[self.time_index] = values["correct"]
+            cleaned_x.loc[
+                cleaned_x[self.time_index] == values["correct"]
+            ] = to_replace.values
             if y is not None:
-                cleaned_y.loc[cleaned_y.dates == values["correct"]] = y.iloc[index]
+                cleaned_y.loc[cleaned_y[self.time_index] == values["correct"]] = y.iloc[
+                    index
+                ]
 
         if cleaned_y is not None:
             cleaned_y = cleaned_y["target"]

@@ -2,6 +2,7 @@
 -------------
 **Future Releases**
     * Enhancements
+        * Updated ``make_pipeline_from_data_check_output`` to work with time series problems. :pr:`3454`
     * Fixes
     * Changes
     * Documentation Changes
