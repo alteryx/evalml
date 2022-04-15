@@ -10,6 +10,7 @@ import pytest
 import woodwork as ww
 from sklearn import datasets
 from skopt.space import Integer, Real
+from woodwork import logical_types as ww_logical_types
 
 from evalml.model_family import ModelFamily
 from evalml.objectives import BinaryClassificationObjective
@@ -1389,7 +1390,7 @@ def helper_functions():
 def make_data_type():
     """Helper function to convert numpy or pandas input to the appropriate type for tests."""
 
-    def _make_data_type(data_type, data):
+    def _make_data_type(data_type, data, nullable=False):
         if data_type == "li":
             if isinstance(data, pd.DataFrame):
                 data = data.to_numpy()
@@ -1403,6 +1404,18 @@ def make_data_type():
         if data_type == "ww":
             if len(data.shape) == 1:
                 data = ww.init_series(data)
+                if nullable and isinstance(
+                        data.ww.logical_type, ww_logical_types.Integer
+                ):
+                    data = ww.init_series(
+                        data, logical_type=ww_logical_types.IntegerNullable
+                    )
+                elif nullable and isinstance(
+                        data.ww.logical_type, ww_logical_types.Boolean
+                ):
+                    data = ww.init_series(
+                        data, logical_type=ww_logical_types.BooleanNullable
+                    )
             else:
                 data.ww.init()
         return data
