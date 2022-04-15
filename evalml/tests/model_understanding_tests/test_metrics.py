@@ -290,6 +290,7 @@ def test_graph_precision_recall_curve_title_addition(X_y_binary, go):
         fig_dict["layout"]["title"]["text"] == "Precision-Recall with added title text"
     )
 
+
 @pytest.mark.parametrize("test_nullable", [True, False])
 @pytest.mark.parametrize("dtype", ["int", "bool"])
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])

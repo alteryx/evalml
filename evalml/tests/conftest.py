@@ -1405,13 +1405,13 @@ def make_data_type():
             if len(data.shape) == 1:
                 data = ww.init_series(data)
                 if nullable and isinstance(
-                        data.ww.logical_type, ww_logical_types.Integer
+                    data.ww.logical_type, ww_logical_types.Integer
                 ):
                     data = ww.init_series(
                         data, logical_type=ww_logical_types.IntegerNullable
                     )
                 elif nullable and isinstance(
-                        data.ww.logical_type, ww_logical_types.Boolean
+                    data.ww.logical_type, ww_logical_types.Boolean
                 ):
                     data = ww.init_series(
                         data, logical_type=ww_logical_types.BooleanNullable
