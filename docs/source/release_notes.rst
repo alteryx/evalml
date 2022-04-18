@@ -6,6 +6,7 @@
     * Fixes
         * Changed ``PipelineBase.graph_json()`` to return a python dictionary and renamed as ``graph_dict()``:pr:`3463`
     * Changes
+        * Moved some preprocessing functionality to separate module.:pr:`3348`
     * Documentation Changes
         * Fixed broken link in contributing guide :pr:`3464`
     * Testing Changes
