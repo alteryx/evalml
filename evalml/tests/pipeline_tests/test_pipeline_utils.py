@@ -42,7 +42,6 @@ from evalml.pipelines.components.utils import (
 )
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
-    _get_preprocessing_components,
     _make_pipeline_from_multiple_graphs,
     generate_pipeline_code,
     get_estimators,
@@ -51,6 +50,7 @@ from evalml.pipelines.utils import (
     make_pipeline_from_actions,
     rows_of_interest,
 )
+from evalml.preprocessing.utils import _get_preprocessing_components
 from evalml.problem_types import ProblemTypes, is_time_series
 
 
