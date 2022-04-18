@@ -2,8 +2,6 @@
 import copy
 import logging
 
-from woodwork import logical_types
-
 from ..preprocessing.utils import _get_preprocessing_components
 from ..utils.gen_utils import contains_all_ts_parameters
 from . import (
@@ -19,7 +17,6 @@ from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 
 from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
-from evalml.model_family import ModelFamily
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,

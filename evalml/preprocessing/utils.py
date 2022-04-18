@@ -1,7 +1,6 @@
 """Helpful preprocessing utilities."""
 import logging
 
-import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 from woodwork import logical_types
 
