@@ -11,7 +11,7 @@ We currently utilize GitHub Issues as our project management tool for EvalML. Pl
 
 
 #### 1. Clone repo
-The code is hosted on GitHub, so you will need to use Git to clone the project and make changes to the codebase. Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment.
+The code is hosted on GitHub, so you will need to use Git to clone the project and make changes to the codebase. Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment. Additionally, you must make sure that the version of Python you use is at least 3.8. Using `conda` you can use `conda create -n evalml python=3.8` and `conda activate evalml` before the following steps.
 * clone with `git clone https://github.com/alteryx/evalml.git`
 * install in edit mode with:
     ```bash

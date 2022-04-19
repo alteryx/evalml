@@ -9,6 +9,7 @@
         * Updated ``roc_curve()`` to work with IntegerNullable and BooleanNullable types. :pr:`3465`
     * Documentation Changes
         * Fixed broken link in contributing guide :pr:`3464`
+        * Improved development instructions :pr:`3468` 
     * Testing Changes
 
 .. warning::
