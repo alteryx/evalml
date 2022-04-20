@@ -1,7 +1,7 @@
 docutils>=0.15.2,<0.17
 pydata-sphinx-theme>=0.3.1
 astroid<=2.6.6
-Sphinx>=4.0.1
+Sphinx>=2.0.1,<4.0.0
 nbconvert>=6.4.5
 nbsphinx>=0.8.5
 sphinx-autoapi
