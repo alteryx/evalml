@@ -28,12 +28,16 @@ def confusion_matrix(y_true, y_predicted, normalize_method="true"):
     Returns:
         pd.DataFrame: Confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
-    y_true = infer_feature_types(y_true)
+    y_true_ww = infer_feature_types(y_true)
+    y_true_np = y_true_ww.to_numpy()
+    if isinstance(y_true_ww.ww.logical_type, BooleanNullable):
+        y_true_np = y_true_np.astype("bool")
+    if isinstance(y_true_ww.ww.logical_type, IntegerNullable):
+        y_true_np = y_true_np.astype("int64")
     y_predicted = infer_feature_types(y_predicted)
-    y_true = y_true.to_numpy()
     y_predicted = y_predicted.to_numpy()
-    labels = unique_labels(y_true, y_predicted)
-    conf_mat = sklearn_confusion_matrix(y_true, y_predicted)
+    labels = unique_labels(y_true_np, y_predicted)
+    conf_mat = sklearn_confusion_matrix(y_true_np, y_predicted)
     conf_mat = pd.DataFrame(conf_mat, index=labels, columns=labels)
     if normalize_method is not None:
         return normalize_confusion_matrix(conf_mat, normalize_method=normalize_method)
