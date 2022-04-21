@@ -8,6 +8,7 @@
     * Changes
     * Documentation Changes
         * Fixed broken link in contributing guide :pr:`3464`
+        * Improved development instructions :pr:`3468` 
     * Testing Changes
 
 .. warning::
