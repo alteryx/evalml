@@ -6,6 +6,7 @@
     * Fixes
         * Changed ``PipelineBase.graph_json()`` to return a python dictionary and renamed as ``graph_dict()``:pr:`3463`
     * Changes
+        * Capped woodwork at ``0.15.0`` :pr:`3475`
     * Documentation Changes
         * Fixed broken link in contributing guide :pr:`3464`
         * Improved development instructions :pr:`3468` 
