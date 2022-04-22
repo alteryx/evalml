@@ -20,34 +20,53 @@ from evalml.model_understanding.metrics import (
 from evalml.utils import get_random_state
 
 
+@pytest.mark.parametrize("test_nullable", [True, False])
+@pytest.mark.parametrize("dtype", ["int", "bool"])
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-def test_confusion_matrix(data_type, make_data_type):
-    y_true = np.array([2, 0, 2, 2, 0, 1, 1, 0, 2])
-    y_predicted = np.array([0, 0, 2, 2, 0, 2, 1, 1, 1])
-    y_true = make_data_type(data_type, y_true)
+def test_confusion_matrix(data_type, test_nullable, dtype, make_data_type):
+    if dtype == "int":
+        y_true = np.array([2, 0, 2, 2, 0, 1, 1, 0, 2])
+    elif dtype == "bool":
+        y_true = np.array([1, 0, 1, 1, 0, 1, 1, 0, 1]).astype(bool)
+
+    if dtype == "int":
+        y_predicted = np.array([0, 0, 2, 2, 0, 2, 1, 1, 1])
+    elif dtype == "bool":
+        y_predicted = np.array([0, 0, 1, 1, 0, 1, 1, 1, 1]).astype(bool)
+
+    y_true = make_data_type(data_type, y_true, nullable=test_nullable)
     y_predicted = make_data_type(data_type, y_predicted)
 
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method=None)
-    conf_mat_expected = np.array([[2, 1, 0], [0, 1, 1], [1, 1, 2]])
+    if dtype == "int":
+        conf_mat_expected = np.array([[2, 1, 0], [0, 1, 1], [1, 1, 2]])
+    elif dtype == "bool":
+        conf_mat_expected = np.array([[2, 1], [1, 5]])
     assert np.array_equal(conf_mat_expected, conf_mat.to_numpy())
     assert isinstance(conf_mat, pd.DataFrame)
 
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method="all")
     conf_mat_expected = conf_mat_expected / 9.0
-    assert np.array_equal(conf_mat_expected, conf_mat.to_numpy())
+    assert np.allclose(conf_mat_expected, conf_mat.to_numpy())
     assert isinstance(conf_mat, pd.DataFrame)
 
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method="true")
-    conf_mat_expected = np.array(
-        [[2 / 3.0, 1 / 3.0, 0], [0, 0.5, 0.5], [0.25, 0.25, 0.5]]
-    )
-    assert np.array_equal(conf_mat_expected, conf_mat.to_numpy())
+    if dtype == "int":
+        conf_mat_expected = np.array(
+            [[2 / 3.0, 1 / 3.0, 0], [0, 0.5, 0.5], [0.25, 0.25, 0.5]]
+        )
+    elif dtype == "bool":
+        conf_mat_expected = np.array([[0.666667, 0.33333], [0.166667, 0.83333]])
+    assert np.allclose(conf_mat_expected, conf_mat.to_numpy())
     assert isinstance(conf_mat, pd.DataFrame)
 
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method="pred")
-    conf_mat_expected = np.array(
-        [[2 / 3.0, 1 / 3.0, 0], [0, 1 / 3.0, 1 / 3.0], [1 / 3.0, 1 / 3.0, 2 / 3.0]]
-    )
+    if dtype == "int":
+        conf_mat_expected = np.array(
+            [[2 / 3.0, 1 / 3.0, 0], [0, 1 / 3.0, 1 / 3.0], [1 / 3.0, 1 / 3.0, 2 / 3.0]]
+        )
+    elif dtype == "bool":
+        conf_mat_expected = np.array([[0.666667, 0.166667], [0.333333, 0.83333]])
     assert np.allclose(conf_mat_expected, conf_mat.to_numpy(), equal_nan=True)
     assert isinstance(conf_mat, pd.DataFrame)
 
