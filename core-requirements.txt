@@ -12,6 +12,7 @@ shap>=0.40.0
 statsmodels>=0.12.2
 texttable>=1.6.2
 woodwork @ git+https://github.com/alteryx/woodwork.git@main#egg=woodwork
+pyarrow>=1.5.0
 dask>=2021.10.0
 nlp-primitives>=2.1.0
 featuretools>=1.7.0
