@@ -58,6 +58,7 @@ jobs:
       - if: ${{ matrix.core_dependencies }}
         name: Installing Core Dependencies
         run: |
+          echo ::group::Installing Core Dependencies
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
@@ -68,6 +69,7 @@ jobs:
           # "!" negates return code. exit nonzero if any of these deps are found
           ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
           exit $?
+          echo ::endgroup::
       - if: ${{ !matrix.core_dependencies && (matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-parallel') }}
         name: Installing Dependencies
         run: |
