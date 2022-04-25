@@ -54,7 +54,7 @@ class TargetLeakageDataCheck(DataCheck):
         for col in X.columns:
             cols_to_compare = X.ww[[col]]
             cols_to_compare.ww[str(col) + "y"] = y
-            mutual_info = cols_to_compare.ww.mutual_information()
+            mutual_info = cols_to_compare.ww.mutual_information(min_shared=3)
             if (
                 len(mutual_info) > 0
                 and mutual_info["mutual_info"].iloc[0] > self.pct_corr_threshold
