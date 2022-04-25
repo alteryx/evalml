@@ -52,9 +52,12 @@ class TargetLeakageDataCheck(DataCheck):
     def _calculate_mutual_information(self, X, y):
         highly_corr_cols = []
         for col in X.columns:
+            print(col)
             cols_to_compare = X.ww[[col]]
             cols_to_compare.ww[str(col) + "y"] = y
             mutual_info = cols_to_compare.ww.mutual_information()
+            print(mutual_info)
+            print()
             if (
                 len(mutual_info) > 0
                 and mutual_info["mutual_info"].iloc[0] > self.pct_corr_threshold
@@ -140,7 +143,7 @@ class TargetLeakageDataCheck(DataCheck):
             highly_corr_cols = self._calculate_pearson(X, y)
         else:
             highly_corr_cols = self._calculate_mutual_information(X, y)
-
+        print(highly_corr_cols)
         warning_msg_singular = "Column {} is {}% or more correlated with the target"
         warning_msg_plural = "Columns {} are {}% or more correlated with the target"
 

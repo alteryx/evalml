@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
@@ -173,18 +174,39 @@ def test_target_leakage_none():
 def test_target_leakage_types():
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
 
-    y = pd.Series([1, 0, 1, 1])
+    y = pd.Series([1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1])
     X = pd.DataFrame()
-    X["a"] = ["a", "b", "a", "a"]
+    X["a"] = ["a", "b", "a", "a", "a", "b", "a", "a", "a", "b", "a", "a", "a", "b", "a", "a", "a", "b", "a", "a", "a", "b", "a", "a", "a"]
     X["b"] = y - 1
     X["c"] = [
         datetime.strptime("2015", "%Y"),
         datetime.strptime("2016", "%Y"),
         datetime.strptime("2015", "%Y"),
         datetime.strptime("2015", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2016", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2016", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2016", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2016", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2016", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2015", "%Y"),
+        datetime.strptime("2015", "%Y"),
     ]
     X["d"] = ~y
-    X["e"] = [0, 0, 0, 0]
+    X["e"] = np.zeros(len(y))
     y = y.astype(bool)
     X.ww.init(logical_types={"a": "categorical"})
 
@@ -213,13 +235,13 @@ def test_target_leakage_multi():
     # test empty pd.DataFrame, empty pd.Series
     assert leakage_check.validate(pd.DataFrame(), pd.Series()) == []
 
-    y = pd.Series([1, 0, 2, 1, 2, 0])
+    y = pd.Series([1, 0, 2, 1, 2, 0, 1, 0, 2, 1, 2, 0, 1, 0, 2, 1, 2, 0, 1, 0, 2, 1, 2, 0, 1])
     X = pd.DataFrame()
     X["a"] = y * 3
     X["b"] = y - 1
     X["c"] = y / 10
-    X["d"] = [0, 0, 0, 0, 0, 0]
-    X["e"] = ["a", "b", "c", "a", "b", "c"]
+    X["d"] = np.zeros(len(y))
+    X["e"] = ["a", "b", "c", "a", "b", "c", "a", "b", "c", "a", "b", "c", "a", "b", "c", "a", "b", "c", "a", "b", "c", "a", "b", "c", "a"]
 
     expected = [
         DataCheckWarning(
@@ -254,14 +276,14 @@ def test_target_leakage_regression():
     assert leakage_check.validate(pd.DataFrame(), pd.Series()) == []
 
     y = pd.Series(
-        [0.4, 0.1, 2.3, 4.3, 2.2, 1.8, 3.7, 3.6, 2.4, 0.9, 3.1, 2.8, 4.1, 1.6, 1.2]
+        [0.7, 0.8, 1.6, 2.8, 4.0, 5.1, 5.2, 5.9, 6.1, 6.4, 8.7, 9.5, 13.2, 13.7, 14.8, 15.2, 15.8, 19.0, 19.2, 19.6, 20.0, 20.6, 21.1, 23.3, 25.3, 25.8]
     )
     X = pd.DataFrame()
     X["a"] = y * 3
     X["b"] = y - 1
     X["c"] = y / 10
-    X["d"] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    X["e"] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"]
+    X["d"] = np.zeros(len(y))
+    X["e"] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
     X.ww.init(logical_types={"e": "categorical"})
 
     expected = [
@@ -392,8 +414,8 @@ def test_target_leakage_none_pearson():
 
 
 def test_target_leakage_maintains_logical_types():
-    X = pd.DataFrame({"A": pd.Series([1, 2, 3]), "B": pd.Series([4, 5, 6])})
-    y = pd.Series([1, 2, 3])
+    X = pd.DataFrame({"A": pd.Series(range(1, 26)), "B": pd.Series(range(26, 51))})
+    y = pd.Series(range(1, 26))
 
     X.ww.init(logical_types={"A": "Unknown", "B": "Double"})
     messages = TargetLeakageDataCheck().validate(X, y)
