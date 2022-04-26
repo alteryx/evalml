@@ -55,7 +55,6 @@ class TargetLeakageDataCheck(DataCheck):
             cols_to_compare = X.ww[[col]]
             cols_to_compare.ww[str(col) + "y"] = y
             mutual_info = cols_to_compare.ww.mutual_information()
-            print(mutual_info)
             if (
                 len(mutual_info) > 0
                 and mutual_info["mutual_info"].iloc[0] > self.pct_corr_threshold
@@ -83,11 +82,11 @@ class TargetLeakageDataCheck(DataCheck):
             data leakage.
 
             >>> X = pd.DataFrame({
-            ...    "leak": [10, 42, 31, 51, 61],
-            ...    "x": [42, 54, 12, 64, 12],
-            ...    "y": [13, 5, 13, 74, 24],
+            ...    "leak": [10, 42, 31, 51, 61] * 15,
+            ...    "x": [42, 54, 12, 64, 12] * 15,
+            ...    "y": [13, 5, 13, 74, 24] * 15,
             ... })
-            >>> y = pd.Series([10, 42, 31, 51, 40])
+            >>> y = pd.Series([10, 42, 31, 51, 40] * 15)
             ...
             >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.95)
             >>> assert target_leakage_check.validate(X, y) == [
