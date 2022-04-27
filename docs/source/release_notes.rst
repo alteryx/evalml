@@ -9,13 +9,16 @@
         * Added ``vowpalwabbit`` to local recipe and remove ``is_using_conda`` pytest skip markers from relevant tests :pr:`3481` 
     * Documentation Changes
         * Fixed broken link in contributing guide :pr:`3464`
-        * Improved development instructions :pr:`3468` 
+        * Improved development instructions :pr:`3468`
+        * Added the ``TimeSeriesRegularizer`` and ``TimeSeriesImputer`` to the timeseries section of the User Guide :pr:`3473`
     * Testing Changes
+        * Updated unit tests to support woodwork 0.16.2 :pr:`3482`
 
 .. warning::
 
     **Breaking Changes**
-        * Renamed ``PipelineBase.graph_json()`` to ``PipelineBase.graph_dict()``
+        * Renamed ``PipelineBase.graph_json()`` to ``PipelineBase.graph_dict()`` :pr:`3463`
+        * Minimum supported woodwork version is now 0.16.2 :pr:`3482`
 
 **v0.50.0 Apr. 12, 2022**
     * Enhancements
