@@ -11,11 +11,13 @@
         * Improved development instructions :pr:`3468`
         * Added the ``TimeSeriesRegularizer`` and ``TimeSeriesImputer`` to the timeseries section of the User Guide :pr:`3473`
     * Testing Changes
+        * Updated unit tests to support woodwork 0.16.2 :pr:`3482`
 
 .. warning::
 
     **Breaking Changes**
-        * Renamed ``PipelineBase.graph_json()`` to ``PipelineBase.graph_dict()``
+        * Renamed ``PipelineBase.graph_json()`` to ``PipelineBase.graph_dict()`` :pr:`3463`
+        * Minimum supported woodwork version is now 0.16.2 :pr:`3482`
 
 **v0.50.0 Apr. 12, 2022**
     * Enhancements
