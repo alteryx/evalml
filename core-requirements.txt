@@ -14,5 +14,5 @@ texttable>=1.6.2
 woodwork>=0.16.2
 dask>=2021.10.0
 nlp-primitives>=2.1.0
-featuretools>=1.7.0
+https://github.com/alteryx/featuretools/archive/ce12a7c486c660dc2f3cb0730ec1818d678284f5.tar.gz
 networkx>=2.5,<2.6
