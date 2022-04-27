@@ -173,65 +173,17 @@ def test_target_leakage_none():
 def test_target_leakage_types():
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
 
-    y = pd.Series(
-        [1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1]
-    )
+    y = pd.Series([1, 0, 1, 1] * 6 + [1])
     X = pd.DataFrame()
-    X["a"] = [
-        "a",
-        "b",
-        "a",
-        "a",
-        "a",
-        "b",
-        "a",
-        "a",
-        "a",
-        "b",
-        "a",
-        "a",
-        "a",
-        "b",
-        "a",
-        "a",
-        "a",
-        "b",
-        "a",
-        "a",
-        "a",
-        "b",
-        "a",
-        "a",
-        "a",
-    ]
+    X["a"] = ["a", "b", "a", "a"] * 6 + ["a"]
     X["b"] = y
+
     X["c"] = [
         datetime.strptime("2015", "%Y"),
         datetime.strptime("2016", "%Y"),
         datetime.strptime("2015", "%Y"),
         datetime.strptime("2015", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2016", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2016", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2016", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2016", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2016", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2015", "%Y"),
-        datetime.strptime("2015", "%Y"),
-    ]
+    ] * 6 + [datetime.strptime("2015", "%Y")]
     X["d"] = ~y
     X["e"] = np.zeros(len(y))
     y = y.astype(bool)
