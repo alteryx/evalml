@@ -82,11 +82,11 @@ class TargetLeakageDataCheck(DataCheck):
             data leakage.
 
             >>> X = pd.DataFrame({
-            ...    "leak": [10, 42, 31, 51, 61],
-            ...    "x": [42, 54, 12, 64, 12],
-            ...    "y": [13, 5, 13, 74, 24],
+            ...    "leak": [10, 42, 31, 51, 61] * 15,
+            ...    "x": [42, 54, 12, 64, 12] * 15,
+            ...    "y": [13, 5, 13, 74, 24] * 15,
             ... })
-            >>> y = pd.Series([10, 42, 31, 51, 40])
+            >>> y = pd.Series([10, 42, 31, 51, 40] * 15)
             ...
             >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.95)
             >>> assert target_leakage_check.validate(X, y) == [
@@ -140,7 +140,6 @@ class TargetLeakageDataCheck(DataCheck):
             highly_corr_cols = self._calculate_pearson(X, y)
         else:
             highly_corr_cols = self._calculate_mutual_information(X, y)
-
         warning_msg_singular = "Column {} is {}% or more correlated with the target"
         warning_msg_plural = "Columns {} are {}% or more correlated with the target"
 
