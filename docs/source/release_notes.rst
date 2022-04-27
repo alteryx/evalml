@@ -8,7 +8,8 @@
     * Changes
     * Documentation Changes
         * Fixed broken link in contributing guide :pr:`3464`
-        * Improved development instructions :pr:`3468` 
+        * Improved development instructions :pr:`3468`
+        * Added the ``TimeSeriesRegularizer`` and ``TimeSeriesImputer`` to the timeseries section of the User Guide :pr:`3473`
     * Testing Changes
         * Updated unit tests to support woodwork 0.16.2 :pr:`3482`
 
