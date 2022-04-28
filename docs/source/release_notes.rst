@@ -6,7 +6,7 @@
     * Fixes
         * Changed ``PipelineBase.graph_json()`` to return a python dictionary and renamed as ``graph_dict()``:pr:`3463`
     * Changes
-        * Updated ``roc_curve()`` to work with IntegerNullable and BooleanNullable types. :pr:`3465`
+        * Updated ``roc_curve()`` and ``conf_matrix()`` to work with IntegerNullable and BooleanNullable types. :pr:`3465`
     * Documentation Changes
         * Fixed broken link in contributing guide :pr:`3464`
         * Improved development instructions :pr:`3468` 
