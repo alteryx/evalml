@@ -1,5 +1,5 @@
 -r core-requirements.txt
-plotly>=5.0.0
+plotly>=5.7.0
 kaleido>=0.1.0
 ipywidgets>=7.5
 xgboost>=1.4.2
