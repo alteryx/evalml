@@ -7,7 +7,7 @@ from evalml.pipelines.components.estimators.classifiers import (
 )
 from evalml.problem_types import ProblemTypes
 
-pytestmark = [pytest.mark.noncore_dependency, pytest.mark.skip_during_conda]
+pytestmark = [pytest.mark.noncore_dependency]
 
 
 def test_model_family():
