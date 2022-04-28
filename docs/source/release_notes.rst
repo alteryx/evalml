@@ -9,6 +9,7 @@
     * Documentation Changes
         * Fixed broken link in contributing guide :pr:`3464`
         * Improved development instructions :pr:`3468` 
+        * Updated OSS slack link :pr:`3487`
     * Testing Changes
 
 .. warning::
