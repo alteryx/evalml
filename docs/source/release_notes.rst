@@ -14,6 +14,7 @@
         * Updated OSS slack link :pr:`3487`
     * Testing Changes
         * Updated unit tests to support woodwork 0.16.2 :pr:`3482`
+        * Fix some unit tests after vowpal wabbit got added to conda recipe :pr:`3486`
 
 .. warning::
 
