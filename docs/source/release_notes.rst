@@ -2,6 +2,18 @@
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+    
+
+**v0.51.0 Apr. 28, 2022**
+    * Enhancements
         * Updated ``make_pipeline_from_data_check_output`` to work with time series problems. :pr:`3454`
     * Fixes
         * Changed ``PipelineBase.graph_json()`` to return a python dictionary and renamed as ``graph_dict()``:pr:`3463`
