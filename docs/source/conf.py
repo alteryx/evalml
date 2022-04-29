@@ -135,7 +135,20 @@ html_static_path = ["_static"]
 # 'searchbox.html']``.
 #
 # html_sidebars = {}
+html_js_files = ["https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js"]
 
+
+# Downgrading MathJax to version 2 to fix plot rendering. For some reason, not fixed in latest plotly.
+# See https://github.com/spatialaudio/nbsphinx/issues/572 for more details.
+mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js"
+mathjax2_config = {
+    'tex2jax': {
+        'inlineMath': [['$', '$'], ['\\(', '\\)']],
+        'processEscapes': True,
+        'ignoreClass': 'document',
+        'processClass': 'math|output_area',
+    }
+}
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
