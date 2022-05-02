@@ -107,14 +107,14 @@ installdeps-core:
 .PHONY: installdeps-test
 installdeps-test:
 	pip install -e . -q
-	pip install -r test-requirements.txt -q
+	pip install .[test]
 
 .PHONY: installdeps-dev
 installdeps-dev:
 	pip install -e . -q
-	pip install -r dev-requirements.txt -q
+	pip install .[dev]
 
 .PHONY: installdeps-docs
 installdeps-docs:
 	pip install -e . -q
-	pip install -r docs-requirements.txt -q
+	pip install .[docs]
