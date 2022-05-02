@@ -29,7 +29,7 @@ jobs:
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
-          pip install -r test-requirements.txt
+          pip install .[test]
           pip install requirements-parser>=0.2.0
       - name: Clone Feedstock & Check Versions
         run: |
