@@ -101,9 +101,6 @@ not_supported_in_conda = set(
     [
         "ARIMA Regressor",
         "Prophet Regressor",
-        "Vowpal Wabbit Binary Classifier",
-        "Vowpal Wabbit Multiclass Classifier",
-        "Vowpal Wabbit Regressor",
     ]
 )
 not_supported_in_windows = set(

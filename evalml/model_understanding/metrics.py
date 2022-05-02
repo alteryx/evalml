@@ -11,9 +11,28 @@ from sklearn.metrics import (
 from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils.multiclass import unique_labels
+from woodwork.logical_types import BooleanNullable, IntegerNullable
 
 from evalml.exceptions import NoPositiveLabelException
 from evalml.utils import import_or_raise, infer_feature_types, jupyter_check
+
+
+def _convert_ww_series_to_np_array(ww_series):
+    """Helper function to properly convert IntegerNullable/BooleanNullable Woodwork series to numpy arrays.
+
+    Args:
+        ww_series: Woodwork init-ed series possibly containing IntegerNullable or BooleanNullable datatype
+
+    Returns:
+        numpy.ndarray: The values of ww_series but in an array.
+    """
+    np_series = ww_series.to_numpy()
+    if isinstance(ww_series.ww.logical_type, BooleanNullable):
+        np_series = np_series.astype("bool")
+    if isinstance(ww_series.ww.logical_type, IntegerNullable):
+        np_series = np_series.astype("int64")
+
+    return np_series
 
 
 def confusion_matrix(y_true, y_predicted, normalize_method="true"):
@@ -27,12 +46,12 @@ def confusion_matrix(y_true, y_predicted, normalize_method="true"):
     Returns:
         pd.DataFrame: Confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
-    y_true = infer_feature_types(y_true)
+    y_true_ww = infer_feature_types(y_true)
+    y_true_np = _convert_ww_series_to_np_array(y_true_ww)
     y_predicted = infer_feature_types(y_predicted)
-    y_true = y_true.to_numpy()
     y_predicted = y_predicted.to_numpy()
-    labels = unique_labels(y_true, y_predicted)
-    conf_mat = sklearn_confusion_matrix(y_true, y_predicted)
+    labels = unique_labels(y_true_np, y_predicted)
+    conf_mat = sklearn_confusion_matrix(y_true_np, y_predicted)
     conf_mat = pd.DataFrame(conf_mat, index=labels, columns=labels)
     if normalize_method is not None:
         return normalize_confusion_matrix(conf_mat, normalize_method=normalize_method)
@@ -254,20 +273,21 @@ def roc_curve(y_true, y_pred_proba):
                   * `threshold`: Threshold values used to produce each pair of true/false positive rates.
                   * `auc_score`: The area under the ROC curve.
     """
-    y_true = infer_feature_types(y_true).to_numpy()
+    y_true_ww = infer_feature_types(y_true)
+    y_true_np = _convert_ww_series_to_np_array(y_true_ww)
     y_pred_proba = infer_feature_types(y_pred_proba).to_numpy()
 
     if len(y_pred_proba.shape) == 1:
         y_pred_proba = y_pred_proba.reshape(-1, 1)
     if y_pred_proba.shape[1] == 2:
         y_pred_proba = y_pred_proba[:, 1].reshape(-1, 1)
-    nan_indices = np.logical_or(pd.isna(y_true), np.isnan(y_pred_proba).any(axis=1))
-    y_true = y_true[~nan_indices]
+    nan_indices = np.logical_or(pd.isna(y_true_np), np.isnan(y_pred_proba).any(axis=1))
+    y_true_np = y_true_np[~nan_indices]
     y_pred_proba = y_pred_proba[~nan_indices]
 
     lb = LabelBinarizer()
-    lb.fit(np.unique(y_true))
-    y_one_hot_true = lb.transform(y_true)
+    lb.fit(np.unique(y_true_np))
+    y_one_hot_true = lb.transform(y_true_np)
     n_classes = y_one_hot_true.shape[1]
 
     curve_data = []

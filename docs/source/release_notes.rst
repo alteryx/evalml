@@ -2,19 +2,39 @@
 -------------
 **Future Releases**
     * Enhancements
-        * Updated ``make_pipeline_from_data_check_output`` to work with time series problems. :pr:`3454`
     * Fixes
-        * Changed ``PipelineBase.graph_json()`` to return a python dictionary and renamed as ``graph_dict()``:pr:`3463`
     * Changes
+        * Updated ``roc_curve()`` and ``conf_matrix()`` to work with IntegerNullable and BooleanNullable types. :pr:`3465`
     * Documentation Changes
-        * Fixed broken link in contributing guide :pr:`3464`
-        * Improved development instructions :pr:`3468` 
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
-        * Renamed ``PipelineBase.graph_json()`` to ``PipelineBase.graph_dict()``
+    
+
+**v0.51.0 Apr. 28, 2022**
+    * Enhancements
+        * Updated ``make_pipeline_from_data_check_output`` to work with time series problems. :pr:`3454`
+    * Fixes
+        * Changed ``PipelineBase.graph_json()`` to return a python dictionary and renamed as ``graph_dict()``:pr:`3463`
+    * Changes
+        * Added ``vowpalwabbit`` to local recipe and remove ``is_using_conda`` pytest skip markers from relevant tests :pr:`3481`
+    * Documentation Changes
+        * Fixed broken link in contributing guide :pr:`3464`
+        * Improved development instructions :pr:`3468`
+        * Added the ``TimeSeriesRegularizer`` and ``TimeSeriesImputer`` to the timeseries section of the User Guide :pr:`3473`
+        * Updated OSS slack link :pr:`3487`
+        * Fix rendering of model understanding plotly charts in docs :pr:`3460`
+    * Testing Changes
+        * Updated unit tests to support woodwork 0.16.2 :pr:`3482`
+        * Fix some unit tests after vowpal wabbit got added to conda recipe :pr:`3486`
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``PipelineBase.graph_json()`` to ``PipelineBase.graph_dict()`` :pr:`3463`
+        * Minimum supported woodwork version is now 0.16.2 :pr:`3482`
 
 **v0.50.0 Apr. 12, 2022**
     * Enhancements

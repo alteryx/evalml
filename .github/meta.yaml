@@ -9,7 +9,7 @@ source:
   sha256: acb758f2234a60dd606a4aa7dcde385e159c95a08470b0c5815d085db48aa985
 
 build:
-  number: 0
+  number: 2
 
 outputs:
   - name: evalml-core
@@ -37,13 +37,14 @@ outputs:
         - requirements-parser >=0.2.0
         - shap >=0.40.0
         - texttable >=1.6.2
-        - woodwork >=0.15.0
+        - woodwork >=0.16.2
         - featuretools>=1.7.0
         - nlp-primitives>=2.1.0
         - python >=3.8.*
         - networkx >=2.5,<2.6
         - category_encoders >=2.2.2
         - python-graphviz >=0.13
+        - vowpalwabbit >=8.11.0
     test:
       imports:
         - evalml
