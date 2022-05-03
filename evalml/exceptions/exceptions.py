@@ -153,7 +153,7 @@ class PipelineErrorCodeEnum(Enum):
 
 
 class PipelineError(ValueError):
-    """Exception raised for errors that can be raised when applying a pipeline"""
+    """Exception raised for errors that can be raised when applying a pipeline."""
 
     def __init__(self, message, code, details=None):
         self.code = code
