@@ -5,6 +5,7 @@
     * Fixes
     * Changes
         * Updated ``roc_curve()`` and ``conf_matrix()`` to work with IntegerNullable and BooleanNullable types. :pr:`3465`
+        * Transitioned to use pyproject.toml and setup.cfg away from setup.py :pr:`3494`
     * Documentation Changes
     * Testing Changes
 
