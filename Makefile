@@ -105,12 +105,12 @@ installdeps-core:
 
 .PHONY: installdeps-test
 installdeps-test:
-	pip install .[test]
+	pip install -e .[test]
 
 .PHONY: installdeps-dev
 installdeps-dev:
-	pip install .[dev]
+	pip install -e .[dev]
 
 .PHONY: installdeps-docs
 installdeps-docs:
-	pip install .[docs]
+	pip install -e .[docs]
