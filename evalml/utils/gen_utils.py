@@ -261,9 +261,11 @@ def _rename_column_names_to_numeric(X, flatten_tuples=True):
         return pd.DataFrame(X)
 
     X_renamed = X.copy()
+    logical_types = X.ww.logical_types
     if flatten_tuples and (len(X.columns) > 0 and isinstance(X.columns, pd.MultiIndex)):
         flat_col_names = list(map(str, X_renamed.columns))
         X_renamed.columns = flat_col_names
+        logical_types = {str(k): v for k, v in logical_types.items()}
         rename_cols_dict = dict(
             (str(col), col_num) for col_num, col in enumerate(list(X.columns))
         )
@@ -272,6 +274,9 @@ def _rename_column_names_to_numeric(X, flatten_tuples=True):
             (col, col_num) for col_num, col in enumerate(list(X.columns))
         )
     X_renamed.rename(columns=rename_cols_dict, inplace=True)
+    X_renamed.ww.init(
+        logical_types={rename_cols_dict[k]: v for k, v in logical_types.items()}
+    )
     return X_renamed
 
 

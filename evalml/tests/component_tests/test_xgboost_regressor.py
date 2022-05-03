@@ -1,4 +1,5 @@
 import string
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -65,3 +66,17 @@ def test_xgboost_predict_all_boolean_columns():
     preds = xgb.predict(X)
     assert isinstance(preds, pd.Series)
     assert not preds.isna().any()
+
+
+@patch("xgboost.XGBRegressor.fit")
+@patch("xgboost.XGBRegressor.predict")
+def test_xgboost_preserves_schema_in_rename(mock_predict, mock_fit):
+    X = pd.DataFrame({"a": [1, 2, 3, 4]})
+    X.ww.init(logical_types={"a": "NaturalLanguage"})
+    original_schema = X.ww.rename(columns={"a": 0}).ww.schema
+
+    xgb = XGBoostRegressor()
+    xgb.fit(X, pd.Series([0, 1, 1, 0]))
+    assert mock_fit.call_args[0][0].ww.schema == original_schema
+    xgb.predict(X)
+    assert mock_predict.call_args[0][0].ww.schema == original_schema

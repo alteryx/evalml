@@ -1,5 +1,6 @@
 import string
 import warnings
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -120,3 +121,20 @@ def test_xgboost_catch_warnings_label_encoder(y, label_encoder):
         assert xgb._label_encoder is not None
         return
     assert xgb._label_encoder is None
+
+
+@patch("xgboost.XGBClassifier.fit")
+@patch("xgboost.XGBClassifier.predict")
+@patch("xgboost.XGBClassifier.predict_proba")
+def test_xgboost_preserves_schema_in_rename(mock_predict_proba, mock_predict, mock_fit):
+    X = pd.DataFrame({"a": [1, 2, 3, 4]})
+    X.ww.init(logical_types={"a": "NaturalLanguage"})
+    original_schema = X.ww.rename(columns={"a": 0}).ww.schema
+
+    xgb = XGBoostClassifier()
+    xgb.fit(X, pd.Series([0, 1, 1, 0]))
+    assert mock_fit.call_args[0][0].ww.schema == original_schema
+    xgb.predict(X)
+    assert mock_predict.call_args[0][0].ww.schema == original_schema
+    xgb.predict_proba(X)
+    assert mock_predict_proba.call_args[0][0].ww.schema == original_schema

@@ -309,3 +309,20 @@ def test_lightgbm_multiindex(data_type, X_y_binary, make_data_type):
     y_pred_proba = clf.predict_proba(X)
     assert not y_pred.isnull().values.any()
     assert not y_pred_proba.isnull().values.any().any()
+
+
+@patch("lightgbm.LGBMClassifier.fit")
+@patch("lightgbm.LGBMClassifier.predict")
+@patch("lightgbm.LGBMClassifier.predict_proba")
+def test_lgbm_preserves_schema_in_rename(mock_predict_proba, mock_predict, mock_fit):
+    X = pd.DataFrame({"a": [1, 2, 3, 4]})
+    X.ww.init(logical_types={"a": "NaturalLanguage"})
+    original_schema = X.ww.rename(columns={"a": 0}).ww.schema
+
+    xgb = LightGBMClassifier()
+    xgb.fit(X, pd.Series([0, 1, 1, 0]))
+    assert mock_fit.call_args[0][0].ww.schema == original_schema
+    xgb.predict(X)
+    assert mock_predict.call_args[0][0].ww.schema == original_schema
+    xgb.predict_proba(X)
+    assert mock_predict_proba.call_args[0][0].ww.schema == original_schema
