@@ -17,13 +17,13 @@ def test_search_iteration_plot_class():
             self.objective = MockObjective()
             self.results = {
                 "pipeline_results": {
-                    2: {"mean_cv_score": 0.50},
-                    0: {"mean_cv_score": 0.60},
-                    1: {"mean_cv_score": 0.75},
+                    2: {"mean_cv_score": 0.75, "validation_score": 0.50},
+                    0: {"mean_cv_score": 0.50, "validation_score": 0.60},
+                    1: {"mean_cv_score": 0.60, "validation_score": 0.75},
                 },
                 "search_order": [1, 2, 0],
             }
-            self.rankings = pd.DataFrame({"mean_cv_score": [0.75, 0.60, 0.50]})
+            self.rankings = pd.DataFrame({"validation_score": [0.75, 0.60, 0.50]})
 
     mock_data = MockResults()
     plot = SearchIterationPlot(mock_data.results, mock_data.objective)

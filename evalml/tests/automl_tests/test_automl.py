@@ -3,6 +3,7 @@ import os
 import warnings
 from collections import OrderedDict, defaultdict
 from itertools import product
+from math import ceil
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import cloudpickle
@@ -12,6 +13,8 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from joblib import hash as joblib_hash
+from pandas.testing import assert_frame_equal, assert_series_equal
+from sklearn import datasets
 from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
@@ -63,7 +66,11 @@ from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_stacked_ensemble_pipeline,
 )
-from evalml.preprocessing import TimeSeriesSplit, TrainingValidationSplit
+from evalml.preprocessing import (
+    TimeSeriesSplit,
+    TrainingValidationSplit,
+    split_data,
+)
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -177,9 +184,9 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
                 "id",
                 "pipeline_name",
                 "search_order",
+                "validation_score",
                 "mean_cv_score",
                 "standard_deviation_cv_score",
-                "validation_score",
                 "percent_better_than_baseline",
                 "high_variance_cv",
                 "parameters",
@@ -204,9 +211,9 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
                 "id",
                 "pipeline_name",
                 "search_order",
+                "validation_score",
                 "mean_cv_score",
                 "standard_deviation_cv_score",
-                "validation_score",
                 "percent_better_than_baseline",
                 "high_variance_cv",
                 "parameters",
@@ -750,8 +757,10 @@ def test_invalid_data_splitter(X_y_binary):
 
 
 def test_large_dataset_binary(AutoMLTestEnv):
-    X = pd.DataFrame({"col_0": [i for i in range(101000)]})
-    y = pd.Series([i % 2 for i in range(101000)])
+    X = pd.DataFrame(
+        {"col_0": [i for i in range(111113)]}
+    )  # Reaches just over max row threshold after holdout set
+    y = pd.Series([i % 2 for i in range(111113)])
 
     fraud_objective = FraudCost(amount_col="col_0")
 
@@ -781,15 +790,18 @@ def test_large_dataset_binary(AutoMLTestEnv):
             == 1.234
         )
         assert (
-            np.isnan(automl.results["pipeline_results"][pipeline_id]["mean_cv_score"])
-            and automl.results["pipeline_results"][pipeline_id]["validation_score"]
-            == 1.234
+            automl.results["pipeline_results"][pipeline_id]["validation_score"] == 1.234
+        )
+        assert np.isnan(
+            automl.results["pipeline_results"][pipeline_id]["mean_cv_score"]
         )
 
 
 def test_large_dataset_multiclass(AutoMLTestEnv):
-    X = pd.DataFrame({"col_0": [i for i in range(101000)]})
-    y = pd.Series([i % 4 for i in range(101000)])
+    X = pd.DataFrame(
+        {"col_0": [i for i in range(111113)]}
+    )  # Reaches just over max row threshold after holdout set
+    y = pd.Series([i % 4 for i in range(111113)])
 
     automl = AutoMLSearch(
         X_train=X,
@@ -814,15 +826,18 @@ def test_large_dataset_multiclass(AutoMLTestEnv):
             == 1.234
         )
         assert (
-            np.isnan(automl.results["pipeline_results"][pipeline_id]["mean_cv_score"])
-            and automl.results["pipeline_results"][pipeline_id]["validation_score"]
-            == 1.234
+            automl.results["pipeline_results"][pipeline_id]["validation_score"] == 1.234
+        )
+        assert np.isnan(
+            automl.results["pipeline_results"][pipeline_id]["mean_cv_score"]
         )
 
 
 def test_large_dataset_regression(AutoMLTestEnv):
-    X = pd.DataFrame({"col_0": [i for i in range(101000)]})
-    y = pd.Series([i for i in range(101000)])
+    X = pd.DataFrame(
+        {"col_0": [i for i in range(200000)]}
+    )  # Reaches just over max row threshold after holdout set
+    y = pd.Series([i for i in range(200000)])
 
     automl = AutoMLSearch(
         X_train=X,
@@ -847,9 +862,10 @@ def test_large_dataset_regression(AutoMLTestEnv):
             == 1.234
         )
         assert (
-            np.isnan(automl.results["pipeline_results"][pipeline_id]["mean_cv_score"])
-            and automl.results["pipeline_results"][pipeline_id]["validation_score"]
-            == 1.234
+            automl.results["pipeline_results"][pipeline_id]["validation_score"] == 1.234
+        )
+        assert np.isnan(
+            automl.results["pipeline_results"][pipeline_id]["mean_cv_score"]
         )
 
 
@@ -875,7 +891,9 @@ def test_large_dataset_split_size(X_y_binary):
     )
     assert isinstance(automl.data_splitter, StratifiedKFold)
 
-    under_max_rows = _LARGE_DATA_ROW_THRESHOLD - 1
+    under_max_rows = (
+        _LARGE_DATA_ROW_THRESHOLD + int(ceil(_LARGE_DATA_ROW_THRESHOLD * 0.1 / 0.9)) - 1
+    )  # Should be under threshold even after taking out holdout set
     X, y = generate_fake_dataset(under_max_rows)
     automl = AutoMLSearch(
         X_train=X,
@@ -890,7 +908,9 @@ def test_large_dataset_split_size(X_y_binary):
     assert isinstance(automl.data_splitter, StratifiedKFold)
 
     automl.data_splitter = None
-    over_max_rows = _LARGE_DATA_ROW_THRESHOLD + 1
+    over_max_rows = (
+        _LARGE_DATA_ROW_THRESHOLD + int(ceil(_LARGE_DATA_ROW_THRESHOLD * 0.1 / 0.9)) + 1
+    )
     X, y = generate_fake_dataset(over_max_rows)
 
     automl = AutoMLSearch(
@@ -985,6 +1005,14 @@ def test_init_missing_data(X_y_binary):
         match=r"Must specify training data target values as a 1d vector using the y_train argument",
     ):
         AutoMLSearch(X_train=X, problem_type="binary")
+
+
+def test_init_no_holdout_set(X_y_binary):
+    X, y = X_y_binary
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
+    assert automl.passed_holdout_set is False
+    assert automl.X_holdout is None
+    assert automl.y_holdout is None
 
 
 def test_init_problem_type_error(X_y_binary):
@@ -1125,6 +1153,7 @@ def test_add_to_rankings_no_search(
         assert isinstance(automl.data_splitter, StratifiedKFold)
         assert len(automl.rankings) == 1
         assert 0.5234 in automl.rankings["mean_cv_score"].values
+        assert 0.5234 in automl.rankings["validation_score"].values
         assert np.isnan(
             automl.results["pipeline_results"][0]["percent_better_than_baseline"],
         )
@@ -1141,8 +1170,10 @@ def test_add_to_rankings_regression_large(
     dummy_regression_pipeline,
     example_regression_graph,
 ):
-    X = pd.DataFrame({"col_0": [i for i in range(101000)]})
-    y = pd.Series([i for i in range(101000)])
+    X = pd.DataFrame(
+        {"col_0": [i for i in range(111113)]}
+    )  # Reaches just over max row threshold after holdout set
+    y = pd.Series([i for i in range(111113)])
 
     automl = AutoMLSearch(
         X_train=X,
@@ -1286,9 +1317,9 @@ def test_no_search(X_y_binary):
         "id",
         "pipeline_name",
         "search_order",
+        "validation_score",
         "mean_cv_score",
         "standard_deviation_cv_score",
-        "validation_score",
         "percent_better_than_baseline",
         "high_variance_cv",
         "parameters",
@@ -1722,6 +1753,7 @@ def make_mock_rankings(scores):
     df = pd.DataFrame(
         {
             "id": range(len(scores)),
+            "mean_cv_score": scores,
             "validation_score": scores,
             "pipeline_name": [f"Mock name {i}" for i in range(len(scores))],
         },
@@ -4425,7 +4457,7 @@ def test_automl_ensembler_allowed_component_graphs(
     automl = AutoMLSearch(
         X,
         y,
-        "regression",
+        problem_type="regression",
         allowed_component_graphs=component_graphs,
         ensembling=True,
         max_batches=4,
@@ -4575,11 +4607,12 @@ def test_automl_passes_known_in_advance_pipeline_parameters_to_all_pipelines(
 def test_cv_validation_scores(
     data_splitter,
     mean_cv_is_none,
-    X_y_binary,
     dummy_classifier_estimator_class,
     AutoMLTestEnv,
 ):
-    X, y = X_y_binary
+    X, y = datasets.make_classification(
+        n_samples=500, n_features=20, n_informative=2, n_redundant=2, random_state=0
+    )
     data_splitter = data_splitter()
     automl = AutoMLSearch(
         X_train=X,
@@ -4816,7 +4849,7 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
     automl = AutoMLSearch(
         X,
         y,
-        "time series regression",
+        problem_type="time series regression",
         max_iterations=5,
         problem_configuration={
             "max_delay": 2,
@@ -4880,7 +4913,7 @@ def test_automl_restricts_use_covariates_for_arima(
     automl = AutoMLSearch(
         X,
         y,
-        "time series regression",
+        problem_type="time series regression",
         problem_configuration={
             "max_delay": 2,
             "gap": 0,
@@ -4930,7 +4963,7 @@ def test_automl_does_not_restrict_use_covariates_if_user_specified(
     automl = AutoMLSearch(
         X,
         y,
-        "time series regression",
+        problem_type="time series regression",
         problem_configuration={
             "max_delay": 2,
             "gap": 0,
@@ -4965,7 +4998,7 @@ def test_automl_passes_down_ensembling(automl_algo, AutoMLTestEnv, X_y_binary):
     automl = AutoMLSearch(
         X,
         y,
-        "binary",
+        problem_type="binary",
         verbose=True,
         automl_algorithm=automl_algo,
         ensembling=True,
@@ -5012,3 +5045,88 @@ def test_default_algorithm_uses_n_jobs(X_y_binary, AutoMLTestEnv):
             )
 
     assert n_checked and n_feature_selector_checked
+
+
+def test_init_holdout_set(X_y_binary):
+    X, y = X_y_binary
+    X_train, X_holdout, y_train, y_holdout = split_data(X, y, "binary")
+
+    match_text = "When specifying holdout data, all of X_train, y_train, X_holdout, and y_holdout must be passed in"
+    with pytest.raises(
+        ValueError,
+        match=match_text,
+    ):
+        AutoMLSearch(
+            X_train=X_train, y_train=y_train, X_holdout=X_holdout, problem_type="binary"
+        )
+    with pytest.raises(
+        ValueError,
+        match=match_text,
+    ):
+        AutoMLSearch(
+            X_train=X_train, y_train=y_train, y_holdout=y_holdout, problem_type="binary"
+        )
+
+    automl = AutoMLSearch(
+        X_train=X_train,
+        y_train=y_train,
+        X_holdout=X_holdout,
+        y_holdout=y_holdout,
+        problem_type="binary",
+    )
+    assert automl.passed_holdout_set is True
+    assert_frame_equal(automl.X_holdout, X_holdout)
+    assert_series_equal(automl.y_holdout, y_holdout)
+
+
+def test_init_create_holdout_set(caplog):
+    caplog.clear()
+    X, y = datasets.make_classification(
+        n_samples=AutoMLSearch._HOLDOUT_SET_MIN_ROWS - 1, random_state=0
+    )
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", verbose=True)
+    out = caplog.text
+
+    match_text = f"Dataset size is too small to create holdout set. Mininum dataset size is {AutoMLSearch._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X)} rows. AutoMLSearch will use mean CV score to rank pipelines."
+    assert match_text in out
+    assert len(automl.X_train) == len(X)
+    assert len(automl.y_train) == len(y)
+    assert automl.X_holdout is None
+    assert automl.y_holdout is None
+    assert automl.passed_holdout_set is False
+
+    caplog.clear()
+    X, y = datasets.make_classification(
+        n_samples=AutoMLSearch._HOLDOUT_SET_MIN_ROWS, random_state=0
+    )
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", verbose=True)
+    out = caplog.text
+
+    expected_holdout_size = int(automl._holdout_set_size * len(X))
+    expected_train_size = int((1 - automl._holdout_set_size) * len(X))
+    match_text = f"Created holdout dataset with {expected_holdout_size} rows. Training dataset has {expected_train_size} rows. AutoMLSearch will use holdout set to score and rank pipelines."
+    assert match_text in out
+    assert len(automl.X_train) == expected_train_size
+    assert len(automl.y_train) == expected_train_size
+    assert len(automl.X_holdout) == expected_holdout_size
+    assert len(automl.y_holdout) == expected_holdout_size
+    assert automl.passed_holdout_set is False
+
+    caplog.clear()
+    X, y = datasets.make_classification(
+        n_samples=AutoMLSearch._HOLDOUT_SET_MIN_ROWS, random_state=0
+    )
+    automl = AutoMLSearch(
+        X_train=X, y_train=y, problem_type="binary", verbose=True, _holdout_set_size=0
+    )
+    out = caplog.text
+
+    expected_holdout_size = int(automl._holdout_set_size * len(X))
+    expected_train_size = int((1 - automl._holdout_set_size) * len(X))
+    match_text = f"Holdout set evaluation is disabled. AutoMLSearch will use mean CV score to rank pipelines."
+    assert match_text in out
+    assert len(automl.X_train) == len(X)
+    assert len(automl.y_train) == len(y)
+    assert automl.X_holdout is None
+    assert automl.y_holdout is None
+    assert automl.passed_holdout_set is False

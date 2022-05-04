@@ -105,7 +105,9 @@ class CFEngine(EngineBase):
         self.client = client
         self._data_futures_cache = {}
 
-    def submit_evaluation_job(self, automl_config, pipeline, X, y):
+    def submit_evaluation_job(
+        self, automl_config, pipeline, X, y, X_holdout=None, y_holdout=None
+    ):
         """Send evaluation job to cluster.
 
         Args:
@@ -113,6 +115,8 @@ class CFEngine(EngineBase):
             pipeline (pipeline.PipelineBase): Pipeline to evaluate.
             X (pd.DataFrame): Input data for modeling.
             y (pd.Series): Target data for modeling.
+            X_holdout (pd.Series): Holdout input data for holdout scoring.
+            y_holdout (pd.Series): Holdout target data for holdout scoring.
 
         Returns:
             CFComputation: An object wrapping a reference to a future-like computation
@@ -125,6 +129,8 @@ class CFEngine(EngineBase):
             automl_config=automl_config,
             X=X,
             y=y,
+            X_holdout=X_holdout,
+            y_holdout=y_holdout,
             logger=logger,
         )
         return CFComputation(future)

@@ -89,11 +89,15 @@ class EngineBase(ABC):
         return JobLogger()
 
     @abstractmethod
-    def submit_evaluation_job(self, automl_config, pipeline, X, y):
+    def submit_evaluation_job(
+        self, automl_config, pipeline, X, y, X_holdout=None, y_holdout=None
+    ):
         """Submit job for pipeline evaluation during AutoMLSearch."""
 
     @abstractmethod
-    def submit_training_job(self, automl_config, pipeline, X, y):
+    def submit_training_job(
+        self, automl_config, pipeline, X, y, X_holdout=None, y_holdout=None
+    ):
         """Submit job for pipeline training."""
 
     @abstractmethod
@@ -180,6 +184,8 @@ def train_and_score_pipeline(
     full_X_train,
     full_y_train,
     logger,
+    X_holdout=None,
+    y_holdout=None,
 ):
     """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores.
 
@@ -189,6 +195,8 @@ def train_and_score_pipeline(
         full_X_train (pd.DataFrame): Training features.
         full_y_train (pd.Series): Training target.
         logger: Logger object to write to.
+        X_holdout (pd.DataFrame): Holdout set features.
+        y_holdout (pd.DataFrame): Holdout set target.
 
     Raises:
         Exception: If there are missing target values in the training set after data split.
@@ -202,16 +210,24 @@ def train_and_score_pipeline(
     logger.info("\tStarting cross validation")
     # Encode target for classification problems so that we can support float targets. This is okay because we only use split to get the indices to split on
     if is_classification(automl_config.problem_type):
-        y_mapping = {
+        train_y_mapping = {
             original_target: encoded_target
             for (encoded_target, original_target) in enumerate(
                 full_y_train.value_counts().index,
             )
         }
-        full_y_train = ww.init_series(full_y_train.map(y_mapping))
-    cv_pipeline = pipeline
-    pipeline_cache = {}
+        full_y_train = ww.init_series(full_y_train.map(train_y_mapping))
 
+        if y_holdout is not None:
+            holdout_y_mapping = {
+                original_target: encoded_target
+                for (encoded_target, original_target) in enumerate(
+                    y_holdout.value_counts().index
+                )
+            }
+            y_holdout = ww.init_series(y_holdout.map(holdout_y_mapping))
+
+    pipeline_cache = {}
     for i, (train, valid) in enumerate(
         automl_config.data_splitter.split(full_X_train, full_y_train),
     ):
@@ -271,6 +287,7 @@ def train_and_score_pipeline(
             )
             score = scores[automl_config.objective.name]
             pipeline_cache[hashes] = cv_pipeline.component_graph.component_instances
+            stored_pipeline = cv_pipeline
         except Exception as e:
             if automl_config.error_callback is not None:
                 automl_config.error_callback(
@@ -318,26 +335,105 @@ def train_and_score_pipeline(
         ):
             evaluation_entry["binary_classification_threshold"] = cv_pipeline.threshold
         cv_data.append(evaluation_entry)
-    training_time = time.time() - start
     cv_scores = pd.Series([fold["mean_cv_score"] for fold in cv_data])
     cv_score_mean = cv_scores.mean()
     logger.info(
-        f"\tFinished cross validation - mean {automl_config.objective.name}: {cv_score_mean:.3f}",
+        f"\tFinished cross validation - mean {automl_config.objective.name}: {cv_score_mean:.3f}"
     )
+
+    holdout_score = np.NaN
+    holdout_scores = np.NaN
+    if X_holdout is not None and y_holdout is not None:
+        logger.info("\tStarting holdout set scoring")
+        logger.debug(f"\t\tTraining and scoring entire dataset")
+        try:
+            logger.debug(f"\t\t\tFull training data pipeline: starting training")
+            full_pipeline, hashes = train_pipeline(
+                pipeline,
+                full_X_train,
+                full_y_train,
+                automl_config,
+                schema=False,
+                get_hashes=True,
+            )
+            stored_pipeline = full_pipeline
+            logger.debug(f"\t\t\tFull training data pipeline: finished training")
+            if (
+                automl_config.optimize_thresholds
+                and is_binary(automl_config.problem_type)
+                and full_pipeline.threshold is not None
+            ):
+                logger.debug(
+                    f"\t\t\tFull data pipeline: Optimal threshold found ({full_pipeline.threshold:.3f})"
+                )
+            logger.debug(f"\t\t\tScoring trained full training data pipeline")
+            holdout_scores = full_pipeline.score(
+                X_holdout,
+                y_holdout,
+                objectives=objectives_to_score,
+                X_train=full_X_train,
+                y_train=full_y_train,
+            )
+            logger.debug(
+                f"\t\t\tFull data pipeline: {automl_config.objective.name} score: {holdout_scores[automl_config.objective.name]:.3f}"
+            )
+            holdout_score = holdout_scores[automl_config.objective.name]
+            pipeline_cache[hashes] = full_pipeline.component_graph.component_instances
+        except Exception as e:
+            if automl_config.error_callback is not None:
+                automl_config.error_callback(
+                    exception=e,
+                    traceback=traceback.format_tb(sys.exc_info()[2]),
+                    automl=automl_config,
+                    fold_num=i,
+                    pipeline=pipeline,
+                )
+            if isinstance(e, PipelineScoreError):
+                nan_scores = {objective: np.nan for objective in e.exceptions}
+                holdout_scores = {**nan_scores, **e.scored_successfully}
+                holdout_scores = OrderedDict(
+                    {
+                        o.name: holdout_scores[o.name]
+                        for o in [automl_config.objective]
+                        + automl_config.additional_objectives
+                    }
+                )
+                holdout_score = holdout_scores[automl_config.objective.name]
+            else:
+                holdout_score = np.nan
+                holdout_scores = OrderedDict(
+                    zip(
+                        [n.name for n in automl_config.additional_objectives],
+                        [np.nan] * len(automl_config.additional_objectives),
+                    )
+                )
+        logger.info(
+            f"\tFinished holdout set scoring - {automl_config.objective.name}: {holdout_score:.3f}"
+        )
+
+    training_time = time.time() - start
     return {
         "scores": {
             "cv_data": cv_data,
             "training_time": training_time,
             "cv_scores": cv_scores,
             "cv_score_mean": cv_score_mean,
+            "holdout_score": None
+            if X_holdout is None and y_holdout is None
+            else holdout_score,
+            "holdout_scores": None
+            if X_holdout is None and y_holdout is None
+            else holdout_scores,
         },
         "cached_data": pipeline_cache,
-        "pipeline": cv_pipeline,
+        "pipeline": stored_pipeline,
         "logger": logger,
     }
 
 
-def evaluate_pipeline(pipeline, automl_config, X, y, logger):
+def evaluate_pipeline(
+    pipeline, automl_config, X, y, logger, X_holdout=None, y_holdout=None
+):
     """Function submitted to the submit_evaluation_job engine method.
 
     Args:
@@ -346,6 +442,8 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
         X (pd.DataFrame): Training features.
         y (pd.Series): Training target.
         logger: Logger object to write to.
+        X_holdout (pd.DataFrame): Holdout set features.
+        y_holdout (pd.DataFrame): Holdout set target.
 
     Returns:
         tuple of three items: First - A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
@@ -362,6 +460,8 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
         full_X_train=X,
         full_y_train=y,
         logger=logger,
+        X_holdout=X_holdout,
+        y_holdout=y_holdout,
     )
 
 
