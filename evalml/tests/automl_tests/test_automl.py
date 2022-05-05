@@ -4505,7 +4505,7 @@ def test_search_parameters_held_automl(
             "time_index": "date",
             "gap": 0,
             "max_delay": 0,
-            "forecast_horizon": 1,
+            "forecast_horizon": 3,
         }
         allowed_component_graphs = {
             "cg": {

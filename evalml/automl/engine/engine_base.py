@@ -201,16 +201,6 @@ def train_and_score_pipeline(
     cv_pipeline = pipeline
     pipeline_cache = {}
 
-    forecast_horizon = None
-    preds = None
-    time_index = None
-    pred_size = None
-    if is_time_series(pipeline.problem_type):
-        forecast_horizon = cv_pipeline.parameters["pipeline"]["forecast_horizon"]
-        time_index = cv_pipeline.parameters["pipeline"]["time_index"]
-        #pred_size = automl_config.data_splitter.get_n_splits() * forecast_horizon
-        preds = [] #np.zeros((pred_size,))
-
     for i, (train, valid) in enumerate(
         automl_config.data_splitter.split(full_X_train, full_y_train)
     ):
@@ -265,12 +255,6 @@ def train_and_score_pipeline(
                 X_train=X_train,
                 y_train=y_train,
             )
-            if is_time_series(cv_pipeline.problem_type):
-                fold_preds = cv_pipeline.predict_in_sample(
-                    X_valid, y_valid, objective=None, X_train=X_train, y_train=y_train
-                )
-                #preds[i * forecast_horizon : (i + 1) * forecast_horizon] = fold_preds
-                preds.append(fold_preds)
 
             logger.debug(
                 f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
@@ -286,11 +270,6 @@ def train_and_score_pipeline(
                     fold_num=i,
                     pipeline=pipeline,
                 )
-            if is_time_series(cv_pipeline.problem_type):
-                #preds[i * forecast_horizon : (i + 1) * forecast_horizon] = [
-                #    np.nan
-                #] * forecast_horizon
-                preds.append(pd.Series([np.nan] * forecast_horizon))
             if isinstance(e, PipelineScoreError):
                 nan_scores = {objective: np.nan for objective in e.exceptions}
                 scores = {**nan_scores, **e.scored_successfully}
@@ -336,21 +315,14 @@ def train_and_score_pipeline(
     logger.info(
         f"\tFinished cross validation - mean {automl_config.objective.name}: {cv_score_mean:.3f}"
     )
-    scores = {
-        "cv_data": cv_data,
-        "training_time": training_time,
-        "cv_scores": cv_scores,
-        "cv_score_mean": cv_score_mean,
-    }
-    if is_time_series(cv_pipeline.problem_type):
-        preds = pd.concat(preds)
-        pred_df = {"dates": full_X_train.iloc[-len(preds):][time_index].astype(str).tolist(),
-                   "preds": preds.tolist(),
-                   "target": full_y_train.iloc[-len(preds):].tolist()}
-        scores.update({"pred_df": pred_df})
     return {
         "cached_data": pipeline_cache,
-        "scores": scores,
+        "scores": {
+            "cv_data": cv_data,
+            "training_time": training_time,
+            "cv_scores": cv_scores,
+            "cv_score_mean": cv_score_mean,
+        },
         "pipeline": cv_pipeline,
         "logger": logger,
     }

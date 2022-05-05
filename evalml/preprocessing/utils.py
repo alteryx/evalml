@@ -46,17 +46,6 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
     return infer_feature_types(X), infer_feature_types(y)
 
 
-class _ForecastHorizonSplitter:
-
-    def __init__(self, forecast_horizon):
-        self.forecast_horizon = forecast_horizon
-
-    def split(self, X, y):
-        train = list(range(X.shape[0] - self.forecast_horizon))
-        validation = list(range(X.shape[0] - self.forecast_horizon, X.shape[0]))
-        yield train, validation
-
-
 def split_data(
     X, y, problem_type, problem_configuration=None, test_size=0.2, random_seed=0
 ):

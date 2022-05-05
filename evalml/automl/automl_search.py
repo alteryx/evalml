@@ -1230,10 +1230,6 @@ class AutoMLSearch:
             ],
             "validation_score": validation_score,
         }
-        if is_time_series(pipeline.problem_type):
-            self._results["pipeline_results"][pipeline_id][
-                "pred_df"
-            ] = evaluation_results["pred_df"]
         self._pipelines_searched.update({pipeline_id: pipeline.clone()})
 
         if pipeline.model_family == ModelFamily.ENSEMBLE:
