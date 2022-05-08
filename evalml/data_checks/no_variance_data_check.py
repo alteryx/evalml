@@ -46,7 +46,7 @@ class NoVarianceDataCheck(DataCheck):
             ...     {
             ...         "message": "'First_Column' has 1 unique value.",
             ...         "data_check_name": "NoVarianceDataCheck",
-            ...         "level": "error",
+            ...         "level": "warning",
             ...         "details": {"columns": ["First_Column"], "rows": None},
             ...         "code": "NO_VARIANCE",
             ...         "action_options": [
@@ -61,7 +61,7 @@ class NoVarianceDataCheck(DataCheck):
             ...     {
             ...         "message": "Y has 1 unique value.",
             ...         "data_check_name": "NoVarianceDataCheck",
-            ...         "level": "error",
+            ...         "level": "warning",
             ...         "details": {"columns": ["Y"], "rows": None},
             ...         "code": "NO_VARIANCE",
             ...         "action_options": []
@@ -81,7 +81,7 @@ class NoVarianceDataCheck(DataCheck):
             ...     {
             ...         "message": "Y has 0 unique values.",
             ...         "data_check_name": "NoVarianceDataCheck",
-            ...         "level": "error",
+            ...         "level": "warning",
             ...         "details": {"columns": ["Y"], "rows": None},
             ...         "code": "NO_VARIANCE_ZERO_UNIQUE",
             ...         "action_options":[]
@@ -96,7 +96,7 @@ class NoVarianceDataCheck(DataCheck):
             ...     {
             ...         "message": "'First_Column' has 1 unique value.",
             ...         "data_check_name": "NoVarianceDataCheck",
-            ...         "level": "error",
+            ...         "level": "warning",
             ...         "details": {"columns": ["First_Column"], "rows": None},
             ...         "code": "NO_VARIANCE",
             ...         "action_options": [
@@ -111,7 +111,7 @@ class NoVarianceDataCheck(DataCheck):
             ...     {
             ...         "message": "Y has 1 unique value.",
             ...         "data_check_name": "NoVarianceDataCheck",
-            ...         "level": "error",
+            ...         "level": "warning",
             ...         "details": {"columns": ["Y"], "rows": None},
             ...         "code": "NO_VARIANCE",
             ...         "action_options": []
@@ -176,7 +176,7 @@ class NoVarianceDataCheck(DataCheck):
         two_unique_with_null_message = "{} has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning."
         if zero_unique:
             messages.append(
-                DataCheckError(
+                DataCheckWarning(
                     message=zero_unique_message.format(
                         (", ").join(["'{}'".format(str(col)) for col in zero_unique]),
                     ),
@@ -194,7 +194,7 @@ class NoVarianceDataCheck(DataCheck):
             )
         if one_unique:
             messages.append(
-                DataCheckError(
+                DataCheckWarning(
                     message=one_unique_message.format(
                         (", ").join(["'{}'".format(str(col)) for col in one_unique]),
                     ),
@@ -244,7 +244,7 @@ class NoVarianceDataCheck(DataCheck):
 
         if y_unique_count == 0:
             messages.append(
-                DataCheckError(
+                DataCheckWarning(
                     message=zero_unique_message.format(y_name),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
@@ -254,7 +254,7 @@ class NoVarianceDataCheck(DataCheck):
 
         elif y_unique_count == 1:
             messages.append(
-                DataCheckError(
+                DataCheckWarning(
                     message=one_unique_message.format(y_name),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
