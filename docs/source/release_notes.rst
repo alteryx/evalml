@@ -1,9 +1,10 @@
-﻿Release Notes
+Release Notes
 -------------
 **Future Releases**
     * Enhancements
     * Fixes
     * Changes
+        * Added github workflows for featuretools and woodwork to test their main branch against evalml. :pr:`3504`
         * Updated ``roc_curve()`` and ``conf_matrix()`` to work with IntegerNullable and BooleanNullable types. :pr:`3465`
         * Changed ``ComponentGraph._transform_features`` to raise a ``PipelineError`` instead of a ``ValueError``. This is not a breaking change because ``PipelineError`` is a subclass of ``ValueError``. :pr:`3497`
     * Documentation Changes
@@ -12,7 +13,7 @@
 .. warning::
 
     **Breaking Changes**
-    
+
 
 **v0.51.0 Apr. 28, 2022**
     * Enhancements
@@ -73,7 +74,7 @@
         * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
         * Unpin ``click`` dependency :pr:`3420`
         * For ``IterativeAlgorithm``, put time series algorithms first :pr:`3407`
-        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407` 
+        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407`
 
 .. warning::
 
@@ -692,7 +693,7 @@
     * Documentation Changes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
         * Build documentation with sphinx-autoapi :pr:`2458`
-        * Change ``autoapi_ignore`` to only ignore files in ``evalml/tests/*`` :pr:`2530` 
+        * Change ``autoapi_ignore`` to only ignore files in ``evalml/tests/*`` :pr:`2530`
     * Testing Changes
         * Fixed flaky dask tests :pr:`2471`
         * Removed shellcheck action from ``build_conda_pkg`` action :pr:`2514`
@@ -752,7 +753,7 @@
         * Replaced `allowed_pipelines` with `allowed_component_graphs` :pr:`2364`
         * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
         * Updated ``compute_order`` in ``ComponentGraph`` to be a read-only property :pr:`2408`
-        * Unpinned PyZMQ version in requirements.txt :pr:`2389` 
+        * Unpinned PyZMQ version in requirements.txt :pr:`2389`
         * Uncapping LightGBM version in requirements.txt :pr:`2405`
         * Updated minimum version of plotly :pr:`2415`
         * Removed ``SensitivityLowAlert`` objective from core objectives :pr:`2418`
