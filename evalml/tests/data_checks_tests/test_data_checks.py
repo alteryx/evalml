@@ -146,7 +146,7 @@ def get_expected_messages(problem_type):
             ],
         ).to_dict(),
         DataCheckWarning(
-            message="Column(s) 'lots_of_null', 'nullable_integer', 'nullable_bool' have null values",
+            message="Column(s) 'lots_of_null', 'nullable_integer', 'nullable_bool' have between 20.0% and 95.0% null values",
             data_check_name="NullDataCheck",
             message_code=DataCheckMessageCode.COLS_WITH_NULL,
             details={

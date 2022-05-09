@@ -15,21 +15,38 @@ class NullDataCheck(DataCheck):
     Args:
         pct_null_col_threshold(float): If the percentage of NaN values in an input feature exceeds this amount,
             that column will be considered highly-null. Defaults to 0.95.
+        pct_moderately_null_col_threshold(float): If the percentage of NaN values in an input feature exceeds this amount
+             but is less than the percentage specified in pct_null_col_threshold, that column will be considered
+             moderately-null. Defaults to 0.20.
         pct_null_row_threshold(float): If the percentage of NaN values in an input row exceeds this amount,
             that row will be considered highly-null. Defaults to 0.95.
     """
 
-    def __init__(self, pct_null_col_threshold=0.95, pct_null_row_threshold=0.95):
+    def __init__(
+        self,
+        pct_null_col_threshold=0.95,
+        pct_moderately_null_col_threshold=0.20,
+        pct_null_row_threshold=0.95,
+    ):
         if pct_null_col_threshold < 0 or pct_null_col_threshold > 1:
             raise ValueError(
-                "pct null column threshold must be a float between 0 and 1, inclusive."
+                "`pct_null_col_threshold` must be a float between 0 and 1, inclusive."
+            )
+        if (
+            pct_moderately_null_col_threshold < 0
+            or pct_moderately_null_col_threshold > 1
+            or pct_moderately_null_col_threshold > pct_null_col_threshold
+        ):
+            raise ValueError(
+                "`pct_moderately_null_col_threshold` must be a float between 0 and 1, inclusive, and must be less than or equal to `pct_null_col_threshold`."
             )
         if pct_null_row_threshold < 0 or pct_null_row_threshold > 1:
             raise ValueError(
-                "pct null row threshold must be a float between 0 and 1, inclusive."
+                "`pct_null_row_threshold` must be a float between 0 and 1, inclusive."
             )
 
         self.pct_null_col_threshold = pct_null_col_threshold
+        self.pct_moderately_null_col_threshold = pct_moderately_null_col_threshold
         self.pct_null_row_threshold = pct_null_row_threshold
 
     def validate(self, X, y=None):
@@ -84,7 +101,7 @@ class NullDataCheck(DataCheck):
             ...         ]
             ...     },
             ...     {
-            ...         "message": "Column(s) 'few_null' have null values",
+            ...         "message": "Column(s) 'few_null' have between 20% and 50% null values",
             ...         "data_check_name": "NullDataCheck",
             ...         "level": "warning",
             ...         "details": {"columns": ["few_null"], "rows": None},
@@ -113,6 +130,8 @@ class NullDataCheck(DataCheck):
             included in the warning, as well as the offending rows ("rows": [0, 1, 2, 3]).
             Since the default value for pct_null_col_threshold is 0.95, "all_null" is also included in the warnings since
             the percentage of null values in that row is over 95%.
+            Since the default value for pct_moderately_null_col_threshold is 0.20, "few_null" is included as a "moderately null"
+            column as it has a null column percentage of 20%.
 
             >>> highly_null_dc = NullDataCheck(pct_null_row_threshold=0.50)
             >>> validation_messages = highly_null_dc.validate(df)
@@ -158,7 +177,7 @@ class NullDataCheck(DataCheck):
             ...         ]
             ...     },
             ...     {
-            ...         "message": "Column(s) 'lots_of_null', 'few_null' have null values",
+            ...         "message": "Column(s) 'lots_of_null', 'few_null' have between 20% and 95% null values",
             ...         "data_check_name": "NullDataCheck",
             ...         "level": "warning",
             ...         "details": {"columns": ["lots_of_null", "few_null"], "rows": None},
@@ -227,12 +246,13 @@ class NullDataCheck(DataCheck):
             ]
         )
 
-        cols_with_any_nulls, _ = NullDataCheck.get_null_column_information(
-            X_to_check_for_any_null, pct_null_col_threshold=0.0
+        cols_at_least_moderately_null, _ = NullDataCheck.get_null_column_information(
+            X_to_check_for_any_null,
+            pct_null_col_threshold=self.pct_moderately_null_col_threshold,
         )
 
-        below_highly_null_cols = [
-            col for col in cols_with_any_nulls if col not in highly_null_cols
+        moderately_null_cols = [
+            col for col in cols_at_least_moderately_null if col not in highly_null_cols
         ]
 
         warning_msg = "Column(s) {} are {}% or more null"
@@ -261,10 +281,10 @@ class NullDataCheck(DataCheck):
                 ).to_dict()
             )
 
-        if below_highly_null_cols:
+        if moderately_null_cols:
 
             impute_strategies_dict = {}
-            for col in below_highly_null_cols:
+            for col in moderately_null_cols:
                 col_in_df = X.ww[col]
                 categories = (
                     ["mean", "most_frequent"]
@@ -284,15 +304,17 @@ class NullDataCheck(DataCheck):
 
             messages.append(
                 DataCheckWarning(
-                    message="Column(s) {} have null values".format(
+                    message="Column(s) {} have between {}% and {}% null values".format(
                         (", ").join(
-                            ["'{}'".format(str(col)) for col in below_highly_null_cols]
-                        )
+                            ["'{}'".format(str(col)) for col in moderately_null_cols]
+                        ),
+                        self.pct_moderately_null_col_threshold * 100,
+                        self.pct_null_col_threshold * 100,
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.COLS_WITH_NULL,
                     details={
-                        "columns": list(below_highly_null_cols),
+                        "columns": list(moderately_null_cols),
                     },
                     action_options=[
                         DataCheckActionOption(
@@ -305,7 +327,7 @@ class NullDataCheck(DataCheck):
                                 }
                             },
                             metadata={
-                                "columns": list(below_highly_null_cols),
+                                "columns": list(moderately_null_cols),
                                 "is_target": False,
                             },
                         )
