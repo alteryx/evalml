@@ -76,7 +76,7 @@ outputs:
         - python >=3.8.*
         - imbalanced-learn >=0.8.0
         - sktime >=0.7.0
-        - pmdarima >= 1.8.5
+        - pmdarima >=1.8.5
     test:
       imports:
         - evalml

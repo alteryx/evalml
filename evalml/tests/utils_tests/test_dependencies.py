@@ -1,7 +1,6 @@
 import pathlib
 from importlib import import_module
 
-import pytest
 import requirements
 
 
