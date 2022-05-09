@@ -639,7 +639,7 @@ def test_null_data_check_datetime_highly_null_dropped():
 
     X["few_null_datetime"] = pd.Series(pd.date_range("20200101", periods=5))
     X.loc[4][1] = None
-    print(X)
+
     null_check = NullDataCheck(pct_null_col_threshold=0.5, pct_null_row_threshold=1.0)
     validate_messages = null_check.validate(X)
 

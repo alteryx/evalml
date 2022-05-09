@@ -101,7 +101,7 @@ class NullDataCheck(DataCheck):
             ...         ]
             ...     },
             ...     {
-            ...         "message": "Column(s) 'few_null' have between 20% and 50% null values",
+            ...         "message": "Column(s) 'few_null' have between 20.0% and 50.0% null values",
             ...         "data_check_name": "NullDataCheck",
             ...         "level": "warning",
             ...         "details": {"columns": ["few_null"], "rows": None},
@@ -177,7 +177,7 @@ class NullDataCheck(DataCheck):
             ...         ]
             ...     },
             ...     {
-            ...         "message": "Column(s) 'lots_of_null', 'few_null' have between 20% and 95% null values",
+            ...         "message": "Column(s) 'lots_of_null', 'few_null' have between 20.0% and 95.0% null values",
             ...         "data_check_name": "NullDataCheck",
             ...         "level": "warning",
             ...         "details": {"columns": ["lots_of_null", "few_null"], "rows": None},
