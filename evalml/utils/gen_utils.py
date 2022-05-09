@@ -90,7 +90,7 @@ def convert_to_seconds(input_str):
 # specifies the min and max values a seed to np.random.RandomState is allowed to take.
 # these limits were chosen to fit in the numpy.int32 datatype to avoid issues with 32-bit systems
 # see https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.random.RandomState.html
-SEED_BOUNDS = namedtuple("SEED_BOUNDS", ("min_bound", "max_bound"))(0, 2**31 - 1)
+SEED_BOUNDS = namedtuple("SEED_BOUNDS", ("min_bound", "max_bound"))(0, 2 ** 31 - 1)
 
 
 def get_random_state(seed):
@@ -663,3 +663,44 @@ def validate_holdout_datasets(X, X_train, pipeline_params):
         )
 
     return _holdout_validation_result(not errors, error_msg, errors)
+
+
+def pd_offset_to_seasonal(offset_str):
+    offset_to_sp = {
+        "B": 7,
+        "C": 7,
+        "W": 52,
+        "WOM": 12,
+        "LWOM": 12,
+        "M": 12,
+        "MS": 12,
+        "BM": 12,
+        "BMS": 12,
+        "CBM": 12,
+        "CBMS": 12,
+        "SM": 52,
+        "SMS": 52,
+        "Q": 4,
+        "QS": 4,
+        "BQ": 4,
+        "BQS": 4,
+        "REQ": 4,
+        "Y": 1,
+        "AS": 1,
+        "BYS": 1,
+        "BA": 1,
+        "BAS": 1,
+        "RE": 1,
+        "BH": 24,
+        "CBH": 24,
+        "D": 7,
+        "H": 24,
+        "M": 60,
+        "S": 60,
+        "L": 1,
+        "ms": 1,
+        "U": 1,
+        "ms": 1,
+        "n": 1,
+    }
+    return offset_to_sp.get(offset_str.split("-")[0], 1)

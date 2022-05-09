@@ -29,13 +29,11 @@ class ExponentialSmoothingRegressor(Estimator):
         "trend": [None, "additive"],
         "damped_trend": [True, False],
         "seasonal": [None, "additive"],
-        "sp": Integer(2, 8),
     }
     """{
         "trend": [None, "additive"],
         "damped_trend": [True, False],
         "seasonal": [None, "additive"],
-        "sp": Integer(2, 8),
     }"""
     model_family = ModelFamily.EXPONENTIAL_SMOOTHING
     """ModelFamily.EXPONENTIAL_SMOOTHING"""
@@ -60,15 +58,16 @@ class ExponentialSmoothingRegressor(Estimator):
             "damped_trend": damped_trend,
             "seasonal": seasonal,
             "sp": sp,
+            "n_jobs": n_jobs,
         }
         parameters.update(kwargs)
         smoothing_model_msg = (
             "sktime is not installed. Please install using `pip install sktime.`"
         )
         sktime_smoothing = import_or_raise(
-            "sktime.forecasting.exp_smoothing", error_msg=smoothing_model_msg
+            "sktime.forecasting.ets", error_msg=smoothing_model_msg
         )
-        smoothing_model = sktime_smoothing.ExponentialSmoothing(**parameters)
+        smoothing_model = sktime_smoothing.AutoETS(**parameters)
 
         super().__init__(
             parameters=parameters,

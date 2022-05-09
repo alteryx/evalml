@@ -7,6 +7,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise, infer_feature_types
+from evalml.utils.gen_utils import pd_offset_to_seasonal
 
 
 class ARIMARegressor(Estimator):
@@ -58,6 +59,7 @@ class ARIMARegressor(Estimator):
         self,
         time_index=None,
         trend=None,
+        sp=1,
         start_p=2,
         d=0,
         start_q=2,
@@ -83,6 +85,7 @@ class ARIMARegressor(Estimator):
             "maxiter": maxiter,
             "n_jobs": n_jobs,
             "time_index": time_index,
+            "sp": sp,
         }
 
         parameters.update(kwargs)
