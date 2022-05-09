@@ -30,4 +30,4 @@ statsmodels==0.13.2
 texttable==1.6.4
 vowpalwabbit==9.1.0
 woodwork==0.16.3
-xgboost==1.6.0
+xgboost==1.6.1
