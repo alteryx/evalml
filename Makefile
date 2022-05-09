@@ -118,3 +118,10 @@ installdeps-dev:
 installdeps-docs:
 	pip install -e . -q
 	pip install -r docs-requirements.txt -q
+
+.PHONY: package_evalml
+package_evalml:
+	python setup.py sdist
+	$(eval EM_VERSION=$(shell python setup.py --version))
+	tar -zxvf "dist/evalml-${EM_VERSION}.tar.gz"
+	mv "evalml-${EM_VERSION}" unpacked_sdist
