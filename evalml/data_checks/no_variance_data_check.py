@@ -3,7 +3,6 @@ from evalml.data_checks import (
     DataCheck,
     DataCheckActionCode,
     DataCheckActionOption,
-    DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
 )
