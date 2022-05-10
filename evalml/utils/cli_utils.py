@@ -105,6 +105,14 @@ def get_evalml_root():
 
 
 def standardize_format(packages):
+    """Standardizes the format of the given packages.
+
+    Args:
+        packages: Requirements package generator object.
+
+    Returns:
+        List of packages with standardized format.
+    """
     standardized_package_specifiers = []
     for package in packages:
         if package.name in IGNORE_PACKAGES:
@@ -120,6 +128,14 @@ def standardize_format(packages):
 
 
 def get_evalml_pip_requirements(evalml_path):
+    """Gets pip requirements for evalml.
+
+    Args:
+        evalml_path: Path to evalml root.
+
+    Returns:
+        List of pip requirements for evalml.
+    """
     config = configparser.ConfigParser()
     config.read(pathlib.Path(evalml_path, "setup.cfg"))
     return standardize_format(requirements.parse(config["options"]["install_requires"]))
