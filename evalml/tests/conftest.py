@@ -52,9 +52,6 @@ def pytest_configure(config):
         "skip_offline: mark test to be skipped if offline (https://api.featurelabs.com cannot be reached)",
     )
     config.addinivalue_line(
-        "markers", "noncore_dependency: mark test as needing non-core dependencies"
-    )
-    config.addinivalue_line(
         "markers",
         "skip_during_conda: mark test to be skipped if running during conda build",
     )
@@ -375,13 +372,6 @@ def all_multiclass_pipeline_classes_with_encoder(all_pipeline_classes):
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--has-minimal-dependencies",
-        action="store_true",
-        default=False,
-        help="If true, tests will assume only the dependencies in"
-        "core-requirements.txt have been installed.",
-    )
-    parser.addoption(
         "--is-using-conda",
         action="store_true",
         default=False,
@@ -391,11 +381,6 @@ def pytest_addoption(parser):
 
 
 def pytest_collection_modifyitems(config, items):
-    if config.getoption("--has-minimal-dependencies"):
-        skip_noncore = pytest.mark.skip(reason="needs noncore dependency")
-        for item in items:
-            if "noncore_dependency" in item.keywords:
-                item.add_marker(skip_noncore)
     if config.getoption("--is-using-conda"):
         skip_conda = pytest.mark.skip(reason="Test does not run during conda")
         for item in items:
@@ -406,12 +391,6 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "skip_if_39" in item.keywords:
                 item.add_marker(skip_39)
-
-
-@pytest.fixture
-def has_minimal_dependencies(pytestconfig):
-    return pytestconfig.getoption("--has-minimal-dependencies")
-
 
 @pytest.fixture
 def is_using_conda(pytestconfig):

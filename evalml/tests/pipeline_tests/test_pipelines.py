@@ -95,22 +95,18 @@ def test_init_list_with_component_that_is_not_supported_by_list_API(pipeline_cla
         pipeline_class(component_graph=["Target Imputer"])
 
 
-def test_allowed_model_families(has_minimal_dependencies):
+def test_allowed_model_families():
     families = [
         ModelFamily.RANDOM_FOREST,
         ModelFamily.LINEAR_MODEL,
         ModelFamily.EXTRA_TREES,
         ModelFamily.DECISION_TREE,
+        ModelFamily.CATBOOST,
+        ModelFamily.XGBOOST,
+        ModelFamily.LIGHTGBM,
     ]
     expected_model_families_binary = set(families)
     expected_model_families_regression = set(families)
-    if not has_minimal_dependencies:
-        expected_model_families_binary.update(
-            [ModelFamily.XGBOOST, ModelFamily.CATBOOST, ModelFamily.LIGHTGBM]
-        )
-        expected_model_families_regression.update(
-            [ModelFamily.CATBOOST, ModelFamily.XGBOOST, ModelFamily.LIGHTGBM]
-        )
     assert (
         set(allowed_model_families(ProblemTypes.BINARY))
         == expected_model_families_binary
@@ -122,21 +118,17 @@ def test_allowed_model_families(has_minimal_dependencies):
 
 
 def test_all_estimators(
-    has_minimal_dependencies,
     is_using_conda,
     is_using_windows,
 ):
-    if has_minimal_dependencies:
-        assert len((_all_estimators_used_in_search())) == 9
+    if is_using_conda:
+        n_estimators = 16
     else:
-        if is_using_conda:
-            n_estimators = 16
-        else:
-            # This is wrong because only prophet is missing in windows
-            # but we don't run this test in windows.
-            # TODO: Change when https://github.com/alteryx/evalml/issues/3190 is addressed
-            n_estimators = 16 if is_using_windows else 18
-        assert len(_all_estimators_used_in_search()) == n_estimators
+        # This is wrong because only prophet is missing in windows
+        # but we don't run this test in windows.
+        # TODO: Change when https://github.com/alteryx/evalml/issues/3190 is addressed
+        n_estimators = 16 if is_using_windows else 18
+    assert len(_all_estimators_used_in_search()) == n_estimators
 
 
 def test_required_fields():
@@ -1186,11 +1178,9 @@ def test_nonlinear_feature_importance_has_feature_names(
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
 def test_feature_importance_has_feature_names_xgboost(
-    problem_type, has_minimal_dependencies, X_y_regression, X_y_binary, X_y_multi
+    problem_type, X_y_regression, X_y_binary, X_y_multi
 ):
     # Testing that we store the original feature names since we map to numeric values for XGBoost
-    if has_minimal_dependencies:
-        pytest.skip("Skipping because XGBoost not installed for minimal dependencies")
     if problem_type == ProblemTypes.REGRESSION:
         pipeline = RegressionPipeline(
             component_graph=["Simple Imputer", "XGBoost Regressor"],

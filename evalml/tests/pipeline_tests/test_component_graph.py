@@ -2245,10 +2245,8 @@ def test_component_graph_repr():
 @patch("evalml.pipelines.components.estimators.LogisticRegressionClassifier.fit")
 @pytest.mark.parametrize("sampler", ["Undersampler", "Oversampler"])
 def test_component_graph_transform_all_but_final_with_sampler(
-    mock_estimator_fit, sampler, has_minimal_dependencies
+    mock_estimator_fit, sampler
 ):
-    if sampler == "Oversampler" and has_minimal_dependencies:
-        pytest.skip("Skipping because imblearn is a non-core dependency.")
     expected_length = 750 if sampler == "Undersampler" else int(1.25 * 850)
     X = pd.DataFrame([[i] for i in range(1000)])
     y = pd.Series([0] * 150 + [1] * 850)

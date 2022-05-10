@@ -474,7 +474,6 @@ def test_default_algorithm_allow_long_running_models_next_batch(
     allow_long_running_models,
     problem_type,
     n_unique,
-    has_minimal_dependencies,
 ):
     if allow_long_running_models and problem_type != "multiclass":
         pytest.skip("Skipping to shorten tests")
@@ -484,8 +483,6 @@ def test_default_algorithm_allow_long_running_models_next_batch(
         "XGBoost",
         "CatBoost",
     ]
-    if has_minimal_dependencies:
-        models_to_check = ["Elastic Net"]
 
     X = pd.DataFrame()
     y = pd.Series([i for i in range(n_unique)] * 5)

@@ -251,45 +251,43 @@ def test_partial_dependence_baseline():
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_partial_dependence_catboost(
-    problem_type, X_y_binary, X_y_multi, has_minimal_dependencies
+    problem_type, X_y_binary, X_y_multi
 ):
-    if not has_minimal_dependencies:
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        y_small = ["a", "b", "a"] * 5
+        pipeline_class = BinaryClassificationPipeline
+    else:
+        X, y = X_y_multi
+        y_small = ["a", "b", "c"] * 5
+        pipeline_class = MulticlassClassificationPipeline
 
-        if problem_type == ProblemTypes.BINARY:
-            X, y = X_y_binary
-            y_small = ["a", "b", "a"] * 5
-            pipeline_class = BinaryClassificationPipeline
-        else:
-            X, y = X_y_multi
-            y_small = ["a", "b", "c"] * 5
-            pipeline_class = MulticlassClassificationPipeline
+    pipeline = pipeline_class(
+        component_graph=["CatBoost Classifier"],
+        parameters={"CatBoost Classifier": {"thread_count": 1}},
+    )
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
+    check_partial_dependence_dataframe(pipeline, part_dep)
+    assert not part_dep.isnull().all().all()
 
-        pipeline = pipeline_class(
-            component_graph=["CatBoost Classifier"],
-            parameters={"CatBoost Classifier": {"thread_count": 1}},
-        )
-        pipeline.fit(X, y)
-        part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
-        check_partial_dependence_dataframe(pipeline, part_dep)
-        assert not part_dep.isnull().all().all()
-
-        # test that CatBoost can natively handle non-numerical columns as feature passed to partial_dependence
-        X = pd.DataFrame(
-            {
-                "numeric": [1, 2, 3] * 5,
-                "also numeric": [2, 3, 4] * 5,
-                "string": ["a", "b", "c"] * 5,
-                "also string": ["c", "b", "a"] * 5,
-            }
-        )
-        pipeline = pipeline_class(
-            component_graph=["CatBoost Classifier"],
-            parameters={"CatBoost Classifier": {"thread_count": 1}},
-        )
-        pipeline.fit(X, y_small)
-        part_dep = partial_dependence(pipeline, X, features="string")
-        check_partial_dependence_dataframe(pipeline, part_dep, grid_size=3)
-        assert not part_dep.isnull().all().all()
+    # test that CatBoost can natively handle non-numerical columns as feature passed to partial_dependence
+    X = pd.DataFrame(
+        {
+            "numeric": [1, 2, 3] * 5,
+            "also numeric": [2, 3, 4] * 5,
+            "string": ["a", "b", "c"] * 5,
+            "also string": ["c", "b", "a"] * 5,
+        }
+    )
+    pipeline = pipeline_class(
+        component_graph=["CatBoost Classifier"],
+        parameters={"CatBoost Classifier": {"thread_count": 1}},
+    )
+    pipeline.fit(X, y_small)
+    part_dep = partial_dependence(pipeline, X, features="string")
+    check_partial_dependence_dataframe(pipeline, part_dep, grid_size=3)
+    assert not part_dep.isnull().all().all()
 
 
 @pytest.mark.parametrize(
@@ -297,10 +295,8 @@ def test_partial_dependence_catboost(
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
 def test_partial_dependence_xgboost_feature_names(
-    problem_type, has_minimal_dependencies, X_y_binary, X_y_multi, X_y_regression
+    problem_type, X_y_binary, X_y_multi, X_y_regression
 ):
-    if has_minimal_dependencies:
-        pytest.skip("Skipping because XGBoost not installed for minimal dependencies")
     if problem_type == ProblemTypes.REGRESSION:
         pipeline = RegressionPipeline(
             component_graph=["Simple Imputer", "XGBoost Regressor"],

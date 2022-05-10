@@ -98,7 +98,6 @@ def test_pipeline_count(
     X_y_multi,
     X_y_regression,
     caplog,
-    has_minimal_dependencies,
 ):
     caplog.clear()
     if type_ == "binary":
@@ -138,9 +137,4 @@ def test_pipeline_count(
                 verbose=verbose,
                 automl_algorithm="iterative",
             )
-    if has_minimal_dependencies:
-        assert (
-            f"{number_min_dep} pipelines ready for search" in caplog.text
-        ) == verbose
-    else:
-        assert (f"{number_} pipelines ready for search" in caplog.text) == verbose
+    assert (f"{number_} pipelines ready for search" in caplog.text) == verbose
