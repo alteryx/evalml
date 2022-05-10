@@ -35,23 +35,6 @@ jobs:
           virtualenv test_python -q
           source test_python/bin/activate
           python -m pip install --upgrade pip -q
-      - if: ${{ matrix.command == 'git-test-automl' || matrix.command == 'git-test-prophet' }}
-        name: Install evalml with test dependencies, core dependencies, & optional requirements (Prophet)
-        run: |
-          source test_python/bin/activate
-          pip install prophet-prebuilt==1.0.2
-          pip install -e . --no-dependencies
-          pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
-          pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
-          pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
-      - if: ${{ matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-parallel' }}
-        name: Install evalml with test dependencies, core dependencies, & optional requirements
-        run: |
-          source test_python/bin/activate
-          pip install -e . --no-dependencies
-          pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
-          pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
-          pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
       - name: run tests
         run: |
           source test_python/bin/activate

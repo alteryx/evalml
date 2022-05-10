@@ -53,10 +53,9 @@ outputs:
         - nbval ==0.9.3
       source_files:
         - evalml/*
-        - requirements.txt
-        - core-requirements.txt
+        - setup.cfg
       commands:
-        - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --has-minimal-dependencies --is-using-conda
+        - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
 
   - name: evalml
     build:
@@ -87,8 +86,7 @@ outputs:
         - pytest-xdist
       source_files:
         - evalml/*
-        - requirements.txt
-        - core-requirements.txt
+        - setup.cfg
       commands:
         - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
 
@@ -111,3 +109,4 @@ extra:
     - jeremyliweishih
     - christopherbunn
     - fjlanasa
+    - eccabay

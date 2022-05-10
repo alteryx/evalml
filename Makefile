@@ -42,30 +42,13 @@ doctests:
 git-test-parallel:
 	pytest evalml/tests/automl_tests/parallel_tests/ -n 1 --cov=evalml --junitxml=test-reports/git-test-parallel-junit.xml --timeout 300 --durations 0
 
-.PHONY: git-test-minimal-deps-parallel
-git-test-minimal-deps-parallel:
-	pytest evalml/tests/automl_tests/parallel_tests/  -n 1 --cov=evalml  --junitxml=test-reports/git-test-minimal-deps-parallel-junit.xml --has-minimal-dependencies --timeout 300 --durations 0
-
-.PHONY: git-test-automl-core
-git-test-automl-core:
-	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 2 --ignore=evalml/tests/automl_tests/parallel_tests --durations 0 --timeout 300 --cov=evalml --junitxml=test-reports/git-test-automl-core-junit.xml --has-minimal-dependencies
-
 .PHONY: git-test-automl
 git-test-automl:
 	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 2 --ignore=evalml/tests/automl_tests/parallel_tests --durations 0 --timeout 300 --cov=evalml --junitxml=test-reports/git-test-automl-junit.xml
 
-.PHONY: git-test-modelunderstanding-core
-git-test-modelunderstanding-core:
-	pytest evalml/tests/model_understanding_tests -n 2 --durations 0 --timeout 300 --cov=evalml --junitxml=test-reports/git-test-modelunderstanding-core-junit.xml --has-minimal-dependencies
-
 .PHONY: git-test-modelunderstanding
 git-test-modelunderstanding:
 	pytest evalml/tests/model_understanding_tests -n 2 --durations 0 --timeout 300 --cov=evalml --junitxml=test-reports/git-test-modelunderstanding-junit.xml
-
-.PHONY: git-test-other-core
-git-test-other-core:
-	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ --ignore evalml/tests/integration_tests/ -n 2 --durations 0 --cov=evalml --junitxml=test-reports/git-test-other-core-junit.xml --has-minimal-dependencies
-	make doctests
 
 .PHONY: git-test-other
 git-test-other:
@@ -91,17 +74,12 @@ installdeps-min:
 	pip install --upgrade pip -q
 	pip install -e . --no-dependencies
 	pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
-	pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
 	pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
 
 
 .PHONY: installdeps-prophet
 installdeps-prophet:
 	pip install -e .[prophet]
-
-.PHONY: installdeps-core
-installdeps-core:
-	pip install -r core-requirements.txt -q
 
 .PHONY: installdeps-test
 installdeps-test:

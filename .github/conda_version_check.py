@@ -1,4 +1,5 @@
 import yaml
+import configparser
 from contextlib import contextmanager
 import requirements
 import pathlib
@@ -33,10 +34,9 @@ def standardize_format(packages):
 
 
 def get_evalml_pip_requirements(evalml_path):
-    core_reqs = open(pathlib.Path(evalml_path, "core-requirements.txt")).readlines()
-    extra_reqs = open(pathlib.Path(evalml_path, "requirements.txt")).readlines()
-    extra_reqs = [req for req in extra_reqs if "-r core-requirements.txt" not in req]
-    all_reqs = core_reqs + extra_reqs
+    config = configparser.ConfigParser()
+    config.read(pathlib.Path(evalml_path, "setup.cfg"))
+    all_reqs = config['options']['install_requires'].split("\n")[1:]
     return standardize_format(requirements.parse("".join(all_reqs)))
 
 

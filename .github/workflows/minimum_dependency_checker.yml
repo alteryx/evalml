@@ -48,22 +48,6 @@ jobs:
         if: steps.check_min_reqs.outcome != 'success'
         run: |
           printf "${{ steps.min_dep_gen_reqs.outputs.min_reqs }}" > evalml/tests/dependency_update_check/minimum_requirements.txt
-      - name: Run min dep generator - core requirements
-        id: min_dep_gen_core
-        uses: alteryx/minimum-dependency-generator@v3.1
-        with:
-          paths: 'setup.cfg'
-          options: 'install_requires'
-      - name: Save min core requirements and run diff
-        id: check_core_reqs
-        continue-on-error: true
-        run: |
-          printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > /tmp/minimum_core_requirements.txt
-          diff /tmp/minimum_core_requirements.txt evalml/tests/dependency_update_check/minimum_core_requirements.txt
-      - name: if min core requirements have changed, write output file
-        if: steps.check_core_reqs.outcome != 'success'
-        run: |
-          printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > evalml/tests/dependency_update_check/minimum_core_requirements.txt
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
