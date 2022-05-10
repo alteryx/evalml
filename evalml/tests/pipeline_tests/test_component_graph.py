@@ -25,6 +25,8 @@ from evalml.exceptions import (
     MethodPropertyNotFoundError,
     MissingComponentError,
     ParameterNotUsedWarning,
+    PipelineError,
+    PipelineErrorCodeEnum,
 )
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (
@@ -2468,9 +2470,12 @@ def test_fit_predict_different_types(
     component_graph = ComponentGraph(component_dict).instantiate({})
     component_graph.fit(X, y)
     with pytest.raises(
-        ValueError, match="Input X data types are different from the input types"
-    ):
+        PipelineError, match="Input X data types are different from the input types"
+    ) as e:
         component_graph.predict(X2)
+    assert e.value.code == PipelineErrorCodeEnum.PREDICT_INPUT_SCHEMA_UNEQUAL
+    assert e.value.details["input_features_types"] is not None
+    assert e.value.details["pipeline_features_types"] is not None
 
 
 def test_fit_transform_different_types(X_y_binary):
@@ -2483,9 +2488,12 @@ def test_fit_transform_different_types(X_y_binary):
     component_graph = ComponentGraph(component_dict).instantiate({})
     component_graph.fit(X, y)
     with pytest.raises(
-        ValueError, match="Input X data types are different from the input types"
-    ):
+        PipelineError, match="Input X data types are different from the input types"
+    ) as e:
         component_graph.transform(X2)
+    assert e.value.code == PipelineErrorCodeEnum.PREDICT_INPUT_SCHEMA_UNEQUAL
+    assert e.value.details["input_features_types"] is not None
+    assert e.value.details["pipeline_features_types"] is not None
 
 
 def test_component_graph_cache():
