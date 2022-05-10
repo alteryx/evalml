@@ -4,12 +4,15 @@
     * Enhancements
     * Fixes
     * Changes
+        * Added a threshold for ``NullDataCheck`` before a warning is issued for null values :pr:`3507`
+        * Changed ``NoVarianceDataCheck`` to only output warnings :pr:`3506`
         * Updated ``roc_curve()`` and ``conf_matrix()`` to work with IntegerNullable and BooleanNullable types. :pr:`3465`
         * Transitioned to use pyproject.toml and setup.cfg away from setup.py :pr:`3494`
         * Changed ``ComponentGraph._transform_features`` to raise a ``PipelineError`` instead of a ``ValueError``. This is not a breaking change because ``PipelineError`` is a subclass of ``ValueError``. :pr:`3497`
     * Documentation Changes
         * Updated to install prophet extras in Read the Docs. :pr:`3509`
     * Testing Changes
+        * Moved vowpal wabbit in test recipe to ``evalml`` package from ``evalml-core`` :pr:`3502`
 
 .. warning::
 

@@ -44,7 +44,6 @@ outputs:
         - networkx >=2.5,<2.6
         - category_encoders >=2.2.2
         - python-graphviz >=0.13
-        - vowpalwabbit >=8.11.0
     test:
       imports:
         - evalml
@@ -75,6 +74,7 @@ outputs:
         - python >=3.8.*
         - imbalanced-learn >=0.8.0
         - sktime >=0.7.0
+        - vowpalwabbit >=8.11.0
     test:
       imports:
         - evalml
