@@ -237,7 +237,7 @@ def get_expected_messages(problem_type):
                 )
             ],
         ).to_dict(),
-        DataCheckError(
+        DataCheckWarning(
             message="'all_null', 'also_all_null' has 0 unique values.",
             data_check_name="NoVarianceDataCheck",
             message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
@@ -250,7 +250,7 @@ def get_expected_messages(problem_type):
                 )
             ],
         ).to_dict(),
-        DataCheckError(
+        DataCheckWarning(
             message="'lots_of_null' has 1 unique value.",
             data_check_name="NoVarianceDataCheck",
             message_code=DataCheckMessageCode.NO_VARIANCE,
@@ -398,7 +398,7 @@ def test_default_data_checks_regression(input_type, data_checks_input_dataframe)
         == expected[:3]
         + expected[4:6]
         + [
-            DataCheckError(
+            DataCheckWarning(
                 message="Y has 1 unique value.",
                 data_check_name="NoVarianceDataCheck",
                 message_code=DataCheckMessageCode.NO_VARIANCE,
@@ -490,7 +490,7 @@ def test_default_data_checks_null_rows():
                 )
             ],
         ).to_dict(),
-        DataCheckError(
+        DataCheckWarning(
             message="'all_null', 'also_all_null' has 0 unique values.",
             data_check_name="NoVarianceDataCheck",
             message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
