@@ -28,19 +28,15 @@ class NullDataCheck(DataCheck):
         pct_moderately_null_col_threshold=0.20,
         pct_null_row_threshold=0.95,
     ):
-        if pct_null_col_threshold < 0 or pct_null_col_threshold > 1:
+        if not 0 <= pct_null_col_threshold <= 1:
             raise ValueError(
                 "`pct_null_col_threshold` must be a float between 0 and 1, inclusive."
             )
-        if (
-            pct_moderately_null_col_threshold < 0
-            or pct_moderately_null_col_threshold > 1
-            or pct_moderately_null_col_threshold > pct_null_col_threshold
-        ):
+        if not 0 <= pct_moderately_null_col_threshold <= pct_null_col_threshold <= 1:
             raise ValueError(
                 "`pct_moderately_null_col_threshold` must be a float between 0 and 1, inclusive, and must be less than or equal to `pct_null_col_threshold`."
             )
-        if pct_null_row_threshold < 0 or pct_null_row_threshold > 1:
+        if not 0 <= pct_null_row_threshold <= 1:
             raise ValueError(
                 "`pct_null_row_threshold` must be a float between 0 and 1, inclusive."
             )
