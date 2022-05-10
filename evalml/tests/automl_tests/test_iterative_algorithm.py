@@ -694,9 +694,7 @@ def test_iterative_algorithm_results_best_pipeline_info_id(
     "problem_type",
     [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS],
 )
-def test_iterative_algorithm_first_batch_order(
-    problem_type, X_y_binary
-):
+def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary):
     X, y = X_y_binary
 
     algo = IterativeAlgorithm(X=X, y=y, problem_type=problem_type)
@@ -735,9 +733,7 @@ def test_iterative_algorithm_first_batch_order(
     )
 
 
-def test_iterative_algorithm_first_batch_order_param(
-    X_y_binary
-):
+def test_iterative_algorithm_first_batch_order_param(X_y_binary):
     X, y = X_y_binary
 
     # put random forest first

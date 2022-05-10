@@ -1271,9 +1271,7 @@ def test_categories_aggregated_linear_pipeline(
     "pipeline_class_and_estimator,algorithm",
     product(pipeline_test_cases, algorithms),
 )
-def test_categories_aggregated_text(
-    pipeline_class_and_estimator, algorithm, fraud_100
-):
+def test_categories_aggregated_text(pipeline_class_and_estimator, algorithm, fraud_100):
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
 
@@ -1877,9 +1875,7 @@ def test_explain_predictions_unknown(indices, X_y_binary):
 
 
 @pytest.mark.parametrize("algorithm", algorithms)
-def test_explain_predictions_url_email(
-    df_with_url_and_email, algorithm
-):
+def test_explain_predictions_url_email(df_with_url_and_email, algorithm):
     X = df_with_url_and_email.ww.select(["url", "EmailAddress"])
     y = pd.Series([0, 1, 1, 0, 1])
 
@@ -2144,9 +2140,7 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
 
 
 @pytest.mark.parametrize("algorithm", algorithms)
-def test_explain_predictions_best_worst_json(
-    algorithm, fraud_100
-):
+def test_explain_predictions_best_worst_json(algorithm, fraud_100):
     pipeline = BinaryClassificationPipeline(
         [
             "Natural Language Featurizer",

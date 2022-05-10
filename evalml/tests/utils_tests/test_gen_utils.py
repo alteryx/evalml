@@ -374,9 +374,7 @@ def test_save_plotly_static_different_format(
     fitted_decision_tree_classification_pipeline,
     tmpdir,
 ):
-    feat_fig_ = (
-        fitted_decision_tree_classification_pipeline.graph_feature_importance()
-    )
+    feat_fig_ = fitted_decision_tree_classification_pipeline.graph_feature_importance()
 
     filepath = os.path.join(str(tmpdir), f"{file_name}")
     no_output_ = save_plot(
@@ -408,9 +406,7 @@ def test_save_plotly_static_no_filepath(
     fitted_decision_tree_classification_pipeline,
     tmpdir,
 ):
-    feat_fig_ = (
-        fitted_decision_tree_classification_pipeline.graph_feature_importance()
-    )
+    feat_fig_ = fitted_decision_tree_classification_pipeline.graph_feature_importance()
 
     filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
     output_ = save_plot(
@@ -445,9 +441,7 @@ def test_save_plotly_interactive(
     fitted_decision_tree_classification_pipeline,
     tmpdir,
 ):
-    feat_fig_ = (
-        fitted_decision_tree_classification_pipeline.graph_feature_importance()
-    )
+    feat_fig_ = fitted_decision_tree_classification_pipeline.graph_feature_importance()
 
     filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
     no_output_ = save_plot(

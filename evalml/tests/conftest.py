@@ -392,6 +392,7 @@ def pytest_collection_modifyitems(config, items):
             if "skip_if_39" in item.keywords:
                 item.add_marker(skip_39)
 
+
 @pytest.fixture
 def is_using_conda(pytestconfig):
     return pytestconfig.getoption("--is-using-conda")

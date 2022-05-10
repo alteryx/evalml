@@ -1,7 +1,10 @@
 """CLI functions."""
+import configparser
 import locale
 import os
+import pathlib
 import platform
+import requirements
 import struct
 import sys
 
@@ -9,6 +12,11 @@ import pkg_resources
 
 import evalml
 from evalml.utils import get_logger
+
+
+IGNORE_PACKAGES = {"python", "pmdarima", "pyzmq", "vowpalwabbit"}
+CONDA_TO_PIP_NAME = {"python-kaleido": "kaleido", 'py-xgboost': 'xgboost', 'matplotlib-base': 'matplotlib',
+                     'python-graphviz': 'graphviz'}
 
 
 def print_info():
@@ -91,3 +99,24 @@ def get_evalml_root():
         Location where evalml is installed.
     """
     return os.path.dirname(evalml.__file__)
+
+
+def standardize_format(packages):
+    standardized_package_specifiers = []
+    for package in packages:
+        if package.name in IGNORE_PACKAGES:
+            continue
+        name = CONDA_TO_PIP_NAME.get(package.name, package.name)
+        if package.specs:
+            all_specs = ",".join([''.join(spec) for spec in package.specs])
+            standardized = f"{name}{all_specs}"
+        else:
+            standardized = name
+        standardized_package_specifiers.append(standardized)
+    return standardized_package_specifiers
+
+
+def get_evalml_pip_requirements(evalml_path):
+    config = configparser.ConfigParser()
+    config.read(pathlib.Path(evalml_path, "setup.cfg"))
+    return standardize_format(requirements.parse(config['options']['install_requires']))

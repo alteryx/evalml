@@ -1,13 +1,10 @@
 import yaml
-import configparser
 from contextlib import contextmanager
 import requirements
 import pathlib
 import os
 
-IGNORE_PACKAGES = {"python", "pmdarima", "pyzmq", "vowpalwabbit"}
-CONDA_TO_PIP_NAME = {"python-kaleido": "kaleido", 'py-xgboost': 'xgboost', 'matplotlib-base': 'matplotlib',
-                     'python-graphviz': 'graphviz'}
+from evalml.utils import get_evalml_pip_requirements, standardize_format
 
 
 @contextmanager
@@ -16,28 +13,6 @@ def read_conda_yaml(path):
         # Toss out the first line that declares the version since its not supported YAML syntax
         next(config_file)
         yield yaml.safe_load(config_file)
-
-
-def standardize_format(packages):
-    standardized_package_specifiers = []
-    for package in packages:
-        if package.name in IGNORE_PACKAGES:
-            continue
-        name = CONDA_TO_PIP_NAME.get(package.name, package.name)
-        if package.specs:
-            all_specs = ",".join([''.join(spec) for spec in package.specs])
-            standardized = f"{name}{all_specs}"
-        else:
-            standardized = name
-        standardized_package_specifiers.append(standardized)
-    return standardized_package_specifiers
-
-
-def get_evalml_pip_requirements(evalml_path):
-    config = configparser.ConfigParser()
-    config.read(pathlib.Path(evalml_path, "setup.cfg"))
-    all_reqs = config['options']['install_requires'].split("\n")[1:]
-    return standardize_format(requirements.parse("".join(all_reqs)))
 
 
 def get_evalml_conda_requirements(conda_recipe):

@@ -250,9 +250,7 @@ def test_partial_dependence_baseline():
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_partial_dependence_catboost(
-    problem_type, X_y_binary, X_y_multi
-):
+def test_partial_dependence_catboost(problem_type, X_y_binary, X_y_multi):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         y_small = ["a", "b", "a"] * 5

@@ -1126,9 +1126,7 @@ def test_automl_search_sampler_k_neighbors_param(sampler):
 @pytest.mark.parametrize(
     "parameters", [None, {"Oversampler": {"k_neighbors_default": 5}}]
 )
-def test_automl_search_sampler_k_neighbors_no_error(
-    parameters, fraud_100
-):
+def test_automl_search_sampler_k_neighbors_no_error(parameters, fraud_100):
     # automatically uses SMOTE
     X, y = fraud_100
     automl = AutoMLSearch(
