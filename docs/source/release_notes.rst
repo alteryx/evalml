@@ -10,6 +10,7 @@
     * Documentation Changes
         * Updated to install prophet extras in Read the Docs. :pr:`3509`
     * Testing Changes
+        * Moved vowpal wabbit in test recipe to ``evalml`` package from ``evalml-core`` :pr:`3502`
 
 .. warning::
 
