@@ -99,7 +99,6 @@ additional_requirements_set = set(
 all_requirements_set = minimum_dependencies_set.union(additional_requirements_set)
 not_supported_in_conda = set(
     [
-        "ARIMA Regressor",
         "Prophet Regressor",
     ]
 )
