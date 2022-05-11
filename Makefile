@@ -92,3 +92,18 @@ installdeps-dev:
 .PHONY: installdeps-docs
 installdeps-docs:
 	pip install -e .[docs]
+
+.PHONY: upgradepip
+upgradepip:
+	python -m pip install --upgrade pip
+
+.PHONY: upgradebuild
+upgradebuild:
+	python -m pip install --upgrade build
+
+.PHONY: package_evalml
+package_evalml: upgradepip upgradebuild
+	python -m build
+	$(eval EM_VERSION := $(shell grep '__version__\s=' evalml/__init__.py | grep -o '[^ ]*$'))
+	tar -zxvf "dist/evalml-${EM_VERSION}.tar.gz"
+	mv "evalml-${EM_VERSION}" unpacked_sdist
