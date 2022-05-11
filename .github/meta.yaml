@@ -68,7 +68,7 @@ outputs:
         - matplotlib-base >=3.3.3
         - seaborn >=0.11.1
         - ipywidgets >=7.5
-        - xgboost >=1.6.0
+        - xgboost >=1.5.1
         - catboost >=0.20
         - lightgbm >=2.3.1
         - lime >=0.2.0.1
