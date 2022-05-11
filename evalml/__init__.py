@@ -1,8 +1,6 @@
 """EvalML."""
 import warnings
 
-from .version import version
-
 # hack to prevent warnings from skopt
 # must import sklearn first
 import sklearn
