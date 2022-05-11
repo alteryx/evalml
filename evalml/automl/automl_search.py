@@ -585,10 +585,6 @@ class AutoMLSearch:
         self.random_seed = random_seed
         self.n_jobs = n_jobs
 
-        if not self.plot and self.verbose:
-            self.logger.warning(
-                "Unable to import plotly; skipping pipeline search plotting\n"
-            )
         if allowed_component_graphs is not None:
             if not isinstance(allowed_component_graphs, dict):
                 raise ValueError(

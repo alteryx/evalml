@@ -205,13 +205,7 @@ def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
     elif len(y) >= _SAMPLER_THRESHOLD and sampler_method != "Oversampler":
         return "Undersampler"
     else:
-        try:
-            import_or_raise(
-                "imblearn.over_sampling", error_msg="imbalanced-learn is not installed"
-            )
-            return "Oversampler"
-        except ImportError:
-            return "Undersampler"
+        return "Oversampler"
 
 
 def get_pipelines_from_component_graphs(

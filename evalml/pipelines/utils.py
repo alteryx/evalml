@@ -67,8 +67,6 @@ from evalml.problem_types import (
 )
 from evalml.utils import import_or_raise, infer_feature_types
 
-logger = logging.getLogger(__name__)
-
 
 def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None):
     component = []
@@ -200,16 +198,7 @@ def _get_sampler(X, y, problem_type, estimator_class, sampler_name=None):
         "Oversampler": Oversampler,
     }
     if sampler_name is not None:
-        try:
-            import_or_raise(
-                "imblearn.over_sampling", error_msg="imbalanced-learn is not installed"
-            )
-            components.append(sampler_components[sampler_name])
-        except ImportError:
-            logger.warning(
-                "Could not import imblearn.over_sampling, so defaulting to use Undersampler"
-            )
-            components.append(Undersampler)
+        components.append(sampler_components[sampler_name])
     return components
 
 
