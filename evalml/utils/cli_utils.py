@@ -13,7 +13,6 @@ import requirements
 import evalml
 from evalml.utils import get_logger
 
-IGNORE_PACKAGES = {"python", "pmdarima", "pyzmq", "vowpalwabbit"}
 CONDA_TO_PIP_NAME = {
     "python-kaleido": "kaleido",
     "py-xgboost": "xgboost",
@@ -104,18 +103,20 @@ def get_evalml_root():
     return os.path.dirname(evalml.__file__)
 
 
-def standardize_format(packages):
+def standardize_format(packages, ignore_packages=None):
     """Standardizes the format of the given packages.
 
     Args:
         packages: Requirements package generator object.
+        ignore_packages: List of packages to ignore. Defaults to None.
 
     Returns:
         List of packages with standardized format.
     """
+    ignore_packages = [] if ignore_packages is None else ignore_packages
     standardized_package_specifiers = []
     for package in packages:
-        if package.name in IGNORE_PACKAGES:
+        if package.name in ignore_packages:
             continue
         name = CONDA_TO_PIP_NAME.get(package.name, package.name)
         if package.specs:
@@ -127,15 +128,19 @@ def standardize_format(packages):
     return standardized_package_specifiers
 
 
-def get_evalml_pip_requirements(evalml_path):
+def get_evalml_pip_requirements(evalml_path, ignore_packages=None):
     """Gets pip requirements for evalml.
 
     Args:
         evalml_path: Path to evalml root.
+        ignore_packages: List of packages to ignore. Defaults to None.
 
     Returns:
         List of pip requirements for evalml.
     """
     config = configparser.ConfigParser()
     config.read(pathlib.Path(evalml_path, "setup.cfg"))
-    return standardize_format(requirements.parse(config["options"]["install_requires"]))
+    return standardize_format(
+        requirements.parse(config["options"]["install_requires"]),
+        ignore_packages=ignore_packages,
+    )
