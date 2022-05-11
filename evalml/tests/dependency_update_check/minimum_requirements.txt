@@ -1,7 +1,7 @@
 plotly==5.0.0
 kaleido==0.1.0
 ipywidgets==7.5
-xgboost==1.6.0
+xgboost==1.5.1
 catboost==0.20
 lightgbm==2.3.1
 matplotlib==3.3.3
