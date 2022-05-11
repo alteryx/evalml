@@ -5,10 +5,15 @@ Release Notes
     * Fixes
     * Changes
         * Added github workflows for featuretools and woodwork to test their main branch against evalml. :pr:`3504`
+        * Added pmdarima to conda recipe. :pr:`3505`
+        * Added a threshold for ``NullDataCheck`` before a warning is issued for null values :pr:`3507`
+        * Changed ``NoVarianceDataCheck`` to only output warnings :pr:`3506`
         * Updated ``roc_curve()`` and ``conf_matrix()`` to work with IntegerNullable and BooleanNullable types. :pr:`3465`
         * Changed ``ComponentGraph._transform_features`` to raise a ``PipelineError`` instead of a ``ValueError``. This is not a breaking change because ``PipelineError`` is a subclass of ``ValueError``. :pr:`3497`
     * Documentation Changes
+        * Updated to install prophet extras in Read the Docs. :pr:`3509`
     * Testing Changes
+        * Moved vowpal wabbit in test recipe to ``evalml`` package from ``evalml-core`` :pr:`3502`
 
 .. warning::
 
