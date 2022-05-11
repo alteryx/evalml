@@ -94,7 +94,6 @@ all_requirements_set = set(
 )
 not_supported_in_conda = set(
     [
-        "ARIMA Regressor",
         "Prophet Regressor",
     ]
 )

@@ -124,7 +124,7 @@ def test_all_estimators(
     is_using_windows,
 ):
     if is_using_conda:
-        n_estimators = 16
+        n_estimators = 17
     else:
         # This is wrong because only prophet is missing in windows
         # but we don't run this test in windows.
