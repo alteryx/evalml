@@ -32,6 +32,7 @@ jobs:
           echo "Run unit tests without code coverage for ${{ matrix.python_version }} and ${{ matrix.libraries }}"
           echo "Testing with EvalML version:" `python -c "import evalml; print(evalml.__version__)"`
           pytest evalml/ -n 2
+          pip check
   slack_alert_failure:
     name: Send Slack alert if failure
     needs: unit_tests_woodwork_main
