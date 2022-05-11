@@ -4,22 +4,3 @@ requires = [
     "wheel"
 ]
 build-backend = "setuptools.build_meta" 
-
-[tool.pytest]
-python_files = evalml/tests/*
-filterwarnings =
-    ignore::DeprecationWarning
-    ignore::PendingDeprecationWarning
-junit_duration_report = call
-
-[tool.isort]
-profile=black
-forced_separate=evalml
-known_first_party=evalml
-multi_line_output=3
-skip=__init__.py
-
-[darglint]
-ignore=DAR402
-ignore_regex=^_(.*)
-strictness=short
