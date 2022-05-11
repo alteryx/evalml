@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Reverted XGBoost Classifier/Regressor patch for all boolean columns needing to be converted to int. :pr:`3503`
         * Added pmdarima to conda recipe. :pr:`3505`
         * Added a threshold for ``NullDataCheck`` before a warning is issued for null values :pr:`3507`
         * Changed ``NoVarianceDataCheck`` to only output warnings :pr:`3506`
