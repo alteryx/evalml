@@ -42,7 +42,7 @@ jobs:
           source test_python/bin/activate
           mkdir evalml-core-feedstock/evalml
           cp -r `ls -A | grep -v "evalml-core-feedstock"` ./evalml-core-feedstock/evalml/
-          python .github/conda_config.py "$(python setup.py --version)"
+          python .github/conda_config.py "$(python -c "import evalml; print(evalml.__version__)")"
           cd evalml-core-feedstock
           echo "Pre docker login"
           echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USER}" --password-stdin
