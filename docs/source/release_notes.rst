@@ -4,11 +4,23 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.52.0 May. 12, 2022**
+    * Enhancements
+    * Fixes
+    * Changes
         * Added github workflows for featuretools and woodwork to test their main branch against evalml. :pr:`3504`
-        * Reverted XGBoost Classifier/Regressor patch for all boolean columns needing to be converted to int. :pr:`3503`
         * Added pmdarima to conda recipe. :pr:`3505`
         * Added a threshold for ``NullDataCheck`` before a warning is issued for null values :pr:`3507`
         * Changed ``NoVarianceDataCheck`` to only output warnings :pr:`3506`
+        * Reverted XGBoost Classifier/Regressor patch for all boolean columns needing to be converted to int. :pr:`3503`
         * Updated ``roc_curve()`` and ``conf_matrix()`` to work with IntegerNullable and BooleanNullable types. :pr:`3465`
         * Changed ``ComponentGraph._transform_features`` to raise a ``PipelineError`` instead of a ``ValueError``. This is not a breaking change because ``PipelineError`` is a subclass of ``ValueError``. :pr:`3497`
         * Capped ``sklearn`` at version 1.1.0 :pr:`3518`
@@ -16,10 +28,6 @@ Release Notes
         * Updated to install prophet extras in Read the Docs. :pr:`3509`
     * Testing Changes
         * Moved vowpal wabbit in test recipe to ``evalml`` package from ``evalml-core`` :pr:`3502`
-
-.. warning::
-
-    **Breaking Changes**
 
 
 **v0.51.0 Apr. 28, 2022**
