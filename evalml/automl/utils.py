@@ -24,7 +24,6 @@ from evalml.problem_types import (
     is_binary,
     is_time_series,
 )
-from evalml.utils import import_or_raise
 
 _LARGE_DATA_ROW_THRESHOLD = int(1e5)
 _SAMPLER_THRESHOLD = 20000

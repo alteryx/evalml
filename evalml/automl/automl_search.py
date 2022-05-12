@@ -1625,10 +1625,7 @@ class AutoMLSearch:
     @property
     def plot(self):
         """Return an instance of the plot with the latest scores."""
-        try:
-            return PipelineSearchPlots(self.results, self.objective)
-        except ImportError:
-            return None
+        return PipelineSearchPlots(self.results, self.objective)
 
     @property
     def _sleep_time(self):

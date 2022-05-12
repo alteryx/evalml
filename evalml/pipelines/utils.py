@@ -1,6 +1,5 @@
 """Utility methods for EvalML pipelines."""
 import copy
-import logging
 
 from woodwork import logical_types
 
@@ -65,7 +64,7 @@ from evalml.problem_types import (
     is_classification,
     is_time_series,
 )
-from evalml.utils import import_or_raise, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None):

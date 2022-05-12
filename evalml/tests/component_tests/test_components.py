@@ -494,18 +494,21 @@ def test_describe_component():
             "bagging_freq": 0,
         },
     }
-    prophet_regressor = ProphetRegressor()
-    assert prophet_regressor.describe(return_dict=True) == {
-        "name": "Prophet Regressor",
-        "parameters": {
-            "changepoint_prior_scale": 0.05,
-            "time_index": None,
-            "holidays_prior_scale": 10,
-            "seasonality_mode": "additive",
-            "seasonality_prior_scale": 10,
-            "stan_backend": "CMDSTANPY",
-        },
-    }
+    try:
+        prophet_regressor = ProphetRegressor()
+        assert prophet_regressor.describe(return_dict=True) == {
+            "name": "Prophet Regressor",
+            "parameters": {
+                "changepoint_prior_scale": 0.05,
+                "time_index": None,
+                "holidays_prior_scale": 10,
+                "seasonality_mode": "additive",
+                "seasonality_prior_scale": 10,
+                "stan_backend": "CMDSTANPY",
+            },
+        }
+    except ImportError:
+        pass
     vw_binary_classifier = VowpalWabbitBinaryClassifier(
         loss_function="classic",
         learning_rate=0.1,
