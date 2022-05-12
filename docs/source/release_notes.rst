@@ -14,6 +14,7 @@ Release Notes
         * Capped ``sklearn`` at version 1.1.0 :pr:`3518`
     * Documentation Changes
         * Updated to install prophet extras in Read the Docs. :pr:`3509`
+        * Updated the Time Series User Guide page to include known-in-advance features and fix typos :pr:`3521`
     * Testing Changes
         * Moved vowpal wabbit in test recipe to ``evalml`` package from ``evalml-core`` :pr:`3502`
 
