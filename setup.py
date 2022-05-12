@@ -11,7 +11,7 @@ extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
 setup(
     name='evalml',
-    version='0.51.0',
+    version='0.52.0',
     author='Alteryx, Inc.',
     author_email='open_source_support@alteryx.com',
     description='EvalML is an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.',
