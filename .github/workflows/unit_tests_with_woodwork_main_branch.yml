@@ -18,7 +18,9 @@ jobs:
           python-version: ${{ matrix.python_version }}
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Set up pip and graphviz
+      - name: Update apt and install Graphviz
+        run: sudo apt update && sudo apt install -y graphviz
+      - name: Set up pip
         run: |
           pip config --site set global.progress_bar off
           python -m pip install -U pip
