@@ -5,6 +5,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Updated the Time Series User Guide page to include known-in-advance features and fix typos :pr:`3521`
     * Testing Changes
 
 .. warning::
