@@ -39,20 +39,20 @@ jobs:
           echo "Testing with EvalML version:" `python -c "import evalml; print(evalml.__version__)"`
           pytest evalml/ -n 2
           pip check
-  slack_alert_failure:
-    name: Send Slack alert if failure
-    needs: unit_tests_featuretools_main
-    runs-on: ubuntu-latest
-    if: ${{ always() }}
-    steps:
-      - name: Send Slack alert if failure
-        if: ${{ needs.unit_tests_featuretools_main.result != 'success' }}
-        id: slack
-        uses: slackapi/slack-github-action@v1
-        with:
-          payload: |
-            {
-              "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_FT_TO_EVALML_WEBHOOK }}
+#  slack_alert_failure:
+#    name: Send Slack alert if failure
+#    needs: unit_tests_featuretools_main
+#    runs-on: ubuntu-latest
+#    if: ${{ always() }}
+#    steps:
+#      - name: Send Slack alert if failure
+#        if: ${{ needs.unit_tests_featuretools_main.result != 'success' }}
+#        id: slack
+#        uses: slackapi/slack-github-action@v1
+#        with:
+#          payload: |
+#            {
+#              "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+#            }
+#        env:
+#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_FT_TO_EVALML_WEBHOOK }}
