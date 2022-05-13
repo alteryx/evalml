@@ -1,7 +1,7 @@
 numpy>=1.21.0
 pandas>=1.4.0
 scipy>=1.5.0
-scikit-learn>=0.24.0,<1.1.0
+scikit-learn>=1.1.0
 scikit-optimize>=0.8.1
 pyzmq>=20.0.0
 colorama>=0.4.4
