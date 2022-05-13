@@ -104,6 +104,6 @@ upgradebuild:
 .PHONY: package_evalml
 package_evalml: upgradepip upgradebuild
 	python -m build
-	$(eval EM_VERSION := $(shell grep '__version__\s=' evalml/__init__.py | grep -o '[^ ]*$'))
-	tar -zxvf "dist/evalml-${EM_VERSION}.tar.gz"
+	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
+	tar -zxvf "dist/evalml-${PACKAGE}.tar.gz"
 	mv "evalml-${EM_VERSION}" unpacked_sdist
