@@ -35,22 +35,22 @@ jobs:
         run: |
           echo "Run unit tests without code coverage for ${{ matrix.python_version }} and ${{ matrix.libraries }}"
           echo "Testing with EvalML version:" `python -c "import evalml; print(evalml.__version__)"`
-          pytest evalml/ -n 2
+          pytest evalml/ -n 2 --ignore=evalml/tests/automl_tests/parallel_tests
           pip check
-#  slack_alert_failure:
-#    name: Send Slack alert if failure
-#    needs: unit_tests_woodwork_main
-#    runs-on: ubuntu-latest
-#    if: ${{ always() }}
-#    steps:
-#      - name: Send Slack alert if failure
-#        if: ${{ needs.unit_tests_woodwork_main.result != 'success' }}
-#        id: slack
-#        uses: slackapi/slack-github-action@v1
-#        with:
-#          payload: |
-#            {
-#              "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-#            }
-#        env:
-#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WW_TO_EVALML_WEBHOOK }}
+  slack_alert_failure:
+    name: Send Slack alert if failure
+    needs: unit_tests_woodwork_main
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
+      - name: Send Slack alert if failure
+        if: ${{ needs.unit_tests_woodwork_main.result != 'success' }}
+        id: slack
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WW_TO_EVALML_WEBHOOK }}
