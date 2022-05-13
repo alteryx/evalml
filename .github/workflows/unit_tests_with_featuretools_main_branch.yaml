@@ -26,7 +26,6 @@ jobs:
           python -m pip install -U pip
       - name: Install EvalML & Featuretools - test requirements
         run: |
-          cd unpacked_sdist
           make installdeps-prophet
           make -installdeps-test
           python -m pip uninstall -y featuretools
