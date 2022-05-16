@@ -3,9 +3,12 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed github workflows for featuretools and woodwork to test their main branch against evalml. :pr:`3517`
     * Changes
     * Documentation Changes
+        * Updated the Time Series User Guide page to include known-in-advance features and fix typos :pr:`3521`
     * Testing Changes
+        * Rename yml to yaml for GitHub Actions :pr:`3522`
 
 .. warning::
 
