@@ -47,7 +47,7 @@ class SimpleImputer(Transformer):
     def _set_boolean_columns_to_categorical(self, X):
         boolean_columns = list(
             X.ww.select(
-                ["Boolean", "BooleanNullable"], return_schema=True
+                ["Boolean"], return_schema=True
             ).columns.keys()
         )
         if boolean_columns:

@@ -123,9 +123,9 @@ def test_simple_imputer_all_bool_return_original(data_type, make_data_type):
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_simple_imputer_boolean_dtype(data_type, make_data_type):
     X = pd.DataFrame([True, np.nan, False, np.nan, True])
-    X.ww.init(logical_types={0: "categorical"})
+    X.ww.init(logical_types={0: "BooleanNullable"})
     y = pd.Series([1, 0, 0, 1, 0])
-    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype="category")
+    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype="boolean")
     X = make_data_type(data_type, X)
     imputer = SimpleImputer()
     imputer.fit(X, y)
@@ -141,12 +141,12 @@ def test_simple_imputer_multitype_with_one_bool(data_type, make_data_type):
             "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
         }
     )
-    X_multi.ww.init(logical_types={"bool with nan": "categorical"})
+    X_multi.ww.init(logical_types={"bool with nan": "BooleanNullable"})
     y = pd.Series([1, 0, 0, 1, 0])
     X_multi_expected_arr = pd.DataFrame(
         {
             "bool with nan": pd.Series(
-                [True, False, False, False, False], dtype="category"
+                [True, False, False, False, False], dtype="boolean"
             ),
             "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
         }
@@ -328,7 +328,7 @@ def test_simple_imputer_with_none():
 
     X = pd.DataFrame(
         {
-            "category with None": pd.Series(["b", "a", "a", None], dtype="category"),
+            "category with None": pd.Series(["c", "a", "a", None], dtype="category"),
             "boolean with None": pd.Series([True, None, False, True]),
             "object with None": ["b", "a", "a", None],
             "all None": [None, None, None, None],
@@ -336,7 +336,7 @@ def test_simple_imputer_with_none():
     )
     X.ww.init(
         logical_types={
-            "boolean with None": "categorical",
+            "boolean with None": "BooleanNullable",
             "object with None": "categorical",
             "all None": "categorical",
         }
@@ -347,7 +347,7 @@ def test_simple_imputer_with_none():
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame(
         {
-            "category with None": pd.Series(["b", "a", "a", "a"], dtype="category"),
+            "category with None": pd.Series(["c", "a", "a", "a"], dtype="category"),
             "boolean with None": pd.Series([True, True, False, True], dtype="category"),
             "object with None": pd.Series(["b", "a", "a", "a"], dtype="category"),
         }
