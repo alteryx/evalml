@@ -308,7 +308,7 @@ def test_simple_imputer_does_not_reset_index():
     )
 
 
-def test_simple_imputer_with_none():
+def test_simple_imputer_with_none_numeric():
     # No all none here because ww default inference will treat
     # it as unknown which is not a supported feature.
     X = pd.DataFrame(
@@ -326,19 +326,86 @@ def test_simple_imputer_with_none():
     )
     assert_frame_equal(expected, transformed, check_dtype=False)
 
+
+X = pd.DataFrame(
+    {
+        "int with None": [1, 0, 5, 5, None],
+        "float with None": [0.1, 0.0, 0.5, 0.5, None],
+        "category with None": pd.Series(["c", "a", "a", "a", None], dtype="category"),
+        "boolean with None": pd.Series([True, None, False, True, True]),
+        "object with None": ["b", "a", "a", "a", None],
+        "all None": [None, None, None, None, None],
+    }
+)
+expected = pd.DataFrame(
+    {
+        "int with None": pd.Series([1, 0, 5, 5, 5], dtype="Int64"),
+        "float with None": [0.1, 0.0, 0.5, 0.5, 0.5],
+        "category with None": pd.Series(["c", "a", "a", "a", "a"], dtype="category"),
+        "boolean with None": pd.Series(
+            [True, True, False, True, True], dtype="category"
+        ),
+        "object with None": pd.Series(["b", "a", "a", "a", "a"], dtype="category"),
+    }
+)
+ltypes = {
+    "int with None": "IntegerNullable",
+    "float with None": "Double",
+    "category with None": "categorical",
+    "boolean with None": "BooleanNullable",
+    "object with None": "categorical",
+    "all None": "categorical",
+}
+columns_dict = {
+    "numerics_only": ["int with None", "float with None"],
+    "categoricals_only": ["category with None", "object with None"],
+    "booleans_only": ["boolean with None"],
+    "categorical_and_booleans": [
+        "category with None",
+        "boolean with None",
+        "object with None",
+    ],
+    "all": [
+        "int with None",
+        "float with None",
+        "category with None",
+        "boolean with None",
+        "object with None",
+    ],
+}
+
+
+@pytest.mark.parametrize(
+    "dtypes",
+    [
+        "numerics_only",
+        "booleans_only",
+        "categoricals_only",
+        "categorical_and_booleans",
+        "all",
+    ],
+)
+def test_simple_imputer_with_none_cat_bool(dtypes):
+    test_ltypes = dict((k, ltypes[k]) for k in columns_dict[dtypes])
+    X_test = X[columns_dict[dtypes]]
+    X.ww.init(logical_types=test_ltypes)
+    y = pd.Series([0, 0, 1, 0, 1])
+    imputer = SimpleImputer()
+    imputer.fit(X_test, y)
+    transformed = imputer.transform(X_test, y)
+    assert_frame_equal(expected[columns_dict[dtypes]], transformed, check_dtype=False)
+
+
+def test_simple_imputer_with_categorical_none():
     X = pd.DataFrame(
         {
             "category with None": pd.Series(["c", "a", "a", None], dtype="category"),
-            "boolean with None": pd.Series([True, None, False, True]),
             "object with None": ["b", "a", "a", None],
-            "all None": [None, None, None, None],
         }
     )
     X.ww.init(
         logical_types={
-            "boolean with None": "BooleanNullable",
             "object with None": "categorical",
-            "all None": "categorical",
         }
     )
     y = pd.Series([0, 0, 1, 0, 1])
@@ -348,7 +415,6 @@ def test_simple_imputer_with_none():
     expected = pd.DataFrame(
         {
             "category with None": pd.Series(["c", "a", "a", "a"], dtype="category"),
-            "boolean with None": pd.Series([True, True, False, True], dtype="category"),
             "object with None": pd.Series(["b", "a", "a", "a"], dtype="category"),
         }
     )
