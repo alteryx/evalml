@@ -131,6 +131,7 @@ def test_categorical_and_numeric_input(imputer_test_data):
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame(
         {
+            "dates": pd.date_range("01-01-2022", periods=20),
             "categorical col": pd.Series(
                 ["zero", "one", "two", "zero", "two"] * 4, dtype="category"
             ),

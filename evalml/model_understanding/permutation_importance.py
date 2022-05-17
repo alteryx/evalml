@@ -6,7 +6,7 @@ from joblib import Parallel, delayed
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import is_classification
 from evalml.problem_types.utils import is_regression
-from evalml.utils import infer_feature_types
+from evalml.utils import import_or_raise, infer_feature_types, jupyter_check
 
 
 def calculate_permutation_importance(
@@ -67,6 +67,68 @@ def calculate_permutation_importance(
     mean_perm_importance = list(zip(feature_names, mean_perm_importance))
     mean_perm_importance.sort(key=lambda x: x[1], reverse=True)
     return pd.DataFrame(mean_perm_importance, columns=["feature", "importance"])
+
+
+def graph_permutation_importance(pipeline, X, y, objective, importance_threshold=0):
+    """Generate a bar graph of the pipeline's permutation importance.
+
+    Args:
+        pipeline (PipelineBase or subclass): Fitted pipeline.
+        X (pd.DataFrame): The input data used to score and compute permutation importance.
+        y (pd.Series): The target data.
+        objective (str, ObjectiveBase): Objective to score on.
+        importance_threshold (float, optional): If provided, graph features with a permutation importance whose absolute value is larger than importance_threshold. Defaults to 0.
+
+    Returns:
+        plotly.Figure, a bar graph showing features and their respective permutation importance.
+
+    Raises:
+        ValueError: If importance_threshold is not greater than or equal to 0.
+    """
+    go = import_or_raise(
+        "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
+    )
+    if jupyter_check():
+        import_or_raise("ipywidgets", warning=True)
+
+    perm_importance = calculate_permutation_importance(pipeline, X, y, objective)
+    perm_importance["importance"] = perm_importance["importance"]
+
+    if importance_threshold < 0:
+        raise ValueError(
+            f"Provided importance threshold of {importance_threshold} must be greater than or equal to 0"
+        )
+    # Remove features with close to zero importance
+    perm_importance = perm_importance[
+        abs(perm_importance["importance"]) >= importance_threshold
+    ]
+    # List is reversed to go from ascending order to descending order
+    perm_importance = perm_importance.iloc[::-1]
+
+    title = "Permutation Importance"
+    subtitle = (
+        "The relative importance of each input feature's "
+        "overall influence on the pipelines' predictions, computed using "
+        "the permutation importance algorithm."
+    )
+    data = [
+        go.Bar(
+            x=perm_importance["importance"],
+            y=perm_importance["feature"],
+            orientation="h",
+        )
+    ]
+
+    layout = {
+        "title": "{0}<br><sub>{1}</sub>".format(title, subtitle),
+        "height": 800,
+        "xaxis_title": "Permutation Importance",
+        "yaxis_title": "Feature",
+        "yaxis": {"type": "category"},
+    }
+
+    fig = go.Figure(data=data, layout=layout)
+    return fig
 
 
 def calculate_permutation_importance_one_column(

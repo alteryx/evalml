@@ -73,6 +73,8 @@ minimum_dependencies_set = set(
         "Target Imputer",
         "Natural Language Featurizer",
         "Time Series Baseline Estimator",
+        "Time Series Imputer",
+        "Time Series Regularizer",
         "URL Featurizer",
         "Undersampler",
     ]
@@ -101,11 +103,7 @@ additional_requirements_set = set(
 all_requirements_set = minimum_dependencies_set.union(additional_requirements_set)
 not_supported_in_conda = set(
     [
-        "ARIMA Regressor",
         "Prophet Regressor",
-        "Vowpal Wabbit Binary Classifier",
-        "Vowpal Wabbit Multiclass Classifier",
-        "Vowpal Wabbit Regressor",
     ]
 )
 not_supported_in_windows = set(

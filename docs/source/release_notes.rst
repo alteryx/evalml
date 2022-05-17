@@ -1,11 +1,113 @@
-﻿Release Notes
+Release Notes
 -------------
-
 **Future Releases**
     * Enhancements
+<<<<<<< HEAD
         * Added clustering as a problem type :pr:`3368`
         * Added clustering models ``DBSCAN``, ``KMeans``, ``KModes``, and ``KPrototypes`` :pr:`3379`
         * Added clustering objectives ``Silhouette Coefficient`` and ``Adjusted Rand Score`` :pr:`3396`
+=======
+    * Fixes
+        * Fixed github workflows for featuretools and woodwork to test their main branch against evalml. :pr:`3517`
+    * Changes
+    * Documentation Changes
+        * Updated the Time Series User Guide page to include known-in-advance features and fix typos :pr:`3521`
+    * Testing Changes
+        * Rename yml to yaml for GitHub Actions :pr:`3522`
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.52.0 May. 12, 2022**
+    * Enhancements
+    * Fixes
+    * Changes
+        * Added github workflows for featuretools and woodwork to test their main branch against evalml. :pr:`3504`
+        * Added pmdarima to conda recipe. :pr:`3505`
+        * Added a threshold for ``NullDataCheck`` before a warning is issued for null values :pr:`3507`
+        * Changed ``NoVarianceDataCheck`` to only output warnings :pr:`3506`
+        * Reverted XGBoost Classifier/Regressor patch for all boolean columns needing to be converted to int. :pr:`3503`
+        * Updated ``roc_curve()`` and ``conf_matrix()`` to work with IntegerNullable and BooleanNullable types. :pr:`3465`
+        * Changed ``ComponentGraph._transform_features`` to raise a ``PipelineError`` instead of a ``ValueError``. This is not a breaking change because ``PipelineError`` is a subclass of ``ValueError``. :pr:`3497`
+        * Capped ``sklearn`` at version 1.1.0 :pr:`3518`
+    * Documentation Changes
+        * Updated to install prophet extras in Read the Docs. :pr:`3509`
+    * Testing Changes
+        * Moved vowpal wabbit in test recipe to ``evalml`` package from ``evalml-core`` :pr:`3502`
+
+
+**v0.51.0 Apr. 28, 2022**
+    * Enhancements
+        * Updated ``make_pipeline_from_data_check_output`` to work with time series problems. :pr:`3454`
+    * Fixes
+        * Changed ``PipelineBase.graph_json()`` to return a python dictionary and renamed as ``graph_dict()``:pr:`3463`
+    * Changes
+        * Added ``vowpalwabbit`` to local recipe and remove ``is_using_conda`` pytest skip markers from relevant tests :pr:`3481`
+    * Documentation Changes
+        * Fixed broken link in contributing guide :pr:`3464`
+        * Improved development instructions :pr:`3468`
+        * Added the ``TimeSeriesRegularizer`` and ``TimeSeriesImputer`` to the timeseries section of the User Guide :pr:`3473`
+        * Updated OSS slack link :pr:`3487`
+        * Fix rendering of model understanding plotly charts in docs :pr:`3460`
+    * Testing Changes
+        * Updated unit tests to support woodwork 0.16.2 :pr:`3482`
+        * Fix some unit tests after vowpal wabbit got added to conda recipe :pr:`3486`
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``PipelineBase.graph_json()`` to ``PipelineBase.graph_dict()`` :pr:`3463`
+        * Minimum supported woodwork version is now 0.16.2 :pr:`3482`
+
+**v0.50.0 Apr. 12, 2022**
+    * Enhancements
+        * Added ``TimeSeriesImputer`` component :pr:`3374`
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`, :pr:`3427`
+        * Added ``TimeSeriesRegularizer`` to smooth uninferrable date ranges for time series problems :pr:`3376`
+        * Enabled ensembling as a parameter for ``DefaultAlgorithm`` :pr:`3435`, :pr:`3444`
+    * Fixes
+        * Fix ``DefaultAlgorithm`` not handling Email and URL features :pr:`3419`
+        * Added test to ensure ``LabelEncoder`` parameters preserved during ``AutoMLSearch`` :pr:`3326`
+    * Changes
+        * Updated ``DateTimeFormatDataCheck`` to use woodwork's ``infer_frequency`` function :pr:`3425`
+        * Renamed ``graphs.py`` to ``visualizations.py`` :pr:`3439`
+    * Documentation Changes
+        * Updated the model understanding section of the user guide to include missing functions :pr:`3446`
+        * Rearranged the user guide model understanding page for easier navigation :pr:`3457`
+        * Update README text to Alteryx :pr:`3462`
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``graphs.py`` to ``visualizations.py`` :pr:`3439`
+        * Replaced ``pipeline_parameters`` and ``custom_hyperparameters`` with ``search_parameters`` in ``AutoMLSearch`` :pr:`3373`
+
+**v0.49.0 Mar. 31, 2022**
+    * Enhancements
+        * Added ``use_covariates`` parameter to ``ARIMARegressor`` :pr:`3407`
+        * ``AutoMLSearch`` will set ``use_covariates`` to ``False`` for ARIMA when dataset is large :pr:`3407`
+        * Add ability to retrieve logical types to a component in the graph via ``get_component_input_logical_types`` :pr:`3428`
+        * Add ability to get logical types passed to the last component via ``last_component_input_logical_types`` :pr:`3428`
+    * Fixes
+        * Fix conda build after PR `3407` :pr:`3429`
+    * Changes
+        * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
+        * Unpin ``click`` dependency :pr:`3420`
+        * For ``IterativeAlgorithm``, put time series algorithms first :pr:`3407`
+        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407`
+
+.. warning::
+
+    **Breaking Changes**
+        * Moved model understanding metrics from ``graph.py`` to ``metrics.py`` :pr:`3417`
+
+
+**v0.48.0 Mar. 25, 2022**
+    * Enhancements
+>>>>>>> main
         * Add support for oversampling in time series classification problems :pr:`3387`
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`
@@ -13,15 +115,20 @@
     * Changes
         * Update maintainers to add Frank :pr:`3382`
         * Allow woodwork version 0.14.0 to be installed :pr:`3381`
+        * Moved partial dependence functions from ``graph.py`` to a separate file :pr:`3404`
+        * Pin ``click`` at ``8.0.4`` due to incompatibility with ``black`` :pr:`3413`
     * Documentation Changes
+        * Added automl user guide section covering search algorithms :pr:`3394`
         * Updated broken links and automated broken link detection :pr:`3398`
-        * Pinned jinja2 to 3.0.3 :pr:`3402`
+        * Upgraded nbconvert :pr:`3402`, :pr:`3411`
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`3395`)
+        * Exclude documentation versions other than latest from broken link check :pr:`3401`
 
 .. warning::
 
     **Breaking Changes**
+        * Moved partial dependence functions from ``graph.py`` to ``partial_dependence.py`` :pr:`3404`
 
 
 **v0.47.0 Mar. 16, 2022**
@@ -610,7 +717,7 @@
     * Documentation Changes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
         * Build documentation with sphinx-autoapi :pr:`2458`
-        * Change ``autoapi_ignore`` to only ignore files in ``evalml/tests/*`` :pr:`2530` 
+        * Change ``autoapi_ignore`` to only ignore files in ``evalml/tests/*`` :pr:`2530`
     * Testing Changes
         * Fixed flaky dask tests :pr:`2471`
         * Removed shellcheck action from ``build_conda_pkg`` action :pr:`2514`
@@ -670,7 +777,7 @@
         * Replaced `allowed_pipelines` with `allowed_component_graphs` :pr:`2364`
         * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
         * Updated ``compute_order`` in ``ComponentGraph`` to be a read-only property :pr:`2408`
-        * Unpinned PyZMQ version in requirements.txt :pr:`2389` 
+        * Unpinned PyZMQ version in requirements.txt :pr:`2389`
         * Uncapping LightGBM version in requirements.txt :pr:`2405`
         * Updated minimum version of plotly :pr:`2415`
         * Removed ``SensitivityLowAlert`` objective from core objectives :pr:`2418`

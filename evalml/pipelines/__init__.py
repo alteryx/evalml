@@ -5,6 +5,8 @@ from .components import (
     TargetEncoder,
     SimpleImputer,
     PerColumnImputer,
+    Imputer,
+    TimeSeriesImputer,
     StandardScaler,
     Transformer,
     LightGBMClassifier,
@@ -44,6 +46,7 @@ from .components import (
     KMeansClusterer,
     KModesClusterer,
     KPrototypesClusterer,
+    TimeSeriesRegularizer,
 )
 
 from .component_graph import ComponentGraph

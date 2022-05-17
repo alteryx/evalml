@@ -16,4 +16,6 @@ from .exceptions import (
     PartialDependenceErrorCode,
     PartialDependenceError,
     ValidationErrorCode,
+    PipelineError,
+    PipelineErrorCodeEnum,
 )

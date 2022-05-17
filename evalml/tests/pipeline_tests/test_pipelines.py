@@ -15,6 +15,8 @@ from evalml.exceptions import (
     MissingComponentError,
     ObjectiveCreationError,
     ObjectiveNotFoundError,
+    PipelineError,
+    PipelineErrorCodeEnum,
     PipelineNotYetFittedError,
     PipelineScoreError,
 )
@@ -130,7 +132,7 @@ def test_all_estimators(
         assert len((_all_estimators_used_in_search())) == 9
     else:
         if is_using_conda:
-            n_estimators = 16
+            n_estimators = 17
         else:
             # This is wrong because only prophet is missing in windows
             # but we don't run this test in windows.
@@ -2867,13 +2869,19 @@ def test_fit_predict_proba_types(problem_type, X_y_binary, X_y_multi):
 
     pipeline.fit(X, y)
     with pytest.raises(
-        ValueError, match="Input X data types are different from the input types"
-    ):
+        PipelineError, match="Input X data types are different from the input types"
+    ) as e:
         pipeline.predict(X2)
+    assert e.value.code == PipelineErrorCodeEnum.PREDICT_INPUT_SCHEMA_UNEQUAL
+    assert e.value.details["input_features_types"] is not None
+    assert e.value.details["pipeline_features_types"] is not None
     with pytest.raises(
-        ValueError, match="Input X data types are different from the input types"
-    ):
+        PipelineError, match="Input X data types are different from the input types"
+    ) as e:
         pipeline.predict_proba(X2)
+    assert e.value.code == PipelineErrorCodeEnum.PREDICT_INPUT_SCHEMA_UNEQUAL
+    assert e.value.details["input_features_types"] is not None
+    assert e.value.details["pipeline_features_types"] is not None
 
 
 def test_pipeline_cache_clone():

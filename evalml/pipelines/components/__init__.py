@@ -46,6 +46,7 @@ from .transformers import (
     TimeSeriesFeaturizer,
     SimpleImputer,
     Imputer,
+    TimeSeriesImputer,
     StandardScaler,
     FeatureSelector,
     DropColumns,
@@ -69,6 +70,7 @@ from .transformers import (
     LabelEncoder,
     ReplaceNullableTypes,
     DropNaNRowsTransformer,
+    TimeSeriesRegularizer,
 )
 from .ensemble import (
     StackedEnsembleClassifier,
