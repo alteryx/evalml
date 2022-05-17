@@ -4,10 +4,12 @@ import pandas as pd
 import woodwork as ww
 
 from evalml.pipelines import PipelineBase
+from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
 
 class UnsupervisedPipeline(PipelineBase):
+
     """Pipeline subclass for all unsupervised learning pipelines.
 
     Args:
@@ -21,6 +23,9 @@ class UnsupervisedPipeline(PipelineBase):
         custom_name (str): Custom name for the pipeline. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
+    
+    problem_type = ProblemTypes.CLUSTERING
+    """ProblemTypes.CLUSTERING"""
 
     def __init__(
         self,
