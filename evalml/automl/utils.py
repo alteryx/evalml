@@ -24,6 +24,7 @@ from evalml.problem_types import (
     is_binary,
     is_time_series,
 )
+from evalml.utils import import_or_raise
 
 _LARGE_DATA_ROW_THRESHOLD = int(1e5)
 _SAMPLER_THRESHOLD = 20000
@@ -204,7 +205,13 @@ def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
     elif len(y) >= _SAMPLER_THRESHOLD and sampler_method != "Oversampler":
         return "Undersampler"
     else:
-        return "Oversampler"
+        try:
+            import_or_raise(
+                "imblearn.over_sampling", error_msg="imbalanced-learn is not installed"
+            )
+            return "Oversampler"
+        except ImportError:
+            return "Undersampler"
 
 
 def get_pipelines_from_component_graphs(

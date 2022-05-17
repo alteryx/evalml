@@ -106,4 +106,4 @@ package_evalml: upgradepip upgradebuild
 	python -m build
 	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
 	tar -zxvf "dist/evalml-${PACKAGE}.tar.gz"
-	mv "evalml-${EM_VERSION}" unpacked_sdist
+	mv "evalml-${PACKAGE}" unpacked_sdist
