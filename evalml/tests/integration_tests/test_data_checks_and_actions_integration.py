@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -5,10 +7,19 @@ import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.automl import get_default_primary_search_objective
-from evalml.data_checks import DefaultDataChecks, OutliersDataCheck
+from evalml.data_checks import (
+    DateTimeFormatDataCheck,
+    DefaultDataChecks,
+    OutliersDataCheck,
+)
 from evalml.data_checks.invalid_target_data_check import InvalidTargetDataCheck
 from evalml.data_checks.null_data_check import NullDataCheck
-from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    TimeSeriesImputer,
+    TimeSeriesRegressionPipeline,
+    TimeSeriesRegularizer,
+)
 from evalml.pipelines.components import (
     DropColumns,
     DropRowsTransformer,
@@ -35,6 +46,111 @@ def test_data_checks_with_healthy_data(X_y_binary):
     assert make_pipeline_from_data_check_output(
         "binary", data_checks_output
     ) == BinaryClassificationPipeline(component_graph={}, parameters={}, random_seed=0)
+
+
+@patch("evalml.pipelines.utils.make_pipeline_from_actions")
+def test_make_pipeline_no_problem_configuration(mocked_make_pipeline_from_actions):
+    with pytest.raises(
+        ValueError, match="problem_configuration must be a dict containing values"
+    ):
+        make_pipeline_from_data_check_output(
+            problem_type="time series regression",
+            data_check_output={},
+            problem_configuration=None,
+        )
+
+
+def test_data_checks_ts_regularizer_imputer(uneven_continuous):
+    X = pd.DataFrame(
+        {
+            "Dates": uneven_continuous,
+            "First_Column": [1, 3, 1, 5, 1, 7] * 23,
+            "Second_Column": ["First", "Second", "First", "Third", "First", "Fourth"]
+            * 23,
+        }
+    )
+    y = pd.Series([i for i in range(len(uneven_continuous))])
+
+    problem_config = {
+        "gap": 0,
+        "max_delay": 0,
+        "forecast_horizon": 0,
+        "time_index": "Dates",
+    }
+    data_check = DateTimeFormatDataCheck(datetime_column="Dates")
+    data_checks_output = data_check.validate(X, y)
+
+    ww_payload = None
+    for output in data_checks_output:
+        if output["code"] == "DATETIME_HAS_UNEVEN_INTERVALS":
+            ww_payload = output["action_options"][0]["parameters"]["frequency_payload"][
+                "default_value"
+            ]
+            break
+
+    action_pipeline = make_pipeline_from_data_check_output(
+        "time series regression", data_checks_output, problem_config
+    )
+
+    assert action_pipeline == TimeSeriesRegressionPipeline(
+        component_graph={
+            "Time Series Regularizer": [TimeSeriesRegularizer, "X", "y"],
+            "Time Series Imputer": [
+                TimeSeriesImputer,
+                "Time Series Regularizer.x",
+                "Time Series Regularizer.y",
+            ],
+        },
+        parameters={
+            "Time Series Regularizer": {
+                "time_index": "Dates",
+                "frequency_payload": ww_payload,
+                "window_length": 5,
+                "threshold": 0.8,
+            },
+            "Time Series Imputer": {
+                "categorical_impute_strategy": "forwards_fill",
+                "numeric_impute_strategy": "interpolate",
+                "target_impute_strategy": "forwards_fill",
+            },
+            "pipeline": {
+                "gap": 0,
+                "max_delay": 0,
+                "forecast_horizon": 0,
+                "time_index": "Dates",
+            },
+        },
+        random_seed=0,
+    )
+    X_expected = pd.DataFrame(
+        {
+            "Dates": pd.date_range("2014-01-01", periods=137, freq="2D"),
+            "First_Column": [1, 3, 1, 5, 1, 7, 1]
+            + [1, 5, 1, 7, 1, 3] * 21
+            + [1, 5, 1, 7],
+            "Second_Column": [
+                "First",
+                "Second",
+                "First",
+                "Third",
+                "First",
+                "Fourth",
+                "First",
+            ]
+            + ["First", "Third", "First", "Fourth", "First", "Second"] * 21
+            + ["First", "Third", "First", "Fourth"],
+        }
+    )
+    X_expected.ww.init(
+        logical_types={"First_Column": "double", "Second_Column": "categorical"}
+    )
+    y_expected = pd.Series(
+        [0, 1, 2, 3, 4, 5, 6] + [i for i in range(8, 138)], name="target"
+    )
+    action_pipeline.fit(X, y)
+    X_t, y_t = action_pipeline.transform(X, y)
+    assert_frame_equal(X_expected, X_t)
+    np.testing.assert_array_equal(y_expected.values, y_t.values)
 
 
 def test_data_checks_suggests_drop_and_impute_cols():

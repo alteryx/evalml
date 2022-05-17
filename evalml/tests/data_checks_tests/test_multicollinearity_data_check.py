@@ -36,7 +36,7 @@ def test_multicollinearity_data_check_init():
 
 @pytest.mark.parametrize("use_nullable_types", [True, False])
 def test_multicollinearity_returns_warning(use_nullable_types):
-    data = [1, 0, 2, 3, 4]
+    data = pd.Series(range(30))
     col = pd.Series(data)
     X = pd.DataFrame(
         {
@@ -45,7 +45,7 @@ def test_multicollinearity_returns_warning(use_nullable_types):
             "col_3": ~col,
             "col_4": col / 2,
             "col_5": col + 1,
-            "not_collinear": [0, 1, 0, 0, 0],
+            "not_collinear": [0, 1, 0, 0, 0] * 6,
         }
     )
     if use_nullable_types:
@@ -55,7 +55,9 @@ def test_multicollinearity_returns_warning(use_nullable_types):
         )
         X.ww.init()
 
-    collinear_cols = [c for c in X.columns if "not" not in c]
+    collinear_cols = [
+        c for c in X.columns if c not in {"not_collinear", "col_nullable"}
+    ]
     msg_list = []
     for idx, col_1 in enumerate(collinear_cols):
         for col_2 in collinear_cols[idx + 1 : :]:
@@ -87,6 +89,7 @@ def test_multicollinearity_nonnumeric_cols(data_type, make_data_type):
             "col_6": [1, 1, 2, 3, 1],
         }
     )
+    X = pd.concat([X] * 10, axis=0).reset_index(drop=True)
     X.ww.init(
         logical_types={
             "col_1": "categorical",
@@ -100,7 +103,7 @@ def test_multicollinearity_nonnumeric_cols(data_type, make_data_type):
     multi_check = MulticollinearityDataCheck(threshold=0.9)
     assert multi_check.validate(X) == [
         DataCheckWarning(
-            message="Columns are likely to be correlated: [('col_1', 'col_4'), ('col_3', 'col_5'), ('col_3', 'col_6'), ('col_5', 'col_6'), ('col_1', 'col_2'), ('col_2', 'col_4')]",
+            message="Columns are likely to be correlated: [('col_1', 'col_4'), ('col_3', 'col_5'), ('col_3', 'col_6'), ('col_5', 'col_6')]",
             data_check_name=multi_data_check_name,
             message_code=DataCheckMessageCode.IS_MULTICOLLINEAR,
             details={
@@ -109,8 +112,6 @@ def test_multicollinearity_nonnumeric_cols(data_type, make_data_type):
                     ("col_3", "col_5"),
                     ("col_3", "col_6"),
                     ("col_5", "col_6"),
-                    ("col_1", "col_2"),
-                    ("col_2", "col_4"),
                 ]
             },
         ).to_dict()

@@ -34,57 +34,39 @@ def test_default_algorithm_init(X_y_binary):
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == []
     assert algo.verbose is True
-    assert algo.default_max_batches == 4
+    assert algo.ensembling is False
+    assert algo.default_max_batches == 3
 
     algo = DefaultAlgorithm(
         X, y, ProblemTypes.TIME_SERIES_BINARY, sampler_name, verbose=True
     )
     assert algo.default_max_batches == 3
 
+    algo = DefaultAlgorithm(
+        X, y, ProblemTypes.BINARY, sampler_name, verbose=True, ensembling=True
+    )
+    assert algo.default_max_batches == 4
 
-def test_default_algorithm_custom_hyperparameters_error(X_y_binary):
+
+def test_default_algorithm_search_parameters_error(X_y_binary):
     X, y = X_y_binary
     problem_type = ProblemTypes.BINARY
     sampler_name = "Undersampler"
 
-    custom_hyperparameters = [
+    search_parameters = [
         {"Imputer": {"numeric_impute_strategy": ["median"]}},
         {"One Hot Encoder": {"value1": ["value2"]}},
     ]
 
     with pytest.raises(
-        ValueError, match="If custom_hyperparameters provided, must be of type dict"
+        ValueError, match="If search_parameters provided, must be of type dict"
     ):
         DefaultAlgorithm(
             X,
             y,
             problem_type,
             sampler_name,
-            custom_hyperparameters=custom_hyperparameters,
-        )
-
-    with pytest.raises(
-        ValueError, match="Custom hyperparameters should only contain skopt"
-    ):
-        DefaultAlgorithm(
-            X,
-            y,
-            problem_type,
-            sampler_name,
-            random_seed=0,
-            custom_hyperparameters={"Imputer": {"impute_strategy": (1, 2)}},
-        )
-
-    with pytest.raises(
-        ValueError, match="Pipeline parameters should not contain skopt.Space variables"
-    ):
-        DefaultAlgorithm(
-            X,
-            y,
-            problem_type,
-            sampler_name,
-            random_seed=0,
-            pipeline_params={"Imputer": {"impute_strategy": Categorical([1, 3, 4])}},
+            search_parameters=search_parameters,
         )
 
 
@@ -142,7 +124,7 @@ def test_default_algorithm(
 
     problem_type = automl_type
     sampler_name = None
-    algo = DefaultAlgorithm(X, y, problem_type, sampler_name)
+    algo = DefaultAlgorithm(X, y, problem_type, sampler_name, ensembling=True)
     naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
 
     first_batch = algo.next_batch()
@@ -227,13 +209,13 @@ def test_default_algorithm(
 
 
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
-def test_evalml_algo_pipeline_params(mock_get_names, X_y_binary):
+def test_evalml_algo_search_params(mock_get_names, X_y_binary):
     X, y = X_y_binary
     mock_get_names.return_value = ["0", "1", "2"]
 
     problem_type = ProblemTypes.BINARY
     sampler_name = None
-    pipeline_params = {
+    search_params = {
         "pipeline": {"gap": 2, "max_delay": 10},
         "Logistic Regression Classifier": {"C": 5},
     }
@@ -242,7 +224,7 @@ def test_evalml_algo_pipeline_params(mock_get_names, X_y_binary):
         y,
         problem_type,
         sampler_name,
-        pipeline_params=pipeline_params,
+        search_parameters=search_params,
         num_long_explore_pipelines=1,
         num_long_pipelines_per_batch=1,
     )
@@ -259,7 +241,7 @@ def test_evalml_algo_pipeline_params(mock_get_names, X_y_binary):
 
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
 @patch("evalml.pipelines.components.OneHotEncoder._get_feature_provenance")
-def test_evalml_algo_custom_hyperparameters(
+def test_evalml_algo_search_hyperparameters(
     mock_get_feature_provenance, mock_get_names, X_y_categorical_classification
 ):
     X, y = X_y_categorical_classification
@@ -274,7 +256,7 @@ def test_evalml_algo_custom_hyperparameters(
     problem_type = ProblemTypes.BINARY
     sampler_name = None
     impute_strategy = Categorical(["mean", "median"])
-    custom_hyperparameters = {
+    search_parameters = {
         "Random Forest Classifier": {
             "n_estimators": Integer(5, 7),
             "max_depth": Categorical([5, 6, 7]),
@@ -287,7 +269,7 @@ def test_evalml_algo_custom_hyperparameters(
         y,
         problem_type,
         sampler_name,
-        custom_hyperparameters=custom_hyperparameters,
+        search_parameters=search_parameters,
         num_long_explore_pipelines=3,
         num_long_pipelines_per_batch=3,
     )
@@ -336,7 +318,7 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
 
     algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)
 
-    assert algo._pipeline_params["Drop Columns Transformer"]["columns"] == columns
+    assert algo.search_parameters["Drop Columns Transformer"]["columns"] == columns
 
     for _ in range(2):
         batch = algo.next_batch()
@@ -354,7 +336,7 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
         for component_name in pipeline.component_graph.compute_order:
             split = component_name.split(" - ")
             if "Drop Columns Transformer" in split:
-                assert algo._pipeline_params[component_name]["columns"] == columns
+                assert algo.search_parameters[component_name]["columns"] == columns
                 assert pipeline.parameters[component_name]["columns"] == columns
 
 
@@ -389,7 +371,7 @@ def test_make_split_pipeline(X_y_binary):
     assert pipeline.name == "test_pipeline"
     assert pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][
         "column_types"
-    ] == ["category"]
+    ] == ["Categorical", "EmailAddress", "URL"]
     assert pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][
         "exclude"
     ]
@@ -460,7 +442,7 @@ def test_select_cat_cols(
         if "Numeric Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cols
         elif "Numeric Pipeline - Select Columns By Type Transformer" in component:
-            assert value["column_types"] == ["category"]
+            assert value["column_types"] == ["Categorical", "EmailAddress", "URL"]
             assert value["exclude"]
         elif "Categorical Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cat_cols
@@ -471,7 +453,7 @@ def test_select_cat_cols(
         if "Numeric Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cols
         elif "Numeric Pipeline - Select Columns By Type Transformer" in component:
-            assert value["column_types"] == ["category"]
+            assert value["column_types"] == ["Categorical", "EmailAddress", "URL"]
             assert value["exclude"]
         elif "Categorical Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cat_cols
@@ -568,7 +550,7 @@ def test_default_algorithm_time_series(
     mock_get_names.return_value = ["0", "1", "2"]
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
     sampler_name = None
-    pipeline_params = {
+    search_parameters = {
         "pipeline": {
             "time_index": "date",
             "gap": 1,
@@ -579,7 +561,7 @@ def test_default_algorithm_time_series(
     }
 
     algo = DefaultAlgorithm(
-        X, y, problem_type, sampler_name, pipeline_params=pipeline_params
+        X, y, problem_type, sampler_name, search_parameters=search_parameters
     )
     naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
 
@@ -587,7 +569,7 @@ def test_default_algorithm_time_series(
     assert len(first_batch) == 2
     assert {p.model_family for p in first_batch} == naive_model_families
     for pipeline in first_batch:
-        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
         assert pipeline.parameters["DateTime Featurizer"]["time_index"]
     add_result(algo, first_batch)
 
@@ -595,7 +577,7 @@ def test_default_algorithm_time_series(
     assert len(second_batch) == 2
     assert {p.model_family for p in second_batch} == naive_model_families
     for pipeline in second_batch:
-        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
         assert pipeline.parameters["DateTime Featurizer"]["time_index"]
     add_result(algo, second_batch)
 
@@ -606,7 +588,7 @@ def test_default_algorithm_time_series(
         ):
             assert pipeline.model_family not in naive_model_families
         assert algo._tuners[pipeline.name]
-        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
         if not isinstance(pipeline.estimator, (ARIMARegressor, ProphetRegressor)):
             assert pipeline.parameters["DateTime Featurizer"]["time_index"]
     add_result(algo, final_batch)
@@ -655,7 +637,7 @@ def test_default_algorithm_time_series_known_in_advance(
     mock_get_names.return_value = ["0", "1", "2"]
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
     sampler_name = None
-    pipeline_params = {
+    search_parameters = {
         "pipeline": {
             "time_index": "date",
             "gap": 1,
@@ -667,7 +649,7 @@ def test_default_algorithm_time_series_known_in_advance(
     }
 
     algo = DefaultAlgorithm(
-        X, y, problem_type, sampler_name, pipeline_params=pipeline_params
+        X, y, problem_type, sampler_name, search_parameters=search_parameters
     )
     naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
 
@@ -708,7 +690,7 @@ def test_default_algorithm_time_series_known_in_advance(
         ):
             assert pipeline.model_family not in naive_model_families
         assert algo._tuners[pipeline.name]
-        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
         assert (
             pipeline.parameters[
                 "Known In Advance Pipeline - Select Columns Transformer"
@@ -734,6 +716,24 @@ def test_default_algorithm_time_series_known_in_advance(
     long_estimators = set([pipeline.estimator.name for pipeline in long_2])
     assert len(long_2) == 30
     assert len(long_estimators) == 3
+
+
+@pytest.mark.parametrize(
+    "automl_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ],
+)
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_default_algorithm_time_series_ensembling(mock_get_names, automl_type, ts_data):
+    X, y = ts_data
+    with pytest.raises(
+        ValueError,
+        match="Ensembling is not available for time series problems in DefaultAlgorithm.",
+    ):
+        DefaultAlgorithm(X, y, automl_type, None, ensembling=True)
 
 
 @pytest.mark.parametrize("split", ["split", "numeric-only", "categorical-only"])
@@ -773,6 +773,7 @@ def test_default_algorithm_accept_features(mock_get_names, X_y_binary, split):
         y,
         problem_type,
         sampler_name,
+        search_parameters={"DFS Transformer": {"features": features}},
         num_long_explore_pipelines=1,
         num_long_pipelines_per_batch=1,
         features=features,
@@ -824,3 +825,61 @@ def test_default_algorithm_add_result_cache(X_y_binary):
 
     for values in algo._best_pipeline_info.values():
         assert values["cached_data"] == cache
+
+
+def test_default_algorithm_ensembling_off(X_y_binary):
+    X, y = X_y_binary
+    algo = DefaultAlgorithm(
+        X=X, y=y, problem_type="binary", sampler_name=None, ensembling=False
+    )
+
+    for i in range(10):
+        next_batch = algo.next_batch()
+        for pipeline in next_batch:
+            assert (
+                "Stacked Ensemble Classifier"
+                not in pipeline.component_graph.compute_order
+            )
+
+
+@patch("evalml.pipelines.components.URLFeaturizer._get_feature_provenance")
+@patch("evalml.pipelines.components.EmailFeaturizer._get_feature_provenance")
+@patch("evalml.pipelines.components.OneHotEncoder._get_feature_provenance")
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_default_algorithm_accepts_URL_email_features(
+    mock_get_names,
+    mock_ohe_get_feature_provenance,
+    mock_email_get_feature_provenance,
+    mock_url_get_feature_provenance,
+    df_with_url_and_email,
+):
+    X = df_with_url_and_email
+    y = pd.Series(range(len(X)))
+
+    mock_ohe_get_feature_provenance.return_value = {
+        "URL_TO_DOMAIN(url)": ["URL_TO_DOMAIN(url)_alteryx.com"],
+        "EMAIL_ADDRESS_TO_DOMAIN(email)": ["EMAIL_ADDRESS_TO_DOMAIN(email)_gmail.com"],
+    }
+    mock_url_get_feature_provenance.return_value = {"url": ["URL_TO_DOMAIN(url)"]}
+    mock_email_get_feature_provenance.return_value = {
+        "email": ["EMAIL_ADDRESS_TO_DOMAIN(email)"]
+    }
+
+    mock_get_names.return_value = [
+        "numeric",
+        "EMAIL_ADDRESS_TO_DOMAIN(email)_gmail.com",
+        "URL_TO_DOMAIN(url)_alteryx.com",
+    ]
+    algo = DefaultAlgorithm(X, y, ProblemTypes.REGRESSION, sampler_name=None)
+    for _ in range(2):
+        batch = algo.next_batch()
+        add_result(algo, batch)
+
+    assert algo._selected_cat_cols == ["url", "email"]
+
+    batch = algo.next_batch()
+    for pipeline in batch:
+        pipeline.fit(X, y)
+        assert pipeline.parameters["Categorical Pipeline - Select Columns Transformer"][
+            "columns"
+        ] == ["url", "email"]

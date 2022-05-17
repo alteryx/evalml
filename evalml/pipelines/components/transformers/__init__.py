@@ -12,6 +12,14 @@ from .feature_selection import (
 )
 from .imputers import PerColumnImputer, SimpleImputer, Imputer, TargetImputer
 from .scalers import StandardScaler, MinMaxScaler
+from .imputers import (
+    PerColumnImputer,
+    SimpleImputer,
+    Imputer,
+    TargetImputer,
+    TimeSeriesImputer,
+)
+from .scalers import StandardScaler
 from .samplers import (
     Undersampler,
     Oversampler,
@@ -32,4 +40,5 @@ from .preprocessing import (
     DropRowsTransformer,
     ReplaceNullableTypes,
     DropNaNRowsTransformer,
+    TimeSeriesRegularizer,
 )

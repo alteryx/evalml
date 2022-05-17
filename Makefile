@@ -94,13 +94,10 @@ installdeps-min:
 	pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
 	pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
 
-SITE_PACKAGES_DIR=$$(python -c 'import site; print(site.getsitepackages()[0])')
+
 .PHONY: installdeps-prophet
 installdeps-prophet:
-	pip install cmdstanpy==0.9.68
-	python ${SITE_PACKAGES_DIR}/cmdstanpy/install_cmdstan.py --dir ${SITE_PACKAGES_DIR} -v 2.28.0
-	echo "Installing Prophet with CMDSTANPY backend"
-	CMDSTAN=${SITE_PACKAGES_DIR}/cmdstan-2.28.0 STAN_BACKEND=CMDSTANPY pip install --no-cache-dir prophet==1.0.1
+	pip install -e .[prophet]
 
 .PHONY: installdeps-core
 installdeps-core:
@@ -121,3 +118,10 @@ installdeps-dev:
 installdeps-docs:
 	pip install -e . -q
 	pip install -r docs-requirements.txt -q
+
+.PHONY: package_evalml
+package_evalml:
+	python setup.py sdist
+	$(eval EM_VERSION=$(shell python setup.py --version))
+	tar -zxvf "dist/evalml-${EM_VERSION}.tar.gz"
+	mv "evalml-${EM_VERSION}" unpacked_sdist

@@ -4,6 +4,7 @@ import logging
 
 from woodwork import logical_types
 
+from ..utils.gen_utils import contains_all_ts_parameters
 from . import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
@@ -45,6 +46,8 @@ from evalml.pipelines.components import (  # noqa: F401
     StandardScaler,
     TargetImputer,
     TimeSeriesFeaturizer,
+    TimeSeriesImputer,
+    TimeSeriesRegularizer,
     Undersampler,
     URLFeaturizer,
 )
@@ -519,6 +522,7 @@ def _make_stacked_ensemble_pipeline(
     n_jobs=-1,
     random_seed=0,
     cached_data=None,
+    label_encoder_params=None,
 ):
     """Creates a pipeline with a stacked ensemble estimator.
 
@@ -532,6 +536,7 @@ def _make_stacked_ensemble_pipeline(
         cached_data (dict): A dictionary of cached data, where the keys are the model family. Expected to be of format
             {model_family: {hash1: trained_component_graph, hash2: trained_component_graph...}...}.
             Defaults to None.
+        label_encoder_params (dict): The parameters passed in for the label encoder, used only for classification problems. Defaults to None.
 
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
@@ -560,14 +565,16 @@ def _make_stacked_ensemble_pipeline(
     )
     final_components = []
     used_model_families = []
-    parameters = {}
+    parameters = label_encoder_params or {}
     cached_data = cached_data or {}
     if is_classification(problem_type):
-        parameters = {
-            "Stacked Ensemble Classifier": {
-                "n_jobs": n_jobs,
+        parameters.update(
+            {
+                "Stacked Ensemble Classifier": {
+                    "n_jobs": n_jobs,
+                }
             }
-        }
+        )
         estimator = StackedEnsembleClassifier
         pipeline_name = "Stacked Ensemble Classification Pipeline"
     else:
@@ -783,12 +790,13 @@ def _make_pipeline_from_multiple_graphs(
     )
 
 
-def make_pipeline_from_actions(problem_type, actions):
+def make_pipeline_from_actions(problem_type, actions, problem_configuration=None):
     """Creates a pipeline of components to address the input DataCheckAction list.
 
     Args:
         problem_type (str or ProblemType): The problem type that the pipeline should address.
         actions (list[DataCheckAction]): List of DataCheckAction objects used to create list of components
+        problem_configuration (dict): Required for time series problem types. Values should be passed in for time_index, gap, forecast_horizon, and max_delay.
 
     Returns:
         PipelineBase: Pipeline which can be used to address data check actions.
@@ -801,6 +809,8 @@ def make_pipeline_from_actions(problem_type, actions):
         [component.name for component in component_list]
     )
     base_class = _get_pipeline_base_class(problem_type)
+    if problem_configuration:
+        parameters["pipeline"] = problem_configuration
     return base_class(component_dict, parameters=parameters)
 
 
@@ -816,8 +826,21 @@ def _make_component_list_from_actions(actions):
     components = []
     cols_to_drop = []
     indices_to_drop = []
+
     for action in actions:
-        if action.action_code == DataCheckActionCode.DROP_COL:
+        if action.action_code == DataCheckActionCode.REGULARIZE_AND_IMPUTE_DATASET:
+            metadata = action.metadata
+            parameters = metadata.get("parameters", {})
+            components.extend(
+                [
+                    TimeSeriesRegularizer(
+                        time_index=parameters.get("time_index", None),
+                        frequency_payload=parameters["frequency_payload"],
+                    ),
+                    TimeSeriesImputer(),
+                ]
+            )
+        elif action.action_code == DataCheckActionCode.DROP_COL:
             cols_to_drop.extend(action.metadata["columns"])
         elif action.action_code == DataCheckActionCode.IMPUTE_COL:
             metadata = action.metadata
@@ -841,26 +864,37 @@ def _make_component_list_from_actions(actions):
     return components
 
 
-def make_pipeline_from_data_check_output(problem_type, data_check_output):
+def make_pipeline_from_data_check_output(
+    problem_type, data_check_output, problem_configuration=None
+):
     """Creates a pipeline of components to address warnings and errors output from running data checks. Uses all default suggestions.
 
     Args:
         problem_type (str or ProblemType): The problem type.
         data_check_output (dict): Output from calling ``DataCheck.validate()``.
+        problem_configuration (dict): Required for time series problem types. Values should be passed in for time_index, gap, forecast_horizon, and max_delay.
 
     Returns:
         PipelineBase: Pipeline which can be used to address data check outputs.
+
+    Raises:
+        ValueError: If problem_type is of type time series but an incorrect problem_configuration has been passed.
     """
     action_options = []
     for message in data_check_output:
         action_options.extend([option for option in message["action_options"]])
+
+    if is_time_series(problem_type):
+        is_valid, msg = contains_all_ts_parameters(problem_configuration)
+        if not is_valid:
+            raise ValueError(msg)
 
     actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
         for option in action_options
     )
 
-    return make_pipeline_from_actions(problem_type, actions)
+    return make_pipeline_from_actions(problem_type, actions, problem_configuration)
 
 
 def get_actions_from_option_defaults(action_options):

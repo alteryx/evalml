@@ -138,8 +138,35 @@ class PartialDependenceErrorCode(Enum):
 
 
 class PartialDependenceError(ValueError):
-    """Exception raised for all errors that partial dependence can raise."""
+    """Exception raised for all errors that partial dependence can raise.
+
+    Args:
+        message (str): descriptive error message
+        code (PartialDependenceErrorCode): code for speicific error
+    """
 
     def __init__(self, message, code):
         self.code = code
+        super().__init__(message)
+
+
+class PipelineErrorCodeEnum(Enum):
+    """Enum identifying the type of error encountered while applying a pipeline."""
+
+    PREDICT_INPUT_SCHEMA_UNEQUAL = "predict_input_schema_unequal"
+    """predict_input_schema_unequal"""
+
+
+class PipelineError(ValueError):
+    """Exception raised for errors that can be raised when applying a pipeline.
+
+    Args:
+        message (str): descriptive error message
+        code (PipelineErrorCodeEnum): code for specific error
+        details (dict): additional details for error
+    """
+
+    def __init__(self, message, code, details=None):
+        self.code = code
+        self.details = details
         super().__init__(message)

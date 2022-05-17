@@ -1,7 +1,6 @@
 """Base machine learning pipeline class."""
 import copy
 import inspect
-import json
 import logging
 import os
 import sys
@@ -428,8 +427,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         df = pd.DataFrame(importance, columns=["feature", "importance"])
         return df
 
-    def graph_json(self):
-        """Generates a JSON with nodes consisting of the component names and parameters, and edges detailing component relationships.
+    def graph_dict(self):
+        """Generates a dictionary with nodes consisting of the component names and parameters, and edges detailing component relationships. This dictionary is JSON serializable in most cases.
 
         x_edges specifies from which component feature data is being passed.
         y_edges specifies from which component target data is being passed.
@@ -440,7 +439,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         "y_edges": [[from_component_name, to_component_name], [from_component_name, to_component_name], ...]}
 
         Returns:
-            dag_json (str): A serialized JSON representation of a DAG structure.
+            dag_dict (dict): A dictionary representing the DAG structure.
         """
         nodes = {}
         for comp_, att_ in self.component_graph.component_instances.items():
@@ -476,14 +475,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                     y_edges.append({"from": "y", "to": component_name})
         nodes["X"] = {"Parameters": {}, "Name": "X"}
         nodes["y"] = {"Parameters": {}, "Name": "y"}
-        graph_as_json = {"Nodes": nodes, "x_edges": x_edges, "y_edges": y_edges}
+        graph_as_dict = {"Nodes": nodes, "x_edges": x_edges, "y_edges": y_edges}
 
-        for x_edge in graph_as_json["x_edges"]:
+        for x_edge in graph_as_dict["x_edges"]:
             if x_edge["from"] == "X":
-                graph_as_json["x_edges"].remove(x_edge)
-                graph_as_json["x_edges"].insert(0, x_edge)
+                graph_as_dict["x_edges"].remove(x_edge)
+                graph_as_dict["x_edges"].insert(0, x_edge)
 
-        return json.dumps(graph_as_json, indent=4)
+        return graph_as_dict
 
     def graph(self, filepath=None):
         """Generate an image representing the pipeline graph.
