@@ -28,21 +28,26 @@ class BaselineClusterer(Unsupervised):
     """[ProblemTypes.CLUSTERING]"""
 
     def __init__(self, n_clusters=8, random_seed=0, **kwargs):
+        if not isinstance(n_clusters, int) or n_clusters < 2:
+            raise ValueError("The number of clusters must be a whole number greater than 1.")
+
         parameters = {"n_clusters": n_clusters}
         parameters.update(kwargs)
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
 
-    def fit(self, X):
+    def fit(self, X, y=None):
         """Fits baseline clusterer component to data.
 
         Args:
             X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target values, which may not exist and are not used in unsupervised learning. Ignored.
 
         Returns:
             self
         """
+        self._num_features = X.shape[1]
         return self
 
     def predict(self, X):
@@ -56,9 +61,7 @@ class BaselineClusterer(Unsupervised):
         """
         X = infer_feature_types(X)
         n_clusters = self.parameters["n_clusters"]
-        predictions = get_random_state(self.random_seed).choice(
-            n_clusters, len(X)
-        )
+        predictions = get_random_state(self.random_seed).choice(n_clusters, len(X))
         return infer_feature_types(predictions)
 
     @property
