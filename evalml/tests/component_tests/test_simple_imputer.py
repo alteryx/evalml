@@ -308,25 +308,6 @@ def test_simple_imputer_does_not_reset_index():
     )
 
 
-def test_simple_imputer_with_none_numeric():
-    # No all none here because ww default inference will treat
-    # it as unknown which is not a supported feature.
-    X = pd.DataFrame(
-        {
-            "int with None": [1, 0, 5, None],
-            "float with None": [0.1, 0.0, 0.5, None],
-        }
-    )
-    y = pd.Series([0, 0, 1, 0, 1])
-    imputer = SimpleImputer(impute_strategy="mean")
-    imputer.fit(X, y)
-    transformed = imputer.transform(X, y)
-    expected = pd.DataFrame(
-        {"int with None": [1, 0, 5, 2], "float with None": [0.1, 0.0, 0.5, 0.2]}
-    )
-    assert_frame_equal(expected, transformed, check_dtype=False)
-
-
 X = pd.DataFrame(
     {
         "int with None": [1, 0, 5, 5, None],
@@ -385,7 +366,7 @@ columns_dict = {
         "all",
     ],
 )
-def test_simple_imputer_with_none_cat_bool(dtypes):
+def test_simple_imputer_with_none_separated(dtypes):
     test_ltypes = dict((k, ltypes[k]) for k in columns_dict[dtypes])
     X_test = X[columns_dict[dtypes]]
     X_test.ww.init(logical_types=test_ltypes)
@@ -394,32 +375,6 @@ def test_simple_imputer_with_none_cat_bool(dtypes):
     imputer.fit(X_test, y)
     transformed = imputer.transform(X_test, y)
     assert_frame_equal(expected[columns_dict[dtypes]], transformed, check_dtype=False)
-
-
-def test_simple_imputer_with_categorical_none():
-    X = pd.DataFrame(
-        {
-            "category with None": pd.Series(["c", "a", "a", None], dtype="category"),
-            "object with None": ["b", "a", "a", None],
-        }
-    )
-    X.ww.init(
-        logical_types={
-            "object with None": "categorical",
-        }
-    )
-    y = pd.Series([0, 0, 1, 0, 1])
-    imputer = SimpleImputer()
-    imputer.fit(X, y)
-    transformed = imputer.transform(X, y)
-    expected = pd.DataFrame(
-        {
-            "category with None": pd.Series(["c", "a", "a", "a"], dtype="category"),
-            "object with None": pd.Series(["b", "a", "a", "a"], dtype="category"),
-        }
-    )
-    assert_frame_equal(expected, transformed, check_dtype=False)
-
 
 @pytest.mark.parametrize("na_type", ["python_none", "numpy_nan", "pandas_na"])
 @pytest.mark.parametrize("data_type", ["Categorical", "NaturalLanguage"])
