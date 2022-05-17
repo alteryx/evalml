@@ -18,6 +18,7 @@ from .estimators import (
     ElasticNetRegressor,
     BaselineClassifier,
     BaselineRegressor,
+    BaselineClusterer,
     DecisionTreeClassifier,
     DecisionTreeRegressor,
     TimeSeriesBaselineEstimator,

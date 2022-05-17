@@ -34,6 +34,7 @@ from .regressors import (
     VowpalWabbitRegressor,
 )
 from .clusterers import (
+    BaselineClusterer,
     DBSCANClusterer,
     KMeansClusterer,
     KModesClusterer,
