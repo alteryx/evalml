@@ -29,7 +29,12 @@ class SimpleImputer(Transformer):
     ):
         parameters = {"impute_strategy": impute_strategy, "fill_value": fill_value}
         parameters.update(kwargs)
-        imputer = SkImputer(strategy=impute_strategy, fill_value=fill_value, **kwargs)
+        imputer = SkImputer(
+            strategy=impute_strategy,
+            fill_value=fill_value,
+            missing_values=pd.NA,
+            **kwargs,
+        )
         self._all_null_cols = None
         super().__init__(
             parameters=parameters, component_obj=imputer, random_seed=random_seed

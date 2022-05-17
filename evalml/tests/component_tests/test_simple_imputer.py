@@ -343,7 +343,7 @@ expected = pd.DataFrame(
         "float with None": [0.1, 0.0, 0.5, 0.5, 0.5],
         "category with None": pd.Series(["c", "a", "a", "a", "a"], dtype="category"),
         "boolean with None": pd.Series(
-            [True, True, False, True, True], dtype="category"
+            [True, True, False, True, True], dtype="boolean"
         ),
         "object with None": pd.Series(["b", "a", "a", "a", "a"], dtype="category"),
     }
@@ -388,7 +388,7 @@ columns_dict = {
 def test_simple_imputer_with_none_cat_bool(dtypes):
     test_ltypes = dict((k, ltypes[k]) for k in columns_dict[dtypes])
     X_test = X[columns_dict[dtypes]]
-    X.ww.init(logical_types=test_ltypes)
+    X_test.ww.init(logical_types=test_ltypes)
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = SimpleImputer()
     imputer.fit(X_test, y)
