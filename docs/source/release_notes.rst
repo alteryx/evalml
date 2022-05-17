@@ -106,10 +106,6 @@ Release Notes
 
 **v0.48.0 Mar. 25, 2022**
     * Enhancements
-<<<<<<< HEAD
-=======
->>>>>>> main
->>>>>>> 69_clustering_pipelines_v1
         * Add support for oversampling in time series classification problems :pr:`3387`
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` to make it deterministic when creating and choosing columns :pr:`3384`

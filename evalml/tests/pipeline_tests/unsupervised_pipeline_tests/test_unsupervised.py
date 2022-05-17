@@ -59,22 +59,6 @@ def test_unsupervised_init():
     assert pipeline.random_seed == 42
 
 
-@pytest.mark.parametrize("target_type", ["category", "string", "bool"])
-def test_invalid_targets_regression_pipeline(
-    breast_cancer_local, wine_local, target_type, dummy_regression_pipeline
-):
-    X, y = wine_local
-    if target_type == "category":
-        y = pd.Series(y).astype("category")
-    if target_type == "bool":
-        X, y = breast_cancer_local
-        y = y.map({"malignant": False, "benign": True})
-    with pytest.raises(
-        ValueError, match="Regression pipeline can only handle numeric target data"
-    ):
-        dummy_regression_pipeline.fit(X, y)
-
-
 def test_woodwork_regression_pipeline(diabetes_local, linear_regression_pipeline):
     X, y = diabetes_local
     linear_regression_pipeline.fit(X, y)

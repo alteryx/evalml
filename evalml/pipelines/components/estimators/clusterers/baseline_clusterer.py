@@ -1,4 +1,4 @@
-"""Baseline classifier."""
+"""Baseline clusterer."""
 import numpy as np
 import pandas as pd
 
@@ -9,7 +9,7 @@ from evalml.utils import get_random_state, infer_feature_types
 
 
 class BaselineClusterer(Unsupervised):
-    """Clusterer that sorts data using the specified strategy.
+    """Clusterer that sorts data randomly into `n` clusters.
 
     This is useful as a simple baseline clusterer to compare with other clusterers.
 
