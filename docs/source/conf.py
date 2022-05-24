@@ -129,7 +129,7 @@ html_theme_options = {
             "name": "StackOverflow",
             "url": "https://stackoverflow.com/questions/tagged/evalml",
             "icon": "fab fa-stack-overflow",
-            "type": "fontawesome'",
+            "type": "fontawesome",
         },
     ],
     "collapse_navigation": False,
