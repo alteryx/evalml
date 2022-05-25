@@ -7,6 +7,7 @@ Release Notes
     * Changes
     * Documentation Changes
         * Updated the Time Series User Guide page to include known-in-advance features and fix typos :pr:`3521`
+        * Add slack and stackoverflow icon to footer :pr:`3528`
     * Testing Changes
         * Rename yml to yaml for GitHub Actions :pr:`3522`
 
