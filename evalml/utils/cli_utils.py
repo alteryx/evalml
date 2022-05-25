@@ -1,14 +1,24 @@
 """CLI functions."""
+import configparser
 import locale
 import os
+import pathlib
 import platform
 import struct
 import sys
 
 import pkg_resources
+import requirements
 
 import evalml
 from evalml.utils import get_logger
+
+CONDA_TO_PIP_NAME = {
+    "python-kaleido": "kaleido",
+    "py-xgboost": "xgboost",
+    "matplotlib-base": "matplotlib",
+    "python-graphviz": "graphviz",
+}
 
 
 def print_info():
@@ -91,3 +101,46 @@ def get_evalml_root():
         Location where evalml is installed.
     """
     return os.path.dirname(evalml.__file__)
+
+
+def standardize_format(packages, ignore_packages=None):
+    """Standardizes the format of the given packages.
+
+    Args:
+        packages: Requirements package generator object.
+        ignore_packages: List of packages to ignore. Defaults to None.
+
+    Returns:
+        List of packages with standardized format.
+    """
+    ignore_packages = [] if ignore_packages is None else ignore_packages
+    standardized_package_specifiers = []
+    for package in packages:
+        if package.name in ignore_packages:
+            continue
+        name = CONDA_TO_PIP_NAME.get(package.name, package.name)
+        if package.specs:
+            all_specs = ",".join(["".join(spec) for spec in package.specs])
+            standardized = f"{name}{all_specs}"
+        else:
+            standardized = name
+        standardized_package_specifiers.append(standardized)
+    return standardized_package_specifiers
+
+
+def get_evalml_pip_requirements(evalml_path, ignore_packages=None):
+    """Gets pip requirements for evalml.
+
+    Args:
+        evalml_path: Path to evalml root.
+        ignore_packages: List of packages to ignore. Defaults to None.
+
+    Returns:
+        List of pip requirements for evalml.
+    """
+    config = configparser.ConfigParser()
+    config.read(pathlib.Path(evalml_path, "setup.cfg"))
+    return standardize_format(
+        requirements.parse(config["options"]["install_requires"]),
+        ignore_packages=ignore_packages,
+    )

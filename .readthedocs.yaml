@@ -25,5 +25,5 @@ python:
     - method: pip
       path: .
       extra_requirements:
+        - dev
         - prophet
-    - requirements: docs-requirements.txt

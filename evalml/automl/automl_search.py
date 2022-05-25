@@ -585,10 +585,6 @@ class AutoMLSearch:
         self.random_seed = random_seed
         self.n_jobs = n_jobs
 
-        if not self.plot and self.verbose:
-            self.logger.warning(
-                "Unable to import plotly; skipping pipeline search plotting\n"
-            )
         if allowed_component_graphs is not None:
             if not isinstance(allowed_component_graphs, dict):
                 raise ValueError(
@@ -1629,10 +1625,7 @@ class AutoMLSearch:
     @property
     def plot(self):
         """Return an instance of the plot with the latest scores."""
-        try:
-            return PipelineSearchPlots(self.results, self.objective)
-        except ImportError:
-            return None
+        return PipelineSearchPlots(self.results, self.objective)
 
     @property
     def _sleep_time(self):

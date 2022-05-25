@@ -579,17 +579,6 @@ def test_max_time_units(X_y_binary):
         )
 
 
-def test_plot_disabled_missing_dependency(X_y_binary, has_minimal_dependencies):
-    X, y = X_y_binary
-
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=3)
-    if has_minimal_dependencies:
-        with pytest.raises(AttributeError):
-            automl.plot.search_iteration_plot
-    else:
-        automl.plot.search_iteration_plot
-
-
 @pytest.mark.noncore_dependency
 def test_plot_iterations_max_iterations(X_y_binary, go):
 
@@ -856,7 +845,6 @@ def test_automl_search_sampler_ratio(
     categorical_features,
     problem_type,
     mock_imbalanced_data_X_y,
-    has_minimal_dependencies,
 ):
     X, y = mock_imbalanced_data_X_y(problem_type, categorical_features, size)
     automl = AutoMLSearch(
@@ -875,7 +863,7 @@ def test_automl_search_sampler_ratio(
             for pipeline in pipelines
         )
     else:
-        if size == "large" or has_minimal_dependencies:
+        if size == "large":
             assert all(
                 any("Undersampler" in comp.name for comp in pipeline.component_graph)
                 for pipeline in pipelines
@@ -910,7 +898,6 @@ def test_automl_search_sampler_method(
     categorical_features,
     problem_type,
     mock_imbalanced_data_X_y,
-    has_minimal_dependencies,
     caplog,
 ):
     # 0.2 minority:majority class ratios
@@ -930,9 +917,6 @@ def test_automl_search_sampler_method(
             for pipeline in pipelines
         )
     else:
-        if has_minimal_dependencies:
-            sampler_method = "Undersampler"
-            assert "Could not import imblearn.over_sampling" in caplog.text
         assert all(
             any(sampler_method in comp.name for comp in pipeline.component_graph)
             for pipeline in pipelines
@@ -942,10 +926,8 @@ def test_automl_search_sampler_method(
 @pytest.mark.parametrize("sampling_ratio", [0.1, 0.2, 0.5, 1])
 @pytest.mark.parametrize("sampler", ["Undersampler", "Oversampler"])
 def test_automl_search_ratio_overrides_sampler_ratio(
-    sampler, sampling_ratio, mock_imbalanced_data_X_y, has_minimal_dependencies
+    sampler, sampling_ratio, mock_imbalanced_data_X_y
 ):
-    if has_minimal_dependencies and sampler == "Oversampler":
-        pytest.skip("Skipping test with minimal dependencies")
     X, y = mock_imbalanced_data_X_y("binary", "none", "small")
     search_parameters = {sampler: {"sampling_ratio": sampling_ratio}}
     automl = AutoMLSearch(
@@ -1094,10 +1076,7 @@ def test_automl_search_sampler_dictionary_keys(
     sampler,
     sampling_ratio_dict,
     errors,
-    has_minimal_dependencies,
 ):
-    if sampler == "Oversampler" and has_minimal_dependencies:
-        pytest.skip("Skipping tests since imblearn isn't installed")
     # split this from the undersampler since the dictionaries are formatted differently
     X = pd.DataFrame({"a": [i for i in range(1200)], "b": [i % 3 for i in range(1200)]})
     y = pd.Series(["majority"] * 900 + ["minority"] * 300)
@@ -1122,9 +1101,7 @@ def test_automl_search_sampler_dictionary_keys(
 
 
 @pytest.mark.parametrize("sampler", ["Undersampler", "Oversampler"])
-def test_automl_search_sampler_k_neighbors_param(sampler, has_minimal_dependencies):
-    if sampler == "Oversampler" and has_minimal_dependencies:
-        pytest.skip("Skipping tests since imblearn isn't installed")
+def test_automl_search_sampler_k_neighbors_param(sampler):
     # split this from the undersampler since the dictionaries are formatted differently
     X = pd.DataFrame({"a": [i for i in range(1200)], "b": [i % 3 for i in range(1200)]})
     y = pd.Series(["majority"] * 900 + ["minority"] * 300)
@@ -1149,12 +1126,8 @@ def test_automl_search_sampler_k_neighbors_param(sampler, has_minimal_dependenci
 @pytest.mark.parametrize(
     "parameters", [None, {"Oversampler": {"k_neighbors_default": 5}}]
 )
-def test_automl_search_sampler_k_neighbors_no_error(
-    parameters, has_minimal_dependencies, fraud_100
-):
+def test_automl_search_sampler_k_neighbors_no_error(parameters, fraud_100):
     # automatically uses SMOTE
-    if has_minimal_dependencies:
-        pytest.skip("Skipping tests since imblearn isn't installed")
     X, y = fraud_100
     automl = AutoMLSearch(
         X_train=X,
@@ -1244,7 +1217,6 @@ def test_automl_passes_allow_long_running_models(
     unique,
     allow_long_running_models,
     caplog,
-    has_minimal_dependencies,
 ):
     X = pd.DataFrame([i for i in range(unique)] * 5)
     y = pd.Series([i for i in range(unique)] * 5)
@@ -1265,9 +1237,7 @@ def test_automl_passes_allow_long_running_models(
     if allow_long_running_models or unique == 10:
         assert "Dropping estimators" not in caplog.text
         return
-    estimators = ["Elastic Net Classifier"]
-    if not has_minimal_dependencies:
-        estimators.extend(["CatBoost Classifier", "XGBoost Classifier"])
+    estimators = ["Elastic Net Classifier", "CatBoost Classifier", "XGBoost Classifier"]
 
     assert "Dropping estimators {}".format(", ".join(sorted(estimators))) in caplog.text
 

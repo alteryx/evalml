@@ -694,9 +694,7 @@ def test_iterative_algorithm_results_best_pipeline_info_id(
     "problem_type",
     [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS],
 )
-def test_iterative_algorithm_first_batch_order(
-    problem_type, X_y_binary, has_minimal_dependencies
-):
+def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary):
     X, y = X_y_binary
 
     algo = IterativeAlgorithm(X=X, y=y, problem_type=problem_type)
@@ -729,17 +727,13 @@ def test_iterative_algorithm_first_batch_order(
             "Decision Tree Classifier",
             "Extra Trees Classifier",
         ]
-    if has_minimal_dependencies:
-        extra_dep_estimators = []
     assert (
         estimators_in_first_batch
         == linear_models + extra_dep_estimators + core_estimators
     )
 
 
-def test_iterative_algorithm_first_batch_order_param(
-    X_y_binary, has_minimal_dependencies
-):
+def test_iterative_algorithm_first_batch_order_param(X_y_binary):
     X, y = X_y_binary
 
     # put random forest first
@@ -763,8 +757,6 @@ def test_iterative_algorithm_first_batch_order_param(
         "LightGBM Classifier",
         "CatBoost Classifier",
     ]
-    if has_minimal_dependencies:
-        final_estimators = []
     assert (
         estimators_in_first_batch
         == [
@@ -784,12 +776,8 @@ def test_iterative_algorithm_first_batch_order_param(
 )
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_iterative_algorithm_sampling_params(
-    problem_type, sampler, mock_imbalanced_data_X_y, has_minimal_dependencies
+    problem_type, sampler, mock_imbalanced_data_X_y
 ):
-    if has_minimal_dependencies and sampler != "Undersampler":
-        pytest.skip(
-            "Minimal dependencies, so we don't test the oversamplers for iterative algorithm"
-        )
     X, y = mock_imbalanced_data_X_y(problem_type, "some", "small")
     algo = IterativeAlgorithm(
         X=X,
@@ -838,10 +826,7 @@ def test_iterative_algorithm_allow_long_running_models(
     allow_long_running_models,
     allowed_component_graphs,
     allowed_model_families,
-    has_minimal_dependencies,
 ):
-    if has_minimal_dependencies:
-        return
     X = pd.DataFrame()
     y = pd.Series([i for i in range(length)] * 5)
     y_short = pd.Series([i for i in range(10)] * 5)
@@ -881,7 +866,7 @@ def test_iterative_algorithm_allow_long_running_models(
     "length,models_missing", [(10, 0), (75, 0), (100, 2), (160, 3)]
 )
 def test_iterative_algorithm_allow_long_running_models_problem(
-    length, models_missing, allow_long_running_models, problem, has_minimal_dependencies
+    length, models_missing, allow_long_running_models, problem
 ):
     X = pd.DataFrame()
     y = pd.Series([i for i in range(length)] * 5)
@@ -903,24 +888,17 @@ def test_iterative_algorithm_allow_long_running_models_problem(
         assert len(algo.allowed_pipelines) == len(algo_reg.allowed_pipelines)
         models_missing = 0
 
-    if has_minimal_dependencies and models_missing > 0:
-        # no XGBoost or CatBoost installed
-        models_missing = 1
     assert len(algo.allowed_pipelines) + models_missing == len(
         algo_reg.allowed_pipelines
     )
 
 
-def test_iterative_algorithm_allow_long_running_models_next_batch(
-    has_minimal_dependencies,
-):
+def test_iterative_algorithm_allow_long_running_models_next_batch():
     models_missing = [
         "Elastic Net Classifier",
         "XGBoost Classifier",
         "CatBoost Classifier",
     ]
-    if has_minimal_dependencies:
-        models_missing = ["Elastic Net Classifier"]
     X = pd.DataFrame()
     y = pd.Series([i for i in range(200)] * 5)
 

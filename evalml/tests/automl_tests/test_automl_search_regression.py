@@ -142,19 +142,6 @@ def test_categorical_regression(X_y_categorical_regression):
     assert not automl.rankings["mean_cv_score"].isnull().any()
 
 
-def test_plot_disabled_missing_dependency(X_y_regression, has_minimal_dependencies):
-    X, y = X_y_regression
-
-    automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="regression", max_iterations=3
-    )
-    if has_minimal_dependencies:
-        with pytest.raises(AttributeError):
-            automl.plot.search_iteration_plot
-    else:
-        automl.plot.search_iteration_plot
-
-
 @pytest.mark.noncore_dependency
 def test_plot_iterations_max_iterations(X_y_regression, go):
 

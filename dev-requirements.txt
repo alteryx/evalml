@@ -1,8 +1,0 @@
--r requirements.txt
--r test-requirements.txt
--r docs-requirements.txt
-flake8==3.7.0
-black==22.3.0
-isort==5.0.0
-pydocstyle==6.1.1
-darglint==1.8.0

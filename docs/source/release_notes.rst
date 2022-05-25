@@ -26,6 +26,7 @@ Release Notes
         * Changed ``NoVarianceDataCheck`` to only output warnings :pr:`3506`
         * Reverted XGBoost Classifier/Regressor patch for all boolean columns needing to be converted to int. :pr:`3503`
         * Updated ``roc_curve()`` and ``conf_matrix()`` to work with IntegerNullable and BooleanNullable types. :pr:`3465`
+        * Transitioned to use pyproject.toml and setup.cfg away from setup.py :pr:`3494`
         * Changed ``ComponentGraph._transform_features`` to raise a ``PipelineError`` instead of a ``ValueError``. This is not a breaking change because ``PipelineError`` is a subclass of ``ValueError``. :pr:`3497`
         * Capped ``sklearn`` at version 1.1.0 :pr:`3518`
     * Documentation Changes
