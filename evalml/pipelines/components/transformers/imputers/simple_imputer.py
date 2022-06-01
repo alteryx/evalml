@@ -118,6 +118,14 @@ class SimpleImputer(Transformer):
 
         new_schema = original_schema.get_subset_schema(X_t.columns)
 
+        # TODO: Fix this after WW adds inference of object type booleans to BooleanNullable
+        # Iterate through categorical columns that might have been boolean and convert them back to boolean
+        cat_cols = X.ww.select(["Categorical"], return_schema=True)
+        cat_cols = [x for x in cat_cols.columns.keys()]
+        for col in cat_cols:
+            if {True, False}.issubset(set(X[col].unique())):
+                X_t[col] = X_t[col].astype(bool)
+
         # Convert Nullable Integers to Doubles for the "mean" and "median" strategies
         if self.impute_strategy in ["mean", "median"]:
             nullable_int_cols = X.ww.select(["IntegerNullable"], return_schema=True)

@@ -564,10 +564,12 @@ def test_imputer_int_preserved():
     )
     assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Integer}
 
+@pytest.mark.parametrize("null_type", ["pandas_na", "numpy_nan", "python_none"])
 @pytest.mark.parametrize("test_case", ["boolean_with_null", "boolean_without_null"])
-def test_imputer_bool_preserved(test_case):
+def test_imputer_bool_preserved(test_case, null_type):
     if test_case == "boolean_with_null":
-        X = pd.DataFrame(pd.Series([True, False, True, np.nan] * 4))
+        null_type = {"pandas_na": pd.NA, "numpy_nan": np.nan, "python_none": None}[null_type]
+        X = pd.DataFrame(pd.Series([True, False, True, null_type] * 4))
         expected = pd.DataFrame(pd.Series([True, False, True, True] * 4, dtype="category"))
         expected_ww_dtype = Categorical
         check_dtype = True
