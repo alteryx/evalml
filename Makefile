@@ -61,7 +61,7 @@ git-test-prophet:
 
 .PHONY: git-test-integration
 git-test-integration:
-	pytest evalml/tests/integration_tests -n 2 --durations 0 --timeout 300 --cov=evalml --cov-config=.pyproject.toml --junitxml=test-reports/git-test-integration-junit.xml
+	pytest evalml/tests/integration_tests -n 2 --durations 0 --timeout 300 --cov=evalml --cov-config=pyproject.toml --junitxml=test-reports/git-test-integration-junit.xml
 
 
 .PHONY: installdeps
