@@ -30,6 +30,7 @@ class Imputer(Transformer):
     _valid_numeric_impute_strategies = set(
         ["mean", "median", "most_frequent", "constant"]
     )
+    _valid_boolean_impute_strategies = set(["most_frequent", "constant"])
 
     def __init__(
         self,
@@ -37,6 +38,8 @@ class Imputer(Transformer):
         categorical_fill_value=None,
         numeric_impute_strategy="mean",
         numeric_fill_value=None,
+        boolean_impute_strategy="most_frequent",
+        boolean_fill_value=None,
         random_seed=0,
         **kwargs,
     ):
@@ -44,9 +47,13 @@ class Imputer(Transformer):
             raise ValueError(
                 f"{categorical_impute_strategy} is an invalid parameter. Valid categorical impute strategies are {', '.join(self._valid_numeric_impute_strategies)}"
             )
-        elif numeric_impute_strategy not in self._valid_numeric_impute_strategies:
+        if numeric_impute_strategy not in self._valid_numeric_impute_strategies:
             raise ValueError(
                 f"{numeric_impute_strategy} is an invalid parameter. Valid impute strategies are {', '.join(self._valid_numeric_impute_strategies)}"
+            )
+        if boolean_impute_strategy not in self._valid_boolean_impute_strategies:
+            raise ValueError(
+                f"{numeric_impute_strategy} is an invalid parameter. Valid impute strategies are {', '.join(self._valid_boolean_impute_strategies)}"
             )
 
         parameters = {
@@ -54,11 +61,17 @@ class Imputer(Transformer):
             "numeric_impute_strategy": numeric_impute_strategy,
             "categorical_fill_value": categorical_fill_value,
             "numeric_fill_value": numeric_fill_value,
+            "boolean_fill_value": boolean_fill_value,
         }
         parameters.update(kwargs)
         self._categorical_imputer = SimpleImputer(
             impute_strategy=categorical_impute_strategy,
             fill_value=categorical_fill_value,
+            **kwargs,
+        )
+        self._boolean_imputer = SimpleImputer(
+            impute_strategy=boolean_impute_strategy,
+            fill_value=boolean_fill_value,
             **kwargs,
         )
         self._numeric_imputer = SimpleImputer(
@@ -69,6 +82,7 @@ class Imputer(Transformer):
         self._all_null_cols = None
         self._numeric_cols = None
         self._categorical_cols = None
+        self._boolean_cols = None
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
@@ -84,8 +98,9 @@ class Imputer(Transformer):
             self
         """
         X = infer_feature_types(X)
-        cat_cols = list(
-            X.ww.select(["category", "boolean"], return_schema=True).columns
+        cat_cols = list(X.ww.select(["category"], return_schema=True).columns)
+        bool_cols = list(
+            X.ww.select(["BooleanNullable", "Boolean"], return_schema=True).columns
         )
         numeric_cols = list(X.ww.select(["numeric"], return_schema=True).columns)
 
@@ -101,6 +116,11 @@ class Imputer(Transformer):
         if len(X_categorical.columns) > 0:
             self._categorical_imputer.fit(X_categorical, y)
             self._categorical_cols = X_categorical.columns
+
+        X_boolean = X[[col for col in bool_cols if col not in self._all_null_cols]]
+        if len(X_boolean.columns) > 0:
+            self._boolean_imputer.fit(X_boolean, y)
+            self._boolean_cols = X_boolean.columns
         return self
 
     def transform(self, X, y=None):
@@ -130,5 +150,10 @@ class Imputer(Transformer):
             X_categorical = X.ww[self._categorical_cols.tolist()]
             imputed = self._categorical_imputer.transform(X_categorical)
             X_no_all_null[X_categorical.columns] = imputed
+
+        if self._boolean_cols is not None and len(self._boolean_cols) > 0:
+            X_boolean = X.ww[self._boolean_cols.tolist()]
+            imputed = self._boolean_imputer.transform(X_boolean)
+            X_no_all_null[X_boolean.columns] = imputed
 
         return X_no_all_null

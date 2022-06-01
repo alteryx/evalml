@@ -1,3 +1,4 @@
+from copy import deepcopy
 from unittest.mock import patch
 
 import numpy as np
@@ -337,6 +338,130 @@ def test_imputer_no_nans(imputer_test_data):
     )
     transformed = imputer.fit_transform(X, y)
     assert_frame_equal(transformed, expected, check_dtype=False)
+
+
+X = pd.DataFrame(
+    {
+        "int with None": [1, 0, 5, 5, None],
+        "float with None": [0.1, 0.0, 0.5, 0.5, None],
+        "category with None": pd.Series(["c", "a", "a", "a", None], dtype="category"),
+        "boolean with None": pd.Series([True, None, False, True, True]),
+        "object with None": ["b", "a", "a", "a", None],
+        "all None": [None, None, None, None, None],
+    }
+)
+
+expected = pd.DataFrame(
+    {
+        "int with None": pd.Series([1, 0, 5, 5, 5], dtype="Int64"),
+        "float with None": [0.1, 0.0, 0.5, 0.5, 0.5],
+        "category with None": pd.Series(["c", "a", "a", "a", "a"], dtype="category"),
+        "boolean with None": pd.Series(
+            [True, True, False, True, True], dtype="boolean"
+        ),
+        "object with None": pd.Series(["b", "a", "a", "a", "a"], dtype="category"),
+    }
+)
+ltypes = {
+    "int with None": "IntegerNullable",
+    "float with None": "Double",
+    "category with None": "categorical",
+    "boolean with None": "BooleanNullable",
+    "object with None": "categorical",
+    "all None": "categorical",
+}
+columns_dict = {
+    "integers_only": ["int with None"],
+    "floats_only": ["float with None"],
+    "numerics_only": ["int with None", "float with None"],
+    "categoricals_only": ["category with None", "object with None"],
+    "booleans_only": ["boolean with None"],
+    "categorical_and_booleans": [
+        "category with None",
+        "boolean with None",
+        "object with None",
+    ],
+    "all": [
+        "int with None",
+        "float with None",
+        "category with None",
+        "boolean with None",
+        "object with None",
+    ],
+}
+
+
+@pytest.mark.parametrize(
+    "dtypes",
+    [
+        "integers_only",
+        "floats_only",
+        "numerics_only",
+        "booleans_only",
+        "categoricals_only",
+        "categorical_and_booleans",
+        "all",
+    ],
+)
+@pytest.mark.parametrize("numeric_impute_strategy", ["most_frequent", "mean"])
+@pytest.mark.parametrize("categorical_impute_strategy", ["most_frequent", "constant"])
+@pytest.mark.parametrize("boolean_impute_strategy", ["most_frequent", "constant"])
+def test_imputer_with_none_separated(
+    dtypes,
+    numeric_impute_strategy,
+    categorical_impute_strategy,
+    boolean_impute_strategy,
+):
+    test_ltypes = dict((k, ltypes[k]) for k in columns_dict[dtypes])
+    X_test = X[columns_dict[dtypes]]
+    X_test.ww.init(logical_types=test_ltypes)
+    y = pd.Series([0, 0, 1, 0, 1])
+    numeric_fill_value = 0
+    categorical_fill_value = "filler"
+    boolean_fill_value = True
+    imputer = Imputer(
+        numeric_impute_strategy=numeric_impute_strategy,
+        categorical_impute_strategy=categorical_impute_strategy,
+        numeric_fill_value=numeric_fill_value,
+        categorical_fill_value=categorical_fill_value,
+        boolean_impute_strategy=boolean_impute_strategy,
+        boolean_fill_value=boolean_fill_value,
+    )
+    imputer.fit(X_test, y)
+    transformed = imputer.transform(X_test, y)
+
+    # Build the expected dataframe
+    expected_columns = columns_dict[dtypes]
+    expected_df = deepcopy(expected[expected_columns])
+    if numeric_impute_strategy == "mean":
+        for col in columns_dict["numerics_only"]:
+            try:
+                expected_df = expected_df.astype({col: float})
+                expected_df[col].iloc[-1:] = X_test[col].mean()
+            except KeyError:
+                continue
+    elif numeric_impute_strategy == "constant":
+        for col in columns_dict["numerics_only"]:
+            try:
+                expected_df[col].iloc[-1:] = numeric_fill_value
+            except KeyError:
+                continue
+    if categorical_impute_strategy == "constant":
+        for col in columns_dict["categoricals_only"]:
+            try:
+                expected_df[col].cat.add_categories(
+                    categorical_fill_value, inplace=True
+                )
+                expected_df[col].iloc[-1:] = categorical_fill_value
+            except KeyError:
+                continue
+    if boolean_impute_strategy == "constant":
+        for col in columns_dict["booleans_only"]:
+            try:
+                expected_df[col].iloc[-1:] = boolean_fill_value
+            except KeyError:
+                continue
+    assert_frame_equal(expected_df, transformed, check_dtype=False)
 
 
 def test_imputer_with_none():

@@ -2,6 +2,7 @@
 import pandas as pd
 import woodwork
 from sklearn.impute import SimpleImputer as SkImputer
+from woodwork.logical_types import Double
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
@@ -113,7 +114,15 @@ class SimpleImputer(Transformer):
 
         X_t = self._component_obj.transform(X_t)
         X_t = pd.DataFrame(X_t, columns=not_all_null_or_natural_language_cols)
-        X_t.ww.init(schema=original_schema.get_subset_schema(X_t.columns))
+
+        new_schema = original_schema.get_subset_schema(X_t.columns)
+
+        # Convert Nullable Integers to Doubles
+        nullable_int_cols = X.ww.select(["IntegerNullable"], return_schema=True)
+        nullable_int_cols = [x for x in nullable_int_cols.columns.keys()]
+        for col in nullable_int_cols:
+            new_schema.set_types({col: Double})
+        X_t.ww.init(schema=new_schema)
 
         # Add back in natural language columns, unchanged
         if len(natural_language_cols) > 0:
