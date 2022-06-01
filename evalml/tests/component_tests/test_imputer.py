@@ -564,28 +564,29 @@ def test_imputer_int_preserved():
     )
     assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Integer}
 
-
-def test_imputer_bool_preserved():
-    X = pd.DataFrame(pd.Series([True, False, True, np.nan] * 4))
+@pytest.mark.parametrize("test_case", ["boolean_with_null", "boolean_without_null"])
+def test_imputer_bool_preserved(test_case):
+    if test_case == "boolean_with_null":
+        X = pd.DataFrame(pd.Series([True, False, True, np.nan] * 4))
+        expected = pd.DataFrame(pd.Series([True, False, True, True] * 4, dtype="category"))
+        expected_ww_dtype = Categorical
+        check_dtype = True
+    elif test_case == "boolean_without_null":
+        X = pd.DataFrame(pd.Series([True, False, True, False] * 4))
+        expected = pd.DataFrame(pd.Series([True, False, True, False] * 4))
+        expected_ww_dtype = Boolean
+        check_dtype = False
     imputer = Imputer(categorical_impute_strategy="most_frequent")
     transformed = imputer.fit_transform(X)
     pd.testing.assert_frame_equal(
         transformed,
-        pd.DataFrame(pd.Series([True, False, True, True] * 4, dtype="category")),
+        expected,
+        check_dtype=check_dtype,
     )
     assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-        0: Categorical
+        0: expected_ww_dtype
     }
 
-    X = pd.DataFrame(pd.Series([True, False, True, False] * 4))
-    imputer = Imputer(categorical_impute_strategy="most_frequent")
-    transformed = imputer.fit_transform(X)
-    pd.testing.assert_frame_equal(
-        transformed,
-        pd.DataFrame(pd.Series([True, False, True, False] * 4)),
-        check_dtype=False,
-    )
-    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Boolean}
 
 
 def test_imputer_does_not_erase_ww_info():
