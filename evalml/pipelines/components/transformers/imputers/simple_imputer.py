@@ -30,6 +30,7 @@ class SimpleImputer(Transformer):
     ):
         parameters = {"impute_strategy": impute_strategy, "fill_value": fill_value}
         parameters.update(kwargs)
+        self.impute_strategy = impute_strategy
         imputer = SkImputer(
             strategy=impute_strategy,
             fill_value=fill_value,
@@ -117,11 +118,12 @@ class SimpleImputer(Transformer):
 
         new_schema = original_schema.get_subset_schema(X_t.columns)
 
-        # Convert Nullable Integers to Doubles
-        nullable_int_cols = X.ww.select(["IntegerNullable"], return_schema=True)
-        nullable_int_cols = [x for x in nullable_int_cols.columns.keys()]
-        for col in nullable_int_cols:
-            new_schema.set_types({col: Double})
+        # Convert Nullable Integers to Doubles for the "mean" strategy
+        if self.impute_strategy in ["mean", "median"]:
+            nullable_int_cols = X.ww.select(["IntegerNullable"], return_schema=True)
+            nullable_int_cols = [x for x in nullable_int_cols.columns.keys()]
+            for col in nullable_int_cols:
+                new_schema.set_types({col: Double})
         X_t.ww.init(schema=new_schema)
 
         # Add back in natural language columns, unchanged

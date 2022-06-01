@@ -12,8 +12,10 @@ class Imputer(Transformer):
     Args:
         categorical_impute_strategy (string): Impute strategy to use for string, object, boolean, categorical dtypes. Valid values include "most_frequent" and "constant".
         numeric_impute_strategy (string): Impute strategy to use for numeric columns. Valid values include "mean", "median", "most_frequent", and "constant".
+        boolean_impute_strategy (string): Impute strategy to use for boolean columns. Valid values include "most_frequent" and "constant".
         categorical_fill_value (string): When categorical_impute_strategy == "constant", fill_value is used to replace missing data. The default value of None will fill with the string "missing_value".
         numeric_fill_value (int, float): When numeric_impute_strategy == "constant", fill_value is used to replace missing data. The default value of None will fill with 0.
+        boolean_fill_value (bool): When boolean_impute_strategy == "constant", fill_value is used to replace missing data.  The default value of None will fill with True.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -21,10 +23,12 @@ class Imputer(Transformer):
     hyperparameter_ranges = {
         "categorical_impute_strategy": ["most_frequent"],
         "numeric_impute_strategy": ["mean", "median", "most_frequent"],
+        "boolean_impute_strategy": ["most_frequent"]
     }
     """{
         "categorical_impute_strategy": ["most_frequent"],
         "numeric_impute_strategy": ["mean", "median", "most_frequent"],
+        "boolean_impute_strategy": ["most_frequent"]
     }"""
     _valid_categorical_impute_strategies = set(["most_frequent", "constant"])
     _valid_numeric_impute_strategies = set(
@@ -59,6 +63,7 @@ class Imputer(Transformer):
         parameters = {
             "categorical_impute_strategy": categorical_impute_strategy,
             "numeric_impute_strategy": numeric_impute_strategy,
+            "boolean_impute_strategy": boolean_impute_strategy,
             "categorical_fill_value": categorical_fill_value,
             "numeric_fill_value": numeric_fill_value,
             "boolean_fill_value": boolean_fill_value,
@@ -124,7 +129,9 @@ class Imputer(Transformer):
         return self
 
     def transform(self, X, y=None):
-        """Transforms data X by imputing missing values. 'None' values are converted to np.nan before imputation and are treated as the same.
+        """Transforms data X by imputing missing values. 'None' values are converted to np.nan before imputation and are
+        treated as the same.  Columns with the new pandas nullable integer type will be transformed into columns full
+        of floats when the numeric strategy is "mean".
 
         Args:
             X (pd.DataFrame): Data to transform

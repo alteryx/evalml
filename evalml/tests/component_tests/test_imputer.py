@@ -29,8 +29,10 @@ def test_imputer_default_parameters():
     expected_parameters = {
         "categorical_impute_strategy": "most_frequent",
         "numeric_impute_strategy": "mean",
+        "boolean_impute_strategy": "most_frequent",
         "categorical_fill_value": None,
         "numeric_fill_value": None,
+        "boolean_fill_value": None,
     }
     assert imputer.parameters == expected_parameters
 
@@ -39,23 +41,31 @@ def test_imputer_default_parameters():
 @pytest.mark.parametrize(
     "numeric_impute_strategy", ["mean", "median", "most_frequent", "constant"]
 )
-def test_imputer_init(categorical_impute_strategy, numeric_impute_strategy):
+@pytest.mark.parametrize(
+    "boolean_impute_strategy", ["most_frequent", "constant"]
+)
+def test_imputer_init(categorical_impute_strategy, numeric_impute_strategy, boolean_impute_strategy):
 
     imputer = Imputer(
         categorical_impute_strategy=categorical_impute_strategy,
         numeric_impute_strategy=numeric_impute_strategy,
+        boolean_impute_strategy=boolean_impute_strategy,
         categorical_fill_value="str_fill_value",
         numeric_fill_value=-1,
+        boolean_fill_value=True,
     )
     expected_parameters = {
         "categorical_impute_strategy": categorical_impute_strategy,
         "numeric_impute_strategy": numeric_impute_strategy,
+        "boolean_impute_strategy": boolean_impute_strategy,
         "categorical_fill_value": "str_fill_value",
         "numeric_fill_value": -1,
+        "boolean_fill_value": True,
     }
     expected_hyperparameters = {
         "categorical_impute_strategy": ["most_frequent"],
         "numeric_impute_strategy": ["mean", "median", "most_frequent"],
+        "boolean_impute_strategy": ["most_frequent"],
     }
     assert imputer.name == "Imputer"
     assert imputer.parameters == expected_parameters
@@ -403,7 +413,7 @@ columns_dict = {
         "all",
     ],
 )
-@pytest.mark.parametrize("numeric_impute_strategy", ["most_frequent", "mean"])
+@pytest.mark.parametrize("numeric_impute_strategy", ["most_frequent", "mean", "median"])
 @pytest.mark.parametrize("categorical_impute_strategy", ["most_frequent", "constant"])
 @pytest.mark.parametrize("boolean_impute_strategy", ["most_frequent", "constant"])
 def test_imputer_with_none_separated(
@@ -412,6 +422,9 @@ def test_imputer_with_none_separated(
     categorical_impute_strategy,
     boolean_impute_strategy,
 ):
+    """Test for correctness for the different numeric, categorical and boolean dtypes using dataframes that contain
+    either just the tested imputed dtypes or combinations of dtypes."""
+
     test_ltypes = dict((k, ltypes[k]) for k in columns_dict[dtypes])
     X_test = X[columns_dict[dtypes]]
     X_test.ww.init(logical_types=test_ltypes)
@@ -433,11 +446,15 @@ def test_imputer_with_none_separated(
     # Build the expected dataframe
     expected_columns = columns_dict[dtypes]
     expected_df = deepcopy(expected[expected_columns])
-    if numeric_impute_strategy == "mean":
+    if numeric_impute_strategy in ["mean", "median"]:
         for col in columns_dict["numerics_only"]:
             try:
                 expected_df = expected_df.astype({col: float})
-                expected_df[col].iloc[-1:] = X_test[col].mean()
+                if numeric_impute_strategy == "mean":
+                    expected_df[col].iloc[-1:] = X_test[col].mean()
+                elif numeric_impute_strategy == "median":
+                    expected_df[col].iloc[-1:] = X_test[col].median()
+
             except KeyError:
                 continue
     elif numeric_impute_strategy == "constant":
@@ -462,41 +479,6 @@ def test_imputer_with_none_separated(
             except KeyError:
                 continue
     assert_frame_equal(expected_df, transformed, check_dtype=False)
-
-
-def test_imputer_with_none():
-    X = pd.DataFrame(
-        {
-            "int with None": [1, 0, 5, None] * 4,
-            "float with None": [0.1, 0.0, 0.5, None] * 4,
-            "category with None": pd.Series(
-                ["b", "a", "a", None] * 4, dtype="category"
-            ),
-            "boolean with None": pd.Series([True, None, False, True] * 4),
-            "object with None": ["b", "a", "a", None] * 4,
-            "all None": [None, None, None, None] * 4,
-        }
-    )
-    y = pd.Series([0, 0, 1, 0, 1] * 4)
-    imputer = Imputer()
-    imputer.fit(X, y)
-    transformed = imputer.transform(X, y)
-    expected = pd.DataFrame(
-        {
-            "int with None": [1, 0, 5, 2] * 4,
-            "float with None": [0.1, 0.0, 0.5, 0.2] * 4,
-            "category with None": pd.Series(["b", "a", "a", "a"] * 4, dtype="category"),
-            "boolean with None": pd.Series(
-                [True, True, False, True] * 4, dtype="category"
-            ),
-            "object with None": pd.Series(["b", "a", "a", "a"] * 4, dtype="category"),
-        }
-    )
-    assert_frame_equal(expected, transformed, check_dtype=False)
-
-    imputer = Imputer()
-    transformed = imputer.fit_transform(X, y)
-    assert_frame_equal(expected, transformed, check_dtype=False)
 
 
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
