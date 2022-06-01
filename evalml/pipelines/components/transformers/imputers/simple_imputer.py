@@ -118,7 +118,7 @@ class SimpleImputer(Transformer):
 
         new_schema = original_schema.get_subset_schema(X_t.columns)
 
-        # Convert Nullable Integers to Doubles for the "mean" strategy
+        # Convert Nullable Integers to Doubles for the "mean" and "median" strategies
         if self.impute_strategy in ["mean", "median"]:
             nullable_int_cols = X.ww.select(["IntegerNullable"], return_schema=True)
             nullable_int_cols = [x for x in nullable_int_cols.columns.keys()]
