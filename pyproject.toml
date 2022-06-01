@@ -4,8 +4,10 @@ requires = [
     "wheel"
 ]
 build-backend = "setuptools.build_meta" 
+
 [tool.coverage.run]
 source = ["evalml"]
+
 [tool.coverage.report]
 exclude_lines =[
     "pragma: no cover",
