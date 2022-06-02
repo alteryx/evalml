@@ -1,0 +1,62 @@
+name: Unit tests, linux, min dependencies with min dependencies
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
+
+jobs:
+  unit_tests:
+    name: ${{ matrix.python_version }} min dep ${{ matrix.command }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ['3.8']
+        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-parallel', 'git-test-prophet']
+    steps:
+      - name: Set up Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 2
+      - name: Update apt and install Graphviz
+        run: sudo apt update && sudo apt install -y graphviz
+      - name: Create virtual environment, upgrade pip
+        run: |
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          python -m pip install --upgrade pip -q
+      - if: ${{ matrix.command == 'git-test-automl' || matrix.command == 'git-test-prophet' }}
+        name: Install evalml with test dependencies, core dependencies, & optional requirements (Prophet)
+        run: |
+          source test_python/bin/activate
+          pip install prophet-prebuilt==1.0.2
+          pip install requirements-parser
+          pip install -e . --no-dependencies
+          pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
+          pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
+          python mininum_req.py
+          pip freeze
+      - if: ${{ matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-parallel' }}
+        name: Install evalml with test dependencies, core dependencies, & optional requirements
+        run: |
+          source test_python/bin/activate
+          pip install -e . --no-dependencies
+          pip install requirements-parser
+          pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
+          pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
+          python mininum_req.py
+          pip freeze
+      - name: run tests
+        run: |
+          source test_python/bin/activate
+          make ${{ matrix.command }}

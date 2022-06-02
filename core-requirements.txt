@@ -16,3 +16,4 @@ dask>=2021.10.0
 nlp-primitives>=2.1.0
 featuretools>=1.7.0
 networkx>=2.5,<2.6
+toolz>=0.9.0
