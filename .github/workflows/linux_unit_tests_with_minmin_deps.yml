@@ -9,7 +9,7 @@ on:
 
 jobs:
   unit_tests:
-    name: ${{ matrix.python_version }} min dep ${{ matrix.command }}
+    name: ${{ matrix.python_version }} min-min dep ${{ matrix.command }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
