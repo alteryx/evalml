@@ -292,8 +292,10 @@ def test_describe_pipeline(
                     "parameters": {
                         "categorical_impute_strategy": "most_frequent",
                         "numeric_impute_strategy": "mean",
+                        "boolean_impute_strategy": "most_frequent",
                         "categorical_fill_value": None,
                         "numeric_fill_value": None,
+                        "boolean_fill_value": None,
                     },
                 },
                 "Label Encoder": {
@@ -337,8 +339,10 @@ def test_describe_pipeline(
                     "parameters": {
                         "categorical_impute_strategy": "most_frequent",
                         "numeric_impute_strategy": "mean",
+                        "boolean_impute_strategy": "most_frequent",
                         "categorical_fill_value": None,
                         "numeric_fill_value": None,
+                        "boolean_fill_value": None,
                     },
                 },
                 "One Hot Encoder": {
@@ -1230,8 +1234,10 @@ def test_get_default_parameters(logistic_regression_binary_pipeline):
         "Imputer": {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "mean",
+            "boolean_impute_strategy": "most_frequent",
             "categorical_fill_value": None,
             "numeric_fill_value": None,
+            "boolean_fill_value": None,
         },
         "One Hot Encoder": {
             "top_n": 10,
@@ -1854,7 +1860,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
     component_graph_str = f"{{'Imputer': ['Imputer', 'X', 'y'], 'OHE_1': ['One Hot Encoder', 'Imputer.x', 'y'], 'OHE_2': ['One Hot Encoder', 'Imputer.x', 'y'], 'Estimator': ['{final_estimator}', 'OHE_1.x', 'OHE_2.x', 'y']}}"
     expected_repr = (
         f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
-        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
+        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None. 'boolean_fill_value': None}, "
         "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Pipeline', random_seed=0)"
@@ -1868,7 +1874,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
     )
     expected_repr = (
         f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
-        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}, "
+        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': 42. 'boolean_fill_value': None}, "
         "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Pipeline', random_seed=0)"
@@ -1887,7 +1893,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
     )
     expected_repr = (
         f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
-        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': float('inf'), 'numeric_fill_value': float('inf')}, "
+        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': float('inf'), 'numeric_fill_value': float('inf'), 'boolean_fill_value': None}, "
         "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Pipeline', random_seed=0)"
@@ -1906,7 +1912,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
     )
     expected_repr = (
         f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
-        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}, "
+        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan, 'boolean_fill_value': None}, "
         "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Pipeline', random_seed=0)"
@@ -2566,6 +2572,7 @@ def test_get_hyperparameter_ranges():
             "numeric_impute_strategy": Categorical(
                 categories=("most_frequent", "mean"), prior=None
             ),
+            "boolean_impute_strategy": ["most_frequent"],
         },
         "Random Forest Classifier": {
             "n_estimators": Integer(

@@ -114,7 +114,9 @@ class Imputer(Transformer):
         # with object dtypes are attempted to be cast to float64 with scikit-learn 1.1.  So we separate
         # boolean and categorical into separate imputers.
         for col in cat_cols:
-            if {True, False}.issubset(set(X[col].unique())):
+            if {True, False}.issubset(set(X[col].unique())) and any(
+                isinstance(x, bool) for x in X[col].unique()
+            ):
                 cat_cols.remove(col)
                 bool_cols.append(col)
 

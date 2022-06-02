@@ -123,7 +123,9 @@ class SimpleImputer(Transformer):
         cat_cols = X.ww.select(["Categorical"], return_schema=True)
         cat_cols = [x for x in cat_cols.columns.keys()]
         for col in cat_cols:
-            if {True, False}.issubset(set(X[col].unique())):
+            if {True, False}.issubset(set(X[col].unique())) and any(
+                isinstance(x, bool) for x in X[col].unique()
+            ):
                 X_t[col] = X_t[col].astype(bool)
 
         # Convert Nullable Integers to Doubles for the "mean" and "median" strategies
