@@ -14,7 +14,7 @@ lime==0.2.0.1
 matplotlib==3.3.3
 networkx==2.5
 nlp-primitives==2.1.0
-numba==0.49.0
+numba==0.50.0
 numpy==1.21.0
 pandas==1.4.0
 plotly==5.0.0
@@ -32,3 +32,7 @@ texttable==1.6.2
 vowpalwabbit==8.11.0
 woodwork==0.16.2
 xgboost==1.5.1
+scikit-image==0.16.2
+six==1.9.0
+pillow==8.3.2
+PyWavelets==0.5.0

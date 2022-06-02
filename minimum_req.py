@@ -113,7 +113,7 @@ if __name__ == "__main__":
     path = args.req_file_path
     
     # get the minimum requirements and install the min core requirements
-    min_reqs, min_core_reqs, min_test_reqs = get_min_test_and_core_requirements(path + "minimum_core_requirements.txt", path + "minimum_test_requirements.txt")
+    min_reqs, min_core_reqs, min_test_reqs = get_min_test_and_core_requirements(path + "minimum_requirements.txt", path + "minimum_test_requirements.txt")
     install_min_deps()
 
     package_to_version_dict = {}
@@ -122,11 +122,16 @@ if __name__ == "__main__":
     # find all packages that the core requirements rely on
     for package in min_core_reqs:
         pack = tuple(requirements.parse(package))[0]
-        _package_name = pack.name
-        _package = pkg_resources.working_set.by_key[_package_name]
+        _package_name = pack.name.lower()
+        try:
+            _package = pkg_resources.working_set.by_key[_package_name]
+        except KeyError:
+            _package_name = _package_name.replace("_", "-")
+            _package = pkg_resources.working_set.by_key[_package_name]
         all_requirements.append(package)
         # reliance will consist of requirements like ["scipy>=0.17.0", "pandas>=X.x", "moto"]
         reliance = [str(r) for r in _package.requires()]
+        print(_package_name, reliance)
         all_requirements.extend(reliance)  # retrieve deps from setup.py
 
     # for any requirements in our test-requirements that apply to the core requirement packages, add that in as well
