@@ -23,7 +23,7 @@ class Imputer(Transformer):
     hyperparameter_ranges = {
         "categorical_impute_strategy": ["most_frequent"],
         "numeric_impute_strategy": ["mean", "median", "most_frequent"],
-        "boolean_impute_strategy": ["most_frequent"]
+        "boolean_impute_strategy": ["most_frequent"],
     }
     """{
         "categorical_impute_strategy": ["most_frequent"],
@@ -108,6 +108,15 @@ class Imputer(Transformer):
             X.ww.select(["BooleanNullable", "Boolean"], return_schema=True).columns
         )
         numeric_cols = list(X.ww.select(["numeric"], return_schema=True).columns)
+
+        # TODO: Remove this when columns with True/False/NaN are inferred properly as BooleanNullable.
+        # If columns with boolean values and NaN are included with normal categorical columns, columns
+        # with object dtypes are attempted to be cast to float64 with scikit-learn 1.1.  So we separate
+        # boolean and categorical into separate imputers.
+        for col in cat_cols:
+            if {True, False}.issubset(set(X[col].unique())):
+                cat_cols.remove(col)
+                bool_cols.append(col)
 
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()

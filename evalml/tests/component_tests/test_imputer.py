@@ -41,10 +41,10 @@ def test_imputer_default_parameters():
 @pytest.mark.parametrize(
     "numeric_impute_strategy", ["mean", "median", "most_frequent", "constant"]
 )
-@pytest.mark.parametrize(
-    "boolean_impute_strategy", ["most_frequent", "constant"]
-)
-def test_imputer_init(categorical_impute_strategy, numeric_impute_strategy, boolean_impute_strategy):
+@pytest.mark.parametrize("boolean_impute_strategy", ["most_frequent", "constant"])
+def test_imputer_init(
+    categorical_impute_strategy, numeric_impute_strategy, boolean_impute_strategy
+):
 
     imputer = Imputer(
         categorical_impute_strategy=categorical_impute_strategy,
@@ -286,8 +286,10 @@ def test_imputer_fill_value(imputer_test_data):
     imputer = Imputer(
         categorical_impute_strategy="constant",
         numeric_impute_strategy="constant",
+        boolean_impute_strategy="constant",
         categorical_fill_value="fill",
         numeric_fill_value=-1,
+        boolean_fill_value=True,
     )
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
@@ -302,7 +304,7 @@ def test_imputer_fill_value(imputer_test_data):
                 ["b", "b", "fill", "c", "fill"] * 4, dtype="category"
             ),
             "bool col with nan": pd.Series(
-                [True, "fill", False, "fill", True] * 4, dtype="category"
+                [True, True, False, True, True] * 4, dtype="category"
             ),
         }
     )
@@ -311,8 +313,10 @@ def test_imputer_fill_value(imputer_test_data):
     imputer = Imputer(
         categorical_impute_strategy="constant",
         numeric_impute_strategy="constant",
+        boolean_impute_strategy="constant",
         categorical_fill_value="fill",
         numeric_fill_value=-1,
+        boolean_fill_value=True,
     )
     transformed = imputer.fit_transform(X, y)
     assert_frame_equal(expected, transformed, check_dtype=False)
@@ -564,13 +568,18 @@ def test_imputer_int_preserved():
     )
     assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Integer}
 
+
 @pytest.mark.parametrize("null_type", ["pandas_na", "numpy_nan", "python_none"])
 @pytest.mark.parametrize("test_case", ["boolean_with_null", "boolean_without_null"])
 def test_imputer_bool_preserved(test_case, null_type):
     if test_case == "boolean_with_null":
-        null_type = {"pandas_na": pd.NA, "numpy_nan": np.nan, "python_none": None}[null_type]
+        null_type = {"pandas_na": pd.NA, "numpy_nan": np.nan, "python_none": None}[
+            null_type
+        ]
         X = pd.DataFrame(pd.Series([True, False, True, null_type] * 4))
-        expected = pd.DataFrame(pd.Series([True, False, True, True] * 4, dtype="category"))
+        expected = pd.DataFrame(
+            pd.Series([True, False, True, True] * 4, dtype="category")
+        )
         expected_ww_dtype = Categorical
         check_dtype = True
     elif test_case == "boolean_without_null":
@@ -588,7 +597,6 @@ def test_imputer_bool_preserved(test_case, null_type):
     assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
         0: expected_ww_dtype
     }
-
 
 
 def test_imputer_does_not_erase_ww_info():
