@@ -24,4 +24,6 @@ python:
     - requirements: docs/readthedocs-requirements.txt
     - method: pip
       path: .
-    - requirements: docs-requirements.txt
+      extra_requirements:
+        - dev
+        - prophet

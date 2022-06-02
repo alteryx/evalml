@@ -102,7 +102,7 @@ Read more about EvalML on our [documentation page](https://evalml.alteryx.com/):
 The EvalML community is happy to provide support to users of EvalML. Project support can be found in four places depending on the type of question:
 1. For usage questions, use [Stack Overflow](https://stackoverflow.com/questions/tagged/evalml) with the `evalml` tag.
 2. For bugs, issues, or feature requests start a [Github issue](https://github.com/alteryx/evalml/issues).
-3. For discussion regarding development on the core library, use [Slack](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTQ1MjZlOWFmZDk2YzAwMjEzNTkwZTZkN2NmOGFjOGI4YzE5OGMyMGM5NGIxNTE4NjkzYWI3OWEwZjkyZGExYmQ).
+3. For discussion regarding development on the core library, use [Slack](https://join.slack.com/t/alteryx-oss/shared_invite/zt-182tyvuxv-NzIn6eiCEf8TBziuKp0bNA).
 4. For everything else, the core developers can be reached by email at open_source_support@alteryx.com
 
 ## Built at Alteryx

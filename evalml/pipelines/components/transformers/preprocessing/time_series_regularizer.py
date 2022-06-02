@@ -117,7 +117,7 @@ class TimeSeriesRegularizer(Transformer):
             ww_payload = self.frequency_payload
         else:
             ww_payload = infer_frequency(
-                X[self.time_index],
+                X_ww[self.time_index],
                 debug=True,
                 window_length=self.window_length,
                 threshold=self.threshold,
@@ -142,7 +142,7 @@ class TimeSeriesRegularizer(Transformer):
         nan = self.debug_payload["nan_values"]
 
         self.error_dict = self._identify_indices(
-            self.time_index, X, estimated_freq, duplicates, missing, extra, nan
+            self.time_index, X_ww, estimated_freq, duplicates, missing, extra, nan
         )
 
         return self

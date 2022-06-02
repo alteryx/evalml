@@ -6,7 +6,6 @@ import woodwork as ww
 from evalml.data_checks import (
     DataCheckActionCode,
     DataCheckActionOption,
-    DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
     NoVarianceDataCheck,
@@ -42,27 +41,27 @@ drop_feature_action_option = DataCheckActionOption(
     data_check_name=no_variance_data_check_name,
     metadata={"columns": ["feature"]},
 )
-feature_0_unique = DataCheckError(
+feature_0_unique = DataCheckWarning(
     message="'feature' has 0 unique values.",
     data_check_name=no_variance_data_check_name,
     message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
     details={"columns": ["feature"]},
     action_options=[drop_feature_action_option],
 ).to_dict()
-feature_1_unique = DataCheckError(
+feature_1_unique = DataCheckWarning(
     message="'feature' has 1 unique value.",
     data_check_name=no_variance_data_check_name,
     message_code=DataCheckMessageCode.NO_VARIANCE,
     details={"columns": ["feature"]},
     action_options=[drop_feature_action_option],
 ).to_dict()
-labels_0_unique = DataCheckError(
+labels_0_unique = DataCheckWarning(
     message="Y has 0 unique values.",
     data_check_name=no_variance_data_check_name,
     message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
     details={"columns": ["Y"]},
 ).to_dict()
-labels_1_unique = DataCheckError(
+labels_1_unique = DataCheckWarning(
     message="Y has 1 unique value.",
     data_check_name=no_variance_data_check_name,
     message_code=DataCheckMessageCode.NO_VARIANCE,
@@ -149,7 +148,7 @@ cases = [
         all_null_y_with_name,
         False,
         [
-            DataCheckError(
+            DataCheckWarning(
                 message="Labels has 0 unique values.",
                 data_check_name=no_variance_data_check_name,
                 message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,

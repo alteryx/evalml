@@ -26,7 +26,7 @@ binary = pd.Series([0] * 800 + [1] * 200)
 multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
 
 
-minimum_dependencies_set = set(
+all_requirements_set = set(
     [
         "Baseline Classifier",
         "Baseline Regressor",
@@ -75,10 +75,6 @@ minimum_dependencies_set = set(
         "Time Series Regularizer",
         "URL Featurizer",
         "Undersampler",
-    ]
-)
-additional_requirements_set = set(
-    [
         "ARIMA Regressor",
         "Exponential Smoothing Regressor",
         "CatBoost Classifier",
@@ -96,14 +92,9 @@ additional_requirements_set = set(
         "XGBoost Regressor",
     ]
 )
-all_requirements_set = minimum_dependencies_set.union(additional_requirements_set)
 not_supported_in_conda = set(
     [
-        "ARIMA Regressor",
         "Prophet Regressor",
-        "Vowpal Wabbit Binary Classifier",
-        "Vowpal Wabbit Multiclass Classifier",
-        "Vowpal Wabbit Regressor",
     ]
 )
 not_supported_in_windows = set(
@@ -121,14 +112,11 @@ not_supported_in_linux_py39 = set()
 
 
 def test_all_components(
-    has_minimal_dependencies,
     is_running_py_39_or_above,
     is_using_conda,
     is_using_windows,
 ):
-    if has_minimal_dependencies:
-        expected_components = minimum_dependencies_set
-    elif is_using_conda:
+    if is_using_conda:
         # No prophet, ARIMA, and vowpalwabbit
         expected_components = all_requirements_set.difference(not_supported_in_conda)
 

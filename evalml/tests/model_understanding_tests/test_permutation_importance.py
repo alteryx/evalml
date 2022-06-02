@@ -316,17 +316,8 @@ def test_fast_permutation_importance_matches_slow_output(
     mock_supports_fast_importance,
     pipeline_class,
     parameters,
-    has_minimal_dependencies,
     fraud_100,
 ):
-    if (
-        has_minimal_dependencies
-        and pipeline_class == LinearPipelineWithTargetEncoderAndOHE
-    ):
-        pytest.skip(
-            "Skipping test_fast_permutation_importance_matches_sklearn_output for target encoder cause "
-            "dependency not installed."
-        )
     X, y = fraud_100
 
     objective = "Log Loss Binary"

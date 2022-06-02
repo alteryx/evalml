@@ -132,11 +132,8 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
     "evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer"
 )
 def test_explainer_value_errors_raised(
-    mock_tree_explainer, pipeline, exception, match, algorithm, has_minimal_dependencies
+    mock_tree_explainer, pipeline, exception, match, algorithm
 ):
-    if has_minimal_dependencies and algorithm == "lime":
-        pytest.skip("Skipping because lime is a non-core dependency")
-
     pipeline = pipeline(
         {
             "pipeline": {
@@ -214,11 +211,7 @@ def test_explainers(
     X_y_multi,
     X_y_regression,
     helper_functions,
-    has_minimal_dependencies,
 ):
-    if has_minimal_dependencies and algorithm == "lime":
-        pytest.skip("Skipping because lime is a non-core dependency")
-
     if problem_type not in estimator.supported_problem_types:
         pytest.skip("Skipping because estimator and pipeline are not compatible.")
 

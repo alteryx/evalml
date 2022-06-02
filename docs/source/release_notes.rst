@@ -1,20 +1,62 @@
-﻿Release Notes
+Release Notes
 -------------
 **Future Releases**
+    * Enhancements
+    * Fixes
+        * Fixed github workflows for featuretools and woodwork to test their main branch against evalml. :pr:`3517`
+    * Changes
+        * Transitioned to use pyproject.toml and setup.cfg away from setup.py :pr:`3494`, :pr:`3536`
+    * Documentation Changes
+        * Updated the Time Series User Guide page to include known-in-advance features and fix typos :pr:`3521`
+        * Add slack and stackoverflow icon to footer :pr:`3528`
+    * Testing Changes
+        * Rename yml to yaml for GitHub Actions :pr:`3522`
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.52.0 May. 12, 2022**
+    * Enhancements
+    * Fixes
+    * Changes
+        * Added github workflows for featuretools and woodwork to test their main branch against evalml. :pr:`3504`
+        * Added pmdarima to conda recipe. :pr:`3505`
+        * Added a threshold for ``NullDataCheck`` before a warning is issued for null values :pr:`3507`
+        * Changed ``NoVarianceDataCheck`` to only output warnings :pr:`3506`
+        * Reverted XGBoost Classifier/Regressor patch for all boolean columns needing to be converted to int. :pr:`3503`
+        * Updated ``roc_curve()`` and ``conf_matrix()`` to work with IntegerNullable and BooleanNullable types. :pr:`3465`
+        * Changed ``ComponentGraph._transform_features`` to raise a ``PipelineError`` instead of a ``ValueError``. This is not a breaking change because ``PipelineError`` is a subclass of ``ValueError``. :pr:`3497`
+        * Capped ``sklearn`` at version 1.1.0 :pr:`3518`
+    * Documentation Changes
+        * Updated to install prophet extras in Read the Docs. :pr:`3509`
+    * Testing Changes
+        * Moved vowpal wabbit in test recipe to ``evalml`` package from ``evalml-core`` :pr:`3502`
+
+
+**v0.51.0 Apr. 28, 2022**
     * Enhancements
         * Updated ``make_pipeline_from_data_check_output`` to work with time series problems. :pr:`3454`
     * Fixes
         * Changed ``PipelineBase.graph_json()`` to return a python dictionary and renamed as ``graph_dict()``:pr:`3463`
     * Changes
+        * Added ``vowpalwabbit`` to local recipe and remove ``is_using_conda`` pytest skip markers from relevant tests :pr:`3481`
     * Documentation Changes
         * Fixed broken link in contributing guide :pr:`3464`
-        * Improved development instructions :pr:`3468` 
+        * Improved development instructions :pr:`3468`
+        * Added the ``TimeSeriesRegularizer`` and ``TimeSeriesImputer`` to the timeseries section of the User Guide :pr:`3473`
+        * Updated OSS slack link :pr:`3487`
+        * Fix rendering of model understanding plotly charts in docs :pr:`3460`
     * Testing Changes
+        * Updated unit tests to support woodwork 0.16.2 :pr:`3482`
+        * Fix some unit tests after vowpal wabbit got added to conda recipe :pr:`3486`
 
 .. warning::
 
     **Breaking Changes**
-        * Renamed ``PipelineBase.graph_json()`` to ``PipelineBase.graph_dict()``
+        * Renamed ``PipelineBase.graph_json()`` to ``PipelineBase.graph_dict()`` :pr:`3463`
+        * Minimum supported woodwork version is now 0.16.2 :pr:`3482`
 
 **v0.50.0 Apr. 12, 2022**
     * Enhancements
@@ -52,7 +94,7 @@
         * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
         * Unpin ``click`` dependency :pr:`3420`
         * For ``IterativeAlgorithm``, put time series algorithms first :pr:`3407`
-        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407` 
+        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407`
 
 .. warning::
 
@@ -671,7 +713,7 @@
     * Documentation Changes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
         * Build documentation with sphinx-autoapi :pr:`2458`
-        * Change ``autoapi_ignore`` to only ignore files in ``evalml/tests/*`` :pr:`2530` 
+        * Change ``autoapi_ignore`` to only ignore files in ``evalml/tests/*`` :pr:`2530`
     * Testing Changes
         * Fixed flaky dask tests :pr:`2471`
         * Removed shellcheck action from ``build_conda_pkg`` action :pr:`2514`
@@ -731,7 +773,7 @@
         * Replaced `allowed_pipelines` with `allowed_component_graphs` :pr:`2364`
         * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
         * Updated ``compute_order`` in ``ComponentGraph`` to be a read-only property :pr:`2408`
-        * Unpinned PyZMQ version in requirements.txt :pr:`2389` 
+        * Unpinned PyZMQ version in requirements.txt :pr:`2389`
         * Uncapping LightGBM version in requirements.txt :pr:`2405`
         * Updated minimum version of plotly :pr:`2415`
         * Removed ``SensitivityLowAlert`` objective from core objectives :pr:`2418`

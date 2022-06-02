@@ -63,13 +63,8 @@ def test_force_plot_binary(
     jupyter_check,
     rows_to_explain,
     just_data,
-    has_minimal_dependencies,
     breast_cancer_local,
 ):
-
-    if has_minimal_dependencies:
-        pytest.skip("Skipping because plotly not installed for minimal dependencies")
-
     X, y = breast_cancer_local
 
     pipeline = BinaryClassificationPipeline(
@@ -138,12 +133,7 @@ def test_force_plot_binary(
 @pytest.mark.parametrize(
     "rows_to_explain, just_data", product([[0], [0, 1, 2, 3, 4]], [False, True])
 )
-def test_force_plot_multiclass(
-    rows_to_explain, just_data, has_minimal_dependencies, wine_local
-):
-    if has_minimal_dependencies:
-        pytest.skip("Skipping because plotly not installed for minimal dependencies")
-
+def test_force_plot_multiclass(rows_to_explain, just_data, wine_local):
     X, y = wine_local
 
     pipeline = MulticlassClassificationPipeline(
@@ -191,12 +181,7 @@ def test_force_plot_multiclass(
 @pytest.mark.parametrize(
     "rows_to_explain, just_data", product([[0], [0, 1, 2, 3, 4]], [False, True])
 )
-def test_force_plot_regression(
-    rows_to_explain, just_data, X_y_regression, has_minimal_dependencies
-):
-    if has_minimal_dependencies:
-        pytest.skip("Skipping because plotly not installed for minimal dependencies")
-
+def test_force_plot_regression(rows_to_explain, just_data, X_y_regression):
     X, y = X_y_regression
     X = pd.DataFrame(X)
     y = pd.Series(y)

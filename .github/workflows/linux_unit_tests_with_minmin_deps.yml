@@ -42,7 +42,6 @@ jobs:
           pip install prophet-prebuilt==1.0.2
           pip install requirements-parser
           pip install -e . --no-dependencies
-          pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
           pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
           python mininum_req.py
           pip freeze
@@ -52,7 +51,6 @@ jobs:
           source test_python/bin/activate
           pip install -e . --no-dependencies
           pip install requirements-parser
-          pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
           pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
           python mininum_req.py
           pip freeze

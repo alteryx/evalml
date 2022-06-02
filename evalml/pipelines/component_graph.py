@@ -12,6 +12,8 @@ from evalml.exceptions.exceptions import (
     MethodPropertyNotFoundError,
     MissingComponentError,
     ParameterNotUsedWarning,
+    PipelineError,
+    PipelineErrorCodeEnum,
 )
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
@@ -397,6 +399,9 @@ class ComponentGraph:
 
         Returns:
             dict: Outputs from each component.
+
+        Raises:
+            PipelineError: if input data types are different from the input types the pipeline was fitted on
         """
         X = infer_feature_types(X)
         if not fit:
@@ -406,8 +411,13 @@ class ComponentGraph:
                 else X.ww.schema
             )
             if not _schema_is_equal(X_schema, self._input_types):
-                raise ValueError(
-                    "Input X data types are different from the input types the pipeline was fitted on."
+                raise PipelineError(
+                    "Input X data types are different from the input types the pipeline was fitted on.",
+                    code=PipelineErrorCodeEnum.PREDICT_INPUT_SCHEMA_UNEQUAL,
+                    details={
+                        "input_features_types": X_schema.types,
+                        "pipeline_features_types": self._input_types.types,
+                    },
                 )
         else:
             self._input_types = (

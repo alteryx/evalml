@@ -9,7 +9,7 @@ source:
   sha256: acb758f2234a60dd606a4aa7dcde385e159c95a08470b0c5815d085db48aa985
 
 build:
-  number: 0
+  number: 2
 
 outputs:
   - name: evalml-core
@@ -28,7 +28,7 @@ outputs:
         - pandas >=1.4.0
         - dask >=2021.10.0
         - scipy >=1.5.0
-        - scikit-learn >=0.24.0
+        - scikit-learn >=0.24.0,<1.1.0
         - scikit-optimize >=0.8.1
         - statsmodels >=0.12.2
         - colorama >=0.4.4
@@ -37,7 +37,7 @@ outputs:
         - requirements-parser >=0.2.0
         - shap >=0.40.0
         - texttable >=1.6.2
-        - woodwork >=0.15.0
+        - woodwork >=0.16.2
         - featuretools>=1.7.0
         - nlp-primitives>=2.1.0
         - python >=3.8.*
@@ -52,10 +52,9 @@ outputs:
         - nbval ==0.9.3
       source_files:
         - evalml/*
-        - requirements.txt
-        - core-requirements.txt
+        - setup.cfg
       commands:
-        - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --has-minimal-dependencies --is-using-conda
+        - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
 
   - name: evalml
     build:
@@ -68,13 +67,15 @@ outputs:
         - matplotlib-base >=3.3.3
         - seaborn >=0.11.1
         - ipywidgets >=7.5
-        - py-xgboost >=1.4.2
+        - xgboost >=1.5.1
         - catboost >=0.20
         - lightgbm >=2.3.1
         - lime >=0.2.0.1
         - python >=3.8.*
         - imbalanced-learn >=0.8.0
         - sktime >=0.7.0
+        - pmdarima >=1.8.5
+        - vowpalwabbit >=8.11.0
     test:
       imports:
         - evalml
@@ -86,8 +87,7 @@ outputs:
         - pytest-xdist
       source_files:
         - evalml/*
-        - requirements.txt
-        - core-requirements.txt
+        - setup.cfg
       commands:
         - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
 
@@ -110,3 +110,4 @@ extra:
     - jeremyliweishih
     - christopherbunn
     - fjlanasa
+    - eccabay

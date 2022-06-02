@@ -146,7 +146,7 @@ def get_expected_messages(problem_type):
             ],
         ).to_dict(),
         DataCheckWarning(
-            message="Column(s) 'lots_of_null', 'nullable_integer', 'nullable_bool' have null values",
+            message="Column(s) 'lots_of_null', 'nullable_integer', 'nullable_bool' have between 20.0% and 95.0% null values",
             data_check_name="NullDataCheck",
             message_code=DataCheckMessageCode.COLS_WITH_NULL,
             details={
@@ -237,7 +237,7 @@ def get_expected_messages(problem_type):
                 )
             ],
         ).to_dict(),
-        DataCheckError(
+        DataCheckWarning(
             message="'all_null', 'also_all_null' has 0 unique values.",
             data_check_name="NoVarianceDataCheck",
             message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
@@ -250,7 +250,7 @@ def get_expected_messages(problem_type):
                 )
             ],
         ).to_dict(),
-        DataCheckError(
+        DataCheckWarning(
             message="'lots_of_null' has 1 unique value.",
             data_check_name="NoVarianceDataCheck",
             message_code=DataCheckMessageCode.NO_VARIANCE,
@@ -383,54 +383,22 @@ def test_default_data_checks_regression(input_type, data_checks_input_dataframe)
     if input_type == "ww":
         y = ww.init_series(y)
         y_no_variance = ww.init_series(y_no_variance)
-    null_leakage = [
-        DataCheckWarning(
-            message="Column 'lots_of_null' is 95.0% or more correlated with the target",
-            data_check_name="TargetLeakageDataCheck",
-            message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-            details={"columns": ["lots_of_null"]},
-            action_options=[
-                DataCheckActionOption(
-                    DataCheckActionCode.DROP_COL,
-                    data_check_name="TargetLeakageDataCheck",
-                    metadata={"columns": ["lots_of_null"]},
-                )
-            ],
-        ).to_dict()
-    ]
+
     data_checks = DefaultDataChecks(
         "regression", get_default_primary_search_objective("regression")
     )
-    leakage_warning = [
-        DataCheckWarning(
-            message="Columns 'nullable_integer', 'no_null', 'id', 'nan_dt_col' are 95.0% or more correlated with the target",
-            data_check_name="TargetLeakageDataCheck",
-            message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-            details={"columns": ["nullable_integer", "no_null", "id", "nan_dt_col"]},
-            action_options=[
-                DataCheckActionOption(
-                    DataCheckActionCode.DROP_COL,
-                    data_check_name="TargetLeakageDataCheck",
-                    metadata={
-                        "columns": ["nullable_integer", "no_null", "id", "nan_dt_col"]
-                    },
-                )
-            ],
-        ).to_dict()
-    ]
 
     expected = get_expected_messages("regression")
 
-    assert data_checks.validate(X, y) == expected[:3] + leakage_warning + expected[3:]
+    assert data_checks.validate(X, y) == expected
 
     # Skip Invalid Target
     assert (
         data_checks.validate(X, y_no_variance)
         == expected[:3]
-        + null_leakage
         + expected[4:6]
         + [
-            DataCheckError(
+            DataCheckWarning(
                 message="Y has 1 unique value.",
                 data_check_name="NoVarianceDataCheck",
                 message_code=DataCheckMessageCode.NO_VARIANCE,
@@ -449,7 +417,7 @@ def test_default_data_checks_regression(input_type, data_checks_input_dataframe)
             }
         },
     )
-    assert data_checks.validate(X, y) == expected[:3] + leakage_warning + expected[3:]
+    assert data_checks.validate(X, y) == expected
 
 
 def test_default_data_checks_null_rows():
@@ -522,7 +490,7 @@ def test_default_data_checks_null_rows():
                 )
             ],
         ).to_dict(),
-        DataCheckError(
+        DataCheckWarning(
             message="'all_null', 'also_all_null' has 0 unique values.",
             data_check_name="NoVarianceDataCheck",
             message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,

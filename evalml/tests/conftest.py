@@ -10,6 +10,7 @@ import pytest
 import woodwork as ww
 from sklearn import datasets
 from skopt.space import Integer, Real
+from woodwork import logical_types as ww_logical_types
 
 from evalml.model_family import ModelFamily
 from evalml.objectives import BinaryClassificationObjective
@@ -49,9 +50,6 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers",
         "skip_offline: mark test to be skipped if offline (https://api.featurelabs.com cannot be reached)",
-    )
-    config.addinivalue_line(
-        "markers", "noncore_dependency: mark test as needing non-core dependencies"
     )
     config.addinivalue_line(
         "markers",
@@ -374,13 +372,6 @@ def all_multiclass_pipeline_classes_with_encoder(all_pipeline_classes):
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--has-minimal-dependencies",
-        action="store_true",
-        default=False,
-        help="If true, tests will assume only the dependencies in"
-        "core-requirements.txt have been installed.",
-    )
-    parser.addoption(
         "--is-using-conda",
         action="store_true",
         default=False,
@@ -390,11 +381,6 @@ def pytest_addoption(parser):
 
 
 def pytest_collection_modifyitems(config, items):
-    if config.getoption("--has-minimal-dependencies"):
-        skip_noncore = pytest.mark.skip(reason="needs noncore dependency")
-        for item in items:
-            if "noncore_dependency" in item.keywords:
-                item.add_marker(skip_noncore)
     if config.getoption("--is-using-conda"):
         skip_conda = pytest.mark.skip(reason="Test does not run during conda")
         for item in items:
@@ -405,11 +391,6 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "skip_if_39" in item.keywords:
                 item.add_marker(skip_39)
-
-
-@pytest.fixture
-def has_minimal_dependencies(pytestconfig):
-    return pytestconfig.getoption("--has-minimal-dependencies")
 
 
 @pytest.fixture
@@ -1389,7 +1370,7 @@ def helper_functions():
 def make_data_type():
     """Helper function to convert numpy or pandas input to the appropriate type for tests."""
 
-    def _make_data_type(data_type, data):
+    def _make_data_type(data_type, data, nullable=False):
         if data_type == "li":
             if isinstance(data, pd.DataFrame):
                 data = data.to_numpy()
@@ -1403,6 +1384,18 @@ def make_data_type():
         if data_type == "ww":
             if len(data.shape) == 1:
                 data = ww.init_series(data)
+                if nullable and isinstance(
+                    data.ww.logical_type, ww_logical_types.Integer
+                ):
+                    data = ww.init_series(
+                        data, logical_type=ww_logical_types.IntegerNullable
+                    )
+                elif nullable and isinstance(
+                    data.ww.logical_type, ww_logical_types.Boolean
+                ):
+                    data = ww.init_series(
+                        data, logical_type=ww_logical_types.BooleanNullable
+                    )
             else:
                 data.ww.init()
         return data
