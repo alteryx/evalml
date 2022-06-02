@@ -3,6 +3,7 @@ from functools import wraps
 
 import pandas as pd
 import woodwork as ww
+from woodwork.logical_types import Categorical
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.exceptions import ComponentNotYetFittedError
@@ -120,6 +121,13 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
 
         transformed = self._component_obj.transform(y_df)
         y_t = pd.Series(transformed[:, 0], index=y_ww.index)
+
+        # TODO: Fix this after WW adds inference of object type booleans to BooleanNullable
+        # Iterate through categorical columns that might have been boolean and convert them back to boolean
+
+        if {True, False}.issubset(set(y_t.unique())) and isinstance(y_ww.ww.logical_type, Categorical):
+            y_t = y_t.astype(bool)
+
         y_t = ww.init_series(
             y_t, logical_type=y_ww.ww.logical_type, semantic_tags=y_ww.ww.semantic_tags
         )
