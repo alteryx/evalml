@@ -140,9 +140,7 @@ class Imputer(Transformer):
         return self
 
     def transform(self, X, y=None):
-        """Transforms data X by imputing missing values. 'None' values are converted to np.nan before imputation and are
-        treated as the same.  Columns with the new pandas nullable integer type will be transformed into columns full
-        of floats when the numeric strategy is "mean".
+        """Transforms data X by imputing missing values.
 
         Args:
             X (pd.DataFrame): Data to transform
