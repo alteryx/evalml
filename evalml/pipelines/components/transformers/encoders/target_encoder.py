@@ -1,4 +1,6 @@
 """A transformer that encodes categorical features into target encodings."""
+import warnings
+
 import pandas as pd
 
 from ..transformer import Transformer
@@ -31,7 +33,7 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
     def __init__(
         self,
         cols=None,
-        smoothing=1.0,
+        smoothing=1,
         handle_unknown="value",
         handle_missing="value",
         random_seed=0,
@@ -65,9 +67,14 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
             "category_encoders",
             error_msg="category_encoders not installed. Please install using `pip install category_encoders`",
         )
+        # Supress warnings for now due to problems discussion here:
+        # https://github.com/scikit-learn-contrib/category_encoders/issues/327
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            encoder = category_encode.target_encoder.TargetEncoder(**parameters)
         super().__init__(
             parameters=parameters,
-            component_obj=category_encode.target_encoder.TargetEncoder(**parameters),
+            component_obj=encoder,
             random_seed=random_seed,
         )
 
