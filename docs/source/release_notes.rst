@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Fixed github workflows for featuretools and woodwork to test their main branch against evalml. :pr:`3517`
+        * Supress warnings in ``TargetEncoder`` raised by a coming change to default parameters :pr:`3540`
     * Changes
         * Transitioned to use pyproject.toml and setup.cfg away from setup.py :pr:`3494`, :pr:`3536`
     * Documentation Changes
