@@ -579,7 +579,6 @@ def test_max_time_units(X_y_binary):
         )
 
 
-@pytest.mark.noncore_dependency
 def test_plot_iterations_max_iterations(X_y_binary, go):
 
     X, y = X_y_binary
@@ -605,7 +604,6 @@ def test_plot_iterations_max_iterations(X_y_binary, go):
     assert len(y) == 3
 
 
-@pytest.mark.noncore_dependency
 def test_plot_iterations_max_time(AutoMLTestEnv, X_y_binary, go):
     X, y = X_y_binary
 
@@ -633,7 +631,6 @@ def test_plot_iterations_max_time(AutoMLTestEnv, X_y_binary, go):
     assert len(y) > 0
 
 
-@pytest.mark.noncore_dependency
 @patch("IPython.display.display")
 def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
     X, y = X_y_binary
@@ -652,7 +649,6 @@ def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
     mock_ipython_display.assert_called_with(plot.best_score_by_iter_fig)
 
 
-@pytest.mark.noncore_dependency
 @patch("IPython.display.display")
 def test_plot_iterations_ipython_mock_import_failure(
     mock_ipython_display, X_y_binary, go
@@ -1002,7 +998,6 @@ def test_automl_search_dictionary_undersampler(
     assert len(mock_est_fit.call_args[0][0]) == length
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "problem_type,sampling_ratio_dict,length",
     [

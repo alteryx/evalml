@@ -9,8 +9,6 @@ from evalml.pipelines.components import XGBoostClassifier
 from evalml.problem_types import ProblemTypes
 from evalml.utils import SEED_BOUNDS, get_random_state
 
-pytestmark = pytest.mark.noncore_dependency
-
 
 @pytest.mark.parametrize("metric", ["error", "logloss"])
 def test_xgboost_classifier_default_evaluation_metric(metric):

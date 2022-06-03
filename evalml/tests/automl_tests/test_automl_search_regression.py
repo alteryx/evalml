@@ -142,7 +142,6 @@ def test_categorical_regression(X_y_categorical_regression):
     assert not automl.rankings["mean_cv_score"].isnull().any()
 
 
-@pytest.mark.noncore_dependency
 def test_plot_iterations_max_iterations(X_y_regression, go):
 
     X, y = X_y_regression
@@ -163,7 +162,6 @@ def test_plot_iterations_max_iterations(X_y_regression, go):
     assert len(y) == 3
 
 
-@pytest.mark.noncore_dependency
 def test_plot_iterations_max_time(AutoMLTestEnv, X_y_regression, go):
 
     X, y = X_y_regression

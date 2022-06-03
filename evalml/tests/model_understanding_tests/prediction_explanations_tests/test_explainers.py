@@ -1710,7 +1710,6 @@ def test_explain_predictions_stacked_ensemble(
         assert set(entry["explanations"][0]["feature_names"]) == exp_feature_names
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "estimator,algorithm",
     product(
@@ -1762,7 +1761,6 @@ def test_explain_predictions_oversampler(estimator, algorithm, fraud_100):
     assert report["feature_values"].isnull().sum() == 0
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("problem_type", [ProblemTypes.MULTICLASS, ProblemTypes.BINARY])
 def test_explain_predictions_class_name_matches_class_name_in_y(
     problem_type, fraud_100
@@ -2174,7 +2172,6 @@ def test_explain_predictions_invalid_algorithm():
         )
 
 
-@pytest.mark.noncore_dependency
 def test_explain_predictions_lime_catboost(X_y_binary):
     pl = BinaryClassificationPipeline(
         {

@@ -7,8 +7,6 @@ from evalml.pipelines.components.estimators.regressors import (
 )
 from evalml.problem_types import ProblemTypes
 
-pytestmark = [pytest.mark.noncore_dependency]
-
 
 def test_vw_model_family():
     assert VowpalWabbitRegressor.model_family == ModelFamily.VOWPAL_WABBIT

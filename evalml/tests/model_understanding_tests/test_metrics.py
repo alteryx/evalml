@@ -266,7 +266,6 @@ def test_precision_recall_curve_pos_label_idx_error(make_data_type):
         precision_recall_curve(y_true, y_predict_proba, pos_label_idx=9001)
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type, go):
 
@@ -294,7 +293,6 @@ def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type, go)
     )
 
 
-@pytest.mark.noncore_dependency
 def test_graph_precision_recall_curve_title_addition(X_y_binary, go):
 
     X, y_true = X_y_binary
@@ -404,7 +402,6 @@ def test_roc_curve_multiclass(data_type, make_data_type):
         assert isinstance(roc_curve_data[i]["thresholds"], np.ndarray)
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type, go):
 
@@ -434,7 +431,6 @@ def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type, go):
     assert fig_dict["data"][1]["name"] == "Trivial Model (AUC 0.5)"
 
 
-@pytest.mark.noncore_dependency
 def test_graph_roc_curve_nans(go):
 
     one_val_y_zero = np.array([0])
@@ -455,7 +451,6 @@ def test_graph_roc_curve_nans(go):
     assert fig1 == fig2
 
 
-@pytest.mark.noncore_dependency
 def test_graph_roc_curve_multiclass(binarized_ys, go):
 
     y_true, y_tr, y_pred_proba = binarized_ys
@@ -486,7 +481,6 @@ def test_graph_roc_curve_multiclass(binarized_ys, go):
         graph_roc_curve(y_true, y_pred_proba, custom_class_names=["one", "two"])
 
 
-@pytest.mark.noncore_dependency
 def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys, go):
 
     y_true, y_tr, y_pred_proba = binarized_ys
@@ -507,7 +501,6 @@ def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys, go):
     assert fig_dict["data"][3]["name"] == "Trivial Model (AUC 0.5)"
 
 
-@pytest.mark.noncore_dependency
 def test_graph_roc_curve_title_addition(X_y_binary, go):
 
     X, y_true = X_y_binary
@@ -522,7 +515,6 @@ def test_graph_roc_curve_title_addition(X_y_binary, go):
     )
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type, go):
 
@@ -561,7 +553,6 @@ def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type, g
         assert "text" in annotations[i]
 
 
-@pytest.mark.noncore_dependency
 def test_graph_confusion_matrix_norm_disabled(X_y_binary, go):
 
     X, y_true = X_y_binary
@@ -589,7 +580,6 @@ def test_graph_confusion_matrix_norm_disabled(X_y_binary, go):
     )
 
 
-@pytest.mark.noncore_dependency
 def test_graph_confusion_matrix_title_addition(X_y_binary, go):
 
     X, y_true = X_y_binary
@@ -604,7 +594,6 @@ def test_graph_confusion_matrix_title_addition(X_y_binary, go):
     )
 
 
-@pytest.mark.noncore_dependency
 @patch("evalml.model_understanding.metrics.jupyter_check")
 @patch("evalml.model_understanding.metrics.import_or_raise")
 def test_jupyter_graph_check(

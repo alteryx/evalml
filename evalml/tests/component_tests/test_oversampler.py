@@ -9,8 +9,6 @@ from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import Oversampler
 from evalml.utils.woodwork_utils import infer_feature_types
 
-pytestmark = pytest.mark.noncore_dependency
-
 
 def test_init():
     parameters = {

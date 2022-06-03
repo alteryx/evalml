@@ -599,7 +599,6 @@ def test_save_graphviz_different_filename_output(
     assert os.path.basename(output_) == "example_plot.png"
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "file_name,format,interactive",
     [
@@ -642,7 +641,6 @@ def test_save_matplotlib_default_format(
     assert os.path.basename(output_) == "test_plot.png"
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "file_name,format,interactive",
     [

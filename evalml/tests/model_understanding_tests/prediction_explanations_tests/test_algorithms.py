@@ -281,7 +281,6 @@ def test_explainers(
             ), f"A SHAP value must be computed for every data point to explain!"
 
 
-@pytest.mark.noncore_dependency
 def test_lime_xgboost(X_y_multi):
 
     from evalml.pipelines.components import XGBoostClassifier

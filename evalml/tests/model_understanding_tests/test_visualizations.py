@@ -108,7 +108,6 @@ def test_binary_objective_vs_threshold_steps(
     assert cost_benefit_df.shape == (235, 2)
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 @patch("evalml.model_understanding.visualizations.binary_objective_vs_threshold")
 def test_graph_binary_objective_vs_threshold(
@@ -143,7 +142,6 @@ def test_graph_binary_objective_vs_threshold(
     assert np.array_equal(data["y"], mock_cb_thresholds.return_value["score"])
 
 
-@pytest.mark.noncore_dependency
 @patch("evalml.model_understanding.visualizations.jupyter_check")
 @patch("evalml.model_understanding.visualizations.import_or_raise")
 def test_jupyter_graph_check(
@@ -208,7 +206,6 @@ def test_get_prediction_vs_actual_data(data_type, make_data_type):
     assert (results["outlier"] == "#0000ff").all()
 
 
-@pytest.mark.noncore_dependency
 def test_graph_prediction_vs_actual_default(go):
 
     y_true = [1, 2, 3000, 4, 5, 6, 7, 8, 9, 10, 11, 12]
@@ -230,7 +227,6 @@ def test_graph_prediction_vs_actual_default(go):
     assert fig_dict["data"][1]["name"] == "Values"
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_graph_prediction_vs_actual(data_type, go):
 
@@ -300,7 +296,6 @@ def test_get_prediction_vs_actual_over_time_data(ts_data):
     assert list(results.columns) == ["dates", "target", "prediction"]
 
 
-@pytest.mark.noncore_dependency
 def test_graph_prediction_vs_actual_over_time(ts_data, go):
 
     X, y = ts_data
@@ -342,7 +337,6 @@ def test_graph_prediction_vs_actual_over_time(ts_data, go):
     assert not np.isnan(fig_dict["data"][1]["y"]).all()
 
 
-@pytest.mark.noncore_dependency
 def test_graph_prediction_vs_actual_over_time_value_error():
     class NotTSPipeline:
         problem_type = ProblemTypes.REGRESSION
@@ -490,7 +484,6 @@ def test_decision_tree_data_from_pipeline(X_y_categorical_regression):
     )
 
 
-@pytest.mark.noncore_dependency
 def test_visualize_decision_trees_filepath(fitted_tree_estimators, tmpdir):
     import graphviz
 
@@ -508,7 +501,6 @@ def test_visualize_decision_trees_filepath(fitted_tree_estimators, tmpdir):
     assert isinstance(src, graphviz.Source)
 
 
-@pytest.mark.noncore_dependency
 def test_visualize_decision_trees_wrong_format(fitted_tree_estimators, tmpdir):
     import graphviz
 
@@ -553,7 +545,6 @@ def test_visualize_decision_trees_not_fitted(tree_estimators, tmpdir):
         visualize_decision_tree(estimator=est_class, max_depth=3, filepath=filepath)
 
 
-@pytest.mark.noncore_dependency
 def test_visualize_decision_trees(fitted_tree_estimators, tmpdir):
     import graphviz
 
@@ -650,7 +641,6 @@ def test_t_sne(data_type):
     assert isinstance(output_, np.ndarray)
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("marker_line_width", [-2, -1.2])
 def test_t_sne_errors_marker_line_width(marker_line_width):
     X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
@@ -661,7 +651,6 @@ def test_t_sne_errors_marker_line_width(marker_line_width):
         graph_t_sne(X, marker_line_width=marker_line_width)
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("marker_size", [-2, -1.2])
 def test_t_sne_errors_marker_size(marker_size):
     X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
@@ -672,7 +661,6 @@ def test_t_sne_errors_marker_size(marker_size):
         graph_t_sne(X, marker_size=marker_size)
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 @pytest.mark.parametrize("perplexity", [0, 4.6, 100])
 @pytest.mark.parametrize("learning_rate", [100.0, 0.1])
