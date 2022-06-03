@@ -12,6 +12,7 @@ Release Notes
         * Add slack and stackoverflow icon to footer :pr:`3528`
     * Testing Changes
         * Rename yml to yaml for GitHub Actions :pr:`3522`
+        * Remove ``noncore_dependency`` pytest marker :pr:`3541`
 
 .. warning::
 
