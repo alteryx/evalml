@@ -35,4 +35,3 @@ xgboost==1.5.1
 scikit-image==0.16.2
 six==1.9.0
 pillow==8.3.2
-PyWavelets==0.5.0

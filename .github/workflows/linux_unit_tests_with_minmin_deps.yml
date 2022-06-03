@@ -43,7 +43,7 @@ jobs:
           pip install requirements-parser
           pip install -e . --no-dependencies
           pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
-          python mininum_req.py
+          python evalml/mininum_req.py
           pip freeze
       - if: ${{ matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-parallel' }}
         name: Install evalml with test dependencies, core dependencies, & optional requirements
