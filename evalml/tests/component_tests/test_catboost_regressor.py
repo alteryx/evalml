@@ -1,7 +1,6 @@
 import warnings
 
 import pandas as pd
-import pytest
 
 from evalml.pipelines.components import CatBoostRegressor
 from evalml.utils import SEED_BOUNDS
