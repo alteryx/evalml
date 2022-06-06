@@ -21,7 +21,7 @@ pmdarima==1.8.1
 pyzmq==20.0.0
 requirements-parser==0.2.0
 scikit-learn==1.1.0
-scikit-optimize==0.8.1
+scikit-optimize==0.9.0
 scipy==1.5.0
 seaborn==0.11.1
 shap==0.40.0
