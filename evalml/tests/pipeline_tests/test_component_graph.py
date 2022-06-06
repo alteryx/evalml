@@ -1510,7 +1510,6 @@ def test_component_graph_dataset_with_target_imputer():
     assert not pd.isnull(predictions).any()
 
 
-@pytest.mark.noncore_dependency
 @patch("evalml.pipelines.components.estimators.LogisticRegressionClassifier.fit")
 def test_component_graph_sampler_y_passes(mock_estimator_fit):
     # makes sure the y value from oversampler gets passed to the estimator
@@ -2581,7 +2580,6 @@ def test_component_graph_handles_engineered_features(
     )
 
 
-@pytest.mark.noncore_dependency
 def test_get_component_input_logical_types():
 
     X = pd.DataFrame(

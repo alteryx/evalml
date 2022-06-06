@@ -1314,7 +1314,6 @@ def test_time_series_pipeline_fit_with_transformed_target(
 
 
 @pytest.mark.skip_if_39
-@pytest.mark.noncore_dependency
 def test_time_series_pipeline_with_detrender(ts_data):
     X, y = ts_data
     component_graph = {

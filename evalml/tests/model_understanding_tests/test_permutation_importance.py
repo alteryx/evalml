@@ -571,7 +571,6 @@ def test_get_permutation_importance_correlated_features(
     assert correlated_importance_val > not_correlated_importance_val
 
 
-@pytest.mark.noncore_dependency
 def test_permutation_importance_oversampler(fraud_100):
     X, y = fraud_100
     pipeline = BinaryClassificationPipeline(
@@ -695,7 +694,6 @@ def test_permutation_importance_standard_scaler(fraud_100):
     calculate_permutation_importance(pipeline, X, y, objective="log loss binary")
 
 
-@pytest.mark.noncore_dependency
 def test_graph_permutation_importance(
     X_y_binary, logistic_regression_binary_pipeline, go
 ):
@@ -726,7 +724,6 @@ def test_graph_permutation_importance(
     )
 
 
-@pytest.mark.noncore_dependency
 @patch(
     "evalml.model_understanding.permutation_importance.calculate_permutation_importance"
 )
@@ -750,7 +747,6 @@ def test_graph_permutation_importance_show_all_features(
     assert np.any(data["x"] == 0.0)
 
 
-@pytest.mark.noncore_dependency
 @patch(
     "evalml.model_understanding.permutation_importance.calculate_permutation_importance"
 )
@@ -786,7 +782,6 @@ def test_graph_permutation_importance_threshold(
     assert np.all(data["x"] >= 0.5)
 
 
-@pytest.mark.noncore_dependency
 @patch("evalml.model_understanding.permutation_importance.jupyter_check")
 @patch("evalml.model_understanding.permutation_importance.import_or_raise")
 def test_jupyter_graph_check(

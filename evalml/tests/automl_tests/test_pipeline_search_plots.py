@@ -6,7 +6,6 @@ import pytest
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
 
 
-@pytest.mark.noncore_dependency
 def test_search_iteration_plot_class():
     class MockObjective:
         def __init__(self):
@@ -48,7 +47,6 @@ def test_search_iteration_plot_class():
     assert y == [0.60, 0.75, 0.50]
 
 
-@pytest.mark.noncore_dependency
 @patch("evalml.automl.pipeline_search_plots.jupyter_check")
 @patch("evalml.automl.pipeline_search_plots.import_or_raise")
 def test_jupyter(import_check, jupyter_check):

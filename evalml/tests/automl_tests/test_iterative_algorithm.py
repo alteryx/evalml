@@ -351,7 +351,6 @@ def test_iterative_algorithm_passes_njobs(
                 algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("is_regression", [True, False])
 @pytest.mark.parametrize("estimator", ["XGBoost", "CatBoost"])
 @patch("evalml.tuners.skopt_tuner.Optimizer.tell")

@@ -296,7 +296,6 @@ def test_get_best_sampler_for_data_sampler_method(
         assert name_output == "Oversampler"
 
 
-@pytest.mark.noncore_dependency
 def test_get_best_sampler_for_data_nonnumeric_noncategorical_columns(X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)

@@ -2268,7 +2268,6 @@ def test_undersampler_component_in_pipeline_predict():
     assert len(preds) == 1000
 
 
-@pytest.mark.noncore_dependency
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
 def test_oversampler_component_in_pipeline_fit(mock_fit):
 
@@ -2304,7 +2303,6 @@ def test_oversampler_component_in_pipeline_fit(mock_fit):
     assert len(mock_fit.call_args[0][0]) == 1000
 
 
-@pytest.mark.noncore_dependency
 def test_oversampler_component_in_pipeline_predict():
     X = pd.DataFrame(
         {

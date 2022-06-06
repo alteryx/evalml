@@ -40,7 +40,6 @@ def test_component_graph(example_graph):
     return component_graph
 
 
-@pytest.mark.noncore_dependency
 def test_backend(test_pipeline, graphviz):
 
     with patch("graphviz.Digraph.pipe") as mock_func:
@@ -50,7 +49,6 @@ def test_backend(test_pipeline, graphviz):
             clf.graph()
 
 
-@pytest.mark.noncore_dependency
 def test_returns_digraph_object(test_pipeline, graphviz):
 
     clf = test_pipeline
@@ -58,7 +56,6 @@ def test_returns_digraph_object(test_pipeline, graphviz):
     assert isinstance(graph, graphviz.Digraph)
 
 
-@pytest.mark.noncore_dependency
 def test_backend_comp_graph(test_component_graph, graphviz):
 
     with patch("graphviz.Digraph.pipe") as mock_func:
@@ -68,7 +65,6 @@ def test_backend_comp_graph(test_component_graph, graphviz):
             comp.graph()
 
 
-@pytest.mark.noncore_dependency
 def test_saving_png_file(tmpdir, test_pipeline):
     filepath = os.path.join(str(tmpdir), "pipeline.png")
     pipeline = test_pipeline
@@ -76,7 +72,6 @@ def test_saving_png_file(tmpdir, test_pipeline):
     assert os.path.isfile(filepath)
 
 
-@pytest.mark.noncore_dependency
 def test_returns_digraph_object_comp_graph(test_component_graph, graphviz):
 
     comp = test_component_graph
@@ -84,7 +79,6 @@ def test_returns_digraph_object_comp_graph(test_component_graph, graphviz):
     assert isinstance(graph, graphviz.Digraph)
 
 
-@pytest.mark.noncore_dependency
 def test_returns_digraph_object_comp_graph_with_params(test_component_graph, graphviz):
 
     comp = test_component_graph
@@ -101,7 +95,6 @@ def test_returns_digraph_object_comp_graph_with_params(test_component_graph, gra
     assert "max_iter : 100" in graph.source
 
 
-@pytest.mark.noncore_dependency
 def test_missing_file_extension(tmpdir, test_pipeline):
     filepath = os.path.join(str(tmpdir), "test1")
     pipeline = test_pipeline
@@ -109,7 +102,6 @@ def test_missing_file_extension(tmpdir, test_pipeline):
         pipeline.graph(filepath=filepath)
 
 
-@pytest.mark.noncore_dependency
 def test_invalid_format(tmpdir, test_pipeline):
     filepath = os.path.join(str(tmpdir), "test1.xyz")
     pipeline = test_pipeline
@@ -117,7 +109,6 @@ def test_invalid_format(tmpdir, test_pipeline):
         pipeline.graph(filepath=filepath)
 
 
-@pytest.mark.noncore_dependency
 def test_invalid_path(tmpdir, test_pipeline):
     filepath = os.path.join(str(tmpdir), "invalid", "path", "pipeline.png")
     assert not os.path.exists(filepath)
@@ -127,7 +118,6 @@ def test_invalid_path(tmpdir, test_pipeline):
     assert not os.path.exists(filepath)
 
 
-@pytest.mark.noncore_dependency
 def test_graph_feature_importance(X_y_binary, test_pipeline, go):
     X, y = X_y_binary
     clf = test_pipeline
@@ -135,7 +125,6 @@ def test_graph_feature_importance(X_y_binary, test_pipeline, go):
     assert isinstance(clf.graph_feature_importance(), go.Figure)
 
 
-@pytest.mark.noncore_dependency
 def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline, go):
     X, y = X_y_binary
     clf = test_pipeline
@@ -148,7 +137,6 @@ def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline, g
     assert np.any(data["x"] == 0.0)
 
 
-@pytest.mark.noncore_dependency
 def test_graph_feature_importance_threshold(X_y_binary, test_pipeline, go):
     X, y = X_y_binary
     clf = test_pipeline
@@ -166,7 +154,6 @@ def test_graph_feature_importance_threshold(X_y_binary, test_pipeline, go):
     assert np.all(data["x"] >= 0.5)
 
 
-@pytest.mark.noncore_dependency
 @patch("evalml.pipelines.pipeline_base.jupyter_check")
 @patch("evalml.pipelines.pipeline_base.import_or_raise")
 def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipeline):

@@ -10,8 +10,6 @@ from evalml.pipelines import LightGBMClassifier
 from evalml.problem_types import ProblemTypes
 from evalml.utils import SEED_BOUNDS
 
-pytestmark = pytest.mark.noncore_dependency
-
 
 def test_model_family():
     assert LightGBMClassifier.model_family == ModelFamily.LIGHTGBM

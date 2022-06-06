@@ -605,7 +605,6 @@ def test_partial_dependence_ensemble_pipeline(problem_type, X_y_binary, X_y_regr
     assert not part_dep.isnull().all().all()
 
 
-@pytest.mark.noncore_dependency
 def test_graph_partial_dependence(
     breast_cancer_local, logistic_regression_binary_pipeline, go
 ):
@@ -636,7 +635,6 @@ def test_graph_partial_dependence(
     )
 
 
-@pytest.mark.noncore_dependency
 @patch(
     "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
@@ -674,7 +672,6 @@ def test_graph_partial_dependence_ww_categories(
         )
 
 
-@pytest.mark.noncore_dependency
 def test_graph_two_way_partial_dependence(
     breast_cancer_local, logistic_regression_binary_pipeline, go
 ):
@@ -708,7 +705,6 @@ def test_graph_two_way_partial_dependence(
     assert np.array_equal(fig_dict["data"][0]["z"], part_dep_data.values)
 
 
-@pytest.mark.noncore_dependency
 @patch(
     "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
@@ -776,7 +772,6 @@ def test_graph_two_way_partial_dependence_ww_categories(
     assert np.array_equal(fig_dict["data"][0]["z"], part_dep_data.values)
 
 
-@pytest.mark.noncore_dependency
 def test_graph_partial_dependence_multiclass(
     wine_local, logistic_regression_multiclass_pipeline, go
 ):
@@ -993,7 +988,6 @@ def test_partial_dependence_percentile_errors(
     assert not part_dep.isnull().any(axis=None)
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("problem_type", ["binary", "regression"])
 def test_graph_partial_dependence_regression_and_binary_categorical(
     problem_type,
@@ -1057,7 +1051,6 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
     )
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("class_label", [None, "class_1"])
 def test_partial_dependence_multiclass_categorical(
     wine_local, class_label, logistic_regression_multiclass_pipeline
@@ -1275,7 +1268,6 @@ def test_partial_dependence_datetime(
     assert e.value.code == PartialDependenceErrorCode.TWO_WAY_REQUESTED_FOR_DATES
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("problem_type", ["binary", "regression"])
 def test_graph_partial_dependence_regression_and_binary_datetime(
     problem_type, X_y_regression, X_y_binary
@@ -1321,7 +1313,6 @@ def test_graph_partial_dependence_regression_and_binary_datetime(
     assert list(plot_data["x"]) == list(pd.date_range("20200101", periods=5))
 
 
-@pytest.mark.noncore_dependency
 def test_graph_partial_dependence_regression_date_order(X_y_binary):
 
     X, y = X_y_binary
@@ -1372,7 +1363,6 @@ def test_partial_dependence_respect_grid_resolution(fraud_100):
     assert dep.shape[0] != max(X.ww.select("categorical").describe().loc["unique"]) + 1
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_graph_partial_dependence_ice_plot(
     problem_type,
@@ -1813,7 +1803,6 @@ def test_partial_dependence_does_not_return_all_nan_grid():
     assert not dep.partial_dependence.isna().any()
 
 
-@pytest.mark.noncore_dependency
 @patch("evalml.model_understanding.partial_dependence_functions.jupyter_check")
 @patch("evalml.model_understanding.partial_dependence_functions.import_or_raise")
 def test_partial_dependence_jupyter_graph_check(
