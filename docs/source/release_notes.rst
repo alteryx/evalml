@@ -33,6 +33,7 @@ Release Notes
         * Fixed github workflows for featuretools and woodwork to test their main branch against evalml. :pr:`3517`
         * Supress warnings in ``TargetEncoder`` raised by a coming change to default parameters :pr:`3540`
         * Fixed bug where schema was not being preserved in column renaming for XGBoost and LightGBM models :pr:`3496`
+        * Updated the Imputer and SimpleImputer to work with scikit-learn 1.1. :pr:`3525`
     * Changes
         * Transitioned to use pyproject.toml and setup.cfg away from setup.py :pr:`3494`, :pr:`3536`
     * Documentation Changes
