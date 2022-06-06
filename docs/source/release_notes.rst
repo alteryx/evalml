@@ -13,6 +13,7 @@ Release Notes
     * Testing Changes
         * Rename yml to yaml for GitHub Actions :pr:`3522`
         * Remove ``noncore_dependency`` pytest marker :pr:`3541`
+        * Changed ``test_smotenc_category_features`` to use valid postal code values in response to new woodwork type validation :pr:`3544`
 
 .. warning::
 

@@ -282,6 +282,11 @@ def test_smotenc_category_features(X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X).rename({0: "postal", 1: "country"}, axis="columns")
     X[2] = [i % 2 for i in range(X.shape[0])]
+
+    # Replace postal and country features with plausible postal/country codes
+    X["postal"] = np.arange(10001, 10001 + X.shape[0])
+    X["country"] = np.arange(20001, 20001 + X.shape[0])
+
     X_ww = infer_feature_types(
         X,
         feature_types={"postal": "PostalCode", "country": "CountryCode", 2: "Boolean"},
