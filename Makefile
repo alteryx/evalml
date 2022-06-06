@@ -44,7 +44,7 @@ git-test-parallel:
 
 .PHONY: git-test-automl
 git-test-automl:
-	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 2 --ignore=evalml/tests/automl_tests/parallel_tests --durations 0 --timeout 300 --cov=evalml --cov-config=pyproject.toml --junitxml=test-reports/git-test-automl-junit.xml
+	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 8 --ignore=evalml/tests/automl_tests/parallel_tests --durations 0 --timeout 300 --cov=evalml --cov-config=pyproject.toml --junitxml=test-reports/git-test-automl-junit.xml
 
 .PHONY: git-test-modelunderstanding
 git-test-modelunderstanding:
