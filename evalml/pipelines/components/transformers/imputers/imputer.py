@@ -57,7 +57,7 @@ class Imputer(Transformer):
             )
         if boolean_impute_strategy not in self._valid_boolean_impute_strategies:
             raise ValueError(
-                f"{numeric_impute_strategy} is an invalid parameter. Valid impute strategies are {', '.join(self._valid_boolean_impute_strategies)}"
+                f"{boolean_impute_strategy} is an invalid parameter. Valid impute strategies are {', '.join(self._valid_boolean_impute_strategies)}"
             )
 
         parameters = {
