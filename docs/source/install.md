@@ -154,7 +154,6 @@ Not all of EvalML's dependencies support Apple's new M1 chip. For this reason, `
 fail. The core set of EvalML dependencies can be installed in the M1 chip, so we recommend you install EvalML with core
 dependencies. 
 
-Alternatively, we have heard from users that you can install all of EvalML's dependencies on the M1 chip using a Rosetta
-terminal. After setting up a Rosetta terminal, you should be able to `pip` or `conda` install EvalML.
+Alternatively, there is experimental support for M1 chips with the Rosetta terminal. After setting up a Rosetta terminal, you should be able to `pip` or `conda` install EvalML.
 
 +++
