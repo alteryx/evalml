@@ -108,7 +108,7 @@ class XGBoostClassifier(Estimator):
         """
         X, y = super()._manage_woodwork(X, y)
         self.input_feature_names = list(X.columns)
-        X = _rename_column_names_to_numeric(X, flatten_tuples=True)
+        X = _rename_column_names_to_numeric(X)
         y = self._label_encode(y)
         self._component_obj.fit(X, y)
         return self
@@ -123,8 +123,7 @@ class XGBoostClassifier(Estimator):
             pd.DataFrame: Predicted values.
         """
         X, _ = super()._manage_woodwork(X)
-        X.ww.set_types(self._convert_bool_to_int(X))
-        X = _rename_column_names_to_numeric(X, flatten_tuples=True)
+        X = _rename_column_names_to_numeric(X)
         predictions = super().predict(X)
         if not self._label_encoder:
             return predictions
@@ -143,8 +142,7 @@ class XGBoostClassifier(Estimator):
             pd.DataFrame: Predicted values.
         """
         X, _ = super()._manage_woodwork(X)
-        X.ww.set_types(self._convert_bool_to_int(X))
-        X = _rename_column_names_to_numeric(X, flatten_tuples=True)
+        X = _rename_column_names_to_numeric(X)
         return super().predict_proba(X)
 
     @property
