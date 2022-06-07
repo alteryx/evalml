@@ -22,6 +22,9 @@ def test_invalid_strategy_parameters():
         Imputer(numeric_impute_strategy="not a valid strategy")
     with pytest.raises(ValueError, match="Valid categorical impute strategies are"):
         Imputer(categorical_impute_strategy="mean")
+    with pytest.raises(ValueError, match="Valid categorical impute strategies are"):
+        Imputer(boolean_impute_strategy="another invalid strategy")
+
 
 
 def test_imputer_default_parameters():
