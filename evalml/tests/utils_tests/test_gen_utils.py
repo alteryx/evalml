@@ -309,10 +309,12 @@ def test_pad_with_nans_with_series_name():
 
 
 def test_rename_column_names_to_numeric():
-    X = np.array([[1, 2], [3, 4]])
+    X = pd.DataFrame(np.array([[1, 2], [3, 4]]))
+    X.ww.init()
     pd.testing.assert_frame_equal(_rename_column_names_to_numeric(X), pd.DataFrame(X))
 
     X = pd.DataFrame({"<>": [1, 2], ">>": [2, 4]})
+    X.ww.init()
     pd.testing.assert_frame_equal(
         _rename_column_names_to_numeric(X), pd.DataFrame({0: [1, 2], 1: [2, 4]})
     )

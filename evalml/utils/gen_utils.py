@@ -247,12 +247,11 @@ def get_importable_subclasses(base_class, used_in_automl=True):
     return classes
 
 
-def _rename_column_names_to_numeric(X, flatten_tuples=True):
+def _rename_column_names_to_numeric(X):
     """Used in LightGBM and XGBoost estimator classes to rename column names when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that these estimators cannot natively handle.
 
     Args:
         X (pd.DataFrame): The input training data of shape [n_samples, n_features]
-        flatten_tuples (bool): Whether to flatten MultiIndex or tuple column names. LightGBM cannot handle columns with tuple names.
 
     Returns:
         Transformed X where column names are renamed to numerical values
@@ -261,9 +260,11 @@ def _rename_column_names_to_numeric(X, flatten_tuples=True):
         return pd.DataFrame(X)
 
     X_renamed = X.copy()
-    if flatten_tuples and (len(X.columns) > 0 and isinstance(X.columns, pd.MultiIndex)):
+    logical_types = X.ww.logical_types
+    if len(X.columns) > 0 and isinstance(X.columns, pd.MultiIndex):
         flat_col_names = list(map(str, X_renamed.columns))
         X_renamed.columns = flat_col_names
+        logical_types = {str(k): v for k, v in logical_types.items()}
         rename_cols_dict = dict(
             (str(col), col_num) for col_num, col in enumerate(list(X.columns))
         )
@@ -272,6 +273,9 @@ def _rename_column_names_to_numeric(X, flatten_tuples=True):
             (col, col_num) for col_num, col in enumerate(list(X.columns))
         )
     X_renamed.rename(columns=rename_cols_dict, inplace=True)
+    X_renamed.ww.init(
+        logical_types={rename_cols_dict[k]: v for k, v in logical_types.items()}
+    )
     return X_renamed
 
 
