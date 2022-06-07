@@ -417,7 +417,7 @@ columns_dict = {
         "all",
     ],
 )
-@pytest.mark.parametrize("numeric_impute_strategy", ["most_frequent", "mean", "median"])
+@pytest.mark.parametrize("numeric_impute_strategy", ["most_frequent", "mean", "median", "constant"])
 @pytest.mark.parametrize("categorical_impute_strategy", ["most_frequent", "constant"])
 @pytest.mark.parametrize("boolean_impute_strategy", ["most_frequent", "constant"])
 def test_imputer_with_none_separated(
