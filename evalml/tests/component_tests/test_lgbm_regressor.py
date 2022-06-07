@@ -222,8 +222,8 @@ def test_lgbm_preserves_schema_in_rename(mock_predict, mock_fit):
     X.ww.init(logical_types={"a": "NaturalLanguage"})
     original_schema = X.ww.rename(columns={"a": 0}).ww.schema
 
-    xgb = LightGBMRegressor()
-    xgb.fit(X, pd.Series([0, 1, 1, 0]))
+    lgb = LightGBMRegressor()
+    lgb.fit(X, pd.Series([0, 1, 1, 0]))
     assert mock_fit.call_args[0][0].ww.schema == original_schema
-    xgb.predict(X)
+    lgb.predict(X)
     assert mock_predict.call_args[0][0].ww.schema == original_schema

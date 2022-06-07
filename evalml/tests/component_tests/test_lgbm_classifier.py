@@ -319,10 +319,10 @@ def test_lgbm_preserves_schema_in_rename(mock_predict_proba, mock_predict, mock_
     X.ww.init(logical_types={"a": "NaturalLanguage"})
     original_schema = X.ww.rename(columns={"a": 0}).ww.schema
 
-    xgb = LightGBMClassifier()
-    xgb.fit(X, pd.Series([0, 1, 1, 0]))
+    lgb = LightGBMClassifier()
+    lgb.fit(X, pd.Series([0, 1, 1, 0]))
     assert mock_fit.call_args[0][0].ww.schema == original_schema
-    xgb.predict(X)
+    lgb.predict(X)
     assert mock_predict.call_args[0][0].ww.schema == original_schema
-    xgb.predict_proba(X)
+    lgb.predict_proba(X)
     assert mock_predict_proba.call_args[0][0].ww.schema == original_schema
