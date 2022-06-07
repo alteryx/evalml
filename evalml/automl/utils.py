@@ -15,6 +15,7 @@ from evalml.pipelines import (
 from evalml.preprocessing.data_splitters import (
     KFold,
     StratifiedKFold,
+    StratifiedSegmentKFold,
     TimeSeriesSplit,
     TrainingValidationSplit,
 )
@@ -59,6 +60,7 @@ def make_data_splitter(
     problem_configuration=None,
     n_splits=3,
     shuffle=True,
+    segment=None,
     random_seed=0,
 ):
     """Given the training data and ML problem parameters, compute a data splitting method to use during AutoML search.
@@ -71,6 +73,7 @@ def make_data_splitter(
             in time series problems, values should be passed in for the time_index, gap, and max_delay variables. Defaults to None.
         n_splits (int, None): The number of CV splits, if applicable. Defaults to 3.
         shuffle (bool): Whether or not to shuffle the data before splitting, if applicable. Defaults to True.
+        segment (str, None): The column to use for segmented stratified splitting. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Returns:
@@ -100,9 +103,13 @@ def make_data_splitter(
     if problem_type == ProblemTypes.REGRESSION:
         return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        return StratifiedKFold(
-            n_splits=n_splits, random_state=random_seed, shuffle=shuffle
-        )
+        if segment is None:
+            return StratifiedKFold(
+                n_splits=n_splits, random_state=random_seed, shuffle=shuffle
+            )
+        return StratifiedSegmentKFold(
+                n_splits=n_splits, random_state=random_seed, shuffle=shuffle, segment=segment
+            )
 
 
 def tune_binary_threshold(

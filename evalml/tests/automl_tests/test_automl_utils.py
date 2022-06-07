@@ -28,6 +28,7 @@ from evalml.pipelines import (
 from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit,
+    StratifiedSegmentKFold
 )
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
@@ -139,11 +140,13 @@ def test_make_data_splitter_default(problem_type, large_data):
 
 
 @pytest.mark.parametrize(
-    "problem_type, expected_data_splitter",
+    "problem_type, segment, expected_data_splitter",
     [
-        (ProblemTypes.REGRESSION, KFold),
-        (ProblemTypes.BINARY, StratifiedKFold),
-        (ProblemTypes.MULTICLASS, StratifiedKFold),
+        (ProblemTypes.REGRESSION, None, KFold),
+        (ProblemTypes.BINARY, None, StratifiedKFold),
+        (ProblemTypes.MULTICLASS, None, StratifiedKFold),
+        (ProblemTypes.BINARY, 'col_0', StratifiedSegmentKFold),
+        (ProblemTypes.MULTICLASS, 'col_0', StratifiedSegmentKFold),
     ],
 )
 def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
@@ -160,6 +163,8 @@ def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     assert data_splitter.shuffle
     assert data_splitter.random_state == random_seed
     assert data_splitter.is_cv
+    if segment is not None:
+        assert data_splitter.segment == segment
 
 
 def test_make_data_splitter_parameters_time_series():

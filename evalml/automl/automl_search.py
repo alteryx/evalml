@@ -409,6 +409,8 @@ class AutoMLSearch:
             be chosen by providing a string from the list ["sequential", "cf_threaded", "cf_process", "dask_threaded", "dask_process"].
             If a parallel engine is selected this way, the maximum amount of parallelism, as determined by the engine, will be used. Defaults to "sequential".
 
+        _segment (str, None): The segment of data to split upon for data splitters. Defaults to None.
+
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
     """
 
@@ -449,6 +451,7 @@ class AutoMLSearch:
         _pipelines_per_batch=5,
         automl_algorithm="default",
         engine="sequential",
+        _segment=None,
         verbose=False,
     ):
         self.verbose = verbose
@@ -612,6 +615,7 @@ class AutoMLSearch:
 
         self.X_train = infer_feature_types(X_train)
         self.y_train = infer_feature_types(y_train)
+        self._segment = _segment
 
         default_data_splitter = make_data_splitter(
             self.X_train,
@@ -621,6 +625,7 @@ class AutoMLSearch:
             n_splits=3,
             shuffle=True,
             random_seed=self.random_seed,
+            segment=_segment
         )
         self.data_splitter = self.data_splitter or default_data_splitter
         self.search_parameters = search_parameters or {}
