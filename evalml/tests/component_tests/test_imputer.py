@@ -26,7 +26,6 @@ def test_invalid_strategy_parameters():
         Imputer(boolean_impute_strategy="another invalid strategy")
 
 
-
 def test_imputer_default_parameters():
     imputer = Imputer()
     expected_parameters = {
@@ -420,7 +419,9 @@ columns_dict = {
         "all",
     ],
 )
-@pytest.mark.parametrize("numeric_impute_strategy", ["most_frequent", "mean", "median", "constant"])
+@pytest.mark.parametrize(
+    "numeric_impute_strategy", ["most_frequent", "mean", "median", "constant"]
+)
 @pytest.mark.parametrize("categorical_impute_strategy", ["most_frequent", "constant"])
 @pytest.mark.parametrize("boolean_impute_strategy", ["most_frequent", "constant"])
 def test_imputer_with_none_separated(
