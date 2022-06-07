@@ -156,7 +156,7 @@ def test_make_data_splitter_parameters(problem_type, segment, expected_data_spli
     random_seed = 42
 
     data_splitter = make_data_splitter(
-        X, y, problem_type, n_splits=5, random_seed=random_seed
+        X, y, problem_type, n_splits=5, random_seed=random_seed, segment=segment
     )
     assert isinstance(data_splitter, expected_data_splitter)
     assert data_splitter.n_splits == 5

@@ -103,15 +103,15 @@ def make_data_splitter(
     if problem_type == ProblemTypes.REGRESSION:
         return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        if segment is None:
-            return StratifiedKFold(
-                n_splits=n_splits, random_state=random_seed, shuffle=shuffle
-            )
-        return StratifiedSegmentKFold(
+        if segment is not None:
+            return StratifiedSegmentKFold(
             n_splits=n_splits,
             random_state=random_seed,
             shuffle=shuffle,
             segment=segment,
+        )
+        return StratifiedKFold(
+            n_splits=n_splits, random_state=random_seed, shuffle=shuffle
         )
 
 
