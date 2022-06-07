@@ -26,9 +26,9 @@ from evalml.pipelines import (
     RegressionPipeline,
 )
 from evalml.preprocessing.data_splitters import (
+    StratifiedSegmentKFold,
     TimeSeriesSplit,
     TrainingValidationSplit,
-    StratifiedSegmentKFold
 )
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
@@ -145,11 +145,11 @@ def test_make_data_splitter_default(problem_type, large_data):
         (ProblemTypes.REGRESSION, None, KFold),
         (ProblemTypes.BINARY, None, StratifiedKFold),
         (ProblemTypes.MULTICLASS, None, StratifiedKFold),
-        (ProblemTypes.BINARY, 'col_0', StratifiedSegmentKFold),
-        (ProblemTypes.MULTICLASS, 'col_0', StratifiedSegmentKFold),
+        (ProblemTypes.BINARY, "col_0", StratifiedSegmentKFold),
+        (ProblemTypes.MULTICLASS, "col_0", StratifiedSegmentKFold),
     ],
 )
-def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
+def test_make_data_splitter_parameters(problem_type, segment, expected_data_splitter):
     n = 10
     X = pd.DataFrame({"col_0": list(range(n)), "target": list(range(n))})
     y = X.pop("target")

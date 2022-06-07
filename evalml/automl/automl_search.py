@@ -625,7 +625,7 @@ class AutoMLSearch:
             n_splits=3,
             shuffle=True,
             random_seed=self.random_seed,
-            segment=_segment
+            segment=_segment,
         )
         self.data_splitter = self.data_splitter or default_data_splitter
         self.search_parameters = search_parameters or {}

@@ -36,8 +36,10 @@ class StratifiedSegmentKFold(StratifiedKFold):
         self.random_state = random_state
         self.shuffle = shuffle
         self.segment = segment
-        super().__init__(n_splits=self.n_splits, random_state=self.random_state, shuffle=self.shuffle)
-    
+        super().__init__(
+            n_splits=self.n_splits, random_state=self.random_state, shuffle=self.shuffle
+        )
+
     def split(self, X, y):
         """Ignores y, creates new y to use based on the segment."""
         y_new = X[self.segment]

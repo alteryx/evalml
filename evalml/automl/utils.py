@@ -108,8 +108,11 @@ def make_data_splitter(
                 n_splits=n_splits, random_state=random_seed, shuffle=shuffle
             )
         return StratifiedSegmentKFold(
-                n_splits=n_splits, random_state=random_seed, shuffle=shuffle, segment=segment
-            )
+            n_splits=n_splits,
+            random_state=random_seed,
+            shuffle=shuffle,
+            segment=segment,
+        )
 
 
 def tune_binary_threshold(

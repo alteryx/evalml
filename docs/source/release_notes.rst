@@ -2,7 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Added ``StratifiedSegmentKFold`` to split data by segments when provided :pr:`` 
+        * Added ``StratifiedSegmentKFold`` to split data by segments when provided :pr:`3545` 
     * Fixes
         * Fixed github workflows for featuretools and woodwork to test their main branch against evalml. :pr:`3517`
         * Supress warnings in ``TargetEncoder`` raised by a coming change to default parameters :pr:`3540`
