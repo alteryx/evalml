@@ -741,6 +741,7 @@ class AutoMLSearch:
                 features=features,
                 ensembling=self.ensembling,
                 verbose=self.verbose,
+                n_jobs=self.n_jobs,
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")

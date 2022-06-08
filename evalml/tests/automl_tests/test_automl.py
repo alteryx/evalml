@@ -4784,3 +4784,25 @@ def test_automl_passes_down_ensembling(automl_algo, AutoMLTestEnv, X_y_binary):
         automl.search()
     pipeline_names = automl.rankings["pipeline_name"]
     assert pipeline_names.str.contains("Ensemble").any()
+
+
+def test_default_algorithm_uses_n_jobs(X_y_binary, AutoMLTestEnv):
+    X, y = X_y_binary
+
+    aml = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_batches=3,
+        automl_algorithm="default",
+        n_jobs=2,
+    )
+
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={aml.objective.name: 1.0}):
+        aml.search()
+
+    for pipeline_id in aml.rankings.id:
+        pl = aml.get_pipeline(pipeline_id)
+        if hasattr(pl.estimator, "n_jobs"):
+            assert pl.estimator.n_jobs == 2
