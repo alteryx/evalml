@@ -4804,5 +4804,5 @@ def test_default_algorithm_uses_n_jobs(X_y_binary, AutoMLTestEnv):
 
     for pipeline_id in aml.rankings.id:
         pl = aml.get_pipeline(pipeline_id)
-        if hasattr(pl.estimator, "n_jobs"):
-            assert pl.estimator.n_jobs == 2
+        if hasattr(pl.estimator._component_obj, "n_jobs"):
+            assert pl.estimator._component_obj.n_jobs == 2
