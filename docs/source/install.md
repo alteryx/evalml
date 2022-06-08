@@ -15,7 +15,7 @@ kernelspec:
 
 EvalML is available for Python 3.7, 3.8, and 3.9. It can be installed from [pypi](https://pypi.org/project/evalml/), [conda-forge](https://anaconda.org/conda-forge/evalml), or from [source](https://github.com/alteryx/evalml).
 
-To install EvalML with all dependencies, run the following command:
+To install EvalML on your platform, run one of the following commands:
 
 ````{tab} PyPI
 ```console
@@ -29,13 +29,28 @@ $ conda install -c conda-forge evalml
 ```
 ````
 
+````{tab} PyPI (M1 Mac)
+```console
+# See the EvalML with core dependencies only section
+$ pip install evalml --no-dependencies
+$ pip install -r core-requirements.txt
+```
+````
+
+````{tab} Conda (M1 Mac)
+```console
+# See the EvalML with core dependencies only section
+$ conda install -c conda-forge evalml-core
+```
+````
+
 ## EvalML with core dependencies only
 
 EvalML includes several optional dependencies. The `xgboost` and `catboost` packages support pipelines built around those modeling libraries. The `plotly` and `ipywidgets` packages support plotting functionality in automl searches. These dependencies are recommended, and are included with EvalML by default but are not required in order to install and use EvalML.
 
 EvalML's core dependencies are listed in `core-requirements.txt` in the source code, while the default collection of requirements is specified in `setup.cfg`'s `install_requires`.
 
-To install EvalML with only the core-required dependencies with pypi, first download the EvalML source [from pypi](https://pypi.org/project/evalml/#files) to access the requirements files before running the following command. For conda-forge, just run the following command:
+To install EvalML with only the core-required dependencies with pypi, first download the EvalML source [from pypi](https://pypi.org/project/evalml/#files) or [github](https://github.com/alteryx/evalml) to access the requirements files before running the following command.
 
 ````{tab} PyPI
 ```console
@@ -132,5 +147,13 @@ Additionally, `graphviz` can be installed by running:
 ```bash
 brew install graphviz
 ```
+
+### Installing EvalML on an M1 Mac
+
+Not all of EvalML's dependencies support Apple's new M1 chip. For this reason, `pip` or `conda` installing EvalML will
+fail. The core set of EvalML dependencies can be installed in the M1 chip, so we recommend you install EvalML with core
+dependencies. 
+
+Alternatively, there is experimental support for M1 chips with the Rosetta terminal. After setting up a Rosetta terminal, you should be able to `pip` or `conda` install EvalML.
 
 +++
