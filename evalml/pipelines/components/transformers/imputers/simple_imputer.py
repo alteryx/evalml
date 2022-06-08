@@ -72,6 +72,14 @@ class SimpleImputer(Transformer):
         """
         X = infer_feature_types(X)
 
+        if set([lt.type_string for lt in X.ww.logical_types.values()]) == {
+            "boolean",
+            "categorical",
+        }:
+            raise ValueError(
+                "SimpleImputer cannot handle dataframes with both boolean and categorical features.  Use Imputer, instead."
+            )
+
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 

@@ -543,3 +543,29 @@ def test_simple_imputer_ignores_natural_language(
         assert_frame_equal(result, X_df)
     elif df_composition == "single_column":
         assert_frame_equal(result, X_df)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        ["int col"],
+        ["float col"],
+        ["categorical col", "bool col"],
+        ["bool col", "float col"],
+        ["categorical col", "float col"],
+    ],
+)
+def test_simple_imputer_errors_with_bool_and_categorical_columns(
+    data, imputer_test_data
+):
+    X_df = imputer_test_data[data]
+    if "categorical col" in data and "bool col" in data:
+        with pytest.raises(
+            ValueError,
+            match="SimpleImputer cannot handle dataframes with both boolean and categorical features.",
+        ):
+            si = SimpleImputer()
+            si.fit(X_df)
+    else:
+        si = SimpleImputer()
+        si.fit(X_df)
