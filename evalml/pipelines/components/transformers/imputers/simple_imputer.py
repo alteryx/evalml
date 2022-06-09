@@ -6,6 +6,7 @@ from woodwork.logical_types import Double
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
+from evalml.utils.gen_utils import is_categorical_actually_boolean
 
 
 class SimpleImputer(Transformer):
@@ -72,11 +73,6 @@ class SimpleImputer(Transformer):
         """
         X = infer_feature_types(X)
 
-        def is_categorical_actually_boolean(df, df_col):
-            return {True, False}.issubset(set(df[df_col].unique())) and any(
-                isinstance(x, bool) for x in df[df_col].unique()
-            )
-
         if set([lt.type_string for lt in X.ww.logical_types.values()]) == {
             "boolean",
             "categorical",
@@ -86,7 +82,6 @@ class SimpleImputer(Transformer):
                 for col in X.ww.select("Categorical")
             ]
         ):
-
             raise ValueError(
                 "SimpleImputer cannot handle dataframes with both boolean and categorical features.  Use Imputer, instead."
             )

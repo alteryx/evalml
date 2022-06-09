@@ -21,7 +21,7 @@ def import_or_raise(library, error_msg=None, warning=False):
 
     Args:
         library (str): The name of the library.
-        error_msg (str): Rrror message to return if the import fails.
+        error_msg (str): Error message to return if the import fails.
         warning (bool): If True, import_or_raise gives a warning instead of ImportError. Defaults to False.
 
     Returns:
@@ -47,6 +47,23 @@ def import_or_raise(library, error_msg=None, warning=False):
             warnings.warn(msg)
         else:
             raise Exception(msg)
+
+
+def is_categorical_actually_boolean(df, df_col):
+    """Function to identify columns of a dataframe that contain True, False and null type.
+    The function is intended to be applied to columns that are identified as Categorical
+    by the Imputer/SimpleImputer.
+
+    Args:
+        df (pandas.DataFrame): Pandas dataframe with data.
+        df_col (str): The column to identify as basically a nullable Boolean.
+
+    Returns:
+        bool: Whether the column contains True, False and a null type.
+    """
+    return {True, False}.issubset(set(df[df_col].unique())) and any(
+        isinstance(x, bool) for x in df[df_col].unique()
+    )
 
 
 def convert_to_seconds(input_str):

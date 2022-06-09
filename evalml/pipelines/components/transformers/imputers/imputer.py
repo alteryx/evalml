@@ -4,6 +4,7 @@ import pandas as pd
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
 from evalml.utils import infer_feature_types
+from evalml.utils.gen_utils import is_categorical_actually_boolean
 
 
 class Imputer(Transformer):
@@ -114,9 +115,7 @@ class Imputer(Transformer):
         # with object dtypes are attempted to be cast to float64 with scikit-learn 1.1.  So we separate
         # boolean and categorical into separate imputers.
         for col in cat_cols:
-            if {True, False}.issubset(set(X[col].unique())) and any(
-                isinstance(x, bool) for x in X[col].unique()
-            ):
+            if is_categorical_actually_boolean(X, col):
                 cat_cols.remove(col)
                 bool_cols.append(col)
 
