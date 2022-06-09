@@ -1,6 +1,12 @@
 Release Notes
 -------------
 **Future Releases**
+    * Enhancements
+    * Fixes
+    * Changes
+        * Set the development status to ``4 - Beta`` in ``setup.cfg`` :pr:`3550`
+    * Documentation Changes
+    * Testing Changes
 
 .. warning::
 
