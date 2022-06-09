@@ -1,6 +1,13 @@
 Release Notes
 -------------
 **Future Releases**
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.53.0 June. 9, 2022**
     * Enhancements
         * Pass ``n_jobs`` to default algorithm :pr:`3548`
     * Fixes
@@ -17,10 +24,6 @@ Release Notes
         * Rename yml to yaml for GitHub Actions :pr:`3522`
         * Remove ``noncore_dependency`` pytest marker :pr:`3541`
         * Changed ``test_smotenc_category_features`` to use valid postal code values in response to new woodwork type validation :pr:`3544`
-
-.. warning::
-
-    **Breaking Changes**
 
 
 **v0.52.0 May. 12, 2022**
