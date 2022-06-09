@@ -4,13 +4,21 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
-        * Set the development status to ``4 - Beta`` in ``setup.cfg`` :pr:`3550`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+
+
+**v0.53.1 June. 9, 2022**
+    * Enhancements
+    * Fixes
+    * Changes
+        * Set the development status to ``4 - Beta`` in ``setup.cfg`` :pr:`3550`
+    * Documentation Changes
+    * Testing Changes
 
 
 **v0.53.0 June. 9, 2022**
