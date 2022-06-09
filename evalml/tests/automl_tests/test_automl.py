@@ -4784,3 +4784,38 @@ def test_automl_passes_down_ensembling(automl_algo, AutoMLTestEnv, X_y_binary):
         automl.search()
     pipeline_names = automl.rankings["pipeline_name"]
     assert pipeline_names.str.contains("Ensemble").any()
+
+
+def test_default_algorithm_uses_n_jobs(X_y_binary, AutoMLTestEnv):
+    X, y = X_y_binary
+
+    aml = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_batches=3,
+        automl_algorithm="default",
+        n_jobs=2,
+    )
+
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={aml.objective.name: 1.0}):
+        aml.search()
+
+    n_checked = 0
+    n_feature_selector_checked = 0
+    for pipeline_id in aml.rankings.id:
+        pl = aml.get_pipeline(pipeline_id)
+        if hasattr(pl.estimator._component_obj, "n_jobs"):
+            n_checked += 1
+            assert pl.estimator._component_obj.n_jobs == 2
+        if "RF Classifier Select From Model" in pl.component_graph.component_instances:
+            n_feature_selector_checked += 1
+            assert (
+                pl.get_component(
+                    "RF Classifier Select From Model"
+                )._component_obj.estimator.n_jobs
+                == 2
+            )
+
+    assert n_checked and n_feature_selector_checked
