@@ -19,8 +19,6 @@ class SimpleImputer(Transformer):
            Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
-    Raises:
-        ValueError: if the SimpleImputer receives a dataframe with both Boolean and Categorical data.
     """
 
     name = "Simple Imputer"
@@ -73,6 +71,10 @@ class SimpleImputer(Transformer):
 
         Returns:
             self
+
+        Raises:
+            ValueError: if the SimpleImputer receives a dataframe with both Boolean and Categorical data.
+
         """
         X = infer_feature_types(X)
 

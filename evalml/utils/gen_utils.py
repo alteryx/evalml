@@ -51,6 +51,7 @@ def import_or_raise(library, error_msg=None, warning=False):
 
 def is_categorical_actually_boolean(df, df_col):
     """Function to identify columns of a dataframe that contain True, False and null type.
+
     The function is intended to be applied to columns that are identified as Categorical
     by the Imputer/SimpleImputer.
 
@@ -60,6 +61,7 @@ def is_categorical_actually_boolean(df, df_col):
 
     Returns:
         bool: Whether the column contains True, False and a null type.
+
     """
     return {True, False}.issubset(set(df[df_col].unique())) and any(
         isinstance(x, bool) for x in df[df_col].unique()
