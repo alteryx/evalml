@@ -4802,7 +4802,20 @@ def test_default_algorithm_uses_n_jobs(X_y_binary, AutoMLTestEnv):
     with env.test_context(score_return_value={aml.objective.name: 1.0}):
         aml.search()
 
+    n_checked = 0
+    n_feature_selector_checked = 0
     for pipeline_id in aml.rankings.id:
         pl = aml.get_pipeline(pipeline_id)
         if hasattr(pl.estimator._component_obj, "n_jobs"):
+            n_checked += 1
             assert pl.estimator._component_obj.n_jobs == 2
+        if "RF Classifier Select From Model" in pl.component_graph.component_instances:
+            n_feature_selector_checked += 1
+            assert (
+                pl.get_component(
+                    "RF Classifier Select From Model"
+                )._component_obj.estimator.n_jobs
+                == 2
+            )
+
+    assert n_checked and n_feature_selector_checked
