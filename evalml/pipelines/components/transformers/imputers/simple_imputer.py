@@ -18,6 +18,9 @@ class SimpleImputer(Transformer):
         fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
            Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+
+    Raises:
+        ValueError: if the SimpleImputer receives a dataframe with both Boolean and Categorical data.
     """
 
     name = "Simple Imputer"
