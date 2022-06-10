@@ -5,6 +5,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Fix typo in ``long_description`` field in ``setup.cfg`` :pr:`3553`
     * Testing Changes
 
 .. warning::
