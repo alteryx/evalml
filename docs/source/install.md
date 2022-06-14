@@ -13,7 +13,7 @@ kernelspec:
 
 # Install
 
-EvalML is available for Python 3.7, 3.8, and 3.9. It can be installed from [pypi](https://pypi.org/project/evalml/), [conda-forge](https://anaconda.org/conda-forge/evalml), or from [source](https://github.com/alteryx/evalml).
+EvalML is available for Python 3.8 and 3.9. It can be installed from [pypi](https://pypi.org/project/evalml/), [conda-forge](https://anaconda.org/conda-forge/evalml), or from [source](https://github.com/alteryx/evalml).
 
 To install EvalML on your platform, run one of the following commands:
 
