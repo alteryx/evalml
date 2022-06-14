@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Don't pass ``time_index`` as kwargs to sktime ARIMA implementation for compatibility with latest version :pr:`3564`
     * Documentation Changes
         * Fix typo in ``long_description`` field in ``setup.cfg`` :pr:`3553`
     * Testing Changes

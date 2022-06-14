@@ -82,7 +82,6 @@ class ARIMARegressor(Estimator):
             "seasonal": seasonal,
             "maxiter": maxiter,
             "n_jobs": n_jobs,
-            "time_index": time_index,
         }
 
         parameters.update(kwargs)
@@ -95,6 +94,7 @@ class ARIMARegressor(Estimator):
         )
         arima_model = sktime_arima.AutoARIMA(**parameters)
         parameters["use_covariates"] = use_covariates
+        parameters["time_index"] = time_index
 
         self.use_covariates = use_covariates
 
