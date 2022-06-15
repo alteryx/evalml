@@ -24,6 +24,9 @@ from evalml.utils import (
     infer_feature_types,
 )
 
+# from tkinter import W
+
+
 logger = get_logger(__file__)
 
 
@@ -683,6 +686,9 @@ class ComponentGraph:
         Args:
             return_dict (bool): If True, return dictionary of information about component graph. Defaults to False.
 
+        Raises:
+            TypeError: If ComponentGraph is not instantiated
+
         Returns:
             dict: Dictionary of all component parameters if return_dict is True, else None
         """
@@ -691,13 +697,18 @@ class ComponentGraph:
         for number, component in enumerate(self.component_instances.values(), 1):
             component_string = str(number) + ". " + component.name
             logger.info(component_string)
-            components.update(
-                {
-                    component.name: component.describe(
-                        print_name=False, return_dict=return_dict
-                    )
-                }
-            )
+            try:
+                components.update(
+                    {
+                        component.name: component.describe(
+                            print_name=False, return_dict=return_dict
+                        )
+                    }
+                )
+            except TypeError:
+                raise TypeError(
+                    "You need to instantiate ComponentGraph before calling describe()"
+                ) from None
         if return_dict:
             return components
 
