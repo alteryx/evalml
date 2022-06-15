@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Using the ``describe`` method on an un-instantiated ComponentGraph now gives a more helpful error message :pr:`3569`
     * Fixes
     * Changes
         * Don't pass ``time_index`` as kwargs to sktime ARIMA implementation for compatibility with latest version :pr:`3564`
