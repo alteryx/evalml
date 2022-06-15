@@ -1,4 +1,5 @@
 import re
+from unittest.case import _AssertRaisesContext
 import warnings
 from datetime import datetime, timedelta
 from unittest.mock import patch
@@ -1684,6 +1685,24 @@ def test_describe_component_graph(return_dict, example_graph, caplog):
                 assert parameter in out
         assert component.name in out
 
+def test_describe_component_graph_TypeError():
+    component_dict = {
+            "Imputer": ["Imputer", "X", "y"],
+            "Target Imputer": ["Target Imputer", "X", "y"],
+            "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "Target Imputer.y"],
+            "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
+            "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
+            "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "Target Imputer.y"],
+            "Logistic Regression": [
+                "Logistic Regression Classifier",
+                "Random Forest.x",
+                "Elastic Net.x",
+                "y",
+            ],
+    }
+    cg_with_estimators = ComponentGraph(component_dict)
+    with pytest.raises(TypeError) as error:
+        cg_with_estimators.describe()
 
 class LogTransform(Transformer):
     name = "Log Transform"
