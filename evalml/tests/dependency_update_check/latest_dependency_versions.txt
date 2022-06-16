@@ -24,7 +24,7 @@ scikit-learn==1.0.2
 scikit-optimize==0.9.0
 scipy==1.8.1
 seaborn==0.11.2
-shap==0.40.0
+shap==0.41.0
 sktime==0.12.0
 statsmodels==0.13.2
 texttable==1.6.4
