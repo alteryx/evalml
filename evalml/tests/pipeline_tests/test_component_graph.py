@@ -1685,27 +1685,9 @@ def test_describe_component_graph(return_dict, example_graph, caplog):
         assert component.name in out
 
 
-def test_describe_component_graph_TypeError():
-    component_dict = {
-        "Imputer": ["Imputer", "X", "y"],
-        "Target Imputer": ["Target Imputer", "X", "y"],
-        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "Target Imputer.y"],
-        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
-        "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
-        "Elastic Net": [
-            "Elastic Net Classifier",
-            "OneHot_ElasticNet.x",
-            "Target Imputer.y",
-        ],
-        "Logistic Regression": [
-            "Logistic Regression Classifier",
-            "Random Forest.x",
-            "Elastic Net.x",
-            "y",
-        ],
-    }
-    cg_with_estimators = ComponentGraph(component_dict)
-    with pytest.raises(TypeError):
+def test_describe_component_graph_value_error(example_graph):
+    cg_with_estimators = ComponentGraph(example_graph)
+    with pytest.raises(ValueError):
         cg_with_estimators.describe()
 
 
