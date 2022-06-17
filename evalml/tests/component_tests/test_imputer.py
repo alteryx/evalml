@@ -455,37 +455,24 @@ def test_imputer_with_none_separated(
     expected_columns = columns_dict[dtypes]
     expected_df = deepcopy(expected[expected_columns])
     if numeric_impute_strategy in ["mean", "median"]:
-        for col in columns_dict["numerics_only"]:
-            try:
-                expected_df = expected_df.astype({col: float})
-                if numeric_impute_strategy == "mean":
-                    expected_df[col].iloc[-1:] = X_test[col].mean()
-                elif numeric_impute_strategy == "median":
-                    expected_df[col].iloc[-1:] = X_test[col].median()
-
-            except KeyError:
-                continue
+        for col in set(columns_dict["numerics_only"]).intersection(set(X_test.columns)):
+            expected_df = expected_df.astype({col: float})
+            if numeric_impute_strategy == "mean":
+                expected_df[col].iloc[-1:] = X_test[col].mean()
+            elif numeric_impute_strategy == "median":
+                expected_df[col].iloc[-1:] = X_test[col].median()
     elif numeric_impute_strategy == "constant":
-        for col in columns_dict["numerics_only"]:
-            try:
-                expected_df[col].iloc[-1:] = numeric_fill_value
-            except KeyError:
-                continue
+        for col in set(columns_dict["numerics_only"]).intersection(set(X_test.columns)):
+            expected_df[col].iloc[-1:] = numeric_fill_value
     if categorical_impute_strategy == "constant":
-        for col in columns_dict["categoricals_only"]:
-            try:
-                expected_df[col].cat.add_categories(
-                    categorical_fill_value, inplace=True
-                )
-                expected_df[col].iloc[-1:] = categorical_fill_value
-            except KeyError:
-                continue
+        for col in set(columns_dict["categoricals_only"]).intersection(
+            set(X_test.columns)
+        ):
+            expected_df[col].cat.add_categories(categorical_fill_value, inplace=True)
+            expected_df[col].iloc[-1:] = categorical_fill_value
     if boolean_impute_strategy == "constant":
-        for col in columns_dict["booleans_only"]:
-            try:
-                expected_df[col].iloc[-1:] = boolean_fill_value
-            except KeyError:
-                continue
+        for col in set(columns_dict["booleans_only"]).intersection(set(X_test.columns)):
+            expected_df[col].iloc[-1:] = boolean_fill_value
     assert_frame_equal(expected_df, transformed, check_dtype=False)
 
 

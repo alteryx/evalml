@@ -63,8 +63,9 @@ def is_categorical_actually_boolean(df, df_col):
         bool: Whether the column contains True, False and a null type.
 
     """
-    return {True, False}.issubset(set(df[df_col].unique())) and any(
-        isinstance(x, bool) for x in df[df_col].unique()
+    unique_vals = df[df_col].unique()
+    return {True, False}.issubset(set(unique_vals)) and any(
+        isinstance(x, bool) for x in unique_vals
     )
 
 
