@@ -5,7 +5,7 @@ Release Notes
     * Fixes
     * Changes
         * Don't pass ``time_index`` as kwargs to sktime ARIMA implementation for compatibility with latest version :pr:`3564`
-        * Capped ``nlp-primitives`` at version 2.5.0 :pr:`3572`
+        * Remove incompatible ``nlp-primitives`` version 2.6.0 from accepted dependency versions :pr:`3572`, :pr:`3574`
     * Documentation Changes
         * Fix typo in ``long_description`` field in ``setup.cfg`` :pr:`3553`
         * Update install page to remove Python 3.7 mention :pr:`3567`
