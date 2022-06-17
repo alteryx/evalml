@@ -859,17 +859,23 @@ class AutoMLSearch:
                 leading_char = ""
 
     def search(self, show_iteration_plot=True, timing=None):
-        batch_times = {}
-        count = 0
         """Find the best pipeline for the data set.
 
         Args:
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
+            timing (str, None): Shows timing of the batches and the individual timings of each pipeline.
+                Doesn't show by default.
 
         Raises:
             AutoMLSearchException: If all pipelines in the current AutoML batch produced a score of np.nan on the primary objective.
+
+        Returns:
+            Dict[str, Dict[str, str]]: Only returns dictionary if timing is set to "return" or "both".
+                Key=batch number, value=dictionary[key=pipeline, value=time of pipeline].
+                Inner dictionary has key called "Total time of batch" with value=total time of batch.
         """
+        batch_times = {}
         if self._searched:
             self.logger.error(
                 "AutoMLSearch.search() has already been run and will not run again on the same instance. Re-initialize AutoMLSearch to search again."
@@ -969,7 +975,10 @@ class AutoMLSearch:
                         pipeline_id = self._post_evaluation_callback(
                             pipeline, data, cached_data, job_log
                         )
-                        pipeline_time[pipeline.name] = time_elapsed(start_pipeline_time)
+                        if self.is_timing_input_correct(timing):
+                            pipeline_time[pipeline.name] = time_elapsed(
+                                start_pipeline_time
+                            )
                         new_pipeline_ids.append(pipeline_id)
                         computations[current_computation_index] = (computation, True)
                         computations_left_to_process -= 1
@@ -991,7 +1000,7 @@ class AutoMLSearch:
             current_batch_pipeline_scores = full_rankings[current_batch_idx][
                 "validation_score"
             ]
-            
+
             if (
                 len(current_batch_pipeline_scores)
                 and current_batch_pipeline_scores.isna().all()
@@ -1000,7 +1009,7 @@ class AutoMLSearch:
                     f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}."
                 )
             if len(pipeline_time) > 0:
-                pipeline_time["Total time of batch " + str(self._get_batch_number())] = time_elapsed(start_batch_time)
+                pipeline_time["Total time of batch"] = time_elapsed(start_batch_time)
                 batch_times[self._get_batch_number()] = pipeline_time
 
         self.search_duration = time.time() - self._start
@@ -1009,7 +1018,7 @@ class AutoMLSearch:
         desc = desc.ljust(self._MAX_NAME_LEN)
         self.logger.info(desc)
 
-        if timing == "log":
+        if timing == "log" or timing == "both":
             log_title(self.logger, "Here are the batch time stats")
             log_batch_times(self.logger, batch_times)
 
@@ -1022,6 +1031,9 @@ class AutoMLSearch:
                 f"Best pipeline {self.objective.name}: {best_pipeline['validation_score']:3f}"
             )
         self._searched = True
+
+        if timing == "return" or timing == "both":
+            return batch_times
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
@@ -1672,3 +1684,16 @@ class AutoMLSearch:
         return self._results["pipeline_results"][ensemble_pipeline_id][
             "input_pipeline_ids"
         ]
+
+    def is_timing_input_correct(self, timing):
+        """Returns a boolean depending on if timing is the correct value.
+
+        Args:
+            timing (str): timing argument.
+
+        Returns:
+            boolean: True if the timing arg is valid, false otherwise.
+        """
+        if timing == "return" or timing == "log" or timing == "both":
+            return True
+        return False

@@ -56,15 +56,19 @@ def time_elapsed(start_time):
     else:
         return "{0:02d}:{1:02d}".format(m, s)
 
+
 def log_batch_times(logger, batch_times):
-    """Used to print out the batch times
+    """Used to print out the batch times.
 
     Args:
-        batch_times: dict with (batch number, {pipeline name, pipeline time})
+        logger: the logger.
+        batch_times: dict with (batch number, {pipeline name, pipeline time}).
     """
     for batch_number in batch_times:
         subtitle = "Batch " + str(batch_number) + " time stats:"
         log_subtitle(logger, subtitle)
         for pipeline_name in batch_times[batch_number]:
-            logger.info("\n" + pipeline_name + ": " + batch_times[batch_number][pipeline_name])
+            logger.info(
+                "\n" + pipeline_name + ": " + batch_times[batch_number][pipeline_name]
+            )
         logger.info("")
