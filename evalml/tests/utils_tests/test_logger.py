@@ -6,6 +6,7 @@ import pytest
 from evalml import AutoMLSearch
 from evalml.utils.logger import (
     get_logger,
+    log_batch_times,
     log_subtitle,
     log_title,
     time_elapsed,
@@ -70,6 +71,20 @@ def test_logger_critical(caplog, logger_env_cleanup):
     logger.critical("Test critical")
     assert "Test critical" in caplog.text
     assert "CRITICAL" in caplog.text
+
+
+def test_logger_batch_times(caplog, logger_env_cleanup):
+    logger = get_logger(TEST_LOGGER_NAME)
+    batch_times = {"1": {"test": "00:01", "tset": "10:00"}, "2": {"pipe": "00:02"}}
+    log_batch_times(logger, batch_times)
+    assert "Batch 1 time stats" in caplog.text
+    assert "test:" in caplog.text
+    assert "00:01" in caplog.text
+    assert "tset" in caplog.text
+    assert "10:00" in caplog.text
+    assert "Batch 2 time stats" in caplog.text
+    assert "pipe" in caplog.text
+    assert "00:02" in caplog.text
 
 
 @pytest.mark.parametrize(
