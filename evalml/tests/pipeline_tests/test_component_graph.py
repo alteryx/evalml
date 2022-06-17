@@ -1685,6 +1685,12 @@ def test_describe_component_graph(return_dict, example_graph, caplog):
         assert component.name in out
 
 
+def test_describe_component_graph_value_error(example_graph):
+    cg_with_estimators = ComponentGraph(example_graph)
+    with pytest.raises(ValueError):
+        cg_with_estimators.describe()
+
+
 class LogTransform(Transformer):
     name = "Log Transform"
     modifies_features = False

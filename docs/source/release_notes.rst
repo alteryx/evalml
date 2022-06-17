@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Added a clearer error message when ``describe`` is called on an un-instantiated ComponentGraph :pr:`3569`
     * Changes
         * Don't pass ``time_index`` as kwargs to sktime ARIMA implementation for compatibility with latest version :pr:`3564`
         * Remove incompatible ``nlp-primitives`` version 2.6.0 from accepted dependency versions :pr:`3572`, :pr:`3574`

@@ -685,19 +685,27 @@ class ComponentGraph:
 
         Returns:
             dict: Dictionary of all component parameters if return_dict is True, else None
+
+        Raises:
+            ValueError: If the componentgraph is not instantiated
         """
         logger = get_logger(f"{__name__}.describe")
         components = {}
         for number, component in enumerate(self.component_instances.values(), 1):
             component_string = str(number) + ". " + component.name
             logger.info(component_string)
-            components.update(
-                {
-                    component.name: component.describe(
-                        print_name=False, return_dict=return_dict
-                    )
-                }
-            )
+            try:
+                components.update(
+                    {
+                        component.name: component.describe(
+                            print_name=False, return_dict=return_dict
+                        )
+                    }
+                )
+            except TypeError:
+                raise ValueError(
+                    "You need to instantiate ComponentGraph before calling describe()"
+                )
         if return_dict:
             return components
 
