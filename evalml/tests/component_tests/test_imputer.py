@@ -18,11 +18,11 @@ from evalml.pipelines.components import Imputer
 
 
 def test_invalid_strategy_parameters():
-    with pytest.raises(ValueError, match="Valid impute strategies are"):
+    with pytest.raises(ValueError, match="Valid numeric imputation strategies are"):
         Imputer(numeric_impute_strategy="not a valid strategy")
-    with pytest.raises(ValueError, match="Valid categorical impute strategies are"):
+    with pytest.raises(ValueError, match="Valid categorical imputation strategies are"):
         Imputer(categorical_impute_strategy="mean")
-    with pytest.raises(ValueError, match="Valid impute strategies are"):
+    with pytest.raises(ValueError, match="Valid boolean imputation strategies are"):
         Imputer(boolean_impute_strategy="another invalid strategy")
 
 
