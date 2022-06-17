@@ -62,6 +62,7 @@ from evalml.utils import convert_to_seconds, infer_feature_types
 from evalml.utils.gen_utils import contains_all_ts_parameters
 from evalml.utils.logger import (
     get_logger,
+    log_batch_times,
     log_subtitle,
     log_title,
     time_elapsed,
@@ -859,7 +860,6 @@ class AutoMLSearch:
 
     def search(self, show_iteration_plot=True, timing=None):
         batch_times = {}
-        print(timing, show_iteration_plot)
         count = 0
         """Find the best pipeline for the data set.
 
@@ -930,7 +930,7 @@ class AutoMLSearch:
 
         while self._should_continue():
             pipeline_time = {}
-            total_batch_time = time.time()
+            start_batch_time = time.time()
             computations = []
             try:
                 if not loop_interrupted:
@@ -939,14 +939,12 @@ class AutoMLSearch:
                 self.logger.info("AutoML Algorithm out of recommendations, ending")
                 break
             try:
-                
                 if self._should_continue():
                     new_pipeline_ids = []
                     log_title(
                         self.logger,
                         f"Evaluating Batch Number {self._get_batch_number()}",
                     )
-                    batch_start_time = time.time()
                     for pipeline in current_batch_pipelines:
                         self._pre_evaluation_callback(pipeline)
                         computation = self._engine.submit_evaluation_job(
@@ -972,7 +970,6 @@ class AutoMLSearch:
                             pipeline, data, cached_data, job_log
                         )
                         pipeline_time[pipeline.name] = time_elapsed(start_pipeline_time)
-                        print(pipeline_time[pipeline.name])
                         new_pipeline_ids.append(pipeline_id)
                         computations[current_computation_index] = (computation, True)
                         computations_left_to_process -= 1
@@ -1002,8 +999,9 @@ class AutoMLSearch:
                 raise AutoMLSearchException(
                     f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}."
                 )
-            pipeline_time["Total time of batch " + str(self._get_batch_number())] = time_elapsed(total_batch_time)
-            batch_times[self._get_batch_number()] = pipeline_time
+            if len(pipeline_time) > 0:
+                pipeline_time["Total time of batch " + str(self._get_batch_number())] = time_elapsed(start_batch_time)
+                batch_times[self._get_batch_number()] = pipeline_time
 
         self.search_duration = time.time() - self._start
         elapsed_time = time_elapsed(self._start)
@@ -1012,12 +1010,8 @@ class AutoMLSearch:
         self.logger.info(desc)
 
         if timing == "log":
-            #TODO: Integrate into logger.py, get rid of prints / use logs
-            for batch in batch_times:
-                print("Batch",batch,"time stats:")
-                for key in batch_times[batch]:
-                    print(key+":",(batch_times[batch])[key])
-                    print()
+            log_title(self.logger, "Here are the batch time stats")
+            log_batch_times(self.logger, batch_times)
 
         self._find_best_pipeline()
         if self._best_pipeline is not None:
