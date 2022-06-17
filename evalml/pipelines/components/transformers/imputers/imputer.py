@@ -50,15 +50,15 @@ class Imputer(Transformer):
     ):
         if categorical_impute_strategy not in self._valid_categorical_impute_strategies:
             raise ValueError(
-                f"{categorical_impute_strategy} is an invalid parameter. Valid categorical impute strategies are {', '.join(self._valid_numeric_impute_strategies)}"
+                f"{categorical_impute_strategy} is an invalid parameter. Valid categorical imputation strategies are {', '.join(self._valid_numeric_impute_strategies)}"
             )
         if numeric_impute_strategy not in self._valid_numeric_impute_strategies:
             raise ValueError(
-                f"{numeric_impute_strategy} is an invalid parameter. Valid impute strategies are {', '.join(self._valid_numeric_impute_strategies)}"
+                f"{numeric_impute_strategy} is an invalid parameter. Valid numeric imputation strategies are {', '.join(self._valid_numeric_impute_strategies)}"
             )
         if boolean_impute_strategy not in self._valid_boolean_impute_strategies:
             raise ValueError(
-                f"{boolean_impute_strategy} is an invalid parameter. Valid impute strategies are {', '.join(self._valid_boolean_impute_strategies)}"
+                f"{boolean_impute_strategy} is an invalid parameter. Valid boolean imputation strategies are {', '.join(self._valid_boolean_impute_strategies)}"
             )
 
         parameters = {

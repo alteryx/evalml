@@ -88,7 +88,7 @@ class SimpleImputer(Transformer):
             ]
         ):
             raise ValueError(
-                "SimpleImputer cannot handle dataframes with both boolean and categorical features.  Use Imputer, instead."
+                "SimpleImputer cannot handle dataframes with both boolean and categorical features.  Use Imputer instead."
             )
 
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
@@ -139,9 +139,7 @@ class SimpleImputer(Transformer):
 
         # TODO: Fix this after WW adds inference of object type booleans to BooleanNullable
         # Iterate through categorical columns that might have been boolean and convert them back to boolean
-        cat_cols = X.ww.select(["Categorical"], return_schema=True)
-        cat_cols = [x for x in cat_cols.columns.keys()]
-        for col in cat_cols:
+        for col in X.ww.select(["Categorical"], return_schema=True).columns:
             if is_categorical_actually_boolean(X, col):
                 X_t[col] = X_t[col].astype(bool)
 
