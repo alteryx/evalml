@@ -220,6 +220,8 @@ def test_describe_component():
             "categorical_fill_value": None,
             "numeric_impute_strategy": "mean",
             "numeric_fill_value": None,
+            "boolean_impute_strategy": "most_frequent",
+            "boolean_fill_value": None,
         },
     }
     assert simple_imputer.describe(return_dict=True) == {
@@ -1500,7 +1502,7 @@ def test_generate_code():
 
     expected_code = (
         "from evalml.pipelines.components.transformers.imputers.imputer import Imputer"
-        "\n\nimputer = Imputer(**{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None})"
+        "\n\nimputer = Imputer(**{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None, 'boolean_fill_value': None})"
     )
     component_code = generate_component_code(Imputer())
     assert component_code == expected_code

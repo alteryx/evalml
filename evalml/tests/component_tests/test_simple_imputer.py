@@ -123,9 +123,9 @@ def test_simple_imputer_all_bool_return_original(data_type, make_data_type):
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_simple_imputer_boolean_dtype(data_type, make_data_type):
     X = pd.DataFrame([True, np.nan, False, np.nan, True])
-    X.ww.init(logical_types={0: "categorical"})
+    X.ww.init(logical_types={0: "BooleanNullable"})
     y = pd.Series([1, 0, 0, 1, 0])
-    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype="category")
+    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype="boolean")
     X = make_data_type(data_type, X)
     imputer = SimpleImputer()
     imputer.fit(X, y)
@@ -141,12 +141,12 @@ def test_simple_imputer_multitype_with_one_bool(data_type, make_data_type):
             "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
         }
     )
-    X_multi.ww.init(logical_types={"bool with nan": "categorical"})
+    X_multi.ww.init(logical_types={"bool with nan": "BooleanNullable"})
     y = pd.Series([1, 0, 0, 1, 0])
     X_multi_expected_arr = pd.DataFrame(
         {
             "bool with nan": pd.Series(
-                [True, False, False, False, False], dtype="category"
+                [True, False, False, False, False], dtype="boolean"
             ),
             "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
         }
@@ -308,51 +308,83 @@ def test_simple_imputer_does_not_reset_index():
     )
 
 
-def test_simple_imputer_with_none():
-    # No all none here because ww default inference will treat
-    # it as unknown which is not a supported feature.
-    X = pd.DataFrame(
-        {
-            "int with None": [1, 0, 5, None],
-            "float with None": [0.1, 0.0, 0.5, None],
-        }
-    )
-    y = pd.Series([0, 0, 1, 0, 1])
-    imputer = SimpleImputer(impute_strategy="mean")
-    imputer.fit(X, y)
-    transformed = imputer.transform(X, y)
-    expected = pd.DataFrame(
-        {"int with None": [1, 0, 5, 2], "float with None": [0.1, 0.0, 0.5, 0.2]}
-    )
-    assert_frame_equal(expected, transformed, check_dtype=False)
+X = pd.DataFrame(
+    {
+        "int with None": [1, 0, 5, 5, None],
+        "float with None": [0.1, 0.0, 0.5, 0.5, None],
+        "category with None": pd.Series(["c", "a", "a", "a", None], dtype="category"),
+        "boolean with None": pd.Series([True, None, False, True, True]),
+        "object with None": ["b", "a", "a", "a", None],
+        "all None": [None, None, None, None, None],
+    }
+)
+expected = pd.DataFrame(
+    {
+        "int with None": pd.Series([1, 0, 5, 5, 5], dtype="Int64"),
+        "float with None": [0.1, 0.0, 0.5, 0.5, 0.5],
+        "category with None": pd.Series(["c", "a", "a", "a", "a"], dtype="category"),
+        "boolean with None": pd.Series(
+            [True, True, False, True, True], dtype="boolean"
+        ),
+        "object with None": pd.Series(["b", "a", "a", "a", "a"], dtype="category"),
+    }
+)
+ltypes = {
+    "int with None": "IntegerNullable",
+    "float with None": "Double",
+    "category with None": "categorical",
+    "boolean with None": "BooleanNullable",
+    "object with None": "categorical",
+    "all None": "categorical",
+}
+columns_dict = {
+    "numerics_only": ["int with None", "float with None"],
+    "categoricals_only": ["category with None", "object with None"],
+    "booleans_only": ["boolean with None"],
+    "categorical_and_booleans": [
+        "category with None",
+        "boolean with None",
+        "object with None",
+    ],
+    "all": [
+        "int with None",
+        "float with None",
+        "category with None",
+        "boolean with None",
+        "object with None",
+    ],
+}
 
-    X = pd.DataFrame(
-        {
-            "category with None": pd.Series(["b", "a", "a", None], dtype="category"),
-            "boolean with None": pd.Series([True, None, False, True]),
-            "object with None": ["b", "a", "a", None],
-            "all None": [None, None, None, None],
-        }
-    )
-    X.ww.init(
-        logical_types={
-            "boolean with None": "categorical",
-            "object with None": "categorical",
-            "all None": "categorical",
-        }
-    )
+
+@pytest.mark.parametrize(
+    "dtypes",
+    [
+        "numerics_only",
+        "booleans_only",
+        "categoricals_only",
+        pytest.param(
+            "categorical_and_booleans",
+            marks=pytest.mark.xfail(
+                reason="Since the scikit-learn 1.1 upgrade, SimpleImputer can't deal with categoricals and booleans in same array"
+            ),
+        ),
+        pytest.param(
+            "all",
+            marks=pytest.mark.xfail(
+                reason="Since the scikit-learn 1.1 upgrade, SimpleImputer can't deal with categoricals and booleans in same array"
+            ),
+        ),
+    ],
+)
+def test_simple_imputer_with_none_separated(dtypes):
+    test_ltypes = dict((k, ltypes[k]) for k in columns_dict[dtypes])
+    X_test = X[columns_dict[dtypes]]
+    X_test.ww.init(logical_types=test_ltypes)
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = SimpleImputer()
-    imputer.fit(X, y)
-    transformed = imputer.transform(X, y)
-    expected = pd.DataFrame(
-        {
-            "category with None": pd.Series(["b", "a", "a", "a"], dtype="category"),
-            "boolean with None": pd.Series([True, True, False, True], dtype="category"),
-            "object with None": pd.Series(["b", "a", "a", "a"], dtype="category"),
-        }
-    )
-    assert_frame_equal(expected, transformed, check_dtype=False)
+    imputer.fit(X_test, y)
+    transformed = imputer.transform(X_test, y)
+    assert_frame_equal(expected[columns_dict[dtypes]], transformed, check_dtype=False)
 
 
 @pytest.mark.parametrize("na_type", ["python_none", "numpy_nan", "pandas_na"])
@@ -511,3 +543,29 @@ def test_simple_imputer_ignores_natural_language(
         assert_frame_equal(result, X_df)
     elif df_composition == "single_column":
         assert_frame_equal(result, X_df)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        ["int col"],
+        ["float col"],
+        ["categorical col", "bool col"],
+        ["bool col", "float col"],
+        ["categorical col", "float col"],
+    ],
+)
+def test_simple_imputer_errors_with_bool_and_categorical_columns(
+    data, imputer_test_data
+):
+    X_df = imputer_test_data[data]
+    if "categorical col" in data and "bool col" in data:
+        with pytest.raises(
+            ValueError,
+            match="SimpleImputer cannot handle dataframes with both boolean and categorical features.",
+        ):
+            si = SimpleImputer()
+            si.fit(X_df)
+    else:
+        si = SimpleImputer()
+        si.fit(X_df)
