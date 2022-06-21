@@ -865,17 +865,29 @@ class AutoMLSearch:
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
             timing (str, None): Shows timing of the batches and the individual timings of each pipeline.
-                Doesn't show by default.
+                Default: None
+                log=prints out batch/pipeline timing to console.
+                return=returns a dict with all the batch/pipeline timings
+                both=both prints out the timing to the console and returns a dict with the timings
 
         Raises:
             AutoMLSearchException: If all pipelines in the current AutoML batch produced a score of np.nan on the primary objective.
+            ValueError: If timing is not set correctly
 
         Returns:
-            Optinal Dict[int, Dict[str, str]]: Returns dict if timing is set to "return" or "both".
-                Key=batch #, value=dictionary[key=pipeline name, value=time of pipeline].
-                Inner dictionary has key called "Total time of batch" with value=total time of batch.
+            Optional Dict[int, Dict[str, Timestamp]]: Returns dict if timing is set to "return" or "both".
+                Key=batch #, value=Dict[key=pipeline name, value=time of pipeline].
+                Inner dict has key called "Total time of batch" with value=total time of batch.
         """
         batch_times = {}
+        if timing is not None:
+            timing = timing.lower()
+
+        if self.is_timing_input_correct(timing) is False and timing is not None:
+            raise ValueError(
+                """Timing isn't set to a correct value! Please try again using one of these args: "log", "return", or "both"."""
+            )
+
         if self._searched:
             self.logger.error(
                 "AutoMLSearch.search() has already been run and will not run again on the same instance. Re-initialize AutoMLSearch to search again."
@@ -935,7 +947,7 @@ class AutoMLSearch:
         loop_interrupted = False
 
         while self._should_continue():
-            pipeline_time = {}
+            pipeline_times = {}
             start_batch_time = time.time()
             computations = []
             try:
@@ -975,10 +987,9 @@ class AutoMLSearch:
                         pipeline_id = self._post_evaluation_callback(
                             pipeline, data, cached_data, job_log
                         )
-                        if self.is_timing_input_correct(timing):
-                            pipeline_time[pipeline.name] = time_elapsed(
-                                start_pipeline_time
-                            )
+                        pipeline_times[pipeline.name] = time_elapsed(
+                            start_pipeline_time
+                        )
                         new_pipeline_ids.append(pipeline_id)
                         computations[current_computation_index] = (computation, True)
                         computations_left_to_process -= 1
@@ -1008,9 +1019,9 @@ class AutoMLSearch:
                 raise AutoMLSearchException(
                     f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}."
                 )
-            if len(pipeline_time) > 0:
-                pipeline_time["Total time of batch"] = time_elapsed(start_batch_time)
-                batch_times[self._get_batch_number()] = pipeline_time
+            if len(pipeline_times) > 0:
+                pipeline_times["Total time of batch"] = time_elapsed(start_batch_time)
+                batch_times[self._get_batch_number()] = pipeline_times
 
         self.search_duration = time.time() - self._start
         elapsed_time = time_elapsed(self._start)
@@ -1019,7 +1030,7 @@ class AutoMLSearch:
         self.logger.info(desc)
 
         if timing == "log" or timing == "both":
-            log_title(self.logger, "Here are the batch time stats")
+            log_title(self.logger, "Batch Time Stats")
             log_batch_times(self.logger, batch_times)
 
         self._find_best_pipeline()
@@ -1031,7 +1042,6 @@ class AutoMLSearch:
                 f"Best pipeline {self.objective.name}: {best_pipeline['validation_score']:3f}"
             )
         self._searched = True
-
         if timing == "return" or timing == "both":
             return batch_times
 
