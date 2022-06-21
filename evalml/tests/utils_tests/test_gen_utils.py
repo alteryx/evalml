@@ -22,6 +22,7 @@ from evalml.utils.gen_utils import (
     get_importable_subclasses,
     get_random_seed,
     import_or_raise,
+    is_categorical_actually_boolean,
     jupyter_check,
     pad_with_nans,
     save_plot,
@@ -830,3 +831,17 @@ def test_year_start_separated_by_gap():
     assert are_datasets_separated_by_gap_time_index(
         train, test, {"time_index": "time_index", "gap": 2}
     )
+
+
+def test_is_categorical_actually_boolean():
+    X = pd.DataFrame(
+        {
+            "categorical": ["a", "b", "c"],
+            "boolean_categorical": [True, False, None],
+            "boolean": [True, False, True],
+        }
+    )
+
+    assert not is_categorical_actually_boolean(X, "categorical")
+    assert is_categorical_actually_boolean(X, "boolean_categorical")
+    assert not is_categorical_actually_boolean(X, "boolean")

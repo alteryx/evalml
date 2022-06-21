@@ -1630,8 +1630,10 @@ def test_describe_component_graph(return_dict, example_graph, caplog):
             "parameters": {
                 "categorical_impute_strategy": "most_frequent",
                 "numeric_impute_strategy": "mean",
+                "boolean_impute_strategy": "most_frequent",
                 "categorical_fill_value": None,
                 "numeric_fill_value": None,
+                "boolean_fill_value": None,
             },
         },
         "One Hot Encoder": {

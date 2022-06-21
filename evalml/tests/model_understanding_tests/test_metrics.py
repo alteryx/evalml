@@ -216,9 +216,9 @@ def test_precision_recall_curve(data_type, make_data_type):
     recall = precision_recall_curve_data.get("recall")
     thresholds = precision_recall_curve_data.get("thresholds")
 
-    precision_expected = np.array([0.66666667, 0.5, 1, 1])
-    recall_expected = np.array([1, 0.5, 0.5, 0])
-    thresholds_expected = np.array([0.35, 0.4, 0.8])
+    precision_expected = np.array([0.5, 0.66666667, 0.5, 1, 1])
+    recall_expected = np.array([1, 1, 0.5, 0.5, 0])
+    thresholds_expected = np.array([0.1, 0.35, 0.4, 0.8])
 
     np.testing.assert_almost_equal(precision_expected, precision, decimal=5)
     np.testing.assert_almost_equal(recall_expected, recall, decimal=5)
@@ -238,9 +238,9 @@ def test_precision_recall_curve_pos_label_idx():
     recall = precision_recall_curve_data.get("recall")
     thresholds = precision_recall_curve_data.get("thresholds")
 
-    precision_expected = np.array([0.66666667, 0.5, 1, 1])
-    recall_expected = np.array([1, 0.5, 0.5, 0])
-    thresholds_expected = np.array([0.35, 0.4, 0.8])
+    precision_expected = np.array([0.5, 0.66666667, 0.5, 1, 1])
+    recall_expected = np.array([1, 1, 0.5, 0.5, 0])
+    thresholds_expected = np.array([0.1, 0.35, 0.4, 0.8])
     np.testing.assert_almost_equal(precision_expected, precision, decimal=5)
     np.testing.assert_almost_equal(recall_expected, recall, decimal=5)
     np.testing.assert_almost_equal(thresholds_expected, thresholds, decimal=5)
