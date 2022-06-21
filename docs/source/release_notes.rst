@@ -3,6 +3,8 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Updated the Imputer and SimpleImputer to work with scikit-learn 1.1.1. :pr:`3525`
+        * Bumped the minimum versions of scikit-learn to 1.1.1 and imbalanced-learn to 0.9.1. :pr:`3525`
         * Added a clearer error message when ``describe`` is called on an un-instantiated ComponentGraph :pr:`3569`
     * Changes
         * Don't pass ``time_index`` as kwargs to sktime ARIMA implementation for compatibility with latest version :pr:`3564`
