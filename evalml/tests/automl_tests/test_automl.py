@@ -17,6 +17,7 @@ from skopt.space import Categorical, Integer, Real
 
 from .test_automl_iterative_algorithm import _get_first_stacked_classifier_no
 
+import evalml
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.automl_search import build_engine_from_str
@@ -31,6 +32,7 @@ from evalml.automl.utils import (
     _LARGE_DATA_ROW_THRESHOLD,
     get_default_primary_search_objective,
 )
+from evalml.data_checks import DefaultDataChecks
 from evalml.exceptions import (
     AutoMLSearchException,
     ParameterNotUsedWarning,
@@ -65,7 +67,11 @@ from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_stacked_ensemble_pipeline,
 )
-from evalml.preprocessing import TimeSeriesSplit, TrainingValidationSplit
+from evalml.preprocessing import (
+    TimeSeriesSplit,
+    TrainingValidationSplit,
+    load_data,
+)
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -77,6 +83,7 @@ from evalml.tests.automl_tests.parallel_tests.test_automl_dask import (
 )
 from evalml.tests.conftest import CustomClassificationObjectiveRanges
 from evalml.tuners import NoParamsException, RandomSearchTuner, SKOptTuner
+from evalml.utils import infer_feature_types
 
 
 @pytest.mark.parametrize(
@@ -214,6 +221,61 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
             ],
         )
     )
+
+
+def test_search_batch_times(caplog):
+    caplog.clear()
+    X, y = load_data(
+        path="evalml/tests/data/fraud_transactions.csv.gz",
+        index="id",
+        target="fraud",
+        compression="gzip",
+        n_rows=250,
+        verbose=True,
+    )
+    X.ww.set_types(logical_types={"provider": "Categorical", "region": "Categorical"})
+
+    X.ww["expiration_date"] = X["expiration_date"].apply(
+        lambda x: "20{}-01-{}".format(x.split("/")[1], x.split("/")[0])
+    )
+    X = infer_feature_types(
+        X,
+        feature_types={
+            "store_id": "categorical",
+            "expiration_date": "datetime",
+            "lat": "categorical",
+            "lng": "categorical",
+            "provider": "categorical",
+        },
+    )
+    X_train, _, y_train, _ = evalml.preprocessing.split_data(
+        X, y, problem_type="binary", test_size=0.2
+    )
+    data_checks = DefaultDataChecks("binary", "log loss binary")
+    data_checks.validate(X_train, y_train)
+    automl = evalml.automl.AutoMLSearch(
+        X_train=X_train, y_train=y_train, problem_type="binary", verbose=True
+    )
+    batch_times = automl.search(timing="both")
+    out = caplog.text
+
+    assert isinstance(batch_times, dict)
+    assert isinstance(list(batch_times.keys())[0], int)
+    assert isinstance(batch_times[1], dict)
+    assert isinstance(list(batch_times[1].keys())[0], str)
+    assert isinstance(batch_times[1]["Total time of batch"], str)
+    assert isinstance(batch_times[2]["Total time of batch"], str)
+    assert isinstance(batch_times[3]["Total time of batch"], str)
+
+    assert len(batch_times) == 3
+    assert len(batch_times[1]) == 3
+    assert len(batch_times[2]) == 3
+    assert len(batch_times[3]) == 7
+
+    assert "Here are the batch time stats" in out
+    assert "Batch 1 time stats" in out
+    assert "Batch 2 time stats" in out
+    assert "Batch 3 time stats" in out
 
 
 @pytest.mark.parametrize(
@@ -714,7 +776,7 @@ def test_large_dataset_binary(AutoMLTestEnv):
         objective=fraud_objective,
         additional_objectives=["auc", "f1", "precision"],
         max_time=1,
-        max_iterations=1,
+        max_iterations=3,
         optimize_thresholds=True,
         n_jobs=1,
     )

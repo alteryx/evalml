@@ -871,8 +871,8 @@ class AutoMLSearch:
             AutoMLSearchException: If all pipelines in the current AutoML batch produced a score of np.nan on the primary objective.
 
         Returns:
-            Dict[str, Dict[str, str]]: Only returns dictionary if timing is set to "return" or "both".
-                Key=batch number, value=dictionary[key=pipeline, value=time of pipeline].
+            Optinal Dict[int, Dict[str, str]]: Returns dict if timing is set to "return" or "both".
+                Key=batch #, value=dictionary[key=pipeline name, value=time of pipeline].
                 Inner dictionary has key called "Total time of batch" with value=total time of batch.
         """
         batch_times = {}
