@@ -1145,6 +1145,7 @@ def test_time_series_pipeline_no_ytrain_predict_error(
     ):
         clf.predict(X_train)
 
+
 @pytest.mark.parametrize(
     "problem_type",
     [
