@@ -1145,7 +1145,14 @@ def test_time_series_pipeline_no_ytrain_predict_error(
     ):
         clf.predict(X_train)
 
-
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ],
+)
 def test_time_series_pipeline_not_fitted_error(
     problem_type,
     ts_data_binary,
