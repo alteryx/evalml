@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ability to log how long each batch and pipeline take in automl.search() :pr:`3577`
     * Fixes
         * Added a clearer error message when ``describe`` is called on an un-instantiated ComponentGraph :pr:`3569`
     * Changes
