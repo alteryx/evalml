@@ -103,7 +103,6 @@ about:
 extra:
   recipe-maintainers:
     - dsherry
-    - freddyaboulton
     - ParthivNaresh
     - bchen1116
     - chukarsten
@@ -111,3 +110,4 @@ extra:
     - christopherbunn
     - fjlanasa
     - eccabay
+    - MichaelFu512
