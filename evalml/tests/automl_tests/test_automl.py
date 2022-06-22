@@ -231,7 +231,7 @@ def test_search_batch_times(caplog, X_y_binary, AutoMLTestEnv):
     batch_times = None
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
-        batch_times = automl.search(timing="both")
+        batch_times = automl.search(timing="log")
 
     out = caplog.text
     assert isinstance(batch_times, dict)

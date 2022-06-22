@@ -867,25 +867,23 @@ class AutoMLSearch:
             timing (str, None): Shows timing of the batches and the individual timings of each pipeline.
                 Default: None
                 log=prints out batch/pipeline timing to console.
-                return=returns a dict with all the batch/pipeline timings
-                both=both prints out the timing to the console and returns a dict with the timings
 
         Raises:
             AutoMLSearchException: If all pipelines in the current AutoML batch produced a score of np.nan on the primary objective.
-            ValueError: If timing is not set correctly
+            ValueError: If timing is not set to a correct value
 
         Returns:
-            Optional Dict[int, Dict[str, Timestamp]]: Returns dict if timing is set to "return" or "both".
-                Key=batch #, value=Dict[key=pipeline name, value=time of pipeline].
+                Dict[int, Dict[str, Timestamp]]: Returns dict.
+                Key=batch #, value=Dict[key=pipeline name, value=timestamp of pipeline].
                 Inner dict has key called "Total time of batch" with value=total time of batch.
         """
         batch_times = {}
         if timing is not None:
             timing = timing.lower()
 
-        if self.is_timing_input_correct(timing) is False and timing is not None:
+        if timing != "log" and timing is not None:
             raise ValueError(
-                """Timing isn't set to a correct value! Please try again using one of these args: "log", "return", or "both"."""
+                """Timing isn't set to a correct value! Please try again using "log"."""
             )
 
         if self._searched:
@@ -1029,7 +1027,7 @@ class AutoMLSearch:
         desc = desc.ljust(self._MAX_NAME_LEN)
         self.logger.info(desc)
 
-        if timing == "log" or timing == "both":
+        if timing == "log":
             log_title(self.logger, "Batch Time Stats")
             log_batch_times(self.logger, batch_times)
 
@@ -1042,8 +1040,7 @@ class AutoMLSearch:
                 f"Best pipeline {self.objective.name}: {best_pipeline['validation_score']:3f}"
             )
         self._searched = True
-        if timing == "return" or timing == "both":
-            return batch_times
+        return batch_times
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
@@ -1694,16 +1691,3 @@ class AutoMLSearch:
         return self._results["pipeline_results"][ensemble_pipeline_id][
             "input_pipeline_ids"
         ]
-
-    def is_timing_input_correct(self, timing):
-        """Returns a boolean depending on if timing is the correct value.
-
-        Args:
-            timing (str): timing argument.
-
-        Returns:
-            boolean: True if the timing arg is valid, false otherwise.
-        """
-        if timing == "return" or timing == "log" or timing == "both":
-            return True
-        return False
