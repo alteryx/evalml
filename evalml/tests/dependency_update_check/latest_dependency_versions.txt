@@ -6,7 +6,7 @@ dask==2022.6.0
 featuretools==1.9.2
 graphviz==0.20
 imbalanced-learn==0.9.1
-ipywidgets==7.7.0
+ipywidgets==7.7.1
 kaleido==0.2.1
 lightgbm==3.3.2
 lime==0.2.0.1
