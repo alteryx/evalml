@@ -1060,6 +1060,26 @@ def test_binary_predict_pipeline_objective_mismatch(
         binary_pipeline.predict(X[30:32], "precision micro", X[:30], y[:30])
 
 
+@pytest.fixture
+def my_parameters():
+    parameters = {
+        "Random Forest Regressor": {"n_jobs": 1},
+        "pipeline": {
+            "gap": 0,
+            "max_delay": 0,
+            "time_index": "date",
+            "forecast_horizon": 10,
+        },
+        "Time Series Featurizer": {
+            "gap": 0,
+            "max_delay": 0,
+            "time_index": "date",
+            "forecast_horizon": 10,
+        },
+    }
+    return parameters
+
+
 @pytest.mark.parametrize(
     "problem_type",
     [
@@ -1076,72 +1096,27 @@ def test_time_series_pipeline_no_ytrain_predict_error(
     time_series_binary_classification_pipeline_class,
     time_series_multiclass_classification_pipeline_class,
     time_series_regression_pipeline_class,
+    my_parameters,
 ):
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = ts_data_binary
-        clf = time_series_binary_classification_pipeline_class(
-            parameters={
-                "Logistic Regression Classifier": {"n_jobs": 1},
-                "pipeline": {
-                    "gap": 0,
-                    "max_delay": 0,
-                    "time_index": "date",
-                    "forecast_horizon": 10,
-                },
-                "Time Series Featurizer": {
-                    "gap": 0,
-                    "max_delay": 0,
-                    "time_index": "date",
-                    "forecast_horizon": 10,
-                },
-            }
-        )
+        clf = time_series_binary_classification_pipeline_class(parameters=my_parameters)
 
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         X, y = ts_data_multi
         clf = time_series_multiclass_classification_pipeline_class(
-            parameters={
-                "Logistic Regression Classifier": {"n_jobs": 1},
-                "pipeline": {
-                    "gap": 0,
-                    "max_delay": 0,
-                    "time_index": "date",
-                    "forecast_horizon": 10,
-                },
-                "Time Series Featurizer": {
-                    "gap": 0,
-                    "max_delay": 0,
-                    "time_index": "date",
-                    "forecast_horizon": 10,
-                },
-            }
+            parameters=my_parameters
         )
     else:
         X, y = ts_data
-        clf = time_series_regression_pipeline_class(
-            parameters={
-                "Random Forest Regressor": {"n_jobs": 1},
-                "pipeline": {
-                    "gap": 0,
-                    "max_delay": 0,
-                    "time_index": "date",
-                    "forecast_horizon": 10,
-                },
-                "Time Series Featurizer": {
-                    "gap": 0,
-                    "max_delay": 0,
-                    "time_index": "date",
-                    "forecast_horizon": 10,
-                },
-            }
-        )
+        clf = time_series_regression_pipeline_class(parameters=my_parameters)
 
     X, y = pd.DataFrame(X), pd.Series(y)
     X_train, y_train = X.iloc[:21], y.iloc[:21]
     clf.fit(X_train, y_train)
     with pytest.raises(
         ValueError,
-        match="Make sure to have a value for both X_train and y_train when calling predict",
+        match="Make sure to have a value that isn't None for y_train when calling time series' predict.",
     ):
         clf.predict(X_train)
 
@@ -1162,65 +1137,20 @@ def test_time_series_pipeline_not_fitted_error(
     time_series_binary_classification_pipeline_class,
     time_series_multiclass_classification_pipeline_class,
     time_series_regression_pipeline_class,
+    my_parameters,
 ):
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = ts_data_binary
-        clf = time_series_binary_classification_pipeline_class(
-            parameters={
-                "Logistic Regression Classifier": {"n_jobs": 1},
-                "pipeline": {
-                    "gap": 0,
-                    "max_delay": 0,
-                    "time_index": "date",
-                    "forecast_horizon": 10,
-                },
-                "Time Series Featurizer": {
-                    "gap": 0,
-                    "max_delay": 0,
-                    "time_index": "date",
-                    "forecast_horizon": 10,
-                },
-            }
-        )
+        clf = time_series_binary_classification_pipeline_class(parameters=my_parameters)
 
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         X, y = ts_data_multi
         clf = time_series_multiclass_classification_pipeline_class(
-            parameters={
-                "Logistic Regression Classifier": {"n_jobs": 1},
-                "pipeline": {
-                    "gap": 0,
-                    "max_delay": 0,
-                    "time_index": "date",
-                    "forecast_horizon": 10,
-                },
-                "Time Series Featurizer": {
-                    "gap": 0,
-                    "max_delay": 0,
-                    "time_index": "date",
-                    "forecast_horizon": 10,
-                },
-            }
+            parameters=my_parameters
         )
     else:
         X, y = ts_data
-        clf = time_series_regression_pipeline_class(
-            parameters={
-                "Random Forest Regressor": {"n_jobs": 1},
-                "pipeline": {
-                    "gap": 0,
-                    "max_delay": 0,
-                    "time_index": "date",
-                    "forecast_horizon": 10,
-                },
-                "Time Series Featurizer": {
-                    "gap": 0,
-                    "max_delay": 0,
-                    "time_index": "date",
-                    "forecast_horizon": 10,
-                },
-            }
-        )
+        clf = time_series_regression_pipeline_class(parameters=my_parameters)
 
     X, y = pd.DataFrame(X), pd.Series(y)
     X_train, y_train = X.iloc[:21], y.iloc[:21]
@@ -1276,21 +1206,7 @@ def test_ts_binary_pipeline_target_thresholding(
     objective = get_objective("F1", return_instance=True)
 
     binary_pipeline = time_series_binary_classification_pipeline_class(
-        parameters={
-            "Logistic Regression Classifier": {"n_jobs": 1},
-            "pipeline": {
-                "gap": 0,
-                "max_delay": 0,
-                "time_index": "date",
-                "forecast_horizon": 10,
-            },
-            "Time Series Featurizer": {
-                "time_index": "date",
-                "gap": 0,
-                "max_delay": 0,
-                "forecast_horizon": 10,
-            },
-        }
+        parameters=my_parameters
     )
     X_train, y_train = X.ww.iloc[:21], y.ww.iloc[:21]
     X_holdout, y_holdout = X.ww.iloc[21:], y.ww.iloc[21:]
