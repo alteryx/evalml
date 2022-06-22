@@ -1206,7 +1206,21 @@ def test_ts_binary_pipeline_target_thresholding(
     objective = get_objective("F1", return_instance=True)
 
     binary_pipeline = time_series_binary_classification_pipeline_class(
-        parameters=my_parameters
+        parameters={
+            "Logistic Regression Classifier": {"n_jobs": 1},
+            "pipeline": {
+                "gap": 0,
+                "max_delay": 0,
+                "time_index": "date",
+                "forecast_horizon": 10,
+            },
+            "Time Series Featurizer": {
+                "time_index": "date",
+                "gap": 0,
+                "max_delay": 0,
+                "forecast_horizon": 10,
+            },
+        }
     )
     X_train, y_train = X.ww.iloc[:21], y.ww.iloc[:21]
     X_holdout, y_holdout = X.ww.iloc[21:], y.ww.iloc[21:]
