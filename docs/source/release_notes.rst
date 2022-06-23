@@ -3,6 +3,22 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.54.0 June. 23, 2022**
+    * Enhancements
+        * Added clustering as a problem type :pr:`3368`
+        * Added clustering models ``DBSCAN``, ``KMeans``, ``KModes``, and ``KPrototypes`` :pr:`3379`
+        * Added clustering objectives ``Silhouette Coefficient`` and ``Adjusted Rand Score`` :pr:`3396`
+        * Added ``MinMaxScaler`` for normalization in clustering problems :pr:`3399`
+    * Fixes
         * Updated the Imputer and SimpleImputer to work with scikit-learn 1.1.1. :pr:`3525`
         * Bumped the minimum versions of scikit-learn to 1.1.1 and imbalanced-learn to 0.9.1. :pr:`3525`
         * Added a clearer error message when ``describe`` is called on an un-instantiated ComponentGraph :pr:`3569`
@@ -14,11 +30,6 @@ Release Notes
     * Documentation Changes
         * Fix typo in ``long_description`` field in ``setup.cfg`` :pr:`3553`
         * Update install page to remove Python 3.7 mention :pr:`3567`
-    * Testing Changes
-
-.. warning::
-
-    **Breaking Changes**
 
 
 **v0.53.1 June. 9, 2022**
