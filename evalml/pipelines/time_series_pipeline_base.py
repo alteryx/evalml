@@ -190,7 +190,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         """
         if X_train is None:
             raise ValueError(
-                "Make sure to have a non None value for X_train when calling time series' predict and that in the predict method you set X_train = X_train"
+                "Make sure to have a non None value for X_train when calling time series' predict"
             )
         elif y_train is None:
             raise ValueError(
