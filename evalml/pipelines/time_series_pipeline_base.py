@@ -190,11 +190,11 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         """
         if X_train is None:
             raise ValueError(
-                "Make sure to have a non None value for X_train when calling time series' predict"
+                "Make sure to include an input for X_train when calling time series' predict"
             )
         elif y_train is None:
             raise ValueError(
-                "Make sure to have a non None value for y_train when calling time series' predict"
+                "Make sure to include an input for y_train when calling time series' predict"
             )
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         if self.estimator is None:

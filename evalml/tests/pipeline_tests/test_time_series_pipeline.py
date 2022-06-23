@@ -1088,7 +1088,7 @@ def time_series_default_pipeline_classification_parameters():
         ProblemTypes.TIME_SERIES_REGRESSION,
     ],
 )
-def test_time_series_pipeline_predict_valueerror(
+def test_time_series_pipeline_predict_none_parameter_valueerror(
     problem_type,
     ts_data_binary,
     ts_data_multi,
@@ -1134,12 +1134,12 @@ def test_time_series_pipeline_predict_valueerror(
     clf.fit(X_train, y_train)
     with pytest.raises(
         ValueError,
-        match="Make sure to have a non None value for y_train when calling time series' predict",
+        match="Make sure to include an input for y_train when calling time series' predict",
     ):
         clf.predict(X=X, X_train=X_train)
     with pytest.raises(
         ValueError,
-        match="Make sure to have a non None value for X_train when calling time series' predict",
+        match="Make sure to include an input for X_train when calling time series' predict",
     ):
         clf.predict(X=X)
 
