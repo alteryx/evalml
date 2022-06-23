@@ -3,7 +3,6 @@ import pandas as pd
 import woodwork as ww
 from sklearn.preprocessing import scale
 
-import evalml
 from evalml.preprocessing import load_data
 
 # def load_diabetes():
