@@ -3,6 +3,17 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.54.0 June. 23, 2022**
+    * Fixes
         * Updated the Imputer and SimpleImputer to work with scikit-learn 1.1.1. :pr:`3525`
         * Bumped the minimum versions of scikit-learn to 1.1.1 and imbalanced-learn to 0.9.1. :pr:`3525`
         * Added a clearer error message when ``describe`` is called on an un-instantiated ComponentGraph :pr:`3569`
@@ -14,20 +25,11 @@ Release Notes
     * Documentation Changes
         * Fix typo in ``long_description`` field in ``setup.cfg`` :pr:`3553`
         * Update install page to remove Python 3.7 mention :pr:`3567`
-    * Testing Changes
-
-.. warning::
-
-    **Breaking Changes**
 
 
 **v0.53.1 June. 9, 2022**
-    * Enhancements
-    * Fixes
     * Changes
         * Set the development status to ``4 - Beta`` in ``setup.cfg`` :pr:`3550`
-    * Documentation Changes
-    * Testing Changes
 
 
 **v0.53.0 June. 9, 2022**
@@ -50,8 +52,6 @@ Release Notes
 
 
 **v0.52.0 May. 12, 2022**
-    * Enhancements
-    * Fixes
     * Changes
         * Added github workflows for featuretools and woodwork to test their main branch against evalml. :pr:`3504`
         * Added pmdarima to conda recipe. :pr:`3505`
@@ -106,7 +106,6 @@ Release Notes
         * Updated the model understanding section of the user guide to include missing functions :pr:`3446`
         * Rearranged the user guide model understanding page for easier navigation :pr:`3457`
         * Update README text to Alteryx :pr:`3462`
-    * Testing Changes
 
 .. warning::
 
@@ -296,7 +295,6 @@ Release Notes
         * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
         * Removed nullable types checking from ``infer_feature_types`` :pr:`3156`
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
-    * Documentation Changes
     * Testing Changes
         * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
         * Add workflow to auto-merge dependency PRs if status checks pass :pr:`3184`
@@ -342,7 +340,6 @@ Release Notes
         * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
         * Updated ``make_pipeline`` for handling pandas nullable types in preprocessing pipeline. :pr:`3129`
         * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
-    * Documentation Changes
     * Testing Changes
         * Refactored tests to avoid using ``importorskip`` :pr:`3126`
         * Added ``skip_during_conda`` test marker to skip tests that are not supposed to run during conda build :pr:`3127`
@@ -532,18 +529,12 @@ Release Notes
 
 
 **v0.33.0 Sep. 15, 2021**
-    * Enhancements
     * Fixes
         * Fixed bug where warnings during ``make_pipeline`` were not being raised to the user :pr:`2765`
     * Changes
         * Refactored and removed ``SamplerBase`` class :pr:`2775`
     * Documentation Changes
         * Added docstring linting packages ``pydocstyle`` and ``darglint`` to `make-lint` command :pr:`2670`
-    * Testing Changes
-
-.. warning::
-
-    **Breaking Changes**
 
 
 **v0.32.1 Sep. 10, 2021**
