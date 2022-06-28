@@ -58,11 +58,7 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.tuners import SKOptTuner
-from evalml.utils import (
-    convert_to_seconds,
-    import_or_raise,
-    infer_feature_types,
-)
+from evalml.utils import convert_to_seconds, infer_feature_types
 from evalml.utils.gen_utils import contains_all_ts_parameters
 from evalml.utils.logger import (
     get_logger,
@@ -865,7 +861,7 @@ class AutoMLSearch:
         """Find the best pipeline for the data set.
 
         Args:
-            show_iteration_plot (boolean, False): Shows an iteration vs. score plot in Jupyter notebook.
+            show_iteration_plot (boolean, False): Shows an iteration vs. score plot in Jupyter notebook if enabled.
                 Disabled by default in non-Jupyter enviroments.
 
         Raises:
