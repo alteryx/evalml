@@ -865,7 +865,7 @@ class AutoMLSearch:
         """Find the best pipeline for the data set.
 
         Args:
-            show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
+            show_iteration_plot (boolean, False): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
 
         Raises:
@@ -1010,7 +1010,9 @@ class AutoMLSearch:
                 f"Best pipeline {self.objective.name}: {best_pipeline['validation_score']:3f}"
             )
         self._searched = True
-        if self.search_iteration_plot is not None and not isinstance(self.search_iteration_plot, SearchIterationPlot):
+        if self.search_iteration_plot is not None and not isinstance(
+            self.search_iteration_plot, SearchIterationPlot
+        ):
             self.search_iteration_plot = self.plot.search_iteration_plot(
                 interactive_plot=show_iteration_plot
             )
