@@ -1012,7 +1012,8 @@ class AutoMLSearch:
             self.search_iteration_plot = self.plot.search_iteration_plot(
                 interactive_plot=show_iteration_plot
             )
-            self.search_iteration_plot.show(renderer="png")
+        #     self.search_iteration_plot.show(renderer="iframe")
+        return self.search_iteration_plot
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
