@@ -58,7 +58,11 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.tuners import SKOptTuner
-from evalml.utils import convert_to_seconds, infer_feature_types
+from evalml.utils import (
+    convert_to_seconds,
+    import_or_raise,
+    infer_feature_types,
+)
 from evalml.utils.gen_utils import contains_all_ts_parameters
 from evalml.utils.logger import (
     get_logger,
@@ -1006,6 +1010,25 @@ class AutoMLSearch:
                 f"Best pipeline {self.objective.name}: {best_pipeline['validation_score']:3f}"
             )
         self._searched = True
+        layout = {
+            "title": self.objective,
+            "xaxis": {"title": "Iteration", "rangemode": "tozero"},
+            "yaxis": {"title": "Score"},
+        }
+        go = import_or_raise(
+            "plotly.graph_objects",
+            error_msg="Cannot find dependency plotly.graph_objects",
+        )
+        if (
+            self.search_iteration_plot is not None
+            and self.search_iteration_plot.best_score_by_iter_fig is not None
+        ):
+            return go.Figure(self.search_iteration_plot.best_score_by_iter_fig, layout)
+        # if self.search_iteration_plot is not None:
+        #     ipython_display = import_or_raise(
+        #         "IPython.display", error_msg="Cannot find dependency IPython.display"
+        #     )
+        #     ipython_display.display(self.search_iteration_plot.best_score_by_iter_fig)
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
