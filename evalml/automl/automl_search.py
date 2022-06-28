@@ -1009,7 +1009,7 @@ class AutoMLSearch:
         if (
             self.search_iteration_plot is not None
             and not isinstance(self.search_iteration_plot, SearchIterationPlot)
-            and not debug
+            and debug
         ):
             self.search_iteration_plot = self.plot.search_iteration_plot(
                 interactive_plot=show_iteration_plot
