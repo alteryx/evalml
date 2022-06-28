@@ -861,7 +861,7 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, show_iteration_plot=True):
+    def search(self, show_iteration_plot=False):
         """Find the best pipeline for the data set.
 
         Args:
@@ -1010,25 +1010,11 @@ class AutoMLSearch:
                 f"Best pipeline {self.objective.name}: {best_pipeline['validation_score']:3f}"
             )
         self._searched = True
-        layout = {
-            "title": self.objective,
-            "xaxis": {"title": "Iteration", "rangemode": "tozero"},
-            "yaxis": {"title": "Score"},
-        }
-        go = import_or_raise(
-            "plotly.graph_objects",
-            error_msg="Cannot find dependency plotly.graph_objects",
-        )
-        if (
-            self.search_iteration_plot is not None
-            and self.search_iteration_plot.best_score_by_iter_fig is not None
-        ):
-            return go.Figure(self.search_iteration_plot.best_score_by_iter_fig, layout)
-        # if self.search_iteration_plot is not None:
-        #     ipython_display = import_or_raise(
-        #         "IPython.display", error_msg="Cannot find dependency IPython.display"
-        #     )
-        #     ipython_display.display(self.search_iteration_plot.best_score_by_iter_fig)
+        if self.search_iteration_plot is not None and not isinstance(self.search_iteration_plot, SearchIterationPlot):
+            self.search_iteration_plot = self.plot.search_iteration_plot(
+                interactive_plot=show_iteration_plot
+            )
+            self.search_iteration_plot.show()
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
