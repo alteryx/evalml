@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed iterative graphs not appearing in documentation :pr:`3592`
     * Changes
     * Documentation Changes
     * Testing Changes
