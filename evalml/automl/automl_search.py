@@ -857,7 +857,7 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, show_iteration_plot=False, debug=False):
+    def search(self, show_iteration_plot=False):
         """Find the best pipeline for the data set.
 
         Args:
@@ -1006,15 +1006,13 @@ class AutoMLSearch:
                 f"Best pipeline {self.objective.name}: {best_pipeline['validation_score']:3f}"
             )
         self._searched = True
-        if (
-            self.search_iteration_plot is not None
-            and not isinstance(self.search_iteration_plot, SearchIterationPlot)
-            and debug
+        if self.search_iteration_plot is not None and not isinstance(
+            self.search_iteration_plot, SearchIterationPlot
         ):
             self.search_iteration_plot = self.plot.search_iteration_plot(
                 interactive_plot=show_iteration_plot
             )
-            self.search_iteration_plot.show()
+            self.search_iteration_plot.show(renderer="png")
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
