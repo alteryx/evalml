@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Regularized the `load_diabetes()` method to fix some issues with testing :pr:`3591`
     * Changes
     * Documentation Changes
     * Testing Changes
