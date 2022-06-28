@@ -80,13 +80,6 @@ class SearchIterationPlot:
             curr_score_trace = self.best_score_by_iter_fig.data[1]
             curr_score_trace.x = sorted_iter_idx
             curr_score_trace.y = sorted_iter_scores
-            print("LM")
-            # print(
-            #     "Raw data:",
-            #     self.best_score_by_iter_fig.data[0],
-            #     "\n",
-            #     self.best_score_by_iter_fig.data[1],
-            # )
 
 
 class PipelineSearchPlots:
