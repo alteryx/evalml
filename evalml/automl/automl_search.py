@@ -58,11 +58,7 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.tuners import SKOptTuner
-from evalml.utils import (
-    convert_to_seconds,
-    import_or_raise,
-    infer_feature_types,
-)
+from evalml.utils import convert_to_seconds, infer_feature_types
 from evalml.utils.gen_utils import contains_all_ts_parameters
 from evalml.utils.logger import (
     get_logger,
@@ -865,7 +861,7 @@ class AutoMLSearch:
         """Find the best pipeline for the data set.
 
         Args:
-            show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
+            show_iteration_plot (boolean, False): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
 
         Raises:
@@ -1013,30 +1009,24 @@ class AutoMLSearch:
                 f"Best pipeline {self.objective.name}: {best_pipeline['validation_score']:3f}"
             )
         self._searched = True
-
         if self.search_iteration_plot is not None:
-            go = import_or_raise(
-                "plotly.graph_objects",
-                error_msg="Cannot find dependency plotly.graph_objects",
-            )
-            title = "Pipeline Search: Iteration vs. {}<br><sub>Gray marker indicates the score at current iteration</sub>".format(
-                self.objective.name
-            )
-            layout = {
-                "title": title,
-                "xaxis": {"title": "Iteration", "rangemode": "tozero"},
-                "yaxis": {"title": "Score"},
-            }
-            if not show_iteration_plot and hasattr(self.search_iteration_plot, "best_score_by_iter_fig"):
-                return go.Figure(
-                    self.search_iteration_plot.best_score_by_iter_fig, layout
+            # go = import_or_raise(
+            #     "plotly.graph_objects",
+            #     error_msg="Cannot find dependency plotly.graph_objects",
+            # )
+            # title = "Pipeline Search: Iteration vs. {}<br><sub>Gray marker indicates the score at current iteration</sub>".format(
+            #     self.objective.name
+            # )
+            # layout = {
+            #     "title": title,
+            #     "xaxis": {"title": "Iteration", "rangemode": "tozero"},
+            #     "yaxis": {"title": "Score"},
+            # }
+            if not show_iteration_plot:
+                self.search_iteration_plot = self.plot.search_iteration_plot(
+                    interactive_plot=show_iteration_plot
                 )
-            else:
-                if not show_iteration_plot:
-                    self.search_iteration_plot = self.plot.search_iteration_plot(
-                        interactive_plot=show_iteration_plot
-                    )
-                    return self.search_iteration_plot
+                return self.search_iteration_plot
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""

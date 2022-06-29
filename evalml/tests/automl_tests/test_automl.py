@@ -216,6 +216,32 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
     )
 
 
+def test_search_graph_return(X_y_binary, go):
+    X, y = X_y_binary
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=1,
+        train_best_pipeline=False,
+        verbose=True,
+    )
+    graph = automl.search()
+    print(type(graph))
+    assert isinstance(graph, go.Figure)
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=1,
+        train_best_pipeline=False,
+        verbose=False,
+    )
+    graph = automl.search()
+    assert graph is None
+
+
 @pytest.mark.parametrize(
     "automl_type",
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
