@@ -1027,15 +1027,16 @@ class AutoMLSearch:
                 "xaxis": {"title": "Iteration", "rangemode": "tozero"},
                 "yaxis": {"title": "Score"},
             }
-            if hasattr(self.search_iteration_plot, "best_score_by_iter_fig"):
+            if not show_iteration_plot and hasattr(self.search_iteration_plot, "best_score_by_iter_fig"):
                 return go.Figure(
                     self.search_iteration_plot.best_score_by_iter_fig, layout
                 )
             else:
-                self.search_iteration_plot = self.plot.search_iteration_plot(
-                    interactive_plot=show_iteration_plot
-                )
-                return self.search_iteration_plot
+                if not show_iteration_plot:
+                    self.search_iteration_plot = self.plot.search_iteration_plot(
+                        interactive_plot=show_iteration_plot
+                    )
+                    return self.search_iteration_plot
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
