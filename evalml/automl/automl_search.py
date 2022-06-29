@@ -42,7 +42,6 @@ from evalml.objectives import (
     get_non_core_objectives,
     get_objective,
 )
-from evalml.utils import import_or_raise
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     ComponentGraph,
@@ -59,7 +58,11 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.tuners import SKOptTuner
-from evalml.utils import convert_to_seconds, infer_feature_types
+from evalml.utils import (
+    convert_to_seconds,
+    import_or_raise,
+    infer_feature_types,
+)
 from evalml.utils.gen_utils import contains_all_ts_parameters
 from evalml.utils.logger import (
     get_logger,
@@ -1022,9 +1025,14 @@ class AutoMLSearch:
         }
 
         if self.search_iteration_plot is not None:
-            print("lol")
-            print(self.search_iteration_plot.best_score_by_iter_fig)
-            return go.Figure(self.search_iteration_plot.best_score_by_iter_fig, layout)
+            if hasattr(self.search_iteration_plot, "best_score_by_iter_fig"):
+                return go.Figure(self.search_iteration_plot.best_score_by_iter_fig, layout)
+            else:
+                self.search_iteration_plot = self.plot.search_iteration_plot(
+                    interactive_plot=show_iteration_plot
+                )
+                return self.search_iteration_plot
+
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
