@@ -870,7 +870,7 @@ class AutoMLSearch:
 
         Raises:
             AutoMLSearchException: If all pipelines in the current AutoML batch produced a score of np.nan on the primary objective.
-        
+
         Returns:
             A plotly figure of the completed search
         """
