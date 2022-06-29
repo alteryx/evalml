@@ -861,7 +861,7 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, show_iteration_plot=True):
+    def search(self, show_iteration_plot=False):
         """Find the best pipeline for the data set.
 
         Args:
@@ -872,7 +872,7 @@ class AutoMLSearch:
             AutoMLSearchException: If all pipelines in the current AutoML batch produced a score of np.nan on the primary objective.
         
         Returns:
-            A plot 
+            A plotly figure of the completed search
         """
         if self._searched:
             self.logger.error(
