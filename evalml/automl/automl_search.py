@@ -865,11 +865,14 @@ class AutoMLSearch:
         """Find the best pipeline for the data set.
 
         Args:
-            show_iteration_plot (boolean, False): Shows an iteration vs. score plot in Jupyter notebook if enabled.
+            show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
 
         Raises:
             AutoMLSearchException: If all pipelines in the current AutoML batch produced a score of np.nan on the primary objective.
+        
+        Returns:
+            A plot 
         """
         if self._searched:
             self.logger.error(
@@ -1011,28 +1014,28 @@ class AutoMLSearch:
             )
         self._searched = True
 
-        go = import_or_raise(
-            "plotly.graph_objects",
-            error_msg="Cannot find dependency plotly.graph_objects",
-        )
-        title = "Pipeline Search: Iteration vs. {}<br><sub>Gray marker indicates the score at current iteration</sub>".format(
-            self.objective.name
-        )
-        layout = {
-            "title": title,
-            "xaxis": {"title": "Iteration", "rangemode": "tozero"},
-            "yaxis": {"title": "Score"},
-        }
-
         if self.search_iteration_plot is not None:
+            go = import_or_raise(
+                "plotly.graph_objects",
+                error_msg="Cannot find dependency plotly.graph_objects",
+            )
+            title = "Pipeline Search: Iteration vs. {}<br><sub>Gray marker indicates the score at current iteration</sub>".format(
+                self.objective.name
+            )
+            layout = {
+                "title": title,
+                "xaxis": {"title": "Iteration", "rangemode": "tozero"},
+                "yaxis": {"title": "Score"},
+            }
             if hasattr(self.search_iteration_plot, "best_score_by_iter_fig"):
-                return go.Figure(self.search_iteration_plot.best_score_by_iter_fig, layout)
+                return go.Figure(
+                    self.search_iteration_plot.best_score_by_iter_fig, layout
+                )
             else:
                 self.search_iteration_plot = self.plot.search_iteration_plot(
                     interactive_plot=show_iteration_plot
                 )
                 return self.search_iteration_plot
-
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
