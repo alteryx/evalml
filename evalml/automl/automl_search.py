@@ -42,6 +42,7 @@ from evalml.objectives import (
     get_non_core_objectives,
     get_objective,
 )
+from evalml.utils import import_or_raise
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     ComponentGraph,
@@ -857,7 +858,7 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, show_iteration_plot=False):
+    def search(self, show_iteration_plot=True):
         """Find the best pipeline for the data set.
 
         Args:
@@ -1006,14 +1007,24 @@ class AutoMLSearch:
                 f"Best pipeline {self.objective.name}: {best_pipeline['validation_score']:3f}"
             )
         self._searched = True
-        if self.search_iteration_plot is not None and not isinstance(
-            self.search_iteration_plot, SearchIterationPlot
-        ):
-            self.search_iteration_plot = self.plot.search_iteration_plot(
-                interactive_plot=show_iteration_plot
-            )
-        #     self.search_iteration_plot.show(renderer="iframe")
-        return self.search_iteration_plot
+
+        go = import_or_raise(
+            "plotly.graph_objects",
+            error_msg="Cannot find dependency plotly.graph_objects",
+        )
+        title = "Pipeline Search: Iteration vs. {}<br><sub>Gray marker indicates the score at current iteration</sub>".format(
+            self.objective.name
+        )
+        layout = {
+            "title": title,
+            "xaxis": {"title": "Iteration", "rangemode": "tozero"},
+            "yaxis": {"title": "Score"},
+        }
+
+        if self.search_iteration_plot is not None:
+            print("lol")
+            print(self.search_iteration_plot.best_score_by_iter_fig)
+            return go.Figure(self.search_iteration_plot.best_score_by_iter_fig, layout)
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
