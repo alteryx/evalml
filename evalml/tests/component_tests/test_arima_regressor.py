@@ -1,4 +1,5 @@
-from unittest.mock import MagicMock, patch
+import math
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -145,6 +146,26 @@ def test_set_forecast(get_ts_X_y):
     assert fh_.is_relative
 
 
+def test_get_sp():
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="D")})
+    X.ww.init()
+    clf_day = ARIMARegressor(time_index="dates")
+    sp_ = clf_day._get_sp(X)
+    assert sp_ == 7
+
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="M")})
+    X.ww.init()
+    clf_month = ARIMARegressor(time_index="dates")
+    sp_ = clf_month._get_sp(X)
+    assert sp_ == 12
+
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="2D")})
+    X.ww.init()
+    clf_month = ARIMARegressor(time_index="dates")
+    sp_ = clf_month._get_sp(X)
+    assert sp_ == 1
+
+
 def test_feature_importance(ts_data):
     X, y = ts_data
     clf = ARIMARegressor()
@@ -243,6 +264,25 @@ def test_fit_predict_sk_failure(
     assert y_pred.index.equals(X_test.index)
 
 
+def test_arima_sp_changes_result():
+    y = pd.Series([math.sin(i) for i in range(200)])
+
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=200, freq="D")})
+    X.ww.init()
+    clf_day = ARIMARegressor(time_index="dates")
+    clf_day.fit(X, y)
+    pred_d = clf_day.predict(X)
+
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=200, freq="Q")})
+    X.ww.init()
+    clf_quarter = ARIMARegressor(time_index="dates")
+    clf_quarter.fit(X, y)
+    pred_q = clf_quarter.predict(X)
+
+    with pytest.raises(AssertionError):
+        pd.testing.assert_series_equal(pred_d, pred_q)
+
+
 @pytest.mark.parametrize("freq_num", ["1", "2"])
 @pytest.mark.parametrize("freq_str", ["T", "M", "Y"])
 def test_different_time_units_out_of_sample(
@@ -270,7 +310,7 @@ def test_different_time_units_out_of_sample(
     assert y_pred.index.equals(X[15:].index)
 
 
-@patch('sktime.forecasting.arima.AutoARIMA.fit')
+@patch("sktime.forecasting.arima.AutoARIMA.fit")
 def test_arima_supports_boolean_features(mock_fit):
     X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=10)})
     X.ww.init()
@@ -318,8 +358,8 @@ def test_arima_boolean_features_no_error():
     assert not preds.isna().any()
 
 
-@patch('sktime.forecasting.arima.AutoARIMA.fit')
-@patch('sktime.forecasting.arima.AutoARIMA.predict')
+@patch("sktime.forecasting.arima.AutoARIMA.fit")
+@patch("sktime.forecasting.arima.AutoARIMA.predict")
 def test_arima_regressor_respects_use_covariates(mock_predict, mock_fit, ts_data):
     X, y = ts_data
     X_train, y_train = X.iloc[:25], y.iloc[:25]

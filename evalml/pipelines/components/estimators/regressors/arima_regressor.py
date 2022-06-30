@@ -27,7 +27,7 @@ class ARIMARegressor(Estimator):
         max_q (int): Maximum Moving Average order. Defaults to 5.
         seasonal (boolean): Whether to fit a seasonal model to ARIMA. Defaults to True.
         sp (int): Period for seasonal differencing, specifically the number of periods in each season. If "detect" and the time series is one of
-                  a few standard frequencies, this model will automatically detect this parameter, defaulting to 1 (no seasonality). Defaults to "detecct".
+                  a few standard frequencies, this model will automatically detect this parameter, defaulting to 1 (no seasonality). Defaults to "detect".
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
