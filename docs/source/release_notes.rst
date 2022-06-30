@@ -7,6 +7,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Pinned GraphViz version for Windows CI Test :pr:`3596`
 
 .. warning::
 
