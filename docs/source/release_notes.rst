@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added the option to set the ``sp`` parameter for ARIMA models :pr:`3597`
     * Fixes
     * Changes
     * Documentation Changes
