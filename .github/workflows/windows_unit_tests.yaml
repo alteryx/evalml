@@ -52,7 +52,7 @@ jobs:
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate curr_py
-          conda install python-graphviz -q -y
+          conda install python-graphviz=0.16 graphviz=2.38 -q -y
       - name: Install numba (for shap)
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
