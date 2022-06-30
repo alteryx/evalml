@@ -270,7 +270,8 @@ def test_different_time_units_out_of_sample(
     assert y_pred.index.equals(X[15:].index)
 
 
-def test_arima_supports_boolean_features():
+@patch('sktime.forecasting.arima.AutoARIMA.fit')
+def test_arima_supports_boolean_features(mock_fit):
     X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=10)})
     X.ww.init()
     X.ww["bool_1"] = (
@@ -286,34 +287,49 @@ def test_arima_supports_boolean_features():
     y = pd.Series(range(10))
 
     ar = ARIMARegressor(time_index="dates")
-
-    ar._component_obj = MagicMock()
     ar.fit(X, y)
 
     pd.testing.assert_series_equal(
-        ar._component_obj.fit.call_args[1]["X"]["bool_1"], X["bool_1"].astype(float)
+        mock_fit.call_args[1]["X"]["bool_1"], X["bool_1"].astype(float)
     )
     pd.testing.assert_series_equal(
-        ar._component_obj.fit.call_args[1]["X"]["bool_2"], X["bool_2"].astype(float)
+        mock_fit.call_args[1]["X"]["bool_2"], X["bool_2"].astype(float)
     )
 
-    # Test that non-mocked predict does not error or produce NaNs
+
+def test_arima_boolean_features_no_error():
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=100)})
+    X.ww.init()
+    X.ww["bool_1"] = (
+        pd.Series([True, False])
+        .sample(n=100, replace=True, random_state=0)
+        .reset_index(drop=True)
+    )
+    X.ww["bool_2"] = (
+        pd.Series([True, False])
+        .sample(n=100, replace=True, random_state=1)
+        .reset_index(drop=True)
+    )
+    y = pd.Series(range(100))
+
     ar = ARIMARegressor(time_index="dates")
     ar.fit(X, y)
     preds = ar.predict(X)
     assert not preds.isna().any()
 
 
-def test_arima_regressor_respects_use_covariates(ts_data):
+@patch('sktime.forecasting.arima.AutoARIMA.fit')
+@patch('sktime.forecasting.arima.AutoARIMA.predict')
+def test_arima_regressor_respects_use_covariates(mock_predict, mock_fit, ts_data):
     X, y = ts_data
     X_train, y_train = X.iloc[:25], y.iloc[:25]
     X_test, _ = X.iloc[25:], y.iloc[25:]
     clf = ARIMARegressor(use_covariates=False)
-    with patch.object(clf, "_component_obj") as mock_obj:
-        clf.fit(X_train, y_train)
-        clf.predict(X_test)
-        mock_obj.fit.assert_called_once()
-        assert "X" not in mock_obj.fit.call_args.kwargs
-        assert "y" in mock_obj.fit.call_args.kwargs
-        mock_obj.predict.assert_called_once()
-        assert "X" not in mock_obj.predict.call_args.kwargs
+
+    clf.fit(X_train, y_train)
+    clf.predict(X_test)
+    mock_fit.assert_called_once()
+    assert "X" not in mock_fit.call_args.kwargs
+    assert "y" in mock_fit.call_args.kwargs
+    mock_predict.assert_called_once()
+    assert "X" not in mock_predict.call_args.kwargs
