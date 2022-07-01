@@ -936,16 +936,18 @@ def ts_data_multi(ts_data):
     y = y % 3
     return X, y
 
+
 @pytest.fixture
 def ts_data_quadratic_trend(ts_data):
     X, y = ts_data
-    y = y ** 2
+    y = y**2
     return X, y
+
 
 @pytest.fixture
 def ts_data_cubic_trend(ts_data):
     X, y = ts_data
-    y = y ** 3
+    y = y**3
     return X, y
 
 

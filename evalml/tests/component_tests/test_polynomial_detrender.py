@@ -49,7 +49,7 @@ def test_polynomial_detrender_fit_transform(
     ts_data,
 ):
 
-    X_input, _, y_input= ts_data()
+    X_input, _, y_input = ts_data()
     if use_int_index:
         X_input.index = np.arange(X_input.shape[0])
         y_input.index = np.arange(y_input.shape[0])
@@ -85,12 +85,24 @@ def test_polynomial_detrender_fit_transform(
         pd.testing.assert_frame_equal(X, output_X)
 
 
-@pytest.mark.parametrize("variateness", ["univariate",
-                                         "multivariate",])
-                                         # pytest.param("multivariate", marks=pytest.mark.xfail(reason="get_trend_dataframe doesn't work with multivariate data yet."))])
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
+# pytest.param("multivariate", marks=pytest.mark.xfail(reason="get_trend_dataframe doesn't work with multivariate data yet."))])
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("degree", [1, 2, 3])
-def test_polynomial_detrender_get_trend_dataframe(degree, input_type, variateness, ts_data, ts_data_quadratic_trend, ts_data_cubic_trend):
+def test_polynomial_detrender_get_trend_dataframe(
+    degree,
+    input_type,
+    variateness,
+    ts_data,
+    ts_data_quadratic_trend,
+    ts_data_cubic_trend,
+):
 
     if degree == 1:
         X_input, _, y_input = ts_data()
@@ -99,7 +111,9 @@ def test_polynomial_detrender_get_trend_dataframe(degree, input_type, variatenes
     elif degree == 3:
         X_input, _, y_input = ts_data_cubic_trend()
 
-    import matplotlib.pyplot as plt; plt.plot(y_input)
+    from matplotlib import pyplot as plt
+
+    plt.plot(y_input)
 
     # Get the expected answer
     lin_reg = LinearRegression(fit_intercept=True)
@@ -129,14 +143,16 @@ def test_polynomial_detrender_get_trend_dataframe(degree, input_type, variatenes
     if variateness == "univariate":
         y = y
     elif variateness == "multivariate":
-        y = pd.concat([y,y], axis=1)
-    result_dfs = pdt.get_trend_dataframe(X,y)
+        y = pd.concat([y, y], axis=1)
+    result_dfs = pdt.get_trend_dataframe(X, y)
 
     def get_trend_df_format_correct(df):
         return set(df.columns) == {"trend", "seasonality", "residual"}
 
     def get_trend_df_values_correct(df, y):
-        return all((df["trend"] + df["seasonality"] + df["residual"]).values == y.values)
+        return all(
+            (df["trend"] + df["seasonality"] + df["residual"]).values == y.values
+        )
 
     assert isinstance(result_dfs, list)
     assert all(isinstance(x, pd.DataFrame) for x in result_dfs)
@@ -146,7 +162,10 @@ def test_polynomial_detrender_get_trend_dataframe(degree, input_type, variatenes
         assert all(get_trend_df_values_correct(x, y) for x in result_dfs)
     elif variateness == "multivariate":
         assert len(result_dfs) == 2
-        assert all(get_trend_df_values_correct(x, y[idx]) for idx, x in enumerate(result_dfs))
+        assert all(
+            get_trend_df_values_correct(x, y[idx]) for idx, x in enumerate(result_dfs)
+        )
+
 
 @pytest.mark.parametrize("degree", [1, 2, 3])
 def test_polynomial_detrender_inverse_transform(degree, ts_data):

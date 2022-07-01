@@ -2,8 +2,9 @@
 import numpy as np
 import pandas as pd
 from skopt.space import Integer
-from sktime.transformations.series import detrend
 from sktime.forecasting.base._fh import ForecastingHorizon
+from sktime.transformations.series import detrend
+
 from evalml.pipelines.components.transformers.preprocessing import Detrender
 from evalml.utils import import_or_raise, infer_feature_types
 
@@ -155,9 +156,9 @@ class PolynomialDetrender(Detrender):
             trend = forecaster.predict(fh=fh, X=y)
             seasonality = np.zeros(len(trend))
             residual = y - trend - seasonality
-            df = pd.DataFrame({"trend": trend,
-                               "seasonality": seasonality,
-                               "residual": residual})
+            df = pd.DataFrame(
+                {"trend": trend, "seasonality": seasonality, "residual": residual}
+            )
             return df
 
         if isinstance(y, pd.Series):
