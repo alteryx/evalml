@@ -1,12 +1,14 @@
 """Component that removes trends from time series by fitting a polynomial to the data."""
+import numpy as np
 import pandas as pd
 from skopt.space import Integer
-
-from evalml.pipelines.components.transformers.transformer import Transformer
+from sktime.transformations.series import detrend
+from sktime.forecasting.base._fh import ForecastingHorizon
+from evalml.pipelines.components.transformers.preprocessing import Detrender
 from evalml.utils import import_or_raise, infer_feature_types
 
 
-class PolynomialDetrender(Transformer):
+class PolynomialDetrender(Detrender):
     """Removes trends from time series by fitting a polynomial to the data.
 
     Args:
@@ -120,3 +122,50 @@ class PolynomialDetrender(Transformer):
         y_t = self._component_obj.inverse_transform(y_ww)
         y_t = infer_feature_types(pd.Series(y_t, index=y_ww.index))
         return y_t
+
+    def get_trend_dataframe(self, X, y):
+        """Return a list of dataframes with 3 columns: trend, seasonality, residual.
+
+        Args:
+            X (pd.DataFrame): Input data with time series data in index
+            y (pd.Series or pd.DataFrame): Target variable data provided as a Series for univariate problems or
+                a DataFrame for multivariate problems.
+
+        Returns:
+            list of pd.DataFrame: Each DataFrame contains the columns "trend", "seasonality" and "residual,"
+                with the column values being the decomposed elements of the target data.
+
+        Raises:
+            TypeError: If X does not have time-series data in the index.
+            TypeError: If y is not provided as a pandas Series or DataFrame.
+
+        """
+        X = infer_feature_types(X)
+        if not isinstance(X.index, pd.DatetimeIndex):
+            raise TypeError("Provided X should have datetimes in the index.")
+        fh = ForecastingHorizon(X.index, is_relative=False)
+
+        result_dfs = []
+
+        def _decompose_target(X, y, fh):
+            # Grab the forecaster from the sktime detrender
+            # TODO: This change will pin us to sktime >= 0.12.0.  clone() might have Python 3.9 /sktime incompatibility implications
+            forecaster = self._component_obj.forecaster.clone()
+            forecaster.fit(y=y, X=X)
+            trend = forecaster.predict(fh=fh, X=y)
+            seasonality = np.zeros(len(trend))
+            residual = y - trend - seasonality
+            df = pd.DataFrame({"trend": trend,
+                               "seasonality": seasonality,
+                               "residual": residual})
+            return df
+
+        if isinstance(y, pd.Series):
+            result_dfs.append(_decompose_target(X, y, fh))
+        elif isinstance(y, pd.DataFrame):
+            for colname in y.columns:
+                result_dfs.append(_decompose_target(X, y[colname], fh))
+        else:
+            raise TypeError("y must be pd.Series or pd.DataFrame")
+
+        return result_dfs

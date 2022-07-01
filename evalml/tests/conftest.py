@@ -908,6 +908,48 @@ def text_df():
 
 
 @pytest.fixture
+def ts_data():
+    X, y = (
+        pd.DataFrame(
+            {
+                "features": range(101, 132),
+                "date": pd.date_range("2020-10-01", "2020-10-31"),
+            },
+        ),
+        pd.Series(range(1, 32)),
+    )
+    y.index = pd.date_range("2020-10-01", "2020-10-31")
+    X.index = pd.date_range("2020-10-01", "2020-10-31")
+    return X, y
+
+
+@pytest.fixture
+def ts_data_binary(ts_data):
+    X, y = ts_data
+    y = y % 2
+    return X, y
+
+
+@pytest.fixture
+def ts_data_multi(ts_data):
+    X, y = ts_data
+    y = y % 3
+    return X, y
+
+@pytest.fixture
+def ts_data_quadratic_trend(ts_data):
+    X, y = ts_data
+    y = y ** 2
+    return X, y
+
+@pytest.fixture
+def ts_data_cubic_trend(ts_data):
+    X, y = ts_data
+    y = y ** 3
+    return X, y
+
+
+@pytest.fixture
 def ts_data_seasonal_train():
     sine_ = np.linspace(-np.pi * 5, np.pi * 5, 25)
     X, y = pd.DataFrame({"features": range(25)}), pd.Series(sine_)
