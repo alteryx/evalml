@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Defined `get_trend_df()` for PolynomialDetrender to allow decomposition of target data into trend, seasonality and residual. :pr:`3599`
         * Updated to run with Woodwork >= 0.18.0 :pr:`3700`
         * Pass time index column to time series native estimators but drop otherwise :pr:`3691`
         * Added ``errors`` attribute to ``AutoMLSearch`` for useful debugging :pr:`3702`
@@ -73,6 +74,7 @@ Release Notes
         * Invalid target data checks involving regression and unsupported data types now produce a different ``DataCheckMessageCode`` :pr:`3630`
         * Updated ``test_data_checks.py::test_data_checks_raises_value_errors_on_init`` - more lenient text check :pr:`3609`
     * Changes
+        *Added abstract Detrender class as a parent to PolynomialDetrender to support additional detrenders. :pr:`3599`
         * Add pre-commit hooks for linting :pr:`3608`
         * Implemented a lower threshold and window size for the ``TimeSeriesRegularizer`` and ``DatetimeFormatDataCheck`` :pr:`3627`
         * Updated ``IDColumnsDataCheck`` to return an action to set the first column as the primary key if it is identified as an ID column :pr:`3634`
