@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 from skopt.space import Integer
 from sktime.forecasting.base._fh import ForecastingHorizon
-from sktime.transformations.series import detrend
 
 from evalml.pipelines.components.transformers.preprocessing import Detrender
 from evalml.utils import import_or_raise, infer_feature_types
@@ -167,6 +166,6 @@ class PolynomialDetrender(Detrender):
             for colname in y.columns:
                 result_dfs.append(_decompose_target(X, y[colname], fh))
         else:
-            raise TypeError("y must be pd.Series or pd.DataFrame")
+            raise TypeError("y must be pd.Series or pd.DataFrame!")
 
         return result_dfs

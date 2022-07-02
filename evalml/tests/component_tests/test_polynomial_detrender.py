@@ -39,6 +39,22 @@ def test_polynomial_detrender_raises_value_error_target_is_none(ts_data):
         pdt.inverse_transform(None)
 
 
+def test_polynomial_detrender_get_trend_df_raises_type_errors(ts_data):
+    X, y = ts_data
+    pdt = PolynomialDetrender(degree=3)
+    pdt.fit_transform(X, y)
+
+    with pytest.raises(
+        TypeError, match="Provided X should have datetimes in the index."
+    ):
+        X_int_index = X.reset_index()
+        pdt.get_trend_dataframe(X_int_index, y)
+
+    with pytest.raises(TypeError, match="y must be pd.Series or pd.DataFrame!"):
+        y = np.array(y.values)
+        pdt.get_trend_dataframe(X, y)
+
+
 @pytest.mark.parametrize("input_type", ["np", "pd", "ww"])
 @pytest.mark.parametrize("use_int_index", [True, False])
 @pytest.mark.parametrize("degree", [1, 2, 3])
@@ -66,10 +82,7 @@ def test_polynomial_detrender_fit_transform(
 
     X, y = X_input, y_input
 
-    if input_type == "np":
-        X = X_input.values
-        y = y_input.values
-    elif input_type == "ww":
+    if input_type == "ww":
         X = X_input.copy()
         X.ww.init()
         y = ww.init_series(y_input.copy())

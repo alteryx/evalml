@@ -1,5 +1,5 @@
 """Component that removes trends from time series and returns the decomposed components."""
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
 from evalml.pipelines.components.transformers.transformer import Transformer
 
