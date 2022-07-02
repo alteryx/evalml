@@ -34,7 +34,7 @@ scikit-optimize==0.9.0
 scipy==1.5.0
 seaborn==0.11.1
 shap==0.40.0
-sktime==0.7.0
+sktime==0.12.0
 statsmodels==0.12.2
 texttable==1.6.2
 vowpalwabbit==8.11.0

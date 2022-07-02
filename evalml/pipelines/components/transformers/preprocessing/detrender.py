@@ -18,8 +18,8 @@ class Detrender(Transformer):
 
     @abstractmethod
     def get_trend_dataframe(self, y):
-        """Return a dataframe with 3 columns: trend, seasonality, residual"""
+        """Return a list of dataframes, each with 3 columns: trend, seasonality, residual."""
 
     @abstractmethod
     def inverse_transform(self, y):
-        """Add the trend + seasonality back to y"""
+        """Add the trend + seasonality back to y."""
