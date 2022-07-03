@@ -82,6 +82,7 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Pinned GraphViz version for Windows CI Test :pr:`3596`
+        * Removed skipping of PolynomialDetrender tests for Python 3.9 envs. :pr:`3599`
         * Removed ``pytest.mark.skip_if_39`` pytest marker :pr:`3602` :pr:`3607`
         * Updated pytest==7.1.2 :pr:`3609`
         * Added Dockerfile.arm and .dockerignore for python version and M1 testing :pr:`3609`
