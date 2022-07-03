@@ -127,7 +127,7 @@ class PolynomialDetrender(Detrender):
         """Return a list of dataframes with 3 columns: trend, seasonality, residual.
 
         Args:
-            X (pd.DataFrame): Input data with time series data in index
+            X (pd.DataFrame): Input data with time series data in index.
             y (pd.Series or pd.DataFrame): Target variable data provided as a Series for univariate problems or
                 a DataFrame for multivariate problems.
 
@@ -148,17 +148,19 @@ class PolynomialDetrender(Detrender):
         result_dfs = []
 
         def _decompose_target(X, y, fh):
-            # Grab the forecaster from the sktime detrender
-            # TODO: This change will pin us to sktime >= 0.12.0.  clone() might have Python 3.9 /sktime incompatibility implications
+            """Function to generate a single DataFrame with trend, seasonality and residual components."""
             forecaster = self._component_obj.forecaster.clone()
             forecaster.fit(y=y, X=X)
             trend = forecaster.predict(fh=fh, X=y)
             seasonality = np.zeros(len(trend))
             residual = y - trend - seasonality
-            df = pd.DataFrame(
-                {"trend": trend, "seasonality": seasonality, "residual": residual}
+            return pd.DataFrame(
+                {
+                    "trend": trend,
+                    "seasonality": seasonality,
+                    "residual": residual,
+                }
             )
-            return df
 
         if isinstance(y, pd.Series):
             result_dfs.append(_decompose_target(X, y, fh))
