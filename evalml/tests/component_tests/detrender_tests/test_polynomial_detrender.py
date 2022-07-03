@@ -90,8 +90,7 @@ def test_polynomial_detrender_fit_transform(
         X.ww.init()
         y = ww.init_series(y_input.copy())
 
-    pdt = PolynomialDetrender(degree=degree)
-    output_X, output_y = pdt.fit_transform(X, y)
+    output_X, output_y = PolynomialDetrender(degree=degree).fit_transform(X, y)
     pd.testing.assert_series_equal(expected_answer, output_y)
 
     # Verify the X is not changed
