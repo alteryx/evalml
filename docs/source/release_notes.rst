@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Added ability to log how long each batch and pipeline take in automl.search() :pr:`3577`
     * Fixes
+        * Updated the `load_diabetes()` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`
     * Changes
     * Documentation Changes
     * Testing Changes
