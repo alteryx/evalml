@@ -3,11 +3,12 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Updated the `load_diabetes()` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`
+        * Updated the ``load_diabetes()`` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`
     * Changes
     * Documentation Changes
     * Testing Changes
         * Pinned GraphViz version for Windows CI Test :pr:`3596`
+        * Removed ``pytest.mark.skip_if_39`` pytest marker :pr:`3602`
 
 .. warning::
 
