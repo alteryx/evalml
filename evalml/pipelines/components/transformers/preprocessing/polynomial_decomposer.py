@@ -58,6 +58,9 @@ class PolynomialDecomposer(Decomposer):
     def fit(self, X, y=None):
         """Fits the PolynomialDecomposer.
 
+        Currently only fits the polynomial detrender.  The seasonality is actually fit during
+        transform().
+
         Args:
             X (pd.DataFrame, optional): Ignored.
             y (pd.Series): Target variable to detrend.
@@ -75,20 +78,32 @@ class PolynomialDecomposer(Decomposer):
         return self
 
     def transform(self, X, y=None):
-        """Removes fitted trend from target variable.
+        """Transforms the target data.
+
+        Applies the fit polynomial detrender to the target data then fits and removes the
+        addititve statsmodel seasonality.
 
         Args:
             X (pd.DataFrame, optional): Ignored.
-            y (pd.Series): Target variable to detrend.
+            y (pd.Series): Target variable to detrend and deseasonalize.
 
         Returns:
             tuple of pd.DataFrame, pd.Series: The input features are returned without modification. The target
-                variable y is detrended
+                variable y is detrended and deseasonalized.
         """
         if y is None:
             return X, y
         y_ww = infer_feature_types(y)
+
+        # Remove polynomial trend
         y_t = self._component_obj.transform(y_ww)
+
+        # TODO: Figure out a better way to do this.  seasonal_decompose() doesn't fit out fit/transform model
+        #  as this function call is doing both.  Need to pass the Polynomial detrended signal so the data isn't
+        #  detrended twice.
+        # Remove statsmodel seasonality from detrended signal.
+        self.statsmodels_result = seasonal_decompose(y_t)
+        y_t = y_t - self.statsmodels_result.seasonal
         y_t = pd.Series(y_t, index=y_ww.index)
         y_t.ww.init(logical_type="double")
         return X, y_t
@@ -107,7 +122,7 @@ class PolynomialDecomposer(Decomposer):
         return self.fit(X, y).transform(X, y)
 
     def inverse_transform(self, y):
-        """Adds back fitted trend to target variable.
+        """Adds back fitted trend and seasonality to target variable.
 
         Args:
             y (pd.Series): Target variable.
@@ -124,6 +139,7 @@ class PolynomialDecomposer(Decomposer):
         y_ww = infer_feature_types(y)
         y_t = self._component_obj.inverse_transform(y_ww)
         y_t = infer_feature_types(pd.Series(y_t, index=y_ww.index))
+        y_t = self.statsmodels_result.seasonal + y_t
         return y_t
 
     def get_trend_dataframe(self, X, y):
@@ -163,7 +179,7 @@ class PolynomialDecomposer(Decomposer):
             forecaster = self._component_obj.forecaster.clone()
             forecaster.fit(y=y, X=X)
             trend = forecaster.predict(fh=fh, X=y)
-            seasonality = seasonal_decompose(y).seasonal
+            seasonality = seasonal_decompose(y - trend).seasonal
             residual = y - trend - seasonality
             return pd.DataFrame(
                 {
