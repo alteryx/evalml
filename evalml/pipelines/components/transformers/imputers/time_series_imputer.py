@@ -132,11 +132,11 @@ class TimeSeriesImputer(Transformer):
         """Transforms data X by imputing missing values using specified timeseries-specific strategies. 'None' values are converted to np.nan before imputation and are treated as the same.
 
         Args:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, optional): Optionally, target data to transform.
 
         Returns:
-            pd.DataFrame: Transformed X
+            pd.DataFrame: Transformed X and y
         """
         X = infer_feature_types(X)
         if len(self._all_null_cols) == X.shape[1]:
@@ -145,6 +145,7 @@ class TimeSeriesImputer(Transformer):
             return df, y
 
         X_not_all_null = X.ww.drop(self._all_null_cols)
+        X_schema = X_not_all_null.ww.schema
 
         if self._forwards_cols is not None:
             X_forward = X.ww[self._forwards_cols]
@@ -174,5 +175,8 @@ class TimeSeriesImputer(Transformer):
         elif self._impute_target == "interpolate":
             y_imputed = y.interpolate()
             y_imputed.bfill(inplace=True)
+
+        X_not_all_null.ww.init(schema=X_schema)
+        y_imputed.ww.init(schema=y.ww.schema)
 
         return X_not_all_null, y_imputed
