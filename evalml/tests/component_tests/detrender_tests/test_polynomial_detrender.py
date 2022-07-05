@@ -125,10 +125,6 @@ def test_polynomial_detrender_get_trend_dataframe(
     elif degree == 3:
         X_input, _, y_input = ts_data_cubic_trend()
 
-    from matplotlib import pyplot as plt
-
-    plt.plot(y_input)
-
     # Get the expected answer
     lin_reg = LinearRegression(fit_intercept=True)
     features = PolynomialFeatures(degree=degree).fit_transform(
