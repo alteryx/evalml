@@ -1,5 +1,4 @@
 """Component that removes trends from time series by fitting a polynomial to the data."""
-import numpy as np
 import pandas as pd
 from skopt.space import Integer
 from sktime.forecasting.base._fh import ForecastingHorizon
