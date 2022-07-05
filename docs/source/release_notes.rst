@@ -3,10 +3,11 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Regularized the `load_diabetes()` method to fix some issues with testing :pr:`3591`
+        * Updated the `load_diabetes()` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Pinned GraphViz version for Windows CI Test :pr:`3596`
 
 .. warning::
 
@@ -17,7 +18,6 @@ Release Notes
     * Fixes
         * Updated the Imputer and SimpleImputer to work with scikit-learn 1.1.1. :pr:`3525`
         * Bumped the minimum versions of scikit-learn to 1.1.1 and imbalanced-learn to 0.9.1. :pr:`3525`
-        * Updated the `load_diabetes()` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3584`
         * Added a clearer error message when ``describe`` is called on an un-instantiated ComponentGraph :pr:`3569`
         * Added a clearer error message when time series' ``predict`` is called with its X_train or y_train parameter set as None :pr:`3579`
     * Changes
