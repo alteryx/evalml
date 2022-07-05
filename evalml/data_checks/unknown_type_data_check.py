@@ -5,12 +5,12 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning,
 )
-
+from evalml.utils import infer_feature_types
 
 class UnknownTypeDataCheck(DataCheck):
     """Check if there are a high number of features that are labelled as unknown by Woodwork."""
 
-    def _init_(
+    def __init__(
         self,
         unknown_percentage_threshold=0.50,
     ):
@@ -29,7 +29,35 @@ def validate(self, X, y=None):
 
     Returns:
         dict: A dictionary with warnings if any columns
+
+    Examples:
+        >>> import pandas as pd
+        ...
+        >>> 
     """
     messages = []
 
     X = infer_feature_types(X)
+    row_unknowns = X.ww.select("unknown")
+    if len(row_unknowns) / len(X.columns) >= self.unknown_percentage_threshold:
+        print("Unknown")
+        warning_msg = f"{len(row_unknowns)} out of {len(X)} rows are {self.pct_null_row_threshold*100}% or more of unknown type."
+
+        messages.append(
+            DataCheckWarning(
+                message=warning_msg,
+                data_check_name=self.name,
+                message_code=DataCheckMessageCode.HIGH_NUMBER_OF_UNKNOWN_TYPE,
+                details={
+                    "rows": row_unknowns.index.tolist(),
+                },
+                action_options=[
+                    DataCheckActionOption(
+                        DataCheckActionCode.DROP_ROWS,
+                        data_check_name=self.name,
+                        metadata={"rows": row_unknowns.index.tolist()}
+                    )
+                ],
+            ).to_dict()
+        )
+    return messages
