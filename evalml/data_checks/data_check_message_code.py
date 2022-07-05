@@ -142,3 +142,6 @@ class DataCheckMessageCode(Enum):
         "timeseries_target_not_compatible_with_split"
     )
     """Message code when any training and validation split of the time series target doesn't contain all classes."""
+
+    HIGH_NUMBER_OF_UNKNOWN_TYPE = "High_number_of_unknown_type"
+    """Message code for data that has a high number of unknown type"""
