@@ -137,12 +137,17 @@ class PolynomialDetrender(Detrender):
 
         Raises:
             TypeError: If X does not have time-series data in the index.
+            ValueError: If time series index of X does not have an inferred frequency.
             TypeError: If y is not provided as a pandas Series or DataFrame.
 
         """
         X = infer_feature_types(X)
         if not isinstance(X.index, pd.DatetimeIndex):
             raise TypeError("Provided X should have datetimes in the index.")
+        if X.index.freq is None:
+            raise ValueError(
+                "Provided DatetimeIndex of X should have an inferred frequency."
+            )
         fh = ForecastingHorizon(X.index, is_relative=False)
 
         result_dfs = []

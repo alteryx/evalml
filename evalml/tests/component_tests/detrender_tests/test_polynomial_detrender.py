@@ -39,7 +39,7 @@ def test_polynomial_detrender_raises_value_error_target_is_none(ts_data):
         pdt.inverse_transform(None)
 
 
-def test_polynomial_detrender_get_trend_df_raises_type_errors(ts_data):
+def test_polynomial_detrender_get_trend_df_raises_errors(ts_data):
     X, y = ts_data
     pdt = PolynomialDetrender(degree=3)
     pdt.fit_transform(X, y)
@@ -52,6 +52,13 @@ def test_polynomial_detrender_get_trend_df_raises_type_errors(ts_data):
 
     with pytest.raises(TypeError, match="y must be pd.Series or pd.DataFrame!"):
         y = np.array(y.values)
+        pdt.get_trend_dataframe(X, y)
+
+    with pytest.raises(
+        ValueError,
+        match="Provided DatetimeIndex of X should have an inferred frequency.",
+    ):
+        X.index.freq = None
         pdt.get_trend_dataframe(X, y)
 
 
