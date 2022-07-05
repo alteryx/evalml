@@ -19,12 +19,14 @@ def load_diabetes():
     )
     X, y = load_data(filename, index=None, target="target")
     y.name = None
-    X = X.astype(float)
+
+    # This scales the feature variables by the standard deviation times the square root of n_samples
+    # This change is necessary due to https://github.com/scikit-learn/scikit-learn/pull/16605
+    # In previous versions the diabetes.csv data was returned, but now scikit-learn scales the data then returns
     y = y.astype(float)
-    numpy_of_X = X.to_numpy()
-    numpy_of_X = scale(numpy_of_X, copy=False)
-    numpy_of_X /= numpy_of_X.shape[0] ** 0.5
-    X = pd.DataFrame(numpy_of_X, columns=X.columns)
+    X_np = scale(X.to_numpy(float), copy=False)
+    X_np /= X_np.shape[0] ** 0.5
+    X = pd.DataFrame(X_np, columns=X.columns)
     X.ww.init()
     y = ww.init_series(y)
 
