@@ -4,14 +4,14 @@ from abc import abstractmethod
 from evalml.pipelines.components.transformers.transformer import Transformer
 
 
-class Detrender(Transformer):
-    """Component that removes trends from time series and returns the decomposed components.
+class Decomposer(Transformer):
+    """Component that removes trends and seasonality from time series and returns the decomposed components.
 
     Args:
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    name = "Detrender"
+    name = "Decomposer"
     hyperparameter_ranges = None
     modifies_features = False
     modifies_target = True

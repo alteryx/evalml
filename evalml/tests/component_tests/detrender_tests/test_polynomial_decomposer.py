@@ -5,43 +5,43 @@ import woodwork as ww
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
-from evalml.pipelines.components import PolynomialDetrender
+from evalml.pipelines.components import PolynomialDecomposer
 
 
-def test_polynomial_detrender_init():
-    delayed_features = PolynomialDetrender(degree=3)
+def test_polynomial_decomposer_init():
+    delayed_features = PolynomialDecomposer(degree=3)
     assert delayed_features.parameters == {"degree": 3}
 
 
-def test_polynomial_detrender_init_raises_error_if_degree_not_int():
+def test_polynomial_decomposer_init_raises_error_if_degree_not_int():
 
     with pytest.raises(TypeError, match="Received str"):
-        PolynomialDetrender(degree="1")
+        PolynomialDecomposer(degree="1")
 
     with pytest.raises(TypeError, match="Received float"):
-        PolynomialDetrender(degree=3.4)
+        PolynomialDecomposer(degree=3.4)
 
-    _ = PolynomialDetrender(degree=3.0)
+    _ = PolynomialDecomposer(degree=3.0)
 
 
-def test_polynomial_detrender_raises_value_error_target_is_none(ts_data):
+def test_polynomial_decomposer_raises_value_error_target_is_none(ts_data):
     X, _, y = ts_data()
 
-    with pytest.raises(ValueError, match="y cannot be None for PolynomialDetrender!"):
-        PolynomialDetrender(degree=3).fit_transform(X, None)
+    with pytest.raises(ValueError, match="y cannot be None for PolynomialDecomposer!"):
+        PolynomialDecomposer(degree=3).fit_transform(X, None)
 
-    with pytest.raises(ValueError, match="y cannot be None for PolynomialDetrender!"):
-        PolynomialDetrender(degree=3).fit(X, None)
+    with pytest.raises(ValueError, match="y cannot be None for PolynomialDecomposer!"):
+        PolynomialDecomposer(degree=3).fit(X, None)
 
-    pdt = PolynomialDetrender(degree=3).fit(X, y)
+    pdt = PolynomialDecomposer(degree=3).fit(X, y)
 
-    with pytest.raises(ValueError, match="y cannot be None for PolynomialDetrender!"):
+    with pytest.raises(ValueError, match="y cannot be None for PolynomialDecomposer!"):
         pdt.inverse_transform(None)
 
 
-def test_polynomial_detrender_get_trend_df_raises_errors(ts_data):
+def test_polynomial_decomposer_get_trend_df_raises_errors(ts_data):
     X, y = ts_data
-    pdt = PolynomialDetrender(degree=3)
+    pdt = PolynomialDecomposer(degree=3)
     pdt.fit_transform(X, y)
 
     with pytest.raises(
@@ -65,7 +65,7 @@ def test_polynomial_detrender_get_trend_df_raises_errors(ts_data):
 @pytest.mark.parametrize("input_type", ["np", "pd", "ww"])
 @pytest.mark.parametrize("use_int_index", [True, False])
 @pytest.mark.parametrize("degree", [1, 2, 3])
-def test_polynomial_detrender_fit_transform(
+def test_polynomial_decomposer_fit_transform(
     degree,
     use_int_index,
     input_type,
@@ -97,7 +97,7 @@ def test_polynomial_detrender_fit_transform(
         X.ww.init()
         y = ww.init_series(y_input.copy())
 
-    output_X, output_y = PolynomialDetrender(degree=degree).fit_transform(X, y)
+    output_X, output_y = PolynomialDecomposer(degree=degree).fit_transform(X, y)
     pd.testing.assert_series_equal(expected_answer, output_y)
 
     # Verify the X is not changed
@@ -116,7 +116,7 @@ def test_polynomial_detrender_fit_transform(
 )
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("degree", [1, 2, 3])
-def test_polynomial_detrender_get_trend_dataframe(
+def test_polynomial_decomposer_get_trend_dataframe(
     degree,
     input_type,
     variateness,
@@ -149,7 +149,7 @@ def test_polynomial_detrender_get_trend_dataframe(
         X.ww.init()
         y = ww.init_series(y_input.copy())
 
-    pdt = PolynomialDetrender(degree=degree)
+    pdt = PolynomialDecomposer(degree=degree)
     output_X, output_y = pdt.fit_transform(X, y)
     pd.testing.assert_series_equal(expected_answer, output_y)
 
@@ -180,26 +180,26 @@ def test_polynomial_detrender_get_trend_dataframe(
 
 
 @pytest.mark.parametrize("degree", [1, 2, 3])
-def test_polynomial_detrender_inverse_transform(degree, ts_data):
+def test_polynomial_decomposer_inverse_transform(degree, ts_data):
     X, _, y = ts_data()
 
-    detrender = PolynomialDetrender(degree=degree)
-    output_X, output_y = detrender.fit_transform(X, y)
-    output_inverse_y = detrender.inverse_transform(output_y)
+    decomposer = PolynomialDecomposer(degree=degree)
+    output_X, output_y = decomposer.fit_transform(X, y)
+    output_inverse_y = decomposer.inverse_transform(output_y)
     pd.testing.assert_series_equal(y, output_inverse_y, check_dtype=False)
 
 
-def test_polynomial_detrender_needs_monotonic_index(ts_data):
+def test_polynomial_decomposer_needs_monotonic_index(ts_data):
     X, _, y = ts_data()
-    detrender = PolynomialDetrender(degree=2)
+    decomposer = PolynomialDecomposer(degree=2)
 
     with pytest.raises(Exception) as exec_info:
         y_shuffled = y.sample(frac=1, replace=False)
-        detrender.fit_transform(X, y_shuffled)
+        decomposer.fit_transform(X, y_shuffled)
     expected_errors = ["monotonically", "X must be in an sktime compatible format"]
     assert any([error in str(exec_info.value) for error in expected_errors])
     with pytest.raises(
         Exception,
     ):
         y_string_index = pd.Series(np.arange(31), index=[f"row_{i}" for i in range(31)])
-        detrender.fit_transform(X, y_string_index)
+        decomposer.fit_transform(X, y_string_index)

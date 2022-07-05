@@ -18,9 +18,11 @@ from evalml.pipelines.components.transformers.preprocessing.time_series_featuriz
 from evalml.pipelines.components.transformers.preprocessing.featuretools import (
     DFSTransformer,
 )
-from evalml.pipelines.components.transformers.preprocessing.detrender import Detrender
-from .polynomial_detrender import (
-    PolynomialDetrender,
+from evalml.pipelines.components.transformers.preprocessing.decomposer import (
+	Decomposer
+)
+from evalml.pipelines.components.transformers.preprocessing.polynomial_decomposer import (
+	PolynomialDecomposer
 )
 from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
     LogTransformer,

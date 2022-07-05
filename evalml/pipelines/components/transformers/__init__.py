@@ -38,7 +38,7 @@ from evalml.pipelines.components.transformers.preprocessing import (
     NaturalLanguageFeaturizer,
     TimeSeriesFeaturizer,
     DFSTransformer,
-    PolynomialDetrender,
+    PolynomialDecomposer,
     LogTransformer,
     EmailFeaturizer,
     URLFeaturizer,

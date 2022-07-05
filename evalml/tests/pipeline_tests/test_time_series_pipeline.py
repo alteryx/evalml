@@ -1367,16 +1367,16 @@ def test_time_series_pipeline_fit_with_transformed_target(
     pd.testing.assert_series_equal(mock_to_check.call_args[0][1], y + 2)
 
 
-def test_time_series_pipeline_with_detrender(ts_data):
+def test_time_series_pipeline_with_decomposer(ts_data):
     X, _, y = ts_data()
     component_graph = {
-        "Polynomial Detrender": ["Polynomial Detrender", "X", "y"],
+        "Polynomial Decomposer": ["Polynomial Decomposer", "X", "y"],
         "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
         "Dt": ["DateTime Featurizer", "Time Series Featurizer.x", "y"],
         "Drop NaN Rows Transformer": [
             "Drop NaN Rows Transformer",
             "Dt.x",
-            "Polynomial Detrender.y",
+            "Polynomial Decomposer.y",
         ],
         "Regressor": [
             "Linear Regressor",
@@ -1411,10 +1411,10 @@ def test_time_series_pipeline_with_detrender(ts_data):
         X_train,
         y_train,
     )
-    detrender = pipeline.component_graph.get_component("Polynomial Detrender")
+    decomposer = pipeline.component_graph.get_component("Polynomial Decomposer")
     preds = pipeline.estimator.predict(features)
     preds.index = y_validation.index
-    expected = detrender.inverse_transform(preds)
+    expected = decomposer.inverse_transform(preds)
     expected = infer_feature_types(expected)
     pd.testing.assert_series_equal(predictions, expected)
 

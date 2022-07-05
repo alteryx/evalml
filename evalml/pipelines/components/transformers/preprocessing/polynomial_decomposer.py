@@ -4,12 +4,15 @@ from skopt.space import Integer
 from sktime.forecasting.base._fh import ForecastingHorizon
 from statsmodels.tsa.seasonal import seasonal_decompose
 
-from evalml.pipelines.components.transformers.preprocessing import Detrender
+from evalml.pipelines.components.transformers.preprocessing import Decomposer
 from evalml.utils import import_or_raise, infer_feature_types
 
 
-class PolynomialDetrender(Detrender):
-    """Removes trends from time series by fitting a polynomial to the data.
+class PolynomialDecomposer(Decomposer):
+    """Removes trends and seasonality from time series by fitting a polynomial and moving average to the data.
+
+    Scikit-learn's PolynomialForecaster is used to generate the trend portion of the target data. statsmodel's
+        seasonal_decompose is used to generate the seasonality of the data.
 
     Args:
         degree (int): Degree for the polynomial. If 1, linear model is fit to the data.
@@ -17,7 +20,7 @@ class PolynomialDetrender(Detrender):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    name = "Polynomial Detrender"
+    name = "Polynomial Decomposer"
     hyperparameter_ranges = {"degree": Integer(1, 3)}
     """{
         "degree": Integer(1, 3)
@@ -44,16 +47,16 @@ class PolynomialDetrender(Detrender):
             error_msg=error_msg,
         )
 
-        detrender = detrend.Detrender(trend.PolynomialTrendForecaster(degree=degree))
+        decomposer = detrend.Detrender(trend.PolynomialTrendForecaster(degree=degree))
 
         super().__init__(
             parameters=params,
-            component_obj=detrender,
+            component_obj=decomposer,
             random_seed=random_seed,
         )
 
     def fit(self, X, y=None):
-        """Fits the PolynomialDetrender.
+        """Fits the PolynomialDecomposer.
 
         Args:
             X (pd.DataFrame, optional): Ignored.
@@ -66,7 +69,7 @@ class PolynomialDetrender(Detrender):
             ValueError: If y is None.
         """
         if y is None:
-            raise ValueError("y cannot be None for PolynomialDetrender!")
+            raise ValueError("y cannot be None for PolynomialDecomposer!")
         y_dt = infer_feature_types(y)
         self._component_obj.fit(y_dt)
         return self
@@ -117,7 +120,7 @@ class PolynomialDetrender(Detrender):
             ValueError: If y is None.
         """
         if y is None:
-            raise ValueError("y cannot be None for PolynomialDetrender!")
+            raise ValueError("y cannot be None for PolynomialDecomposer!")
         y_ww = infer_feature_types(y)
         y_t = self._component_obj.inverse_transform(y_ww)
         y_t = infer_feature_types(pd.Series(y_t, index=y_ww.index))
