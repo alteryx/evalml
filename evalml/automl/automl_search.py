@@ -857,11 +857,11 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, show_iteration_plot=False):
+    def search(self, interactive_plot=True):
         """Find the best pipeline for the data set.
 
         Args:
-            show_iteration_plot (boolean, False): Shows an iteration vs. score plot in Jupyter notebook.
+            interactive_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
 
         Raises:
@@ -877,11 +877,11 @@ class AutoMLSearch:
             return
 
         # don't show iteration plot outside of a jupyter notebook
-        if show_iteration_plot:
+        if interactive_plot:
             try:
                 get_ipython
             except NameError:
-                show_iteration_plot = False
+                interactive_plot = False
 
         log_title(self.logger, "Beginning pipeline search")
         self.logger.info("Optimizing for %s. " % self.objective.name)
@@ -912,7 +912,7 @@ class AutoMLSearch:
         self.search_iteration_plot = None
         if self.plot and self.verbose:
             self.search_iteration_plot = self.plot.search_iteration_plot(
-                interactive_plot=show_iteration_plot
+                interactive_plot=interactive_plot
             )
 
         self._start = time.time()
@@ -1010,21 +1010,9 @@ class AutoMLSearch:
             )
         self._searched = True
         if self.search_iteration_plot is not None:
-            # go = import_or_raise(
-            #     "plotly.graph_objects",
-            #     error_msg="Cannot find dependency plotly.graph_objects",
-            # )
-            # title = "Pipeline Search: Iteration vs. {}<br><sub>Gray marker indicates the score at current iteration</sub>".format(
-            #     self.objective.name
-            # )
-            # layout = {
-            #     "title": title,
-            #     "xaxis": {"title": "Iteration", "rangemode": "tozero"},
-            #     "yaxis": {"title": "Score"},
-            # }
-            if not show_iteration_plot:
+            if self.verbose and not interactive_plot:
                 self.search_iteration_plot = self.plot.search_iteration_plot(
-                    interactive_plot=show_iteration_plot
+                    interactive_plot=interactive_plot
                 )
                 return self.search_iteration_plot
 
