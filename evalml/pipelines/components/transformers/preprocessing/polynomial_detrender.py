@@ -82,7 +82,7 @@ class PolynomialDetrender(Transformer):
         y_ww = infer_feature_types(y)
         y_t = self._component_obj.transform(y_ww)
         y_t = pd.Series(y_t, index=y_ww.index)
-        y_t.ww.init(schema=y_ww.ww.schema)
+        y_t.ww.init(logical_type="double")
         return X, y_t
 
     def fit_transform(self, X, y=None):

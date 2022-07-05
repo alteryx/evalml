@@ -76,8 +76,8 @@ class BaseSampler(Transformer):
         X, y = self._prepare_data(X, y)
         X_new, y_new = self._component_obj.fit_resample(X, y)
 
-        X_new.ww.init(schema=X.schema)
-        y_new.ww.init(schema=y.schema)
+        X_new.ww.init(schema=X.ww.schema)
+        y_new.ww.init(schema=y.ww.schema)
         return X_new, y_new
 
     def _convert_dictionary(self, sampling_dict, y):
