@@ -13,6 +13,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 from dask import distributed as dd
+from plotly import io as pio
 from sklearn.model_selection import BaseCrossValidator
 from skopt.space import Categorical
 
@@ -1014,7 +1015,9 @@ class AutoMLSearch:
                 self.search_iteration_plot = self.plot.search_iteration_plot(
                     interactive_plot=interactive_plot
                 )
-                return self.search_iteration_plot
+                if pio.renderers.default != "browser":
+                    self.search_iteration_plot.show()
+                # return self.search_iteration_plot
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
