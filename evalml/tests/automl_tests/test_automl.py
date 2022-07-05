@@ -227,11 +227,12 @@ def test_search_batch_times(caplog, X_y_binary, AutoMLTestEnv):
         optimize_thresholds=False,
         max_batches=3,
         verbose=True,
+        timing=True,
     )
     batch_times = None
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
-        batch_times = automl.search(timing="log")
+        batch_times = automl.search()
 
     out = caplog.text
     assert isinstance(batch_times, dict)
@@ -251,24 +252,6 @@ def test_search_batch_times(caplog, X_y_binary, AutoMLTestEnv):
     assert "Batch 1 time stats" in out
     assert "Batch 2 time stats" in out
     assert "Batch 3 time stats" in out
-
-
-def test_search_batch_times_raise_valueerror(caplog, X_y_binary, AutoMLTestEnv):
-    caplog.clear()
-    X, y = X_y_binary
-    automl = AutoMLSearch(
-        X_train=X,
-        y_train=y,
-        problem_type="binary",
-        max_iterations=None,
-        optimize_thresholds=False,
-        max_batches=3,
-        verbose=True,
-    )
-    env = AutoMLTestEnv("binary")
-    with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
-        with pytest.raises(ValueError):
-            automl.search(timing="test")
 
 
 @pytest.mark.parametrize(
