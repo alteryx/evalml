@@ -116,6 +116,7 @@ def search(
     problem_configuration=None,
     n_splits=3,
     verbose=False,
+    timing=False,
 ):
     """Given data and configuration, run an automl search.
 
@@ -144,6 +145,7 @@ def search(
             in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
         n_splits (int): Number of splits to use with the default data splitter.
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
+        timing (boolean): Whether or not to display pipeline search times to stdout. Defaults to False.
 
     Returns:
         (AutoMLSearch, dict): The automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
@@ -195,6 +197,7 @@ def search(
         "verbose": verbose,
         "problem_configuration": problem_configuration,
         "data_splitter": data_splitter,
+        "timing": timing,
     }
 
     data_checks = DefaultDataChecks(
@@ -411,6 +414,8 @@ class AutoMLSearch:
             If a parallel engine is selected this way, the maximum amount of parallelism, as determined by the engine, will be used. Defaults to "sequential".
 
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
+
+        timing (boolean): Whether or not to display pipeline search times to stdout. Defaults to False.
     """
 
     _MAX_NAME_LEN = 40
@@ -451,12 +456,14 @@ class AutoMLSearch:
         automl_algorithm="default",
         engine="sequential",
         verbose=False,
+        timing=False,
     ):
         self.verbose = verbose
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
         else:
             self.logger = logging.getLogger(__name__)
+        self.timing = timing
         if X_train is None:
             raise ValueError(
                 "Must specify training data as a 2d array using the X_train argument"
@@ -858,33 +865,22 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, show_iteration_plot=True, timing=None):
+    def search(self, show_iteration_plot=True):
         """Find the best pipeline for the data set.
 
         Args:
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
-            timing (str, None): Shows timing of the batches and the individual timings of each pipeline.
-                Default: None
-                log=prints out batch/pipeline timing to console.
 
         Raises:
             AutoMLSearchException: If all pipelines in the current AutoML batch produced a score of np.nan on the primary objective.
             ValueError: If timing is not set to a correct value
 
         Returns:
-                Dict[int, Dict[str, Timestamp]]: Returns dict.
-                Key=batch #, value=Dict[key=pipeline name, value=timestamp of pipeline].
-                Inner dict has key called "Total time of batch" with value=total time of batch.
+            Dict[int, Dict[str, Timestamp]]: Dictionary keyed by batch number that maps to the timings for pipelines run in that batch,
+            as well as the total time for each batch. Pipelines within a batch are labeled by pipeline name.
         """
         batch_times = {}
-        if timing is not None:
-            timing = timing.lower()
-
-        if timing != "log" and timing is not None:
-            raise ValueError(
-                """Timing isn't set to a correct value! Please try again using "log"."""
-            )
 
         if self._searched:
             self.logger.error(
@@ -1027,8 +1023,7 @@ class AutoMLSearch:
         desc = desc.ljust(self._MAX_NAME_LEN)
         self.logger.info(desc)
 
-        if timing == "log":
-            log_title(self.logger, "Batch Time Stats")
+        if self.timing is True:
             log_batch_times(self.logger, batch_times)
 
         self._find_best_pipeline()

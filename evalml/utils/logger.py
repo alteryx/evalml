@@ -64,6 +64,7 @@ def log_batch_times(logger, batch_times):
         logger: the logger.
         batch_times: dict with (batch number, {pipeline name, pipeline time}).
     """
+    log_title(logger, "Batch Time Stats")
     for batch_number in batch_times:
         subtitle = "Batch " + str(batch_number) + " time stats:"
         log_subtitle(logger, subtitle)
