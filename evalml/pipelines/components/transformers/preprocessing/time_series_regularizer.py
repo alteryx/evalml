@@ -264,6 +264,9 @@ class TimeSeriesRegularizer(Transformer):
         """
         if self.inferred_freq is not None:
             return X, y
+        X = infer_feature_types(X)
+        if y is not None:
+            y = infer_feature_types(y)
 
         # The cleaned df will begin at the range determined by estimated_range_start, which will result
         # in dropping of the first consecutive faulty values in the dataset.
@@ -299,5 +302,8 @@ class TimeSeriesRegularizer(Transformer):
 
         if cleaned_y is not None:
             cleaned_y = cleaned_y["target"]
+
+        cleaned_x.ww.init(schema=X.schema)
+        cleaned_y.ww.init(schema=y.schema)
 
         return cleaned_x, cleaned_y
