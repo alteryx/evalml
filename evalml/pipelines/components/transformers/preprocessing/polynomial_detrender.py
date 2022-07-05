@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from skopt.space import Integer
 from sktime.forecasting.base._fh import ForecastingHorizon
+from statsmodels.tsa.seasonal import seasonal_decompose
 
 from evalml.pipelines.components.transformers.preprocessing import Detrender
 from evalml.utils import import_or_raise, infer_feature_types
@@ -126,6 +127,9 @@ class PolynomialDetrender(Detrender):
     def get_trend_dataframe(self, X, y):
         """Return a list of dataframes with 3 columns: trend, seasonality, residual.
 
+        Scikit-learn's PolynomialForecaster is used to generate the trend portion of the target data. statsmodel's
+        seasonal_decompose is used to generate the seasonality of the data.
+
         Args:
             X (pd.DataFrame): Input data with time series data in index.
             y (pd.Series or pd.DataFrame): Target variable data provided as a Series for univariate problems or
@@ -157,7 +161,7 @@ class PolynomialDetrender(Detrender):
             forecaster = self._component_obj.forecaster.clone()
             forecaster.fit(y=y, X=X)
             trend = forecaster.predict(fh=fh, X=y)
-            seasonality = np.zeros(len(trend))
+            seasonality = seasonal_decompose(y).seasonal
             residual = y - trend - seasonality
             return pd.DataFrame(
                 {

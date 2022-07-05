@@ -164,8 +164,8 @@ def test_polynomial_detrender_get_trend_dataframe(
         return set(df.columns) == {"trend", "seasonality", "residual"}
 
     def get_trend_df_values_correct(df, y):
-        return all(
-            (df["trend"] + df["seasonality"] + df["residual"]).values == y.values
+        np.testing.assert_array_almost_equal(
+            (df["trend"] + df["seasonality"] + df["residual"]).values, y.values
         )
 
     assert isinstance(result_dfs, list)
@@ -173,12 +173,10 @@ def test_polynomial_detrender_get_trend_dataframe(
     assert all(get_trend_df_format_correct(x) for x in result_dfs)
     if variateness == "univariate":
         assert len(result_dfs) == 1
-        assert all(get_trend_df_values_correct(x, y) for x in result_dfs)
+        [get_trend_df_values_correct(x, y) for x in result_dfs]
     elif variateness == "multivariate":
         assert len(result_dfs) == 2
-        assert all(
-            get_trend_df_values_correct(x, y[idx]) for idx, x in enumerate(result_dfs)
-        )
+        [get_trend_df_values_correct(x, y[idx]) for idx, x in enumerate(result_dfs)]
 
 
 @pytest.mark.parametrize("degree", [1, 2, 3])
