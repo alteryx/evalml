@@ -877,7 +877,6 @@ class AutoMLSearch:
 
         Raises:
             AutoMLSearchException: If all pipelines in the current AutoML batch produced a score of np.nan on the primary objective.
-            ValueError: If timing is not set to a correct value
 
         Returns:
             Dict[int, Dict[str, Timestamp]]: Dictionary keyed by batch number that maps to the timings for pipelines run in that batch,
