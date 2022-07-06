@@ -159,10 +159,18 @@ def test_get_sp():
     sp_ = clf_month._get_sp(X)
     assert sp_ == 12
 
+    # Testing the case where an unknown frequency is passed
     X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="2D")})
     X.ww.init()
     clf_month = ARIMARegressor(time_index="dates")
     sp_ = clf_month._get_sp(X)
+    assert sp_ == 1
+
+    # Testing the case where there is no time index given
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="M")})
+    X.ww.init()
+    clf_noindex = ARIMARegressor()
+    sp_ = clf_noindex._get_sp(X)
     assert sp_ == 1
 
 
@@ -279,6 +287,8 @@ def test_arima_sp_changes_result():
     clf_quarter.fit(X, y)
     pred_q = clf_quarter.predict(X)
 
+    assert clf_day._component_obj.sp == 7
+    assert clf_quarter._component_obj.sp == 4
     with pytest.raises(AssertionError):
         pd.testing.assert_series_equal(pred_d, pred_q)
 
@@ -305,6 +315,7 @@ def test_different_time_units_out_of_sample(
     m_clf = ARIMARegressor(d=None)
     m_clf.fit(X=X[:15], y=y[:15])
     y_pred = m_clf.predict(X=X[15:])
+    assert m_clf._component_obj.d is None
 
     assert (y_pred_sk.values == y_pred.values).all()
     assert y_pred.index.equals(X[15:].index)

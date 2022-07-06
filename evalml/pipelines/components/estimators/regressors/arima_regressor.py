@@ -26,8 +26,9 @@ class ARIMARegressor(Estimator):
         max_d (int): Maximum Differencing degree. Defaults to 2.
         max_q (int): Maximum Moving Average order. Defaults to 5.
         seasonal (boolean): Whether to fit a seasonal model to ARIMA. Defaults to True.
-        sp (int): Period for seasonal differencing, specifically the number of periods in each season. If "detect" and the time series is one of
-                  a few standard frequencies, this model will automatically detect this parameter, defaulting to 1 (no seasonality). Defaults to "detect".
+        sp (int or str): Period for seasonal differencing, specifically the number of periods in each season. If "detect", this
+            model will automatically detect this parameter (given the time series is a standard frequency) and will fall
+            back to 1 (no seasonality) if it cannot be detected. Defaults to "detect".
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -74,7 +75,7 @@ class ARIMARegressor(Estimator):
         use_covariates=True,
         **kwargs,
     ):
-        self.arima_parameters = {
+        parameters = {
             "trend": trend,
             "start_p": start_p,
             "d": d,
@@ -83,26 +84,27 @@ class ARIMARegressor(Estimator):
             "max_d": max_d,
             "max_q": max_q,
             "seasonal": seasonal,
-            "sp": sp,
             "maxiter": maxiter,
             "n_jobs": n_jobs,
         }
-        self.arima_parameters.update(kwargs)
+        parameters.update(kwargs)
 
         arima_model_msg = (
             "sktime is not installed. Please install using `pip install sktime.`"
         )
-        self.sktime_arima = import_or_raise(
+        sktime_arima = import_or_raise(
             "sktime.forecasting.arima", error_msg=arima_model_msg
         )
-        self.use_covariates = use_covariates
+        arima_model = sktime_arima.AutoARIMA(**parameters)
 
-        parameters = self.arima_parameters.copy()
         parameters["use_covariates"] = use_covariates
         parameters["time_index"] = time_index
 
+        self.sp = sp
+        self.use_covariates = use_covariates
+
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters, component_obj=arima_model, random_seed=random_seed
         )
 
     def _remove_datetime(self, data, features=False):
@@ -137,16 +139,16 @@ class ARIMARegressor(Estimator):
             return 1
         freq_mappings = {
             "D": 7,
-            "W": 52,
             "M": 12,
             "Q": 4,
         }
         time_index = self._parameters.get("time_index", None)
-        sp = self.arima_parameters["sp"]
-        if sp == "detect":
+        if self.sp == "detect":
             inferred_freqs = X.ww.infer_temporal_frequencies()
             freq = inferred_freqs.get(time_index, None)
-            sp = freq_mappings.get(freq, 1)
+            sp = 1
+            if freq is not None:
+                sp = freq_mappings.get(freq[:1], 1)
         return sp
 
     def fit(self, X, y=None):
@@ -168,11 +170,8 @@ class ARIMARegressor(Estimator):
         if y is None:
             raise ValueError("ARIMA Regressor requires y as input.")
 
-        parameters = self.arima_parameters
-        parameters["sp"] = self._get_sp(X)
-
-        arima_model = self.sktime_arima.AutoARIMA(**parameters)
-        self._component_obj = arima_model
+        sp = self._get_sp(X)
+        self._component_obj.sp = sp
 
         X = self._remove_datetime(X, features=True)
         if X is not None:
