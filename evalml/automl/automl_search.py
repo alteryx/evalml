@@ -145,7 +145,7 @@ def search(
             in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
         n_splits (int): Number of splits to use with the default data splitter.
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
-        timing (boolean): Whether or not to display pipeline search times to stdout. Defaults to False.
+        timing (boolean): Whether or not to write pipeline search times to the logger. Defaults to False.
 
     Returns:
         (AutoMLSearch, dict): The automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
@@ -224,6 +224,7 @@ def search_iterative(
     objective="auto",
     problem_configuration=None,
     n_splits=3,
+    timing=False,
     **kwargs,
 ):
     """Given data and configuration, run an automl search.
@@ -243,6 +244,7 @@ def search_iterative(
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
         n_splits (int): Number of splits to use with the default data splitter.
+        timing(boolean): Whether or not to write pipeline search times to the logger. Defaults to False.
         **kwargs: Other keyword arguments which are provided will be passed to AutoMLSearch.
 
     Returns:
@@ -282,6 +284,7 @@ def search_iterative(
             "max_batches": 1,
             "problem_configuration": problem_configuration,
             "data_splitter": data_splitter,
+            "timing": timing,
         }
     )
 
@@ -415,7 +418,7 @@ class AutoMLSearch:
 
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
 
-        timing (boolean): Whether or not to display pipeline search times to stdout. Defaults to False.
+        timing (boolean): Whether or not to write pipeline search times to the logger. Defaults to False.
     """
 
     _MAX_NAME_LEN = 40
