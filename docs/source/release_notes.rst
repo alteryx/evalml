@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Added the option to set the ``sp`` parameter for ARIMA models :pr:`3597`
     * Fixes
+        * Updated the `load_diabetes()` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`
     * Changes
     * Documentation Changes
     * Testing Changes
