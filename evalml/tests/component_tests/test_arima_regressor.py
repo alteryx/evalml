@@ -149,29 +149,40 @@ def test_set_forecast(get_ts_X_y):
 def test_get_sp():
     X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="D")})
     X.ww.init()
-    clf_day = ARIMARegressor(time_index="dates")
+    clf_day = ARIMARegressor(time_index="dates", sp="detect")
     sp_ = clf_day._get_sp(X)
     assert sp_ == 7
 
     X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="M")})
     X.ww.init()
-    clf_month = ARIMARegressor(time_index="dates")
+    clf_month = ARIMARegressor(time_index="dates", sp="detect")
     sp_ = clf_month._get_sp(X)
     assert sp_ == 12
 
     # Testing the case where an unknown frequency is passed
     X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="2D")})
     X.ww.init()
-    clf_month = ARIMARegressor(time_index="dates")
+    clf_month = ARIMARegressor(time_index="dates", sp="detect")
     sp_ = clf_month._get_sp(X)
     assert sp_ == 1
 
     # Testing the case where there is no time index given
     X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="M")})
     X.ww.init()
-    clf_noindex = ARIMARegressor()
+    clf_noindex = ARIMARegressor(sp="detect")
     sp_ = clf_noindex._get_sp(X)
     assert sp_ == 1
+
+    # Testing the case where X is None
+    sp_ = clf_noindex._get_sp(None)
+    assert sp_ == 1
+
+    # Testing the case where sp is given and does not match the frequency
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="M")})
+    X.ww.init()
+    clf_month = ARIMARegressor(time_index="dates", sp=2)
+    sp_ = clf_month._get_sp(X)
+    assert sp_ == 2
 
 
 def test_feature_importance(ts_data):
@@ -277,13 +288,13 @@ def test_arima_sp_changes_result():
 
     X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=200, freq="D")})
     X.ww.init()
-    clf_day = ARIMARegressor(time_index="dates")
+    clf_day = ARIMARegressor(time_index="dates", sp="detect")
     clf_day.fit(X, y)
     pred_d = clf_day.predict(X)
 
     X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=200, freq="Q")})
     X.ww.init()
-    clf_quarter = ARIMARegressor(time_index="dates")
+    clf_quarter = ARIMARegressor(time_index="dates", sp="detect")
     clf_quarter.fit(X, y)
     pred_q = clf_quarter.predict(X)
 

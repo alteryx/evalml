@@ -28,7 +28,7 @@ class ARIMARegressor(Estimator):
         seasonal (boolean): Whether to fit a seasonal model to ARIMA. Defaults to True.
         sp (int or str): Period for seasonal differencing, specifically the number of periods in each season. If "detect", this
             model will automatically detect this parameter (given the time series is a standard frequency) and will fall
-            back to 1 (no seasonality) if it cannot be detected. Defaults to "detect".
+            back to 1 (no seasonality) if it cannot be detected. Defaults to 1.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -68,7 +68,7 @@ class ARIMARegressor(Estimator):
         max_d=2,
         max_q=5,
         seasonal=True,
-        sp="detect",
+        sp=1,
         n_jobs=-1,
         random_seed=0,
         maxiter=10,
@@ -143,7 +143,8 @@ class ARIMARegressor(Estimator):
             "Q": 4,
         }
         time_index = self._parameters.get("time_index", None)
-        if self.sp == "detect":
+        sp = self.sp
+        if sp == "detect":
             inferred_freqs = X.ww.infer_temporal_frequencies()
             freq = inferred_freqs.get(time_index, None)
             sp = 1
