@@ -155,7 +155,6 @@ class Imputer(Transformer):
             return df
 
         X_no_all_null = X.ww.drop(self._all_null_cols)
-        schema = X_no_all_null.ww.schema
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
             X_numeric = X.ww[self._numeric_cols.tolist()]
