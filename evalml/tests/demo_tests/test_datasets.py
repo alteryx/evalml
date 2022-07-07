@@ -87,5 +87,5 @@ def test_datasets_match_local(dataset_name, demo_method, local_datasets):
     X, y = demo_method
     X_local, y_local = local_datasets[dataset_name]
 
-    pd.testing.assert_frame_equal(X, X_local, check_exact=False, check_less_precise=4)
+    pd.testing.assert_frame_equal(X, X_local)
     pd.testing.assert_series_equal(y, y_local)
