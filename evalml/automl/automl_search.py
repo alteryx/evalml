@@ -867,9 +867,6 @@ class AutoMLSearch:
 
         Raises:
             AutoMLSearchException: If all pipelines in the current AutoML batch produced a score of np.nan on the primary objective.
-
-        Returns:
-            A plotly figure of the completed search
         """
         if self._searched:
             self.logger.error(
@@ -1017,7 +1014,6 @@ class AutoMLSearch:
                 )
                 if pio.renderers.default != "browser":
                     self.search_iteration_plot.show()
-                # return self.search_iteration_plot
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
