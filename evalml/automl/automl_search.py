@@ -13,6 +13,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 from dask import distributed as dd
+from plotly import io as pio
 from sklearn.model_selection import BaseCrossValidator
 from skopt.space import Categorical
 
@@ -868,11 +869,11 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, show_iteration_plot=True):
+    def search(self, interactive_plot=True):
         """Find the best pipeline for the data set.
 
         Args:
-            show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
+            interactive_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
 
         Raises:
@@ -891,11 +892,11 @@ class AutoMLSearch:
             return
 
         # don't show iteration plot outside of a jupyter notebook
-        if show_iteration_plot:
+        if interactive_plot:
             try:
                 get_ipython
             except NameError:
-                show_iteration_plot = False
+                interactive_plot = False
 
         log_title(self.logger, "Beginning pipeline search")
         self.logger.info("Optimizing for %s. " % self.objective.name)
@@ -926,7 +927,7 @@ class AutoMLSearch:
         self.search_iteration_plot = None
         if self.plot and self.verbose:
             self.search_iteration_plot = self.plot.search_iteration_plot(
-                interactive_plot=show_iteration_plot
+                interactive_plot=interactive_plot
             )
 
         self._start = time.time()
@@ -1037,6 +1038,13 @@ class AutoMLSearch:
                 f"Best pipeline {self.objective.name}: {best_pipeline['validation_score']:3f}"
             )
         self._searched = True
+        if self.search_iteration_plot is not None:
+            if self.verbose and not interactive_plot:
+                self.search_iteration_plot = self.plot.search_iteration_plot(
+                    interactive_plot=interactive_plot
+                )
+                if pio.renderers.default != "browser":
+                    self.search_iteration_plot.show()
         return batch_times
 
     def _find_best_pipeline(self):
