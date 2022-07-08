@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Increased the amount of logical type information passed to Woodwork when calling ``ww.init()`` in transformers :pr:`3604`
     * Fixes
+        * Fixed iterative graphs not appearing in documentation :pr:`3592`
         * Updated the `load_diabetes()` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`
     * Changes
     * Documentation Changes
