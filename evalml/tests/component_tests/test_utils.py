@@ -98,6 +98,7 @@ not_supported_in_conda = set()
 not_supported_in_windows = set()
 not_supported_in_windows_py39 = set()
 
+
 def test_all_components():
     expected_components = all_requirements_set
     all_component_names = [component.name for component in all_components()]
