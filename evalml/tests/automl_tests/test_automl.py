@@ -216,6 +216,44 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
     )
 
 
+def test_search_batch_times(caplog, X_y_binary, AutoMLTestEnv):
+    caplog.clear()
+    X, y = X_y_binary
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=None,
+        optimize_thresholds=False,
+        max_batches=3,
+        verbose=True,
+        timing=True,
+    )
+    batch_times = None
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
+        batch_times = automl.search()
+
+    out = caplog.text
+    assert isinstance(batch_times, dict)
+    assert isinstance(list(batch_times.keys())[0], int)
+    assert isinstance(batch_times[1], dict)
+    assert isinstance(list(batch_times[1].keys())[0], str)
+    assert isinstance(batch_times[1]["Total time of batch"], str)
+    assert isinstance(batch_times[2]["Total time of batch"], str)
+    assert isinstance(batch_times[3]["Total time of batch"], str)
+
+    assert len(batch_times) == 3
+    assert len(batch_times[1]) == 3
+    assert len(batch_times[2]) == 3
+    assert len(batch_times[3]) == 7
+
+    assert "Batch Time Stats" in out
+    assert "Batch 1 time stats" in out
+    assert "Batch 2 time stats" in out
+    assert "Batch 3 time stats" in out
+
+
 @pytest.mark.parametrize(
     "automl_type",
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],

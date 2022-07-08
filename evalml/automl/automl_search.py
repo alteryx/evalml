@@ -13,6 +13,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 from dask import distributed as dd
+from plotly import io as pio
 from sklearn.model_selection import BaseCrossValidator
 from skopt.space import Categorical
 
@@ -62,6 +63,7 @@ from evalml.utils import convert_to_seconds, infer_feature_types
 from evalml.utils.gen_utils import contains_all_ts_parameters
 from evalml.utils.logger import (
     get_logger,
+    log_batch_times,
     log_subtitle,
     log_title,
     time_elapsed,
@@ -115,6 +117,7 @@ def search(
     problem_configuration=None,
     n_splits=3,
     verbose=False,
+    timing=False,
 ):
     """Given data and configuration, run an automl search.
 
@@ -143,6 +146,7 @@ def search(
             in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
         n_splits (int): Number of splits to use with the default data splitter.
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
+        timing (boolean): Whether or not to write pipeline search times to the logger. Defaults to False.
 
     Returns:
         (AutoMLSearch, dict): The automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
@@ -194,6 +198,7 @@ def search(
         "verbose": verbose,
         "problem_configuration": problem_configuration,
         "data_splitter": data_splitter,
+        "timing": timing,
     }
 
     data_checks = DefaultDataChecks(
@@ -220,6 +225,7 @@ def search_iterative(
     objective="auto",
     problem_configuration=None,
     n_splits=3,
+    timing=False,
     **kwargs,
 ):
     """Given data and configuration, run an automl search.
@@ -239,6 +245,7 @@ def search_iterative(
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
         n_splits (int): Number of splits to use with the default data splitter.
+        timing(boolean): Whether or not to write pipeline search times to the logger. Defaults to False.
         **kwargs: Other keyword arguments which are provided will be passed to AutoMLSearch.
 
     Returns:
@@ -278,6 +285,7 @@ def search_iterative(
             "max_batches": 1,
             "problem_configuration": problem_configuration,
             "data_splitter": data_splitter,
+            "timing": timing,
         }
     )
 
@@ -410,6 +418,8 @@ class AutoMLSearch:
             If a parallel engine is selected this way, the maximum amount of parallelism, as determined by the engine, will be used. Defaults to "sequential".
 
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
+
+        timing (boolean): Whether or not to write pipeline search times to the logger. Defaults to False.
     """
 
     _MAX_NAME_LEN = 40
@@ -450,12 +460,14 @@ class AutoMLSearch:
         automl_algorithm="default",
         engine="sequential",
         verbose=False,
+        timing=False,
     ):
         self.verbose = verbose
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
         else:
             self.logger = logging.getLogger(__name__)
+        self.timing = timing
         if X_train is None:
             raise ValueError(
                 "Must specify training data as a 2d array using the X_train argument"
@@ -857,16 +869,22 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, show_iteration_plot=True):
+    def search(self, interactive_plot=True):
         """Find the best pipeline for the data set.
 
         Args:
-            show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
+            interactive_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
 
         Raises:
             AutoMLSearchException: If all pipelines in the current AutoML batch produced a score of np.nan on the primary objective.
+
+        Returns:
+            Dict[int, Dict[str, Timestamp]]: Dictionary keyed by batch number that maps to the timings for pipelines run in that batch,
+            as well as the total time for each batch. Pipelines within a batch are labeled by pipeline name.
         """
+        batch_times = {}
+
         if self._searched:
             self.logger.error(
                 "AutoMLSearch.search() has already been run and will not run again on the same instance. Re-initialize AutoMLSearch to search again."
@@ -874,11 +892,11 @@ class AutoMLSearch:
             return
 
         # don't show iteration plot outside of a jupyter notebook
-        if show_iteration_plot:
+        if interactive_plot:
             try:
                 get_ipython
             except NameError:
-                show_iteration_plot = False
+                interactive_plot = False
 
         log_title(self.logger, "Beginning pipeline search")
         self.logger.info("Optimizing for %s. " % self.objective.name)
@@ -909,7 +927,7 @@ class AutoMLSearch:
         self.search_iteration_plot = None
         if self.plot and self.verbose:
             self.search_iteration_plot = self.plot.search_iteration_plot(
-                interactive_plot=show_iteration_plot
+                interactive_plot=interactive_plot
             )
 
         self._start = time.time()
@@ -924,7 +942,10 @@ class AutoMLSearch:
         current_batch_pipeline_scores = []
         new_pipeline_ids = []
         loop_interrupted = False
+
         while self._should_continue():
+            pipeline_times = {}
+            start_batch_time = time.time()
             computations = []
             try:
                 if not loop_interrupted:
@@ -952,6 +973,7 @@ class AutoMLSearch:
                         current_computation_index
                     ]
                     if computation.done() and not has_been_processed:
+                        start_pipeline_time = time.time()
                         evaluation = computation.get_result()
                         data, cached_data, pipeline, job_log = (
                             evaluation.get("scores"),
@@ -961,6 +983,9 @@ class AutoMLSearch:
                         )
                         pipeline_id = self._post_evaluation_callback(
                             pipeline, data, cached_data, job_log
+                        )
+                        pipeline_times[pipeline.name] = time_elapsed(
+                            start_pipeline_time
                         )
                         new_pipeline_ids.append(pipeline_id)
                         computations[current_computation_index] = (computation, True)
@@ -983,6 +1008,7 @@ class AutoMLSearch:
             current_batch_pipeline_scores = full_rankings[current_batch_idx][
                 "validation_score"
             ]
+
             if (
                 len(current_batch_pipeline_scores)
                 and current_batch_pipeline_scores.isna().all()
@@ -990,12 +1016,18 @@ class AutoMLSearch:
                 raise AutoMLSearchException(
                     f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}."
                 )
+            if len(pipeline_times) > 0:
+                pipeline_times["Total time of batch"] = time_elapsed(start_batch_time)
+                batch_times[self._get_batch_number()] = pipeline_times
 
         self.search_duration = time.time() - self._start
         elapsed_time = time_elapsed(self._start)
         desc = f"\nSearch finished after {elapsed_time}"
         desc = desc.ljust(self._MAX_NAME_LEN)
         self.logger.info(desc)
+
+        if self.timing is True:
+            log_batch_times(self.logger, batch_times)
 
         self._find_best_pipeline()
         if self._best_pipeline is not None:
@@ -1006,6 +1038,14 @@ class AutoMLSearch:
                 f"Best pipeline {self.objective.name}: {best_pipeline['validation_score']:3f}"
             )
         self._searched = True
+        if self.search_iteration_plot is not None:
+            if self.verbose and not interactive_plot:
+                self.search_iteration_plot = self.plot.search_iteration_plot(
+                    interactive_plot=interactive_plot
+                )
+                if pio.renderers.default != "browser":
+                    self.search_iteration_plot.show()
+        return batch_times
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
