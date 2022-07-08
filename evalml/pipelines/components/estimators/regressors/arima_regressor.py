@@ -26,6 +26,9 @@ class ARIMARegressor(Estimator):
         max_d (int): Maximum Differencing degree. Defaults to 2.
         max_q (int): Maximum Moving Average order. Defaults to 5.
         seasonal (boolean): Whether to fit a seasonal model to ARIMA. Defaults to True.
+        sp (int or str): Period for seasonal differencing, specifically the number of periods in each season. If "detect", this
+            model will automatically detect this parameter (given the time series is a standard frequency) and will fall
+            back to 1 (no seasonality) if it cannot be detected. Defaults to 1.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -65,6 +68,7 @@ class ARIMARegressor(Estimator):
         max_d=2,
         max_q=5,
         seasonal=True,
+        sp=1,
         n_jobs=-1,
         random_seed=0,
         maxiter=10,
@@ -83,7 +87,6 @@ class ARIMARegressor(Estimator):
             "maxiter": maxiter,
             "n_jobs": n_jobs,
         }
-
         parameters.update(kwargs)
 
         arima_model_msg = (
@@ -93,9 +96,11 @@ class ARIMARegressor(Estimator):
             "sktime.forecasting.arima", error_msg=arima_model_msg
         )
         arima_model = sktime_arima.AutoARIMA(**parameters)
+
         parameters["use_covariates"] = use_covariates
         parameters["time_index"] = time_index
 
+        self.sp = sp
         self.use_covariates = use_covariates
 
         super().__init__(
@@ -129,6 +134,24 @@ class ARIMARegressor(Estimator):
         fh_ = ForecastingHorizon([i + 1 for i in range(len(X))], is_relative=True)
         return fh_
 
+    def _get_sp(self, X):
+        if X is None:
+            return 1
+        freq_mappings = {
+            "D": 7,
+            "M": 12,
+            "Q": 4,
+        }
+        time_index = self._parameters.get("time_index", None)
+        sp = self.sp
+        if sp == "detect":
+            inferred_freqs = X.ww.infer_temporal_frequencies()
+            freq = inferred_freqs.get(time_index, None)
+            sp = 1
+            if freq is not None:
+                sp = freq_mappings.get(freq[:1], 1)
+        return sp
+
     def fit(self, X, y=None):
         """Fits ARIMA regressor to data.
 
@@ -140,13 +163,16 @@ class ARIMARegressor(Estimator):
             self
 
         Raises:
-            ValueError: If X was passed to `fit` but not passed in `predict`.
+            ValueError: If y was not passed in.
         """
         if X is not None:
             X = X.fillna(X.mean())
         X, y = self._manage_woodwork(X, y)
         if y is None:
             raise ValueError("ARIMA Regressor requires y as input.")
+
+        sp = self._get_sp(X)
+        self._component_obj.sp = sp
 
         X = self._remove_datetime(X, features=True)
         if X is not None:
@@ -158,6 +184,7 @@ class ARIMARegressor(Estimator):
             )
         y = self._remove_datetime(y)
         X, y = self._match_indices(X, y)
+
         if X is not None and not X.empty and self.use_covariates:
             self._component_obj.fit(y=y, X=X)
         else:
