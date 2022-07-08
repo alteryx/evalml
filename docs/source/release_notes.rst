@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added the option to set the ``sp`` parameter for ARIMA models :pr:`3597`
     * Fixes
         * Fixed iterative graphs not appearing in documentation :pr:`3592`
         * Updated the `load_diabetes()` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`
