@@ -1,11 +1,11 @@
+"""Data check that checks if there are high number of Unknown type of columns."""
 from evalml.data_checks import (
     DataCheck,
-    DataCheckActionCode,
-    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
 )
 from evalml.utils import infer_feature_types
+
 
 class UnknownTypeDataCheck(DataCheck):
     """Check if there are a high number of features that are labelled as unknown by Woodwork."""
@@ -20,44 +20,50 @@ class UnknownTypeDataCheck(DataCheck):
             )
         self.unknown_percentage_threshold = unknown_percentage_threshold
 
+    def validate(self, X, y=None):
+        """Check if there are any rows or columns that have a high percentage of unknown types.
 
-def validate(self, X, y=None):
-    """Check if there are any rows or columns that have a high percentage of unknown types.
+        Args:
+            X (pd.DataFrame, np.ndarray): Features.
+            y (pd.Series, np.nparray): Ignored. Defaults to None.
 
-    Args:
-        X (pd.DataFrame, np.ndarray): Features.
+        Returns:
+            dict: A dictionary with warnings if any columns
 
-    Returns:
-        dict: A dictionary with warnings if any columns
+        Examples:
+            >>> import pandas as pd
+            ...
+            >>>
 
-    Examples:
-        >>> import pandas as pd
-        ...
-        >>> 
-    """
-    messages = []
+            We use the default unknown_percentage_threshold.
+            >>> df = pd.DataFrame({
+            ...     "all_null": [None, pd.NA, None, None, None],
+            ...     "literally_all_null": [None, None, None, None, None],
+            ...     "few_null": [1, 2, None, 2, 3],
+            ...     "no_null": [1, 2, 3, 4, 5]
+            ... })
+            ...
+            >>> unknown_type_dc = UnknownTypeDataCheck()
+            >>> assert unknown_type_dc.validate(df) == []
+        """
+        messages = []
 
-    X = infer_feature_types(X)
-    row_unknowns = X.ww.select("unknown")
-    if len(row_unknowns) / len(X.columns) >= self.unknown_percentage_threshold:
-        print("Unknown")
-        warning_msg = f"{len(row_unknowns)} out of {len(X)} rows are {self.pct_null_row_threshold*100}% or more of unknown type."
+        X = infer_feature_types(X)
+        row_unknowns = X.ww.select(["Unknown"])
+        print(X.ww)
+        if (
+            len(row_unknowns.columns) / len(X.columns)
+            >= self.unknown_percentage_threshold
+        ):
+            warning_msg = f"{len(row_unknowns.columns)} out of {len(X.columns)} rows are unknown type, meaning the number of rows that are unknown is more than {self.unknown_percentage_threshold*100}%."
 
-        messages.append(
-            DataCheckWarning(
-                message=warning_msg,
-                data_check_name=self.name,
-                message_code=DataCheckMessageCode.HIGH_NUMBER_OF_UNKNOWN_TYPE,
-                details={
-                    "rows": row_unknowns.index.tolist(),
-                },
-                action_options=[
-                    DataCheckActionOption(
-                        DataCheckActionCode.DROP_ROWS,
-                        data_check_name=self.name,
-                        metadata={"rows": row_unknowns.index.tolist()}
-                    )
-                ],
-            ).to_dict()
-        )
-    return messages
+            messages.append(
+                DataCheckWarning(
+                    message=warning_msg,
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.HIGH_NUMBER_OF_UNKNOWN_TYPE,
+                    details={"columns": list(row_unknowns.columns)},
+                    action_options=[],
+                ).to_dict()
+            )
+        return messages

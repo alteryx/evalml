@@ -26,3 +26,4 @@ from .target_distribution_data_check import TargetDistributionDataCheck
 from .datetime_format_data_check import DateTimeFormatDataCheck
 from .ts_parameters_data_check import TimeSeriesParametersDataCheck
 from .ts_splitting_data_check import TimeSeriesSplittingDataCheck
+from .unknown_type_data_check import UnknownTypeDataCheck
