@@ -1,4 +1,5 @@
-from unittest.mock import MagicMock, patch
+import math
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -145,6 +146,45 @@ def test_set_forecast(get_ts_X_y):
     assert fh_.is_relative
 
 
+def test_get_sp():
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="D")})
+    X.ww.init()
+    clf_day = ARIMARegressor(time_index="dates", sp="detect")
+    sp_ = clf_day._get_sp(X)
+    assert sp_ == 7
+
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="M")})
+    X.ww.init()
+    clf_month = ARIMARegressor(time_index="dates", sp="detect")
+    sp_ = clf_month._get_sp(X)
+    assert sp_ == 12
+
+    # Testing the case where an unknown frequency is passed
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="2D")})
+    X.ww.init()
+    clf_month = ARIMARegressor(time_index="dates", sp="detect")
+    sp_ = clf_month._get_sp(X)
+    assert sp_ == 1
+
+    # Testing the case where there is no time index given
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="M")})
+    X.ww.init()
+    clf_noindex = ARIMARegressor(sp="detect")
+    sp_ = clf_noindex._get_sp(X)
+    assert sp_ == 1
+
+    # Testing the case where X is None
+    sp_ = clf_noindex._get_sp(None)
+    assert sp_ == 1
+
+    # Testing the case where sp is given and does not match the frequency
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=500, freq="M")})
+    X.ww.init()
+    clf_month = ARIMARegressor(time_index="dates", sp=2)
+    sp_ = clf_month._get_sp(X)
+    assert sp_ == 2
+
+
 def test_feature_importance(ts_data):
     X, y = ts_data
     clf = ARIMARegressor()
@@ -243,6 +283,27 @@ def test_fit_predict_sk_failure(
     assert y_pred.index.equals(X_test.index)
 
 
+def test_arima_sp_changes_result():
+    y = pd.Series([math.sin(i) for i in range(200)])
+
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=200, freq="D")})
+    X.ww.init()
+    clf_day = ARIMARegressor(time_index="dates", sp="detect")
+    clf_day.fit(X, y)
+    pred_d = clf_day.predict(X)
+
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=200, freq="Q")})
+    X.ww.init()
+    clf_quarter = ARIMARegressor(time_index="dates", sp="detect")
+    clf_quarter.fit(X, y)
+    pred_q = clf_quarter.predict(X)
+
+    assert clf_day._component_obj.sp == 7
+    assert clf_quarter._component_obj.sp == 4
+    with pytest.raises(AssertionError):
+        pd.testing.assert_series_equal(pred_d, pred_q)
+
+
 @pytest.mark.parametrize("freq_num", ["1", "2"])
 @pytest.mark.parametrize("freq_str", ["T", "M", "Y"])
 def test_different_time_units_out_of_sample(
@@ -265,12 +326,14 @@ def test_different_time_units_out_of_sample(
     m_clf = ARIMARegressor(d=None)
     m_clf.fit(X=X[:15], y=y[:15])
     y_pred = m_clf.predict(X=X[15:])
+    assert m_clf._component_obj.d is None
 
     assert (y_pred_sk.values == y_pred.values).all()
     assert y_pred.index.equals(X[15:].index)
 
 
-def test_arima_supports_boolean_features():
+@patch("sktime.forecasting.arima.AutoARIMA.fit")
+def test_arima_supports_boolean_features(mock_fit):
     X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=10)})
     X.ww.init()
     X.ww["bool_1"] = (
@@ -286,34 +349,49 @@ def test_arima_supports_boolean_features():
     y = pd.Series(range(10))
 
     ar = ARIMARegressor(time_index="dates")
-
-    ar._component_obj = MagicMock()
     ar.fit(X, y)
 
     pd.testing.assert_series_equal(
-        ar._component_obj.fit.call_args[1]["X"]["bool_1"], X["bool_1"].astype(float)
+        mock_fit.call_args[1]["X"]["bool_1"], X["bool_1"].astype(float)
     )
     pd.testing.assert_series_equal(
-        ar._component_obj.fit.call_args[1]["X"]["bool_2"], X["bool_2"].astype(float)
+        mock_fit.call_args[1]["X"]["bool_2"], X["bool_2"].astype(float)
     )
 
-    # Test that non-mocked predict does not error or produce NaNs
+
+def test_arima_boolean_features_no_error():
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=100)})
+    X.ww.init()
+    X.ww["bool_1"] = (
+        pd.Series([True, False])
+        .sample(n=100, replace=True, random_state=0)
+        .reset_index(drop=True)
+    )
+    X.ww["bool_2"] = (
+        pd.Series([True, False])
+        .sample(n=100, replace=True, random_state=1)
+        .reset_index(drop=True)
+    )
+    y = pd.Series(range(100))
+
     ar = ARIMARegressor(time_index="dates")
     ar.fit(X, y)
     preds = ar.predict(X)
     assert not preds.isna().any()
 
 
-def test_arima_regressor_respects_use_covariates(ts_data):
+@patch("sktime.forecasting.arima.AutoARIMA.fit")
+@patch("sktime.forecasting.arima.AutoARIMA.predict")
+def test_arima_regressor_respects_use_covariates(mock_predict, mock_fit, ts_data):
     X, y = ts_data
     X_train, y_train = X.iloc[:25], y.iloc[:25]
     X_test, _ = X.iloc[25:], y.iloc[25:]
     clf = ARIMARegressor(use_covariates=False)
-    with patch.object(clf, "_component_obj") as mock_obj:
-        clf.fit(X_train, y_train)
-        clf.predict(X_test)
-        mock_obj.fit.assert_called_once()
-        assert "X" not in mock_obj.fit.call_args.kwargs
-        assert "y" in mock_obj.fit.call_args.kwargs
-        mock_obj.predict.assert_called_once()
-        assert "X" not in mock_obj.predict.call_args.kwargs
+
+    clf.fit(X_train, y_train)
+    clf.predict(X_test)
+    mock_fit.assert_called_once()
+    assert "X" not in mock_fit.call_args.kwargs
+    assert "y" in mock_fit.call_args.kwargs
+    mock_predict.assert_called_once()
+    assert "X" not in mock_predict.call_args.kwargs
