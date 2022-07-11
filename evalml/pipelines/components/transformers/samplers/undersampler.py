@@ -100,7 +100,7 @@ class Undersampler(BaseSampler):
         indices = self.fit_resample(X_ww, y_ww)
 
         train_indices = index_df[index_df.isin(indices)].index.values.tolist()
-        return X_ww.iloc[train_indices], y_ww.iloc[train_indices]
+        return X_ww.ww.iloc[train_indices], y_ww.ww.iloc[train_indices]
 
     def _find_ideal_samples(self, y):
         """Returns dictionary of examples to drop for each class if we need to resample.
