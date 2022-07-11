@@ -758,7 +758,7 @@ def test_invalid_data_splitter(X_y_binary):
 
 def test_large_dataset_binary(AutoMLTestEnv):
     X = pd.DataFrame(
-        {"col_0": [i for i in range(111113)]}
+        {"col_0": range(111113)}
     )  # Reaches just over max row threshold after holdout set
     y = pd.Series([i % 2 for i in range(111113)])
 
@@ -799,7 +799,7 @@ def test_large_dataset_binary(AutoMLTestEnv):
 
 def test_large_dataset_multiclass(AutoMLTestEnv):
     X = pd.DataFrame(
-        {"col_0": [i for i in range(111113)]}
+        {"col_0": range(111113)}
     )  # Reaches just over max row threshold after holdout set
     y = pd.Series([i % 4 for i in range(111113)])
 
@@ -1171,9 +1171,9 @@ def test_add_to_rankings_regression_large(
     example_regression_graph,
 ):
     X = pd.DataFrame(
-        {"col_0": [i for i in range(111113)]}
+        {"col_0": range(111113)}
     )  # Reaches just over max row threshold after holdout set
-    y = pd.Series([i for i in range(111113)])
+    y = pd.Series(range(111113))
 
     automl = AutoMLSearch(
         X_train=X,
@@ -5121,8 +5121,6 @@ def test_init_create_holdout_set(caplog):
     )
     out = caplog.text
 
-    expected_holdout_size = int(automl._holdout_set_size * len(X))
-    expected_train_size = int((1 - automl._holdout_set_size) * len(X))
     match_text = f"Holdout set evaluation is disabled. AutoMLSearch will use mean CV score to rank pipelines."
     assert match_text in out
     assert len(automl.X_train) == len(X)

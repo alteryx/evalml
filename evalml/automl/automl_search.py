@@ -668,16 +668,18 @@ class AutoMLSearch:
         else:
             self.X_train = X_train
             self.y_train = y_train
-            self.X_holdout = X_holdout if X_holdout is not None else None
-            self.y_holdout = y_holdout if y_holdout is not None else None
-            self.logger.info(
-                f"Holdout set evaluation is disabled. AutoMLSearch will use mean CV score to rank pipelines."
+            self.X_holdout = (
+                infer_feature_types(X_holdout) if X_holdout is not None else None
             )
+            self.y_holdout = (
+                infer_feature_types(y_holdout) if y_holdout is not None else None
+            )
+            if self.passed_holdout_set is False:
+                self.logger.info(
+                    f"Holdout set evaluation is disabled. AutoMLSearch will use mean CV score to rank pipelines."
+                )
         self.X_train = infer_feature_types(self.X_train)
         self.y_train = infer_feature_types(self.y_train)
-        if self.X_holdout is not None and self.y_holdout is not None:
-            self.X_holdout = infer_feature_types(self.X_holdout)
-            self.y_holdout = infer_feature_types(self.y_holdout)
         default_data_splitter = make_data_splitter(
             self.X_train,
             self.y_train,

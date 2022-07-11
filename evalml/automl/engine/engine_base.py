@@ -207,6 +207,7 @@ def train_and_score_pipeline(
     """
     start = time.time()
     cv_data = []
+    use_holdout = X_holdout is not None and y_holdout is not None
     logger.info("\tStarting cross validation")
     # Encode target for classification problems so that we can support float targets. This is okay because we only use split to get the indices to split on
     if is_classification(automl_config.problem_type):
@@ -343,7 +344,7 @@ def train_and_score_pipeline(
 
     holdout_score = np.NaN
     holdout_scores = np.NaN
-    if X_holdout is not None and y_holdout is not None:
+    if use_holdout:
         logger.info("\tStarting holdout set scoring")
         logger.debug(f"\t\tTraining and scoring entire dataset")
         try:
@@ -418,12 +419,8 @@ def train_and_score_pipeline(
             "training_time": training_time,
             "cv_scores": cv_scores,
             "cv_score_mean": cv_score_mean,
-            "holdout_score": None
-            if X_holdout is None and y_holdout is None
-            else holdout_score,
-            "holdout_scores": None
-            if X_holdout is None and y_holdout is None
-            else holdout_scores,
+            "holdout_score": None if not use_holdout else holdout_score,
+            "holdout_scores": None if not use_holdout else holdout_scores,
         },
         "cached_data": pipeline_cache,
         "pipeline": stored_pipeline,
