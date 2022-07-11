@@ -12,6 +12,7 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Pinned GraphViz version for Windows CI Test :pr:`3596`
+        * Removed ``pytest.mark.skip_if_39`` pytest marker :pr:`3602`
 
 .. warning::
 

@@ -11,7 +11,6 @@ from evalml.problem_types import ProblemTypes
 
 pytestmark = [
     pytest.mark.skip_during_conda,
-    pytest.mark.skip_if_39,
 ]
 
 
