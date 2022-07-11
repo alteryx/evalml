@@ -102,13 +102,10 @@ not_supported_in_windows = set(
         "Prophet Regressor",
     ]
 )
-not_supported_in_windows_py39 = set(
-    [
-        "Prophet Regressor",
-    ]
-)
+
 # Keeping here in case we need to add to it when a new component is added
 not_supported_in_linux_py39 = set()
+not_supported_in_windows_py39 = set()
 
 
 def test_all_components(is_using_conda, is_using_windows):
