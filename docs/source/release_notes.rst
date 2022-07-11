@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Increased the amount of logical type information passed to Woodwork when calling ``ww.init()`` in transformers :pr:`3604`
         * Added ability to log how long each batch and pipeline take in ``automl.search()`` :pr:`3577`
         * Added the option to set the ``sp`` parameter for ARIMA models :pr:`3597`
     * Fixes
