@@ -93,21 +93,30 @@ all_requirements_set = set(
     ]
 )
 not_supported_in_conda = set(
-     [
-         "Prophet Regressor",
-     ]
- )
+    [
+        "Prophet Regressor",
+    ]
+)
+not_supported_in_windows = set(
+    [
+        "Prophet Regressor",
+    ]
+)
+not_supported_in_windows_py39 = set(
+    [
+        "Prophet Regressor",
+    ]
+)
 # Keeping here in case we need to add to it when a new component is added
 not_supported_in_linux_py39 = set()
-not_supported_in_windows = set()
-not_supported_in_windows_py39 = set()
 
-def test_all_components(
-     is_using_conda,
- ):
+
+def test_all_components(is_using_conda, is_using_windows):
     if is_using_conda:
-        # No prophet
+        # No prophet, ARIMA, and vowpalwabbit
         expected_components = all_requirements_set.difference(not_supported_in_conda)
+    elif is_using_windows:
+        expected_components = all_requirements_set.difference(not_supported_in_windows)
     else:
         expected_components = all_requirements_set
     all_component_names = [component.name for component in all_components()]
