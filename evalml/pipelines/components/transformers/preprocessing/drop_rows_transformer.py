@@ -79,11 +79,11 @@ class DropRowsTransformer(Transformer):
         y_t = infer_feature_types(y) if y is not None else None
         if self.indices_to_drop is None or len(self.indices_to_drop) == 0:
             return X_t, y_t
+        schema = X_t.ww.schema
 
         X_t = X_t.drop(self.indices_to_drop, axis=0)
-        X_t.ww.init()
+        X_t.ww.init(schema=schema)
 
         if y_t is not None:
-            y_t = y_t.drop(self.indices_to_drop)
-            y_t.ww.init()
+            y_t = y_t.ww.drop(self.indices_to_drop)
         return X_t, y_t

@@ -48,7 +48,8 @@ class LogTransformer(Transformer):
         self.min = y_ww.min()
         if self.min <= 0:
             y_ww = y_ww.apply(lambda x: x + abs(self.min) + 1)
-        y_t = infer_feature_types(y_ww.apply(np.log))
+        y_t = y_ww.apply(np.log)
+        y_t.ww.init(logical_type="double")
         return X, y_t
 
     def fit_transform(self, X, y=None):

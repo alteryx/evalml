@@ -73,9 +73,12 @@ class BaseSampler(Transformer):
         Returns:
             pd.DataFrame, pd.Series: Transformed features and target.
         """
-        X_pd, y_pd = self._prepare_data(X, y)
-        X_new, y_new = self._component_obj.fit_resample(X_pd, y_pd)
-        return infer_feature_types(X_new), infer_feature_types(y_new)
+        X, y = self._prepare_data(X, y)
+        X_new, y_new = self._component_obj.fit_resample(X, y)
+
+        X_new.ww.init(schema=X.ww.schema)
+        y_new.ww.init(schema=y.ww.schema)
+        return X_new, y_new
 
     def _convert_dictionary(self, sampling_dict, y):
         """Converts the provided sampling dictionary from a dictionary of ratios to a dictionary of number of samples.

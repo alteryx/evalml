@@ -132,19 +132,22 @@ class TimeSeriesImputer(Transformer):
         """Transforms data X by imputing missing values using specified timeseries-specific strategies. 'None' values are converted to np.nan before imputation and are treated as the same.
 
         Args:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, optional): Optionally, target data to transform.
 
         Returns:
-            pd.DataFrame: Transformed X
+            pd.DataFrame: Transformed X and y
         """
-        X = infer_feature_types(X)
         if len(self._all_null_cols) == X.shape[1]:
             df = pd.DataFrame(index=X.index)
             df.ww.init()
             return df, y
+        X = infer_feature_types(X)
+        if y is not None:
+            y = infer_feature_types(y)
 
         X_not_all_null = X.ww.drop(self._all_null_cols)
+        X_schema = X_not_all_null.ww.schema
 
         if self._forwards_cols is not None:
             X_forward = X.ww[self._forwards_cols]
@@ -165,14 +168,18 @@ class TimeSeriesImputer(Transformer):
             X_not_all_null[X_interpolate.columns] = imputed
 
         y_imputed = pd.Series(y)
-        if self._impute_target == "forwards_fill":
-            y_imputed = y.pad()
-            y_imputed.bfill(inplace=True)
-        elif self._impute_target == "backwards_fill":
-            y_imputed = y.bfill()
-            y_imputed.pad(inplace=True)
-        elif self._impute_target == "interpolate":
-            y_imputed = y.interpolate()
-            y_imputed.bfill(inplace=True)
+        if y is not None and len(y) > 0:
+            if self._impute_target == "forwards_fill":
+                y_imputed = y.pad()
+                y_imputed.bfill(inplace=True)
+            elif self._impute_target == "backwards_fill":
+                y_imputed = y.bfill()
+                y_imputed.pad(inplace=True)
+            elif self._impute_target == "interpolate":
+                y_imputed = y.interpolate()
+                y_imputed.bfill(inplace=True)
+            y_imputed.ww.init(schema=y.ww.schema)
+
+        X_not_all_null.ww.init(schema=X_schema)
 
         return X_not_all_null, y_imputed
