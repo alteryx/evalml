@@ -58,7 +58,7 @@ class PolynomialDecomposer(Decomposer):
     def fit(self, X, y=None):
         """Fits the PolynomialDecomposer.
 
-        Currently only fits the polynomial detrender.  The seasonality is actually fit during
+        Currently only fits the polynomial detrender.  The seasonality is actually determined during
         transform().
 
         Args:
@@ -93,18 +93,13 @@ class PolynomialDecomposer(Decomposer):
         """
         if y is None:
             return X, y
+        # Remove polynomial trend then seasonality of detrended signal
         y_ww = infer_feature_types(y)
-
-        # Remove polynomial trend
-        y_t = self._component_obj.transform(y_ww)
-
-        # TODO: Figure out a better way to do this.  seasonal_decompose() doesn't fit out fit/transform model
-        #  as this function call is doing both.  Need to pass the Polynomial detrended signal so the data isn't
-        #  detrended twice.
-        # Remove statsmodel seasonality from detrended signal.
-        self.statsmodels_result = seasonal_decompose(y_t)
-        y_t = y_t - self.statsmodels_result.seasonal
-        y_t = pd.Series(y_t, index=y_ww.index)
+        y_detrended = self._component_obj.transform(y_ww)
+        self.seasonality = seasonal_decompose(y_detrended).seasonal
+        y_detrended_and_deseasonalized = y_detrended - self.seasonality
+        y_t =
+            pd.Series(y_detrended_and_deseasonalized, index=y_ww.index)
         y_t.ww.init(logical_type="double")
         return X, y_t
 
@@ -137,9 +132,17 @@ class PolynomialDecomposer(Decomposer):
         if y is None:
             raise ValueError("y cannot be None for PolynomialDecomposer!")
         y_ww = infer_feature_types(y)
-        y_t = self._component_obj.inverse_transform(y_ww)
-        y_t = infer_feature_types(pd.Series(y_t, index=y_ww.index))
-        y_t = self.statsmodels_result.seasonal + y_t
+
+        # Add polynomial trend back to signal
+        y_retrended = self._component_obj.inverse_transform(y_ww)
+
+        # Learn the seasonality on the original y data and add it back in
+        y_retrended_and_reseasonalized = (
+            y_retrended + seasonal_decompose(y_ww).seasonal
+        )
+        y_t = infer_feature_types(
+            pd.Series(y_retrended_and_reseasonalized, index=y_ww.index)
+        )
         return y_t
 
     def get_trend_dataframe(self, X, y):

@@ -924,6 +924,16 @@ def ts_data():
 
 
 @pytest.fixture
+def ts_data_long():
+    X, y = pd.DataFrame(
+        {"features": range(101, 193), "date": pd.date_range("2020-10-01", "2020-12-31")}
+    ), pd.Series(range(1, 93))
+    y.index = pd.date_range("2020-10-01", "2020-12-31")
+    X.index = pd.date_range("2020-10-01", "2020-12-31")
+    return X, y
+
+
+@pytest.fixture
 def ts_data_binary(ts_data):
     X, y = ts_data
     y = y % 2

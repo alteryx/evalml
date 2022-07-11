@@ -1367,8 +1367,20 @@ def test_time_series_pipeline_fit_with_transformed_target(
     pd.testing.assert_series_equal(mock_to_check.call_args[0][1], y + 2)
 
 
-def test_time_series_pipeline_with_decomposer(ts_data):
-    X, _, y = ts_data()
+@pytest.mark.parametrize(
+    "data_length",
+    [
+        pytest.param(
+            "short",
+            marks=pytest.mark.xfail(
+                reason="Provided too little data to determine seasonality."
+            ),
+        ),
+        "long",
+    ],
+)
+def test_time_series_pipeline_with_decomposer(data_length, ts_data, ts_data_long):
+    X, _,  y = ts_data() if data_length == "short" else ts_data_long()
     component_graph = {
         "Polynomial Decomposer": ["Polynomial Decomposer", "X", "y"],
         "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
@@ -1401,8 +1413,9 @@ def test_time_series_pipeline_with_decomposer(ts_data):
             },
         },
     )
-    X_train, y_train = X[:33], y[:33]
-    X_validation, y_validation = X[34:], y[34:]
+    limit = int(np.floor(0.66 * len(X)))
+    X_train, y_train = X[:limit], y[:limit]
+    X_validation, y_validation = X[limit + 1 :], y[limit + 1 :]
     pipeline.fit(X_train, y_train)
     predictions = pipeline.predict(X_validation, None, X_train, y_train)
     features = pipeline.transform_all_but_final(
