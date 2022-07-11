@@ -106,8 +106,32 @@ html_theme = "pydata_sphinx_theme"
 # documentation.
 #
 html_theme_options = {
-    "github_url": "https://github.com/alteryx/evalml",
-    "twitter_url": "https://twitter.com/AlteryxOSS",
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/alteryx/evalml",
+            "icon": "fab fa-github-square",
+            "type": "fontawesome",
+        },
+        {
+            "name": "Twitter",
+            "url": "https://twitter.com/AlteryxOSS",
+            "icon": "fab fa-twitter-square",
+            "type": "fontawesome",
+        },
+        {
+            "name": "Slack",
+            "url": "https://join.slack.com/t/alteryx-oss/shared_invite/zt-182tyvuxv-NzIn6eiCEf8TBziuKp0bNA",
+            "icon": "fab fa-slack",
+            "type": "fontawesome",
+        },
+        {
+            "name": "StackOverflow",
+            "url": "https://stackoverflow.com/questions/tagged/evalml",
+            "icon": "fab fa-stack-overflow",
+            "type": "fontawesome",
+        },
+    ],
     "collapse_navigation": False,
     "navigation_depth": 2,
 }

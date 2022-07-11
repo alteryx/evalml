@@ -17,8 +17,6 @@ from woodwork.logical_types import (
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import TargetEncoder
 
-pytestmark = pytest.mark.noncore_dependency
-
 
 def test_init():
     parameters = {

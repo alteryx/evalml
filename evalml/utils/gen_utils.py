@@ -21,7 +21,7 @@ def import_or_raise(library, error_msg=None, warning=False):
 
     Args:
         library (str): The name of the library.
-        error_msg (str): Rrror message to return if the import fails.
+        error_msg (str): Error message to return if the import fails.
         warning (bool): If True, import_or_raise gives a warning instead of ImportError. Defaults to False.
 
     Returns:
@@ -47,6 +47,26 @@ def import_or_raise(library, error_msg=None, warning=False):
             warnings.warn(msg)
         else:
             raise Exception(msg)
+
+
+def is_categorical_actually_boolean(df, df_col):
+    """Function to identify columns of a dataframe that contain True, False and null type.
+
+    The function is intended to be applied to columns that are identified as Categorical
+    by the Imputer/SimpleImputer.
+
+    Args:
+        df (pandas.DataFrame): Pandas dataframe with data.
+        df_col (str): The column to identify as basically a nullable Boolean.
+
+    Returns:
+        bool: Whether the column contains True, False and a null type.
+
+    """
+    unique_vals = df[df_col].unique()
+    return {True, False}.issubset(set(unique_vals)) and any(
+        isinstance(x, bool) for x in unique_vals
+    )
 
 
 def convert_to_seconds(input_str):
@@ -247,12 +267,11 @@ def get_importable_subclasses(base_class, used_in_automl=True):
     return classes
 
 
-def _rename_column_names_to_numeric(X, flatten_tuples=True):
+def _rename_column_names_to_numeric(X):
     """Used in LightGBM and XGBoost estimator classes to rename column names when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that these estimators cannot natively handle.
 
     Args:
         X (pd.DataFrame): The input training data of shape [n_samples, n_features]
-        flatten_tuples (bool): Whether to flatten MultiIndex or tuple column names. LightGBM cannot handle columns with tuple names.
 
     Returns:
         Transformed X where column names are renamed to numerical values
@@ -261,9 +280,11 @@ def _rename_column_names_to_numeric(X, flatten_tuples=True):
         return pd.DataFrame(X)
 
     X_renamed = X.copy()
-    if flatten_tuples and (len(X.columns) > 0 and isinstance(X.columns, pd.MultiIndex)):
+    logical_types = X.ww.logical_types
+    if len(X.columns) > 0 and isinstance(X.columns, pd.MultiIndex):
         flat_col_names = list(map(str, X_renamed.columns))
         X_renamed.columns = flat_col_names
+        logical_types = {str(k): v for k, v in logical_types.items()}
         rename_cols_dict = dict(
             (str(col), col_num) for col_num, col in enumerate(list(X.columns))
         )
@@ -272,6 +293,9 @@ def _rename_column_names_to_numeric(X, flatten_tuples=True):
             (col, col_num) for col_num, col in enumerate(list(X.columns))
         )
     X_renamed.rename(columns=rename_cols_dict, inplace=True)
+    X_renamed.ww.init(
+        logical_types={rename_cols_dict[k]: v for k, v in logical_types.items()}
+    )
     return X_renamed
 
 

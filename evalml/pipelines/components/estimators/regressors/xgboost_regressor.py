@@ -80,12 +80,6 @@ class XGBoostRegressor(Estimator):
             parameters=parameters, component_obj=xgb_regressor, random_seed=random_seed
         )
 
-    @staticmethod
-    def _convert_bool_to_int(X):
-        return {
-            col: "Integer" for col in X.ww.select("boolean", return_schema=True).columns
-        }
-
     def fit(self, X, y=None):
         """Fits XGBoost regressor component to data.
 
@@ -97,9 +91,8 @@ class XGBoostRegressor(Estimator):
             self
         """
         X, y = super()._manage_woodwork(X, y)
-        X.ww.set_types(self._convert_bool_to_int(X))
         self.input_feature_names = list(X.columns)
-        X = _rename_column_names_to_numeric(X, flatten_tuples=False)
+        X = _rename_column_names_to_numeric(X)
         self._component_obj.fit(X, y)
         return self
 
@@ -113,8 +106,7 @@ class XGBoostRegressor(Estimator):
             pd.Series: Predicted values.
         """
         X, _ = super()._manage_woodwork(X)
-        X.ww.set_types(self._convert_bool_to_int(X))
-        X = _rename_column_names_to_numeric(X, flatten_tuples=False)
+        X = _rename_column_names_to_numeric(X)
         return super().predict(X)
 
     @property

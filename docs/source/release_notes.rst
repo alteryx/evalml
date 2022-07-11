@@ -1,18 +1,76 @@
-﻿Release Notes
+Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ability to log how long each batch and pipeline take in ``automl.search()`` :pr:`3577`
+        * Added the option to set the ``sp`` parameter for ARIMA models :pr:`3597`
     * Fixes
+        * Fixed iterative graphs not appearing in documentation :pr:`3592`
+        * Updated the ``load_diabetes()`` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`
     * Changes
-        * Updated ``roc_curve()`` and ``conf_matrix()`` to work with IntegerNullable and BooleanNullable types. :pr:`3465`
-        * Changed ``ComponentGraph._transform_features`` to raise a ``PipelineError`` instead of a ``ValueError``. This is not a breaking change because ``PipelineError`` is a subclass of ``ValueError``. :pr:`3497`
     * Documentation Changes
     * Testing Changes
+        * Pinned GraphViz version for Windows CI Test :pr:`3596`
 
 .. warning::
 
     **Breaking Changes**
-    
+
+
+**v0.54.0 June. 23, 2022**
+    * Fixes
+        * Updated the Imputer and SimpleImputer to work with scikit-learn 1.1.1. :pr:`3525`
+        * Bumped the minimum versions of scikit-learn to 1.1.1 and imbalanced-learn to 0.9.1. :pr:`3525`
+        * Added a clearer error message when ``describe`` is called on an un-instantiated ComponentGraph :pr:`3569`
+        * Added a clearer error message when time series' ``predict`` is called with its X_train or y_train parameter set as None :pr:`3579`
+    * Changes
+        * Don't pass ``time_index`` as kwargs to sktime ARIMA implementation for compatibility with latest version :pr:`3564`
+        * Remove incompatible ``nlp-primitives`` version 2.6.0 from accepted dependency versions :pr:`3572`, :pr:`3574`
+        * Updated evalml authors :pr:`3581`
+    * Documentation Changes
+        * Fix typo in ``long_description`` field in ``setup.cfg`` :pr:`3553`
+        * Update install page to remove Python 3.7 mention :pr:`3567`
+
+
+**v0.53.1 June. 9, 2022**
+    * Changes
+        * Set the development status to ``4 - Beta`` in ``setup.cfg`` :pr:`3550`
+
+
+**v0.53.0 June. 9, 2022**
+    * Enhancements
+        * Pass ``n_jobs`` to default algorithm :pr:`3548`
+    * Fixes
+        * Fixed github workflows for featuretools and woodwork to test their main branch against evalml. :pr:`3517`
+        * Supress warnings in ``TargetEncoder`` raised by a coming change to default parameters :pr:`3540`
+        * Fixed bug where schema was not being preserved in column renaming for XGBoost and LightGBM models :pr:`3496`
+    * Changes
+        * Transitioned to use pyproject.toml and setup.cfg away from setup.py :pr:`3494`, :pr:`3536`
+    * Documentation Changes
+        * Updated the Time Series User Guide page to include known-in-advance features and fix typos :pr:`3521`
+        * Add slack and stackoverflow icon to footer :pr:`3528`
+        * Add install instructions for M1 Mac :pr:`3543`
+    * Testing Changes
+        * Rename yml to yaml for GitHub Actions :pr:`3522`
+        * Remove ``noncore_dependency`` pytest marker :pr:`3541`
+        * Changed ``test_smotenc_category_features`` to use valid postal code values in response to new woodwork type validation :pr:`3544`
+
+
+**v0.52.0 May. 12, 2022**
+    * Changes
+        * Added github workflows for featuretools and woodwork to test their main branch against evalml. :pr:`3504`
+        * Added pmdarima to conda recipe. :pr:`3505`
+        * Added a threshold for ``NullDataCheck`` before a warning is issued for null values :pr:`3507`
+        * Changed ``NoVarianceDataCheck`` to only output warnings :pr:`3506`
+        * Reverted XGBoost Classifier/Regressor patch for all boolean columns needing to be converted to int. :pr:`3503`
+        * Updated ``roc_curve()`` and ``conf_matrix()`` to work with IntegerNullable and BooleanNullable types. :pr:`3465`
+        * Changed ``ComponentGraph._transform_features`` to raise a ``PipelineError`` instead of a ``ValueError``. This is not a breaking change because ``PipelineError`` is a subclass of ``ValueError``. :pr:`3497`
+        * Capped ``sklearn`` at version 1.1.0 :pr:`3518`
+    * Documentation Changes
+        * Updated to install prophet extras in Read the Docs. :pr:`3509`
+    * Testing Changes
+        * Moved vowpal wabbit in test recipe to ``evalml`` package from ``evalml-core`` :pr:`3502`
+
 
 **v0.51.0 Apr. 28, 2022**
     * Enhancements
@@ -53,7 +111,6 @@
         * Updated the model understanding section of the user guide to include missing functions :pr:`3446`
         * Rearranged the user guide model understanding page for easier navigation :pr:`3457`
         * Update README text to Alteryx :pr:`3462`
-    * Testing Changes
 
 .. warning::
 
@@ -73,7 +130,7 @@
         * Moved model understanding metrics from ``graph.py`` into a separate file :pr:`3417`
         * Unpin ``click`` dependency :pr:`3420`
         * For ``IterativeAlgorithm``, put time series algorithms first :pr:`3407`
-        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407` 
+        * Use ``prophet-prebuilt`` to install prophet in extras :pr:`3407`
 
 .. warning::
 
@@ -243,7 +300,6 @@
         * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
         * Removed nullable types checking from ``infer_feature_types`` :pr:`3156`
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
-    * Documentation Changes
     * Testing Changes
         * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
         * Add workflow to auto-merge dependency PRs if status checks pass :pr:`3184`
@@ -289,7 +345,6 @@
         * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
         * Updated ``make_pipeline`` for handling pandas nullable types in preprocessing pipeline. :pr:`3129`
         * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
-    * Documentation Changes
     * Testing Changes
         * Refactored tests to avoid using ``importorskip`` :pr:`3126`
         * Added ``skip_during_conda`` test marker to skip tests that are not supposed to run during conda build :pr:`3127`
@@ -479,18 +534,12 @@
 
 
 **v0.33.0 Sep. 15, 2021**
-    * Enhancements
     * Fixes
         * Fixed bug where warnings during ``make_pipeline`` were not being raised to the user :pr:`2765`
     * Changes
         * Refactored and removed ``SamplerBase`` class :pr:`2775`
     * Documentation Changes
         * Added docstring linting packages ``pydocstyle`` and ``darglint`` to `make-lint` command :pr:`2670`
-    * Testing Changes
-
-.. warning::
-
-    **Breaking Changes**
 
 
 **v0.32.1 Sep. 10, 2021**
@@ -692,7 +741,7 @@
     * Documentation Changes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
         * Build documentation with sphinx-autoapi :pr:`2458`
-        * Change ``autoapi_ignore`` to only ignore files in ``evalml/tests/*`` :pr:`2530` 
+        * Change ``autoapi_ignore`` to only ignore files in ``evalml/tests/*`` :pr:`2530`
     * Testing Changes
         * Fixed flaky dask tests :pr:`2471`
         * Removed shellcheck action from ``build_conda_pkg`` action :pr:`2514`
@@ -752,7 +801,7 @@
         * Replaced `allowed_pipelines` with `allowed_component_graphs` :pr:`2364`
         * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
         * Updated ``compute_order`` in ``ComponentGraph`` to be a read-only property :pr:`2408`
-        * Unpinned PyZMQ version in requirements.txt :pr:`2389` 
+        * Unpinned PyZMQ version in requirements.txt :pr:`2389`
         * Uncapping LightGBM version in requirements.txt :pr:`2405`
         * Updated minimum version of plotly :pr:`2415`
         * Removed ``SensitivityLowAlert`` objective from core objectives :pr:`2418`

@@ -56,8 +56,10 @@ class ComponentGraph:
         >>> assert component_graph.default_parameters == {
         ...     'Imputer': {'categorical_impute_strategy': 'most_frequent',
         ...                 'numeric_impute_strategy': 'mean',
+        ...                 'boolean_impute_strategy': 'most_frequent',
         ...                 'categorical_fill_value': None,
-        ...                 'numeric_fill_value': None},
+        ...                 'numeric_fill_value': None,
+        ...                 'boolean_fill_value': None},
         ...     'One Hot Encoder': {'top_n': 10,
         ...                         'features_to_encode': None,
         ...                         'categories': None,
@@ -685,19 +687,27 @@ class ComponentGraph:
 
         Returns:
             dict: Dictionary of all component parameters if return_dict is True, else None
+
+        Raises:
+            ValueError: If the componentgraph is not instantiated
         """
         logger = get_logger(f"{__name__}.describe")
         components = {}
         for number, component in enumerate(self.component_instances.values(), 1):
             component_string = str(number) + ". " + component.name
             logger.info(component_string)
-            components.update(
-                {
-                    component.name: component.describe(
-                        print_name=False, return_dict=return_dict
-                    )
-                }
-            )
+            try:
+                components.update(
+                    {
+                        component.name: component.describe(
+                            print_name=False, return_dict=return_dict
+                        )
+                    }
+                )
+            except TypeError:
+                raise ValueError(
+                    "You need to instantiate ComponentGraph before calling describe()"
+                )
         if return_dict:
             return components
 

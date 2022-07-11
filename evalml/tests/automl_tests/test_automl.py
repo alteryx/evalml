@@ -216,6 +216,44 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
     )
 
 
+def test_search_batch_times(caplog, X_y_binary, AutoMLTestEnv):
+    caplog.clear()
+    X, y = X_y_binary
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=None,
+        optimize_thresholds=False,
+        max_batches=3,
+        verbose=True,
+        timing=True,
+    )
+    batch_times = None
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
+        batch_times = automl.search()
+
+    out = caplog.text
+    assert isinstance(batch_times, dict)
+    assert isinstance(list(batch_times.keys())[0], int)
+    assert isinstance(batch_times[1], dict)
+    assert isinstance(list(batch_times[1].keys())[0], str)
+    assert isinstance(batch_times[1]["Total time of batch"], str)
+    assert isinstance(batch_times[2]["Total time of batch"], str)
+    assert isinstance(batch_times[3]["Total time of batch"], str)
+
+    assert len(batch_times) == 3
+    assert len(batch_times[1]) == 3
+    assert len(batch_times[2]) == 3
+    assert len(batch_times[3]) == 7
+
+    assert "Batch Time Stats" in out
+    assert "Batch 1 time stats" in out
+    assert "Batch 2 time stats" in out
+    assert "Batch 3 time stats" in out
+
+
 @pytest.mark.parametrize(
     "automl_type",
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
@@ -4630,7 +4668,6 @@ def test_automl_accepts_features(
 
 
 @pytest.mark.skip_during_conda
-@pytest.mark.noncore_dependency
 def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
     ts_data, AutoMLTestEnv, is_using_windows
 ):
@@ -4680,7 +4717,6 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
 
 
 @pytest.mark.skip_during_conda
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("automl_algo", ["iterative", "default"])
 @pytest.mark.parametrize(
     "hyperparams",
@@ -4726,7 +4762,6 @@ def test_automl_restricts_use_covariates_for_arima(
 
 
 @pytest.mark.skip_during_conda
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("automl_algo", ["iterative", "default"])
 @pytest.mark.parametrize(
     "hyperparams",
@@ -4796,3 +4831,38 @@ def test_automl_passes_down_ensembling(automl_algo, AutoMLTestEnv, X_y_binary):
         automl.search()
     pipeline_names = automl.rankings["pipeline_name"]
     assert pipeline_names.str.contains("Ensemble").any()
+
+
+def test_default_algorithm_uses_n_jobs(X_y_binary, AutoMLTestEnv):
+    X, y = X_y_binary
+
+    aml = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_batches=3,
+        automl_algorithm="default",
+        n_jobs=2,
+    )
+
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={aml.objective.name: 1.0}):
+        aml.search()
+
+    n_checked = 0
+    n_feature_selector_checked = 0
+    for pipeline_id in aml.rankings.id:
+        pl = aml.get_pipeline(pipeline_id)
+        if hasattr(pl.estimator._component_obj, "n_jobs"):
+            n_checked += 1
+            assert pl.estimator._component_obj.n_jobs == 2
+        if "RF Classifier Select From Model" in pl.component_graph.component_instances:
+            n_feature_selector_checked += 1
+            assert (
+                pl.get_component(
+                    "RF Classifier Select From Model"
+                )._component_obj.estimator.n_jobs
+                == 2
+            )
+
+    assert n_checked and n_feature_selector_checked

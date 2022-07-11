@@ -22,6 +22,7 @@ from evalml.utils.gen_utils import (
     get_importable_subclasses,
     get_random_seed,
     import_or_raise,
+    is_categorical_actually_boolean,
     jupyter_check,
     pad_with_nans,
     save_plot,
@@ -309,10 +310,12 @@ def test_pad_with_nans_with_series_name():
 
 
 def test_rename_column_names_to_numeric():
-    X = np.array([[1, 2], [3, 4]])
+    X = pd.DataFrame(np.array([[1, 2], [3, 4]]))
+    X.ww.init()
     pd.testing.assert_frame_equal(_rename_column_names_to_numeric(X), pd.DataFrame(X))
 
     X = pd.DataFrame({"<>": [1, 2], ">>": [2, 4]})
+    X.ww.init()
     pd.testing.assert_frame_equal(
         _rename_column_names_to_numeric(X), pd.DataFrame({0: [1, 2], 1: [2, 4]})
     )
@@ -340,32 +343,30 @@ def test_save_plotly_static_default_format(
     interactive,
     fitted_decision_tree_classification_pipeline,
     tmpdir,
-    has_minimal_dependencies,
 ):
-    if not has_minimal_dependencies:
-        pipeline = fitted_decision_tree_classification_pipeline
-        feat_fig_ = pipeline.graph_feature_importance()
+    pipeline = fitted_decision_tree_classification_pipeline
+    feat_fig_ = pipeline.graph_feature_importance()
 
-        filepath = os.path.join(str(tmpdir), f"{file_name}")
-        no_output_ = save_plot(
-            fig=feat_fig_,
-            filepath=filepath,
-            format=format,
-            interactive=interactive,
-            return_filepath=False,
-        )
-        output_ = save_plot(
-            fig=feat_fig_,
-            filepath=filepath,
-            format=format,
-            interactive=interactive,
-            return_filepath=True,
-        )
+    filepath = os.path.join(str(tmpdir), f"{file_name}")
+    no_output_ = save_plot(
+        fig=feat_fig_,
+        filepath=filepath,
+        format=format,
+        interactive=interactive,
+        return_filepath=False,
+    )
+    output_ = save_plot(
+        fig=feat_fig_,
+        filepath=filepath,
+        format=format,
+        interactive=interactive,
+        return_filepath=True,
+    )
 
-        assert not no_output_
-        assert os.path.exists(output_)
-        assert isinstance(output_, str)
-        assert os.path.basename(output_) == "test_plot.png"
+    assert not no_output_
+    assert os.path.exists(output_)
+    assert isinstance(output_, str)
+    assert os.path.basename(output_) == "test_plot.png"
 
 
 @pytest.mark.parametrize("file_name,format,interactive", [("test_plot", "jpeg", False)])
@@ -375,33 +376,29 @@ def test_save_plotly_static_different_format(
     interactive,
     fitted_decision_tree_classification_pipeline,
     tmpdir,
-    has_minimal_dependencies,
 ):
-    if not has_minimal_dependencies:
-        feat_fig_ = (
-            fitted_decision_tree_classification_pipeline.graph_feature_importance()
-        )
+    feat_fig_ = fitted_decision_tree_classification_pipeline.graph_feature_importance()
 
-        filepath = os.path.join(str(tmpdir), f"{file_name}")
-        no_output_ = save_plot(
-            fig=feat_fig_,
-            filepath=filepath,
-            format=format,
-            interactive=interactive,
-            return_filepath=False,
-        )
-        output_ = save_plot(
-            fig=feat_fig_,
-            filepath=filepath,
-            format=format,
-            interactive=interactive,
-            return_filepath=True,
-        )
+    filepath = os.path.join(str(tmpdir), f"{file_name}")
+    no_output_ = save_plot(
+        fig=feat_fig_,
+        filepath=filepath,
+        format=format,
+        interactive=interactive,
+        return_filepath=False,
+    )
+    output_ = save_plot(
+        fig=feat_fig_,
+        filepath=filepath,
+        format=format,
+        interactive=interactive,
+        return_filepath=True,
+    )
 
-        assert not no_output_
-        assert os.path.exists(output_)
-        assert isinstance(output_, str)
-        assert os.path.basename(output_) == "test_plot.jpeg"
+    assert not no_output_
+    assert os.path.exists(output_)
+    assert isinstance(output_, str)
+    assert os.path.basename(output_) == "test_plot.jpeg"
 
 
 @pytest.mark.parametrize("file_name,format,interactive", [(None, "jpeg", False)])
@@ -411,26 +408,22 @@ def test_save_plotly_static_no_filepath(
     interactive,
     fitted_decision_tree_classification_pipeline,
     tmpdir,
-    has_minimal_dependencies,
 ):
-    if not has_minimal_dependencies:
-        feat_fig_ = (
-            fitted_decision_tree_classification_pipeline.graph_feature_importance()
-        )
+    feat_fig_ = fitted_decision_tree_classification_pipeline.graph_feature_importance()
 
-        filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
-        output_ = save_plot(
-            fig=feat_fig_,
-            filepath=filepath,
-            format=format,
-            interactive=interactive,
-            return_filepath=True,
-        )
+    filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
+    output_ = save_plot(
+        fig=feat_fig_,
+        filepath=filepath,
+        format=format,
+        interactive=interactive,
+        return_filepath=True,
+    )
 
-        assert os.path.exists(output_)
-        assert isinstance(output_, str)
-        assert os.path.basename(output_) == "test_plot.jpeg"
-        os.remove("test_plot.jpeg")
+    assert os.path.exists(output_)
+    assert isinstance(output_, str)
+    assert os.path.basename(output_) == "test_plot.jpeg"
+    os.remove("test_plot.jpeg")
 
 
 @pytest.mark.parametrize(
@@ -450,33 +443,29 @@ def test_save_plotly_interactive(
     interactive,
     fitted_decision_tree_classification_pipeline,
     tmpdir,
-    has_minimal_dependencies,
 ):
-    if not has_minimal_dependencies:
-        feat_fig_ = (
-            fitted_decision_tree_classification_pipeline.graph_feature_importance()
-        )
+    feat_fig_ = fitted_decision_tree_classification_pipeline.graph_feature_importance()
 
-        filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
-        no_output_ = save_plot(
-            fig=feat_fig_,
-            filepath=filepath,
-            format=format,
-            interactive=interactive,
-            return_filepath=False,
-        )
-        output_ = save_plot(
-            fig=feat_fig_,
-            filepath=filepath,
-            format=format,
-            interactive=interactive,
-            return_filepath=True,
-        )
+    filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
+    no_output_ = save_plot(
+        fig=feat_fig_,
+        filepath=filepath,
+        format=format,
+        interactive=interactive,
+        return_filepath=False,
+    )
+    output_ = save_plot(
+        fig=feat_fig_,
+        filepath=filepath,
+        format=format,
+        interactive=interactive,
+        return_filepath=True,
+    )
 
-        assert not no_output_
-        assert os.path.exists(output_)
-        assert isinstance(output_, str)
-        assert os.path.basename(output_) == "test_plot.html"
+    assert not no_output_
+    assert os.path.exists(output_)
+    assert isinstance(output_, str)
+    assert os.path.basename(output_) == "test_plot.html"
 
 
 @pytest.mark.parametrize(
@@ -493,32 +482,30 @@ def test_save_graphviz_default_format(
     interactive,
     fitted_tree_estimators,
     tmpdir,
-    has_minimal_dependencies,
 ):
-    if not has_minimal_dependencies:
-        est_class, _ = fitted_tree_estimators
-        src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
+    est_class, _ = fitted_tree_estimators
+    src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
 
-        filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
-        no_output_ = save_plot(
-            fig=src,
-            filepath=filepath,
-            format=format,
-            interactive=interactive,
-            return_filepath=False,
-        )
-        output_ = save_plot(
-            fig=src,
-            filepath=filepath,
-            format=format,
-            interactive=interactive,
-            return_filepath=True,
-        )
+    filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
+    no_output_ = save_plot(
+        fig=src,
+        filepath=filepath,
+        format=format,
+        interactive=interactive,
+        return_filepath=False,
+    )
+    output_ = save_plot(
+        fig=src,
+        filepath=filepath,
+        format=format,
+        interactive=interactive,
+        return_filepath=True,
+    )
 
-        assert not no_output_
-        assert os.path.exists(output_)
-        assert isinstance(output_, str)
-        assert os.path.basename(output_) == "test_plot.png"
+    assert not no_output_
+    assert os.path.exists(output_)
+    assert isinstance(output_, str)
+    assert os.path.basename(output_) == "test_plot.png"
 
 
 @pytest.mark.parametrize("file_name,format,interactive", [("test_plot", "jpeg", False)])
@@ -528,32 +515,30 @@ def test_save_graphviz_different_format(
     interactive,
     fitted_tree_estimators,
     tmpdir,
-    has_minimal_dependencies,
 ):
-    if not has_minimal_dependencies:
-        est_class, _ = fitted_tree_estimators
-        src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
+    est_class, _ = fitted_tree_estimators
+    src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
 
-        filepath = os.path.join(str(tmpdir), f"{file_name}")
-        no_output_ = save_plot(
-            fig=src,
-            filepath=filepath,
-            format=format,
-            interactive=interactive,
-            return_filepath=False,
-        )
-        output_ = save_plot(
-            fig=src,
-            filepath=filepath,
-            format=format,
-            interactive=interactive,
-            return_filepath=True,
-        )
+    filepath = os.path.join(str(tmpdir), f"{file_name}")
+    no_output_ = save_plot(
+        fig=src,
+        filepath=filepath,
+        format=format,
+        interactive=interactive,
+        return_filepath=False,
+    )
+    output_ = save_plot(
+        fig=src,
+        filepath=filepath,
+        format=format,
+        interactive=interactive,
+        return_filepath=True,
+    )
 
-        assert not no_output_
-        assert os.path.exists(output_)
-        assert isinstance(output_, str)
-        assert os.path.basename(output_) == "test_plot.png"
+    assert not no_output_
+    assert os.path.exists(output_)
+    assert isinstance(output_, str)
+    assert os.path.basename(output_) == "test_plot.png"
 
 
 @pytest.mark.parametrize(
@@ -565,22 +550,20 @@ def test_save_graphviz_invalid_filepath(
     interactive,
     fitted_tree_estimators,
     tmpdir,
-    has_minimal_dependencies,
 ):
-    if not has_minimal_dependencies:
-        est_class, _ = fitted_tree_estimators
-        src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
+    est_class, _ = fitted_tree_estimators
+    src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
 
-        filepath = f"{file_name}.{format}"
+    filepath = f"{file_name}.{format}"
 
-        with pytest.raises(ValueError, match="Specified filepath is not writeable"):
-            save_plot(
-                fig=src,
-                filepath=filepath,
-                format=format,
-                interactive=interactive,
-                return_filepath=False,
-            )
+    with pytest.raises(ValueError, match="Specified filepath is not writeable"):
+        save_plot(
+            fig=src,
+            filepath=filepath,
+            format=format,
+            interactive=interactive,
+            return_filepath=False,
+        )
 
 
 @pytest.mark.parametrize(
@@ -593,35 +576,32 @@ def test_save_graphviz_different_filename_output(
     interactive,
     fitted_tree_estimators,
     tmpdir,
-    has_minimal_dependencies,
 ):
-    if not has_minimal_dependencies:
-        est_class, _ = fitted_tree_estimators
-        src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
+    est_class, _ = fitted_tree_estimators
+    src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
 
-        filepath = os.path.join(str(tmpdir), f"{file_name}")
-        no_output_ = save_plot(
-            fig=src,
-            filepath=filepath,
-            format=format,
-            interactive=interactive,
-            return_filepath=False,
-        )
-        output_ = save_plot(
-            fig=src,
-            filepath=filepath,
-            format=format,
-            interactive=interactive,
-            return_filepath=True,
-        )
+    filepath = os.path.join(str(tmpdir), f"{file_name}")
+    no_output_ = save_plot(
+        fig=src,
+        filepath=filepath,
+        format=format,
+        interactive=interactive,
+        return_filepath=False,
+    )
+    output_ = save_plot(
+        fig=src,
+        filepath=filepath,
+        format=format,
+        interactive=interactive,
+        return_filepath=True,
+    )
 
-        assert not no_output_
-        assert os.path.exists(output_)
-        assert isinstance(output_, str)
-        assert os.path.basename(output_) == "example_plot.png"
+    assert not no_output_
+    assert os.path.exists(output_)
+    assert isinstance(output_, str)
+    assert os.path.basename(output_) == "example_plot.png"
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "file_name,format,interactive",
     [
@@ -664,7 +644,6 @@ def test_save_matplotlib_default_format(
     assert os.path.basename(output_) == "test_plot.png"
 
 
-@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "file_name,format,interactive",
     [
@@ -857,3 +836,17 @@ def test_year_start_separated_by_gap():
     assert are_datasets_separated_by_gap_time_index(
         train, test, {"time_index": "time_index", "gap": 2}
     )
+
+
+def test_is_categorical_actually_boolean():
+    X = pd.DataFrame(
+        {
+            "categorical": ["a", "b", "c"],
+            "boolean_categorical": [True, False, None],
+            "boolean": [True, False, True],
+        }
+    )
+
+    assert not is_categorical_actually_boolean(X, "categorical")
+    assert is_categorical_actually_boolean(X, "boolean_categorical")
+    assert not is_categorical_actually_boolean(X, "boolean")

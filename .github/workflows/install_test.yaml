@@ -10,12 +10,13 @@ on:
 name: Install Test
 jobs:
   install_evalml:
-    name: ${{ matrix.python_version }} install EvalML
-    runs-on: ubuntu-latest
+    name: ${{ matrix.os }} - ${{ matrix.python_version }} install EvalML
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, macos-latest]
         python_version: ["3.8", "3.9"]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2

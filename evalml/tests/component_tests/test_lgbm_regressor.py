@@ -10,8 +10,6 @@ from evalml.pipelines import LightGBMRegressor
 from evalml.problem_types import ProblemTypes
 from evalml.utils import SEED_BOUNDS
 
-pytestmark = pytest.mark.noncore_dependency
-
 
 def test_model_family():
     assert LightGBMRegressor.model_family == ModelFamily.LIGHTGBM
@@ -215,3 +213,17 @@ def test_lightgbm_multiindex(data_type, X_y_regression, make_data_type):
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert not y_pred.isnull().values.any()
+
+
+@patch("lightgbm.LGBMRegressor.fit")
+@patch("lightgbm.LGBMRegressor.predict")
+def test_lgbm_preserves_schema_in_rename(mock_predict, mock_fit):
+    X = pd.DataFrame({"a": [1, 2, 3, 4]})
+    X.ww.init(logical_types={"a": "NaturalLanguage"})
+    original_schema = X.ww.rename(columns={"a": 0}).ww.schema
+
+    lgb = LightGBMRegressor()
+    lgb.fit(X, pd.Series([0, 1, 1, 0]))
+    assert mock_fit.call_args[0][0].ww.schema == original_schema
+    lgb.predict(X)
+    assert mock_predict.call_args[0][0].ww.schema == original_schema

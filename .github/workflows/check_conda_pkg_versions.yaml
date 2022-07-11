@@ -7,8 +7,7 @@ on:
   pull_request:
     types: [ opened, synchronize ]
     paths:
-      - 'requirements.txt'
-      - 'core-requirements.txt'
+      - 'setup.cfg'
       - 'evalml/tests/dependency_update_check/*.txt'
 
 jobs:
@@ -29,7 +28,7 @@ jobs:
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
-          pip install -r test-requirements.txt
+          pip install .[test]
           pip install requirements-parser>=0.2.0
       - name: Clone Feedstock & Check Versions
         run: |

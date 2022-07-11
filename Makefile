@@ -40,45 +40,28 @@ doctests:
 
 .PHONY: git-test-parallel
 git-test-parallel:
-	pytest evalml/tests/automl_tests/parallel_tests/ -n 1 --cov=evalml --junitxml=test-reports/git-test-parallel-junit.xml --timeout 300 --durations 0
-
-.PHONY: git-test-minimal-deps-parallel
-git-test-minimal-deps-parallel:
-	pytest evalml/tests/automl_tests/parallel_tests/  -n 1 --cov=evalml  --junitxml=test-reports/git-test-minimal-deps-parallel-junit.xml --has-minimal-dependencies --timeout 300 --durations 0
-
-.PHONY: git-test-automl-core
-git-test-automl-core:
-	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 2 --ignore=evalml/tests/automl_tests/parallel_tests --durations 0 --timeout 300 --cov=evalml --junitxml=test-reports/git-test-automl-core-junit.xml --has-minimal-dependencies
+	pytest evalml/tests/automl_tests/parallel_tests/ -n 1 --cov=evalml --cov-config=pyproject.toml --junitxml=test-reports/git-test-parallel-junit.xml --timeout 300 --durations 0
 
 .PHONY: git-test-automl
 git-test-automl:
-	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 2 --ignore=evalml/tests/automl_tests/parallel_tests --durations 0 --timeout 300 --cov=evalml --junitxml=test-reports/git-test-automl-junit.xml
-
-.PHONY: git-test-modelunderstanding-core
-git-test-modelunderstanding-core:
-	pytest evalml/tests/model_understanding_tests -n 2 --durations 0 --timeout 300 --cov=evalml --junitxml=test-reports/git-test-modelunderstanding-core-junit.xml --has-minimal-dependencies
+	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 2 --ignore=evalml/tests/automl_tests/parallel_tests --durations 0 --timeout 300 --cov=evalml --cov-config=pyproject.toml --junitxml=test-reports/git-test-automl-junit.xml
 
 .PHONY: git-test-modelunderstanding
 git-test-modelunderstanding:
-	pytest evalml/tests/model_understanding_tests -n 2 --durations 0 --timeout 300 --cov=evalml --junitxml=test-reports/git-test-modelunderstanding-junit.xml
-
-.PHONY: git-test-other-core
-git-test-other-core:
-	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ --ignore evalml/tests/integration_tests/ -n 2 --durations 0 --cov=evalml --junitxml=test-reports/git-test-other-core-junit.xml --has-minimal-dependencies
-	make doctests
+	pytest evalml/tests/model_understanding_tests -n 2 --durations 0 --timeout 300 --cov=evalml --cov-config=pyproject.toml --junitxml=test-reports/git-test-modelunderstanding-junit.xml
 
 .PHONY: git-test-other
 git-test-other:
-	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ --ignore evalml/tests/pipeline_tests/ --ignore evalml/tests/utils_tests/ --ignore evalml/tests/component_tests/test_prophet_regressor.py --ignore evalml/tests/component_tests/test_components.py --ignore evalml/tests/component_tests/test_utils.py --ignore evalml/tests/integration_tests/ -n 2 --durations 0 --timeout 300 --cov=evalml --junitxml=test-reports/git-test-other-junit.xml
+	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ --ignore evalml/tests/pipeline_tests/ --ignore evalml/tests/utils_tests/ --ignore evalml/tests/component_tests/test_prophet_regressor.py --ignore evalml/tests/component_tests/test_components.py --ignore evalml/tests/component_tests/test_utils.py --ignore evalml/tests/integration_tests/ -n 2 --durations 0 --timeout 300 --cov=evalml --cov-config=pyproject.toml --junitxml=test-reports/git-test-other-junit.xml
 	make doctests
 
 .PHONY: git-test-prophet
 git-test-prophet:
-	pytest evalml/tests/component_tests/test_prophet_regressor.py evalml/tests/component_tests/test_components.py evalml/tests/component_tests/test_utils.py evalml/tests/pipeline_tests/ evalml/tests/utils_tests/ -n 2 --durations 0 --timeout 300 --cov=evalml --junitxml=test-reports/git-test-prophet-junit.xml
+	pytest evalml/tests/component_tests/test_prophet_regressor.py evalml/tests/component_tests/test_components.py evalml/tests/component_tests/test_utils.py evalml/tests/pipeline_tests/ evalml/tests/utils_tests/ -n 2 --durations 0 --timeout 300 --cov=evalml --cov-config=pyproject.toml --junitxml=test-reports/git-test-prophet-junit.xml
 
 .PHONY: git-test-integration
 git-test-integration:
-	pytest evalml/tests/integration_tests -n 2 --durations 0 --timeout 300 --cov=evalml --junitxml=test-reports/git-test-integration-junit.xml
+	pytest evalml/tests/integration_tests -n 2 --durations 0 --timeout 300 --cov=evalml --cov-config=pyproject.toml --junitxml=test-reports/git-test-integration-junit.xml
 
 
 .PHONY: installdeps
@@ -91,7 +74,6 @@ installdeps-min:
 	pip install --upgrade pip -q
 	pip install -e . --no-dependencies
 	pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
-	pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
 	pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
 
 
@@ -99,22 +81,29 @@ installdeps-min:
 installdeps-prophet:
 	pip install -e .[prophet]
 
-.PHONY: installdeps-core
-installdeps-core:
-	pip install -e . -q
-	pip install -r core-requirements.txt -q
-
 .PHONY: installdeps-test
 installdeps-test:
-	pip install -e . -q
-	pip install -r test-requirements.txt -q
+	pip install -e .[test]
 
 .PHONY: installdeps-dev
 installdeps-dev:
-	pip install -e . -q
-	pip install -r dev-requirements.txt -q
+	pip install -e .[dev]
 
 .PHONY: installdeps-docs
 installdeps-docs:
-	pip install -e . -q
-	pip install -r docs-requirements.txt -q
+	pip install -e .[docs]
+
+.PHONY: upgradepip
+upgradepip:
+	python -m pip install --upgrade pip
+
+.PHONY: upgradebuild
+upgradebuild:
+	python -m pip install --upgrade build
+
+.PHONY: package_evalml
+package_evalml: upgradepip upgradebuild
+	python -m build
+	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
+	tar -zxvf "dist/evalml-${PACKAGE}.tar.gz"
+	mv "evalml-${PACKAGE}" unpacked_sdist

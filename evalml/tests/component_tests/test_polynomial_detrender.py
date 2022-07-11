@@ -7,7 +7,7 @@ from sklearn.preprocessing import PolynomialFeatures
 
 from evalml.pipelines.components import PolynomialDetrender
 
-pytestmark = [pytest.mark.noncore_dependency, pytest.mark.skip_if_39]
+pytestmark = pytest.mark.skip_if_39
 
 
 def test_polynomial_detrender_init():

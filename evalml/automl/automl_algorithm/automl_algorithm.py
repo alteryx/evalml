@@ -120,11 +120,8 @@ class AutoMLAlgorithm(ABC):
             # Inspects each component and adds the following parameters when needed
             if "n_jobs" in init_params:
                 component_parameters["n_jobs"] = self.n_jobs
-            try:
-                if "number_features" in init_params:
-                    component_parameters["number_features"] = self.number_features
-            except AttributeError:
-                continue
+            if "number_features" in init_params and hasattr(self, "number_features"):
+                component_parameters["number_features"] = self.number_features
             if "pipeline" in self.search_parameters:
                 for param_name, value in self.search_parameters["pipeline"].items():
                     if param_name in init_params:

@@ -185,15 +185,7 @@ def test_estimator_predict_output_type(X_y_binary, helper_functions):
 
     for component_class in _all_estimators_used_in_search():
         for X, y, X_cols_expected, y_cols_expected, time_series in datatype_combos:
-            if (
-                component_class.name in ["ARIMA Regressor", "Prophet Regressor"]
-                and not time_series
-            ):
-                continue
-            elif (
-                component_class.name not in ["ARIMA Regressor", "Prophet Regressor"]
-                and time_series
-            ):
+            if component_class.name in ["ARIMA Regressor", "Prophet Regressor"]:
                 continue
             print(
                 'Checking output of predict for estimator "{}" on X type {} cols {}, y type {} name {}'.format(

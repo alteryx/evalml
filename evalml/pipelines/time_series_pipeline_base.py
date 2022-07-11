@@ -183,11 +183,19 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             y_train (pd.Series or None): Training labels.
 
         Raises:
-            ValueError: If final component is not an Estimator.
+            ValueError: If X_train and/or y_train are None or if final component is not an Estimator.
 
         Returns:
             Predictions.
         """
+        if X_train is None:
+            raise ValueError(
+                "Make sure to include an input for X_train when calling time series' predict"
+            )
+        elif y_train is None:
+            raise ValueError(
+                "Make sure to include an input for y_train when calling time series' predict"
+            )
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         if self.estimator is None:
             raise ValueError(

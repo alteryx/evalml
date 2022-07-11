@@ -220,6 +220,8 @@ def test_describe_component():
             "categorical_fill_value": None,
             "numeric_impute_strategy": "mean",
             "numeric_fill_value": None,
+            "boolean_impute_strategy": "most_frequent",
+            "boolean_fill_value": None,
         },
     }
     assert simple_imputer.describe(return_dict=True) == {
@@ -303,19 +305,16 @@ def test_describe_component():
             "min_percentage": 0.1,
         },
     }
-    try:
-        oversampler = Oversampler()
-        assert oversampler.describe(return_dict=True) == {
-            "name": "Oversampler",
-            "parameters": {
-                "sampling_ratio": 0.25,
-                "sampling_ratio_dict": None,
-                "k_neighbors_default": 5,
-                "n_jobs": -1,
-            },
-        }
-    except ImportError:
-        pass
+    oversampler = Oversampler()
+    assert oversampler.describe(return_dict=True) == {
+        "name": "Oversampler",
+        "parameters": {
+            "sampling_ratio": 0.25,
+            "sampling_ratio_dict": None,
+            "k_neighbors_default": 5,
+            "n_jobs": -1,
+        },
+    }
     # testing estimators
     base_classifier = BaselineClassifier()
     base_regressor = BaselineRegressor()
@@ -414,98 +413,89 @@ def test_describe_component():
         "name": "SVM Regressor",
         "parameters": {"C": 1.0, "kernel": "rbf", "gamma": "auto"},
     }
-    try:
-        xgb_classifier = XGBoostClassifier(
-            eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75
-        )
-        xgb_regressor = XGBoostRegressor(
-            eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75
-        )
-        assert xgb_classifier.describe(return_dict=True) == {
-            "name": "XGBoost Classifier",
-            "parameters": {
-                "eta": 0.1,
-                "max_depth": 3,
-                "min_child_weight": 1,
-                "n_estimators": 75,
-                "n_jobs": 12,
-                "eval_metric": "logloss",
-            },
-        }
-        assert xgb_regressor.describe(return_dict=True) == {
-            "name": "XGBoost Regressor",
-            "parameters": {
-                "eta": 0.1,
-                "max_depth": 3,
-                "min_child_weight": 1,
-                "n_estimators": 75,
-                "n_jobs": 12,
-            },
-        }
-    except ImportError:
-        pass
-    try:
-        cb_classifier = CatBoostClassifier()
-        cb_regressor = CatBoostRegressor()
-        assert cb_classifier.describe(return_dict=True) == {
-            "name": "CatBoost Classifier",
-            "parameters": {
-                "allow_writing_files": False,
-                "n_estimators": 10,
-                "eta": 0.03,
-                "max_depth": 6,
-                "bootstrap_type": None,
-                "silent": True,
-                "n_jobs": -1,
-            },
-        }
-        assert cb_regressor.describe(return_dict=True) == {
-            "name": "CatBoost Regressor",
-            "parameters": {
-                "allow_writing_files": False,
-                "n_estimators": 10,
-                "eta": 0.03,
-                "max_depth": 6,
-                "bootstrap_type": None,
-                "silent": False,
-                "n_jobs": -1,
-            },
-        }
-    except ImportError:
-        pass
-    try:
-        lg_classifier = LightGBMClassifier()
-        lg_regressor = LightGBMRegressor()
-        assert lg_classifier.describe(return_dict=True) == {
-            "name": "LightGBM Classifier",
-            "parameters": {
-                "boosting_type": "gbdt",
-                "learning_rate": 0.1,
-                "n_estimators": 100,
-                "max_depth": 0,
-                "num_leaves": 31,
-                "min_child_samples": 20,
-                "n_jobs": -1,
-                "bagging_fraction": 0.9,
-                "bagging_freq": 0,
-            },
-        }
-        assert lg_regressor.describe(return_dict=True) == {
-            "name": "LightGBM Regressor",
-            "parameters": {
-                "boosting_type": "gbdt",
-                "learning_rate": 0.1,
-                "n_estimators": 20,
-                "max_depth": 0,
-                "num_leaves": 31,
-                "min_child_samples": 20,
-                "n_jobs": -1,
-                "bagging_fraction": 0.9,
-                "bagging_freq": 0,
-            },
-        }
-    except ImportError:
-        pass
+    xgb_classifier = XGBoostClassifier(
+        eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75
+    )
+    xgb_regressor = XGBoostRegressor(
+        eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75
+    )
+    assert xgb_classifier.describe(return_dict=True) == {
+        "name": "XGBoost Classifier",
+        "parameters": {
+            "eta": 0.1,
+            "max_depth": 3,
+            "min_child_weight": 1,
+            "n_estimators": 75,
+            "n_jobs": 12,
+            "eval_metric": "logloss",
+        },
+    }
+    assert xgb_regressor.describe(return_dict=True) == {
+        "name": "XGBoost Regressor",
+        "parameters": {
+            "eta": 0.1,
+            "max_depth": 3,
+            "min_child_weight": 1,
+            "n_estimators": 75,
+            "n_jobs": 12,
+        },
+    }
+    cb_classifier = CatBoostClassifier()
+    cb_regressor = CatBoostRegressor()
+    assert cb_classifier.describe(return_dict=True) == {
+        "name": "CatBoost Classifier",
+        "parameters": {
+            "allow_writing_files": False,
+            "n_estimators": 10,
+            "eta": 0.03,
+            "max_depth": 6,
+            "bootstrap_type": None,
+            "silent": True,
+            "n_jobs": -1,
+        },
+    }
+    assert cb_regressor.describe(return_dict=True) == {
+        "name": "CatBoost Regressor",
+        "parameters": {
+            "allow_writing_files": False,
+            "n_estimators": 10,
+            "eta": 0.03,
+            "max_depth": 6,
+            "bootstrap_type": None,
+            "silent": False,
+            "n_jobs": -1,
+        },
+    }
+    lg_classifier = LightGBMClassifier()
+    lg_regressor = LightGBMRegressor()
+    assert lg_classifier.describe(return_dict=True) == {
+        "name": "LightGBM Classifier",
+        "parameters": {
+            "boosting_type": "gbdt",
+            "learning_rate": 0.1,
+            "n_estimators": 100,
+            "max_depth": 0,
+            "num_leaves": 31,
+            "min_child_samples": 20,
+            "n_jobs": -1,
+            "bagging_fraction": 0.9,
+            "bagging_freq": 0,
+        },
+    }
+    assert lg_regressor.describe(return_dict=True) == {
+        "name": "LightGBM Regressor",
+        "parameters": {
+            "boosting_type": "gbdt",
+            "learning_rate": 0.1,
+            "n_estimators": 20,
+            "max_depth": 0,
+            "num_leaves": 31,
+            "min_child_samples": 20,
+            "n_jobs": -1,
+            "bagging_fraction": 0.9,
+            "bagging_freq": 0,
+        },
+    }
     try:
         prophet_regressor = ProphetRegressor()
         assert prophet_regressor.describe(return_dict=True) == {
@@ -521,56 +511,53 @@ def test_describe_component():
         }
     except ImportError:
         pass
-    try:
-        vw_binary_classifier = VowpalWabbitBinaryClassifier(
-            loss_function="classic",
-            learning_rate=0.1,
-            decay_learning_rate=1.0,
-            power_t=0.1,
-            passes=1,
-        )
-        vw_multi_classifier = VowpalWabbitMulticlassClassifier(
-            loss_function="classic",
-            learning_rate=0.1,
-            decay_learning_rate=1.0,
-            power_t=0.1,
-            passes=1,
-        )
-        vw_regressor = VowpalWabbitRegressor(
-            learning_rate=0.1, decay_learning_rate=1.0, power_t=0.1, passes=1
-        )
+    vw_binary_classifier = VowpalWabbitBinaryClassifier(
+        loss_function="classic",
+        learning_rate=0.1,
+        decay_learning_rate=1.0,
+        power_t=0.1,
+        passes=1,
+    )
+    vw_multi_classifier = VowpalWabbitMulticlassClassifier(
+        loss_function="classic",
+        learning_rate=0.1,
+        decay_learning_rate=1.0,
+        power_t=0.1,
+        passes=1,
+    )
+    vw_regressor = VowpalWabbitRegressor(
+        learning_rate=0.1, decay_learning_rate=1.0, power_t=0.1, passes=1
+    )
 
-        assert vw_binary_classifier.describe(return_dict=True) == {
-            "name": "Vowpal Wabbit Binary Classifier",
-            "parameters": {
-                "loss_function": "classic",
-                "learning_rate": 0.1,
-                "decay_learning_rate": 1.0,
-                "power_t": 0.1,
-                "passes": 1,
-            },
-        }
-        assert vw_multi_classifier.describe(return_dict=True) == {
-            "name": "Vowpal Wabbit Multiclass Classifier",
-            "parameters": {
-                "loss_function": "classic",
-                "learning_rate": 0.1,
-                "decay_learning_rate": 1.0,
-                "power_t": 0.1,
-                "passes": 1,
-            },
-        }
-        assert vw_regressor.describe(return_dict=True) == {
-            "name": "Vowpal Wabbit Regressor",
-            "parameters": {
-                "learning_rate": 0.1,
-                "decay_learning_rate": 1.0,
-                "power_t": 0.1,
-                "passes": 1,
-            },
-        }
-    except ImportError:
-        pass
+    assert vw_binary_classifier.describe(return_dict=True) == {
+        "name": "Vowpal Wabbit Binary Classifier",
+        "parameters": {
+            "loss_function": "classic",
+            "learning_rate": 0.1,
+            "decay_learning_rate": 1.0,
+            "power_t": 0.1,
+            "passes": 1,
+        },
+    }
+    assert vw_multi_classifier.describe(return_dict=True) == {
+        "name": "Vowpal Wabbit Multiclass Classifier",
+        "parameters": {
+            "loss_function": "classic",
+            "learning_rate": 0.1,
+            "decay_learning_rate": 1.0,
+            "power_t": 0.1,
+            "passes": 1,
+        },
+    }
+    assert vw_regressor.describe(return_dict=True) == {
+        "name": "Vowpal Wabbit Regressor",
+        "parameters": {
+            "learning_rate": 0.1,
+            "decay_learning_rate": 1.0,
+            "power_t": 0.1,
+            "passes": 1,
+        },
+    }
 
 
 def test_missing_attributes(X_y_binary):
@@ -1515,7 +1502,7 @@ def test_generate_code():
 
     expected_code = (
         "from evalml.pipelines.components.transformers.imputers.imputer import Imputer"
-        "\n\nimputer = Imputer(**{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None})"
+        "\n\nimputer = Imputer(**{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None, 'boolean_fill_value': None})"
     )
     component_code = generate_component_code(Imputer())
     assert component_code == expected_code

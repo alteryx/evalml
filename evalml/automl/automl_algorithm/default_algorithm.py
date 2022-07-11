@@ -84,7 +84,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         tuner_class=None,
         random_seed=0,
         search_parameters=None,
-        n_jobs=-1,
+        n_jobs=1,
         text_in_ensembling=False,
         top_n=3,
         ensembling=False,
