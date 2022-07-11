@@ -24,7 +24,7 @@ lint-fix:
 
 .PHONY: test
 test:
-	pytest evalml/ --doctest-modules --doctest-continue-on-failure  --timeout 300
+	pytest -vv evalml/ --doctest-modules --doctest-continue-on-failure  --timeout 1200
 
 .PHONY: test-no-parallel
 test-no-parallel:

@@ -638,19 +638,19 @@ class MockCheck2(DataCheck):
             [MockCheck],
             {"mock_check": {"foo": 1}},
             DataCheckInitError,
-            r"Encountered the following error while initializing mock_check: __init__\(\) missing 1 required positional argument: 'bar'",
+            r"Encountered the following error while initializing mock_check: .*__init__\(\) missing 1 required positional argument: 'bar'",
         ),
         (
             [MockCheck],
             {"mock_check": {"Bar": 2}},
             DataCheckInitError,
-            r"Encountered the following error while initializing mock_check: __init__\(\) got an unexpected keyword argument 'Bar'",
+            r"Encountered the following error while initializing mock_check: .*__init__\(\) got an unexpected keyword argument 'Bar'",
         ),
         (
             [MockCheck],
             {"mock_check": {"fo": 3, "ba": 4}},
             DataCheckInitError,
-            r"Encountered the following error while initializing mock_check: __init__\(\) got an unexpected keyword argument 'fo'",
+            r"Encountered the following error while initializing mock_check: .*__init__\(\) got an unexpected keyword argument 'fo'",
         ),
         (
             [MockCheck],
