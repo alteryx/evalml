@@ -136,7 +136,8 @@ class PolynomialDecomposer(Decomposer):
             self.seasonality.T, len(y_detrended) // self.periodicity + 1
         ).T[: len(y_detrended)]
 
-        y_t = pd.Series(y_detrended - seasonal, index=y_ww.index)y_t.ww.init(logical_type="double")
+        y_t = pd.Series(y_detrended - seasonal, index=y_ww.index)
+        y_t.ww.init(logical_type="double")
         return X, y_t
 
     def fit_transform(self, X, y=None):
