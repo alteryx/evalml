@@ -88,11 +88,11 @@ def test_column_transformer_transform(class_to_test, checking_functions):
                 "one": ["1", "2", "3", "4"],
                 "two": [False, True, True, False],
                 "three": [1, 2, 3, 4],
-            }
+            },
         )
     else:
         X = pd.DataFrame(
-            {"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]}
+            {"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]},
         )
     check1, check2, check3, check4 = checking_functions
 
@@ -152,11 +152,11 @@ def test_column_transformer_fit_transform(class_to_test, checking_functions):
                 "one": ["1", "2", "3", "4"],
                 "two": [False, True, True, False],
                 "three": [1, 2, 3, 4],
-            }
+            },
         )
     else:
         X = pd.DataFrame(
-            {"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]}
+            {"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]},
         )
     check1, check2, check3 = checking_functions
 
@@ -172,7 +172,7 @@ def test_column_transformer_fit_transform(class_to_test, checking_functions):
         assert check3(
             X,
             class_to_test(
-                column_types=["categorical", "boolean", "integer"]
+                column_types=["categorical", "boolean", "integer"],
             ).fit_transform(X),
         )
     else:
@@ -225,7 +225,7 @@ def test_typeortag_column_transformer_ww_logical_and_semantic_types():
             "two": [False, True, True, False],
             "three": [1, 2, 3, 4],
             "four": [4.0, 2.3, 6.5, 2.6],
-        }
+        },
     )
     X.ww.init(logical_types={"one": "categorical"})
 
@@ -241,7 +241,7 @@ def test_typeortag_column_transformer_ww_logical_and_semantic_types():
             ww.logical_types.Boolean,
             ww.logical_types.Integer,
             ww.logical_types.Double,
-        ]
+        ],
     ).fit_transform(X)
     assert X_t.astype(str).equals(X.astype(str))
 
@@ -264,7 +264,7 @@ def test_select_by_type_exclude():
             "one": ["1", "2", "3", "4"],
             "two": [1, 2, 3, 4],
             "three": [4.0, 2.3, 6.5, 2.6],
-        }
+        },
     )
     X.ww.init(logical_types={"one": "categorical"})
 

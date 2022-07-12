@@ -51,7 +51,7 @@ def data_checks_input_dataframe():
                 "string_that_is_long_enough_for_natural_language_4",
             ],
             "nan_dt_col": pd.Series(pd.date_range("20200101", periods=5)),
-        }
+        },
     )
     X["nan_dt_col"][0] = None
     return X
@@ -76,7 +76,7 @@ def test_data_checks(X_y_binary):
                     message="warning one",
                     data_check_name=self.name,
                     message_code=None,
-                ).to_dict()
+                ).to_dict(),
             ]
 
     class MockDataCheckError(DataCheck):
@@ -86,7 +86,7 @@ def test_data_checks(X_y_binary):
                     message="error one",
                     data_check_name=self.name,
                     message_code=None,
-                ).to_dict()
+                ).to_dict(),
             ]
 
     class MockDataCheckErrorAndWarning(DataCheck):
@@ -113,16 +113,16 @@ def test_data_checks(X_y_binary):
     data_checks = DataChecks(data_checks=data_checks_list)
     assert data_checks.validate(X, y) == [
         DataCheckWarning(
-            message="warning one", data_check_name="MockDataCheckWarning"
+            message="warning one", data_check_name="MockDataCheckWarning",
         ).to_dict(),
         DataCheckError(
-            message="error one", data_check_name="MockDataCheckError"
+            message="error one", data_check_name="MockDataCheckError",
         ).to_dict(),
         DataCheckWarning(
-            message="warning two", data_check_name="MockDataCheckErrorAndWarning"
+            message="warning two", data_check_name="MockDataCheckErrorAndWarning",
         ).to_dict(),
         DataCheckError(
-            message="error two", data_check_name="MockDataCheckErrorAndWarning"
+            message="error two", data_check_name="MockDataCheckErrorAndWarning",
         ).to_dict(),
     ]
 
@@ -142,7 +142,7 @@ def get_expected_messages(problem_type):
                     DataCheckActionCode.DROP_COL,
                     data_check_name="NullDataCheck",
                     metadata={"columns": ["all_null", "also_all_null"]},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -177,26 +177,26 @@ def get_expected_messages(problem_type):
                                         "categories": ["most_frequent"],
                                         "type": "category",
                                         "default_value": "most_frequent",
-                                    }
+                                    },
                                 },
                                 "nullable_integer": {
                                     "impute_strategy": {
                                         "categories": ["mean", "most_frequent"],
                                         "type": "category",
                                         "default_value": "mean",
-                                    }
+                                    },
                                 },
                                 "nullable_bool": {
                                     "impute_strategy": {
                                         "categories": ["most_frequent"],
                                         "type": "category",
                                         "default_value": "most_frequent",
-                                    }
+                                    },
                                 },
                             },
-                        }
+                        },
                     },
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -209,7 +209,7 @@ def get_expected_messages(problem_type):
                     DataCheckActionCode.DROP_COL,
                     data_check_name="IDColumnsDataCheck",
                     metadata={"columns": ["id"]},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckError(
@@ -231,10 +231,10 @@ def get_expected_messages(problem_type):
                             "default_value": "mean"
                             if is_regression(problem_type)
                             else "most_frequent",
-                        }
+                        },
                     },
                     metadata={"is_target": True},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -247,7 +247,7 @@ def get_expected_messages(problem_type):
                     DataCheckActionCode.DROP_COL,
                     data_check_name="NoVarianceDataCheck",
                     metadata={"columns": ["all_null", "also_all_null"]},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -260,7 +260,7 @@ def get_expected_messages(problem_type):
                     DataCheckActionCode.DROP_COL,
                     data_check_name="NoVarianceDataCheck",
                     metadata={"columns": ["lots_of_null"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -279,14 +279,14 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
             "natural_language_nan": "NaturalLanguage",
             "nullable_integer": "IntegerNullable",
             "nullable_bool": "BooleanNullable",
-        }
+        },
     )
     if input_type == "ww":
         y = ww.init_series(y)
         y_multiclass = ww.init_series(y_multiclass)
 
     data_checks = DefaultDataChecks(
-        "binary", get_default_primary_search_objective("binary")
+        "binary", get_default_primary_search_objective("binary"),
     )
     imbalance = [
         DataCheckError(
@@ -294,7 +294,7 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
             data_check_name="ClassImbalanceDataCheck",
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": [0.0, 1.0]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     expected = get_expected_messages("binary")
@@ -306,7 +306,7 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
             "InvalidTargetDataCheck": {
                 "problem_type": "binary",
                 "objective": get_default_primary_search_objective("binary"),
-            }
+            },
         },
     )
     assert data_checks.validate(X, y) == expected
@@ -318,7 +318,7 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
             data_check_name="ClassImbalanceDataCheck",
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": [0.0, 1.0, 2.0]},
-        ).to_dict()
+        ).to_dict(),
     ]
     min_2_class_count = [
         DataCheckError(
@@ -326,7 +326,7 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
             data_check_name="InvalidTargetDataCheck",
             message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS,
             details={"least_populated_class_labels": [1.0, 2.0]},
-        ).to_dict()
+        ).to_dict(),
     ]
     high_class_to_sample_ratio = [
         DataCheckWarning(
@@ -334,11 +334,11 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
             data_check_name="InvalidTargetDataCheck",
             message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
             details={"class_to_value_ratio": 0.6},
-        ).to_dict()
+        ).to_dict(),
     ]
     # multiclass
     data_checks = DefaultDataChecks(
-        "multiclass", get_default_primary_search_objective("multiclass")
+        "multiclass", get_default_primary_search_objective("multiclass"),
     )
 
     expected = get_expected_messages("multiclass")
@@ -358,7 +358,7 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
             "InvalidTargetDataCheck": {
                 "problem_type": "multiclass",
                 "objective": get_default_primary_search_objective("multiclass"),
-            }
+            },
         },
     )
     assert (
@@ -378,14 +378,14 @@ def test_default_data_checks_regression(input_type, data_checks_input_dataframe)
             "lots_of_null": "categorical",
             "natural_language_nan": "NaturalLanguage",
             "nullable_bool": "BooleanNullable",
-        }
+        },
     )
     if input_type == "ww":
         y = ww.init_series(y)
         y_no_variance = ww.init_series(y_no_variance)
 
     data_checks = DefaultDataChecks(
-        "regression", get_default_primary_search_objective("regression")
+        "regression", get_default_primary_search_objective("regression"),
     )
 
     expected = get_expected_messages("regression")
@@ -403,7 +403,7 @@ def test_default_data_checks_regression(input_type, data_checks_input_dataframe)
                 data_check_name="NoVarianceDataCheck",
                 message_code=DataCheckMessageCode.NO_VARIANCE,
                 details={"columns": ["Y"]},
-            ).to_dict()
+            ).to_dict(),
         ]
         + expected[6:]
     )
@@ -414,7 +414,7 @@ def test_default_data_checks_regression(input_type, data_checks_input_dataframe)
             "InvalidTargetDataCheck": {
                 "problem_type": "regression",
                 "objective": get_default_primary_search_objective("regression"),
-            }
+            },
         },
     )
     assert data_checks.validate(X, y) == expected
@@ -432,11 +432,11 @@ def test_default_data_checks_null_rows():
         {
             "all_null": [None, None, None, None, None],
             "also_all_null": [None, None, None, None, None],
-        }
+        },
     )
     y = pd.Series([0, 1, np.nan, 1, 0])
     data_checks = DefaultDataChecks(
-        "regression", get_default_primary_search_objective("regression")
+        "regression", get_default_primary_search_objective("regression"),
     )
     highly_null_rows = SeriesWrap(pd.Series([1.0, 1.0, 1.0, 1.0, 1.0]))
     expected = [
@@ -450,7 +450,7 @@ def test_default_data_checks_null_rows():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name="NullDataCheck",
                     metadata={"rows": [0, 1, 2, 3, 4]},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -466,7 +466,7 @@ def test_default_data_checks_null_rows():
                     DataCheckActionCode.DROP_COL,
                     data_check_name="NullDataCheck",
                     metadata={"columns": ["all_null", "also_all_null"]},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckError(
@@ -484,10 +484,10 @@ def test_default_data_checks_null_rows():
                             "type": "category",
                             "categories": ["mean", "most_frequent"],
                             "default_value": "mean",
-                        }
+                        },
                     },
                     metadata={"is_target": True},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -500,13 +500,13 @@ def test_default_data_checks_null_rows():
                     DataCheckActionCode.DROP_COL,
                     data_check_name="NoVarianceDataCheck",
                     metadata={"columns": ["all_null", "also_all_null"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
     validation_messages = data_checks.validate(X, y)
     validation_messages[0]["details"]["pct_null_cols"] = SeriesWrap(
-        validation_messages[0]["details"]["pct_null_cols"]
+        validation_messages[0]["details"]["pct_null_cols"],
     )
     assert validation_messages == expected
 
@@ -518,7 +518,7 @@ def test_default_data_checks_across_problem_types(problem_type):
     if is_time_series(problem_type):
         if is_classification(problem_type):
             default_data_check_list = default_data_check_list + [
-                TimeSeriesSplittingDataCheck
+                TimeSeriesSplittingDataCheck,
             ]
         default_data_check_list = default_data_check_list + [
             DateTimeFormatDataCheck,
@@ -530,7 +530,7 @@ def test_default_data_checks_across_problem_types(problem_type):
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]:
         default_data_check_list = default_data_check_list + [
-            TargetDistributionDataCheck
+            TargetDistributionDataCheck,
         ]
     else:
         default_data_check_list = default_data_check_list + [ClassImbalanceDataCheck]
@@ -670,7 +670,7 @@ class MockCheck2(DataCheck):
     ],
 )
 def test_data_checks_raises_value_errors_on_init(
-    classes, params, expected_exception, expected_message
+    classes, params, expected_exception, expected_message,
 ):
     with pytest.raises(expected_exception, match=expected_message):
         DataChecks(classes, params)
@@ -744,9 +744,9 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
                             DataCheckActionCode.DROP_COL,
                             data_check_name=self.name,
                             metadata={"columns": ["col_to_drop"]},
-                        )
+                        ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             ]
 
     class MockDataCheckWithSameOutput(DataCheck):
@@ -761,9 +761,9 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
                             DataCheckActionCode.DROP_COL,
                             data_check_name=self.name,
                             metadata={"columns": ["col_to_drop"]},
-                        )
+                        ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             ]
 
     data_checks_list = [MockDataCheck, MockDataCheckWithSameOutput]
@@ -779,7 +779,7 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
                     DataCheckActionCode.DROP_COL,
                     data_check_name="Mock Data Check",
                     metadata={"columns": ["col_to_drop"]},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -791,7 +791,7 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
                     DataCheckActionCode.DROP_COL,
                     data_check_name="MockDataCheckWithSameOutput",
                     metadata={"columns": ["col_to_drop"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]

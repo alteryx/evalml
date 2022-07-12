@@ -134,7 +134,7 @@ class NaturalLanguageFeaturizer(TextTransformer):
         nan_mask = X[self._text_columns].isna()
         any_nans = nan_mask.any().any()
         X_nlp_primitives = ft.calculate_feature_matrix(
-            features=self._features, entityset=es
+            features=self._features, entityset=es,
         )
         if X_nlp_primitives.isnull().any().any():
             X_nlp_primitives.fillna(0, inplace=True)
@@ -155,7 +155,7 @@ class NaturalLanguageFeaturizer(TextTransformer):
                 X_lsa.loc[nan_mask[column], derived_features] = None
         X_lsa.ww.init(logical_types={col: "Double" for col in X_lsa.columns})
         X_nlp_primitives.ww.init(
-            logical_types={col: "Double" for col in X_nlp_primitives.columns}
+            logical_types={col: "Double" for col in X_nlp_primitives.columns},
         )
         X_ww = X_ww.ww.drop(self._text_columns)
         for col in X_nlp_primitives:

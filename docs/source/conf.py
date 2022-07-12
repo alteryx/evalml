@@ -171,7 +171,7 @@ mathjax2_config = {
         'processEscapes': True,
         'ignoreClass': 'document',
         'processClass': 'math|output_area',
-    }
+    },
 }
 
 # -- Options for HTMLHelp output ---------------------------------------------
@@ -310,7 +310,8 @@ class PatchedPythonDomain(PythonDomain):
         if 'refspecific' in node:
             del node['refspecific']
         return super(PatchedPythonDomain, self).resolve_xref(
-            env, fromdocname, builder, typ, target, node, contnode)
+            env, fromdocname, builder, typ, target, node, contnode,
+        )
 
 
 def setup(app):
@@ -322,7 +323,7 @@ def setup(app):
         shutil.copy("set-headers.py", "/home/docs/.ipython/profile_default/startup")
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_js_file(
-       "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
+       "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js",
     )
     app.add_css_file("style.css")
     app.add_autodocumenter(AccessorCallableDocumenter)

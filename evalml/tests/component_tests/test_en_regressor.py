@@ -34,7 +34,7 @@ def test_fit_predict(X_y_regression):
     X, y = X_y_regression
 
     sk_clf = SKElasticNetRegressor(
-        alpha=0.0001, l1_ratio=0.15, random_state=0, normalize=False, max_iter=1000
+        alpha=0.0001, l1_ratio=0.15, random_state=0, normalize=False, max_iter=1000,
     )
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
@@ -51,7 +51,7 @@ def test_feature_importance(X_y_regression):
     X, y = X_y_regression
 
     sk_clf = SKElasticNetRegressor(
-        alpha=0.0001, l1_ratio=0.15, random_state=0, normalize=False, max_iter=1000
+        alpha=0.0001, l1_ratio=0.15, random_state=0, normalize=False, max_iter=1000,
     )
     sk_clf.fit(X, y)
 

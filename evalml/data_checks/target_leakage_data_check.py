@@ -27,7 +27,7 @@ class TargetLeakageDataCheck(DataCheck):
     def __init__(self, pct_corr_threshold=0.95, method="mutual"):
         if pct_corr_threshold < 0 or pct_corr_threshold > 1:
             raise ValueError(
-                "pct_corr_threshold must be a float between 0 and 1, inclusive."
+                "pct_corr_threshold must be a float between 0 and 1, inclusive.",
             )
         if method not in ["mutual", "pearson"]:
             raise ValueError(f"Method '{method}' not in ['mutual', 'pearson']")
@@ -165,8 +165,8 @@ class TargetLeakageDataCheck(DataCheck):
                             DataCheckActionCode.DROP_COL,
                             data_check_name=self.name,
                             metadata={"columns": highly_corr_cols},
-                        )
+                        ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             )
         return messages

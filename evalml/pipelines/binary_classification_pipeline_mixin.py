@@ -59,5 +59,5 @@ class BinaryClassificationPipelineMixin:
             self.threshold = objective.optimize_threshold(y_pred_proba, y, X)
         else:
             raise ValueError(
-                "Problem type must be binary and objective must be optimizable."
+                "Problem type must be binary and objective must be optimizable.",
             )

@@ -106,6 +106,6 @@ class GridSearchTuner(Tuner):
             return False
         except StopIteration:
             raise NoParamsException(
-                "Grid search has exhausted all possible parameters."
+                "Grid search has exhausted all possible parameters.",
             )
             return True

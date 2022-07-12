@@ -47,7 +47,7 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
 
 
 def split_data(
-    X, y, problem_type, problem_configuration=None, test_size=0.2, random_seed=0
+    X, y, problem_type, problem_configuration=None, test_size=0.2, random_seed=0,
 ):
     """Split data into train and test sets.
 
@@ -95,15 +95,15 @@ def split_data(
     data_splitter = None
     if is_time_series(problem_type):
         data_splitter = TrainingValidationSplit(
-            test_size=test_size, shuffle=False, stratify=None, random_seed=random_seed
+            test_size=test_size, shuffle=False, stratify=None, random_seed=random_seed,
         )
     elif is_regression(problem_type):
         data_splitter = ShuffleSplit(
-            n_splits=1, test_size=test_size, random_state=random_seed
+            n_splits=1, test_size=test_size, random_state=random_seed,
         )
     elif is_classification(problem_type):
         data_splitter = StratifiedShuffleSplit(
-            n_splits=1, test_size=test_size, random_state=random_seed
+            n_splits=1, test_size=test_size, random_state=random_seed,
         )
 
     train, test = next(data_splitter.split(X, y))

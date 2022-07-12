@@ -66,5 +66,5 @@ def test_data_check_with_param():
 
     data_check = MockDataCheckWithParam(num=0)
     assert data_check.validate(X, y=None) == [
-        DataCheckError("Expected num == 10", "MockDataCheckWithParam")
+        DataCheckError("Expected num == 10", "MockDataCheckWithParam"),
     ]

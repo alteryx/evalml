@@ -130,7 +130,7 @@ def test_get_random_seed_int():
     assert default_max_bound == SEED_BOUNDS.max_bound
 
     def get_random_seed_vec(
-        min_bound=None, max_bound=None
+        min_bound=None, max_bound=None,
     ):  # passing None for either means no value is provided to get_random_seed
         def get_random_seed_wrapper(random_seed):
             return get_random_seed(
@@ -152,13 +152,13 @@ def test_get_random_seed_int():
                 if (min_bound <= i and i < max_bound)
                 else ((i - min_bound) % (max_bound - min_bound)) + min_bound
                 for i in vals
-            ]
+            ],
         )
 
     np.testing.assert_equal(
         get_random_seed_vec(min_bound=None, max_bound=None)(vals),
         make_expected_values(
-            vals, min_bound=SEED_BOUNDS.min_bound, max_bound=SEED_BOUNDS.max_bound
+            vals, min_bound=SEED_BOUNDS.min_bound, max_bound=SEED_BOUNDS.max_bound,
         ),
     )
     np.testing.assert_equal(
@@ -277,7 +277,7 @@ def _check_equality(data, expected, check_index_type=True):
                 {
                     "a": pd.Series([1.0, 2.0, 3.0], dtype="float64"),
                     "b": pd.Series([4.0, 5.0, 6.0], dtype="float64"),
-                }
+                },
             ),
         ),
         (
@@ -287,7 +287,7 @@ def _check_equality(data, expected, check_index_type=True):
                 {
                     "a": pd.Series([np.nan, 4, 5, 6], dtype="float64"),
                     "b": [np.nan, "a", "b", "c"],
-                }
+                },
             ),
         ),
         (
@@ -317,13 +317,13 @@ def test_rename_column_names_to_numeric():
     X = pd.DataFrame({"<>": [1, 2], ">>": [2, 4]})
     X.ww.init()
     pd.testing.assert_frame_equal(
-        _rename_column_names_to_numeric(X), pd.DataFrame({0: [1, 2], 1: [2, 4]})
+        _rename_column_names_to_numeric(X), pd.DataFrame({0: [1, 2], 1: [2, 4]}),
     )
 
     X.ww.init(logical_types={"<>": "categorical", ">>": "categorical"})
     X_renamed = _rename_column_names_to_numeric(X)
     X_expected = pd.DataFrame(
-        {0: pd.Series([1, 2], dtype="category"), 1: pd.Series([2, 4], dtype="category")}
+        {0: pd.Series([1, 2], dtype="category"), 1: pd.Series([2, 4], dtype="category")},
     )
     pd.testing.assert_frame_equal(X_renamed, X_expected)
 
@@ -542,7 +542,7 @@ def test_save_graphviz_different_format(
 
 
 @pytest.mark.parametrize(
-    "file_name,format,interactive", [("Output/in_folder_plot", "jpeg", True)]
+    "file_name,format,interactive", [("Output/in_folder_plot", "jpeg", True)],
 )
 def test_save_graphviz_invalid_filepath(
     file_name,
@@ -612,7 +612,7 @@ def test_save_graphviz_different_filename_output(
     ],
 )
 def test_save_matplotlib_default_format(
-    file_name, format, interactive, fitted_tree_estimators, tmpdir
+    file_name, format, interactive, fitted_tree_estimators, tmpdir,
 ):
     from matplotlib import pyplot as plt
 
@@ -701,18 +701,18 @@ def test_deprecate_arg():
         assert deprecate_arg("foo", "bar", 4, 7) == 4
         assert len(warn) == 1
         assert str(warn[0].message).startswith(
-            "Argument 'foo' has been deprecated in favor of 'bar'"
+            "Argument 'foo' has been deprecated in favor of 'bar'",
         )
 
 
 def test_contains_all_ts_parameters():
     is_valid, msg = contains_all_ts_parameters(
-        {"time_index": "date", "max_delay": 1, "forecast_horizon": 3, "gap": 7}
+        {"time_index": "date", "max_delay": 1, "forecast_horizon": 3, "gap": 7},
     )
     assert is_valid and not msg
 
     is_valid, msg = contains_all_ts_parameters(
-        {"time_index": None, "max_delay": 1, "forecast_horizon": 3, "gap": 7}
+        {"time_index": None, "max_delay": 1, "forecast_horizon": 3, "gap": 7},
     )
     assert not is_valid and msg
 
@@ -723,12 +723,12 @@ def test_contains_all_ts_parameters():
 
 def test_are_ts_parameters_valid():
     result = are_ts_parameters_valid_for_split(
-        gap=1, max_delay=4, forecast_horizon=2, n_obs=20, n_splits=3
+        gap=1, max_delay=4, forecast_horizon=2, n_obs=20, n_splits=3,
     )
     assert not result.is_valid and result.msg
 
     result = are_ts_parameters_valid_for_split(
-        gap=1, max_delay=4, forecast_horizon=2, n_obs=200, n_splits=3
+        gap=1, max_delay=4, forecast_horizon=2, n_obs=200, n_splits=3,
     )
     assert result.is_valid and not result.msg
 
@@ -822,14 +822,14 @@ def test_year_start_separated_by_gap():
     X = pd.DataFrame(
         {
             "time_index": pd.Series(
-                pd.date_range("1960-01-01", freq="AS-JAN", periods=35)
-            )
-        }
+                pd.date_range("1960-01-01", freq="AS-JAN", periods=35),
+            ),
+        },
     )
     train = X.iloc[:30]
     test = X.iloc[32:36]
     assert are_datasets_separated_by_gap_time_index(
-        train, test, {"time_index": "time_index", "gap": 2}
+        train, test, {"time_index": "time_index", "gap": 2},
     )
 
 
@@ -839,7 +839,7 @@ def test_is_categorical_actually_boolean():
             "categorical": ["a", "b", "c"],
             "boolean_categorical": [True, False, None],
             "boolean": [True, False, True],
-        }
+        },
     )
 
     assert not is_categorical_actually_boolean(X, "categorical")

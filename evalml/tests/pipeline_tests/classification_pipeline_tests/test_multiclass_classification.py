@@ -3,7 +3,7 @@ from evalml.pipelines import MulticlassClassificationPipeline
 
 def test_multiclass_init():
     clf = MulticlassClassificationPipeline(
-        component_graph=["Imputer", "One Hot Encoder", "Random Forest Classifier"]
+        component_graph=["Imputer", "One Hot Encoder", "Random Forest Classifier"],
     )
     assert clf.parameters == {
         "Imputer": {

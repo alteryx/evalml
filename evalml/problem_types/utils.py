@@ -32,7 +32,7 @@ def handle_problem_types(problem_type):
     if isinstance(problem_type, ProblemTypes):
         return problem_type
     raise ValueError(
-        "`handle_problem_types` was not passed a str or ProblemTypes object"
+        "`handle_problem_types` was not passed a str or ProblemTypes object",
     )
 
 

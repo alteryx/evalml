@@ -30,7 +30,7 @@ def sequential_results(X_y_binary_cls):
     X, y = X_y_binary_cls
 
     seq_automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", engine="sequential"
+        X_train=X, y_train=y, problem_type="binary", engine="sequential",
     )
     seq_automl.search()
     sequential_rankings = seq_automl.full_rankings
@@ -51,7 +51,7 @@ def test_automl(
 
     X, y = X_y_binary_cls
     par_automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", engine=engine_str
+        X_train=X, y_train=y, problem_type="binary", engine=engine_str,
     )
     par_automl.search()
     par_automl.close_engine()
@@ -216,10 +216,10 @@ def test_automl_immediate_quit(
     # Make sure the automl algorithm stopped after the broken pipeline raised
     assert len(automl.full_rankings) < len(pipelines)
     assert DaskPipelineSlow.custom_name not in set(
-        automl.full_rankings["pipeline_name"]
+        automl.full_rankings["pipeline_name"],
     )
     assert DaskPipelineWithFitError.custom_name not in set(
-        automl.full_rankings["pipeline_name"]
+        automl.full_rankings["pipeline_name"],
     )
     automl.close_engine()
 
@@ -337,7 +337,7 @@ def test_score_pipelines_passes_X_train_y_train(
 
     with env.test_context(score_return_value={automl.objective.name: 3.12}):
         automl.score_pipelines(
-            automl.allowed_pipelines, X_test, y_test, [automl.objective]
+            automl.allowed_pipelines, X_test, y_test, [automl.objective],
         )
 
     expected_X_train, expected_y_train = None, None

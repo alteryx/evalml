@@ -62,7 +62,7 @@ class MulticollinearityDataCheck(DataCheck):
         correlated_cols = [
             (col_1, col_2)
             for col_1, col_2 in zip(
-                above_threshold["column_1"], above_threshold["column_2"]
+                above_threshold["column_1"], above_threshold["column_2"],
             )
         ]
         if correlated_cols:
@@ -73,6 +73,6 @@ class MulticollinearityDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.IS_MULTICOLLINEAR,
                     details={"columns": correlated_cols},
-                ).to_dict()
+                ).to_dict(),
             )
         return messages

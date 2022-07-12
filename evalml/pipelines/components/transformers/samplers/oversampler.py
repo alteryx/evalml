@@ -52,7 +52,7 @@ class Oversampler(BaseSampler):
         }
         parameters.update(kwargs)
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters, component_obj=None, random_seed=random_seed,
         )
 
     def fit(self, X, y):
@@ -128,7 +128,7 @@ class Oversampler(BaseSampler):
         min_counts = y_pd.value_counts().values[-1]
         if min_counts == 1:
             raise ValueError(
-                f"Minority class needs more than 1 sample to use SMOTE!, received {min_counts} sample"
+                f"Minority class needs more than 1 sample to use SMOTE!, received {min_counts} sample",
             )
         if min_counts <= neighbors:
             neighbors = min_counts - 1

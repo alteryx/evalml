@@ -97,6 +97,6 @@ class TimeSeriesParametersDataCheck(DataCheck):
                         "n_obs": validation.n_obs,
                         "n_splits": validation.n_splits,
                     },
-                ).to_dict()
+                ).to_dict(),
             )
         return messages

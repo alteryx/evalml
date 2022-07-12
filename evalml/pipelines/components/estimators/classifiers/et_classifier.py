@@ -85,5 +85,5 @@ class ExtraTreesClassifier(Estimator):
         parameters.update(kwargs)
         et_classifier = SKExtraTreesClassifier(random_state=random_seed, **parameters)
         super().__init__(
-            parameters=parameters, component_obj=et_classifier, random_seed=random_seed
+            parameters=parameters, component_obj=et_classifier, random_seed=random_seed,
         )

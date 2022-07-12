@@ -12,7 +12,7 @@ from evalml.data_checks import (
     [[1, 1, 1, None], [None, None, None, None], ["missing", 1, 1, "dates"]],
 )
 def test_time_series_param_data_check_raises_value_error(
-    gap, max_delay, forecast_horizon, time_index
+    gap, max_delay, forecast_horizon, time_index,
 ):
     if all(i is None for i in [gap, max_delay, forecast_horizon, time_index]):
         params = None
@@ -48,7 +48,7 @@ def test_time_series_param_data_check_raises_value_error(
     ],
 )
 def test_time_series_param_data_check(
-    gap, max_delay, forecast_horizon, n_obs, n_splits, is_valid
+    gap, max_delay, forecast_horizon, n_obs, n_splits, is_valid,
 ):
 
     config = {

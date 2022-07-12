@@ -93,13 +93,13 @@ def get_objective(objective, return_instance=False, **kwargs):
     all_objectives_dict = _all_objectives_dict()
     if not isinstance(objective, str):
         raise TypeError(
-            "If parameter objective is not a string, it must be an instance of ObjectiveBase!"
+            "If parameter objective is not a string, it must be an instance of ObjectiveBase!",
         )
     if objective.lower() not in all_objectives_dict:
         raise ObjectiveNotFoundError(
             f"{objective} is not a valid Objective! "
             "Use evalml.objectives.get_all_objective_names()"
-            "to get a list of all valid objective names. "
+            "to get a list of all valid objective names. ",
         )
 
     objective_class = all_objectives_dict[objective.lower()]
@@ -109,7 +109,7 @@ def get_objective(objective, return_instance=False, **kwargs):
             return objective_class(**kwargs)
         except TypeError as e:
             raise ObjectiveCreationError(
-                f"In get_objective, cannot pass in return_instance=True for {objective} because {str(e)}"
+                f"In get_objective, cannot pass in return_instance=True for {objective} because {str(e)}",
             )
 
     return objective_class

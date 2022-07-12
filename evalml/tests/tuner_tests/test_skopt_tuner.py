@@ -65,7 +65,7 @@ def test_skopt_tuner_basic():
             "parameter e": ["option a", "option b", "option c"],
             "parameter f": ["option a 💩", "option b 💩", "option c 💩"],
             "parameter g": ["option a", "option b", 100, np.inf],
-        }
+        },
     }
 
     tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_seed=random_seed)
@@ -82,7 +82,7 @@ def test_skopt_tuner_basic():
             "parameter e": "option a",
             "parameter f": "option a 💩",
             "parameter g": "option a",
-        }
+        },
     }
     proposed_params = tuner.propose()
     assert proposed_params == {
@@ -94,7 +94,7 @@ def test_skopt_tuner_basic():
             "parameter e": "option b",
             "parameter f": "option b 💩",
             "parameter g": "option b",
-        }
+        },
     }
     tuner.add(proposed_params, 0.5)
 
@@ -110,7 +110,7 @@ def test_skopt_tuner_invalid_ranges():
                     "param a": Integer(0, 10),
                     "param b": Real(0, 10),
                     "param c": [],
-                }
+                },
             },
             random_seed=random_seed,
         )
@@ -124,7 +124,7 @@ def test_skopt_tuner_invalid_ranges():
                     "param a": Integer(0, 10),
                     "param b": Real(0, 10),
                     "param c": None,
-                }
+                },
             },
             random_seed=random_seed,
         )
@@ -146,7 +146,7 @@ def test_skopt_tuner_invalid_parameters_score():
             "param a": Integer(0, 10),
             "param b": Real(0, 10),
             "param c": ["option a", "option b", "option c"],
-        }
+        },
     }
     tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_seed=random_seed)
     with pytest.raises(
@@ -166,7 +166,7 @@ def test_skopt_tuner_invalid_parameters_score():
         tuner.add({"Mock Classifier": {"param a": 0}}, 0.5)
     with pytest.raises(ValueError, match="is not within the bounds of the space"):
         tuner.add(
-            {"Mock Classifier": {"param a": 0, "param b": 0.0, "param c": 0}}, 0.5
+            {"Mock Classifier": {"param a": 0, "param b": 0.0, "param c": 0}}, 0.5,
         )
     with pytest.raises(ValueError, match="is not within the bounds of the space"):
         tuner.add(
@@ -190,7 +190,7 @@ def test_skopt_tuner_invalid_parameters_score():
                     "param a": np.nan,
                     "param b": 0.0,
                     "param c": "option a",
-                }
+                },
             },
             0.5,
         )
@@ -201,12 +201,12 @@ def test_skopt_tuner_invalid_parameters_score():
                     "param a": np.inf,
                     "param b": 0.0,
                     "param c": "option a",
-                }
+                },
             },
             0.5,
         )
     with pytest.raises(
-        ParameterError, match="Invalid parameters specified to SKOptTuner.add"
+        ParameterError, match="Invalid parameters specified to SKOptTuner.add",
     ):
         tuner.add(
             {
@@ -214,7 +214,7 @@ def test_skopt_tuner_invalid_parameters_score():
                     "param a": None,
                     "param b": 0.0,
                     "param c": "option a",
-                }
+                },
             },
             0.5,
         )
@@ -228,12 +228,12 @@ def test_skopt_tuner_invalid_parameters_score():
                         "param a": 0,
                         "param b": 0.0,
                         "param c": "option a",
-                    }
+                    },
                 },
                 0.5,
             )
     tuner.add(
-        {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}}, 0.5
+        {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}}, 0.5,
     )
     tuner.add(
         {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}},
@@ -244,7 +244,7 @@ def test_skopt_tuner_invalid_parameters_score():
         np.inf,
     )
     tuner.add(
-        {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}}, None
+        {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}}, None,
     )
     tuner.propose()
 
@@ -255,7 +255,7 @@ def test_skopt_tuner_propose():
             "param a": Integer(0, 10),
             "param b": Real(0, 10),
             "param c": ["option a", "option b", "option c"],
-        }
+        },
     }
     tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_seed=random_seed)
     first_params = tuner.get_starting_parameters(pipeline_hyperparameter_ranges)
@@ -264,10 +264,10 @@ def test_skopt_tuner_propose():
             "param a": 5,
             "param b": 5.488135039273248,
             "param c": "option a",
-        }
+        },
     }
     tuner.add(
-        {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}}, 0.5
+        {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}}, 0.5,
     )
     parameters = tuner.propose()
     assert parameters == {
@@ -275,5 +275,5 @@ def test_skopt_tuner_propose():
             "param a": 5,
             "param b": 8.442657485810175,
             "param c": "option c",
-        }
+        },
     }

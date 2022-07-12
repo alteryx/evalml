@@ -42,7 +42,7 @@ def write_conda_recipe(version):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Configure conda for local build. Run from the feedstock root"
+        description="Configure conda for local build. Run from the feedstock root",
     )
     parser.add_argument("version", help="The version of EvalML being built")
     args = parser.parse_args()

@@ -42,7 +42,7 @@ def check_versions():
 
         raise SystemExit(
             f"The following package versions are different in conda from pip:\n {conda_not_in_pip}\n"
-            f"The following package versions are different in pip from conda:\n {pip_not_in_conda}\n"
+            f"The following package versions are different in pip from conda:\n {pip_not_in_conda}\n",
         )
 
 

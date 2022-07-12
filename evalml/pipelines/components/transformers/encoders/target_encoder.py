@@ -50,17 +50,17 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
         unknown_and_missing_input_options = ["error", "return_nan", "value"]
         if handle_unknown not in unknown_and_missing_input_options:
             raise ValueError(
-                "Invalid input '{}' for handle_unknown".format(handle_unknown)
+                "Invalid input '{}' for handle_unknown".format(handle_unknown),
             )
         if handle_missing not in unknown_and_missing_input_options:
             raise ValueError(
-                "Invalid input '{}' for handle_missing".format(handle_missing)
+                "Invalid input '{}' for handle_missing".format(handle_missing),
             )
         if smoothing <= 0:
             raise ValueError(
                 "Smoothing value needs to be strictly larger than 0. {} provided".format(
-                    smoothing
-                )
+                    smoothing,
+                ),
             )
 
         category_encode = import_or_raise(

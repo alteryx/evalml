@@ -59,7 +59,7 @@ class DefaultDataChecks(DataChecks):
         if is_time_series(problem_type):
             if problem_configuration is None:
                 raise ValueError(
-                    "problem_configuration cannot be None for time series problems!"
+                    "problem_configuration cannot be None for time series problems!",
                 )
             if is_classification(problem_type):
                 default_checks = default_checks + [TimeSeriesSplittingDataCheck]
@@ -68,8 +68,8 @@ class DefaultDataChecks(DataChecks):
                         "TimeSeriesSplittingDataCheck": {
                             "problem_type": problem_type,
                             "n_splits": n_splits,
-                        }
-                    }
+                        },
+                    },
                 )
             default_checks = default_checks + [
                 DateTimeFormatDataCheck,
@@ -84,7 +84,7 @@ class DefaultDataChecks(DataChecks):
                         "problem_configuration": problem_configuration,
                         "n_splits": n_splits,
                     },
-                }
+                },
             )
 
         if handle_problem_types(problem_type) in [
@@ -97,8 +97,8 @@ class DefaultDataChecks(DataChecks):
                     "InvalidTargetDataCheck": {
                         "problem_type": problem_type,
                         "objective": objective,
-                    }
-                }
+                    },
+                },
             )
         else:
             default_checks = default_checks + [ClassImbalanceDataCheck]
@@ -109,7 +109,7 @@ class DefaultDataChecks(DataChecks):
                         "objective": objective,
                     },
                     "ClassImbalanceDataCheck": {"num_cv_folds": n_splits},
-                }
+                },
             )
 
         super().__init__(

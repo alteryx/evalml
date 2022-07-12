@@ -90,7 +90,7 @@ all_requirements_set = set(
         "Vowpal Wabbit Regressor",
         "XGBoost Classifier",
         "XGBoost Regressor",
-    ]
+    ],
 )
 # Keeping here in case we need to add to it when a new component is added
 not_supported_in_linux_py39 = set()
@@ -132,7 +132,7 @@ def test_scikit_learn_wrapper_invalid_problem_type():
     evalml_pipeline = MulticlassClassificationPipeline([RandomForestClassifier])
     evalml_pipeline.problem_type = None
     with pytest.raises(
-        ValueError, match="Could not wrap EvalML object in scikit-learn wrapper."
+        ValueError, match="Could not wrap EvalML object in scikit-learn wrapper.",
     ):
         scikit_learn_wrapped_estimator(evalml_pipeline)
 

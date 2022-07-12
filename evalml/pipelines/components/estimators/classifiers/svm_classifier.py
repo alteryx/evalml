@@ -66,7 +66,7 @@ class SVMClassifier(Estimator):
         parameters.update(kwargs)
         svm_classifier = SVC(random_state=random_seed, **parameters)
         super().__init__(
-            parameters=parameters, component_obj=svm_classifier, random_seed=random_seed
+            parameters=parameters, component_obj=svm_classifier, random_seed=random_seed,
         )
 
     @property

@@ -28,5 +28,5 @@ def test_standard_scaler_woodwork_custom_overrides_returned_by_components(X_df):
         transformed = std_scaler.transform(X_df, y)
         assert isinstance(transformed, pd.DataFrame)
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            0: Double
+            0: Double,
         }
