@@ -7,8 +7,6 @@ from sklearn.preprocessing import PolynomialFeatures
 
 from evalml.pipelines.components import PolynomialDetrender
 
-pytestmark = pytest.mark.skip_if_39
-
 
 def test_polynomial_detrender_init():
     delayed_features = PolynomialDetrender(degree=3)
