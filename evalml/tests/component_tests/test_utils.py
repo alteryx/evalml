@@ -92,50 +92,15 @@ all_requirements_set = set(
         "XGBoost Regressor",
     ]
 )
-not_supported_in_conda = set(
-    [
-        "Prophet Regressor",
-    ]
-)
-not_supported_in_windows = set(
-    [
-        "Prophet Regressor",
-    ]
-)
-not_supported_in_windows_py39 = set(
-    [
-        "Prophet Regressor",
-    ]
-)
 # Keeping here in case we need to add to it when a new component is added
 not_supported_in_linux_py39 = set()
+not_supported_in_conda = set()
+not_supported_in_windows = set()
+not_supported_in_windows_py39 = set()
 
 
-def test_all_components(
-    is_running_py_39_or_above,
-    is_using_conda,
-    is_using_windows,
-):
-    if is_using_conda:
-        # No prophet, ARIMA, and vowpalwabbit
-        expected_components = all_requirements_set.difference(not_supported_in_conda)
-
-    elif is_using_windows and not is_running_py_39_or_above:
-        # No prophet
-        expected_components = all_requirements_set.difference(not_supported_in_windows)
-
-    elif is_using_windows and is_running_py_39_or_above:
-        # No detrender, no ARIMA, no prophet
-        expected_components = all_requirements_set.difference(
-            not_supported_in_windows_py39
-        )
-    elif not is_using_windows and is_running_py_39_or_above:
-        # No detrender or ARIMA
-        expected_components = all_requirements_set.difference(
-            not_supported_in_linux_py39
-        )
-    else:
-        expected_components = all_requirements_set
+def test_all_components():
+    expected_components = all_requirements_set
     all_component_names = [component.name for component in all_components()]
     assert set(all_component_names) == expected_components
 
