@@ -39,6 +39,19 @@ def test_polynomial_decomposer_raises_value_error_target_is_none(ts_data):
         pdt.inverse_transform(None)
 
 
+def test_polynomial_decomposer_raises_value_error_transform_fit_data_freq_mismatch(
+    ts_data,
+):
+    X, y = ts_data
+
+    pdc = PolynomialDecomposer(degree=3).fit(X, y)
+
+    with pytest.raises(ValueError, match="Cannot transform given data with frequency"):
+        # Change target data frequency to monthly to mismatch daily frequency of fixture
+        y = y.asfreq("m")
+        pdc.transform(X, y)
+
+
 def test_polynomial_decomposer_get_trend_df_raises_errors(ts_data):
     X, y = ts_data
     pdt = PolynomialDecomposer(degree=3)

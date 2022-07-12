@@ -1,8 +1,12 @@
 """Component that removes trends from time series by fitting a polynomial to the data."""
+from datetime import timedelta
+
+import numpy as np
 import pandas as pd
 from skopt.space import Integer
 from sktime.forecasting.base._fh import ForecastingHorizon
 from statsmodels.tsa.seasonal import seasonal_decompose
+from statsmodels.tsa.tsatools import freq_to_period
 
 from evalml.pipelines.components.transformers.preprocessing import Decomposer
 from evalml.utils import import_or_raise, infer_feature_types
@@ -11,8 +15,15 @@ from evalml.utils import import_or_raise, infer_feature_types
 class PolynomialDecomposer(Decomposer):
     """Removes trends and seasonality from time series by fitting a polynomial and moving average to the data.
 
-    Scikit-learn's PolynomialForecaster is used to generate the trend portion of the target data. statsmodel's
-        seasonal_decompose is used to generate the seasonality of the data.
+    Scikit-learn's PolynomialForecaster is used to generate the trend portion of the target data. A polynomial
+        will be fit to the data during fit.  That polynomial trend will be removed during fit so that statsmodel's
+        seasonal_decompose can determine the seasonality of the data by using rolling averages over
+        the series' inferred periodicity.
+
+        For example, daily time series data will generate rolling averages over the first week of data, normalize
+        out the mean and return those 7 averages repeated over the entire length of the given series.  Those seven
+        averages, repeated as many times as necessary to match the length of the given target data, will be used
+        as the seasonal signal of the data.
 
     Args:
         degree (int): Degree for the polynomial. If 1, linear model is fit to the data.
@@ -56,14 +67,14 @@ class PolynomialDecomposer(Decomposer):
         )
 
     def fit(self, X, y=None):
-        """Fits the PolynomialDecomposer.
+        """Fits the PolynomialDecomposer and determine the seasonal signal.
 
-        Currently only fits the polynomial detrender.  The seasonality is actually determined during
-        transform().
+        Currently only fits the polynomial detrender.  The seasonality is determined by removing
+        the trend from the signal and using statsmodels' seasonal_decompose().
 
         Args:
             X (pd.DataFrame, optional): Ignored.
-            y (pd.Series): Target variable to detrend.
+            y (pd.Series): Target variable to detrend and deseasonalize.
 
         Returns:
             self
@@ -75,13 +86,25 @@ class PolynomialDecomposer(Decomposer):
             raise ValueError("y cannot be None for PolynomialDecomposer!")
         y_dt = infer_feature_types(y)
         self._component_obj.fit(y_dt)
+
+        # Save the frequency of the fitted series for checking against transform data.
+        self.frequency = y_dt.index.freqstr
+
+        # statsmodel's seasonal_decompose() repeats the seasonal signal over the length of
+        # the given array.  We'll extract the first iteration and save it for use in .transform()
+        self.periodicity = freq_to_period(self.frequency)
+        self.seasonality = seasonal_decompose(
+            self._component_obj.transform(y_dt)
+        ).seasonal[0 : self.periodicity]
+
         return self
 
     def transform(self, X, y=None):
-        """Transforms the target data.
+        """Transforms the target data by removing the polynomial trend and rolling average seasonality.
 
-        Applies the fit polynomial detrender to the target data then fits and removes the
-        addititve statsmodel seasonality.
+        Applies the fit polynomial detrender to the target data, removing the polynomial trend. Then,
+        utilizes the first period's worth of seasonal data determined in the .train() function to
+        extrapolate the seasonal signal of the data to be transformed.
 
         Args:
             X (pd.DataFrame, optional): Ignored.
@@ -90,25 +113,38 @@ class PolynomialDecomposer(Decomposer):
         Returns:
             tuple of pd.DataFrame, pd.Series: The input features are returned without modification. The target
                 variable y is detrended and deseasonalized.
+
+        Raises:
+            ValueError: If the frequency attached to the target data's pandas.DatetimeIndex does not match
+                the frequency of the trained data's index.
         """
         if y is None:
             return X, y
+        # TODO: Decide if we want to limit this transformer to data with a pd.DatetimeIndex.
+        if y.index.freqstr != self.frequency:
+            raise ValueError(
+                f"Cannot transform given data with frequency {y.index.freqstr}. "
+                f"Transformer was trained on data with frequency {self.frequency}"
+            )
+
         # Remove polynomial trend then seasonality of detrended signal
         y_ww = infer_feature_types(y)
         y_detrended = self._component_obj.transform(y_ww)
-        self.seasonality = seasonal_decompose(y_detrended).seasonal
-        y_detrended_and_deseasonalized = y_detrended - self.seasonality
-        y_t =
-            pd.Series(y_detrended_and_deseasonalized, index=y_ww.index)
-        y_t.ww.init(logical_type="double")
+
+        # Repeat the seasonal signal over the target data
+        seasonal = np.tile(
+            self.seasonality.T, len(y_detrended) // self.periodicity + 1
+        ).T[: len(y_detrended)]
+
+        y_t = pd.Series(y_detrended - seasonal, index=y_ww.index)y_t.ww.init(logical_type="double")
         return X, y_t
 
     def fit_transform(self, X, y=None):
-        """Removes fitted trend from target variable.
+        """Removes fitted trend and seasonality from target variable.
 
         Args:
             X (pd.DataFrame, optional): Ignored.
-            y (pd.Series): Target variable to detrend.
+            y (pd.Series): Target variable to detrend and deseasonalize.
 
         Returns:
             tuple of pd.DataFrame, pd.Series: The first element are the input features returned without modification.
@@ -119,12 +155,15 @@ class PolynomialDecomposer(Decomposer):
     def inverse_transform(self, y):
         """Adds back fitted trend and seasonality to target variable.
 
+        The polynomial trend is added in the traditional way, calling the detrender's inverse_transform().
+        Then the seasonality is projected forward to determine and re-add the seasonality.
+
         Args:
             y (pd.Series): Target variable.
 
         Returns:
             tuple of pd.DataFrame, pd.Series: The first element are the input features returned without modification.
-                The second element is the target variable y with the trend added back.
+                The second element is the target variable y with the trend and seasonality added back.
 
         Raises:
             ValueError: If y is None.
@@ -136,13 +175,21 @@ class PolynomialDecomposer(Decomposer):
         # Add polynomial trend back to signal
         y_retrended = self._component_obj.inverse_transform(y_ww)
 
-        # Learn the seasonality on the original y data and add it back in
-        y_retrended_and_reseasonalized = (
-            y_retrended + seasonal_decompose(y_ww).seasonal
-        )
-        y_t = infer_feature_types(
-            pd.Series(y_retrended_and_reseasonalized, index=y_ww.index)
-        )
+        # Determine where the seasonality starts
+        first_index_diff = y_ww.index[0] - self.seasonality.index[0]
+        # TODO: Write tests to test different time series frequencies.
+        if self.frequency == "D":
+            delta = timedelta(days=1)
+            period = timedelta(days=self.periodicity)
+
+        # Cycle through the saved seasonality to match the first index of the transform data and project forward to the last index
+        transform_first_ind = int((first_index_diff % period) / delta)
+        seasonal = np.tile(
+            np.roll(self.seasonality.T.values, -transform_first_ind),
+            len(y_ww) // self.periodicity + 1,
+        ).T[: len(y_ww)]
+
+        y_t = infer_feature_types(pd.Series(y_retrended + seasonal, index=y_ww.index))
         return y_t
 
     def get_trend_dataframe(self, X, y):
