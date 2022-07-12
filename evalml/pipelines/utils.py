@@ -3,18 +3,18 @@ import copy
 
 from woodwork import logical_types
 
-from ..utils.gen_utils import contains_all_ts_parameters
-from . import (
+from evalml.utils.gen_utils import contains_all_ts_parameters
+from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline,
 )
-from .binary_classification_pipeline import BinaryClassificationPipeline
-from .multiclass_classification_pipeline import (
+from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline
+from evalml.pipelines.multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
 )
-from .pipeline_base import PipelineBase
-from .regression_pipeline import RegressionPipeline
+from evalml.pipelines.pipeline_base import PipelineBase
+from evalml.pipelines.regression_pipeline import RegressionPipeline
 
 from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
 from evalml.model_family import ModelFamily

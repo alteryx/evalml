@@ -12,14 +12,14 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 
-from .components import (
+from evalml.pipelines.components import (
     PCA,
     ComponentBase,
     DFSTransformer,
     Estimator,
     LinearDiscriminantAnalysis,
 )
-from .components.utils import all_components, handle_component_class
+from evalml.pipelines.components.utils import all_components, handle_component_class
 
 from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
 from evalml.objectives import get_objective

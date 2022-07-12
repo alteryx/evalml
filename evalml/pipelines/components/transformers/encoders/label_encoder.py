@@ -1,7 +1,7 @@
 """A transformer that encodes target labels using values between 0 and num_classes - 1."""
 import woodwork as ww
 
-from ..transformer import Transformer
+from evalml.pipelines.components.transformers.transformer import Transformer
 
 from evalml.utils import infer_feature_types
 

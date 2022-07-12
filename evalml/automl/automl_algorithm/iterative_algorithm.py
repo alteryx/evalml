@@ -5,7 +5,7 @@ from operator import itemgetter
 
 import numpy as np
 
-from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
+from evalml.automl.automl_algorithm.automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
 from evalml.automl.utils import get_pipelines_from_component_graphs
 from evalml.exceptions import ParameterNotUsedWarning

@@ -1,7 +1,7 @@
 """Pipeline base class for time-series classification problems."""
 import pandas as pd
 
-from .binary_classification_pipeline_mixin import (
+from evalml.pipelines.binary_classification_pipeline_mixin import (
     BinaryClassificationPipelineMixin,
 )
 

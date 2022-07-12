@@ -5,8 +5,8 @@ import warnings
 import pandas as pd
 from skopt import Optimizer
 
-from .tuner import Tuner
-from .tuner_exceptions import ParameterError
+from evalml.tuners.tuner import Tuner
+from evalml.tuners.tuner_exceptions import ParameterError
 
 logger = logging.getLogger(__name__)
 

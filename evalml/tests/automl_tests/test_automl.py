@@ -15,7 +15,7 @@ from joblib import hash as joblib_hash
 from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
-from .test_automl_iterative_algorithm import _get_first_stacked_classifier_no
+from evalml.tests.automl_tests.test_automl_iterative_algorithm import _get_first_stacked_classifier_no
 
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm

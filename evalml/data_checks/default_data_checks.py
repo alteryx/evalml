@@ -1,15 +1,15 @@
 """A default set of data checks that can be used for a variety of datasets."""
-from .class_imbalance_data_check import ClassImbalanceDataCheck
-from .data_checks import DataChecks
-from .datetime_format_data_check import DateTimeFormatDataCheck
-from .id_columns_data_check import IDColumnsDataCheck
-from .invalid_target_data_check import InvalidTargetDataCheck
-from .no_variance_data_check import NoVarianceDataCheck
-from .null_data_check import NullDataCheck
-from .target_distribution_data_check import TargetDistributionDataCheck
-from .target_leakage_data_check import TargetLeakageDataCheck
-from .ts_parameters_data_check import TimeSeriesParametersDataCheck
-from .ts_splitting_data_check import TimeSeriesSplittingDataCheck
+from evalml.data_checks.class_imbalance_data_check import ClassImbalanceDataCheck
+from evalml.data_checks.data_checks import DataChecks
+from evalml.data_checks.datetime_format_data_check import DateTimeFormatDataCheck
+from evalml.data_checks.id_columns_data_check import IDColumnsDataCheck
+from evalml.data_checks.invalid_target_data_check import InvalidTargetDataCheck
+from evalml.data_checks.no_variance_data_check import NoVarianceDataCheck
+from evalml.data_checks.null_data_check import NullDataCheck
+from evalml.data_checks.target_distribution_data_check import TargetDistributionDataCheck
+from evalml.data_checks.target_leakage_data_check import TargetLeakageDataCheck
+from evalml.data_checks.ts_parameters_data_check import TimeSeriesParametersDataCheck
+from evalml.data_checks.ts_splitting_data_check import TimeSeriesSplittingDataCheck
 
 from evalml.problem_types import (
     ProblemTypes,

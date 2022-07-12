@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.optimize import differential_evolution
 
-from .objective_base import ObjectiveBase
+from evalml.objectives.objective_base import ObjectiveBase
 
 from evalml.problem_types import ProblemTypes
 

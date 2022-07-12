@@ -1,2 +1,2 @@
 """Components that scale input data."""
-from .standard_scaler import StandardScaler
+from evalml.pipelines.components.transformers.scalers.standard_scaler import StandardScaler

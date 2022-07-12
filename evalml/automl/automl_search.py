@@ -17,7 +17,7 @@ from plotly import io as pio
 from sklearn.model_selection import BaseCrossValidator
 from skopt.space import Categorical
 
-from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
+from evalml.automl.pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 
 from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback

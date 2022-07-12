@@ -1,5 +1,5 @@
 """Pipeline subclass for all binary classification pipelines."""
-from .binary_classification_pipeline_mixin import (
+from evalml.pipelines.binary_classification_pipeline_mixin import (
     BinaryClassificationPipelineMixin,
 )
 

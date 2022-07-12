@@ -6,13 +6,13 @@ import pandas as pd
 from sklearn import metrics
 from sklearn.preprocessing import label_binarize
 
-from ..utils import classproperty
-from .binary_classification_objective import BinaryClassificationObjective
-from .multiclass_classification_objective import (
+from evalml.utils import classproperty
+from evalml.objectives.binary_classification_objective import BinaryClassificationObjective
+from evalml.objectives.multiclass_classification_objective import (
     MulticlassClassificationObjective,
 )
-from .regression_objective import RegressionObjective
-from .time_series_regression_objective import TimeSeriesRegressionObjective
+from evalml.objectives.regression_objective import RegressionObjective
+from evalml.objectives.time_series_regression_objective import TimeSeriesRegressionObjective
 
 
 class AccuracyBinary(BinaryClassificationObjective):

@@ -3,8 +3,8 @@ import itertools
 
 from skopt.space import Integer, Real
 
-from .tuner import Tuner
-from .tuner_exceptions import NoParamsException
+from evalml.tuners.tuner import Tuner
+from evalml.tuners.tuner_exceptions import NoParamsException
 
 
 class GridSearchTuner(Tuner):

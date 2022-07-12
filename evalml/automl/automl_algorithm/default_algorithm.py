@@ -3,7 +3,7 @@ import logging
 
 import numpy as np
 
-from .automl_algorithm import AutoMLAlgorithm
+from evalml.automl.automl_algorithm.automl_algorithm import AutoMLAlgorithm
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
