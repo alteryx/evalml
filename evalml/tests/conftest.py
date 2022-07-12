@@ -55,10 +55,6 @@ def pytest_configure(config):
         "markers",
         "skip_during_conda: mark test to be skipped if running during conda build",
     )
-    config.addinivalue_line(
-        "markers",
-        "skip_if_39: mark test to be skipped if running during conda build",
-    )
 
 
 @pytest.fixture(scope="session")
