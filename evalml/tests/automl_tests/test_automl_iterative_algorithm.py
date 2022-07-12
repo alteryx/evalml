@@ -8,21 +8,12 @@ from skopt.space import Categorical, Integer
 
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
-from evalml.automl.automl_algorithm.iterative_algorithm import (
-    _ESTIMATOR_FAMILY_ORDER,
-)
+from evalml.automl.automl_algorithm.iterative_algorithm import _ESTIMATOR_FAMILY_ORDER
 from evalml.automl.callbacks import raise_error_callback
 from evalml.exceptions import ParameterNotUsedWarning
 from evalml.model_family import ModelFamily
-from evalml.pipelines import (
-    BinaryClassificationPipeline,
-    ComponentGraph,
-    Estimator,
-)
-from evalml.pipelines.components.utils import (
-    allowed_model_families,
-    get_estimators,
-)
+from evalml.pipelines import BinaryClassificationPipeline, ComponentGraph, Estimator
+from evalml.pipelines.components.utils import allowed_model_families, get_estimators
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 

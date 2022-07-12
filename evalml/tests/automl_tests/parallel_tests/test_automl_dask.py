@@ -6,12 +6,7 @@ from evalml.automl import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.engine import CFEngine, DaskEngine, SequentialEngine
-from evalml.problem_types import (
-    ProblemTypes,
-    is_binary,
-    is_multiclass,
-    is_time_series,
-)
+from evalml.problem_types import ProblemTypes, is_binary, is_multiclass, is_time_series
 from evalml.tests.automl_tests.dask_test_utils import (
     DaskPipelineFast,
     DaskPipelineSlow,

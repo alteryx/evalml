@@ -2,7 +2,6 @@
 import woodwork as ww
 
 from evalml.pipelines.components.transformers.transformer import Transformer
-
 from evalml.utils import infer_feature_types
 
 

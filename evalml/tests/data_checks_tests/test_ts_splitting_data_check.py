@@ -1,10 +1,7 @@
 import pandas as pd
 import pytest
 
-from evalml.data_checks import (
-    DataCheckMessageCode,
-    TimeSeriesSplittingDataCheck,
-)
+from evalml.data_checks import DataCheckMessageCode, TimeSeriesSplittingDataCheck
 
 
 def test_time_series_splitting_data_check_raises_value_error():

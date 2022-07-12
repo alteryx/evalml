@@ -1,4 +1,8 @@
-import yaml, argparse, os, pathlib
+import argparse
+import os
+import pathlib
+
+import yaml
 
 
 class CondaDumper(yaml.Dumper):

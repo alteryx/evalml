@@ -3,22 +3,15 @@ import copy
 
 from woodwork import logical_types
 
-from evalml.utils.gen_utils import contains_all_ts_parameters
+from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
+from evalml.model_family import ModelFamily
 from evalml.pipelines import (
+    ComponentGraph,
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline,
 )
 from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline
-from evalml.pipelines.multiclass_classification_pipeline import (
-    MulticlassClassificationPipeline,
-)
-from evalml.pipelines.pipeline_base import PipelineBase
-from evalml.pipelines.regression_pipeline import RegressionPipeline
-
-from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
-from evalml.model_family import ModelFamily
-from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
     CatBoostRegressor,
@@ -50,14 +43,17 @@ from evalml.pipelines.components import (  # noqa: F401
     Undersampler,
     URLFeaturizer,
 )
-from evalml.pipelines.components.transformers.encoders.label_encoder import (
-    LabelEncoder,
-)
+from evalml.pipelines.components.transformers.encoders.label_encoder import LabelEncoder
 from evalml.pipelines.components.utils import (
     estimator_unable_to_handle_nans,
     get_estimators,
     handle_component_class,
 )
+from evalml.pipelines.multiclass_classification_pipeline import (
+    MulticlassClassificationPipeline,
+)
+from evalml.pipelines.pipeline_base import PipelineBase
+from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -65,6 +61,7 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.utils import infer_feature_types
+from evalml.utils.gen_utils import contains_all_ts_parameters
 
 
 def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None):

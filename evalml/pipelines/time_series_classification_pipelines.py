@@ -1,11 +1,10 @@
 """Pipeline base class for time-series classification problems."""
 import pandas as pd
 
+from evalml.objectives import get_objective
 from evalml.pipelines.binary_classification_pipeline_mixin import (
     BinaryClassificationPipelineMixin,
 )
-
-from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes

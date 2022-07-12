@@ -4,11 +4,7 @@ import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
 
-from evalml.pipelines.components import (
-    DropColumns,
-    SelectByType,
-    SelectColumns,
-)
+from evalml.pipelines.components import DropColumns, SelectByType, SelectColumns
 
 
 @pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns])

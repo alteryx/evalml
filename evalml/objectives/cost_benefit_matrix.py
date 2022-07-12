@@ -1,9 +1,10 @@
 """Cost-benefit matrix objective."""
 import numpy as np
 
-from evalml.objectives.binary_classification_objective import BinaryClassificationObjective
-
 import evalml
+from evalml.objectives.binary_classification_objective import (
+    BinaryClassificationObjective,
+)
 
 
 class CostBenefitMatrix(BinaryClassificationObjective):

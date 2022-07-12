@@ -3,7 +3,9 @@ import logging
 
 import numpy as np
 
-from evalml.objectives.binary_classification_objective import BinaryClassificationObjective
+from evalml.objectives.binary_classification_objective import (
+    BinaryClassificationObjective,
+)
 
 logger = logging.getLogger(__name__)
 

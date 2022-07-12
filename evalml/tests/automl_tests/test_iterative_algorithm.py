@@ -6,10 +6,7 @@ import pandas as pd
 import pytest
 from skopt.space import Categorical, Integer, Real
 
-from evalml.automl.automl_algorithm import (
-    AutoMLAlgorithmException,
-    IterativeAlgorithm,
-)
+from evalml.automl.automl_algorithm import AutoMLAlgorithmException, IterativeAlgorithm
 from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,

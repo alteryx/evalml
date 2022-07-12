@@ -12,16 +12,15 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import evalml
 import os
-import sys
-import subprocess
 import shutil
+import subprocess
+import sys
 from pathlib import Path
+
 from sphinx.ext.autodoc import Documenter, MethodDocumenter
 
-
-from sphinx.ext.autodoc import MethodDocumenter, Documenter
+import evalml
 
 path = os.path.join("..", "..")
 sys.path.insert(0, os.path.abspath(path))

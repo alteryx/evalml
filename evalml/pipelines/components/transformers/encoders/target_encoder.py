@@ -3,11 +3,10 @@ import warnings
 
 import pandas as pd
 
-from evalml.pipelines.components.transformers.transformer import Transformer
-
 from evalml.pipelines.components.transformers.encoders.onehot_encoder import (
     OneHotEncoderMeta,
 )
+from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import import_or_raise, infer_feature_types
 
 

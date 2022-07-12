@@ -10,10 +10,7 @@ import pandas as pd
 import pytest
 from skopt.space import Categorical
 
-from evalml.exceptions import (
-    ComponentNotYetFittedError,
-    MethodPropertyNotFoundError,
-)
+from evalml.exceptions import ComponentNotYetFittedError, MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import (
@@ -81,15 +78,11 @@ from evalml.pipelines.components.estimators.classifiers.vowpal_wabbit_classifier
 from evalml.pipelines.components.estimators.regressors.vowpal_wabbit_regressor import (
     VowpalWabbitRegressor,
 )
-from evalml.pipelines.components.transformers.encoders.label_encoder import (
-    LabelEncoder,
-)
+from evalml.pipelines.components.transformers.encoders.label_encoder import LabelEncoder
 from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
     LogTransformer,
 )
-from evalml.pipelines.components.transformers.samplers.base_sampler import (
-    BaseSampler,
-)
+from evalml.pipelines.components.transformers.samplers.base_sampler import BaseSampler
 from evalml.pipelines.components.utils import (
     _all_estimators,
     _all_transformers,

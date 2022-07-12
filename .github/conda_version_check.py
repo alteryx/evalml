@@ -1,11 +1,11 @@
-import yaml
-from contextlib import contextmanager
-import requirements
-import pathlib
 import os
+import pathlib
+from contextlib import contextmanager
+
+import requirements
+import yaml
 
 from evalml.utils import get_evalml_pip_requirements, standardize_format
-
 
 IGNORE_PACKAGES = {"python", "pmdarima", "pyzmq", "vowpalwabbit"}
 

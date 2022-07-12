@@ -2,9 +2,7 @@
 import numpy as np
 import pandas as pd
 
-from evalml.pipelines.components.transformers.samplers.base_sampler import (
-    BaseSampler,
-)
+from evalml.pipelines.components.transformers.samplers.base_sampler import BaseSampler
 from evalml.utils.woodwork_utils import infer_feature_types
 
 

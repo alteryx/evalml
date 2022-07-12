@@ -6,11 +6,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning,
 )
-from evalml.problem_types import (
-    handle_problem_types,
-    is_multiclass,
-    is_regression,
-)
+from evalml.problem_types import handle_problem_types, is_multiclass, is_regression
 from evalml.utils.woodwork_utils import infer_feature_types
 
 warning_not_unique_enough = (

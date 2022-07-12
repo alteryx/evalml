@@ -9,10 +9,7 @@ import pandas as pd
 import woodwork as ww
 from scipy.stats.mstats import mquantiles
 
-from evalml.exceptions import (
-    PartialDependenceError,
-    PartialDependenceErrorCode,
-)
+from evalml.exceptions import PartialDependenceError, PartialDependenceErrorCode
 from evalml.problem_types import is_regression
 
 

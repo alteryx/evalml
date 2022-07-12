@@ -20,11 +20,7 @@ from evalml.pipelines import (
     TimeSeriesRegressionPipeline,
     TimeSeriesRegularizer,
 )
-from evalml.pipelines.components import (
-    DropColumns,
-    DropRowsTransformer,
-    TargetImputer,
-)
+from evalml.pipelines.components import DropColumns, DropRowsTransformer, TargetImputer
 from evalml.pipelines.components.transformers.imputers.per_column_imputer import (
     PerColumnImputer,
 )

@@ -21,12 +21,7 @@ from evalml.exceptions import (
     PipelineScoreError,
 )
 from evalml.model_family import ModelFamily
-from evalml.objectives import (
-    CostBenefitMatrix,
-    FraudCost,
-    Precision,
-    get_objective,
-)
+from evalml.objectives import CostBenefitMatrix, FraudCost, Precision, get_objective
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -55,12 +50,7 @@ from evalml.pipelines.components.utils import (
 )
 from evalml.pipelines.utils import _get_pipeline_base_class
 from evalml.preprocessing.utils import is_classification
-from evalml.problem_types import (
-    ProblemTypes,
-    is_binary,
-    is_multiclass,
-    is_time_series,
-)
+from evalml.problem_types import ProblemTypes, is_binary, is_multiclass, is_time_series
 from evalml.utils import infer_feature_types
 
 

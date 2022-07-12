@@ -13,22 +13,13 @@ from evalml.automl.utils import (
     make_data_splitter,
     tune_binary_threshold,
 )
-from evalml.objectives import (
-    F1,
-    R2,
-    LogLossBinary,
-    LogLossMulticlass,
-    MedianAE,
-)
+from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass, MedianAE
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
-from evalml.preprocessing.data_splitters import (
-    TimeSeriesSplit,
-    TrainingValidationSplit,
-)
+from evalml.preprocessing.data_splitters import TimeSeriesSplit, TrainingValidationSplit
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
 

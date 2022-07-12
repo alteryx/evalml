@@ -4,9 +4,7 @@ from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import make_pipeline
 
-from evalml.pipelines.components.transformers.preprocessing import (
-    TextTransformer,
-)
+from evalml.pipelines.components.transformers.preprocessing import TextTransformer
 from evalml.utils import infer_feature_types
 
 

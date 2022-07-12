@@ -12,6 +12,9 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 
+from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
+from evalml.objectives import get_objective
+from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (
     PCA,
     ComponentBase,
@@ -20,10 +23,6 @@ from evalml.pipelines.components import (
     LinearDiscriminantAnalysis,
 )
 from evalml.pipelines.components.utils import all_components, handle_component_class
-
-from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
-from evalml.objectives import get_objective
-from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.problem_types import is_binary
 from evalml.utils import (

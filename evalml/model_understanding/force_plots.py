@@ -3,9 +3,7 @@ import numpy as np
 import shap
 from shap import initjs
 
-from evalml.model_understanding.prediction_explanations import (
-    explain_predictions,
-)
+from evalml.model_understanding.prediction_explanations import explain_predictions
 from evalml.utils import jupyter_check
 
 

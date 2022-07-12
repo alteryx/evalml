@@ -6,12 +6,7 @@ import cloudpickle
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
-from evalml.utils import (
-    classproperty,
-    infer_feature_types,
-    log_subtitle,
-    safe_repr,
-)
+from evalml.utils import classproperty, infer_feature_types, log_subtitle, safe_repr
 from evalml.utils.logger import get_logger
 
 

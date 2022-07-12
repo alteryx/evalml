@@ -17,13 +17,12 @@ from plotly import io as pio
 from sklearn.model_selection import BaseCrossValidator
 from skopt.space import Categorical
 
-from evalml.automl.pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
-
 from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engine import SequentialEngine
 from evalml.automl.engine.cf_engine import CFClient, CFEngine
 from evalml.automl.engine.dask_engine import DaskEngine
+from evalml.automl.pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 from evalml.automl.utils import (
     AutoMLConfig,
     check_all_pipeline_names_unique,

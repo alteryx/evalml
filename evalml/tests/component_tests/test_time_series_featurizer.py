@@ -5,13 +5,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
-from woodwork.logical_types import (
-    Boolean,
-    Categorical,
-    Datetime,
-    Double,
-    Integer,
-)
+from woodwork.logical_types import Boolean, Categorical, Datetime, Double, Integer
 
 from evalml.pipelines import TimeSeriesFeaturizer
 

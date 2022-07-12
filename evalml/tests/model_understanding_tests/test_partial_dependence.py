@@ -11,10 +11,7 @@ from evalml.exceptions import (
     PartialDependenceError,
     PartialDependenceErrorCode,
 )
-from evalml.model_understanding import (
-    graph_partial_dependence,
-    partial_dependence,
-)
+from evalml.model_understanding import graph_partial_dependence, partial_dependence
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     ClassificationPipeline,

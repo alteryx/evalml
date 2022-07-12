@@ -33,10 +33,7 @@ from evalml.objectives import (
     RootMeanSquaredError,
     RootMeanSquaredLogError,
 )
-from evalml.objectives.utils import (
-    _all_objectives_dict,
-    get_non_core_objectives,
-)
+from evalml.objectives.utils import _all_objectives_dict, get_non_core_objectives
 
 EPS = 1e-5
 all_automl_objectives = _all_objectives_dict()

@@ -4,7 +4,6 @@ import logging
 import numpy as np
 
 from evalml.automl.automl_algorithm.automl_algorithm import AutoMLAlgorithm
-
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     EmailFeaturizer,
@@ -17,14 +16,8 @@ from evalml.pipelines.components.transformers.column_selectors import (
     SelectByType,
     SelectColumns,
 )
-from evalml.pipelines.components.utils import (
-    get_estimators,
-    handle_component_class,
-)
-from evalml.pipelines.utils import (
-    _make_pipeline_from_multiple_graphs,
-    make_pipeline,
-)
+from evalml.pipelines.components.utils import get_estimators, handle_component_class
+from evalml.pipelines.utils import _make_pipeline_from_multiple_graphs, make_pipeline
 from evalml.problem_types import is_regression, is_time_series
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger

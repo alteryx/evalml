@@ -15,17 +15,8 @@ from evalml.data_checks import (
     InvalidTargetDataCheck,
 )
 from evalml.exceptions import DataCheckInitError
-from evalml.objectives import (
-    MAPE,
-    MeanSquaredLogError,
-    RootMeanSquaredLogError,
-)
-from evalml.problem_types import (
-    ProblemTypes,
-    is_binary,
-    is_multiclass,
-    is_regression,
-)
+from evalml.objectives import MAPE, MeanSquaredLogError, RootMeanSquaredLogError
+from evalml.problem_types import ProblemTypes, is_binary, is_multiclass, is_regression
 from evalml.utils.woodwork_utils import numeric_and_boolean_ww
 
 invalid_targets_data_check_name = InvalidTargetDataCheck.name

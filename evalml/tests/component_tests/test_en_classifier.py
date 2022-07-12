@@ -4,9 +4,7 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components.estimators.classifiers import (
-    ElasticNetClassifier,
-)
+from evalml.pipelines.components.estimators.classifiers import ElasticNetClassifier
 from evalml.problem_types import ProblemTypes
 
 

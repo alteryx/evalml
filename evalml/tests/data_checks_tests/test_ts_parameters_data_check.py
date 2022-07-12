@@ -1,10 +1,7 @@
 import pandas as pd
 import pytest
 
-from evalml.data_checks import (
-    DataCheckMessageCode,
-    TimeSeriesParametersDataCheck,
-)
+from evalml.data_checks import DataCheckMessageCode, TimeSeriesParametersDataCheck
 
 
 @pytest.mark.parametrize(

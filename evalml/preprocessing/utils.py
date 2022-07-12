@@ -3,11 +3,7 @@ import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
-from evalml.problem_types import (
-    is_classification,
-    is_regression,
-    is_time_series,
-)
+from evalml.problem_types import is_classification, is_regression, is_time_series
 from evalml.utils import infer_feature_types
 
 

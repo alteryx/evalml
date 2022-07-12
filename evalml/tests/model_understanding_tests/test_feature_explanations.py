@@ -4,10 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.model_understanding import (
-    get_influential_features,
-    readable_explanation,
-)
+from evalml.model_understanding import get_influential_features, readable_explanation
 from evalml.pipelines import BinaryClassificationPipeline
 
 
