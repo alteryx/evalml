@@ -2,7 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Defined `get_trend_df()` for PolynomialDetrender to allow decomposition of target data into trend, seasonality and residual. :pr:`3599`
+        * Defined `get_trend_df()` for PolynomialDecomposer to allow decomposition of target data into trend, seasonality and residual. :pr:`3599`
         * Updated to run with Woodwork >= 0.18.0 :pr:`3700`
         * Pass time index column to time series native estimators but drop otherwise :pr:`3691`
         * Added ``errors`` attribute to ``AutoMLSearch`` for useful debugging :pr:`3702`
@@ -75,14 +75,14 @@ Release Notes
         * Updated ``test_data_checks.py::test_data_checks_raises_value_errors_on_init`` - more lenient text check :pr:`3609`
     * Changes
         * Bumped up minimum version of sktime to 0.12.0. :pr:`3599`
-        * Added abstract Detrender class as a parent to PolynomialDetrender to support additional detrenders. :pr:`3599`
+        * Added abstract Detrender class as a parent to PolynomialDecomposer to support additional detrenders. :pr:`3599`
         * Add pre-commit hooks for linting :pr:`3608`
         * Implemented a lower threshold and window size for the ``TimeSeriesRegularizer`` and ``DatetimeFormatDataCheck`` :pr:`3627`
         * Updated ``IDColumnsDataCheck`` to return an action to set the first column as the primary key if it is identified as an ID column :pr:`3634`
     * Documentation Changes
     * Testing Changes
         * Pinned GraphViz version for Windows CI Test :pr:`3596`
-        * Removed skipping of PolynomialDetrender tests for Python 3.9 envs. :pr:`3599`
+        * Removed skipping of PolynomialDecomposer tests for Python 3.9 envs. :pr:`3599`
         * Removed ``pytest.mark.skip_if_39`` pytest marker :pr:`3602` :pr:`3607`
         * Updated pytest==7.1.2 :pr:`3609`
         * Added Dockerfile.arm and .dockerignore for python version and M1 testing :pr:`3609`
@@ -1080,7 +1080,7 @@ Release Notes
         * Added recommended actions for the output of data check's ``validate`` method :pr:`1968`
         * Added error message for ``partial_dependence`` when features are mostly the same value :pr:`1994`
         * Updated ``OneHotEncoder`` to drop one redundant feature by default for features with two categories :pr:`1997`
-        * Added a ``PolynomialDetrender`` component :pr:`1992`
+        * Added a ``PolynomialDecomposer`` component :pr:`1992`
         * Added ``DateTimeNaNDataCheck`` data check :pr:`2039`
     * Fixes
         * Changed best pipeline to train on the entire dataset rather than just ensemble indices for ensemble problems :pr:`2037`
