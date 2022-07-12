@@ -29,7 +29,31 @@ class UnknownTypeDataCheck(DataCheck):
 
         Returns:
             dict: A dictionary with warnings if any columns
-
+        Examples:
+            We use the default unknown_percentage_threshold.
+            >>> import pandas as pd
+            ...
+            >>> df = pd.DataFrame({
+            ...     "all_null": [None, pd.NA, None, None, None],
+            ...     "literally_all_null": [None, None, None, None, None],
+            ...     "few_null": [1, 2, None, 2, 3],
+            ...     "no_null": [1, 2, 3, 4, 5]
+            ... })
+            ...
+            >>> unknown_type_dc = UnknownTypeDataCheck()
+            >>> assert unknown_type_dc.validate(df) == [
+            ...     {
+            ...         "message": "2 out of 4 rows are unknown type, meaning the number of rows that are unknown is more than 50.0%.",
+            ...         "data_check_name": "UnknownTypeDataCheck",
+            ...         "level": "warning",
+            ...         "details": {
+            ...             "columns": ["all_null", "literally_all_null"],
+            ...             "rows": None,
+            ...         },
+            ...         "code": "HIGH_NUMBER_OF_UNKNOWN_TYPE",
+            ...         "action_options": [],
+            ...      }
+            ... ]
         """
         messages = []
 
