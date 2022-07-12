@@ -12,7 +12,7 @@
    .. autoattribute:: name
 
    {% endblock %}
-      
+
    {% block methods %}
    {% if methods %}
    .. rubric:: Methods:
