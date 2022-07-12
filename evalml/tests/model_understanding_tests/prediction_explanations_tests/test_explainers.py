@@ -35,11 +35,13 @@ def compare_two_tables(table_1, table_2):
 def test_error_metrics():
 
     np.testing.assert_array_equal(
-        abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])), np.array([3, 1, 3]),
+        abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])),
+        np.array([3, 1, 3]),
     )
     np.testing.assert_allclose(
         cross_entropy(
-            pd.Series([1, 0]), pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]}),
+            pd.Series([1, 0]),
+            pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]}),
         ),
         np.array([-np.log(0.9), -np.log(0.2)]),
     )
@@ -65,10 +67,13 @@ input_features_and_y_true = [
 
 
 @pytest.mark.parametrize(
-    "input_features,y_true,error_message", input_features_and_y_true,
+    "input_features,y_true,error_message",
+    input_features_and_y_true,
 )
 def test_explain_predictions_best_worst_value_errors(
-    input_features, y_true, error_message,
+    input_features,
+    y_true,
+    error_message,
 ):
     with pytest.raises(ValueError, match=error_message):
         explain_predictions_best_worst(None, input_features, y_true)
@@ -84,13 +89,16 @@ def test_explain_predictions_raises_pipeline_score_error():
         pipeline.problem_type = ProblemTypes.BINARY
         pipeline.predict_proba.side_effect = raise_zero_division
         explain_predictions_best_worst(
-            pipeline, pd.DataFrame({"a": range(15)}), pd.Series(range(15)),
+            pipeline,
+            pd.DataFrame({"a": range(15)}),
+            pd.Series(range(15)),
         )
 
 
 def test_explain_predictions_value_errors():
     with pytest.raises(
-        ValueError, match="Parameter input_features must be a non-empty dataframe.",
+        ValueError,
+        match="Parameter input_features must be a non-empty dataframe.",
     ):
         explain_predictions(MagicMock(), pd.DataFrame(), y=None, indices_to_explain=[0])
 
@@ -130,7 +138,9 @@ def test_explain_predictions_value_errors():
     ],
 )
 def test_time_series_training_target_and_training_data_are_not_None(
-    training_target, training_data, problem_type,
+    training_target,
+    training_data,
+    problem_type,
 ):
     mock_ts_pipeline = MagicMock(problem_type=problem_type)
 
@@ -138,7 +148,8 @@ def test_time_series_training_target_and_training_data_are_not_None(
         pytest.xfail("No exception raised in this case")
 
     with pytest.raises(
-        ValueError, match="training_target and training_data are not None",
+        ValueError,
+        match="training_target and training_data are not None",
     ):
         explain_predictions(
             mock_ts_pipeline,
@@ -150,7 +161,8 @@ def test_time_series_training_target_and_training_data_are_not_None(
         )
 
     with pytest.raises(
-        ValueError, match="training_target and training_data are not None",
+        ValueError,
+        match="training_target and training_data are not None",
     ):
         explain_predictions_best_worst(
             mock_ts_pipeline,
@@ -518,7 +530,10 @@ regression_custom_indices = [[0, 1], [4, 10], ["foo", "bar"]]
 @pytest.mark.parametrize(
     "problem_type,output_format,custom_index,algorithm",
     product(
-        regression_problem_types, output_formats, regression_custom_indices, algorithms,
+        regression_problem_types,
+        output_formats,
+        regression_custom_indices,
+        algorithms,
     ),
 )
 @patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
@@ -744,7 +759,10 @@ multiclass_custom_indices = [[0, 1], [17, 235], ["2020-15", "2020-15"]]
 @pytest.mark.parametrize(
     "problem_type,output_format,custom_index,algorithm",
     product(
-        multiclass_problem_types, output_formats, multiclass_custom_indices, algorithms,
+        multiclass_problem_types,
+        output_formats,
+        multiclass_custom_indices,
+        algorithms,
     ),
 )
 @patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
@@ -925,7 +943,9 @@ regression_custom_metric_answer_dict = {
     "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table",
 )
 def test_explain_predictions_best_worst_custom_metric(
-    mock_make_table, output_format, answer,
+    mock_make_table,
+    output_format,
+    answer,
 ):
 
     mock_make_table.return_value = (
@@ -958,7 +978,8 @@ def test_explain_predictions_best_worst_custom_metric(
 
     if output_format == "text":
         compare_two_tables(
-            best_worst_report.splitlines(), regression_custom_metric_answer.splitlines(),
+            best_worst_report.splitlines(),
+            regression_custom_metric_answer.splitlines(),
         )
     else:
         assert best_worst_report == answer
@@ -1032,7 +1053,11 @@ def test_explain_predictions_time_series(ts_data):
     ],
 )
 def test_explain_predictions_best_worst_time_series(
-    output_format, pipeline_class, estimator, ts_data, ts_data_binary,
+    output_format,
+    pipeline_class,
+    estimator,
+    ts_data,
+    ts_data_binary,
 ):
     X, y = ts_data
 
@@ -1126,12 +1151,20 @@ def test_json_serialization(
     pipeline.fit(X, y)
 
     best_worst = explain_predictions_best_worst(
-        pipeline, pd.DataFrame(X), y, num_to_explain=1, output_format="dict",
+        pipeline,
+        pd.DataFrame(X),
+        y,
+        num_to_explain=1,
+        output_format="dict",
     )
     assert json.loads(json.dumps(best_worst)) == best_worst
 
     report = explain_predictions(
-        pipeline, pd.DataFrame(X), y=y, output_format="dict", indices_to_explain=[0],
+        pipeline,
+        pd.DataFrame(X),
+        y=y,
+        output_format="dict",
+        indices_to_explain=[0],
     )
     assert json.loads(json.dumps(report)) == report
 
@@ -1221,7 +1254,9 @@ pipeline_test_cases = [
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_linear_pipeline(
-    pipeline_class_and_estimator, algorithm, fraud_100,
+    pipeline_class_and_estimator,
+    algorithm,
+    fraud_100,
 ):
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
@@ -1344,7 +1379,9 @@ def test_categories_aggregated_text(pipeline_class_and_estimator, algorithm, fra
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_date_ohe(
-    pipeline_class_and_estimator, algorithm, fraud_100,
+    pipeline_class_and_estimator,
+    algorithm,
+    fraud_100,
 ):
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
@@ -1410,7 +1447,9 @@ def test_categories_aggregated_date_ohe(
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_pca_dag(
-    pipeline_class_and_estimator, algorithm, fraud_100,
+    pipeline_class_and_estimator,
+    algorithm,
+    fraud_100,
 ):
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
@@ -1483,7 +1522,9 @@ def test_categories_aggregated_pca_dag(
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_but_not_those_that_are_dropped(
-    pipeline_class_and_estimator, algorithm, fraud_100,
+    pipeline_class_and_estimator,
+    algorithm,
+    fraud_100,
 ):
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
@@ -1535,7 +1576,9 @@ def test_categories_aggregated_but_not_those_that_are_dropped(
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_when_some_are_dropped(
-    pipeline_class_and_estimator, algorithm, fraud_100,
+    pipeline_class_and_estimator,
+    algorithm,
+    fraud_100,
 ):
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
@@ -1703,7 +1746,12 @@ def test_explain_predictions_stacked_ensemble(
     )
 
     report = explain_predictions_best_worst(
-        pipeline, X, y, top_k_features=10, output_format="dict", algorithm=algorithm,
+        pipeline,
+        X,
+        y,
+        top_k_features=10,
+        output_format="dict",
+        algorithm=algorithm,
     )
     explanations_data = report["explanations"]
     for entry in explanations_data:
@@ -1763,7 +1811,8 @@ def test_explain_predictions_oversampler(estimator, algorithm, fraud_100):
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.MULTICLASS, ProblemTypes.BINARY])
 def test_explain_predictions_class_name_matches_class_name_in_y(
-    problem_type, fraud_100,
+    problem_type,
+    fraud_100,
 ):
     X, y = fraud_100
     if problem_type == ProblemTypes.BINARY:
@@ -1839,7 +1888,11 @@ def test_explain_predictions_best_worst_callback(mock_make_table):
 
     mock_callback = MockCallback()
     explain_predictions_best_worst(
-        pipeline, input_features, y_true, num_to_explain=1, callback=mock_callback,
+        pipeline,
+        input_features,
+        y_true,
+        num_to_explain=1,
+        callback=mock_callback,
     )
     assert mock_callback.progress_stages == [e for e in ExplainPredictionsStage]
     assert mock_callback.total_elapsed_time > 0
@@ -1866,7 +1919,10 @@ def test_explain_predictions_unknown(indices, X_y_binary):
     if indices == 0:
         # make sure we only run this part once
         exp = explain_predictions_best_worst(
-            pipeline=pl, input_features=X, y_true=y, output_format="dataframe",
+            pipeline=pl,
+            input_features=X,
+            y_true=y,
+            output_format="dataframe",
         )
         assert exp["feature_names"].isnull().sum() == 0
         assert exp["feature_values"].isnull().sum() == 0
@@ -2009,7 +2065,9 @@ def test_explain_predictions_postalcodes(
     product(pipeline_test_cases, algorithms),
 )
 def test_explain_predictions_report_shows_original_value_if_possible(
-    pipeline_class_and_estimator, algorithm, fraud_100,
+    pipeline_class_and_estimator,
+    algorithm,
+    fraud_100,
 ):
     pipeline_class, estimator = pipeline_class_and_estimator
     X, y = fraud_100
@@ -2064,7 +2122,8 @@ def test_explain_predictions_report_shows_original_value_if_possible(
     for explanation in report["explanations"][0]["explanations"]:
         assert set(explanation["feature_names"]) == set(X.columns)
         for feature_name, feature_value in zip(
-            explanation["feature_names"], explanation["feature_values"],
+            explanation["feature_names"],
+            explanation["feature_values"],
         ):
             if feature_name == "lat":
                 assert np.isnan(feature_value)
@@ -2072,7 +2131,8 @@ def test_explain_predictions_report_shows_original_value_if_possible(
 
 @pytest.mark.parametrize("algorithm", algorithms)
 def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
-    algorithm, fraud_100,
+    algorithm,
+    fraud_100,
 ):
     X, y = fraud_100
     X.ww.set_types({"country": "NaturalLanguage"})
@@ -2088,7 +2148,8 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
         "Random Forest Classifier": {"n_jobs": 1},
     }
     pipeline = BinaryClassificationPipeline(
-        component_graph=component_graph, parameters=parameters,
+        component_graph=component_graph,
+        parameters=parameters,
     )
 
     y = transform_y_for_problem_type(pipeline.problem_type, y)
@@ -2131,7 +2192,8 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
         for exp in explanation["explanations"]:
             assert set(exp["feature_names"]) == set(X.columns)
             for feature_name, feature_value in zip(
-                exp["feature_names"], exp["feature_values"],
+                exp["feature_names"],
+                exp["feature_values"],
             ):
                 if feature_name == "lat":
                     assert np.isnan(feature_value)
@@ -2151,7 +2213,11 @@ def test_explain_predictions_best_worst_json(algorithm, fraud_100):
     pipeline.fit(X, y)
 
     report = explain_predictions_best_worst(
-        pipeline, X, y, algorithm=algorithm, output_format="dict",
+        pipeline,
+        X,
+        y,
+        algorithm=algorithm,
+        output_format="dict",
     )
     json_output = json.dumps(report)
     assert isinstance(json_output, str)
@@ -2168,7 +2234,11 @@ def test_explain_predictions_invalid_algorithm():
 
     with pytest.raises(ValueError, match="Unknown algorithm"):
         explain_predictions_best_worst(
-            pipeline, input_features, y, top_k_features=1, algorithm="lIMe",
+            pipeline,
+            input_features,
+            y,
+            top_k_features=1,
+            algorithm="lIMe",
         )
 
 

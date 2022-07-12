@@ -132,7 +132,8 @@ def test_scikit_learn_wrapper_invalid_problem_type():
     evalml_pipeline = MulticlassClassificationPipeline([RandomForestClassifier])
     evalml_pipeline.problem_type = None
     with pytest.raises(
-        ValueError, match="Could not wrap EvalML object in scikit-learn wrapper.",
+        ValueError,
+        match="Could not wrap EvalML object in scikit-learn wrapper.",
     ):
         scikit_learn_wrapped_estimator(evalml_pipeline)
 

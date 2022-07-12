@@ -81,7 +81,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             )
         elif isinstance(component_graph, dict):
             self.component_graph = ComponentGraph(
-                component_dict=component_graph, random_seed=self.random_seed,
+                component_dict=component_graph,
+                random_seed=self.random_seed,
             )
         elif isinstance(component_graph, ComponentGraph):
             self.component_graph = ComponentGraph(
@@ -148,7 +149,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         component_graph[-1] = component_graph[-1]
 
         if inspect.isclass(component_graph[-1]) and issubclass(
-            component_graph[-1], Estimator,
+            component_graph[-1],
+            Estimator,
         ):
             estimator_class = component_graph.pop(-1)
             summary = estimator_class.name
@@ -195,7 +197,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         if self.problem_type not in estimator_problem_types:
             raise ValueError(
                 "Problem type {} not valid for this component graph. Valid problem types include {}.".format(
-                    self.problem_type, estimator_problem_types,
+                    self.problem_type,
+                    estimator_problem_types,
                 ),
             )
 
@@ -359,7 +362,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                         f"Invalid objective {objective.name} specified for problem type {self.problem_type}",
                     )
                 y_pred = self._select_y_pred_for_score(
-                    X, y, y_pred, y_pred_proba, objective,
+                    X,
+                    y,
+                    y_pred,
+                    y_pred_proba,
+                    objective,
                 )
                 score = self._score(
                     X,
@@ -455,10 +462,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             nodes[comp_] = {"Parameters": param_dict, "Name": att_.name}
 
         x_edges_list = self.component_graph._get_edges(
-            self.component_graph.component_dict, "features",
+            self.component_graph.component_dict,
+            "features",
         )
         y_edges_list = self.component_graph._get_edges(
-            self.component_graph.component_dict, "target",
+            self.component_graph.component_dict,
+            "target",
         )
         x_edges = [{"from": edge[0], "to": edge[1]} for edge in x_edges_list]
         y_edges = [{"from": edge[0], "to": edge[1]} for edge in y_edges_list]
@@ -497,7 +506,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             ValueError: If path is not writeable.
         """
         graphviz = import_or_raise(
-            "graphviz", error_msg="Please install graphviz to visualize pipelines.",
+            "graphviz",
+            error_msg="Please install graphviz to visualize pipelines.",
         )
 
         # Try rendering a dummy graph to see if a working backend is installed

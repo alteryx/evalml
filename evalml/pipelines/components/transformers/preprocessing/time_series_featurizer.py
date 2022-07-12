@@ -125,7 +125,9 @@ class TimeSeriesFeaturizer(Transformer):
         if self.time_index is None:
             raise ValueError("time_index cannot be None!")
         self.statistically_significant_lags = self._find_significant_lags(
-            y, conf_level=self.conf_level, max_delay=self.max_delay,
+            y,
+            conf_level=self.conf_level,
+            max_delay=self.max_delay,
         )
         return self
 
@@ -153,7 +155,10 @@ class TimeSeriesFeaturizer(Transformer):
         if y is not None:
             # Compute the acf and find its peaks
             acf_values, ci_intervals = acf(
-                y, nlags=len(y) - 1, fft=True, alpha=conf_level,
+                y,
+                nlags=len(y) - 1,
+                fft=True,
+                alpha=conf_level,
             )
             peaks, _ = find_peaks(acf_values)
 
@@ -219,7 +224,8 @@ class TimeSeriesFeaturizer(Transformer):
         """
         cols_to_delay = list(
             X_ww.ww.select(
-                ["numeric", "category", "boolean"], return_schema=True,
+                ["numeric", "category", "boolean"],
+                return_schema=True,
             ).columns,
         )
         categorical_columns = self._get_categorical_columns(X_ww)

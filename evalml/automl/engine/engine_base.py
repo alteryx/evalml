@@ -97,7 +97,14 @@ class EngineBase(ABC):
 
     @abstractmethod
     def submit_scoring_job(
-        self, automl_config, pipeline, X, y, objectives, X_train=None, y_train=None,
+        self,
+        automl_config,
+        pipeline,
+        X,
+        y,
+        objectives,
+        X_train=None,
+        y_train=None,
     ):
         """Submit job for pipeline scoring."""
 
@@ -167,7 +174,11 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False)
 
 
 def train_and_score_pipeline(
-    pipeline, automl_config, full_X_train, full_y_train, logger,
+    pipeline,
+    automl_config,
+    full_X_train,
+    full_y_train,
+    logger,
 ):
     """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores.
 
@@ -352,7 +363,14 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
 
 
 def score_pipeline(
-    pipeline, X, y, objectives, X_train=None, y_train=None, X_schema=None, y_schema=None,
+    pipeline,
+    X,
+    y,
+    objectives,
+    X_train=None,
+    y_train=None,
+    X_schema=None,
+    y_schema=None,
 ):
     """Wrap around pipeline.score method to make it easy to score pipelines with dask.
 

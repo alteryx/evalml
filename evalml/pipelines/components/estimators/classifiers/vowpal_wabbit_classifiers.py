@@ -54,7 +54,9 @@ class VowpalWabbitBaseClassifier(Estimator):
         vw_class = self._get_component_obj_class()
         vw_classifier = vw_class(**parameters)
         super().__init__(
-            parameters=parameters, component_obj=vw_classifier, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=vw_classifier,
+            random_seed=random_seed,
         )
 
     @abstractmethod

@@ -25,7 +25,8 @@ def test_optimize_threshold_neg():
     obj = AUC()
     np.random.seed(0)
     with pytest.raises(
-        RuntimeError, match="Trying to optimize objective that can't be optimized!",
+        RuntimeError,
+        match="Trying to optimize objective that can't be optimized!",
     ):
         obj.optimize_threshold(ypred_proba, y_true)
 
@@ -62,7 +63,8 @@ def test_decision_function_neg():
     obj = F1()
     pd.testing.assert_series_equal(obj.decision_function(ypred_proba), y_true)
     pd.testing.assert_series_equal(
-        obj.decision_function(pd.Series(ypred_proba, dtype=float)), y_true,
+        obj.decision_function(pd.Series(ypred_proba, dtype=float)),
+        y_true,
     )
 
 
@@ -141,6 +143,7 @@ class TestBinaryObjective(metaclass=ABCMeta):
 
     def binary_more_than_two_unique_values(self, fix_y_pred_multi, fix_y_true):
         with pytest.raises(
-            ValueError, match="y_predicted contains more than two unique values",
+            ValueError,
+            match="y_predicted contains more than two unique values",
         ):
             self.objective.score(fix_y_true, fix_y_pred_multi)

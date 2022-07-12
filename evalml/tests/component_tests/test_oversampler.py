@@ -104,7 +104,9 @@ def test_oversample_imbalanced_binary(data_type, oversampler_type, make_data_typ
     value_counts = fit_transformed_y.value_counts()
     assert value_counts.values[0] == value_counts.values[1]
     pd.testing.assert_series_equal(
-        value_counts, pd.Series([850, 850]), check_dtype=False,
+        value_counts,
+        pd.Series([850, 850]),
+        check_dtype=False,
     )
 
     oversampler = Oversampler(sampling_ratio=1)
@@ -118,7 +120,10 @@ def test_oversample_imbalanced_binary(data_type, oversampler_type, make_data_typ
 @pytest.mark.parametrize("oversampler_type", ["numeric", "categorical"])
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_oversample_imbalanced_multiclass(
-    data_type, oversampler_type, sampling_ratio, make_data_type,
+    data_type,
+    oversampler_type,
+    sampling_ratio,
+    make_data_type,
 ):
     X = np.array(
         [
@@ -169,7 +174,8 @@ def test_oversample_seed_same_outputs(sampler, X_y_binary):
         oversampler = Oversampler(sampling_ratio=1, random_seed=seed)
         if "N" in sampler:
             X = infer_feature_types(
-                X, feature_types={0: "Categorical", 1: "Categorical"},
+                X,
+                feature_types={0: "Categorical", 1: "Categorical"},
             )
             if sampler == "SMOTEN" and X.shape[1] > 2:
                 X = X.drop([i for i in range(2, 20)], axis=1)
@@ -201,7 +207,10 @@ def test_oversample_seed_same_outputs(sampler, X_y_binary):
 )
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
 def test_samplers_perform_equally(
-    problem_type, component_sampler, X_y_binary, X_y_multi,
+    problem_type,
+    component_sampler,
+    X_y_binary,
+    X_y_multi,
 ):
     from imblearn import over_sampling as im
 
@@ -240,7 +249,8 @@ def test_samplers_perform_equally(
         )
     else:
         imb_sampler = imblearn_sampler(
-            sampling_strategy=imb_learn_sampling_ratio, random_state=random_seed,
+            sampling_strategy=imb_learn_sampling_ratio,
+            random_state=random_seed,
         )
 
     X_com, y_com = component.fit_transform(X, y)
@@ -396,7 +406,8 @@ def test_oversampler_sampling_k_neighbors(minority, expected, fails):
     overs = Oversampler(k_neighbors_default=5)
     if fails:
         with pytest.raises(
-            ValueError, match="Minority class needs more than 1 sample to use SMOTE",
+            ValueError,
+            match="Minority class needs more than 1 sample to use SMOTE",
         ):
             overs.fit_transform(X_ww, y)
         return

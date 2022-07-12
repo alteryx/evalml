@@ -124,7 +124,9 @@ class DateTimeFeaturizer(Transformer):
         self._categories = {}
         self.encode_as_categories = encode_as_categories
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):
@@ -162,7 +164,8 @@ class DateTimeFeaturizer(Transformer):
             for feature in features_to_extract:
                 name = f"{col_name}_{feature}"
                 features, categories = self._function_mappings[feature](
-                    X[col_name], self.encode_as_categories,
+                    X[col_name],
+                    self.encode_as_categories,
                 )
                 X.ww[name] = features
                 if categories:

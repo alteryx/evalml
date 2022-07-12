@@ -25,7 +25,8 @@ class FeatureSelector(Transformer):
         return [
             feature_name
             for (selected, feature_name) in zip(
-                selected_masks, self.input_feature_names,
+                selected_masks,
+                self.input_feature_names,
             )
             if selected
         ]

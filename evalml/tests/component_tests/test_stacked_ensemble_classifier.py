@@ -40,7 +40,8 @@ def test_stacked_ensemble_init_with_final_estimator(X_y_binary):
         "Random Forest B": [RandomForestClassifier, "X", "y"],
         "Stacked Ensemble": [
             StackedEnsembleClassifier(
-                n_jobs=1, final_estimator=RandomForestClassifier(),
+                n_jobs=1,
+                final_estimator=RandomForestClassifier(),
             ),
             "Random Forest.x",
             "Random Forest B.x",
@@ -60,7 +61,8 @@ def test_stacked_ensemble_does_not_overwrite_pipeline_random_seed():
         "Random Forest B": [RandomForestClassifier(random_seed=4), "X", "y"],
         "Stacked Ensemble": [
             StackedEnsembleClassifier(
-                n_jobs=1, final_estimator=RandomForestClassifier(),
+                n_jobs=1,
+                final_estimator=RandomForestClassifier(),
             ),
             "Random Forest.x",
             "Random Forest B.x",
@@ -86,7 +88,10 @@ def test_stacked_problem_types():
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_stacked_fit_predict_classification(
-    X_y_binary, X_y_multi, stackable_classifiers, problem_type,
+    X_y_binary,
+    X_y_multi,
+    stackable_classifiers,
+    problem_type,
 ):
     def make_stacked_pipeline(pipeline_class):
         component_graph = {}
@@ -219,7 +224,10 @@ def test_ensembler_str_and_classes():
 
 def test_stacked_ensemble_nondefault_y():
     X, y = datasets.make_classification(
-        n_samples=100, n_features=20, weights={0: 0.1, 1: 0.9}, random_state=0,
+        n_samples=100,
+        n_features=20,
+        weights={0: 0.1, 1: 0.9},
+        random_state=0,
     )
     input_pipelines = [
         BinaryClassificationPipeline(
@@ -545,7 +553,8 @@ def test_stacked_ensemble_cache_train_predict(
 
     try:
         pd.testing.assert_frame_equal(
-            pl_cache.predict_proba(X2), pl_cache_copy.predict_proba(X2),
+            pl_cache.predict_proba(X2),
+            pl_cache_copy.predict_proba(X2),
         )
         assert indices == 0
     except AssertionError:

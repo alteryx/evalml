@@ -123,7 +123,9 @@ def test_binary_classification_pipeline_predict(
 
 @patch("evalml.pipelines.ComponentGraph._transform_features")
 def test_binary_predict_pipeline_objective_mismatch(
-    mock_transform, X_y_binary, dummy_binary_pipeline,
+    mock_transform,
+    X_y_binary,
+    dummy_binary_pipeline,
 ):
     X, y = X_y_binary
     binary_pipeline = dummy_binary_pipeline.new(
@@ -140,7 +142,9 @@ def test_binary_predict_pipeline_objective_mismatch(
 
 @patch("evalml.objectives.FraudCost.decision_function")
 def test_binary_predict_pipeline_use_objective(
-    mock_decision_function, X_y_binary, logistic_regression_binary_pipeline,
+    mock_decision_function,
+    X_y_binary,
+    logistic_regression_binary_pipeline,
 ):
     X, y = X_y_binary
     binary_pipeline = logistic_regression_binary_pipeline
@@ -154,7 +158,8 @@ def test_binary_predict_pipeline_use_objective(
 
 
 def test_binary_predict_pipeline_score_error(
-    X_y_binary, logistic_regression_binary_pipeline,
+    X_y_binary,
+    logistic_regression_binary_pipeline,
 ):
     X, y = X_y_binary
     binary_pipeline = logistic_regression_binary_pipeline

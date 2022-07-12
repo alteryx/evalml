@@ -176,7 +176,8 @@ def test_lsa_output():
     lsa = LSA()
     lsa.fit(X)
     expected_features = pd.DataFrame(
-        [[0.832, 0.0], [0.0, 1.0], [0.832, 0.0]], columns=["LSA(lsa)[0]", "LSA(lsa)[1]"],
+        [[0.832, 0.0], [0.0, 1.0], [0.832, 0.0]],
+        columns=["LSA(lsa)[0]", "LSA(lsa)[1]"],
     )
     X_t = lsa.transform(X)
     cols = [col for col in X_t.columns if "LSA" in col]

@@ -87,7 +87,9 @@ class XGBoostClassifier(Estimator):
         )
         self._label_encoder = None
         super().__init__(
-            parameters=parameters, component_obj=xgb_classifier, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=xgb_classifier,
+            random_seed=random_seed,
         )
 
     def _label_encode(self, y):

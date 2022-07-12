@@ -68,7 +68,10 @@ def test_transform(X_y_binary, X_y_multi, X_y_regression):
         X_pd.columns = X_pd.columns.astype(str)
         es = ft.EntitySet()
         es = es.add_dataframe(
-            dataframe_name="X", dataframe=X_pd, index="index", make_index=True,
+            dataframe_name="X",
+            dataframe=X_pd,
+            index="index",
+            make_index=True,
         )
         feature_matrix, features = ft.dfs(entityset=es, target_dataframe_name="X")
 
@@ -98,7 +101,10 @@ def test_transform_subset(X_y_binary, X_y_multi, X_y_regression):
 
         es = ft.EntitySet()
         es = es.add_dataframe(
-            dataframe_name="X", dataframe=X_transform, index="index", make_index=True,
+            dataframe_name="X",
+            dataframe=X_transform,
+            index="index",
+            make_index=True,
         )
         feature_matrix, features = ft.dfs(entityset=es, target_dataframe_name="X")
 
@@ -169,10 +175,15 @@ def test_dfs_with_serialized_features(mock_dfs, X_y_binary):
 
     es = ft.EntitySet()
     es = es.add_dataframe(
-        dataframe_name="X", dataframe=X_pd, index="index", make_index=True,
+        dataframe_name="X",
+        dataframe=X_pd,
+        index="index",
+        make_index=True,
     )
     feature_matrix, features = ft.dfs(
-        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"],
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["absolute"],
     )
 
     dfs = DFSTransformer(features=features)
@@ -197,10 +208,15 @@ def test_dfs_skip_transform(mock_calculate_feature_matrix, mock_dfs, X_y_binary)
 
     es = ft.EntitySet()
     es = es.add_dataframe(
-        dataframe_name="X", dataframe=X_transform, index="index", make_index=True,
+        dataframe_name="X",
+        dataframe=X_transform,
+        index="index",
+        make_index=True,
     )
     feature_matrix, features = ft.dfs(
-        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"],
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["absolute"],
     )
     features = list(filter(lambda f: not isinstance(f, IdentityFeature), features))
     dfs = DFSTransformer(features=features)
@@ -225,10 +241,15 @@ def test_dfs_does_not_skip_transform_with_non_identity_feature(mock_dfs, X_y_bin
 
     es = ft.EntitySet()
     es = es.add_dataframe(
-        dataframe_name="X", dataframe=X_transform, index="index", make_index=True,
+        dataframe_name="X",
+        dataframe=X_transform,
+        index="index",
+        make_index=True,
     )
     feature_matrix, features = ft.dfs(
-        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"],
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["absolute"],
     )
 
     non_identity_features = list(
@@ -254,10 +275,15 @@ def test_dfs_missing_feature_column(mock_dfs, X_y_binary):
 
     es = ft.EntitySet()
     es = es.add_dataframe(
-        dataframe_name="X", dataframe=X_transform, index="index", make_index=True,
+        dataframe_name="X",
+        dataframe=X_transform,
+        index="index",
+        make_index=True,
     )
     feature_matrix, features = ft.dfs(
-        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"],
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["absolute"],
     )
 
     dfs = DFSTransformer(features=features)
@@ -282,10 +308,15 @@ def test_transform_identity_and_non_identity():
 
     es = ft.EntitySet()
     es = es.add_dataframe(
-        dataframe_name="X", dataframe=X_fit, index="index", make_index=True,
+        dataframe_name="X",
+        dataframe=X_fit,
+        index="index",
+        make_index=True,
     )
     feature_matrix, features = ft.dfs(
-        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"],
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["absolute"],
     )
 
     dfs = DFSTransformer(features=features)
@@ -304,10 +335,15 @@ def test_dfs_multi_input_primitive(X_y_binary):
 
     es = ft.EntitySet()
     es = es.add_dataframe(
-        dataframe_name="X", dataframe=X_transform, index="index", make_index=True,
+        dataframe_name="X",
+        dataframe=X_transform,
+        index="index",
+        make_index=True,
     )
     feature_matrix, features = ft.dfs(
-        entityset=es, target_dataframe_name="X", trans_primitives=["divide_numeric"],
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["divide_numeric"],
     )  # divide_numeric is a primitive that generates features with 2 input columns
 
     dfs = DFSTransformer(features=features)

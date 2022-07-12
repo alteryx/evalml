@@ -46,7 +46,12 @@ def test_time_series_baseline_outside_of_pipeline(X_y_regression):
     ],
 )
 def test_time_series_baseline(
-    forecast_horizon, gap, problem_type, ts_data, ts_data_binary, ts_data_multi,
+    forecast_horizon,
+    gap,
+    problem_type,
+    ts_data,
+    ts_data_binary,
+    ts_data_multi,
 ):
 
     if problem_type == problem_type.TIME_SERIES_REGRESSION:
@@ -63,7 +68,10 @@ def test_time_series_baseline(
     X_validation = X.iloc[(15 + gap) : (15 + gap + forecast_horizon)]
 
     clf = make_timeseries_baseline_pipeline(
-        problem_type, gap, forecast_horizon, time_index="date",
+        problem_type,
+        gap,
+        forecast_horizon,
+        time_index="date",
     )
     clf.fit(X_train, y_train)
     np.testing.assert_allclose(

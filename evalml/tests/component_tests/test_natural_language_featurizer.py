@@ -316,7 +316,8 @@ def test_lsa_primitive_output():
     tf.fit(X)
 
     expected_features = pd.DataFrame(
-        [[0.832, 0.0], [0.0, 1.0], [0.832, 0.0]], columns=["LSA(lsa)[0]", "LSA(lsa)[1]"],
+        [[0.832, 0.0], [0.0, 1.0], [0.832, 0.0]],
+        columns=["LSA(lsa)[0]", "LSA(lsa)[1]"],
     )
     X_t = tf.transform(X)
     cols = [col for col in X_t.columns if "LSA" in col]
@@ -329,7 +330,8 @@ def test_featurizer_custom_types(text_df):
     # if the output contains text features for col_2, then the natural language featurizer didn't pass the right
     # ww types to LSA, because LSA still thought col_2 was natural language even though the user said otherwise.
     X = infer_feature_types(
-        pd.DataFrame(text_df), {"col_1": "NaturalLanguage", "col_2": "categorical"},
+        pd.DataFrame(text_df),
+        {"col_1": "NaturalLanguage", "col_2": "categorical"},
     )
     tf = NaturalLanguageFeaturizer()
     tf.fit(X)

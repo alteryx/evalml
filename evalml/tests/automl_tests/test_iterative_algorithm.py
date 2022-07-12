@@ -81,7 +81,8 @@ def test_iterative_algorithm_init(
 
 
 def test_make_iterative_algorithm_search_parameters_error(
-    dummy_binary_pipeline_classes, X_y_binary,
+    dummy_binary_pipeline_classes,
+    X_y_binary,
 ):
     (
         dummy_binary_pipeline_classes,
@@ -95,7 +96,8 @@ def test_make_iterative_algorithm_search_parameters_error(
     ]
 
     with pytest.raises(
-        ValueError, match="If search_parameters provided, must be of type dict",
+        ValueError,
+        match="If search_parameters provided, must be of type dict",
     ):
         IterativeAlgorithm(
             X=X,
@@ -107,7 +109,8 @@ def test_make_iterative_algorithm_search_parameters_error(
 
 
 def test_iterative_algorithm_allowed_pipelines(
-    X_y_binary, dummy_binary_pipeline_classes,
+    X_y_binary,
+    dummy_binary_pipeline_classes,
 ):
     X, y = X_y_binary
 
@@ -154,7 +157,8 @@ def test_iterative_algorithm_empty(X_y_binary, dummy_binary_pipeline_classes):
     assert algo.batch_number == 1
 
     with pytest.raises(
-        AutoMLAlgorithmException, match="No results were reported from the first batch",
+        AutoMLAlgorithmException,
+        match="No results were reported from the first batch",
     ):
         algo.next_batch()
     assert algo.batch_number == 1
@@ -314,7 +318,9 @@ def test_iterative_algorithm_passes_pipeline_params(
 
 @patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_iterative_algorithm_passes_njobs(
-    mock_opt_tell, X_y_binary, dummy_binary_pipeline_classes,
+    mock_opt_tell,
+    X_y_binary,
+    dummy_binary_pipeline_classes,
 ):
     X, y = X_y_binary
 
@@ -352,7 +358,11 @@ def test_iterative_algorithm_passes_njobs(
 @pytest.mark.parametrize("estimator", ["XGBoost", "CatBoost"])
 @patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_iterative_algorithm_passes_n_jobs_catboost_xgboost(
-    mock_opt_tell, is_regression, estimator, X_y_binary, X_y_regression,
+    mock_opt_tell,
+    is_regression,
+    estimator,
+    X_y_binary,
+    X_y_regression,
 ):
     if is_regression:
         X, y = X_y_regression
@@ -390,7 +400,9 @@ def test_iterative_algorithm_passes_n_jobs_catboost_xgboost(
 
 @pytest.mark.parametrize("ensembling_value", [True, False])
 def test_iterative_algorithm_one_allowed_pipeline(
-    X_y_binary, ensembling_value, dummy_binary_pipeline_classes,
+    X_y_binary,
+    ensembling_value,
+    dummy_binary_pipeline_classes,
 ):
     X, y = X_y_binary
 
@@ -511,7 +523,10 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(
 @pytest.mark.parametrize("text_in_ensembling", [True, False])
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
 def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(
-    n_jobs, text_in_ensembling, X_y_regression, linear_regression_pipeline,
+    n_jobs,
+    text_in_ensembling,
+    X_y_regression,
+    linear_regression_pipeline,
 ):
     X, y = X_y_regression
 
@@ -612,7 +627,8 @@ def test_iterative_algorithm_search_params(
 
 
 def test_iterative_algorithm_search_params_kwargs(
-    X_y_binary, dummy_binary_pipeline_classes,
+    X_y_binary,
+    dummy_binary_pipeline_classes,
 ):
     X, y = X_y_binary
 
@@ -674,11 +690,14 @@ def test_iterative_algorithm_results_best_pipeline_info_id(
     for i in range(1, 3):
         next_batch = algo.next_batch()
         scores = -np.arange(
-            1, len(next_batch),
+            1,
+            len(next_batch),
         )  # Score always gets better with each pipeline
         for pipeline_num, (score, pipeline) in enumerate(zip(scores, next_batch)):
             algo.add_result(
-                score, pipeline, {"id": algo.pipeline_number + pipeline_num},
+                score,
+                pipeline,
+                {"id": algo.pipeline_number + pipeline_num},
             )
             assert (
                 algo._best_pipeline_info[pipeline.model_family]["id"]
@@ -743,7 +762,10 @@ def test_iterative_algorithm_first_batch_order_param(X_y_binary):
         ModelFamily.CATBOOST,
     ]
     algo = IterativeAlgorithm(
-        X=X, y=y, problem_type="binary", _estimator_family_order=estimator_family_order,
+        X=X,
+        y=y,
+        problem_type="binary",
+        _estimator_family_order=estimator_family_order,
     )
     next_batch = algo.next_batch()
     estimators_in_first_batch = [p.estimator.name for p in next_batch]
@@ -772,7 +794,9 @@ def test_iterative_algorithm_first_batch_order_param(X_y_binary):
 )
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_iterative_algorithm_sampling_params(
-    problem_type, sampler, mock_imbalanced_data_X_y,
+    problem_type,
+    sampler,
+    mock_imbalanced_data_X_y,
 ):
     X, y = mock_imbalanced_data_X_y(problem_type, "some", "small")
     algo = IterativeAlgorithm(
@@ -859,10 +883,14 @@ def test_iterative_algorithm_allow_long_running_models(
 @pytest.mark.parametrize("problem", ["binary", "multiclass", "regression"])
 @pytest.mark.parametrize("allow_long_running_models", [True, False])
 @pytest.mark.parametrize(
-    "length,models_missing", [(10, 0), (75, 0), (100, 2), (160, 3)],
+    "length,models_missing",
+    [(10, 0), (75, 0), (100, 2), (160, 3)],
 )
 def test_iterative_algorithm_allow_long_running_models_problem(
-    length, models_missing, allow_long_running_models, problem,
+    length,
+    models_missing,
+    allow_long_running_models,
+    problem,
 ):
     X = pd.DataFrame()
     y = pd.Series([i for i in range(length)] * 5)
@@ -926,7 +954,9 @@ def test_iterative_algorithm_allow_long_running_models_next_batch():
 
 @patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_iterative_algorithm_passes_features(
-    mock_opt_tell, X_y_binary, dummy_binary_pipeline_classes,
+    mock_opt_tell,
+    X_y_binary,
+    dummy_binary_pipeline_classes,
 ):
     X, y = X_y_binary
     X_pd = pd.DataFrame(X)
@@ -935,10 +965,15 @@ def test_iterative_algorithm_passes_features(
 
     es = ft.EntitySet()
     es = es.add_dataframe(
-        dataframe_name="X", dataframe=X_transform, index="index", make_index=True,
+        dataframe_name="X",
+        dataframe=X_transform,
+        index="index",
+        make_index=True,
     )
     _, features = ft.dfs(
-        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"],
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["absolute"],
     )
 
     algo = IterativeAlgorithm(

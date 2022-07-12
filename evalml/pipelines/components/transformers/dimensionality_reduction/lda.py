@@ -27,7 +27,9 @@ class LinearDiscriminantAnalysis(Transformer):
         parameters.update(kwargs)
         lda = SkLDA(n_components=n_components, **kwargs)
         super().__init__(
-            parameters=parameters, component_obj=lda, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=lda,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y):

@@ -26,7 +26,8 @@ def test_datetime_featurizer_init():
     }
 
     datetime_transformer = DateTimeFeaturizer(
-        features_to_extract=["year", "month"], encode_as_categories=True,
+        features_to_extract=["year", "month"],
+        encode_as_categories=True,
     )
     assert datetime_transformer.parameters == {
         "features_to_extract": ["year", "month"],
@@ -159,7 +160,8 @@ def test_datetime_featurizer_fit_transform():
 
 def test_datetime_featurizer_fit_transform_time_index():
     datetime_transformer = DateTimeFeaturizer(
-        features_to_extract=["year"], time_index="Date Col 1",
+        features_to_extract=["year"],
+        time_index="Date Col 1",
     )
     X = pd.DataFrame(
         {
@@ -315,12 +317,15 @@ def test_datetime_featurizer_with_inconsistent_date_format():
 @pytest.mark.parametrize("with_datetime_col", [True, False])
 @pytest.mark.parametrize("encode_as_categories", [True, False])
 def test_datetime_featurizer_woodwork_custom_overrides_returned_by_components(
-    with_datetime_col, encode_as_categories, X_df,
+    with_datetime_col,
+    encode_as_categories,
+    X_df,
 ):
     override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime]
     if with_datetime_col:
         X_df["datetime col"] = pd.to_datetime(
-            ["20200101", "20200519", "20190607"], format="%Y%m%d",
+            ["20200101", "20200519", "20190607"],
+            format="%Y%m%d",
         )
     for logical_type in override_types:
         try:

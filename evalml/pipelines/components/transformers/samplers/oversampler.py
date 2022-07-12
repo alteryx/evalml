@@ -50,7 +50,9 @@ class Oversampler(BaseSampler):
         }
         parameters.update(kwargs)
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y):

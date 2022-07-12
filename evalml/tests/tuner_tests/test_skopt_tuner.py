@@ -166,7 +166,8 @@ def test_skopt_tuner_invalid_parameters_score():
         tuner.add({"Mock Classifier": {"param a": 0}}, 0.5)
     with pytest.raises(ValueError, match="is not within the bounds of the space"):
         tuner.add(
-            {"Mock Classifier": {"param a": 0, "param b": 0.0, "param c": 0}}, 0.5,
+            {"Mock Classifier": {"param a": 0, "param b": 0.0, "param c": 0}},
+            0.5,
         )
     with pytest.raises(ValueError, match="is not within the bounds of the space"):
         tuner.add(
@@ -206,7 +207,8 @@ def test_skopt_tuner_invalid_parameters_score():
             0.5,
         )
     with pytest.raises(
-        ParameterError, match="Invalid parameters specified to SKOptTuner.add",
+        ParameterError,
+        match="Invalid parameters specified to SKOptTuner.add",
     ):
         tuner.add(
             {
@@ -233,7 +235,8 @@ def test_skopt_tuner_invalid_parameters_score():
                 0.5,
             )
     tuner.add(
-        {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}}, 0.5,
+        {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}},
+        0.5,
     )
     tuner.add(
         {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}},
@@ -244,7 +247,8 @@ def test_skopt_tuner_invalid_parameters_score():
         np.inf,
     )
     tuner.add(
-        {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}}, None,
+        {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}},
+        None,
     )
     tuner.propose()
 
@@ -267,7 +271,8 @@ def test_skopt_tuner_propose():
         },
     }
     tuner.add(
-        {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}}, 0.5,
+        {"Mock Classifier": {"param a": 0, "param b": 1.0, "param c": "option a"}},
+        0.5,
     )
     parameters = tuner.propose()
     assert parameters == {

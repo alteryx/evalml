@@ -41,7 +41,9 @@ class SimpleImputer(Transformer):
         )
         self._all_null_cols = None
         super().__init__(
-            parameters=parameters, component_obj=imputer, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=imputer,
+            random_seed=random_seed,
         )
 
     def _drop_natural_language_columns(self, X):

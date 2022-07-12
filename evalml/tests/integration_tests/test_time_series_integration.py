@@ -60,7 +60,8 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
     X_valid = pd.DataFrame(
         {
             "date": pd.date_range(
-                pd.Timestamp(X.date.iloc[-1]) + pd.Timedelta("4d"), periods=2,
+                pd.Timestamp(X.date.iloc[-1]) + pd.Timedelta("4d"),
+                periods=2,
             ),
         },
     )
@@ -130,7 +131,8 @@ def test_can_run_automl_for_time_series_known_in_advance(
     X_valid = pd.DataFrame(
         {
             "date": pd.date_range(
-                pd.Timestamp(X.date.iloc[-1]) + pd.Timedelta("4d"), periods=2,
+                pd.Timestamp(X.date.iloc[-1]) + pd.Timedelta("4d"),
+                periods=2,
             ),
             "bool_feature": [True, False],
             "cat_feature": ["a", "c"],

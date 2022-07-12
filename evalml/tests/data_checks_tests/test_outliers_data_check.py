@@ -157,7 +157,8 @@ def test_outliers_data_check_string_cols():
     n_cols = 20
 
     X = pd.DataFrame(
-        data=data, columns=[string.ascii_lowercase[i] for i in range(n_cols)],
+        data=data,
+        columns=[string.ascii_lowercase[i] for i in range(n_cols)],
     )
     X.iloc[0, 3] = 1000
 

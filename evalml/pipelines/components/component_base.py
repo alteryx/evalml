@@ -150,7 +150,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             log_subtitle(logger, title)
         for parameter in self.parameters:
             parameter_str = ("\t * {} : {}").format(
-                parameter, self.parameters[parameter],
+                parameter,
+                self.parameters[parameter],
             )
             logger.info(parameter_str)
         if return_dict:

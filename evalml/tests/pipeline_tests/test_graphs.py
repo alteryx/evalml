@@ -20,7 +20,8 @@ def test_pipeline():
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
-                component_graph=self.component_graph, parameters=parameters,
+                component_graph=self.component_graph,
+                parameters=parameters,
             )
 
         @property

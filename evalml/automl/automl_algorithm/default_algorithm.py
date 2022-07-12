@@ -159,7 +159,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         for pipeline in pipelines:
             self._create_tuner(pipeline)
             starting_parameters = self._tuners[pipeline.name].get_starting_parameters(
-                self._hyperparameters, self.random_seed,
+                self._hyperparameters,
+                self.random_seed,
             )
             parameters = self._transform_parameters(pipeline, starting_parameters)
             next_batch.append(
@@ -192,7 +193,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 extra_components_after=feature_selector,
                 parameters=self._pipeline_parameters,
                 known_in_advance=self._pipeline_parameters.get("pipeline", {}).get(
-                    "known_in_advance", None,
+                    "known_in_advance",
+                    None,
                 ),
                 features=self.features,
             )
@@ -254,7 +256,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
 
     def _rename_pipeline_search_parameters(self, pipelines):
         names_to_value_pipeline_params = self._find_component_names_from_parameters(
-            self.search_parameters, pipelines,
+            self.search_parameters,
+            pipelines,
         )
         self.search_parameters.update(names_to_value_pipeline_params)
         self._separate_hyperparameters_from_parameters()
@@ -279,7 +282,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             self._rename_pipeline_search_parameters(pipelines)
 
         next_batch = self._create_n_pipelines(
-            pipelines, 1, create_starting_parameters=True,
+            pipelines,
+            1,
+            create_starting_parameters=True,
         )
         return next_batch
 
@@ -293,7 +298,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 select_parameters = self._create_select_parameters()
                 parameters = (
                     self._tuners[pipeline.name].get_starting_parameters(
-                        self._hyperparameters, self.random_seed,
+                        self._hyperparameters,
+                        self.random_seed,
                     )
                     if create_starting_parameters
                     else self._tuners[pipeline.name].propose()
@@ -329,7 +335,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     sampler_name=self.sampler_name,
                     parameters=self._pipeline_parameters,
                     known_in_advance=self.search_parameters.get("pipeline", {}).get(
-                        "known_in_advance", None,
+                        "known_in_advance",
+                        None,
                     ),
                     features=self.features,
                 )
@@ -366,7 +373,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 )
             else:
                 next_batch = self._create_n_pipelines(
-                    self._top_n_pipelines, self.num_long_pipelines_per_batch,
+                    self._top_n_pipelines,
+                    self.num_long_pipelines_per_batch,
                 )
         else:
             if self._batch_number == 0:
@@ -379,7 +387,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 next_batch = self._create_long_exploration(n=self.top_n)
             else:
                 next_batch = self._create_n_pipelines(
-                    self._top_n_pipelines, self.num_long_pipelines_per_batch,
+                    self._top_n_pipelines,
+                    self.num_long_pipelines_per_batch,
                 )
 
         self._pipeline_number += len(next_batch)
@@ -387,7 +396,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return next_batch
 
     def _get_feature_provenance_and_remove_engineered_features(
-        self, pipeline, component_name, to_be_removed, to_be_added,
+        self,
+        pipeline,
+        component_name,
+        to_be_removed,
+        to_be_added,
     ):
         component = pipeline.get_component(component_name)
         feature_provenance = component._get_feature_provenance()
@@ -424,7 +437,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             )
 
     def add_result(
-        self, score_to_minimize, pipeline, trained_pipeline_results, cached_data=None,
+        self,
+        score_to_minimize,
+        pipeline,
+        trained_pipeline_results,
+        cached_data=None,
     ):
         """Register results from evaluating a pipeline. In batch number 2, the selected column names from the feature selector are taken to be used in a column selector. Information regarding the best pipeline is updated here as well.
 
@@ -440,7 +457,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         if pipeline.model_family != ModelFamily.ENSEMBLE:
             if self.batch_number >= 3:
                 super().add_result(
-                    score_to_minimize, pipeline, trained_pipeline_results,
+                    score_to_minimize,
+                    pipeline,
+                    trained_pipeline_results,
                 )
 
         if (
@@ -460,7 +479,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             self._parse_selected_categorical_features(pipeline)
 
         current_best_score = self._best_pipeline_info.get(
-            pipeline.model_family, {},
+            pipeline.model_family,
+            {},
         ).get("mean_cv_score", np.inf)
         if (
             score_to_minimize is not None

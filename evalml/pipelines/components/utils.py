@@ -323,13 +323,16 @@ def generate_component_code(element):
     if element.__class__ in all_components():
         code_strings.append(
             "from {} import {}\n".format(
-                element.__class__.__module__, element.__class__.__name__,
+                element.__class__.__module__,
+                element.__class__.__name__,
             ),
         )
     component_parameters = element.parameters
     name = element.name[0].lower() + element.name[1:].replace(" ", "")
     base_string += "{0} = {1}(**{2})".format(
-        name, element.__class__.__name__, component_parameters,
+        name,
+        element.__class__.__name__,
+        component_parameters,
     )
 
     code_strings.append(base_string)
@@ -359,7 +362,9 @@ def make_balancing_dictionary(y, sampling_ratio):
     """
     if sampling_ratio <= 0 or sampling_ratio > 1:
         raise ValueError(
-            "Sampling ratio must be in range (0, 1], received {}".format(sampling_ratio),
+            "Sampling ratio must be in range (0, 1], received {}".format(
+                sampling_ratio
+            ),
         )
     if len(y) == 0:
         raise ValueError("Target data must not be empty")

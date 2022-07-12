@@ -1,10 +1,14 @@
 """EvalML standard and custom objectives."""
-from evalml.objectives.binary_classification_objective import BinaryClassificationObjective
+from evalml.objectives.binary_classification_objective import (
+    BinaryClassificationObjective,
+)
 from evalml.objectives.cost_benefit_matrix import CostBenefitMatrix
 from evalml.objectives.fraud_cost import FraudCost
 from evalml.objectives.lead_scoring import LeadScoring
 from evalml.objectives.sensitivity_low_alert import SensitivityLowAlert
-from evalml.objectives.multiclass_classification_objective import MulticlassClassificationObjective
+from evalml.objectives.multiclass_classification_objective import (
+    MulticlassClassificationObjective,
+)
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.objectives.regression_objective import RegressionObjective
 from evalml.objectives.standard_metrics import (

@@ -77,7 +77,8 @@ class AutoMLAlgorithm(ABC):
             self._hyperparameters,
         )
         self._tuners[pipeline.name] = self._tuner_class(
-            pipeline_hyperparameters, random_seed=self.random_seed,
+            pipeline_hyperparameters,
+            random_seed=self.random_seed,
         )
 
     def _separate_hyperparameters_from_parameters(self):
@@ -210,7 +211,8 @@ class AutoMLAlgorithm(ABC):
                     f"Removing columns {unknown_columns} because they are of 'Unknown' type",
                 )
         kina_columns = self.search_parameters.get("pipeline", {}).get(
-            "known_in_advance", [],
+            "known_in_advance",
+            [],
         )
         if kina_columns:
             no_kin_columns = [c for c in self.X.columns if c not in kina_columns]

@@ -89,7 +89,9 @@ class CatBoostRegressor(Estimator):
         )
         parameters["n_jobs"] = n_jobs
         super().__init__(
-            parameters=parameters, component_obj=cb_regressor, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=cb_regressor,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):

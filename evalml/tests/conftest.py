@@ -92,7 +92,10 @@ def graphviz():
 @pytest.fixture
 def get_test_data_from_configuration():
     def _get_test_data_from_configuration(
-        input_type, problem_type, column_names=None, nullable_target=False,
+        input_type,
+        problem_type,
+        column_names=None,
+        nullable_target=False,
     ):
         X_all = pd.DataFrame(
             {
@@ -225,7 +228,10 @@ def get_ts_X_y():
 
 
 def create_mock_pipeline(
-    estimator, problem_type, parameters=None, add_label_encoder=False,
+    estimator,
+    problem_type,
+    parameters=None,
+    add_label_encoder=False,
 ):
     pipeline_parameters = (
         {estimator.name: {"n_jobs": 1}}
@@ -265,27 +271,39 @@ def create_mock_pipeline(
 
     if problem_type == ProblemTypes.BINARY:
         return BinaryClassificationPipeline(
-            component_graph, parameters=pipeline_parameters, custom_name=custom_name,
+            component_graph,
+            parameters=pipeline_parameters,
+            custom_name=custom_name,
         )
     elif problem_type == ProblemTypes.MULTICLASS:
         return MulticlassClassificationPipeline(
-            component_graph, parameters=pipeline_parameters, custom_name=custom_name,
+            component_graph,
+            parameters=pipeline_parameters,
+            custom_name=custom_name,
         )
     elif problem_type == ProblemTypes.REGRESSION:
         return RegressionPipeline(
-            component_graph, parameters=pipeline_parameters, custom_name=custom_name,
+            component_graph,
+            parameters=pipeline_parameters,
+            custom_name=custom_name,
         )
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
         return TimeSeriesRegressionPipeline(
-            component_graph, parameters=pipeline_parameters, custom_name=custom_name,
+            component_graph,
+            parameters=pipeline_parameters,
+            custom_name=custom_name,
         )
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
         return TimeSeriesBinaryClassificationPipeline(
-            component_graph, parameters=pipeline_parameters, custom_name=custom_name,
+            component_graph,
+            parameters=pipeline_parameters,
+            custom_name=custom_name,
         )
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         return TimeSeriesMulticlassClassificationPipeline(
-            component_graph, parameters=pipeline_parameters, custom_name=custom_name,
+            component_graph,
+            parameters=pipeline_parameters,
+            custom_name=custom_name,
         )
 
 
@@ -394,12 +412,14 @@ def is_using_windows(pytestconfig):
 @pytest.fixture
 def assert_allowed_pipelines_equal_helper():
     def assert_allowed_pipelines_equal_helper(
-        actual_allowed_pipelines, expected_allowed_pipelines,
+        actual_allowed_pipelines,
+        expected_allowed_pipelines,
     ):
         actual_allowed_pipelines.sort(key=lambda p: p.name)
         expected_allowed_pipelines.sort(key=lambda p: p.name)
         for actual, expected in zip(
-            actual_allowed_pipelines, expected_allowed_pipelines,
+            actual_allowed_pipelines,
+            expected_allowed_pipelines,
         ):
             for pipeline_subclass in [
                 BinaryClassificationPipeline,
@@ -611,7 +631,11 @@ def combination_of_faulty_datetime():
 @pytest.fixture
 def X_y_binary():
     X, y = datasets.make_classification(
-        n_samples=100, n_features=20, n_informative=2, n_redundant=2, random_state=0,
+        n_samples=100,
+        n_features=20,
+        n_informative=2,
+        n_redundant=2,
+        random_state=0,
     )
 
     return X, y
@@ -620,7 +644,11 @@ def X_y_binary():
 @pytest.fixture(scope="session")
 def X_y_binary_cls():
     X, y = datasets.make_classification(
-        n_samples=100, n_features=20, n_informative=2, n_redundant=2, random_state=0,
+        n_samples=100,
+        n_features=20,
+        n_informative=2,
+        n_redundant=2,
+        random_state=0,
     )
     return pd.DataFrame(X), pd.Series(y)
 
@@ -628,7 +656,10 @@ def X_y_binary_cls():
 @pytest.fixture
 def X_y_regression():
     X, y = datasets.make_regression(
-        n_samples=100, n_features=20, n_informative=3, random_state=0,
+        n_samples=100,
+        n_features=20,
+        n_informative=3,
+        random_state=0,
     )
     return X, y
 
@@ -722,7 +753,10 @@ def text_df():
 @pytest.fixture
 def ts_data():
     X, y = pd.DataFrame(
-        {"features": range(101, 132), "date": pd.date_range("2020-10-01", "2020-10-31")},
+        {
+            "features": range(101, 132),
+            "date": pd.date_range("2020-10-01", "2020-10-31"),
+        },
     ), pd.Series(range(1, 32))
     y.index = pd.date_range("2020-10-01", "2020-10-31")
     X.index = pd.date_range("2020-10-01", "2020-10-31")
@@ -810,7 +844,9 @@ def dummy_classifier_estimator_class():
 
         def __init__(self, a=1, b=0, random_seed=0):
             super().__init__(
-                parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed,
+                parameters={"a": a, "b": b},
+                component_obj=None,
+                random_seed=random_seed,
             )
 
         def fit(self, X, y):
@@ -909,7 +945,9 @@ def dummy_regressor_estimator_class():
 
         def __init__(self, a=1, b=0, random_seed=0):
             super().__init__(
-                parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed,
+                parameters={"a": a, "b": b},
+                component_obj=None,
+                random_seed=random_seed,
             )
 
         def fit(self, X, y):
@@ -936,7 +974,9 @@ def dummy_time_series_regressor_estimator_class():
 
         def __init__(self, a=1, b=0, random_seed=0):
             super().__init__(
-                parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed,
+                parameters={"a": a, "b": b},
+                component_obj=None,
+                random_seed=random_seed,
             )
 
     return MockTimeSeriesRegressor
@@ -972,10 +1012,16 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
         component_graph = [MockEstimator]
 
         def __init__(
-            self, parameters, custom_name=None, component_graph=None, random_seed=0,
+            self,
+            parameters,
+            custom_name=None,
+            component_graph=None,
+            random_seed=0,
         ):
             super().__init__(
-                self.component_graph, parameters=parameters, random_seed=random_seed,
+                self.component_graph,
+                parameters=parameters,
+                random_seed=random_seed,
             )
 
     return MockBinaryClassificationPipeline
@@ -990,10 +1036,16 @@ def dummy_ts_binary_tree_classifier_pipeline_class():
         component_graph = [estimator]
 
         def __init__(
-            self, parameters, custom_name=None, component_graph=None, random_seed=0,
+            self,
+            parameters,
+            custom_name=None,
+            component_graph=None,
+            random_seed=0,
         ):
             super().__init__(
-                self.component_graph, parameters=parameters, random_seed=random_seed,
+                self.component_graph,
+                parameters=parameters,
+                random_seed=random_seed,
             )
 
     return MockBinaryClassificationPipeline
@@ -1010,10 +1062,16 @@ def dummy_ts_multi_pipeline_class(dummy_classifier_estimator_class):
         component_graph = [MockEstimator]
 
         def __init__(
-            self, parameters, custom_name=None, component_graph=None, random_seed=0,
+            self,
+            parameters,
+            custom_name=None,
+            component_graph=None,
+            random_seed=0,
         ):
             super().__init__(
-                self.component_graph, parameters=parameters, random_seed=random_seed,
+                self.component_graph,
+                parameters=parameters,
+                random_seed=random_seed,
             )
 
     return MockMultiClassificationClassificationPipeline
@@ -1101,7 +1159,9 @@ def time_series_regression_pipeline_class():
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
-                self.component_graph, parameters=parameters, random_seed=random_seed,
+                self.component_graph,
+                parameters=parameters,
+                random_seed=random_seed,
             )
 
     return TSRegressionPipeline
@@ -1146,7 +1206,9 @@ def time_series_binary_classification_pipeline_class(
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
-                self.component_graph, parameters=parameters, random_seed=random_seed,
+                self.component_graph,
+                parameters=parameters,
+                random_seed=random_seed,
             )
 
     return TSBinaryPipeline
@@ -1163,7 +1225,9 @@ def time_series_multiclass_classification_pipeline_class(
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
-                self.component_graph, parameters=parameters, random_seed=random_seed,
+                self.component_graph,
+                parameters=parameters,
+                random_seed=random_seed,
             )
 
     return TSMultiPipeline
@@ -1266,7 +1330,8 @@ def time_series_non_core_objectives():
 
 @pytest.fixture
 def time_series_objectives(
-    time_series_core_objectives, time_series_non_core_objectives,
+    time_series_core_objectives,
+    time_series_non_core_objectives,
 ):
     return time_series_core_objectives + time_series_non_core_objectives
 
@@ -1368,16 +1433,20 @@ def make_data_type():
             if len(data.shape) == 1:
                 data = ww.init_series(data)
                 if nullable and isinstance(
-                    data.ww.logical_type, ww_logical_types.Integer,
+                    data.ww.logical_type,
+                    ww_logical_types.Integer,
                 ):
                     data = ww.init_series(
-                        data, logical_type=ww_logical_types.IntegerNullable,
+                        data,
+                        logical_type=ww_logical_types.IntegerNullable,
                     )
                 elif nullable and isinstance(
-                    data.ww.logical_type, ww_logical_types.Boolean,
+                    data.ww.logical_type,
+                    ww_logical_types.Boolean,
                 ):
                     data = ww.init_series(
-                        data, logical_type=ww_logical_types.BooleanNullable,
+                        data,
+                        logical_type=ww_logical_types.BooleanNullable,
                     )
             else:
                 data.ww.init()
@@ -1655,13 +1724,18 @@ class _AutoMLTestEnv:
             optimize_threshold_return_value: Passed as the return value of BinaryClassificationObjective.optimize_threshold patch.
         """
         mock_fit = self._patch_method(
-            "fit", side_effect=mock_fit_side_effect, return_value=mock_fit_return_value,
+            "fit",
+            side_effect=mock_fit_side_effect,
+            return_value=mock_fit_return_value,
         )
         mock_score = self._patch_method(
-            "score", side_effect=mock_score_side_effect, return_value=score_return_value,
+            "score",
+            side_effect=mock_score_side_effect,
+            return_value=score_return_value,
         )
         mock_get_names = patch(
-            "evalml.pipelines.components.FeatureSelector.get_names", return_value=[],
+            "evalml.pipelines.components.FeatureSelector.get_names",
+            return_value=[],
         )
 
         # For simplicity, we will always mock predict_proba and _encode_targets even if the problem is not a
@@ -1711,7 +1785,8 @@ class _AutoMLTestEnv:
         # `with ... ` syntax.
         sleep_time = PropertyMock(return_value=0.00000001)
         mock_sleep = patch(
-            "evalml.automl.AutoMLSearch._sleep_time", new_callable=sleep_time,
+            "evalml.automl.AutoMLSearch._sleep_time",
+            new_callable=sleep_time,
         )
         if mock_predict_proba_in_sample is None:
             with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
@@ -1902,24 +1977,28 @@ def imputer_test_data():
         {
             "dates": pd.date_range("01-01-2022", periods=20),
             "categorical col": pd.Series(
-                ["zero", "one", "two", "zero", "two"] * 4, dtype="category",
+                ["zero", "one", "two", "zero", "two"] * 4,
+                dtype="category",
             ),
             "int col": [0, 1, 2, 0, 3] * 4,
             "object col": ["b", "b", "a", "c", "d"] * 4,
             "float col": [0.0, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
             "categorical with nan": pd.Series(
-                [np.nan, "1", "0", "0", "3"] * 4, dtype="category",
+                [np.nan, "1", "0", "0", "3"] * 4,
+                dtype="category",
             ),
             "int with nan": [np.nan, 1, 0, 0, 1] * 4,
             "float with nan": [0.0, 1.0, np.nan, -1.0, 0.0] * 4,
             "object with nan": ["b", "b", np.nan, "c", np.nan] * 4,
             "bool col with nan": pd.Series(
-                [True, np.nan, False, np.nan, True] * 4, dtype="category",
+                [True, np.nan, False, np.nan, True] * 4,
+                dtype="category",
             ),
             "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan] * 4,
             "all nan cat": pd.Series(
-                [np.nan, np.nan, np.nan, np.nan, np.nan] * 4, dtype="category",
+                [np.nan, np.nan, np.nan, np.nan, np.nan] * 4,
+                dtype="category",
             ),
             "natural language col": pd.Series(
                 ["cats are really great", "don't", "believe", "me?", "well..."] * 4,

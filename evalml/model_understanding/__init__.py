@@ -23,11 +23,19 @@ from evalml.model_understanding.partial_dependence_functions import (
     graph_partial_dependence,
     partial_dependence,
 )
-from evalml.model_understanding.prediction_explanations import explain_predictions, explain_predictions_best_worst
+from evalml.model_understanding.prediction_explanations import (
+    explain_predictions,
+    explain_predictions_best_worst,
+)
 from evalml.model_understanding.permutation_importance import (
     calculate_permutation_importance,
     calculate_permutation_importance_one_column,
     graph_permutation_importance,
 )
-from evalml.model_understanding.feature_explanations import readable_explanation, get_influential_features
-from evalml.model_understanding.decision_boundary import find_confusion_matrix_per_thresholds
+from evalml.model_understanding.feature_explanations import (
+    readable_explanation,
+    get_influential_features,
+)
+from evalml.model_understanding.decision_boundary import (
+    find_confusion_matrix_per_thresholds,
+)

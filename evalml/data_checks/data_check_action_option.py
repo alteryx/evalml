@@ -205,7 +205,9 @@ class DataCheckActionOption:
         metadata = self.metadata
         metadata.update({"parameters": actions_parameters})
         return DataCheckAction(
-            self.action_code, self.data_check_name, metadata=metadata,
+            self.action_code,
+            self.data_check_name,
+            metadata=metadata,
         )
 
 

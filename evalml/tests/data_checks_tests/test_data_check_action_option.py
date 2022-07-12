@@ -12,7 +12,8 @@ from evalml.data_checks.data_check_action import DataCheckAction
 
 def test_data_check_action_option_attributes(dummy_data_check_name):
     data_check_action_option = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL, dummy_data_check_name,
+        DataCheckActionCode.DROP_COL,
+        dummy_data_check_name,
     )
     assert data_check_action_option.data_check_name == dummy_data_check_name
     assert data_check_action_option.action_code == DataCheckActionCode.DROP_COL
@@ -20,7 +21,10 @@ def test_data_check_action_option_attributes(dummy_data_check_name):
     assert data_check_action_option.parameters == {}
 
     data_check_action_option = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL, None, metadata={}, parameters={},
+        DataCheckActionCode.DROP_COL,
+        None,
+        metadata={},
+        parameters={},
     )
     assert data_check_action_option.action_code == DataCheckActionCode.DROP_COL
     assert data_check_action_option.data_check_name is None
@@ -61,10 +65,12 @@ def test_data_check_action_option_attributes(dummy_data_check_name):
 
 def test_data_check_action_option_equality(dummy_data_check_name):
     data_check_action_option = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL, dummy_data_check_name,
+        DataCheckActionCode.DROP_COL,
+        dummy_data_check_name,
     )
     data_check_action_option_eq = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL, dummy_data_check_name,
+        DataCheckActionCode.DROP_COL,
+        dummy_data_check_name,
     )
     assert data_check_action_option == data_check_action_option
     assert data_check_action_option == data_check_action_option_eq
@@ -102,7 +108,9 @@ def test_data_check_action_option_equality(dummy_data_check_name):
 def test_data_check_action_option_inequality():
     data_check_action_option = DataCheckActionOption(DataCheckActionCode.DROP_COL, None)
     data_check_action_option_diff = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL, None, metadata={"metadata": ["this is different"]},
+        DataCheckActionCode.DROP_COL,
+        None,
+        metadata={"metadata": ["this is different"]},
     )
 
     assert data_check_action_option != data_check_action_option_diff
@@ -229,7 +237,8 @@ def test_convert_dict_to_option_bad_input():
         "metadata": {"cow": None},
     }
     with pytest.raises(
-        ValueError, match="The metadata dictionary should have the keys",
+        ValueError,
+        match="The metadata dictionary should have the keys",
     ):
         DataCheckActionOption.convert_dict_to_option(
             data_check_action_option_dict_no_columns,
@@ -238,7 +247,8 @@ def test_convert_dict_to_option_bad_input():
 
 def test_convert_dict_to_option_bad_parameter_input(dummy_data_check_name):
     with pytest.raises(
-        ValueError, match="Each parameter must have a parameter_type key.",
+        ValueError,
+        match="Each parameter must have a parameter_type key.",
     ):
         DataCheckActionOption(
             action_code=DataCheckActionCode.DROP_COL,
@@ -333,7 +343,8 @@ def test_convert_dict_to_option_bad_parameter_input(dummy_data_check_name):
             },
         )
     with pytest.raises(
-        ValueError, match="Each column parameter must have a default_value key.",
+        ValueError,
+        match="Each column parameter must have a default_value key.",
     ):
         DataCheckActionOption(
             action_code=DataCheckActionCode.DROP_COL,
@@ -356,7 +367,8 @@ def test_convert_dict_to_option(dummy_data_check_name):
         "metadata": {"columns": None, "rows": None},
     }
     expected_data_check_action_option = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL, None,
+        DataCheckActionCode.DROP_COL,
+        None,
     )
     data_check_action_option = DataCheckActionOption.convert_dict_to_option(
         data_check_action_option_dict,

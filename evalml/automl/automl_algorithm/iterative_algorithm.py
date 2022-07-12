@@ -146,7 +146,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self.allowed_component_graphs is None:
             self.logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(
-                self.problem_type, self.allowed_model_families,
+                self.problem_type,
+                self.allowed_model_families,
             )
             allowed_estimators = self._filter_estimators(
                 allowed_estimators,
@@ -170,7 +171,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         parameters=self._pipeline_parameters,
                         sampler_name=self.sampler_name,
                         known_in_advance=self._pipeline_parameters.get(
-                            "pipeline", {},
+                            "pipeline",
+                            {},
                         ).get("known_in_advance", None),
                         features=self.features,
                     )
@@ -282,7 +284,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     "No results were reported from the first batch",
                 )
             self._first_batch_results = sorted(
-                self._first_batch_results, key=itemgetter(0),
+                self._first_batch_results,
+                key=itemgetter(0),
             )
 
         next_batch = []
@@ -324,7 +327,11 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         return next_batch
 
     def add_result(
-        self, score_to_minimize, pipeline, trained_pipeline_results, cached_data=None,
+        self,
+        score_to_minimize,
+        pipeline,
+        trained_pipeline_results,
+        cached_data=None,
     ):
         """Register results from evaluating a pipeline.
 
@@ -344,25 +351,31 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             if self.batch_number == 1:
                 try:
                     super().add_result(
-                        score_to_minimize, pipeline, trained_pipeline_results,
+                        score_to_minimize,
+                        pipeline,
+                        trained_pipeline_results,
                     )
                 except ValueError as e:
                     if "is not within the bounds of the space" in str(e):
                         raise ValueError(
                             "Default parameters for components in pipeline {} not in the hyperparameter ranges: {}".format(
-                                pipeline.name, e,
+                                pipeline.name,
+                                e,
                             ),
                         )
                     else:
                         raise (e)
             else:
                 super().add_result(
-                    score_to_minimize, pipeline, trained_pipeline_results,
+                    score_to_minimize,
+                    pipeline,
+                    trained_pipeline_results,
                 )
         if self.batch_number == 1:
             self._first_batch_results.append((score_to_minimize, pipeline))
         current_best_score = self._best_pipeline_info.get(
-            pipeline.model_family, {},
+            pipeline.model_family,
+            {},
         ).get("mean_cv_score", np.inf)
         if (
             score_to_minimize is not None

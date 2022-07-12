@@ -202,7 +202,8 @@ def test_drop_null_transformer_np_array():
 )
 @pytest.mark.parametrize("has_nan", [True, False])
 def test_drop_null_transformer_woodwork_custom_overrides_returned_by_components(
-    X_df, has_nan,
+    X_df,
+    has_nan,
 ):
     y = pd.Series([1, 2, 1])
     if has_nan:

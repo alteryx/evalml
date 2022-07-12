@@ -25,11 +25,13 @@ def test_multicollinearity_data_check_init():
     assert multi_check.threshold == 1.0
 
     with pytest.raises(
-        ValueError, match="threshold must be a float between 0 and 1, inclusive.",
+        ValueError,
+        match="threshold must be a float between 0 and 1, inclusive.",
     ):
         MulticollinearityDataCheck(threshold=-0.1)
     with pytest.raises(
-        ValueError, match="threshold must be a float between 0 and 1, inclusive.",
+        ValueError,
+        match="threshold must be a float between 0 and 1, inclusive.",
     ):
         MulticollinearityDataCheck(threshold=1.1)
 
@@ -51,7 +53,8 @@ def test_multicollinearity_returns_warning(use_nullable_types):
     if use_nullable_types:
         data[1] = None
         X["col_nullable"] = woodwork.init_series(
-            pd.Series(data), logical_type="IntegerNullable",
+            pd.Series(data),
+            logical_type="IntegerNullable",
         )
         X.ww.init()
 

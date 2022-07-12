@@ -96,7 +96,9 @@ class CatBoostClassifier(Estimator):
         )
         parameters["n_jobs"] = n_jobs
         super().__init__(
-            parameters=parameters, component_obj=cb_classifier, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=cb_classifier,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):

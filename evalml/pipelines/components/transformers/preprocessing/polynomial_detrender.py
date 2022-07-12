@@ -38,13 +38,16 @@ class PolynomialDetrender(Transformer):
 
         trend = import_or_raise("sktime.forecasting.trend", error_msg=error_msg)
         detrend = import_or_raise(
-            "sktime.transformations.series.detrend", error_msg=error_msg,
+            "sktime.transformations.series.detrend",
+            error_msg=error_msg,
         )
 
         detrender = detrend.Detrender(trend.PolynomialTrendForecaster(degree=degree))
 
         super().__init__(
-            parameters=params, component_obj=detrender, random_seed=random_seed,
+            parameters=params,
+            component_obj=detrender,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):

@@ -49,7 +49,8 @@ def infer_feature_types(data, feature_types=None):
 
     if data.ww.schema is not None:
         if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(
-            data, data.ww.schema,
+            data,
+            data.ww.schema,
         ):
             ww_error = ww.get_invalid_schema_message(data, data.ww.schema)
             if "dtype mismatch" in ww_error:

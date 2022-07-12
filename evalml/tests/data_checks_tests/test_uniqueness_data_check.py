@@ -27,11 +27,13 @@ def test_uniqueness_data_check_init():
     assert uniqueness_check.threshold == 1.0
 
     with pytest.raises(
-        ValueError, match="threshold must be a float between 0 and 1, inclusive.",
+        ValueError,
+        match="threshold must be a float between 0 and 1, inclusive.",
     ):
         UniquenessDataCheck("regression", threshold=-0.1)
     with pytest.raises(
-        ValueError, match="threshold must be a float between 0 and 1, inclusive.",
+        ValueError,
+        match="threshold must be a float between 0 and 1, inclusive.",
     ):
         UniquenessDataCheck("regression", threshold=1.1)
 

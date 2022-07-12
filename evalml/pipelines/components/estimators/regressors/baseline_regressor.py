@@ -41,7 +41,9 @@ class BaselineRegressor(Estimator):
         self._prediction_value = None
         self._num_features = None
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):

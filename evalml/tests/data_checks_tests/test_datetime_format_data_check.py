@@ -45,11 +45,14 @@ def get_uneven_error(col_name, ww_payload):
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize(
-    "issue", ["redundant", "missing", "uneven", "type_errors", None],
+    "issue",
+    ["redundant", "missing", "uneven", "type_errors", None],
 )
 @pytest.mark.parametrize("datetime_loc", [1, "X_index", "y_index"])
 def test_datetime_format_data_check_typeerror_uneven_intervals(
-    issue, input_type, datetime_loc,
+    issue,
+    input_type,
+    datetime_loc,
 ):
     X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
 
@@ -428,7 +431,10 @@ def test_datetime_nan_check_ww():
     ww_input = pd.DataFrame(dates, columns=["dates"])
     ww_input.ww.init()
     ww_payload = infer_frequency(
-        ww_input["dates"], debug=True, window_length=5, threshold=0.8,
+        ww_input["dates"],
+        debug=True,
+        window_length=5,
+        threshold=0.8,
     )
 
     expected = [

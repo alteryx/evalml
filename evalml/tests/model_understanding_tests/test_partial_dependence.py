@@ -131,7 +131,9 @@ def test_partial_dependence_with_non_numeric_columns(
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
 def test_partial_dependence_with_ww_category_columns(
-    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline,
+    mock_predict_proba,
+    fraud_100,
+    logistic_regression_binary_pipeline,
 ):
     X, y = fraud_100
     X.ww.set_types(
@@ -144,7 +146,9 @@ def test_partial_dependence_with_ww_category_columns(
     logistic_regression_binary_pipeline.fit(X, y)
 
     part_dep = partial_dependence(
-        logistic_regression_binary_pipeline, X, features="store_id",
+        logistic_regression_binary_pipeline,
+        X,
+        features="store_id",
     )
     assert list(part_dep.columns) == [
         "feature_values",
@@ -156,7 +160,9 @@ def test_partial_dependence_with_ww_category_columns(
     assert not part_dep.isnull().any(axis=None)
 
     part_dep = partial_dependence(
-        logistic_regression_binary_pipeline, X, features="country",
+        logistic_regression_binary_pipeline,
+        X,
+        features="country",
     )
     assert list(part_dep.columns) == [
         "feature_values",
@@ -168,7 +174,9 @@ def test_partial_dependence_with_ww_category_columns(
     assert not part_dep.isnull().any(axis=None)
 
     part_dep = partial_dependence(
-        logistic_regression_binary_pipeline, X, features="region",
+        logistic_regression_binary_pipeline,
+        X,
+        features="region",
     )
     assert list(part_dep.columns) == [
         "feature_values",
@@ -185,7 +193,9 @@ def test_partial_dependence_with_ww_category_columns(
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
 def test_two_way_partial_dependence_with_ww_category_columns(
-    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline,
+    mock_predict_proba,
+    fraud_100,
+    logistic_regression_binary_pipeline,
 ):
     X, y = fraud_100
     X.ww.set_types(
@@ -199,7 +209,9 @@ def test_two_way_partial_dependence_with_ww_category_columns(
     logistic_regression_binary_pipeline.fit(X, y)
 
     part_dep = partial_dependence(
-        logistic_regression_binary_pipeline, X, features=("store_id", "country"),
+        logistic_regression_binary_pipeline,
+        X,
+        features=("store_id", "country"),
     )
     assert "class_label" in part_dep.columns
     assert part_dep["class_label"].nunique() == 1
@@ -235,7 +247,8 @@ def test_partial_dependence_baseline():
     X = pd.DataFrame([[1, 0], [0, 1]])
     y = pd.Series([0, 1])
     pipeline = BinaryClassificationPipeline(
-        component_graph=["Baseline Classifier"], parameters={},
+        component_graph=["Baseline Classifier"],
+        parameters={},
     )
     pipeline.fit(X, y)
     with pytest.raises(
@@ -290,7 +303,10 @@ def test_partial_dependence_catboost(problem_type, X_y_binary, X_y_multi):
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
 def test_partial_dependence_xgboost_feature_names(
-    problem_type, X_y_binary, X_y_multi, X_y_regression,
+    problem_type,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
 ):
     if problem_type == ProblemTypes.REGRESSION:
         pipeline = RegressionPipeline(
@@ -324,7 +340,8 @@ def test_partial_dependence_xgboost_feature_names(
 
 
 def test_partial_dependence_multiclass(
-    wine_local, logistic_regression_multiclass_pipeline,
+    wine_local,
+    logistic_regression_multiclass_pipeline,
 ):
     X, y = wine_local
     logistic_regression_multiclass_pipeline.fit(X, y)
@@ -381,7 +398,8 @@ def test_partial_dependence_multiclass(
 
 
 def test_partial_dependence_multiclass_numeric_labels(
-    logistic_regression_multiclass_pipeline, X_y_multi,
+    logistic_regression_multiclass_pipeline,
+    X_y_multi,
 ):
     X, y = X_y_multi
     X = pd.DataFrame(X)
@@ -426,7 +444,10 @@ def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pi
         match="Pipeline to calculate partial dependence for must be fitted",
     ) as e:
         partial_dependence(
-            logistic_regression_binary_pipeline, X, features=0, grid_resolution=5,
+            logistic_regression_binary_pipeline,
+            X,
+            features=0,
+            grid_resolution=5,
         )
     assert e.value.code == PartialDependenceErrorCode.UNFITTED_PIPELINE
 
@@ -475,7 +496,8 @@ def test_partial_dependence_errors(logistic_regression_binary_pipeline):
 
 
 def test_partial_dependence_more_categories_than_grid_resolution(
-    fraud_local, logistic_regression_binary_pipeline,
+    fraud_local,
+    logistic_regression_binary_pipeline,
 ):
     def round_dict_keys(dictionary, places=6):
         """Function to round all keys of a dictionary that has floats as keys."""
@@ -511,21 +533,30 @@ def test_partial_dependence_more_categories_than_grid_resolution(
 
     # Check the case where grid_resolution < number of categorical features
     part_dep = partial_dependence(
-        pipeline, X, "currency", grid_resolution=round(num_cat_features / 2),
+        pipeline,
+        X,
+        "currency",
+        grid_resolution=round(num_cat_features / 2),
     )
     part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
     assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
 
     # Check the case where grid_resolution == number of categorical features
     part_dep = partial_dependence(
-        pipeline, X, "currency", grid_resolution=round(num_cat_features),
+        pipeline,
+        X,
+        "currency",
+        grid_resolution=round(num_cat_features),
     )
     part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
     assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
 
     # Check the case where grid_resolution > number of categorical features
     part_dep = partial_dependence(
-        pipeline, X, "currency", grid_resolution=round(num_cat_features * 2),
+        pipeline,
+        X,
+        "currency",
+        grid_resolution=round(num_cat_features * 2),
     )
     part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
     assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
@@ -557,7 +588,11 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
     pipeline.fit(X, y)
 
     avg_pred, ind_preds = partial_dependence(
-        pipeline, X, features=["a", "b"], grid_resolution=5, kind="both",
+        pipeline,
+        X,
+        features=["a", "b"],
+        grid_resolution=5,
+        kind="both",
     )
     assert isinstance(avg_pred, pd.DataFrame)
     assert isinstance(ind_preds, list)
@@ -569,7 +604,11 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
         assert ind_df.shape == (2, 3)
 
     ind_preds = partial_dependence(
-        pipeline, X, features=["a", "b"], grid_resolution=5, kind="individual",
+        pipeline,
+        X,
+        features=["a", "b"],
+        grid_resolution=5,
+        kind="individual",
     )
     assert isinstance(ind_preds, list)
     assert isinstance(ind_preds[0], pd.DataFrame)
@@ -594,7 +633,8 @@ def test_partial_dependence_ensemble_pipeline(problem_type, X_y_binary, X_y_regr
             RegressionPipeline(["Elastic Net Regressor"]),
         ]
     pipeline = _make_stacked_ensemble_pipeline(
-        input_pipelines=input_pipelines, problem_type=problem_type,
+        input_pipelines=input_pipelines,
+        problem_type=problem_type,
     )
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
@@ -603,7 +643,9 @@ def test_partial_dependence_ensemble_pipeline(problem_type, X_y_binary, X_y_regr
 
 
 def test_graph_partial_dependence(
-    breast_cancer_local, logistic_regression_binary_pipeline, go,
+    breast_cancer_local,
+    logistic_regression_binary_pipeline,
+    go,
 ):
     X, y = breast_cancer_local
 
@@ -628,7 +670,8 @@ def test_graph_partial_dependence(
     )
     assert np.array_equal(fig_dict["data"][0]["x"], part_dep_data["feature_values"])
     assert np.array_equal(
-        fig_dict["data"][0]["y"], part_dep_data["partial_dependence"].values,
+        fig_dict["data"][0]["y"],
+        part_dep_data["partial_dependence"].values,
     )
 
 
@@ -637,7 +680,10 @@ def test_graph_partial_dependence(
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
 def test_graph_partial_dependence_ww_categories(
-    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline, go,
+    mock_predict_proba,
+    fraud_100,
+    logistic_regression_binary_pipeline,
+    go,
 ):
 
     X, y = fraud_100
@@ -665,12 +711,15 @@ def test_graph_partial_dependence_ww_categories(
         part_dep_data = partial_dependence(pipeline, X, features=feat)
         assert np.array_equal(fig_dict["data"][0]["x"], part_dep_data["feature_values"])
         assert np.array_equal(
-            fig_dict["data"][0]["y"], part_dep_data["partial_dependence"].values,
+            fig_dict["data"][0]["y"],
+            part_dep_data["partial_dependence"].values,
         )
 
 
 def test_graph_two_way_partial_dependence(
-    breast_cancer_local, logistic_regression_binary_pipeline, go,
+    breast_cancer_local,
+    logistic_regression_binary_pipeline,
+    go,
 ):
 
     X, y = breast_cancer_local
@@ -707,7 +756,10 @@ def test_graph_two_way_partial_dependence(
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
 def test_graph_two_way_partial_dependence_ww_categories(
-    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline, go,
+    mock_predict_proba,
+    fraud_100,
+    logistic_regression_binary_pipeline,
+    go,
 ):
 
     X, y = fraud_100
@@ -770,7 +822,9 @@ def test_graph_two_way_partial_dependence_ww_categories(
 
 
 def test_graph_partial_dependence_multiclass(
-    wine_local, logistic_regression_multiclass_pipeline, go,
+    wine_local,
+    logistic_regression_multiclass_pipeline,
+    go,
 ):
 
     X, y = wine_local
@@ -789,7 +843,8 @@ def test_graph_partial_dependence_multiclass(
         logistic_regression_multiclass_pipeline.classes_,
     )
     for data, label in zip(
-        fig_dict["data"], logistic_regression_multiclass_pipeline.classes_,
+        fig_dict["data"],
+        logistic_regression_multiclass_pipeline.classes_,
     ):
         assert len(data["x"]) == 5
         assert len(data["y"]) == 5
@@ -1013,14 +1068,20 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
     pipeline.fit(X, y)
 
     fig = graph_partial_dependence(
-        pipeline, X, features="categorical_column", grid_resolution=5,
+        pipeline,
+        X,
+        features="categorical_column",
+        grid_resolution=5,
     )
     plot_data = fig.to_dict()["data"][0]
     assert plot_data["type"] == "bar"
     assert list(plot_data["x"]) == ["0", "1", "2"]
 
     fig = graph_partial_dependence(
-        pipeline, X, features=("0", "categorical_column"), grid_resolution=5,
+        pipeline,
+        X,
+        features=("0", "categorical_column"),
+        grid_resolution=5,
     )
     fig_dict = fig.to_dict()
     plot_data = fig_dict["data"][0]
@@ -1050,7 +1111,9 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
 
 @pytest.mark.parametrize("class_label", [None, "class_1"])
 def test_partial_dependence_multiclass_categorical(
-    wine_local, class_label, logistic_regression_multiclass_pipeline,
+    wine_local,
+    class_label,
+    logistic_regression_multiclass_pipeline,
 ):
 
     X, y = wine_local
@@ -1144,7 +1207,10 @@ def test_partial_dependence_all_nan_value_error(
 
     with pytest.raises(PartialDependenceError, match=message.format("'a'")) as e:
         partial_dependence(
-            logistic_regression_binary_pipeline, pred_df, features=0, grid_resolution=10,
+            logistic_regression_binary_pipeline,
+            pred_df,
+            features=0,
+            grid_resolution=10,
         )
     assert e.value.code == PartialDependenceErrorCode.FEATURE_IS_ALL_NANS
 
@@ -1169,7 +1235,10 @@ def test_partial_dependence_all_nan_value_error(
     pred_df = pred_df.ww.rename(columns={"a": 0})
     with pytest.raises(PartialDependenceError, match=message.format("'0'")) as e:
         partial_dependence(
-            logistic_regression_binary_pipeline, pred_df, features=0, grid_resolution=10,
+            logistic_regression_binary_pipeline,
+            pred_df,
+            features=0,
+            grid_resolution=10,
         )
     assert e.value.code == PartialDependenceErrorCode.FEATURE_IS_ALL_NANS
 
@@ -1178,7 +1247,12 @@ def test_partial_dependence_all_nan_value_error(
 @pytest.mark.parametrize("size", [10, 100])
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
 def test_partial_dependence_datetime(
-    problem_type, size, grid, X_y_regression, X_y_binary, X_y_multi,
+    problem_type,
+    size,
+    grid,
+    X_y_regression,
+    X_y_binary,
+    X_y_multi,
 ):
     if problem_type == "binary":
         X, y = X_y_binary
@@ -1223,7 +1297,10 @@ def test_partial_dependence_datetime(
     X["dt_column"] = random_dates
     pipeline.fit(X, y)
     part_dep = partial_dependence(
-        pipeline, X, features="dt_column", grid_resolution=grid,
+        pipeline,
+        X,
+        features="dt_column",
+        grid_resolution=grid,
     )
     expected_size = min(size, grid)
     num_classes = y.nunique()
@@ -1267,7 +1344,9 @@ def test_partial_dependence_datetime(
 
 @pytest.mark.parametrize("problem_type", ["binary", "regression"])
 def test_graph_partial_dependence_regression_and_binary_datetime(
-    problem_type, X_y_regression, X_y_binary,
+    problem_type,
+    X_y_regression,
+    X_y_binary,
 ):
 
     if problem_type == "binary":
@@ -1381,7 +1460,11 @@ def test_graph_partial_dependence_ice_plot(
     clf.fit(X, y)
 
     fig = graph_partial_dependence(
-        clf, X, features=feature, grid_resolution=5, kind="both",
+        clf,
+        X,
+        features=feature,
+        grid_resolution=5,
+        kind="both",
     )
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
@@ -1404,7 +1487,11 @@ def test_graph_partial_dependence_ice_plot(
     )
 
     avg_dep_data, ind_dep_data = partial_dependence(
-        clf, X, features=feature, grid_resolution=5, kind="both",
+        clf,
+        X,
+        features=feature,
+        grid_resolution=5,
+        kind="both",
     )
     assert np.array_equal(
         fig_dict["data"][-1]["x"],
@@ -1413,7 +1500,8 @@ def test_graph_partial_dependence_ice_plot(
 
     if problem_type == ProblemTypes.BINARY:
         assert np.array_equal(
-            fig_dict["data"][-1]["y"], avg_dep_data["partial_dependence"].values,
+            fig_dict["data"][-1]["y"],
+            avg_dep_data["partial_dependence"].values,
         )
     else:
         class_2_data = avg_dep_data[avg_dep_data["class_label"] == "class_2"][
@@ -1435,11 +1523,16 @@ def test_graph_partial_dependence_ice_plot(
             assert np.array_equal(data, ind_dep_data[f"Sample {i}"].values)
         else:
             assert np.array_equal(
-                fig_dict["data"][i]["y"], ind_dep_data[f"Sample {i}"].values,
+                fig_dict["data"][i]["y"],
+                ind_dep_data[f"Sample {i}"].values,
             )
 
     fig = graph_partial_dependence(
-        clf, X, features=feature, grid_resolution=5, kind="individual",
+        clf,
+        X,
+        features=feature,
+        grid_resolution=5,
+        kind="individual",
     )
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
@@ -1458,7 +1551,11 @@ def test_graph_partial_dependence_ice_plot(
     assert fig_dict["data"][0]["name"] == expected_label
 
     ind_dep_data = partial_dependence(
-        clf, X, features=feature, grid_resolution=5, kind="individual",
+        clf,
+        X,
+        features=feature,
+        grid_resolution=5,
+        kind="individual",
     )
 
     for i in range(len(X)):
@@ -1475,12 +1572,14 @@ def test_graph_partial_dependence_ice_plot(
             assert np.array_equal(data, ind_dep_data[f"Sample {i}"].values)
         else:
             assert np.array_equal(
-                fig_dict["data"][i]["y"], ind_dep_data[f"Sample {i}"].values,
+                fig_dict["data"][i]["y"],
+                ind_dep_data[f"Sample {i}"].values,
             )
 
 
 def test_graph_partial_dependence_ice_plot_two_way_error(
-    breast_cancer_local, logistic_regression_binary_pipeline,
+    breast_cancer_local,
+    logistic_regression_binary_pipeline,
 ):
     X, y = breast_cancer_local
     logistic_regression_binary_pipeline.fit(X, y)
@@ -1531,7 +1630,8 @@ def test_partial_dependence_scale_error():
 
     # Catch the intended sklearn error and change the message.
     with pytest.raises(
-        PartialDependenceError, match="scale of these features is too small",
+        PartialDependenceError,
+        match="scale of these features is too small",
     ) as e:
         partial_dependence(pl, X_pd, "a", grid_resolution=5)
     assert e.value.code == PartialDependenceErrorCode.COMPUTED_PERCENTILES_TOO_CLOSE
@@ -1587,7 +1687,9 @@ def test_partial_dependence_unknown(indices, error, X_y_binary):
         pd.DataFrame(
             {
                 "date_column": pd.date_range(
-                    start="20200101", freq="10h30min50s", periods=100,
+                    start="20200101",
+                    freq="10h30min50s",
+                    periods=100,
                 ),
             },
         ),
@@ -1595,7 +1697,11 @@ def test_partial_dependence_unknown(indices, error, X_y_binary):
 )
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
 def test_partial_dependence_datetime_extra(
-    problem_type, X_datasets, X_y_regression, X_y_binary, X_y_multi,
+    problem_type,
+    X_datasets,
+    X_y_regression,
+    X_y_binary,
+    X_y_multi,
 ):
     if problem_type == "binary":
         X, y = X_y_binary
@@ -1636,7 +1742,10 @@ def test_partial_dependence_datetime_extra(
     y = pd.Series(y)
     pipeline.fit(X, y)
     part_dep = partial_dependence(
-        pipeline, X, features="date_column", grid_resolution=10,
+        pipeline,
+        X,
+        features="date_column",
+        grid_resolution=10,
     )
     num_classes = y.nunique()
     if problem_type == "multiclass":
@@ -1712,7 +1821,10 @@ def test_partial_dependence_categorical_nan(fraud_100):
 
     GRID_RESOLUTION = 5
     dep = partial_dependence(
-        pl, X, features="provider", grid_resolution=GRID_RESOLUTION,
+        pl,
+        X,
+        features="provider",
+        grid_resolution=GRID_RESOLUTION,
     )
 
     assert dep.shape[0] == X["provider"].dropna().nunique()
@@ -1720,7 +1832,10 @@ def test_partial_dependence_categorical_nan(fraud_100):
     assert not dep["partial_dependence"].isna().any()
 
     dep2way = partial_dependence(
-        pl, X, features=("amount", "provider"), grid_resolution=GRID_RESOLUTION,
+        pl,
+        X,
+        features=("amount", "provider"),
+        grid_resolution=GRID_RESOLUTION,
     )
     assert not dep2way.isna().any().any()
     # Plus 1 in the columns because there is `class_label`
@@ -1817,7 +1932,10 @@ def test_partial_dependence_jupyter_graph_check(
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
         graph_partial_dependence(
-            logistic_regression_binary_pipeline, X, features=0, grid_resolution=20,
+            logistic_regression_binary_pipeline,
+            X,
+            features=0,
+            grid_resolution=20,
         )
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)

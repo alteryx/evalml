@@ -25,7 +25,9 @@ class DropRowsTransformer(Transformer):
         self.indices_to_drop = indices_to_drop
         parameters = {"indices_to_drop": self.indices_to_drop}
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):

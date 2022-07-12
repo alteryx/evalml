@@ -22,7 +22,9 @@ class ColumnSelector(Transformer):
         parameters = {"columns": columns}
         parameters.update(kwargs)
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def _check_input_for_columns(self, X):

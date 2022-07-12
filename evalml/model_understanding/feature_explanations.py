@@ -93,7 +93,10 @@ def readable_explanation(
 
 
 def get_influential_features(
-    imp_df, max_features=5, min_importance_threshold=0.05, linear_importance=False,
+    imp_df,
+    max_features=5,
+    min_importance_threshold=0.05,
+    linear_importance=False,
 ):
     """Finds the most influential features as well as any detrimental features from a dataframe of feature importances.
 
@@ -142,7 +145,12 @@ def get_influential_features(
 
 
 def _fill_template(
-    estimator, target, objective, most_important, somewhat_important, detrimental_feats,
+    estimator,
+    target,
+    objective,
+    most_important,
+    somewhat_important,
+    detrimental_feats,
 ):
     # Get the objective to a printable string
     if objective is not None:

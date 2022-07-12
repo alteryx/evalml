@@ -51,12 +51,15 @@ make_rows_test_cases = [
     product(make_rows_test_cases, [True, False], [True, False]),
 )
 def test_make_rows_and_make_table(
-    test_case, include_explainer_values, include_string_features,
+    test_case,
+    include_explainer_values,
+    include_string_features,
 ):
     values, top_k, answer = test_case
 
     pipeline_features = pd.DataFrame(
-        {name: value[0] + 1 for name, value in values.items()}, index=[5],
+        {name: value[0] + 1 for name, value in values.items()},
+        index=[5],
     )
 
     if include_string_features:
@@ -672,7 +675,9 @@ def test_make_single_prediction_table(
     "evalml.model_understanding.prediction_explanations._user_interface._compute_shap_values",
 )
 def test_make_single_prediction_table_calls_correct_algorithm(
-    mock_shap, mock_lime, mock_make_text,
+    mock_shap,
+    mock_lime,
+    mock_make_text,
 ):
     pipeline = MagicMock()
     pipeline.problem_type = ProblemTypes.BINARY

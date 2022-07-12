@@ -70,12 +70,16 @@ class SKOptTuner(Tuner):
         except Exception as e:
             logger.debug(
                 "SKOpt tuner received error during add. Score: {}\nParameters: {}\nFlat parameter values: {}\nError: {}".format(
-                    pipeline_parameters, score, flat_parameter_values, e,
+                    pipeline_parameters,
+                    score,
+                    flat_parameter_values,
+                    e,
                 ),
             )
             if str(e) == "'<=' not supported between instances of 'int' and 'NoneType'":
                 msg = "Invalid parameters specified to SKOptTuner.add: parameters {} error {}".format(
-                    pipeline_parameters, str(e),
+                    pipeline_parameters,
+                    str(e),
                 )
                 logger.error(msg)
                 raise ParameterError(msg)

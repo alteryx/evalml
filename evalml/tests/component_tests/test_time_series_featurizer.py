@@ -45,7 +45,8 @@ def test_delayed_features_transformer_init():
 @pytest.mark.parametrize("conf_level", [-0.05, 0, 1.2])
 def test_delayed_features_init_raises_if_conf_level_not_in_range(conf_level):
     with pytest.raises(
-        ValueError, match="Parameter conf_level must be in range \\(0, 1\\]",
+        ValueError,
+        match="Parameter conf_level must be in range \\(0, 1\\]",
     ):
         TimeSeriesFeaturizer(conf_level=conf_level)
 
@@ -95,11 +96,17 @@ def encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str):
     return_value=pd.DataFrame(),
 )
 def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
-    mock_roll, encode_X_as_str, encode_y_as_str, delayed_features_data,
+    mock_roll,
+    encode_X_as_str,
+    encode_y_as_str,
+    delayed_features_data,
 ):
     X, y = delayed_features_data
     X, X_answer, y, y_answer = encode_X_y_as_strings(
-        X, y, encode_X_as_str, encode_y_as_str,
+        X,
+        y,
+        encode_X_as_str,
+        encode_y_as_str,
     )
     answer = pd.DataFrame(
         {
@@ -117,7 +124,11 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
     assert_frame_equal(
         answer,
         TimeSeriesFeaturizer(
-            max_delay=3, gap=0, forecast_horizon=1, conf_level=1.0, time_index="date",
+            max_delay=3,
+            gap=0,
+            forecast_horizon=1,
+            conf_level=1.0,
+            time_index="date",
         ).fit_transform(X=X, y=y),
     )
 
@@ -150,11 +161,17 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
     return_value=pd.DataFrame(),
 )
 def test_delayed_feature_extractor_maxdelay5_forecasthorizon1_gap0(
-    mock_roll, encode_X_as_str, encode_y_as_str, delayed_features_data,
+    mock_roll,
+    encode_X_as_str,
+    encode_y_as_str,
+    delayed_features_data,
 ):
     X, y = delayed_features_data
     X, X_answer, y, y_answer = encode_X_y_as_strings(
-        X, y, encode_X_as_str, encode_y_as_str,
+        X,
+        y,
+        encode_X_as_str,
+        encode_y_as_str,
     )
     answer = pd.DataFrame(
         {
@@ -215,11 +232,17 @@ def test_delayed_feature_extractor_maxdelay5_forecasthorizon1_gap0(
     return_value=pd.DataFrame(),
 )
 def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
-    mock_roll, encode_X_as_str, encode_y_as_str, delayed_features_data,
+    mock_roll,
+    encode_X_as_str,
+    encode_y_as_str,
+    delayed_features_data,
 ):
     X, y = delayed_features_data
     X, X_answer, y, y_answer = encode_X_y_as_strings(
-        X, y, encode_X_as_str, encode_y_as_str,
+        X,
+        y,
+        encode_X_as_str,
+        encode_y_as_str,
     )
     answer = pd.DataFrame(
         {
@@ -238,7 +261,11 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
     assert_frame_equal(
         answer,
         TimeSeriesFeaturizer(
-            max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0, time_index="date",
+            max_delay=3,
+            forecast_horizon=7,
+            gap=1,
+            conf_level=1.0,
+            time_index="date",
         ).fit_transform(X, y),
     )
 
@@ -285,7 +312,11 @@ def test_delayed_feature_extractor_numpy(mock_roll, delayed_features_data):
     assert_frame_equal(
         answer,
         TimeSeriesFeaturizer(
-            max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0, time_index=1,
+            max_delay=3,
+            forecast_horizon=7,
+            gap=1,
+            conf_level=1.0,
+            time_index=1,
         ).fit_transform(X_np, y_np),
     )
     answer_only_y = pd.DataFrame(
@@ -311,7 +342,8 @@ def test_delayed_feature_extractor_numpy(mock_roll, delayed_features_data):
 
 
 @pytest.mark.parametrize(
-    "delay_features,delay_target", [(False, True), (True, False), (False, False)],
+    "delay_features,delay_target",
+    [(False, True), (True, False), (False, False)],
 )
 @pytest.mark.parametrize("encode_X_as_str", [True, False])
 @pytest.mark.parametrize("encode_y_as_str", [True, False])
@@ -329,7 +361,10 @@ def test_lagged_feature_extractor_delay_features_delay_target(
 ):
     X, y = delayed_features_data
     X, X_answer, y, y_answer = encode_X_y_as_strings(
-        X, y, encode_X_as_str, encode_y_as_str,
+        X,
+        y,
+        encode_X_as_str,
+        encode_y_as_str,
     )
     all_delays = pd.DataFrame(
         {
@@ -366,7 +401,8 @@ def test_lagged_feature_extractor_delay_features_delay_target(
 
 
 @pytest.mark.parametrize(
-    "delay_features,delay_target", [(False, True), (True, False), (False, False)],
+    "delay_features,delay_target",
+    [(False, True), (True, False), (False, False)],
 )
 @pytest.mark.parametrize("encode_X_as_str", [True, False])
 @pytest.mark.parametrize("encode_y_as_str", [True, False])
@@ -384,7 +420,10 @@ def test_lagged_feature_extractor_delay_target(
 ):
     X, y = delayed_features_data
     X, X_answer, y, y_answer = encode_X_y_as_strings(
-        X, y, encode_X_as_str, encode_y_as_str,
+        X,
+        y,
+        encode_X_as_str,
+        encode_y_as_str,
     )
     answer = pd.DataFrame({"date": X["date"]})
     if delay_features:
@@ -423,11 +462,18 @@ def test_lagged_feature_extractor_delay_target(
 @pytest.mark.parametrize("encode_y_as_str", [True, False])
 @pytest.mark.parametrize("data_type", ["ww", "pd"])
 def test_delay_feature_transformer_supports_custom_index(
-    encode_X_as_str, encode_y_as_str, data_type, make_data_type, delayed_features_data,
+    encode_X_as_str,
+    encode_y_as_str,
+    data_type,
+    make_data_type,
+    delayed_features_data,
 ):
     X, y = delayed_features_data
     X, X_answer, y, y_answer = encode_X_y_as_strings(
-        X, y, encode_X_as_str, encode_y_as_str,
+        X,
+        y,
+        encode_X_as_str,
+        encode_y_as_str,
     )
     X.index = pd.RangeIndex(50, 81)
     X_answer.index = pd.RangeIndex(50, 81)
@@ -630,7 +676,11 @@ def test_time_series_featurizer_rolling_mean(
 @pytest.mark.parametrize("forecast_horizon", [1, 5, 10])
 @pytest.mark.parametrize("max_delay", [1, 3, 9])
 def test_time_series_featurizer_does_not_need_to_delay_to_compute_means(
-    max_delay, forecast_horizon, gap, rolling_window_size, delayed_features_data,
+    max_delay,
+    forecast_horizon,
+    gap,
+    rolling_window_size,
+    delayed_features_data,
 ):
     X, y = delayed_features_data
     output = TimeSeriesFeaturizer(
@@ -676,7 +726,11 @@ def test_time_series_featurizer_does_not_need_to_delay_to_compute_means(
     return_value=pd.DataFrame(),
 )
 def test_delayed_feature_transformer_conf_level(
-    mock_roll, mock_acf, mock_peaks, peaks, significant_lags,
+    mock_roll,
+    mock_acf,
+    mock_peaks,
+    peaks,
+    significant_lags,
 ):
     X = pd.DataFrame(
         {
@@ -802,7 +856,9 @@ def test_delayed_feature_transformer_selects_first_lag_if_none_significant(
     return_value=pd.DataFrame(),
 )
 def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_components(
-    mock_roll, X_df, fit_transform,
+    mock_roll,
+    X_df,
+    fit_transform,
 ):
     y = pd.Series(range(X_df.shape[0]))
     override_types = [Integer, Double, Categorical, Boolean]
@@ -818,7 +874,10 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
             # Casting the fourth and fifth dataframes to datetime will produce all NaNs
             continue
         dft = TimeSeriesFeaturizer(
-            max_delay=1, forecast_horizon=1, conf_level=1.0, time_index="date",
+            max_delay=1,
+            forecast_horizon=1,
+            conf_level=1.0,
+            time_index="date",
         )
         if fit_transform:
             transformed = dft.fit_transform(X, y)

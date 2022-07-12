@@ -143,12 +143,23 @@ class CFEngine(EngineBase):
                 occurring in the resource pool
         """
         future = self.client.submit(
-            train_pipeline, pipeline=pipeline, X=X, y=y, automl_config=automl_config,
+            train_pipeline,
+            pipeline=pipeline,
+            X=X,
+            y=y,
+            automl_config=automl_config,
         )
         return CFComputation(future)
 
     def submit_scoring_job(
-        self, automl_config, pipeline, X, y, objectives, X_train=None, y_train=None,
+        self,
+        automl_config,
+        pipeline,
+        X,
+        y,
+        objectives,
+        X_train=None,
+        y_train=None,
     ):
         """Send scoring job to cluster.
 

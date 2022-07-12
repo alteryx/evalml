@@ -143,7 +143,9 @@ class ComponentGraph:
 
             if (
                 len(
-                    list(filter(check_all_inputs_have_correct_syntax, component_inputs)),
+                    list(
+                        filter(check_all_inputs_have_correct_syntax, component_inputs)
+                    ),
                 )
                 != 0
             ):
@@ -217,7 +219,8 @@ class ComponentGraph:
                 except (ValueError, TypeError) as e:
                     self._is_instantiated = False
                     err = "Error received when instantiating component {} with the following arguments {}".format(
-                        component_name, component_parameters,
+                        component_name,
+                        component_parameters,
                     )
                     raise ValueError(err) from e
                 component_instances[component_name] = new_component
@@ -290,7 +293,10 @@ class ComponentGraph:
             evaluate_training_only_components=needs_fitting,
         )
         x_inputs, y_output = self._consolidate_inputs_for_component(
-            component_outputs, self.compute_order[-1], X, y,
+            component_outputs,
+            self.compute_order[-1],
+            X,
+            y,
         )
         if needs_fitting:
             self.input_feature_names.update(
@@ -299,7 +305,11 @@ class ComponentGraph:
         return x_inputs, y_output
 
     def _consolidate_inputs_for_component(
-        self, component_outputs, component, X, y=None,
+        self,
+        component_outputs,
+        component,
+        X,
+        y=None,
     ):
         x_inputs = []
         y_input = None
@@ -341,7 +351,11 @@ class ComponentGraph:
             )
 
         outputs = self._transform_features(
-            self.compute_order, X, y, fit=False, evaluate_training_only_components=True,
+            self.compute_order,
+            X,
+            y,
+            fit=False,
+            evaluate_training_only_components=True,
         )
         output_x = infer_feature_types(outputs.get(f"{final_component_name}.x"))
         output_y = outputs.get(f"{final_component_name}.y", None)
@@ -370,7 +384,9 @@ class ComponentGraph:
                 "Cannot call predict() on a component graph because the final component is not an Estimator.",
             )
         outputs = self._transform_features(
-            self.compute_order, X, evaluate_training_only_components=False,
+            self.compute_order,
+            X,
+            evaluate_training_only_components=False,
         )
         return infer_feature_types(outputs.get(f"{final_component}.x"))
 
@@ -441,14 +457,19 @@ class ComponentGraph:
         output_cache = {}
         for component_name in component_list:
             component_instance = self._get_component_from_cache(
-                hashes, component_name, fit,
+                hashes,
+                component_name,
+                fit,
             )
             if not isinstance(component_instance, ComponentBase):
                 raise ValueError(
                     "All components must be instantiated before fitting or predicting",
                 )
             x_inputs, y_input = self._consolidate_inputs_for_component(
-                output_cache, component_name, X, y,
+                output_cache,
+                component_name,
+                X,
+                y,
             )
             self.input_feature_names.update({component_name: list(x_inputs.columns)})
             self._feature_logical_types[component_name] = x_inputs.ww.logical_types
@@ -700,7 +721,8 @@ class ComponentGraph:
                 components.update(
                     {
                         component.name: component.describe(
-                            print_name=False, return_dict=return_dict,
+                            print_name=False,
+                            return_dict=return_dict,
                         ),
                     },
                 )
@@ -725,7 +747,8 @@ class ComponentGraph:
             RuntimeError: If graphviz is not installed.
         """
         graphviz = import_or_raise(
-            "graphviz", error_msg="Please install graphviz to visualize pipelines.",
+            "graphviz",
+            error_msg="Please install graphviz to visualize pipelines.",
         )
 
         # Try rendering a dummy graph to see if a working backend is installed

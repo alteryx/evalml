@@ -142,14 +142,26 @@ class TimeSeriesRegularizer(Transformer):
         nan = self.debug_payload["nan_values"]
 
         self.error_dict = self._identify_indices(
-            self.time_index, X_ww, estimated_freq, duplicates, missing, extra, nan,
+            self.time_index,
+            X_ww,
+            estimated_freq,
+            duplicates,
+            missing,
+            extra,
+            nan,
         )
 
         return self
 
     @staticmethod
     def _identify_indices(
-        time_index, X, estimated_freq, duplicates, missing, extra, nan,
+        time_index,
+        X,
+        estimated_freq,
+        duplicates,
+        missing,
+        extra,
+        nan,
     ):
         """Identifies which of the problematic indices is actually misaligned.
 

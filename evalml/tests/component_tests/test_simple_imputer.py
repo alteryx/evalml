@@ -72,21 +72,25 @@ def test_simple_imputer_col_with_non_numeric():
     X.ww.init(logical_types={0: "categorical", 1: "Double", 2: "Double", 3: "Double"})
     transformer = SimpleImputer(impute_strategy="mean")
     with pytest.raises(
-        ValueError, match="Cannot use mean strategy with non-numeric data",
+        ValueError,
+        match="Cannot use mean strategy with non-numeric data",
     ):
         transformer.fit_transform(X)
     with pytest.raises(
-        ValueError, match="Cannot use mean strategy with non-numeric data",
+        ValueError,
+        match="Cannot use mean strategy with non-numeric data",
     ):
         transformer.fit(X)
 
     transformer = SimpleImputer(impute_strategy="median")
     with pytest.raises(
-        ValueError, match="Cannot use median strategy with non-numeric data",
+        ValueError,
+        match="Cannot use median strategy with non-numeric data",
     ):
         transformer.fit_transform(X)
     with pytest.raises(
-        ValueError, match="Cannot use median strategy with non-numeric data",
+        ValueError,
+        match="Cannot use median strategy with non-numeric data",
     ):
         transformer.fit(X)
 
@@ -146,7 +150,8 @@ def test_simple_imputer_multitype_with_one_bool(data_type, make_data_type):
     X_multi_expected_arr = pd.DataFrame(
         {
             "bool with nan": pd.Series(
-                [True, False, False, False, False], dtype="boolean",
+                [True, False, False, False, False],
+                dtype="boolean",
             ),
             "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
         },
@@ -228,7 +233,8 @@ def test_simple_imputer_numpy_input():
     X_expected_arr = np.array([[1, 0, 1, 1], [1, 2, 3, 2], [1, 2, 3, 0]])
     assert np.allclose(X_expected_arr, transformer.fit_transform(X))
     np.testing.assert_almost_equal(
-        X, np.array([[1, 0, 1, np.nan], [np.nan, 2, 3, 2], [np.nan, 2, 3, 0]]),
+        X,
+        np.array([[1, 0, 1, np.nan], [np.nan, 2, 3, 2], [np.nan, 2, 3, 0]]),
     )
 
 
@@ -246,7 +252,8 @@ def test_simple_imputer_fill_value(data_type):
         X = pd.DataFrame(
             {
                 "categorical with nan": pd.Series(
-                    [np.nan, "1", np.nan, "0", "3"], dtype="category",
+                    [np.nan, "1", np.nan, "0", "3"],
+                    dtype="category",
                 ),
                 "object with nan": ["b", "b", np.nan, "c", np.nan],
             },
@@ -255,10 +262,12 @@ def test_simple_imputer_fill_value(data_type):
         expected = pd.DataFrame(
             {
                 "categorical with nan": pd.Series(
-                    ["fill", "1", "fill", "0", "3"], dtype="category",
+                    ["fill", "1", "fill", "0", "3"],
+                    dtype="category",
                 ),
                 "object with nan": pd.Series(
-                    ["b", "b", "fill", "c", "fill"], dtype="category",
+                    ["b", "b", "fill", "c", "fill"],
+                    dtype="category",
                 ),
             },
         )
@@ -324,7 +333,8 @@ expected = pd.DataFrame(
         "float with None": [0.1, 0.0, 0.5, 0.5, 0.5],
         "category with None": pd.Series(["c", "a", "a", "a", "a"], dtype="category"),
         "boolean with None": pd.Series(
-            [True, True, False, True, True], dtype="boolean",
+            [True, True, False, True, True],
+            dtype="boolean",
         ),
         "object with None": pd.Series(["b", "a", "a", "a", "a"], dtype="category"),
     },
@@ -390,7 +400,8 @@ def test_simple_imputer_with_none_separated(dtypes):
 @pytest.mark.parametrize("na_type", ["python_none", "numpy_nan", "pandas_na"])
 @pytest.mark.parametrize("data_type", ["Categorical", "NaturalLanguage"])
 def test_simple_imputer_supports_natural_language_and_categorical_constant(
-    na_type, data_type,
+    na_type,
+    data_type,
 ):
     na_type = {"python_none": None, "numpy_nan": np.nan, "pandas_na": pandas.NA}[
         na_type
@@ -412,7 +423,8 @@ def test_simple_imputer_supports_natural_language_and_categorical_constant(
         {
             "Categorical": pd.Series(["a", "b", "a", "placeholder"], dtype="category"),
             "NaturalLanguage": pd.Series(
-                ["free-form text", "will", "be imputed", pd.NA], dtype="string",
+                ["free-form text", "will", "be imputed", pd.NA],
+                dtype="string",
             ),
         },
     )[[data_type]]
@@ -429,12 +441,17 @@ def test_simple_imputer_supports_natural_language_and_categorical_constant(
     ],
 )
 @pytest.mark.parametrize(
-    "logical_type", ["Integer", "Double", "Categorical", "NaturalLanguage", "Boolean"],
+    "logical_type",
+    ["Integer", "Double", "Categorical", "NaturalLanguage", "Boolean"],
 )
 @pytest.mark.parametrize("has_nan", ["has_nan", "no_nans"])
 @pytest.mark.parametrize("impute_strategy", ["mean", "median"])
 def test_simple_imputer_woodwork_custom_overrides_returned_by_components(
-    data, logical_type, has_nan, impute_strategy, imputer_test_data,
+    data,
+    logical_type,
+    has_nan,
+    impute_strategy,
+    imputer_test_data,
 ):
     X_df = {
         "int col": imputer_test_data[["int col"]],
@@ -494,10 +511,14 @@ def test_component_handles_pre_init_ww():
 @pytest.mark.parametrize("df_composition", ["full_df", "single_column"])
 @pytest.mark.parametrize("has_nan", ["has_nan", "no_nans"])
 @pytest.mark.parametrize(
-    "numeric_impute_strategy", ["mean", "median", "most_frequent", "constant"],
+    "numeric_impute_strategy",
+    ["mean", "median", "most_frequent", "constant"],
 )
 def test_simple_imputer_ignores_natural_language(
-    has_nan, numeric_impute_strategy, imputer_test_data, df_composition,
+    has_nan,
+    numeric_impute_strategy,
+    imputer_test_data,
+    df_composition,
 ):
     """Test to ensure that the simple imputer just passes through
     natural language columns, unchanged."""
@@ -516,7 +537,8 @@ def test_simple_imputer_ignores_natural_language(
     if numeric_impute_strategy == "constant":
         fill_value = 1
         imputer = SimpleImputer(
-            impute_strategy=numeric_impute_strategy, fill_value=fill_value,
+            impute_strategy=numeric_impute_strategy,
+            fill_value=fill_value,
         )
     else:
         imputer = SimpleImputer(impute_strategy=numeric_impute_strategy)
@@ -556,7 +578,8 @@ def test_simple_imputer_ignores_natural_language(
     ],
 )
 def test_simple_imputer_errors_with_bool_and_categorical_columns(
-    data, imputer_test_data,
+    data,
+    imputer_test_data,
 ):
     X_df = imputer_test_data[data]
     if "categorical col" in data and "bool col" in data:

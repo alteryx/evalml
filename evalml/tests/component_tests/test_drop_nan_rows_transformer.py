@@ -14,7 +14,9 @@ def test_drop_rows_transformer():
     # Expecting float because of np.NaN values
     X = pd.DataFrame({"a column": [np.NaN, 2, 3], "another col": [4, np.NaN, 6]})
     X_expected = pd.DataFrame(
-        {"a column": [3], "another col": [6]}, index=[2], dtype=np.float64,
+        {"a column": [3], "another col": [6]},
+        index=[2],
+        dtype=np.float64,
     )
     drop_rows_transformer = DropNaNRowsTransformer()
     drop_rows_transformer.fit(X)
@@ -50,7 +52,9 @@ def test_drop_rows_transformer_retain_ww_schema(null_value):
 
     y_expected = pd.Series([1], index=[2])
     y_expected = init_series(
-        y_expected, logical_type="IntegerNullable", semantic_tags="y_custom_tag",
+        y_expected,
+        logical_type="IntegerNullable",
+        semantic_tags="y_custom_tag",
     )
     y_expected_schema = y.ww.schema
 

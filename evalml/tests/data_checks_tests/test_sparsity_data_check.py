@@ -21,42 +21,52 @@ def test_sparsity_data_check_init():
     assert sparsity_check.unique_count_threshold == 10
 
     sparsity_check = SparsityDataCheck(
-        "multiclass", threshold=0.1, unique_count_threshold=5,
+        "multiclass",
+        threshold=0.1,
+        unique_count_threshold=5,
     )
     assert sparsity_check.unique_count_threshold == 5
 
     with pytest.raises(
-        ValueError, match="Threshold must be a float between 0 and 1, inclusive.",
+        ValueError,
+        match="Threshold must be a float between 0 and 1, inclusive.",
     ):
         SparsityDataCheck("multiclass", threshold=-0.1)
     with pytest.raises(
-        ValueError, match="Threshold must be a float between 0 and 1, inclusive.",
+        ValueError,
+        match="Threshold must be a float between 0 and 1, inclusive.",
     ):
         SparsityDataCheck("multiclass", threshold=1.1)
 
     with pytest.raises(
-        ValueError, match="Sparsity is only defined for multiclass problem types.",
+        ValueError,
+        match="Sparsity is only defined for multiclass problem types.",
     ):
         SparsityDataCheck("binary", threshold=0.5)
     with pytest.raises(
-        ValueError, match="Sparsity is only defined for multiclass problem types.",
+        ValueError,
+        match="Sparsity is only defined for multiclass problem types.",
     ):
         SparsityDataCheck("time series binary", threshold=0.5)
     with pytest.raises(
-        ValueError, match="Sparsity is only defined for multiclass problem types.",
+        ValueError,
+        match="Sparsity is only defined for multiclass problem types.",
     ):
         SparsityDataCheck("regression", threshold=0.5)
     with pytest.raises(
-        ValueError, match="Sparsity is only defined for multiclass problem types.",
+        ValueError,
+        match="Sparsity is only defined for multiclass problem types.",
     ):
         SparsityDataCheck("time series regression", threshold=0.5)
 
     with pytest.raises(
-        ValueError, match="Unique count threshold must be positive integer.",
+        ValueError,
+        match="Unique count threshold must be positive integer.",
     ):
         SparsityDataCheck("multiclass", threshold=0.5, unique_count_threshold=-1)
     with pytest.raises(
-        ValueError, match="Unique count threshold must be positive integer.",
+        ValueError,
+        match="Unique count threshold must be positive integer.",
     ):
         SparsityDataCheck("multiclass", threshold=0.5, unique_count_threshold=2.3)
 
@@ -116,7 +126,9 @@ def test_sparsity_data_check_warnings():
     )  # [1,1,1,1,1,1,1,1,1,1]
 
     sparsity_check = SparsityDataCheck(
-        problem_type="multiclass", threshold=0.4, unique_count_threshold=3,
+        problem_type="multiclass",
+        threshold=0.4,
+        unique_count_threshold=3,
     )
     assert sparsity_check.validate(data) == [
         DataCheckWarning(

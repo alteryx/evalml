@@ -50,7 +50,9 @@ def _check_execution_and_output(notebook):
     with open(notebook, "r") as f:
         source = json.load(f)
     for cells in source["cells"]:
-        if cells["cell_type"] == "code" and (cells["execution_count"] is not None or cells['outputs']!= []):
+        if cells["cell_type"] == "code" and (
+            cells["execution_count"] is not None or cells["outputs"] != []
+        ):
             return False
     return True
 
@@ -119,7 +121,8 @@ def cli():
 def check_versions(desired_version):
     notebooks = _get_ipython_notebooks(DOCS_PATH)
     different_versions = _get_notebooks_with_different_versions(
-        notebooks, desired_version,
+        notebooks,
+        desired_version,
     )
     if different_versions:
         different_versions = ["\t" + notebook for notebook in different_versions]
@@ -139,9 +142,12 @@ def check_versions(desired_version):
 def standardize(desired_version):
     notebooks = _get_ipython_notebooks(DOCS_PATH)
     different_versions = _get_notebooks_with_different_versions(
-        notebooks, desired_version,
+        notebooks,
+        desired_version,
     )
-    executed_notebooks, empty_cells = _get_notebooks_with_executions_and_empty(notebooks)
+    executed_notebooks, empty_cells = _get_notebooks_with_executions_and_empty(
+        notebooks
+    )
     if different_versions:
         _standardize_versions(different_versions, desired_version)
         different_versions = ["\t" + notebook for notebook in different_versions]
@@ -168,7 +174,9 @@ def standardize(desired_version):
 @cli.command()
 def check_execution():
     notebooks = _get_ipython_notebooks(DOCS_PATH)
-    executed_notebooks, empty_cells = _get_notebooks_with_executions_and_empty(notebooks)
+    executed_notebooks, empty_cells = _get_notebooks_with_executions_and_empty(
+        notebooks
+    )
     if executed_notebooks:
         executed_notebooks = ["\t" + notebook for notebook in executed_notebooks]
         executed_notebooks = "\n".join(executed_notebooks)

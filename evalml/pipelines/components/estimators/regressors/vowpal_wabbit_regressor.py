@@ -58,7 +58,9 @@ class VowpalWabbitRegressor(Estimator):
         vw_regressor_class = vw.VWRegressor
         vw_regressor = vw_regressor_class(**parameters)
         super().__init__(
-            parameters=parameters, component_obj=vw_regressor, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=vw_regressor,
+            random_seed=random_seed,
         )
 
     @property

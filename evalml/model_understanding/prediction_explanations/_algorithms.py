@@ -29,7 +29,8 @@ def _create_dictionary(explainer_values, feature_names):
     explainer_values = np.atleast_2d(explainer_values)
     mapping = {}
     for feature_name, column_index in zip(
-        feature_names, range(explainer_values.shape[1]),
+        feature_names,
+        range(explainer_values.shape[1]),
     ):
         mapping[feature_name] = explainer_values[:, column_index].tolist()
     return mapping
@@ -137,7 +138,8 @@ def _compute_shap_values(pipeline, features, training_data=None):
         # Use tree_path_dependent to avoid linear runtime with dataset size
         with warnings.catch_warnings(record=True) as ws:
             explainer = shap.TreeExplainer(
-                estimator._component_obj, feature_perturbation="tree_path_dependent",
+                estimator._component_obj,
+                feature_perturbation="tree_path_dependent",
             )
         if ws:
             logger.debug(f"_compute_shap_values TreeExplainer: {ws[0].message}")

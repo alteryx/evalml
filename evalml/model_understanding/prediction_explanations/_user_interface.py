@@ -447,7 +447,9 @@ class _MultiClassExplanationTable(_TableMaker):
     ):
         strings = []
         for class_name, class_values, normalized_class_values in zip(
-            self.class_names, aggregated_explainer_values, aggregated_normalized_values,
+            self.class_names,
+            aggregated_explainer_values,
+            aggregated_normalized_values,
         ):
             strings.append(f"Class: {class_name}\n")
             table = _make_text_table(
@@ -547,7 +549,9 @@ def _make_single_prediction_explanation_table(
         )
     elif algorithm == "lime":
         explainer_values = _compute_lime_values(
-            pipeline, pipeline_features, index_to_explain,
+            pipeline,
+            pipeline_features,
+            index_to_explain,
         )
         expected_value = None
     else:
@@ -558,7 +562,8 @@ def _make_single_prediction_explanation_table(
 
     provenance = pipeline._get_feature_provenance()
     aggregated_explainer_values = _aggregate_explainer_values(
-        explainer_values, provenance,
+        explainer_values,
+        provenance,
     )
     aggregated_normalized_explainer_values = _normalize_explainer_values(
         aggregated_explainer_values,
@@ -729,7 +734,8 @@ class _ClassificationPredictedValues(_SectionMaker):
         pred_value = [
             f"{col_name}: {pred}"
             for col_name, pred in zip(
-                y_pred.columns, round(y_pred.iloc[index], 3).tolist(),
+                y_pred.columns,
+                round(y_pred.iloc[index], 3).tolist(),
             )
         ]
         pred_value = "[" + ", ".join(pred_value) + "]"
@@ -922,7 +928,10 @@ class _ReportMaker:
                 report.extend([""])
             report.extend(
                 self.table_maker.make_text(
-                    index, data.pipeline, data.pipeline_features, data.input_features,
+                    index,
+                    data.pipeline,
+                    data.pipeline_features,
+                    data.input_features,
                 ),
             )
         return "".join(report)
@@ -953,7 +962,10 @@ class _ReportMaker:
                     pd.Series(data.pipeline_features.index),
                 )
             section["explanations"] = self.table_maker.make_dict(
-                index, data.pipeline, data.pipeline_features, data.input_features,
+                index,
+                data.pipeline,
+                data.pipeline_features,
+                data.input_features,
             )["explanations"]
             report.append(section)
         return {"explanations": report}
@@ -962,7 +974,10 @@ class _ReportMaker:
         report = []
         for rank, index in enumerate(data.index_list):
             explanation_table = self.table_maker.make_dataframe(
-                index, data.pipeline, data.pipeline_features, data.input_features,
+                index,
+                data.pipeline,
+                data.pipeline_features,
+                data.input_features,
             )
             if self.make_predicted_values_maker:
                 heading = self.make_predicted_values_maker.make_dataframe(

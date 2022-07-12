@@ -138,13 +138,17 @@ def test_serialization(X_y_binary, tmpdir, logistic_regression_binary_pipeline):
     pipeline.fit(X, y)
     pipeline.save(path)
     assert pipeline.score(X, y, ["precision"]) == PipelineBase.load(path).score(
-        X, y, ["precision"],
+        X,
+        y,
+        ["precision"],
     )
 
 
 @patch("cloudpickle.dump")
 def test_serialization_protocol(
-    mock_cloudpickle_dump, tmpdir, logistic_regression_binary_pipeline,
+    mock_cloudpickle_dump,
+    tmpdir,
+    logistic_regression_binary_pipeline,
 ):
     path = os.path.join(str(tmpdir), "pipe.pkl")
     pipeline = logistic_regression_binary_pipeline
@@ -174,7 +178,9 @@ def pickled_pipeline_path(X_y_binary, tmpdir, logistic_regression_binary_pipelin
 
 
 def test_load_pickled_pipeline_with_custom_objective(
-    X_y_binary, pickled_pipeline_path, logistic_regression_binary_pipeline,
+    X_y_binary,
+    pickled_pipeline_path,
+    logistic_regression_binary_pipeline,
 ):
     X, y = X_y_binary
     # checks that class is not defined before loading in pipeline
@@ -184,7 +190,9 @@ def test_load_pickled_pipeline_with_custom_objective(
     pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
     assert PipelineBase.load(pickled_pipeline_path).score(
-        X, y, [objective],
+        X,
+        y,
+        [objective],
     ) == pipeline.score(X, y, [objective])
 
 
@@ -518,7 +526,8 @@ def test_name():
     assert pipeline_with_custom_name.custom_name == "Cool Logistic Regression"
 
     pipeline_with_neat_name = BinaryClassificationPipeline(
-        component_graph=["Logistic Regression Classifier"], custom_name="some_neat_name",
+        component_graph=["Logistic Regression Classifier"],
+        custom_name="some_neat_name",
     )
     assert pipeline_with_neat_name.name == "some_neat_name"
     assert pipeline_with_neat_name.custom_name == "some_neat_name"
@@ -547,7 +556,8 @@ def test_multi_format_creation(X_y_binary):
     }
 
     clf = BinaryClassificationPipeline(
-        component_graph=component_graph, parameters=parameters,
+        component_graph=component_graph,
+        parameters=parameters,
     )
     correct_components = [
         Imputer,
@@ -570,25 +580,29 @@ def test_problem_types():
         match="not valid for this component graph. Valid problem types include *.",
     ):
         BinaryClassificationPipeline(
-            component_graph=["Random Forest Regressor"], parameters={},
+            component_graph=["Random Forest Regressor"],
+            parameters={},
         )
 
 
 def make_mock_regression_pipeline():
     return RegressionPipeline(
-        component_graph=["Random Forest Regressor"], parameters={},
+        component_graph=["Random Forest Regressor"],
+        parameters={},
     )
 
 
 def make_mock_binary_pipeline():
     return BinaryClassificationPipeline(
-        component_graph=["Random Forest Classifier"], parameters={},
+        component_graph=["Random Forest Classifier"],
+        parameters={},
     )
 
 
 def make_mock_multiclass_pipeline():
     return MulticlassClassificationPipeline(
-        component_graph=["Random Forest Classifier"], parameters={},
+        component_graph=["Random Forest Classifier"],
+        parameters={},
     )
 
 
@@ -608,7 +622,10 @@ def test_score_regression_single(mock_predict, mock_fit, X_y_regression):
 @patch("evalml.pipelines.ComponentGraph.fit")
 @patch("evalml.pipelines.RegressionPipeline.predict")
 def test_score_nonlinear_regression(
-    mock_predict, mock_fit, nonlinear_regression_pipeline, X_y_regression,
+    mock_predict,
+    mock_fit,
+    nonlinear_regression_pipeline,
+    X_y_regression,
 ):
     X, y = X_y_regression
     mock_predict.return_value = pd.Series(y)
@@ -652,7 +669,10 @@ def test_score_multiclass_single(mock_schema, mock_predict, mock_fit, X_y_binary
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.ComponentGraph.predict")
 def test_score_nonlinear_multiclass(
-    mock_predict, mock_fit, nonlinear_multiclass_pipeline, X_y_multi,
+    mock_predict,
+    mock_fit,
+    nonlinear_multiclass_pipeline,
+    X_y_multi,
 ):
     X, y = X_y_multi
     mock_predict.return_value = pd.Series(y)
@@ -711,7 +731,10 @@ def test_score_multi_list(mock_schema, mock_predict, mock_fit, mock_encode, X_y_
 @patch("evalml.pipelines.RegressionPipeline.fit")
 @patch("evalml.pipelines.RegressionPipeline.predict")
 def test_score_regression_objective_error(
-    mock_predict, mock_fit, mock_objective_score, X_y_binary,
+    mock_predict,
+    mock_fit,
+    mock_objective_score,
+    X_y_binary,
 ):
     mock_objective_score.side_effect = Exception("finna kabooom 💣")
     X, y = X_y_binary
@@ -736,7 +759,12 @@ def test_score_regression_objective_error(
 @patch("evalml.pipelines.components.Estimator.predict")
 @patch("evalml.pipelines.component_graph._schema_is_equal", return_value=True)
 def test_score_binary_objective_error(
-    mock_schema, mock_predict, mock_fit, mock_objective_score, mock_encode, X_y_binary,
+    mock_schema,
+    mock_predict,
+    mock_fit,
+    mock_objective_score,
+    mock_encode,
+    X_y_binary,
 ):
     mock_objective_score.side_effect = Exception("finna kabooom 💣")
     X, y = X_y_binary
@@ -789,7 +817,12 @@ def test_score_nonlinear_binary_objective_error(
 @patch("evalml.pipelines.components.Estimator.predict")
 @patch("evalml.pipelines.component_graph._schema_is_equal", return_value=True)
 def test_score_multiclass_objective_error(
-    mock_schema, mock_predict, mock_fit, mock_objective_score, mock_encode, X_y_binary,
+    mock_schema,
+    mock_predict,
+    mock_fit,
+    mock_objective_score,
+    mock_encode,
+    X_y_binary,
 ):
     mock_objective_score.side_effect = Exception("finna kabooom 💣")
     X, y = X_y_binary
@@ -902,10 +935,12 @@ def test_instantiating_pipeline_with_required_parameters():
             return X
 
     with pytest.raises(
-        ValueError, match="Error received when instantiating component *.",
+        ValueError,
+        match="Error received when instantiating component *.",
     ):
         BinaryClassificationPipeline(
-            [MockComponent, "Logistic Regression Classifier"], parameters={},
+            [MockComponent, "Logistic Regression Classifier"],
+            parameters={},
         )
 
     assert BinaryClassificationPipeline(
@@ -923,7 +958,8 @@ def test_init_components_invalid_parameters():
 
     with pytest.raises(ValueError, match="Error received when instantiating component"):
         BinaryClassificationPipeline(
-            component_graph=component_graph, parameters=parameters,
+            component_graph=component_graph,
+            parameters=parameters,
         )
 
 
@@ -974,7 +1010,9 @@ def test_correct_nonlinear_parameters(nonlinear_binary_pipeline):
 
 @patch("evalml.pipelines.components.Estimator.predict")
 def test_score_with_objective_that_requires_predict_proba(
-    mock_predict, dummy_regression_pipeline, X_y_binary,
+    mock_predict,
+    dummy_regression_pipeline,
+    X_y_binary,
 ):
     X, y = X_y_binary
     mock_predict.return_value = pd.Series([1] * 100)
@@ -1069,7 +1107,9 @@ def test_drop_columns_in_pipeline():
 
 @pytest.mark.parametrize("is_linear", [True, False])
 def test_clone_init(
-    is_linear, linear_regression_pipeline, nonlinear_regression_pipeline,
+    is_linear,
+    linear_regression_pipeline,
+    nonlinear_regression_pipeline,
 ):
     if is_linear:
         pipeline = linear_regression_pipeline
@@ -1101,11 +1141,13 @@ def test_clone_fitted(
     X, y = X_y_binary
     if is_linear:
         pipeline = logistic_regression_binary_pipeline.new(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_seed=42,
+            parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+            random_seed=42,
         )
     else:
         pipeline = nonlinear_binary_pipeline.new(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_seed=42,
+            parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+            random_seed=42,
         )
 
     pipeline.fit(X, y)
@@ -1124,7 +1166,8 @@ def test_clone_fitted(
 
 
 def test_feature_importance_has_feature_names(
-    X_y_binary, logistic_regression_binary_pipeline,
+    X_y_binary,
+    logistic_regression_binary_pipeline,
 ):
     X, y = X_y_binary
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
@@ -1150,7 +1193,8 @@ def test_feature_importance_has_feature_names(
 
 
 def test_nonlinear_feature_importance_has_feature_names(
-    X_y_binary, nonlinear_binary_pipeline,
+    X_y_binary,
+    nonlinear_binary_pipeline,
 ):
     X, y = X_y_binary
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
@@ -1178,7 +1222,10 @@ def test_nonlinear_feature_importance_has_feature_names(
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
 def test_feature_importance_has_feature_names_xgboost(
-    problem_type, X_y_regression, X_y_binary, X_y_multi,
+    problem_type,
+    X_y_regression,
+    X_y_binary,
+    X_y_multi,
 ):
     # Testing that we store the original feature names since we map to numeric values for XGBoost
     if problem_type == ProblemTypes.REGRESSION:
@@ -1540,7 +1587,9 @@ def test_pipeline_equality_subclasses(pipeline_class):
 )
 @patch("evalml.pipelines.ComponentGraph.fit")
 def test_pipeline_equality(
-    mock_fit, pipeline_class, X_y_based_on_pipeline_or_problem_type,
+    mock_fit,
+    pipeline_class,
+    X_y_based_on_pipeline_or_problem_type,
 ):
     if pipeline_class in [
         BinaryClassificationPipeline,
@@ -1585,10 +1634,12 @@ def test_pipeline_equality(
 
     # Test random_seed
     assert MockPipeline(parameters={}, random_seed=10) == MockPipeline(
-        parameters={}, random_seed=10,
+        parameters={},
+        random_seed=10,
     )
     assert MockPipeline(parameters={}, random_seed=10) != MockPipeline(
-        parameters={}, random_seed=0,
+        parameters={},
+        random_seed=0,
     )
 
     # Test parameters
@@ -1609,7 +1660,8 @@ def test_pipeline_equality(
     # Test fitted equality: same data but different target names are not equal
     mock_pipeline_different_target_name = MockPipeline(parameters={})
     mock_pipeline_different_target_name.fit(
-        X, y=pd.Series(y, name="target with a name"),
+        X,
+        y=pd.Series(y, name="target with a name"),
     )
     assert mock_pipeline != mock_pipeline_different_target_name
 
@@ -1678,10 +1730,12 @@ def test_nonlinear_pipeline_equality(pipeline_class):
 
     # Test random_seed
     assert MockPipeline(parameters={}, random_seed=10) == MockPipeline(
-        parameters={}, random_seed=10,
+        parameters={},
+        random_seed=10,
     )
     assert MockPipeline(parameters={}, random_seed=10) != MockPipeline(
-        parameters={}, random_seed=0,
+        parameters={},
+        random_seed=0,
     )
 
     # Test parameters
@@ -1739,13 +1793,16 @@ def test_pipeline_str_equivalent_to_custom_name():
     regression_component_graph = ["Imputer", "Random Forest Regressor"]
 
     binary_pipeline = BinaryClassificationPipeline(
-        classification_component_graph, custom_name="Mock Binary Pipeline",
+        classification_component_graph,
+        custom_name="Mock Binary Pipeline",
     )
     multiclass_pipeline = MulticlassClassificationPipeline(
-        classification_component_graph, custom_name="Mock Multiclass Pipeline",
+        classification_component_graph,
+        custom_name="Mock Multiclass Pipeline",
     )
     regression_pipeline = RegressionPipeline(
-        regression_component_graph, custom_name="Mock Regression Pipeline",
+        regression_component_graph,
+        custom_name="Mock Regression Pipeline",
     )
 
     assert str(binary_pipeline) == "Mock Binary Pipeline"
@@ -2171,7 +2228,8 @@ def test_score_error_when_custom_objective_not_instantiated(
 
     # Verify ObjectiveCreationError only raised when string matches an existing objective
     with pytest.raises(
-        ObjectiveNotFoundError, match="cost benefit is not a valid Objective!",
+        ObjectiveNotFoundError,
+        match="cost benefit is not a valid Objective!",
     ):
         pipeline.score(X, y, objectives=["cost benefit", "F1"])
 
@@ -2565,13 +2623,17 @@ def test_get_hyperparameter_ranges():
         "Imputer": {
             "categorical_impute_strategy": ["most_frequent"],
             "numeric_impute_strategy": Categorical(
-                categories=("most_frequent", "mean"), prior=None,
+                categories=("most_frequent", "mean"),
+                prior=None,
             ),
             "boolean_impute_strategy": ["most_frequent"],
         },
         "Random Forest Classifier": {
             "n_estimators": Integer(
-                low=150, high=160, prior="uniform", transform="identity",
+                low=150,
+                high=160,
+                prior="uniform",
+                transform="identity",
             ),
             "max_depth": Integer(low=1, high=10, prior="uniform", transform="identity"),
         },
@@ -2589,7 +2651,9 @@ def test_get_hyperparameter_ranges():
     ],
 )
 def test_pipeline_predict_without_final_estimator(
-    problem_type, make_data_type, X_y_based_on_pipeline_or_problem_type,
+    problem_type,
+    make_data_type,
+    X_y_based_on_pipeline_or_problem_type,
 ):
     X, y = X_y_based_on_pipeline_or_problem_type(problem_type)
 
@@ -2665,7 +2729,10 @@ def test_pipeline_transform(
     ],
 )
 def test_pipeline_transform_with_final_estimator(
-    problem_type, X_y_binary, X_y_multi, X_y_regression,
+    problem_type,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
 ):
     X, y = X_y_binary
     if problem_type == ProblemTypes.BINARY:
@@ -2803,7 +2870,8 @@ def test_component_graph_pipeline():
         BinaryClassificationPipeline(no_estimator_cg).component_graph == no_estimator_cg
     )
     with pytest.raises(
-        ValueError, match="Problem type regression not valid for this component graph",
+        ValueError,
+        match="Problem type regression not valid for this component graph",
     ):
         RegressionPipeline(classification_cg)
 
@@ -2830,7 +2898,8 @@ def test_component_graph_pipeline_initialized():
 
     # make sure the value gets overwritten when reinitialized
     bcp = BinaryClassificationPipeline(
-        component_graph1, parameters={"Imputer": {"numeric_impute_strategy": "median"}},
+        component_graph1,
+        parameters={"Imputer": {"numeric_impute_strategy": "median"}},
     )
     assert bcp.parameters["Imputer"]["numeric_impute_strategy"] == "median"
     assert (
@@ -2857,14 +2926,16 @@ def test_fit_predict_proba_types(problem_type, X_y_binary, X_y_multi):
 
     pipeline.fit(X, y)
     with pytest.raises(
-        PipelineError, match="Input X data types are different from the input types",
+        PipelineError,
+        match="Input X data types are different from the input types",
     ) as e:
         pipeline.predict(X2)
     assert e.value.code == PipelineErrorCodeEnum.PREDICT_INPUT_SCHEMA_UNEQUAL
     assert e.value.details["input_features_types"] is not None
     assert e.value.details["pipeline_features_types"] is not None
     with pytest.raises(
-        PipelineError, match="Input X data types are different from the input types",
+        PipelineError,
+        match="Input X data types are different from the input types",
     ) as e:
         pipeline.predict_proba(X2)
     assert e.value.code == PipelineErrorCodeEnum.PREDICT_INPUT_SCHEMA_UNEQUAL

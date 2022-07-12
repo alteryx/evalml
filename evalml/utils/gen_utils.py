@@ -130,14 +130,18 @@ def get_random_state(seed):
     ):
         raise ValueError(
             'Seed "{}" is not in the range [{}, {}], inclusive'.format(
-                seed, SEED_BOUNDS.min_bound, SEED_BOUNDS.max_bound,
+                seed,
+                SEED_BOUNDS.min_bound,
+                SEED_BOUNDS.max_bound,
             ),
         )
     return check_random_state(seed)
 
 
 def get_random_seed(
-    random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEED_BOUNDS.max_bound,
+    random_state,
+    min_bound=SEED_BOUNDS.min_bound,
+    max_bound=SEED_BOUNDS.max_bound,
 ):
     """Given a numpy.random.RandomState object, generate an int representing a seed value for another random number generator. Or, if given an int, return that int.
 
@@ -157,7 +161,8 @@ def get_random_seed(
     if not min_bound < max_bound:
         raise ValueError(
             "Provided min_bound {} is not less than max_bound {}".format(
-                min_bound, max_bound,
+                min_bound,
+                max_bound,
             ),
         )
     if isinstance(random_state, np.random.RandomState):
@@ -451,7 +456,11 @@ def _file_path_check(filepath=None, format="png", interactive=False, is_plotly=F
 
 
 def save_plot(
-    fig, filepath=None, format="png", interactive=False, return_filepath=False,
+    fig,
+    filepath=None,
+    format="png",
+    interactive=False,
+    return_filepath=False,
 ):
     """Saves fig to filepath if specified, or to a default location if not.
 
@@ -470,10 +479,12 @@ def save_plot(
     """
     plotly_ = import_or_raise("plotly", error_msg="Cannot find dependency plotly")
     graphviz_ = import_or_raise(
-        "graphviz", error_msg="Please install graphviz to visualize trees.",
+        "graphviz",
+        error_msg="Please install graphviz to visualize trees.",
     )
     matplotlib = import_or_raise(
-        "matplotlib", error_msg="Cannot find dependency matplotlib",
+        "matplotlib",
+        error_msg="Cannot find dependency matplotlib",
     )
     plt_ = matplotlib.pyplot
     axes_ = matplotlib.axes
@@ -498,7 +509,10 @@ def save_plot(
         filepath = os.path.join(os.getcwd(), f"test_plot.{extension}")
 
     filepath = _file_path_check(
-        filepath, format=format, interactive=interactive, is_plotly=is_plotly,
+        filepath,
+        format=format,
+        interactive=interactive,
+        is_plotly=is_plotly,
     )
 
     if is_plotly and interactive:
@@ -573,7 +587,11 @@ _validation_result = namedtuple(
 
 
 def are_ts_parameters_valid_for_split(
-    gap, max_delay, forecast_horizon, n_obs, n_splits,
+    gap,
+    max_delay,
+    forecast_horizon,
+    n_obs,
+    n_splits,
 ):
     """Validates the time series parameters in problem_configuration are compatible with split sizes.
 
@@ -668,7 +686,9 @@ def validate_holdout_datasets(X, X_train, pipeline_params):
     time_index = pipeline_params["time_index"]
     right_length = len(X) <= forecast_horizon
     X_separated_by_gap = are_datasets_separated_by_gap_time_index(
-        X_train, X, pipeline_params,
+        X_train,
+        X,
+        pipeline_params,
     )
     errors = []
     error_msg = []

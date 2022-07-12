@@ -52,7 +52,8 @@ def test_invalid_inputs():
     with pytest.raises(ValueError, match="Invalid input 'test2' for handle_missing"):
         TargetEncoder(handle_missing="test2")
     with pytest.raises(
-        ValueError, match="Smoothing value needs to be strictly larger than 0",
+        ValueError,
+        match="Smoothing value needs to be strictly larger than 0",
     ):
         TargetEncoder(smoothing=0)
 
@@ -239,7 +240,8 @@ def test_get_feature_names():
         encoder.get_feature_names()
     encoder.fit(X, y)
     np.testing.assert_array_equal(
-        encoder.get_feature_names(), np.array(["col_1", "col_2", "col_3"]),
+        encoder.get_feature_names(),
+        np.array(["col_1", "col_2", "col_3"]),
     )
 
 

@@ -69,7 +69,12 @@ def test_target_distribution_data_check_unsupported_target_type(target_type):
     [(10000, "jarque_bera", jarque_bera), (5000, "shapiro", shapiro)],
 )
 def test_target_distribution_data_check_warning_action(
-    size, name, statistic, distribution, data_type, X_y_regression,
+    size,
+    name,
+    statistic,
+    distribution,
+    data_type,
+    X_y_regression,
 ):
     X, y = X_y_regression
     # set this to avoid flaky tests. This is primarily because when we have smaller samples,

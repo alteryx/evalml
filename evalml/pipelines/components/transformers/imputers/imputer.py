@@ -90,7 +90,9 @@ class Imputer(Transformer):
         self._categorical_cols = None
         self._boolean_cols = None
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):

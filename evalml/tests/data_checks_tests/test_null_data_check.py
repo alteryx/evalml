@@ -28,7 +28,10 @@ def highly_null_dataframe():
 def highly_null_dataframe_nullable_types(highly_null_dataframe):
     df = highly_null_dataframe
     df.ww.init(
-        logical_types={"lots_of_null": "IntegerNullable", "all_null": "IntegerNullable"},
+        logical_types={
+            "lots_of_null": "IntegerNullable",
+            "all_null": "IntegerNullable",
+        },
     )
     return df
 
@@ -63,7 +66,8 @@ def test_highly_null_data_check_init():
     assert highly_null_check.pct_null_row_threshold == 0.5
 
     highly_null_check = NullDataCheck(
-        pct_null_col_threshold=1.0, pct_null_row_threshold=1.0,
+        pct_null_col_threshold=1.0,
+        pct_null_row_threshold=1.0,
     )
     assert highly_null_check.pct_null_col_threshold == 1.0
     assert highly_null_check.pct_null_row_threshold == 1.0
@@ -93,7 +97,8 @@ def test_highly_null_data_check_init():
         match="`pct_moderately_null_col_threshold` must be a float between 0 and 1, inclusive, and must be less than or equal to `pct_null_col_threshold`.",
     ):
         NullDataCheck(
-            pct_null_col_threshold=0.90, pct_moderately_null_col_threshold=0.95,
+            pct_null_col_threshold=0.90,
+            pct_moderately_null_col_threshold=0.95,
         )
     with pytest.raises(
         ValueError,
@@ -109,7 +114,9 @@ def test_highly_null_data_check_init():
 
 @pytest.mark.parametrize("nullable_type", [True, False])
 def test_highly_null_data_check_warnings(
-    nullable_type, highly_null_dataframe_nullable_types, highly_null_dataframe,
+    nullable_type,
+    highly_null_dataframe_nullable_types,
+    highly_null_dataframe,
 ):
     # Test the data check with nullable types being used.
     if nullable_type:
@@ -166,7 +173,8 @@ def test_highly_null_data_check_warnings(
     ]
 
     some_null_check = NullDataCheck(
-        pct_null_col_threshold=0.5, pct_null_row_threshold=0.5,
+        pct_null_col_threshold=0.5,
+        pct_null_row_threshold=0.5,
     )
     highly_null_rows = SeriesWrap(pd.Series([2 / 4, 2 / 4, 3 / 4, 3 / 4]))
     validate_messages = some_null_check.validate(df)
@@ -239,7 +247,8 @@ def test_highly_null_data_check_warnings(
     ]
 
     all_null_check = NullDataCheck(
-        pct_null_col_threshold=1.0, pct_null_row_threshold=1.0,
+        pct_null_col_threshold=1.0,
+        pct_null_row_threshold=1.0,
     )
     assert all_null_check.validate(df) == [
         DataCheckWarning(
@@ -404,7 +413,8 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
 
 def test_highly_null_data_check_input_formats():
     highly_null_check = NullDataCheck(
-        pct_null_col_threshold=0.8, pct_null_row_threshold=0.8,
+        pct_null_col_threshold=0.8,
+        pct_null_row_threshold=0.8,
     )
 
     # test empty pd.DataFrame
@@ -486,7 +496,8 @@ def test_get_null_column_information(highly_null_dataframe):
         highly_null_cols,
         highly_null_cols_indices,
     ) = NullDataCheck.get_null_column_information(
-        highly_null_dataframe, pct_null_col_threshold=0.8,
+        highly_null_dataframe,
+        pct_null_col_threshold=0.8,
     )
     assert highly_null_cols == {"lots_of_null": 0.8, "all_null": 1.0}
     assert highly_null_cols_indices == {
@@ -498,7 +509,8 @@ def test_get_null_column_information(highly_null_dataframe):
 def test_get_null_row_information(highly_null_dataframe):
     expected_highly_null_rows = SeriesWrap(pd.Series([2 / 4, 2 / 4, 3 / 4, 3 / 4]))
     highly_null_rows = NullDataCheck.get_null_row_information(
-        highly_null_dataframe, pct_null_row_threshold=0.5,
+        highly_null_dataframe,
+        pct_null_row_threshold=0.5,
     )
     highly_null_rows = SeriesWrap(highly_null_rows)
     assert highly_null_rows == expected_highly_null_rows

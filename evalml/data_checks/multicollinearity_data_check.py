@@ -58,7 +58,8 @@ class MulticollinearityDataCheck(DataCheck):
         correlated_cols = [
             (col_1, col_2)
             for col_1, col_2 in zip(
-                above_threshold["column_1"], above_threshold["column_2"],
+                above_threshold["column_1"],
+                above_threshold["column_2"],
             )
         ]
         if correlated_cols:

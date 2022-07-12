@@ -74,7 +74,9 @@ class XGBoostRegressor(Estimator):
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
         xgb_regressor = xgb.XGBRegressor(random_state=random_seed, **parameters)
         super().__init__(
-            parameters=parameters, component_obj=xgb_regressor, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=xgb_regressor,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):

@@ -25,7 +25,11 @@ from evalml.utils import get_random_state
 
 
 def test_estimators_feature_name_with_random_ascii(
-    X_y_binary, X_y_multi, X_y_regression, ts_data, helper_functions,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
+    ts_data,
+    helper_functions,
 ):
     for estimator_class in _all_estimators_used_in_search():
         if estimator_class.__name__ in [
@@ -80,7 +84,8 @@ def test_binary_classification_estimators_predict_proba_col_order(helper_functio
             estimator.fit(X, y)
             predicted_proba = estimator.predict_proba(X)
             expected = np.concatenate(
-                [(1 - data).reshape(-1, 1), data.reshape(-1, 1)], axis=1,
+                [(1 - data).reshape(-1, 1), data.reshape(-1, 1)],
+                axis=1,
             )
             np.testing.assert_allclose(expected, np.round(predicted_proba).values)
 
@@ -99,7 +104,10 @@ def test_estimator_equality_different_supported_problem_types():
 
 @pytest.mark.parametrize("data_type", ["li", "np", "pd", "ww"])
 def test_all_estimators_check_fit_input_type(
-    data_type, X_y_binary, make_data_type, helper_functions,
+    data_type,
+    X_y_binary,
+    make_data_type,
+    helper_functions,
 ):
     X, y = X_y_binary
     X = make_data_type(data_type, X)
@@ -114,7 +122,10 @@ def test_all_estimators_check_fit_input_type(
 
 @pytest.mark.parametrize("data_type", ["li", "np", "pd", "ww"])
 def test_all_estimators_check_fit_input_type_regression(
-    data_type, X_y_regression, make_data_type, helper_functions,
+    data_type,
+    X_y_regression,
+    make_data_type,
+    helper_functions,
 ):
     X, y = X_y_regression
     X = make_data_type(data_type, X)
@@ -135,7 +146,8 @@ def test_estimator_predict_output_type(X_y_binary, helper_functions):
     X_df_no_col_names = pd.DataFrame(X_np)
     range_index = pd.RangeIndex(start=0, stop=X_np.shape[1], step=1)
     X_df_with_col_names = pd.DataFrame(
-        X_np, columns=["x" + str(i) for i in range(X_np.shape[1])],
+        X_np,
+        columns=["x" + str(i) for i in range(X_np.shape[1])],
     )
     y_series_no_name = pd.Series(y_np)
     y_series_with_name = pd.Series(y_np, name="target")
@@ -347,7 +359,9 @@ def test_estimator_fit_predict_and_predict_proba_respect_custom_indices(
     if is_classification(problem_type):
         X_pred_proba = estimator.predict_proba(X)
         pd.testing.assert_index_equal(
-            X_original_index, X_pred_proba.index, check_names=True,
+            X_original_index,
+            X_pred_proba.index,
+            check_names=True,
         )
     X_pred = estimator.predict(X)
     pd.testing.assert_index_equal(X_original_index, X_pred.index, check_names=True)
@@ -359,7 +373,11 @@ def test_estimator_fit_predict_and_predict_proba_respect_custom_indices(
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
 def test_estimator_feature_importance(
-    problem_type, estimator_class, X_y_binary, X_y_multi, X_y_regression,
+    problem_type,
+    estimator_class,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
 ):
     if estimator_class not in get_estimators(problem_type):
         return

@@ -58,7 +58,9 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         proba = self._estimator_predict_proba(features)
         proba.index = y_holdout.index
         proba = proba.ww.rename(
-            columns={col: new_col for col, new_col in zip(proba.columns, self.classes_)},
+            columns={
+                col: new_col for col, new_col in zip(proba.columns, self.classes_)
+            },
         )
         return infer_feature_types(proba)
 
@@ -116,7 +118,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         X = infer_feature_types(X)
         X.index = self._move_index_forward(
-            X_train.index[-X.shape[0] :], self.gap + X.shape[0],
+            X_train.index[-X.shape[0] :],
+            self.gap + X.shape[0],
         )
         y_holdout = self._create_empty_series(y_train, X.shape[0])
         y_holdout = infer_feature_types(y_holdout)
@@ -244,7 +247,9 @@ class TimeSeriesBinaryClassificationPipeline(
                 predictions = predictions.astype(int)
             else:
                 predictions = objective.decision_function(
-                    proba, threshold=self.threshold, X=X,
+                    proba,
+                    threshold=self.threshold,
+                    X=X,
                 )
             predictions = pd.Series(
                 predictions,

@@ -44,7 +44,8 @@ def test_train_and_score_pipelines(
     assert evaluation_result.get("training_time") is not None
     assert evaluation_result.get("cv_score_mean") == 0.42
     pd.testing.assert_series_equal(
-        evaluation_result.get("cv_scores"), pd.Series([0.42] * 3),
+        evaluation_result.get("cv_scores"),
+        pd.Series([0.42] * 3),
     )
     for i in range(automl.data_splitter.get_n_splits()):
         assert (
@@ -92,7 +93,8 @@ def test_train_and_score_pipelines_error(
     assert evaluation_result.get("training_time") is not None
     assert np.isnan(evaluation_result.get("cv_score_mean"))
     pd.testing.assert_series_equal(
-        evaluation_result.get("cv_scores"), pd.Series([np.nan] * 3),
+        evaluation_result.get("cv_scores"),
+        pd.Series([np.nan] * 3),
     )
     for i in range(automl.data_splitter.get_n_splits()):
         assert np.isnan(
@@ -110,10 +112,23 @@ def test_train_pipeline_trains_and_tunes_threshold(
 ):
     X, y = X_y_binary
     mock_split_data.return_value = split_data(
-        X, y, "binary", test_size=0.2, random_seed=0,
+        X,
+        y,
+        "binary",
+        test_size=0.2,
+        random_seed=0,
     )
     automl_config = AutoMLConfig(
-        None, "binary", LogLossBinary(), [], None, True, None, 0, None, None,
+        None,
+        "binary",
+        LogLossBinary(),
+        [],
+        None,
+        True,
+        None,
+        0,
+        None,
+        None,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context():
@@ -124,7 +139,16 @@ def test_train_pipeline_trains_and_tunes_threshold(
     mock_split_data.assert_not_called()
 
     automl_config = AutoMLConfig(
-        None, "binary", LogLossBinary(), [], F1(), True, None, 0, None, None,
+        None,
+        "binary",
+        LogLossBinary(),
+        [],
+        F1(),
+        True,
+        None,
+        0,
+        None,
+        None,
     )
     with env.test_context():
         _ = train_pipeline(dummy_binary_pipeline, X, y, automl_config=automl_config)
@@ -147,7 +171,16 @@ def test_train_pipeline_trains_and_tunes_threshold_ts(
     assert ts_binary.threshold is None
 
     automl_config = AutoMLConfig(
-        None, "time series binary", LogLossBinary(), [], F1(), True, None, 0, None, None,
+        None,
+        "time series binary",
+        LogLossBinary(),
+        [],
+        F1(),
+        True,
+        None,
+        0,
+        None,
+        None,
     )
     cv_pipeline, _ = train_pipeline(ts_binary, X, y, automl_config=automl_config)
     assert cv_pipeline.threshold is not None
@@ -174,19 +207,36 @@ def test_train_pipelines_cache(
     X, y = X_y_binary
     X = pd.DataFrame(X)
     automl_config = AutoMLConfig(
-        None, "binary", LogLossBinary(), [], None, True, None, 0, None, None,
+        None,
+        "binary",
+        LogLossBinary(),
+        [],
+        None,
+        True,
+        None,
+        0,
+        None,
+        None,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context():
         res = train_pipeline(
-            dummy_binary_pipeline, X, y, automl_config=automl_config, get_hashes=False,
+            dummy_binary_pipeline,
+            X,
+            y,
+            automl_config=automl_config,
+            get_hashes=False,
         )
     assert isinstance(res, tuple)
     assert res[1] is None
 
     with env.test_context():
         res = train_pipeline(
-            dummy_binary_pipeline, X, y, automl_config=automl_config, get_hashes=True,
+            dummy_binary_pipeline,
+            X,
+            y,
+            automl_config=automl_config,
+            get_hashes=True,
         )
     assert isinstance(res, tuple)
     assert res[1] == hash(tuple(X.index))

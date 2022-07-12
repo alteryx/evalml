@@ -106,12 +106,14 @@ def test_non_numeric_errors(non_numeric_df):
     # mean with all strings
     strategies = {"A": {"impute_strategy": "mean"}}
     with pytest.raises(
-        ValueError, match="Cannot use mean strategy with non-numeric data",
+        ValueError,
+        match="Cannot use mean strategy with non-numeric data",
     ):
         transformer = PerColumnImputer(impute_strategies=strategies)
         transformer.fit_transform(X)
     with pytest.raises(
-        ValueError, match="Cannot use mean strategy with non-numeric data",
+        ValueError,
+        match="Cannot use mean strategy with non-numeric data",
     ):
         transformer = PerColumnImputer(impute_strategies=strategies)
         transformer.fit(X)
@@ -119,12 +121,14 @@ def test_non_numeric_errors(non_numeric_df):
     # median with all strings
     strategies = {"B": {"impute_strategy": "median"}}
     with pytest.raises(
-        ValueError, match="Cannot use median strategy with non-numeric data",
+        ValueError,
+        match="Cannot use median strategy with non-numeric data",
     ):
         transformer = PerColumnImputer(impute_strategies=strategies)
         transformer.fit_transform(X)
     with pytest.raises(
-        ValueError, match="Cannot use median strategy with non-numeric data",
+        ValueError,
+        match="Cannot use median strategy with non-numeric data",
     ):
         transformer = PerColumnImputer(impute_strategies=strategies)
         transformer.fit(X)
@@ -294,7 +298,8 @@ def test_transform_drop_all_nan_columns_empty():
 )
 @pytest.mark.parametrize("has_nan", [True, False])
 def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(
-    X_df, has_nan,
+    X_df,
+    has_nan,
 ):
     y = pd.Series([1, 2, 1])
     override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]

@@ -45,7 +45,9 @@ class DummyTransformer(Transformer):
     def __init__(self, parameters=None, random_seed=0):
         parameters = parameters or {}
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y):
@@ -75,7 +77,9 @@ class DummyEstimator(Estimator):
     def __init__(self, parameters=None, random_seed=0):
         parameters = parameters or {}
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y):
@@ -167,7 +171,8 @@ def test_init_instantiated():
 def test_invalid_init():
     invalid_graph = {"Imputer": [Imputer, "X", "y"], "OHE": OneHotEncoder}
     with pytest.raises(
-        ValueError, match="All component information should be passed in as a list",
+        ValueError,
+        match="All component information should be passed in as a list",
     ):
         ComponentGraph(invalid_graph)
 
@@ -179,7 +184,8 @@ def test_invalid_init():
         ],
     }
     with pytest.raises(
-        ValueError, match="may only contain str or ComponentBase subclasses",
+        ValueError,
+        match="may only contain str or ComponentBase subclasses",
     ):
         ComponentGraph(graph)
 
@@ -254,7 +260,8 @@ def test_instantiate_with_parameters(example_graph):
 
     assert not isinstance(component_graph.get_component("Imputer"), Imputer)
     assert not isinstance(
-        component_graph.get_component("Elastic Net"), ElasticNetClassifier,
+        component_graph.get_component("Elastic Net"),
+        ElasticNetClassifier,
     )
 
     parameters = {
@@ -276,7 +283,8 @@ def test_instantiate_with_parameters(example_graph):
 
     assert isinstance(component_graph.get_component("Imputer"), Imputer)
     assert isinstance(
-        component_graph.get_component("Random Forest"), RandomForestClassifier,
+        component_graph.get_component("Random Forest"),
+        RandomForestClassifier,
     )
     assert isinstance(
         component_graph.get_component("Logistic Regression Classifier"),
@@ -356,7 +364,8 @@ def test_get_component(example_graph):
         top_n=3,
     )
     assert component_graph.get_component("Random Forest") == RandomForestClassifier(
-        n_estimators=50, max_depth=4,
+        n_estimators=50,
+        max_depth=4,
     )
 
 
@@ -414,7 +423,8 @@ def test_parents(example_graph):
 def test_get_last_component(example_graph):
     component_graph = ComponentGraph()
     with pytest.raises(
-        ValueError, match="Cannot get last component from edgeless graph",
+        ValueError,
+        match="Cannot get last component from edgeless graph",
     ):
         component_graph.get_last_component()
 
@@ -437,7 +447,11 @@ def test_get_last_component(example_graph):
 @patch("evalml.pipelines.components.Estimator.fit")
 @patch("evalml.pipelines.components.Estimator.predict_proba")
 def test_fit_component_graph(
-    mock_predict_proba, mock_fit, mock_fit_transform, example_graph, X_y_binary,
+    mock_predict_proba,
+    mock_fit,
+    mock_fit_transform,
+    example_graph,
+    X_y_binary,
 ):
     X, y = X_y_binary
     mock_fit_transform.return_value = pd.DataFrame(X)
@@ -454,7 +468,9 @@ def test_fit_component_graph(
 @patch("evalml.pipelines.components.TargetImputer.fit_transform")
 @patch("evalml.pipelines.components.OneHotEncoder.fit_transform")
 def test_fit_correct_inputs(
-    mock_ohe_fit_transform, mock_imputer_fit_transform, X_y_binary,
+    mock_ohe_fit_transform,
+    mock_imputer_fit_transform,
+    X_y_binary,
 ):
     X, y = X_y_binary
     X = pd.DataFrame(X)
@@ -479,7 +495,11 @@ def test_fit_correct_inputs(
 @patch("evalml.pipelines.components.Estimator.fit")
 @patch("evalml.pipelines.components.Estimator.predict_proba")
 def test_component_graph_fit_and_transform_all_but_final(
-    mock_predict_proba, mock_fit, mock_fit_transform, example_graph, X_y_binary,
+    mock_predict_proba,
+    mock_fit,
+    mock_fit_transform,
+    example_graph,
+    X_y_binary,
 ):
     X, y = X_y_binary
     component_graph = ComponentGraph(example_graph)
@@ -522,7 +542,11 @@ def test_predict(mock_predict, mock_predict_proba, mock_fit, example_graph, X_y_
 @patch("evalml.pipelines.components.Estimator.predict_proba")
 @patch("evalml.pipelines.components.Estimator.predict")
 def test_predict_multiclass(
-    mock_predict, mock_predict_proba, mock_fit, example_graph, X_y_multi,
+    mock_predict,
+    mock_predict_proba,
+    mock_fit,
+    example_graph,
+    X_y_multi,
 ):
     X, y = X_y_multi
     mock_predict_proba.return_value = pd.DataFrame(
@@ -547,7 +571,8 @@ def test_predict_multiclass(
     ]
     for col in final_estimator_input:
         assert np.array_equal(
-            final_estimator_input[col].to_numpy(), np.full(X.shape[0], 0.33),
+            final_estimator_input[col].to_numpy(),
+            np.full(X.shape[0], 0.33),
         )
     component_graph.predict(X)
     assert (
@@ -561,7 +586,11 @@ def test_predict_multiclass(
 @patch("evalml.pipelines.components.Estimator.predict_proba")
 @patch("evalml.pipelines.components.Estimator.predict")
 def test_predict_regression(
-    mock_predict, mock_predict_proba, mock_fit, example_regression_graph, X_y_multi,
+    mock_predict,
+    mock_predict_proba,
+    mock_fit,
+    example_regression_graph,
+    X_y_multi,
 ):
     X, y = X_y_multi
     mock_predict.return_value = pd.Series(y)
@@ -587,7 +616,10 @@ def test_predict_regression(
 @patch("evalml.pipelines.components.Estimator.predict_proba")
 @patch("evalml.pipelines.components.Estimator.predict")
 def test_predict_repeat_estimator(
-    mock_predict, mock_predict_proba, mock_fit, X_y_binary,
+    mock_predict,
+    mock_predict_proba,
+    mock_fit,
+    X_y_binary,
 ):
     X, y = X_y_binary
     mock_predict_proba.return_value = pd.DataFrame(y)
@@ -1307,7 +1339,8 @@ def test_component_graph_preserves_ltypes_created_during_pipeline_evaluation():
 
     # woodwork would infer this as boolean by default -- convert to a numeric type
     X.ww.init(
-        logical_types={"column_1": "categorical"}, semantic_tags={"address": "address"},
+        logical_types={"column_1": "categorical"},
+        semantic_tags={"address": "address"},
     )
 
     component_graph = ComponentGraph(graph)
@@ -1379,7 +1412,8 @@ def test_component_graph_types_merge():
     X["column_6"] = [42.0] * len(X)
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
     X = infer_feature_types(
-        X, {"column_1": "categorical", "column_5": "NaturalLanguage"},
+        X,
+        {"column_1": "categorical", "column_5": "NaturalLanguage"},
     )
 
     component_graph = ComponentGraph(graph)
@@ -1562,7 +1596,8 @@ def test_component_graph_equality(example_graph):
     component_graph_different_seed = ComponentGraph(example_graph, random_seed=5)
     component_graph_not_eq = ComponentGraph(different_graph, random_seed=0)
     component_graph_different_order = ComponentGraph(
-        same_graph_different_order, random_seed=0,
+        same_graph_different_order,
+        random_seed=0,
     )
 
     component_graph.instantiate()
@@ -1957,7 +1992,9 @@ class SubsetData(Transformer):
     ],
 )
 def test_component_graph_inverse_transform(
-    component_graph, answer_func, X_y_regression,
+    component_graph,
+    answer_func,
+    X_y_regression,
 ):
     X, y = X_y_regression
     y = pd.Series(np.abs(y))
@@ -2080,7 +2117,8 @@ def test_component_graph_with_X_y_inputs_y(mock_fit, mock_fit_transform):
 def test_component_graph_does_not_define_all_edges():
     # Graph does not define an X edge
     with pytest.raises(
-        ValueError, match="All components must have at least one input feature",
+        ValueError,
+        match="All components must have at least one input feature",
     ):
         ComponentGraph(
             {
@@ -2110,7 +2148,8 @@ def test_component_graph_does_not_define_all_edges():
         )
     # Graph does not define X and y edges
     with pytest.raises(
-        ValueError, match="All components must have at least one input feature",
+        ValueError,
+        match="All components must have at least one input feature",
     ):
         ComponentGraph(
             {
@@ -2129,7 +2168,8 @@ def test_component_graph_does_not_define_all_edges():
 def test_component_graph_defines_edges_with_bad_syntax():
     # Graph does not define an X edge
     with pytest.raises(
-        ValueError, match="All edges must be specified as either an input feature",
+        ValueError,
+        match="All edges must be specified as either an input feature",
     ):
         ComponentGraph(
             {
@@ -2153,7 +2193,8 @@ def test_component_graph_defines_edges_with_bad_syntax():
 def test_component_graph_defines_edge_with_invalid_syntax():
     # Graph does not define an X edge using .x
     with pytest.raises(
-        ValueError, match="All components must have at least one input feature",
+        ValueError,
+        match="All components must have at least one input feature",
     ):
         ComponentGraph(
             {
@@ -2244,7 +2285,8 @@ def test_component_graph_repr():
 @patch("evalml.pipelines.components.estimators.LogisticRegressionClassifier.fit")
 @pytest.mark.parametrize("sampler", ["Undersampler", "Oversampler"])
 def test_component_graph_transform_all_but_final_with_sampler(
-    mock_estimator_fit, sampler,
+    mock_estimator_fit,
+    sampler,
 ):
     expected_length = 750 if sampler == "Undersampler" else int(1.25 * 850)
     X = pd.DataFrame([[i] for i in range(1000)])
@@ -2433,7 +2475,10 @@ def test_training_only_component_in_component_graph_transform_all_but_final(
 
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
 def test_fit_predict_different_types(
-    problem_type, X_y_binary, X_y_multi, X_y_regression,
+    problem_type,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
 ):
     if problem_type == "binary":
         X, y = X_y_binary
@@ -2467,7 +2512,8 @@ def test_fit_predict_different_types(
     component_graph = ComponentGraph(component_dict).instantiate({})
     component_graph.fit(X, y)
     with pytest.raises(
-        PipelineError, match="Input X data types are different from the input types",
+        PipelineError,
+        match="Input X data types are different from the input types",
     ) as e:
         component_graph.predict(X2)
     assert e.value.code == PipelineErrorCodeEnum.PREDICT_INPUT_SCHEMA_UNEQUAL
@@ -2485,7 +2531,8 @@ def test_fit_transform_different_types(X_y_binary):
     component_graph = ComponentGraph(component_dict).instantiate({})
     component_graph.fit(X, y)
     with pytest.raises(
-        PipelineError, match="Input X data types are different from the input types",
+        PipelineError,
+        match="Input X data types are different from the input types",
     ) as e:
         component_graph.transform(X2)
     assert e.value.code == PipelineErrorCodeEnum.PREDICT_INPUT_SCHEMA_UNEQUAL
@@ -2541,7 +2588,8 @@ def test_component_graph_cache():
     "evalml.pipelines.components.transformers.preprocessing.featuretools.calculate_feature_matrix",
 )
 def test_component_graph_handles_engineered_features(
-    mock_calculate_feature_matrix, mock_dfs,
+    mock_calculate_feature_matrix,
+    mock_dfs,
 ):
     X, y = load_diabetes()
     del X.ww
@@ -2552,10 +2600,15 @@ def test_component_graph_handles_engineered_features(
 
     es = ft.EntitySet()
     es = es.add_dataframe(
-        dataframe_name="X", dataframe=X_fit, index="index", make_index=True,
+        dataframe_name="X",
+        dataframe=X_fit,
+        index="index",
+        make_index=True,
     )
     feature_matrix, _ = ft.dfs(
-        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"],
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["absolute"],
     )
 
     graph = {"DFS Transformer": ["DFS Transformer", "X", "y"]}

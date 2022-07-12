@@ -113,16 +113,20 @@ def test_data_checks(X_y_binary):
     data_checks = DataChecks(data_checks=data_checks_list)
     assert data_checks.validate(X, y) == [
         DataCheckWarning(
-            message="warning one", data_check_name="MockDataCheckWarning",
+            message="warning one",
+            data_check_name="MockDataCheckWarning",
         ).to_dict(),
         DataCheckError(
-            message="error one", data_check_name="MockDataCheckError",
+            message="error one",
+            data_check_name="MockDataCheckError",
         ).to_dict(),
         DataCheckWarning(
-            message="warning two", data_check_name="MockDataCheckErrorAndWarning",
+            message="warning two",
+            data_check_name="MockDataCheckErrorAndWarning",
         ).to_dict(),
         DataCheckError(
-            message="error two", data_check_name="MockDataCheckErrorAndWarning",
+            message="error two",
+            data_check_name="MockDataCheckErrorAndWarning",
         ).to_dict(),
     ]
 
@@ -286,7 +290,8 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
         y_multiclass = ww.init_series(y_multiclass)
 
     data_checks = DefaultDataChecks(
-        "binary", get_default_primary_search_objective("binary"),
+        "binary",
+        get_default_primary_search_objective("binary"),
     )
     imbalance = [
         DataCheckError(
@@ -338,7 +343,8 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
     ]
     # multiclass
     data_checks = DefaultDataChecks(
-        "multiclass", get_default_primary_search_objective("multiclass"),
+        "multiclass",
+        get_default_primary_search_objective("multiclass"),
     )
 
     expected = get_expected_messages("multiclass")
@@ -385,7 +391,8 @@ def test_default_data_checks_regression(input_type, data_checks_input_dataframe)
         y_no_variance = ww.init_series(y_no_variance)
 
     data_checks = DefaultDataChecks(
-        "regression", get_default_primary_search_objective("regression"),
+        "regression",
+        get_default_primary_search_objective("regression"),
     )
 
     expected = get_expected_messages("regression")
@@ -436,7 +443,8 @@ def test_default_data_checks_null_rows():
     )
     y = pd.Series([0, 1, np.nan, 1, 0])
     data_checks = DefaultDataChecks(
-        "regression", get_default_primary_search_objective("regression"),
+        "regression",
+        get_default_primary_search_objective("regression"),
     )
     highly_null_rows = SeriesWrap(pd.Series([1.0, 1.0, 1.0, 1.0, 1.0]))
     expected = [
@@ -670,7 +678,10 @@ class MockCheck2(DataCheck):
     ],
 )
 def test_data_checks_raises_value_errors_on_init(
-    classes, params, expected_exception, expected_message,
+    classes,
+    params,
+    expected_exception,
+    expected_message,
 ):
     with pytest.raises(expected_exception, match=expected_message):
         DataChecks(classes, params)

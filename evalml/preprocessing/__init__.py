@@ -5,4 +5,8 @@ from evalml.preprocessing.utils import (
     number_of_features,
     target_distribution,
 )
-from evalml.preprocessing.data_splitters import NoSplit, TrainingValidationSplit, TimeSeriesSplit
+from evalml.preprocessing.data_splitters import (
+    NoSplit,
+    TrainingValidationSplit,
+    TimeSeriesSplit,
+)

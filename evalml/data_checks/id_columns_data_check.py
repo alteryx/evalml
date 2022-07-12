@@ -163,7 +163,10 @@ class IDColumnsDataCheck(DataCheck):
                 DataCheckWarning(
                     message=warning_msg.format(
                         (", ").join(
-                            ["'{}'".format(str(col)) for col in id_cols_above_threshold],
+                            [
+                                "'{}'".format(str(col))
+                                for col in id_cols_above_threshold
+                            ],
                         ),
                         self.id_threshold * 100,
                     ),

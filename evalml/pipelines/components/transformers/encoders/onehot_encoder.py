@@ -82,7 +82,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         self.features_to_encode = features_to_encode
         self._encoder = None
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
         self._initial_state = self.random_seed
         self._provenance = {}
@@ -129,7 +131,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         elif self.parameters["categories"] is not None:
             categories = self.parameters["categories"]
             if len(categories) != len(self.features_to_encode) or not isinstance(
-                categories[0], list,
+                categories[0],
+                list,
             ):
                 raise ValueError(
                     "Categories argument must contain a list of categories for each categorical feature",
@@ -145,10 +148,13 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                     unique_values = value_counts.index.tolist()
                 else:
                     value_counts = value_counts.sample(
-                        frac=1, random_state=self._initial_state,
+                        frac=1,
+                        random_state=self._initial_state,
                     )
                     value_counts = value_counts.sort_values(
-                        [col], ascending=False, kind="mergesort",
+                        [col],
+                        ascending=False,
+                        kind="mergesort",
                     )
                     unique_values = value_counts.head(top_n).index.tolist()
                 unique_values = np.sort(unique_values)

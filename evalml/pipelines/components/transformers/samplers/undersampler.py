@@ -71,7 +71,9 @@ class Undersampler(BaseSampler):
 
         parameters.update(kwargs)
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def _initialize_sampler(self, X, y):
@@ -128,7 +130,8 @@ class Undersampler(BaseSampler):
         # find goal size, round it down if it's a float
         minority_class = min(counts.values)
         goal_value = max(
-            int((minority_class / self.sampling_ratio) // 1), self.min_samples,
+            int((minority_class / self.sampling_ratio) // 1),
+            self.min_samples,
         )
         # we don't want to drop less than 0 rows
         drop_values = {k: max(0, counts[k] - goal_value) for k in undersample_classes}
@@ -162,7 +165,8 @@ class Undersampler(BaseSampler):
         """
         if self.parameters["sampling_ratio_dict"]:
             self.sampling_ratio_dict = self._convert_dictionary(
-                self.parameters["sampling_ratio_dict"], y,
+                self.parameters["sampling_ratio_dict"],
+                y,
             )
 
         y = infer_feature_types(y)

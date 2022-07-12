@@ -160,7 +160,8 @@ class ClassImbalanceDataCheck(DataCheck):
             messages.append(
                 DataCheckError(
                     message=error_msg.format(
-                        self.cv_folds, sorted(below_threshold_values),
+                        self.cv_folds,
+                        sorted(below_threshold_values),
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
@@ -177,7 +178,8 @@ class ClassImbalanceDataCheck(DataCheck):
             messages.append(
                 DataCheckWarning(
                     message=warning_msg.format(
-                        self.threshold * 100, below_threshold_values,
+                        self.threshold * 100,
+                        below_threshold_values,
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
@@ -192,7 +194,9 @@ class ClassImbalanceDataCheck(DataCheck):
             messages.append(
                 DataCheckWarning(
                     message=warning_msg.format(
-                        self.threshold * 100, self.min_samples, severe_imbalance,
+                        self.threshold * 100,
+                        self.min_samples,
+                        severe_imbalance,
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_SEVERE,

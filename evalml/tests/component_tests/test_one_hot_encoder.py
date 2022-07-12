@@ -361,7 +361,8 @@ def test_categories():
 
     # test categories with top_n errors
     with pytest.raises(
-        ValueError, match="Cannot use categories and top_n arguments simultaneously",
+        ValueError,
+        match="Cannot use categories and top_n arguments simultaneously",
     ):
         encoder = OneHotEncoder(top_n=10, categories=categories, random_seed=2)
 
@@ -420,14 +421,18 @@ def test_more_top_n_unique_values():
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=random_seed)
     col_1_counts = col_1_counts.sort_values(
-        ["col_1"], ascending=False, kind="mergesort",
+        ["col_1"],
+        ascending=False,
+        kind="mergesort",
     )
     col_1_samples = col_1_counts.head(encoder.parameters["top_n"]).index.tolist()
 
     col_2_counts = X["col_2"].value_counts(dropna=False).to_frame()
     col_2_counts = col_2_counts.sample(frac=1, random_state=random_seed)
     col_2_counts = col_2_counts.sort_values(
-        ["col_2"], ascending=False, kind="mergesort",
+        ["col_2"],
+        ascending=False,
+        kind="mergesort",
     )
     col_2_samples = col_2_counts.head(encoder.parameters["top_n"]).index.tolist()
 
@@ -462,7 +467,9 @@ def test_more_top_n_unique_values_large():
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=random_seed)
     col_1_counts = col_1_counts.sort_values(
-        ["col_1"], ascending=False, kind="mergesort",
+        ["col_1"],
+        ascending=False,
+        kind="mergesort",
     )
     col_1_samples = col_1_counts.head(encoder.parameters["top_n"]).index.tolist()
     expected_col_names = set(
@@ -633,14 +640,16 @@ def test_ohe_get_feature_names():
         ohe.get_feature_names()
     ohe.fit(X)
     np.testing.assert_array_equal(
-        ohe.get_feature_names(), np.array(["col_1_a", "col_2_a", "col_2_b"]),
+        ohe.get_feature_names(),
+        np.array(["col_1_a", "col_2_a", "col_2_b"]),
     )
 
     X = pd.DataFrame({"col_1": ["a"] * 4 + ["b"] * 6, "col_2": ["b"] * 3 + ["c"] * 7})
     ohe = OneHotEncoder(drop="if_binary")
     ohe.fit(X)
     np.testing.assert_array_equal(
-        ohe.get_feature_names(), np.array(["col_1_a", "col_2_b"]),
+        ohe.get_feature_names(),
+        np.array(["col_1_a", "col_2_b"]),
     )
 
 
@@ -728,7 +737,11 @@ def test_ohe_column_names_unique():
         },
     )
     df.ww.init(
-        logical_types={"A": "categorical", "A_x": "categorical", "A_x_y": "categorical"},
+        logical_types={
+            "A": "categorical",
+            "A_x": "categorical",
+            "A_x_y": "categorical",
+        },
     )
     df_transformed = OneHotEncoder().fit_transform(df)
     # category y in A_x gets mapped to A_x_y_1 because A_x_y already exists
@@ -739,7 +752,11 @@ def test_ohe_column_names_unique():
         {"A": ["x_y", "z", "a"], "A_x": ["y_1", "y", "b"], "A_x_y": ["1", "y", "c"]},
     )
     df.ww.init(
-        logical_types={"A": "categorical", "A_x": "categorical", "A_x_y": "categorical"},
+        logical_types={
+            "A": "categorical",
+            "A_x": "categorical",
+            "A_x_y": "categorical",
+        },
     )
     df_transformed = OneHotEncoder().fit_transform(df)
     # category y in A_x gets mapped to A_x_y_1 because A_x_y already exists

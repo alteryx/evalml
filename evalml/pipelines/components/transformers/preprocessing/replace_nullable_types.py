@@ -22,7 +22,9 @@ class ReplaceNullableTypes(Transformer):
         self._nullable_bool_cols = []
         self._nullable_target = None
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):
@@ -38,7 +40,8 @@ class ReplaceNullableTypes(Transformer):
         X_t = infer_feature_types(X)
         self._nullable_int_cols = list(
             X_t.ww.select(
-                ["IntegerNullable", "AgeNullable"], return_schema=True,
+                ["IntegerNullable", "AgeNullable"],
+                return_schema=True,
             ).columns,
         )
         self._nullable_bool_cols = list(

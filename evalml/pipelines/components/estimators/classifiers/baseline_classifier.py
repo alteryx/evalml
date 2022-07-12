@@ -39,7 +39,9 @@ class BaselineClassifier(Estimator):
         self._num_unique = None
         self._mode = None
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):
@@ -85,11 +87,14 @@ class BaselineClassifier(Estimator):
             predictions = pd.Series([self._mode] * len(X))
         elif strategy == "random":
             predictions = get_random_state(self.random_seed).choice(
-                self._classes, len(X),
+                self._classes,
+                len(X),
             )
         else:
             predictions = get_random_state(self.random_seed).choice(
-                self._classes, len(X), p=self._percentage_freq,
+                self._classes,
+                len(X),
+                p=self._percentage_freq,
             )
         return infer_feature_types(predictions)
 

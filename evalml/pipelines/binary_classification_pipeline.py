@@ -9,7 +9,8 @@ from evalml.utils import infer_feature_types
 
 
 class BinaryClassificationPipeline(
-    BinaryClassificationPipelineMixin, ClassificationPipeline,
+    BinaryClassificationPipelineMixin,
+    ClassificationPipeline,
 ):
     """Pipeline subclass for all binary classification pipelines.
 

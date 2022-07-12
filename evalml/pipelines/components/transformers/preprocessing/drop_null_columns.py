@@ -27,7 +27,9 @@ class DropNullColumns(Transformer):
 
         self._cols_to_drop = None
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):

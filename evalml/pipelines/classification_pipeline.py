@@ -74,7 +74,9 @@ class ClassificationPipeline(PipelineBase):
         if self._encoder is not None:
             try:
                 return pd.Series(
-                    self._encoder.transform(None, y)[1], index=y.index, name=y.name,
+                    self._encoder.transform(None, y)[1],
+                    index=y.index,
+                    name=y.name,
                 ).astype(int)
             except ValueError as e:
                 raise ValueError(str(e))
@@ -116,7 +118,9 @@ class ClassificationPipeline(PipelineBase):
         _predictions = self._predict(X, objective=objective)
         predictions = self.inverse_transform(_predictions.astype(int))
         predictions = pd.Series(
-            predictions, name=self.input_target_name, index=_predictions.index,
+            predictions,
+            name=self.input_target_name,
+            index=_predictions.index,
         )
         return infer_feature_types(predictions)
 
@@ -141,7 +145,9 @@ class ClassificationPipeline(PipelineBase):
         X = self.transform_all_but_final(X, y=None)
         proba = self.estimator.predict_proba(X)
         proba = proba.ww.rename(
-            columns={col: new_col for col, new_col in zip(proba.columns, self.classes_)},
+            columns={
+                col: new_col for col, new_col in zip(proba.columns, self.classes_)
+            },
         )
         return infer_feature_types(proba)
 
@@ -164,7 +170,11 @@ class ClassificationPipeline(PipelineBase):
             y = self._encode_targets(y)
         y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
         return self._score_all_objectives(
-            X, y, y_predicted, y_predicted_proba, objectives,
+            X,
+            y,
+            y_predicted,
+            y_predicted_proba,
+            objectives,
         )
 
     def _compute_predictions(self, X, y, objectives):

@@ -59,7 +59,8 @@ def test_baseline_binary_random(X_y_binary):
     assert clf.classes_ == [0, 1]
 
     expected_predictions = pd.Series(
-        get_random_state(0).choice(np.unique(y), len(X)), dtype="int64",
+        get_random_state(0).choice(np.unique(y), len(X)),
+        dtype="int64",
     )
     predictions = clf.predict(X)
     assert_series_equal(expected_predictions, predictions)
@@ -85,7 +86,8 @@ def test_baseline_binary_random_weighted(X_y_binary):
 
     assert clf.classes_ == [0, 1]
     expected_predictions = pd.Series(
-        get_random_state(0).choice(np.unique(y), len(X), p=percent_freq), dtype="int64",
+        get_random_state(0).choice(np.unique(y), len(X), p=percent_freq),
+        dtype="int64",
     )
     predictions = clf.predict(X)
     assert_series_equal(expected_predictions, predictions)
@@ -129,7 +131,8 @@ def test_baseline_multiclass_random(X_y_multi):
 
     assert clf.classes_ == [0, 1, 2]
     expected_predictions = pd.Series(
-        get_random_state(0).choice(np.unique(y), len(X)), dtype="int64",
+        get_random_state(0).choice(np.unique(y), len(X)),
+        dtype="int64",
     )
     predictions = clf.predict(X)
     assert_series_equal(expected_predictions, predictions)
@@ -153,7 +156,8 @@ def test_baseline_multiclass_random_weighted(X_y_multi):
 
     assert clf.classes_ == [0, 1, 2]
     expected_predictions = pd.Series(
-        get_random_state(0).choice(np.unique(y), len(X), p=percent_freq), dtype="int64",
+        get_random_state(0).choice(np.unique(y), len(X), p=percent_freq),
+        dtype="int64",
     )
     predictions = clf.predict(X)
     assert_series_equal(expected_predictions, predictions)

@@ -27,11 +27,13 @@ def test_id_cols_data_check_init():
     assert id_cols_check.id_threshold == 1.0
 
     with pytest.raises(
-        ValueError, match="id_threshold must be a float between 0 and 1, inclusive.",
+        ValueError,
+        match="id_threshold must be a float between 0 and 1, inclusive.",
     ):
         IDColumnsDataCheck(id_threshold=-0.1)
     with pytest.raises(
-        ValueError, match="id_threshold must be a float between 0 and 1, inclusive.",
+        ValueError,
+        match="id_threshold must be a float between 0 and 1, inclusive.",
     ):
         IDColumnsDataCheck(id_threshold=1.1)
 

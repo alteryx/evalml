@@ -246,7 +246,8 @@ class InvalidTargetDataCheck(DataCheck):
             messages.append(
                 DataCheckError(
                     message="{} row(s) ({}%) of target values are null".format(
-                        num_null_rows, pct_null_rows,
+                        num_null_rows,
+                        pct_null_rows,
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_HAS_NULL,
@@ -336,7 +337,9 @@ class InvalidTargetDataCheck(DataCheck):
         )
         if any_neg and self.objective.positive_only:
             details = {
-                "Count of offending values": sum(val <= 0 for val in y.values.flatten()),
+                "Count of offending values": sum(
+                    val <= 0 for val in y.values.flatten()
+                ),
             }
             messages.append(
                 DataCheckError(

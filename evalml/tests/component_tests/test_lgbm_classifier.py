@@ -31,12 +31,18 @@ def test_lightgbm_classifier_random_seed_bounds_seed(X_y_binary):
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
     clf = LightGBMClassifier(
-        n_estimators=1, max_depth=1, random_seed=SEED_BOUNDS.min_bound, n_jobs=1,
+        n_estimators=1,
+        max_depth=1,
+        random_seed=SEED_BOUNDS.min_bound,
+        n_jobs=1,
     )
     fitted = clf.fit(X, y)
     assert isinstance(fitted, LightGBMClassifier)
     clf = LightGBMClassifier(
-        n_estimators=1, max_depth=1, random_seed=SEED_BOUNDS.max_bound, n_jobs=1,
+        n_estimators=1,
+        max_depth=1,
+        random_seed=SEED_BOUNDS.max_bound,
+        n_jobs=1,
     )
     clf.fit(X, y)
 
@@ -269,7 +275,9 @@ def test_binary_rf(X_y_binary, lgbm):
 
     with pytest.raises(lgbm.basic.LightGBMError, match="bagging_fraction"):
         clf = LightGBMClassifier(
-            boosting_type="rf", bagging_freq=1, bagging_fraction=1.01,
+            boosting_type="rf",
+            bagging_freq=1,
+            bagging_fraction=1.01,
         )
         clf.fit(X, y)
 

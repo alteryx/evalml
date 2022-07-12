@@ -81,5 +81,9 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         objectives = self.create_objectives(objectives)
         y_predicted = self.predict_in_sample(X, y, X_train, y_train)
         return self._score_all_objectives(
-            X, y, y_predicted, y_pred_proba=None, objectives=objectives,
+            X,
+            y,
+            y_predicted,
+            y_pred_proba=None,
+            objectives=objectives,
         )

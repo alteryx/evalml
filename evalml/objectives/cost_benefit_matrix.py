@@ -48,7 +48,9 @@ class CostBenefitMatrix(BinaryClassificationObjective):
             float: Cost-benefit matrix score
         """
         conf_matrix = evalml.model_understanding.metrics.confusion_matrix(
-            y_true, y_predicted, normalize_method="all",
+            y_true,
+            y_predicted,
+            normalize_method="all",
         )
         cost_matrix = np.array(
             [

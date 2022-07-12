@@ -43,7 +43,8 @@ def test_exceptions():
     ):
         force_plot(None, None, None, None)
     with pytest.raises(
-        TypeError, match="rows_to_explain should only contain integers!",
+        TypeError,
+        match="rows_to_explain should only contain integers!",
     ):
         force_plot(
             pipeline=None,
@@ -56,7 +57,8 @@ def test_exceptions():
 @patch("evalml.model_understanding.force_plots.jupyter_check")
 @patch("evalml.model_understanding.force_plots.initjs")
 @pytest.mark.parametrize(
-    "rows_to_explain, just_data", product([[0], [0, 1, 2, 3, 4]], [False, True]),
+    "rows_to_explain, just_data",
+    product([[0], [0, 1, 2, 3, 4]], [False, True]),
 )
 def test_force_plot_binary(
     initjs,
@@ -131,7 +133,8 @@ def test_force_plot_binary(
 
 
 @pytest.mark.parametrize(
-    "rows_to_explain, just_data", product([[0], [0, 1, 2, 3, 4]], [False, True]),
+    "rows_to_explain, just_data",
+    product([[0], [0, 1, 2, 3, 4]], [False, True]),
 )
 def test_force_plot_multiclass(rows_to_explain, just_data, wine_local):
     X, y = wine_local
@@ -179,7 +182,8 @@ def test_force_plot_multiclass(rows_to_explain, just_data, wine_local):
 
 
 @pytest.mark.parametrize(
-    "rows_to_explain, just_data", product([[0], [0, 1, 2, 3, 4]], [False, True]),
+    "rows_to_explain, just_data",
+    product([[0], [0, 1, 2, 3, 4]], [False, True]),
 )
 def test_force_plot_regression(rows_to_explain, just_data, X_y_regression):
     X, y = X_y_regression
@@ -217,7 +221,8 @@ def test_force_plot_regression(rows_to_explain, just_data, X_y_regression):
         # Should have a force plot for each row result.
         for result in results:
             assert isinstance(
-                result["regression"]["plot"], shap.plots._force.AdditiveForceVisualizer,
+                result["regression"]["plot"],
+                shap.plots._force.AdditiveForceVisualizer,
             )
         validate_plot_feature_values(results, X)
 

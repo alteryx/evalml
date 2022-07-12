@@ -130,7 +130,8 @@ class BaseSampler(Transformer):
         param_copy = copy.copy(self.parameters)
         if self.parameters["sampling_ratio_dict"]:
             new_dic = self._convert_dictionary(
-                self.parameters["sampling_ratio_dict"], y,
+                self.parameters["sampling_ratio_dict"],
+                y,
             )
             param_copy["sampling_ratio_dict"] = new_dic
         return param_copy

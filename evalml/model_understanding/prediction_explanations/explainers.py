@@ -108,7 +108,10 @@ def explain_predictions(
         raise ValueError("CatBoost models are not supported by LIME at this time")
 
     pipeline_features = pipeline.transform_all_but_final(
-        input_features, y, training_data, training_target,
+        input_features,
+        y,
+        training_data,
+        training_target,
     )
 
     data = _ReportData(
@@ -211,7 +214,10 @@ def explain_predictions_best_worst(
     """
     start_time = timer()
     _update_progress(
-        start_time, timer(), ExplainPredictionsStage.PREPROCESSING_STAGE, callback,
+        start_time,
+        timer(),
+        ExplainPredictionsStage.PREPROCESSING_STAGE,
+        callback,
     )
 
     input_features = infer_feature_types(input_features)
@@ -235,7 +241,10 @@ def explain_predictions_best_worst(
     if not metric:
         metric = DEFAULT_METRICS[pipeline.problem_type]
     _update_progress(
-        start_time, timer(), ExplainPredictionsStage.PREDICT_STAGE, callback,
+        start_time,
+        timer(),
+        ExplainPredictionsStage.PREDICT_STAGE,
+        callback,
     )
     if is_time_series(pipeline.problem_type) and (
         training_target is None or training_data is None
@@ -255,7 +264,10 @@ def explain_predictions_best_worst(
         if is_regression(pipeline.problem_type):
             if is_time_series(pipeline.problem_type):
                 y_pred = pipeline.predict_in_sample(
-                    input_features, y_true, training_data, training_target,
+                    input_features,
+                    y_true,
+                    training_data,
+                    training_target,
                 )
             else:
                 y_pred = pipeline.predict(input_features)
@@ -265,16 +277,24 @@ def explain_predictions_best_worst(
         else:
             if is_time_series(pipeline.problem_type):
                 y_pred = pipeline.predict_proba_in_sample(
-                    input_features, y_true, training_data, training_target,
+                    input_features,
+                    y_true,
+                    training_data,
+                    training_target,
                 )
                 y_pred_values = pipeline.predict_in_sample(
-                    input_features, y_true, training_data, training_target,
+                    input_features,
+                    y_true,
+                    training_data,
+                    training_target,
                 )
             else:
                 y_pred = pipeline.predict_proba(input_features)
                 y_pred_values = pipeline.predict(input_features)
             y_true_no_nan, y_pred_no_nan, y_pred_values_no_nan = drop_rows_with_nans(
-                y_true, y_pred, y_pred_values,
+                y_true,
+                y_pred,
+                y_pred_values,
             )
             if is_classification(pipeline.problem_type):
                 y_true_no_nan = pipeline._encode_targets(y_true_no_nan)
@@ -282,7 +302,8 @@ def explain_predictions_best_worst(
     except Exception as e:
         tb = traceback.format_tb(sys.exc_info()[2])
         raise PipelineScoreError(
-            exceptions={metric.__name__: (e, tb)}, scored_successfully={},
+            exceptions={metric.__name__: (e, tb)},
+            scored_successfully={},
         )
 
     errors = pd.Series(errors)
@@ -291,11 +312,17 @@ def explain_predictions_best_worst(
     worst_indices = sorted_scores.index[-num_to_explain:]
     index_list = best_indices.tolist() + worst_indices.tolist()
     _update_progress(
-        start_time, timer(), ExplainPredictionsStage.COMPUTE_FEATURE_STAGE, callback,
+        start_time,
+        timer(),
+        ExplainPredictionsStage.COMPUTE_FEATURE_STAGE,
+        callback,
     )
 
     pipeline_features = pipeline.transform_all_but_final(
-        input_features, y_true, training_data, training_target,
+        input_features,
+        y_true,
+        training_data,
+        training_target,
     )
 
     _update_progress(

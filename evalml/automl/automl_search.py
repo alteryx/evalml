@@ -506,7 +506,8 @@ class AutoMLSearch:
             and self.objective.score_needs_proba
         ):
             self.alternate_thresholding_objective = get_objective(
-                alternate_thresholding_objective, return_instance=True,
+                alternate_thresholding_objective,
+                return_instance=True,
             )
         if (
             self.alternate_thresholding_objective is not None
@@ -516,13 +517,15 @@ class AutoMLSearch:
                 "Alternate thresholding objective must be a tuneable objective and cannot need probabilities!",
             )
         if self.data_splitter is not None and not issubclass(
-            self.data_splitter.__class__, BaseCrossValidator,
+            self.data_splitter.__class__,
+            BaseCrossValidator,
         ):
             raise ValueError("Not a valid data splitter")
         if not objective.is_defined_for_problem_type(self.problem_type):
             raise ValueError(
                 "Given objective {} is not compatible with a {} problem.".format(
-                    self.objective.name, self.problem_type.value,
+                    self.objective.name,
+                    self.problem_type.value,
                 ),
             )
         if additional_objectives is None:
@@ -830,7 +833,8 @@ class AutoMLSearch:
         rankings_desc = ""
         if not self.rankings.empty:
             rankings_str = self.rankings.drop(
-                ["parameters"], axis="columns",
+                ["parameters"],
+                axis="columns",
             ).to_string()
             rankings_desc = f"\nSearch Results: \n{'='*20}\n{rankings_str}"
 
@@ -962,7 +966,10 @@ class AutoMLSearch:
                     for pipeline in current_batch_pipelines:
                         self._pre_evaluation_callback(pipeline)
                         computation = self._engine.submit_evaluation_job(
-                            self.automl_config, pipeline, self.X_train, self.y_train,
+                            self.automl_config,
+                            pipeline,
+                            self.X_train,
+                            self.y_train,
                         )
                         computations.append((computation, False))
                     current_computation_index = 0
@@ -981,7 +988,10 @@ class AutoMLSearch:
                             evaluation.get("logger"),
                         )
                         pipeline_id = self._post_evaluation_callback(
-                            pipeline, data, cached_data, job_log,
+                            pipeline,
+                            data,
+                            cached_data,
+                            job_log,
                         )
                         pipeline_times[pipeline.name] = time_elapsed(
                             start_pipeline_time,
@@ -990,7 +1000,8 @@ class AutoMLSearch:
                         computations[current_computation_index] = (computation, True)
                         computations_left_to_process -= 1
                     current_computation_index = (current_computation_index + 1) % max(
-                        len(computations), 1,
+                        len(computations),
+                        1,
                     )
                     time.sleep(self._sleep_time)
                 loop_interrupted = False
@@ -1060,7 +1071,10 @@ class AutoMLSearch:
                 X_train = self.X_train
                 y_train = self.y_train
                 best_pipeline = self._engine.submit_training_job(
-                    self.automl_config, best_pipeline, X_train, y_train,
+                    self.automl_config,
+                    best_pipeline,
+                    X_train,
+                    y_train,
                 ).get_result()[0]
 
             self._best_pipeline = best_pipeline
@@ -1129,7 +1143,8 @@ class AutoMLSearch:
             if not obj.is_defined_for_problem_type(self.problem_type):
                 raise ValueError(
                     "Additional objective {} is not compatible with a {} problem.".format(
-                        obj.name, self.problem_type.value,
+                        obj.name,
+                        self.problem_type.value,
                     ),
                 )
 
@@ -1166,7 +1181,10 @@ class AutoMLSearch:
             forecast_horizon = self.problem_configuration["forecast_horizon"]
             time_index = self.problem_configuration["time_index"]
             baseline = make_timeseries_baseline_pipeline(
-                self.problem_type, gap, forecast_horizon, time_index,
+                self.problem_type,
+                gap,
+                forecast_horizon,
+                time_index,
             )
         return baseline
 
@@ -1179,7 +1197,10 @@ class AutoMLSearch:
         self._pre_evaluation_callback(baseline)
         self.logger.info(f"Evaluating Baseline Pipeline: {baseline.name}")
         computation = self._engine.submit_evaluation_job(
-            self.automl_config, baseline, self.X_train, self.y_train,
+            self.automl_config,
+            baseline,
+            self.X_train,
+            self.y_train,
         )
         evaluation = computation.get_result()
         data, cached_data, pipeline, job_log = (
@@ -1206,7 +1227,11 @@ class AutoMLSearch:
         }
 
     def _post_evaluation_callback(
-        self, pipeline, evaluation_results, cached_data, job_log,
+        self,
+        pipeline,
+        evaluation_results,
+        cached_data,
+        job_log,
     ):
         job_log.write_to_logger(self.logger)
         training_time = evaluation_results["training_time"]
@@ -1222,7 +1247,8 @@ class AutoMLSearch:
 
         percent_better_than_baseline = {}
         mean_cv_all_objectives = self._get_mean_cv_scores_for_all_objectives(
-            cv_data, self.objective_name_to_class,
+            cv_data,
+            self.objective_name_to_class,
         )
         if is_baseline:
             self._baseline_cv_scores = mean_cv_all_objectives
@@ -1292,7 +1318,9 @@ class AutoMLSearch:
 
         if self.add_result_callback:
             self.add_result_callback(
-                self._results["pipeline_results"][pipeline_id], pipeline, self,
+                self._results["pipeline_results"][pipeline_id],
+                pipeline,
+                self,
             )
         return pipeline_id
 
@@ -1413,7 +1441,10 @@ class AutoMLSearch:
         all_objective_scores = all_objective_scores.fillna("-")
 
         with pd.option_context(
-            "display.float_format", "{:.3f}".format, "expand_frame_repr", False,
+            "display.float_format",
+            "{:.3f}".format,
+            "expand_frame_repr",
+            False,
         ):
             logger.info(all_objective_scores)
 
@@ -1434,7 +1465,10 @@ class AutoMLSearch:
                 return
 
         computation = self._engine.submit_evaluation_job(
-            self.automl_config, pipeline, self.X_train, self.y_train,
+            self.automl_config,
+            pipeline,
+            self.X_train,
+            self.y_train,
         )
         evaluation = computation.get_result()
         data, cached_data, pipeline, job_log = (
@@ -1490,7 +1524,9 @@ class AutoMLSearch:
         rankings_df = pd.DataFrame(self._results["pipeline_results"].values())
         rankings_df = rankings_df[pipeline_results_cols]
         rankings_df.insert(
-            2, "search_order", pd.Series(self._results["search_order"]),
+            2,
+            "search_order",
+            pd.Series(self._results["search_order"]),
         )  # place search_order after pipeline_name
         rankings_df.sort_values("validation_score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
@@ -1580,7 +1616,10 @@ class AutoMLSearch:
         for pipeline in pipelines:
             computations.append(
                 self._engine.submit_training_job(
-                    self.automl_config, pipeline, X_train, y_train,
+                    self.automl_config,
+                    pipeline,
+                    X_train,
+                    y_train,
                 ),
             )
 

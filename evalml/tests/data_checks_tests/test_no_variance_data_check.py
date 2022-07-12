@@ -31,7 +31,8 @@ two_distinct_with_nulls_y = pd.Series(([1] * 2) + ([None] * 2))
 two_distinct_with_nulls_y_ww = two_distinct_with_nulls_y.copy()
 two_distinct_with_nulls_y_ww.ww.init()
 two_distinct_with_nulls_y_ww_nullable_types = ww.init_series(
-    two_distinct_with_nulls_y.copy(), logical_type="IntegerNullable",
+    two_distinct_with_nulls_y.copy(),
+    logical_type="IntegerNullable",
 )
 all_null_y_with_name = pd.Series([None] * 4)
 all_null_y_with_name.name = "Labels"
@@ -193,7 +194,10 @@ cases = [
 
 @pytest.mark.parametrize("X, y, count_nan_as_value, expected_validation_result", cases)
 def test_no_variance_data_check_warnings(
-    X, y, count_nan_as_value, expected_validation_result,
+    X,
+    y,
+    count_nan_as_value,
+    expected_validation_result,
 ):
     check = NoVarianceDataCheck(count_nan_as_value)
     assert check.validate(X, y) == expected_validation_result

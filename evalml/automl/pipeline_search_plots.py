@@ -29,7 +29,11 @@ class SearchIterationPlot:
         data = [
             self._go.Scatter(x=[], y=[], mode="lines+markers", name="Best Score"),
             self._go.Scatter(
-                x=[], y=[], mode="markers", name="Iter score", marker={"color": "gray"},
+                x=[],
+                y=[],
+                mode="markers",
+                name="Iter score",
+                marker={"color": "gray"},
             ),
         ]
         layout = {
@@ -115,7 +119,8 @@ class PipelineSearchPlots:
             return self._go.Figure(plot_obj.best_score_by_iter_fig)
         try:
             ipython_display = import_or_raise(
-                "IPython.display", error_msg="Cannot find dependency IPython.display",
+                "IPython.display",
+                error_msg="Cannot find dependency IPython.display",
             )
             plot_obj = SearchIterationPlot(self.results, self.objective)
             ipython_display.display(plot_obj.best_score_by_iter_fig)

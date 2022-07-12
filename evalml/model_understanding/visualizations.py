@@ -66,7 +66,8 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     """
     _go = import_or_raise(
-        "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects",
+        "plotly.graph_objects",
+        error_msg="Cannot find dependency plotly.graph_objects",
     )
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
@@ -146,7 +147,8 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
         ValueError: If threshold is not positive.
     """
     _go = import_or_raise(
-        "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects",
+        "plotly.graph_objects",
+        error_msg="Cannot find dependency plotly.graph_objects",
     )
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
@@ -271,7 +273,11 @@ def decision_tree_data_from_pipeline(pipeline_):
 
 
 def visualize_decision_tree(
-    estimator, max_depth=None, rotate=False, filled=False, filepath=None,
+    estimator,
+    max_depth=None,
+    rotate=False,
+    filled=False,
+    filepath=None,
 ):
     """Generate an image visualizing the decision tree.
 
@@ -307,7 +313,8 @@ def visualize_decision_tree(
     est = estimator._component_obj
 
     graphviz = import_or_raise(
-        "graphviz", error_msg="Please install graphviz to visualize trees.",
+        "graphviz",
+        error_msg="Please install graphviz to visualize trees.",
     )
 
     graph_format = None
@@ -393,7 +400,8 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, X_train, y_train, dates
         ValueError: If the pipeline is not a time-series regression pipeline.
     """
     _go = import_or_raise(
-        "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects",
+        "plotly.graph_objects",
+        error_msg="Cannot find dependency plotly.graph_objects",
     )
 
     if pipeline.problem_type != ProblemTypes.TIME_SERIES_REGRESSION:
@@ -403,7 +411,12 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, X_train, y_train, dates
         )
 
     data = get_prediction_vs_actual_over_time_data(
-        pipeline, X, y, X_train, y_train, dates,
+        pipeline,
+        X,
+        y,
+        X_train,
+        y_train,
+        dates,
     )
 
     data = [
@@ -538,7 +551,8 @@ def graph_t_sne(
         ValueError: If marker_line_width or marker_size are not valid values.
     """
     _go = import_or_raise(
-        "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects",
+        "plotly.graph_objects",
+        error_msg="Cannot find dependency plotly.graph_objects",
     )
 
     if not marker_line_width >= 0:
@@ -558,7 +572,9 @@ def graph_t_sne(
     fig = _go.Figure()
     fig.add_trace(_go.Scatter(x=X_embedded[:, 0], y=X_embedded[:, 1], mode="markers"))
     fig.update_traces(
-        mode="markers", marker_line_width=marker_line_width, marker_size=marker_size,
+        mode="markers",
+        marker_line_width=marker_line_width,
+        marker_size=marker_size,
     )
     fig.update_layout(title="t-SNE", yaxis_zeroline=False, xaxis_zeroline=False)
 
