@@ -12,13 +12,13 @@ lint:
 	sh ./import_or_skip.sh
 	python docs/notebook_version_standardizer.py check-versions
 	python docs/notebook_version_standardizer.py check-execution
-	black evalml -t py39 --check
+	black evalml docs/source -t py310 --check
 	pydocstyle evalml/ --convention=google --add-ignore=D107 --add-select=D400 --match-dir='^(?!(tests)).*'
 	flake8 evalml
 
 .PHONY: lint-fix
 lint-fix:
-	black -t py39 evalml
+	black evalml docs/source -t py310
 	isort evalml
 	python docs/notebook_version_standardizer.py standardize
 
@@ -88,6 +88,7 @@ installdeps-test:
 .PHONY: installdeps-dev
 installdeps-dev:
 	pip install -e .[dev]
+	pre-commit install
 
 .PHONY: installdeps-docs
 installdeps-docs:
