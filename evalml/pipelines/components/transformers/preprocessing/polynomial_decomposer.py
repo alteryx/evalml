@@ -87,15 +87,18 @@ class PolynomialDecomposer(Decomposer):
         y_dt = infer_feature_types(y)
         self._component_obj.fit(y_dt)
 
-        # Save the frequency of the fitted series for checking against transform data.
-        self.frequency = y_dt.index.freqstr
+        if isinstance(y_dt.index, pd.DatetimeIndex):
+            # Save the frequency of the fitted series for checking against transform data.
+            self.frequency = y_dt.index.freqstr
 
-        # statsmodel's seasonal_decompose() repeats the seasonal signal over the length of
-        # the given array.  We'll extract the first iteration and save it for use in .transform()
-        self.periodicity = freq_to_period(self.frequency)
-        self.seasonality = seasonal_decompose(
-            self._component_obj.transform(y_dt)
-        ).seasonal[0 : self.periodicity]
+            # statsmodel's seasonal_decompose() repeats the seasonal signal over the length of
+            # the given array.  We'll extract the first iteration and save it for use in .transform()
+            self.periodicity = freq_to_period(self.frequency)
+            self.seasonality = seasonal_decompose(
+                self._component_obj.transform(y_dt)
+            ).seasonal[0 : self.periodicity]
+        else:
+            self.seasonality = np.zeros(len(y_dt))
 
         return self
 
@@ -121,7 +124,7 @@ class PolynomialDecomposer(Decomposer):
         if y is None:
             return X, y
         # TODO: Decide if we want to limit this transformer to data with a pd.DatetimeIndex.
-        if y.index.freqstr != self.frequency:
+        if isinstance(y.index, pd.DatetimeIndex) and y.index.freqstr != self.frequency:
             raise ValueError(
                 f"Cannot transform given data with frequency {y.index.freqstr}. "
                 f"Transformer was trained on data with frequency {self.frequency}"
@@ -131,10 +134,13 @@ class PolynomialDecomposer(Decomposer):
         y_ww = infer_feature_types(y)
         y_detrended = self._component_obj.transform(y_ww)
 
-        # Repeat the seasonal signal over the target data
-        seasonal = np.tile(
-            self.seasonality.T, len(y_detrended) // self.periodicity + 1
-        ).T[: len(y_detrended)]
+        if isinstance(y.index, pd.DatetimeIndex):
+            # Repeat the seasonal signal over the target data
+            seasonal = np.tile(
+                self.seasonality.T, len(y_detrended) // self.periodicity + 1
+            ).T[: len(y_detrended)]
+        else:
+            seasonal = np.zeros(len(y))
 
         y_t = pd.Series(y_detrended - seasonal, index=y_ww.index)
         y_t.ww.init(logical_type="double")
