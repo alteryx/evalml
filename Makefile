@@ -12,13 +12,13 @@ lint:
 	sh ./import_or_skip.sh
 	python docs/notebook_version_standardizer.py check-versions
 	python docs/notebook_version_standardizer.py check-execution
-	black evalml docs/source -t py310 --check
+	black evalml docs/source -t py39 --check
 	pydocstyle evalml/ --convention=google --add-ignore=D107 --add-select=D400 --match-dir='^(?!(tests)).*'
 	flake8 evalml
 
 .PHONY: lint-fix
 lint-fix:
-	black evalml docs/source -t py310
+	black evalml docs/source -t py39
 	isort evalml
 	python docs/notebook_version_standardizer.py standardize
 
