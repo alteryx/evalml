@@ -43,7 +43,17 @@ class UnknownTypeDataCheck(DataCheck):
             ... })
             ...
             >>> unknown_type_dc = UnknownTypeDataCheck()
-            >>> assert 1 == 0
+            >>> assert xd.validate(df) == [{"message": "2 out of 4 rows are unknown type, meaning the number of rows that are unknown is more than 50.0%.",
+            ...    "data_check_name": "UnknownTypeDataCheck",
+            ...    "level": "warning",
+            ...    "details": {
+            ...        "columns": ["all_null", "literally_all_null"],
+            ...        "rows": None,
+            ...    },
+            ...    "code": "HIGH_NUMBER_OF_UNKNOWN_TYPE",
+            ...    "action_options": [],
+            ...    }
+            ...    ])
         """
         messages = []
 
