@@ -15,8 +15,6 @@ from joblib import hash as joblib_hash
 from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
-from .test_automl_iterative_algorithm import _get_first_stacked_classifier_no
-
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.automl_search import build_engine_from_str
@@ -72,8 +70,9 @@ from evalml.problem_types import (
     is_classification,
     is_time_series,
 )
-from evalml.tests.automl_tests.parallel_tests.test_automl_dask import (
-    engine_strs,
+from evalml.tests.automl_tests.parallel_tests.test_automl_dask import engine_strs
+from evalml.tests.automl_tests.test_automl_iterative_algorithm import (
+    _get_first_stacked_classifier_no,
 )
 from evalml.tests.conftest import CustomClassificationObjectiveRanges
 from evalml.tuners import NoParamsException, RandomSearchTuner, SKOptTuner
@@ -185,7 +184,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
                 "high_variance_cv",
                 "parameters",
             ],
-        )
+        ),
     )
     assert np.all(
         automl.full_rankings.dtypes
@@ -212,7 +211,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
                 "high_variance_cv",
                 "parameters",
             ],
-        )
+        ),
     )
 
 
@@ -381,7 +380,7 @@ def test_pipeline_fit_raises(AutoMLTestEnv, X_y_binary, caplog):
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(
-        mock_fit_side_effect=Exception("all your model are belong to us")
+        mock_fit_side_effect=Exception("all your model are belong to us"),
     ):
         automl.search()
     out = caplog.text
@@ -410,7 +409,7 @@ def test_pipeline_score_raises(AutoMLTestEnv, X_y_binary, caplog):
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(
-        mock_score_side_effect=Exception("all your model are belong to us")
+        mock_score_side_effect=Exception("all your model are belong to us"),
     ):
         automl.search()
     out = caplog.text
@@ -600,7 +599,9 @@ def test_automl_str_no_param_search(X_y_binary):
 
 @patch("evalml.tuners.random_search_tuner.RandomSearchTuner.is_search_space_exhausted")
 def test_automl_tuner_exception(
-    mock_is_search_space_exhausted, AutoMLTestEnv, X_y_binary
+    mock_is_search_space_exhausted,
+    AutoMLTestEnv,
+    X_y_binary,
 ):
     X, y = X_y_binary
     error_text = "Cannot create a unique set of unexplored parameters. Try expanding the search space."
@@ -667,7 +668,7 @@ def test_automl_serialization(pickle_type, X_y_binary, tmpdir):
     if automl.search_iteration_plot:
         # Testing pickling of SearchIterationPlot object
         automl.search_iteration_plot = automl.plot.search_iteration_plot(
-            interactive_plot=True
+            interactive_plot=True,
         )
 
     if pickle_type == "invalid":
@@ -697,11 +698,13 @@ def test_automl_serialization(pickle_type, X_y_binary, tmpdir):
                     if name == "percent_better_than_baseline_all_objectives":
                         for objective_name, value in pipeline_results[name].items():
                             np.testing.assert_almost_equal(
-                                value, loaded_[name][objective_name]
+                                value,
+                                loaded_[name][objective_name],
                             )
                     elif name == "percent_better_than_baseline":
                         np.testing.assert_almost_equal(
-                            pipeline_results[name], loaded_[name]
+                            pipeline_results[name],
+                            loaded_[name],
                         )
                     else:
                         assert pipeline_results[name] == loaded_[name]
@@ -714,7 +717,11 @@ def test_automl_serialization_protocol(mock_cloudpickle_dump, tmpdir, X_y_binary
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), "automl.pkl")
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", max_iterations=5, n_jobs=1
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=5,
+        n_jobs=1,
     )
 
     automl.save(path)
@@ -735,7 +742,10 @@ def test_invalid_data_splitter(X_y_binary):
     data_splitter = pd.DataFrame()
     with pytest.raises(ValueError, match="Not a valid data splitter"):
         AutoMLSearch(
-            X_train=X, y_train=y, problem_type="binary", data_splitter=data_splitter
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            data_splitter=data_splitter,
         )
 
 
@@ -929,10 +939,14 @@ def test_data_splitter_shuffle():
             decimal=4,
         )
     np.testing.assert_almost_equal(
-        automl.results["pipeline_results"][0]["mean_cv_score"], 0.0, decimal=4
+        automl.results["pipeline_results"][0]["mean_cv_score"],
+        0.0,
+        decimal=4,
     )
     np.testing.assert_almost_equal(
-        automl.results["pipeline_results"][0]["validation_score"], 0.0, decimal=4
+        automl.results["pipeline_results"][0]["validation_score"],
+        0.0,
+        decimal=4,
     )
 
 
@@ -942,11 +956,17 @@ def test_main_objective_problem_type_mismatch(X_y_binary):
         AutoMLSearch(X_train=X, y_train=y, problem_type="binary", objective="R2")
     with pytest.raises(ValueError, match="is not compatible with a"):
         AutoMLSearch(
-            X_train=X, y_train=y, problem_type="regression", objective="MCC Binary"
+            X_train=X,
+            y_train=y,
+            problem_type="regression",
+            objective="MCC Binary",
         )
     with pytest.raises(ValueError, match="is not compatible with a"):
         AutoMLSearch(
-            X_train=X, y_train=y, problem_type="binary", objective="MCC Multiclass"
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            objective="MCC Multiclass",
         )
     with pytest.raises(ValueError, match="is not compatible with a"):
         AutoMLSearch(X_train=X, y_train=y, problem_type="multiclass", objective="MSE")
@@ -999,7 +1019,10 @@ def test_checks_at_search_time(mock_search, X_y_multi):
     mock_search.side_effect = ValueError(error_text)
 
     error_automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="regression", objective="R2"
+        X_train=X,
+        y_train=y,
+        problem_type="regression",
+        objective="R2",
     )
     with pytest.raises(ValueError, match=error_text):
         error_automl.search()
@@ -1067,7 +1090,7 @@ def test_add_to_rankings(
 
     with env.test_context(score_return_value={"Log Loss Binary": 0.5678}):
         test_pipeline_2 = dummy_binary_pipeline.new(
-            parameters={"Mock Classifier": {"a": 1.234}}
+            parameters={"Mock Classifier": {"a": 1.234}},
         )
         automl.add_to_rankings(test_pipeline_2)
         assert automl.best_pipeline.name == dummy_binary_pipeline.name
@@ -1103,7 +1126,7 @@ def test_add_to_rankings_no_search(
         assert len(automl.rankings) == 1
         assert 0.5234 in automl.rankings["mean_cv_score"].values
         assert np.isnan(
-            automl.results["pipeline_results"][0]["percent_better_than_baseline"]
+            automl.results["pipeline_results"][0]["percent_better_than_baseline"],
         )
         assert all(
             np.isnan(res)
@@ -1238,11 +1261,13 @@ def test_add_to_rankings_trained(
     with env.test_context(
         score_return_value={"Log Loss Binary": 0.1234},
         mock_fit_return_value=BinaryClassificationPipeline(
-            component_graph=dummy_binary_pipeline.component_graph, parameters={}
+            component_graph=dummy_binary_pipeline.component_graph,
+            parameters={},
         ),
     ):
         test_pipeline_trained = BinaryClassificationPipeline(
-            component_graph=dummy_binary_pipeline.component_graph, parameters={}
+            component_graph=dummy_binary_pipeline.component_graph,
+            parameters={},
         ).fit(X, y)
         automl.add_to_rankings(test_pipeline_trained)
         assert len(automl.rankings) == 3
@@ -1286,7 +1311,8 @@ def test_get_pipeline_invalid(AutoMLTestEnv, X_y_binary):
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
     with pytest.raises(
-        PipelineNotFoundError, match="Pipeline not found in automl results"
+        PipelineNotFoundError,
+        match="Pipeline not found in automl results",
     ):
         automl.get_pipeline(1000)
 
@@ -1403,28 +1429,40 @@ def test_describe_pipeline(return_dict, verbose, caplog, X_y_binary, AutoMLTestE
         assert automl_dict["cv_data"] == [
             {
                 "all_objective_scores": OrderedDict(
-                    [("Log Loss Binary", 1.0), ("# Training", 66), ("# Validation", 34)]
+                    [
+                        ("Log Loss Binary", 1.0),
+                        ("# Training", 66),
+                        ("# Validation", 34),
+                    ],
                 ),
                 "mean_cv_score": 1.0,
                 "binary_classification_threshold": None,
             },
             {
                 "all_objective_scores": OrderedDict(
-                    [("Log Loss Binary", 1.0), ("# Training", 67), ("# Validation", 33)]
+                    [
+                        ("Log Loss Binary", 1.0),
+                        ("# Training", 67),
+                        ("# Validation", 33),
+                    ],
                 ),
                 "mean_cv_score": 1.0,
                 "binary_classification_threshold": None,
             },
             {
                 "all_objective_scores": OrderedDict(
-                    [("Log Loss Binary", 1.0), ("# Training", 67), ("# Validation", 33)]
+                    [
+                        ("Log Loss Binary", 1.0),
+                        ("# Training", 67),
+                        ("# Validation", 33),
+                    ],
                 ),
                 "mean_cv_score": 1.0,
                 "binary_classification_threshold": None,
             },
         ]
         assert automl_dict["percent_better_than_baseline_all_objectives"] == {
-            "Log Loss Binary": 0
+            "Log Loss Binary": 0,
         }
         assert automl_dict["percent_better_than_baseline"] == 0
         assert automl_dict["validation_score"] == 1.0
@@ -1473,11 +1511,16 @@ def test_results_getter(AutoMLTestEnv, X_y_binary):
     ],
 )
 def test_targets_pandas_data_types_classification(
-    breast_cancer_local, wine_local, data_type, automl_type, target_type, make_data_type
+    breast_cancer_local,
+    wine_local,
+    data_type,
+    automl_type,
+    target_type,
+    make_data_type,
 ):
     if data_type == "np" and target_type in ["Int64", "boolean"]:
         pytest.skip(
-            "Skipping test where data type is numpy and target type is nullable dtype"
+            "Skipping test where data type is numpy and target type is nullable dtype",
         )
 
     if automl_type == ProblemTypes.BINARY:
@@ -1487,7 +1530,7 @@ def test_targets_pandas_data_types_classification(
     elif automl_type == ProblemTypes.MULTICLASS:
         if "bool" in target_type:
             pytest.skip(
-                "Skipping test where problem type is multiclass but target type is boolean"
+                "Skipping test where problem type is multiclass but target type is boolean",
             )
         X, y = wine_local
     unique_vals = y.unique()
@@ -1570,10 +1613,15 @@ def test_catch_keyboard_interrupt_baseline(
 
     mock_input.side_effect = user_input
     mock_future_get_result.side_effect = KeyboardInterruptOnKthPipeline(
-        k=when_to_interrupt, starting_index=1
+        k=when_to_interrupt,
+        starting_index=1,
     )
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", max_iterations=5, objective="f1"
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=5,
+        objective="f1",
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"F1": 1.0}):
@@ -1618,7 +1666,8 @@ def test_catch_keyboard_interrupt(
 
     mock_input.side_effect = user_input
     mock_future_get_result.side_effect = KeyboardInterruptOnKthPipeline(
-        k=when_to_interrupt, starting_index=2
+        k=when_to_interrupt,
+        starting_index=2,
     )
 
     automl = AutoMLSearch(
@@ -1675,7 +1724,7 @@ def make_mock_rankings(scores):
             "id": range(len(scores)),
             "validation_score": scores,
             "pipeline_name": [f"Mock name {i}" for i in range(len(scores))],
-        }
+        },
     )
     return df
 
@@ -1921,7 +1970,7 @@ def test_percent_better_than_baseline_in_rankings(
                 "gap": 0,
                 "max_delay": 0,
                 "forecast_horizon": 2,
-            }
+            },
         }
         if problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION
         else {}
@@ -1998,7 +2047,7 @@ def test_percent_better_than_baseline_in_rankings(
             zip(
                 automl.rankings.pipeline_name,
                 automl.rankings.percent_better_than_baseline,
-            )
+            ),
         )
         baseline_name = next(
             name
@@ -2008,13 +2057,15 @@ def test_percent_better_than_baseline_in_rankings(
         answers = {
             "Pipeline1": round(
                 objective.calculate_percent_difference(
-                    pipeline_scores[0], baseline_score
+                    pipeline_scores[0],
+                    baseline_score,
                 ),
                 2,
             ),
             "Pipeline2": round(
                 objective.calculate_percent_difference(
-                    pipeline_scores[1], baseline_score
+                    pipeline_scores[1],
+                    baseline_score,
                 ),
                 2,
             ),
@@ -2029,7 +2080,8 @@ def test_percent_better_than_baseline_in_rankings(
 
 @pytest.mark.parametrize("custom_additional_objective", [True, False])
 @pytest.mark.parametrize(
-    "problem_type", ["binary", "multiclass", "regression", "time series regression"]
+    "problem_type",
+    ["binary", "multiclass", "regression", "time series regression"],
 )
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
@@ -2096,7 +2148,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     core_objectives = get_core_objectives(problem_type)
     if additional_objectives:
         core_objectives = [
-            get_default_primary_search_objective(problem_type_enum)
+            get_default_primary_search_objective(problem_type_enum),
         ] + additional_objectives
     mock_scores = {get_objective(obj).name: i for i, obj in enumerate(core_objectives)}
     mock_baseline_scores = {
@@ -2107,7 +2159,8 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     for obj in core_objectives:
         obj_class = get_objective(obj)
         answer[obj_class.name] = obj_class.calculate_percent_difference(
-            mock_scores[obj_class.name], mock_baseline_scores[obj_class.name]
+            mock_scores[obj_class.name],
+            mock_baseline_scores[obj_class.name],
         )
         baseline_percent_difference[obj_class.name] = 0
 
@@ -2121,7 +2174,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
                 "gap": 6,
                 "max_delay": 3,
                 "forecast_horizon": 3,
-            }
+            },
         }
     # specifying problem_configuration for all problem types for conciseness
     automl = AutoMLSearch(
@@ -2156,7 +2209,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
                 "gap": 1,
                 "max_delay": 1,
                 "forecast_horizon": 2,
-            }
+            },
         },
     )
     automl.automl_algorithm._set_allowed_pipelines([DummyPipeline(parameters)])
@@ -2273,7 +2326,7 @@ def test_percent_better_than_baseline_scores_different_folds(
             return self.__class__(self.parameters, random_seed=self.random_seed)
 
     mock_score = MagicMock(
-        side_effect=[{"Log Loss Binary": 1, "F1": val} for val in fold_scores]
+        side_effect=[{"Log Loss Binary": 1, "F1": val} for val in fold_scores],
     )
     DummyPipeline.score = mock_score
     f1 = get_objective("f1")()
@@ -2316,7 +2369,8 @@ def test_percent_better_than_baseline_scores_different_folds(
     ), "This tests assumes only one non-baseline pipeline was run!"
     pipeline_results = automl.results["pipeline_results"][1]
     np.testing.assert_equal(
-        pipeline_results["percent_better_than_baseline_all_objectives"]["F1"], answer
+        pipeline_results["percent_better_than_baseline_all_objectives"]["F1"],
+        answer,
     )
 
 
@@ -2382,7 +2436,10 @@ def test_early_stopping_negative(X_y_binary):
 
 @pytest.mark.parametrize("verbose", [True, False])
 def test_early_stopping(
-    verbose, caplog, logistic_regression_binary_pipeline, X_y_binary
+    verbose,
+    caplog,
+    logistic_regression_binary_pipeline,
+    X_y_binary,
 ):
     X, y = X_y_binary
     automl = AutoMLSearch(
@@ -2512,7 +2569,10 @@ def test_max_batches_must_be_non_negative(max_batches, X_y_binary):
         match=f"Parameter max_batches must be None or non-negative. Received {max_batches}.",
     ):
         AutoMLSearch(
-            X_train=X, y_train=y, problem_type="binary", max_batches=max_batches
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            max_batches=max_batches,
         )
 
 
@@ -2560,7 +2620,11 @@ def test_data_splitter_binary(AutoMLTestEnv, X_y_binary):
 
     y[2] = 1
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False, n_jobs=1
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        optimize_thresholds=False,
+        n_jobs=1,
     )
     with env.test_context(score_return_value={"Log Loss Binary": 1.0}):
         automl.search()
@@ -2628,12 +2692,15 @@ def test_search_with_text(AutoMLTestEnv):
                 "Red, the blood of angry men - black, the dark of ages past",
                 "It was red and yellow and green and brown and scarlet and black and ochre and peach and ruby and olive and violet and fawn...",
             ],
-        }
+        },
     )
     X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     y = [0, 1, 1, 0, 1, 0]
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        optimize_thresholds=False,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
@@ -2642,7 +2709,8 @@ def test_search_with_text(AutoMLTestEnv):
 
 
 @pytest.mark.parametrize(
-    "callback", [log_error_callback, silent_error_callback, raise_error_callback]
+    "callback",
+    [log_error_callback, silent_error_callback, raise_error_callback],
 )
 @pytest.mark.parametrize("error_type", ["fit", "mean_cv_score", "fit-single"])
 def test_automl_error_callback(error_type, callback, AutoMLTestEnv, X_y_binary, caplog):
@@ -2759,26 +2827,30 @@ def test_automl_woodwork_user_types_preserved(
         if isinstance(arg, pd.DataFrame):
             assert arg.ww.semantic_tags["cat col"] == {"category"}
             assert isinstance(
-                arg.ww.logical_types["cat col"], ww.logical_types.Categorical
+                arg.ww.logical_types["cat col"],
+                ww.logical_types.Categorical,
             )
             assert arg.ww.semantic_tags["num col"] == {"numeric"}
             assert isinstance(arg.ww.logical_types["num col"], ww.logical_types.Integer)
             assert arg.ww.semantic_tags["text col"] == set()
             assert isinstance(
-                arg.ww.logical_types["text col"], ww.logical_types.NaturalLanguage
+                arg.ww.logical_types["text col"],
+                ww.logical_types.NaturalLanguage,
             )
     for arg in env.mock_score.call_args[0]:
         assert isinstance(arg, (pd.DataFrame, pd.Series))
         if isinstance(arg, pd.DataFrame):
             assert arg.ww.semantic_tags["cat col"] == {"category"}
             assert isinstance(
-                arg.ww.logical_types["cat col"], ww.logical_types.Categorical
+                arg.ww.logical_types["cat col"],
+                ww.logical_types.Categorical,
             )
             assert arg.ww.semantic_tags["num col"] == {"numeric"}
             assert isinstance(arg.ww.logical_types["num col"], ww.logical_types.Integer)
             assert arg.ww.semantic_tags["text col"] == set()
             assert isinstance(
-                arg.ww.logical_types["text col"], ww.logical_types.NaturalLanguage
+                arg.ww.logical_types["text col"],
+                ww.logical_types.NaturalLanguage,
             )
 
 
@@ -2791,13 +2863,17 @@ def test_automl_validates_problem_configuration(ts_data):
     )
     assert (
         AutoMLSearch(
-            X_train=X, y_train=y, problem_type="multiclass"
+            X_train=X,
+            y_train=y,
+            problem_type="multiclass",
         ).problem_configuration
         == {}
     )
     assert (
         AutoMLSearch(
-            X_train=X, y_train=y, problem_type="regression"
+            X_train=X,
+            y_train=y,
+            problem_type="regression",
         ).problem_configuration
         == {}
     )
@@ -2942,11 +3018,11 @@ def test_automl_data_splitter_consistent(
         with env.test_context():
             a.search()
         data_splitters.append(
-            [[set(train), set(test)] for train, test in a.data_splitter.split(X, y)]
+            [[set(train), set(test)] for train, test in a.data_splitter.split(X, y)],
         )
     # append split from last random state again, should be referencing same datasplit object
     data_splitters.append(
-        [[set(train), set(test)] for train, test in a.data_splitter.split(X, y)]
+        [[set(train), set(test)] for train, test in a.data_splitter.split(X, y)],
     )
 
     assert data_splitters[0] == data_splitters[1]
@@ -3025,7 +3101,8 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(AutoMLTestEnv, ts_d
     ],
 )
 def test_automl_does_not_include_positive_only_objectives_by_default(
-    problem_type, X_y_regression
+    problem_type,
+    X_y_regression,
 ):
 
     X, y = X_y_regression
@@ -3110,7 +3187,7 @@ def test_automl_pipeline_params_multiple(AutoMLTestEnv, X_y_regression):
     X, y = X_y_regression
     hyperparams = {
         "Imputer": {
-            "numeric_impute_strategy": Categorical(["median", "most_frequent"])
+            "numeric_impute_strategy": Categorical(["median", "most_frequent"]),
         },
         "Decision Tree Regressor": {
             "max_depth": Categorical([17, 18, 19]),
@@ -3137,7 +3214,7 @@ def test_automl_pipeline_params_multiple(AutoMLTestEnv, X_y_regression):
             assert row["parameters"]["Imputer"][
                 "numeric_impute_strategy"
             ] == Categorical(["median", "most_frequent"]).rvs(
-                random_state=automl.random_seed
+                random_state=automl.random_seed,
             )
         if "Decision Tree Regressor" in row["parameters"]:
             assert row["parameters"]["Decision Tree Regressor"][
@@ -3206,7 +3283,8 @@ def test_automl_pipeline_random_seed(AutoMLTestEnv, random_seed, X_y_multi):
 
 
 @pytest.mark.parametrize(
-    "ranges", [0, [float("-inf"), float("inf")], [float("-inf"), 0], [0, float("inf")]]
+    "ranges",
+    [0, [float("-inf"), float("inf")], [float("-inf"), 0], [0, float("inf")]],
 )
 def test_automl_check_for_high_variance(ranges, X_y_binary, dummy_binary_pipeline):
     X, y = X_y_binary
@@ -3215,7 +3293,10 @@ def test_automl_check_for_high_variance(ranges, X_y_binary, dummy_binary_pipelin
     else:
         objectives = CustomClassificationObjectiveRanges(ranges)
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", objective=objectives
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        objective=objectives,
     )
     cv_scores = pd.Series([1, 1, 1])
     pipeline = dummy_binary_pipeline
@@ -3269,7 +3350,8 @@ def test_automl_check_high_variance_logs_warning(AutoMLTestEnv, X_y_binary, capl
 
 
 def test_automl_raises_error_with_duplicate_pipeline_names(
-    dummy_classifier_estimator_class, X_y_binary
+    dummy_classifier_estimator_class,
+    X_y_binary,
 ):
     X, y = X_y_binary
 
@@ -3282,17 +3364,19 @@ def test_automl_raises_error_with_duplicate_pipeline_names(
         component_graph=[dummy_classifier_estimator_class],
     )
     pipeline_2 = BinaryClassificationPipeline(
-        custom_name="My Pipeline 3", component_graph=[dummy_classifier_estimator_class]
+        custom_name="My Pipeline 3",
+        component_graph=[dummy_classifier_estimator_class],
     )
     pipeline_3 = BinaryClassificationPipeline(
-        custom_name="My Pipeline 3", component_graph=[dummy_classifier_estimator_class]
+        custom_name="My Pipeline 3",
+        component_graph=[dummy_classifier_estimator_class],
     )
 
     with pytest.raises(
         ValueError,
         match="All pipeline names must be unique. The name 'Custom Pipeline' was repeated.",
     ):
-        AutoMLSearch(X, y, problem_type="binary",).train_pipelines(
+        AutoMLSearch(X, y, problem_type="binary").train_pipelines(
             [
                 pipeline_0,
                 pipeline_1,
@@ -3304,7 +3388,7 @@ def test_automl_raises_error_with_duplicate_pipeline_names(
         ValueError,
         match="All pipeline names must be unique. The names 'Custom Pipeline', 'My Pipeline 3' were repeated.",
     ):
-        AutoMLSearch(X, y, problem_type="binary",).train_pipelines(
+        AutoMLSearch(X, y, problem_type="binary").train_pipelines(
             [
                 pipeline_0,
                 pipeline_1,
@@ -3317,7 +3401,7 @@ def test_automl_raises_error_with_duplicate_pipeline_names(
         ValueError,
         match="All pipeline names must be unique. The names 'Custom Pipeline', 'My Pipeline 3' were repeated.",
     ):
-        AutoMLSearch(X, y, problem_type="binary",).score_pipelines(
+        AutoMLSearch(X, y, problem_type="binary").score_pipelines(
             [
                 pipeline_0,
                 pipeline_1,
@@ -3331,12 +3415,15 @@ def test_automl_raises_error_with_duplicate_pipeline_names(
 
 
 def test_train_batch_score_batch(
-    AutoMLTestEnv, dummy_classifier_estimator_class, X_y_binary
+    AutoMLTestEnv,
+    dummy_classifier_estimator_class,
+    X_y_binary,
 ):
     custom_names = [f"Pipeline {i}" for i in range(3)]
     pipelines = [
         BinaryClassificationPipeline(
-            component_graph=[dummy_classifier_estimator_class], custom_name=custom_name
+            component_graph=[dummy_classifier_estimator_class],
+            custom_name=custom_name,
         )
         for custom_name in custom_names
     ]
@@ -3451,7 +3538,7 @@ def test_train_batch_works(
             "Stacked Ensemble Classifier": {
                 "input_pipelines": input_pipelines,
                 "n_jobs": 1,
-            }
+            },
         },
     )
     pipelines.append(ensemble)
@@ -3463,7 +3550,7 @@ def test_train_batch_works(
             trained_pipelines = automl.train_pipelines(pipelines)
 
             assert len(trained_pipelines) == len(pipeline_fit_side_effect) - len(
-                exceptions_to_check
+                exceptions_to_check,
             )
         assert env.mock_fit.call_count == len(pipeline_fit_side_effect)
         for exception in exceptions_to_check:
@@ -3562,7 +3649,7 @@ def test_score_batch_works(
         problem_type="binary",
         max_iterations=1,
         allowed_component_graphs={
-            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class],
         },
         optimize_thresholds=False,
     )
@@ -3589,7 +3676,10 @@ def test_score_batch_works(
         with env.test_context(mock_score_side_effect=pipeline_score_side_effect):
 
             scores = automl.score_pipelines(
-                pipelines, X, y, objectives=["Log Loss Binary", "F1", "AUC"]
+                pipelines,
+                X,
+                y,
+                objectives=["Log Loss Binary", "F1", "AUC"],
             )
             assert scores == expected_scores
             for exception in exceptions_to_check:
@@ -3606,14 +3696,17 @@ def test_score_batch_works(
 
 
 def test_train_pipelines_score_pipelines_raise_exception_with_duplicate_names(
-    X_y_binary, dummy_classifier_estimator_class
+    X_y_binary,
+    dummy_classifier_estimator_class,
 ):
     X, y = X_y_binary
     pipeline_1 = BinaryClassificationPipeline(
-        component_graph=[dummy_classifier_estimator_class], custom_name="Mock Pipeline"
+        component_graph=[dummy_classifier_estimator_class],
+        custom_name="Mock Pipeline",
     )
     pipeline_2 = BinaryClassificationPipeline(
-        component_graph=[dummy_classifier_estimator_class], custom_name="Mock Pipeline"
+        component_graph=[dummy_classifier_estimator_class],
+        custom_name="Mock Pipeline",
     )
 
     automl = AutoMLSearch(
@@ -3622,7 +3715,7 @@ def test_train_pipelines_score_pipelines_raise_exception_with_duplicate_names(
         problem_type="binary",
         max_iterations=1,
         allowed_component_graphs={
-            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class],
         },
     )
 
@@ -3640,7 +3733,10 @@ def test_train_pipelines_score_pipelines_raise_exception_with_duplicate_names(
 
 
 def test_score_batch_before_fitting_yields_error_nan_scores(
-    X_y_binary, dummy_classifier_estimator_class, dummy_binary_pipeline, caplog
+    X_y_binary,
+    dummy_classifier_estimator_class,
+    dummy_binary_pipeline,
+    caplog,
 ):
     X, y = X_y_binary
 
@@ -3650,15 +3746,21 @@ def test_score_batch_before_fitting_yields_error_nan_scores(
         problem_type="binary",
         max_iterations=1,
         allowed_component_graphs={
-            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class],
         },
     )
 
     scored_pipelines = automl.score_pipelines(
-        [dummy_binary_pipeline], X, y, objectives=["Log Loss Binary", F1()]
+        [dummy_binary_pipeline],
+        X,
+        y,
+        objectives=["Log Loss Binary", F1()],
     )
     assert scored_pipelines == {
-        "Mock Binary Classification Pipeline": {"Log Loss Binary": np.nan, "F1": np.nan}
+        "Mock Binary Classification Pipeline": {
+            "Log Loss Binary": np.nan,
+            "F1": np.nan,
+        },
     }
 
     assert "Score error for Mock Binary Classification Pipeline" in caplog.text
@@ -3670,7 +3772,8 @@ def test_high_cv_check_no_warning_for_divide_by_zero(X_y_binary, dummy_binary_pi
     with pytest.warns(None) as warnings:
         # mean is 0 but std is not
         automl._check_for_high_variance(
-            dummy_binary_pipeline, cv_scores=[0.0, 1.0, -1.0]
+            dummy_binary_pipeline,
+            cv_scores=[0.0, 1.0, -1.0],
         )
     assert len(warnings) == 0
 
@@ -3766,20 +3869,21 @@ def test_automl_drop_index_columns(AutoMLTestEnv, X_y_binary):
         assert pipeline.get_component("Drop Columns Transformer")
         assert "Drop Columns Transformer" in pipeline.parameters
         assert pipeline.parameters["Drop Columns Transformer"] == {
-            "columns": ["index_col"]
+            "columns": ["index_col"],
         }
 
     all_drop_column_params = []
     for _, row in automl.full_rankings.iterrows():
         if "Baseline" not in row.pipeline_name:
             all_drop_column_params.append(
-                row.parameters["Drop Columns Transformer"]["columns"]
+                row.parameters["Drop Columns Transformer"]["columns"],
             )
     assert all(param == ["index_col"] for param in all_drop_column_params)
 
 
 def test_automl_validates_data_passed_in_to_allowed_component_graphs(
-    X_y_binary, dummy_classifier_estimator_class
+    X_y_binary,
+    dummy_classifier_estimator_class,
 ):
     X, y = X_y_binary
 
@@ -3794,9 +3898,9 @@ def test_automl_validates_data_passed_in_to_allowed_component_graphs(
             allowed_component_graphs=[
                 {
                     "Mock Binary Classification Pipeline": [
-                        dummy_classifier_estimator_class
-                    ]
-                }
+                        dummy_classifier_estimator_class,
+                    ],
+                },
             ],
         )
 
@@ -3809,7 +3913,7 @@ def test_automl_validates_data_passed_in_to_allowed_component_graphs(
             y,
             problem_type="binary",
             allowed_component_graphs={
-                "Mock Binary Classification Pipeline": dummy_classifier_estimator_class
+                "Mock Binary Classification Pipeline": dummy_classifier_estimator_class,
             },
         )
 
@@ -3834,7 +3938,7 @@ def test_automl_baseline_pipeline_predictions_and_scores(problem_type):
     if problem_type == ProblemTypes.BINARY:
         expected_predictions = pd.Series(np.array([10] * len(X)), dtype="int64")
         expected_predictions_proba = pd.DataFrame(
-            {10: [1.0, 1.0, 1.0, 1.0], 11: [0.0, 0.0, 0.0, 0.0]}
+            {10: [1.0, 1.0, 1.0, 1.0], 11: [0.0, 0.0, 0.0, 0.0]},
         )
     if problem_type == ProblemTypes.MULTICLASS:
         expected_predictions = pd.Series(np.array([11] * len(X)), dtype="int64")
@@ -3843,7 +3947,7 @@ def test_automl_baseline_pipeline_predictions_and_scores(problem_type):
                 10: [0.0, 0.0, 0.0, 0.0],
                 11: [1.0, 1.0, 1.0, 1.0],
                 12: [0.0, 0.0, 0.0, 0.0],
-            }
+            },
         )
     if problem_type == ProblemTypes.REGRESSION:
         mean = y.mean()
@@ -3852,10 +3956,12 @@ def test_automl_baseline_pipeline_predictions_and_scores(problem_type):
     pd.testing.assert_series_equal(expected_predictions, baseline.predict(X))
     if is_classification(problem_type):
         pd.testing.assert_frame_equal(
-            expected_predictions_proba, baseline.predict_proba(X)
+            expected_predictions_proba,
+            baseline.predict_proba(X),
         )
     np.testing.assert_allclose(
-        baseline.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1])
+        baseline.feature_importance.iloc[:, 1],
+        np.array([0.0] * X.shape[1]),
     )
 
 
@@ -3869,14 +3975,14 @@ def test_automl_baseline_pipeline_predictions_and_scores(problem_type):
 )
 def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_type):
     X = pd.DataFrame(
-        {"a": [4, 5, 6, 7, 8], "b": pd.date_range("2021-01-01", periods=5)}
+        {"a": [4, 5, 6, 7, 8], "b": pd.date_range("2021-01-01", periods=5)},
     )
     y = pd.Series([0, 1, 1, 0, 1])
     expected_predictions_proba = pd.DataFrame(
         {
             0: pd.Series([1.0], index=[4]),
             1: pd.Series([0.0], index=[4]),
-        }
+        },
     )
     if problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         y = pd.Series([0, 2, 0, 1, 1])
@@ -3885,7 +3991,7 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
                 0: pd.Series([0.0], index=[4]),
                 1: pd.Series([1.0], index=[4]),
                 2: pd.Series([0.0], index=[4]),
-            }
+            },
         )
 
     automl = AutoMLSearch(
@@ -4035,7 +4141,7 @@ def test_automl_drop_unknown_columns(columns, AutoMLTestEnv, X_y_binary, caplog)
     for _, row in automl.full_rankings.iterrows():
         if "Baseline" not in row.pipeline_name:
             all_drop_column_params.append(
-                row.parameters["Drop Columns Transformer"]["columns"]
+                row.parameters["Drop Columns Transformer"]["columns"],
             )
     assert all(param == columns for param in all_drop_column_params)
 
@@ -4052,7 +4158,11 @@ def test_automl_drop_unknown_columns(columns, AutoMLTestEnv, X_y_binary, caplog)
     ],
 )
 def test_data_splitter_gives_pipelines_same_data(
-    automl_type, AutoMLTestEnv, X_y_binary, X_y_multi, X_y_regression
+    automl_type,
+    AutoMLTestEnv,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
 ):
     problem_configuration = None
     if automl_type == ProblemTypes.BINARY:
@@ -4127,7 +4237,10 @@ def test_data_splitter_gives_pipelines_same_data(
 @patch("evalml.pipelines.utils._get_preprocessing_components")
 @pytest.mark.parametrize("verbose", [True, False])
 def test_component_and_pipeline_warnings_surface_in_search(
-    mock_get_preprocessing_components, verbose, AutoMLTestEnv, X_y_regression
+    mock_get_preprocessing_components,
+    verbose,
+    AutoMLTestEnv,
+    X_y_regression,
 ):
     X, y = X_y_regression
 
@@ -4176,7 +4289,7 @@ def test_search_with_text_nans(mock_score, mock_fit, nans):
         {
             "a": [np.nan] + [i for i in range(99)],
             "b": [np.nan] + [f"string {i} is valid" for i in range(99)],
-        }
+        },
     )
     X.ww.init(logical_types={"b": "NaturalLanguage"})
     y = pd.Series([0] * 25 + [1] * 75)
@@ -4190,7 +4303,7 @@ def test_search_with_text_nans(mock_score, mock_fit, nans):
     automl.search()
     for (x, _), _ in mock_fit.call_args_list:
         assert all(
-            [str(types) == "Double" for types in x.ww.types["Logical Type"].values]
+            [str(types) == "Double" for types in x.ww.types["Logical Type"].values],
         )
 
 
@@ -4218,7 +4331,8 @@ def test_build_engine(engine_str):
         engine.close()
     else:
         with pytest.raises(
-            ValueError, match="is not a valid engine, please choose from"
+            ValueError,
+            match="is not a valid engine, please choose from",
         ):
             build_engine_from_str(engine_str)
 
@@ -4234,23 +4348,33 @@ def test_automl_chooses_engine(engine_choice, X_y_binary):
     if engine_choice == "str":
         engine_choice = "dask_process"
         automl = AutoMLSearch(
-            X_train=X, y_train=y, problem_type="binary", engine=engine_choice
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            engine=engine_choice,
         )
         assert isinstance(automl._engine, DaskEngine)
         automl.close_engine()
     elif engine_choice == "engine_instance":
         engine_choice = DaskEngine()
         automl = AutoMLSearch(
-            X_train=X, y_train=y, problem_type="binary", engine=engine_choice
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            engine=engine_choice,
         )
         automl.close_engine()
     elif engine_choice == "invalid_str":
         engine_choice = "DaskEngine"
         with pytest.raises(
-            ValueError, match="is not a valid engine, please choose from"
+            ValueError,
+            match="is not a valid engine, please choose from",
         ):
             automl = AutoMLSearch(
-                X_train=X, y_train=y, problem_type="binary", engine=engine_choice
+                X_train=X,
+                y_train=y,
+                problem_type="binary",
+                engine=engine_choice,
             )
     elif engine_choice == "invalid_type":
         engine_choice = DaskEngine
@@ -4259,7 +4383,10 @@ def test_automl_chooses_engine(engine_choice, X_y_binary):
             match="Invalid type provided for 'engine'.  Requires string, DaskEngine instance, or CFEngine instance.",
         ):
             automl = AutoMLSearch(
-                X_train=X, y_train=y, problem_type="binary", engine=engine_choice
+                X_train=X,
+                y_train=y,
+                problem_type="binary",
+                engine=engine_choice,
             )
 
 
@@ -4307,7 +4434,7 @@ def test_automl_ensembler_allowed_component_graphs(
     automl.search()
     assert "Stacked Ensemble Regression Pipeline" in caplog.text
     assert "Stacked Ensemble Regression Pipeline" in list(
-        automl.rankings["pipeline_name"]
+        automl.rankings["pipeline_name"],
     )
     ensemble_result = automl.rankings[
         automl.rankings["pipeline_name"] == "Stacked Ensemble Regression Pipeline"
@@ -4389,7 +4516,11 @@ def test_baseline_pipeline_properly_initalized(
     ],
 )
 def test_automl_passes_known_in_advance_pipeline_parameters_to_all_pipelines(
-    problem_type, ts_data_binary, ts_data_multi, ts_data, AutoMLTestEnv
+    problem_type,
+    ts_data_binary,
+    ts_data_multi,
+    ts_data,
+    AutoMLTestEnv,
 ):
     if problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         X, y = ts_data_multi
@@ -4427,13 +4558,13 @@ def test_automl_passes_known_in_advance_pipeline_parameters_to_all_pipelines(
     ]
     assert no_baseline.parameters.map(
         lambda d: d["Known In Advance Pipeline - Select Columns Transformer"]["columns"]
-        == known_in_advance
+        == known_in_advance,
     ).all()
     assert no_baseline.parameters.map(
         lambda d: d["Not Known In Advance Pipeline - Select Columns Transformer"][
             "columns"
         ]
-        == ["features", "date"]
+        == ["features", "date"],
     ).all()
 
 
@@ -4512,7 +4643,13 @@ def test_cv_validation_scores_time_series(
 )
 @pytest.mark.parametrize("problem_type", ["binary", "time series binary"])
 def test_search_parameters_held_automl(
-    problem_type, parameter, expected, algorithm, batches, X_y_binary, ts_data_binary
+    problem_type,
+    parameter,
+    expected,
+    algorithm,
+    batches,
+    X_y_binary,
+    ts_data_binary,
 ):
     if problem_type == "binary":
         X, y = X_y_binary
@@ -4526,7 +4663,7 @@ def test_search_parameters_held_automl(
                     "Label Encoder.x",
                     "Label Encoder.y",
                 ],
-            }
+            },
         }
     else:
         X, y = ts_data_binary
@@ -4550,7 +4687,7 @@ def test_search_parameters_held_automl(
                     "DateTime Featurizer.x",
                     "Label Encoder.y",
                 ],
-            }
+            },
         }
     search_parameters = {
         "Imputer": {"numeric_impute_strategy": parameter},
@@ -4622,10 +4759,15 @@ def test_automl_accepts_features(
     if features == "with_features_provided":
         es = ft.EntitySet()
         es = es.add_dataframe(
-            dataframe_name="X", dataframe=X_transform, index="index", make_index=True
+            dataframe_name="X",
+            dataframe=X_transform,
+            index="index",
+            make_index=True,
         )
         _, features = ft.dfs(
-            entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
+            entityset=es,
+            target_dataframe_name="X",
+            trans_primitives=["absolute"],
         )
     else:
         features = None
@@ -4650,17 +4792,22 @@ def test_automl_accepts_features(
             [
                 p["DFS Transformer"]["features"] == features
                 for p in automl.full_rankings["parameters"][1:]
-            ]
+            ],
         )
     else:
         assert all(
-            ["DFS Transformer" not in p for p in automl.full_rankings["parameters"][1:]]
+            [
+                "DFS Transformer" not in p
+                for p in automl.full_rankings["parameters"][1:]
+            ],
         )
 
 
 @pytest.mark.skip_during_conda
 def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
-    ts_data, AutoMLTestEnv, is_using_windows
+    ts_data,
+    AutoMLTestEnv,
+    is_using_windows,
 ):
 
     X, y = ts_data
@@ -4718,7 +4865,11 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
     ],
 )
 def test_automl_restricts_use_covariates_for_arima(
-    hyperparams, automl_algo, AutoMLTestEnv, is_using_windows, X_y_binary
+    hyperparams,
+    automl_algo,
+    AutoMLTestEnv,
+    is_using_windows,
+    X_y_binary,
 ):
 
     X, y = X_y_binary
@@ -4745,7 +4896,7 @@ def test_automl_restricts_use_covariates_for_arima(
         automl.search()
 
     params = automl.full_rankings.parameters.map(
-        lambda p: p.get("ARIMA Regressor", {}).get("use_covariates")
+        lambda p: p.get("ARIMA Regressor", {}).get("use_covariates"),
     ).tolist()
     arima_params = [p for p in params if p is not None]
     assert arima_params
@@ -4765,7 +4916,11 @@ def test_automl_restricts_use_covariates_for_arima(
     ],
 )
 def test_automl_does_not_restrict_use_covariates_if_user_specified(
-    hyperparams, automl_algo, AutoMLTestEnv, is_using_windows, X_y_binary
+    hyperparams,
+    automl_algo,
+    AutoMLTestEnv,
+    is_using_windows,
+    X_y_binary,
 ):
 
     X, y = X_y_binary
@@ -4791,7 +4946,7 @@ def test_automl_does_not_restrict_use_covariates_if_user_specified(
         automl.search()
 
     params = automl.full_rankings.parameters.map(
-        lambda p: p.get("ARIMA Regressor", {}).get("use_covariates")
+        lambda p: p.get("ARIMA Regressor", {}).get("use_covariates"),
     ).tolist()
     arima_params = [p for p in params if p is not None]
     assert arima_params
@@ -4851,7 +5006,7 @@ def test_default_algorithm_uses_n_jobs(X_y_binary, AutoMLTestEnv):
             n_feature_selector_checked += 1
             assert (
                 pl.get_component(
-                    "RF Classifier Select From Model"
+                    "RF Classifier Select From Model",
                 )._component_obj.estimator.n_jobs
                 == 2
             )

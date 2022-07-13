@@ -30,7 +30,7 @@ def test_cmdstanpy_backend(prophet):
 
 def test_problem_types():
     assert set(ProphetRegressor.supported_problem_types) == {
-        ProblemTypes.TIME_SERIES_REGRESSION
+        ProblemTypes.TIME_SERIES_REGRESSION,
     }
 
 
@@ -58,7 +58,9 @@ def test_init_with_other_params():
 def test_feature_importance(ts_data):
     X, y = ts_data
     clf = ProphetRegressor(
-        time_index="date", uncertainty_samples=False, changepoint_prior_scale=2.0
+        time_index="date",
+        uncertainty_samples=False,
+        changepoint_prior_scale=2.0,
     )
     clf.fit(X, y)
     assert clf.feature_importance == np.zeros(1)
@@ -85,7 +87,8 @@ def test_build_prophet_df_time_index_errors(index_status, ts_data):
             ProphetRegressor.build_prophet_df(X, y, index_status)
     elif index_status == "wrong_column":
         with pytest.raises(
-            ValueError, match=f"Column {index_status} was not found in X!"
+            ValueError,
+            match=f"Column {index_status} was not found in X!",
         ):
             ProphetRegressor.build_prophet_df(X, y, index_status)
 
@@ -116,7 +119,9 @@ def test_fit_predict_ts(ts_data, drop_index, prophet):
     y_pred_p = p_clf.predict(prophet_df)["yhat"]
 
     clf = ProphetRegressor(
-        time_index="date", uncertainty_samples=False, changepoint_prior_scale=2.0
+        time_index="date",
+        uncertainty_samples=False,
+        changepoint_prior_scale=2.0,
     )
     clf.fit(X, y)
     y_pred = clf.predict(X)

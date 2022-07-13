@@ -24,7 +24,9 @@ class StandardScaler(Transformer):
 
         scaler = SkScaler(**parameters)
         super().__init__(
-            parameters=parameters, component_obj=scaler, random_seed=random_seed
+            parameters=parameters,
+            component_obj=scaler,
+            random_seed=random_seed,
         )
 
     def transform(self, X, y=None):
@@ -43,7 +45,8 @@ class StandardScaler(Transformer):
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
 
         schema = X.ww.select(
-            exclude=[Integer, Categorical, Boolean], return_schema=True
+            exclude=[Integer, Categorical, Boolean],
+            return_schema=True,
         )
         X_t_df.ww.init(schema=schema)
         return X_t_df

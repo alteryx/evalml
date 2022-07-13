@@ -88,7 +88,9 @@ class KNeighborsClassifier(Estimator):
         parameters.update(kwargs)
         knn_classifier = SKKNeighborsClassifier(**parameters)
         super().__init__(
-            parameters=parameters, component_obj=knn_classifier, random_seed=random_seed
+            parameters=parameters,
+            component_obj=knn_classifier,
+            random_seed=random_seed,
         )
 
     @property

@@ -20,7 +20,8 @@ def test_pipeline():
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
-                component_graph=self.component_graph, parameters=parameters
+                component_graph=self.component_graph,
+                parameters=parameters,
             )
 
         @property
@@ -257,7 +258,7 @@ def test_ensemble_as_json():
         ],
     }
     parameters = {
-        "Random Forest Pipeline - Random Forest Classifier": {"max_depth": np.int64(7)}
+        "Random Forest Pipeline - Random Forest Classifier": {"max_depth": np.int64(7)},
     }
     pipeline = BinaryClassificationPipeline(component_graph, parameters=parameters)
     dag_dict = pipeline.graph_dict()

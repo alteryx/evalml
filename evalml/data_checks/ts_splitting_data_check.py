@@ -25,7 +25,7 @@ class TimeSeriesSplittingDataCheck(DataCheck):
             ProblemTypes.TIME_SERIES_MULTICLASS,
         ]:
             raise ValueError(
-                "Valid splitting of labels in time series is only defined for time series binary and time series multiclass problem types."
+                "Valid splitting of labels in time series is only defined for time series binary and time series multiclass problem types.",
             )
         self.n_splits = n_splits
         self._splitter = SkTimeSeriesSplit(n_splits=self.n_splits)
@@ -101,6 +101,6 @@ class TimeSeriesSplittingDataCheck(DataCheck):
                     details={
                         "invalid_splits": invalid_splits,
                     },
-                ).to_dict()
+                ).to_dict(),
             )
         return messages

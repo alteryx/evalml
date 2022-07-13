@@ -3,7 +3,27 @@ requires = [
     "setuptools >= 47",
     "wheel"
 ]
-build-backend = "setuptools.build_meta" 
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "evalml/tests/*"
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning"
+]
+junit_duration_report = "call"
+
+[tool.isort]
+profile = "black"
+forced_separate = "evalml"
+known_first_party = "evalml"
+skip = "__init__.py"
+multi_line_output = 3
+
+[tool.black]
+target-version = ["py39"]
 
 [tool.coverage.run]
 source = ["evalml"]

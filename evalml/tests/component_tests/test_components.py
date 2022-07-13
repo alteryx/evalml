@@ -10,10 +10,7 @@ import pandas as pd
 import pytest
 from skopt.space import Categorical
 
-from evalml.exceptions import (
-    ComponentNotYetFittedError,
-    MethodPropertyNotFoundError,
-)
+from evalml.exceptions import ComponentNotYetFittedError, MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import (
@@ -81,15 +78,11 @@ from evalml.pipelines.components.estimators.classifiers.vowpal_wabbit_classifier
 from evalml.pipelines.components.estimators.regressors.vowpal_wabbit_regressor import (
     VowpalWabbitRegressor,
 )
-from evalml.pipelines.components.transformers.encoders.label_encoder import (
-    LabelEncoder,
-)
+from evalml.pipelines.components.transformers.encoders.label_encoder import LabelEncoder
 from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
     LogTransformer,
 )
-from evalml.pipelines.components.transformers.samplers.base_sampler import (
-    BaseSampler,
-)
+from evalml.pipelines.components.transformers.samplers.base_sampler import BaseSampler
 from evalml.pipelines.components.utils import (
     _all_estimators,
     _all_transformers,
@@ -150,7 +143,7 @@ class MockFitComponent(ComponentBase):
 
     def predict(self, X):
         return np.array(
-            [self.parameters["param_a"] * 2, self.parameters["param_b"] * 10]
+            [self.parameters["param_a"] * 2, self.parameters["param_b"] * 10],
         )
 
 
@@ -188,10 +181,16 @@ def test_describe_component():
     column_imputer = PerColumnImputer({"a": "mean", "b": ("constant", 100)})
     scaler = StandardScaler()
     feature_selection_clf = RFClassifierSelectFromModel(
-        n_estimators=10, number_features=5, percent_features=0.3, threshold=-np.inf
+        n_estimators=10,
+        number_features=5,
+        percent_features=0.3,
+        threshold=-np.inf,
     )
     feature_selection_reg = RFRegressorSelectFromModel(
-        n_estimators=10, number_features=5, percent_features=0.3, threshold=-np.inf
+        n_estimators=10,
+        number_features=5,
+        percent_features=0.3,
+        threshold=-np.inf,
     )
     drop_col_transformer = DropColumns(columns=["col_one", "col_two"])
     drop_null_transformer = DropNullColumns()
@@ -414,10 +413,16 @@ def test_describe_component():
         "parameters": {"C": 1.0, "kernel": "rbf", "gamma": "auto"},
     }
     xgb_classifier = XGBoostClassifier(
-        eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75
+        eta=0.1,
+        min_child_weight=1,
+        max_depth=3,
+        n_estimators=75,
     )
     xgb_regressor = XGBoostRegressor(
-        eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75
+        eta=0.1,
+        min_child_weight=1,
+        max_depth=3,
+        n_estimators=75,
     )
     assert xgb_classifier.describe(return_dict=True) == {
         "name": "XGBoost Classifier",
@@ -526,7 +531,10 @@ def test_describe_component():
         passes=1,
     )
     vw_regressor = VowpalWabbitRegressor(
-        learning_rate=0.1, decay_learning_rate=1.0, power_t=0.1, passes=1
+        learning_rate=0.1,
+        decay_learning_rate=1.0,
+        power_t=0.1,
+        passes=1,
     )
 
     assert vw_binary_classifier.describe(return_dict=True) == {
@@ -821,7 +829,8 @@ def test_transformer_transform_output_type(component_class, X_y_binary):
     X_df_no_col_names = pd.DataFrame(X_np)
     range_index = pd.RangeIndex(start=0, stop=X_np.shape[1], step=1)
     X_df_with_col_names = pd.DataFrame(
-        X_np, columns=["x" + str(i) for i in range(X_np.shape[1])]
+        X_np,
+        columns=["x" + str(i) for i in range(X_np.shape[1])],
     )
     y_series_no_name = pd.Series(y_np)
     y_series_with_name = pd.Series(y_np, name="target")
@@ -839,7 +848,7 @@ def test_transformer_transform_output_type(component_class, X_y_binary):
         TimeSeriesRegularizer,
     ]:
         pytest.skip(
-            "Skipping because these tests are handled in their respective test files"
+            "Skipping because these tests are handled in their respective test files",
         )
     print("Testing transformer {}".format(component_class.name))
     for X, y, X_cols_expected in datatype_combos:
@@ -850,7 +859,7 @@ def test_transformer_transform_output_type(component_class, X_y_binary):
                 X.columns if isinstance(X, pd.DataFrame) else None,
                 type(y),
                 y.name if isinstance(y, pd.Series) else None,
-            )
+            ),
         )
 
         component = component_class()
@@ -878,7 +887,8 @@ def test_transformer_transform_output_type(component_class, X_y_binary):
         elif isinstance(component, RFClassifierSelectFromModel):
             assert transform_output.shape == (X.shape[0], 10)
         elif isinstance(component, PCA) or isinstance(
-            component, LinearDiscriminantAnalysis
+            component,
+            LinearDiscriminantAnalysis,
         ):
             assert transform_output.shape[0] == X.shape[0]
             assert transform_output.shape[1] <= X.shape[1]
@@ -907,7 +917,8 @@ def test_transformer_transform_output_type(component_class, X_y_binary):
         elif isinstance(component, RFClassifierSelectFromModel):
             assert transform_output.shape == (X.shape[0], 10)
         elif isinstance(component, PCA) or isinstance(
-            component, LinearDiscriminantAnalysis
+            component,
+            LinearDiscriminantAnalysis,
         ):
             assert transform_output.shape[0] == X.shape[0]
             assert transform_output.shape[1] <= X.shape[1]
@@ -976,7 +987,9 @@ def test_estimator_check_for_fit(X_y_binary):
         def __init__(self, parameters=None, component_obj=None, random_seed=0):
             est = MockEstimatorObj()
             super().__init__(
-                parameters=parameters, component_obj=est, random_seed=random_seed
+                parameters=parameters,
+                component_obj=est,
+                random_seed=random_seed,
             )
 
     X, y = X_y_binary
@@ -1101,7 +1114,8 @@ def test_all_transformers_check_fit(X_y_binary, ts_data_binary):
             component = component_class(time_index="date")
 
         with pytest.raises(
-            ComponentNotYetFittedError, match=f"You must fit {component_class.__name__}"
+            ComponentNotYetFittedError,
+            match=f"You must fit {component_class.__name__}",
         ):
             component.transform(X, y)
 
@@ -1118,7 +1132,10 @@ def test_all_transformers_check_fit(X_y_binary, ts_data_binary):
 
 
 def test_all_estimators_check_fit(
-    X_y_binary, ts_data, test_estimator_needs_fitting_false, helper_functions
+    X_y_binary,
+    ts_data,
+    test_estimator_needs_fitting_false,
+    helper_functions,
 ):
     estimators_to_check = [
         estimator
@@ -1149,12 +1166,13 @@ def test_all_estimators_check_fit(
             component = component_class(time_index="date")
         else:
             component = helper_functions.safe_init_component_with_njobs_1(
-                component_class
+                component_class,
             )
 
         with patch.object(component, "_component_obj") as mock_component_obj:
             with patch.object(
-                mock_component_obj, "predict"
+                mock_component_obj,
+                "predict",
             ) as mock_component_obj_predict:
                 mock_component_obj_predict.return_value = pd.Series([0] * len(y))
 
@@ -1198,7 +1216,10 @@ def test_all_estimators_check_fit(
 
 @pytest.mark.parametrize("data_type", ["li", "np", "pd", "ww"])
 def test_all_transformers_check_fit_input_type(
-    data_type, X_y_binary, make_data_type, ts_data_binary
+    data_type,
+    X_y_binary,
+    make_data_type,
+    ts_data_binary,
 ):
 
     for component_class in _all_transformers():
@@ -1218,13 +1239,15 @@ def test_all_transformers_check_fit_input_type(
 
 
 def test_no_fitting_required_components(
-    X_y_binary, test_estimator_needs_fitting_false, helper_functions
+    X_y_binary,
+    test_estimator_needs_fitting_false,
+    helper_functions,
 ):
     X, y = X_y_binary
     for component_class in all_components() + [test_estimator_needs_fitting_false]:
         if not component_class.needs_fitting:
             component = helper_functions.safe_init_component_with_njobs_1(
-                component_class
+                component_class,
             )
             if issubclass(component_class, Estimator):
                 component.predict(X)
@@ -1256,7 +1279,7 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
             loaded_component = ComponentBase.load(path)
             assert component.parameters == loaded_component.parameters
             assert component.describe(return_dict=True) == loaded_component.describe(
-                return_dict=True
+                return_dict=True,
             )
             if issubclass(component_class, Estimator) and not (
                 isinstance(
@@ -1300,7 +1323,7 @@ def test_estimators_accept_all_kwargs(estimator_class):
     estimator = estimator_class()
     if estimator._component_obj is None:
         pytest.skip(
-            f"Skipping {estimator_class} because does not have component object."
+            f"Skipping {estimator_class} because does not have component object.",
         )
     if estimator_class.model_family == ModelFamily.ENSEMBLE:
         params = estimator.parameters
@@ -1358,7 +1381,9 @@ def test_component_equality():
             parameters = {"param_1": param_1, "param_2": param_2}
             parameters.update(kwargs)
             super().__init__(
-                parameters=parameters, component_obj=None, random_seed=random_seed
+                parameters=parameters,
+                component_obj=None,
+                random_seed=random_seed,
             )
 
         def fit(self, X, y=None):
@@ -1527,7 +1552,10 @@ def test_generate_code_custom(test_classes):
 @pytest.mark.parametrize("transformer_class", _all_transformers())
 @pytest.mark.parametrize("use_custom_index", [True, False])
 def test_transformer_fit_and_transform_respect_custom_indices(
-    use_custom_index, transformer_class, X_y_binary, ts_data_binary
+    use_custom_index,
+    transformer_class,
+    X_y_binary,
+    ts_data_binary,
 ):
     check_names = True
     if transformer_class == DFSTransformer:
@@ -1537,7 +1565,7 @@ def test_transformer_fit_and_transform_respect_custom_indices(
     if transformer_class == PolynomialDetrender:
         pytest.skip(
             "Skipping PolynomialDetrender because we test that it respects custom indices in "
-            "test_polynomial_detrender.py"
+            "test_polynomial_detrender.py",
         )
 
     X, y = X_y_binary
@@ -1569,18 +1597,24 @@ def test_transformer_fit_and_transform_respect_custom_indices(
     elif transformer_class.modifies_target:
         X_t, y_t = transformer.transform(X, y)
         pd.testing.assert_index_equal(
-            y_t.index, y_original_index, check_names=check_names
+            y_t.index,
+            y_original_index,
+            check_names=check_names,
         )
     else:
         X_t = transformer.transform(X, y)
         pd.testing.assert_index_equal(
-            y.index, y_original_index, check_names=check_names
+            y.index,
+            y_original_index,
+            check_names=check_names,
         )
 
     if hasattr(transformer_class, "inverse_transform"):
         y_inv = transformer.inverse_transform(y)
         pd.testing.assert_index_equal(
-            y_inv.index, y_original_index, check_names=check_names
+            y_inv.index,
+            y_original_index,
+            check_names=check_names,
         )
     pd.testing.assert_index_equal(X_t.index, X_original_index, check_names=check_names)
 
@@ -1653,7 +1687,7 @@ def test_component_modifies_feature_or_target():
         else:
             assert not component_class.modifies_target
         if hasattr(component_class, "inverse_transform") or component_class in [
-            TargetImputer
+            TargetImputer,
         ]:
             assert not component_class.modifies_features
         else:

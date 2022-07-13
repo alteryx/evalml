@@ -97,7 +97,10 @@ class ObjectiveBase(ABC):
         y_predicted = self._standardize_input_type(y_predicted)
         self.validate_inputs(y_true, y_predicted)
         return self.objective_function(
-            y_true, y_predicted, X=X, sample_weight=sample_weight
+            y_true,
+            y_predicted,
+            X=X,
+            sample_weight=sample_weight,
         )
 
     @staticmethod
@@ -134,8 +137,9 @@ class ObjectiveBase(ABC):
         if y_predicted.shape[0] != y_true.shape[0]:
             raise ValueError(
                 "Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(
-                    len(y_predicted), len(y_true)
-                )
+                    len(y_predicted),
+                    len(y_true),
+                ),
             )
         if len(y_true) == 0:
             raise ValueError("Length of inputs is 0")
@@ -147,7 +151,7 @@ class ObjectiveBase(ABC):
             raise ValueError("y_predicted contains NaN or infinity")
         if self.score_needs_proba and np.any([(y_pred_flat < 0) | (y_pred_flat > 1)]):
             raise ValueError(
-                "y_predicted contains probability estimates not within [0, 1]"
+                "y_predicted contains probability estimates not within [0, 1]",
             )
 
     @classmethod

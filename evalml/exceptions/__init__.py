@@ -1,5 +1,5 @@
 """Exceptions used in EvalML."""
-from .exceptions import (
+from evalml.exceptions.exceptions import (
     MethodPropertyNotFoundError,
     PipelineNotFoundError,
     ObjectiveNotFoundError,

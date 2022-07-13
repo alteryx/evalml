@@ -94,7 +94,7 @@ class Estimator(ComponentBase):
             predictions = self._component_obj.predict(X)
         except AttributeError:
             raise MethodPropertyNotFoundError(
-                "Estimator requires a predict method or a component_obj that implements predict"
+                "Estimator requires a predict method or a component_obj that implements predict",
             )
         predictions = infer_feature_types(predictions)
         predictions.index = X.index
@@ -117,7 +117,7 @@ class Estimator(ComponentBase):
             pred_proba = self._component_obj.predict_proba(X)
         except AttributeError:
             raise MethodPropertyNotFoundError(
-                "Estimator requires a predict_proba method or a component_obj that implements predict_proba"
+                "Estimator requires a predict_proba method or a component_obj that implements predict_proba",
             )
         pred_proba = infer_feature_types(pred_proba)
         pred_proba.index = X.index
@@ -137,7 +137,7 @@ class Estimator(ComponentBase):
             return pd.Series(self._component_obj.feature_importances_)
         except AttributeError:
             raise MethodPropertyNotFoundError(
-                "Estimator requires a feature_importance property or a component_obj that implements feature_importances_"
+                "Estimator requires a feature_importance property or a component_obj that implements feature_importances_",
             )
 
     def __eq__(self, other):

@@ -33,7 +33,11 @@ def test_init(X_y_binary):
     X, y = X_y_binary
 
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", max_iterations=1, n_jobs=1
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=1,
+        n_jobs=1,
     )
     automl.search()
 
@@ -45,7 +49,11 @@ def test_init(X_y_binary):
 
     # test with dataframes
     automl = AutoMLSearch(
-        pd.DataFrame(X), pd.Series(y), problem_type="binary", max_iterations=1, n_jobs=1
+        pd.DataFrame(X),
+        pd.Series(y),
+        problem_type="binary",
+        max_iterations=1,
+        n_jobs=1,
     )
     automl.search()
 
@@ -216,12 +224,14 @@ def test_multi_auto(X_y_multi):
     assert len(np.unique(y_pred)) == 3
 
     objective_in_additional_objectives = next(
-        (obj for obj in multiclass_objectives if obj.name == objective.name), None
+        (obj for obj in multiclass_objectives if obj.name == objective.name),
+        None,
     )
     multiclass_objectives.remove(objective_in_additional_objectives)
 
     for expected, additional in zip(
-        multiclass_objectives, automl.additional_objectives
+        multiclass_objectives,
+        automl.additional_objectives,
     ):
         assert type(additional) is type(expected)
 
@@ -229,17 +239,26 @@ def test_multi_auto(X_y_multi):
 def test_multi_objective(X_y_multi):
     X, y = X_y_multi
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", objective="Log Loss Binary"
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        objective="Log Loss Binary",
     )
     assert automl.problem_type == ProblemTypes.BINARY
 
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="multiclass", objective="Log Loss Multiclass"
+        X_train=X,
+        y_train=y,
+        problem_type="multiclass",
+        objective="Log Loss Multiclass",
     )
     assert automl.problem_type == ProblemTypes.MULTICLASS
 
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="multiclass", objective="AUC Micro"
+        X_train=X,
+        y_train=y,
+        problem_type="multiclass",
+        objective="AUC Micro",
     )
     assert automl.problem_type == ProblemTypes.MULTICLASS
 
@@ -380,19 +399,19 @@ def test_optimizable_threshold_enabled(
     assert automl.best_pipeline.threshold == 0.8
     assert (
         automl.results["pipeline_results"][0]["cv_data"][0].get(
-            "binary_classification_threshold"
+            "binary_classification_threshold",
         )
         == 0.8
     )
     assert (
         automl.results["pipeline_results"][0]["cv_data"][1].get(
-            "binary_classification_threshold"
+            "binary_classification_threshold",
         )
         == 0.8
     )
     assert (
         automl.results["pipeline_results"][0]["cv_data"][2].get(
-            "binary_classification_threshold"
+            "binary_classification_threshold",
         )
         == 0.8
     )
@@ -425,19 +444,19 @@ def test_optimizable_threshold_disabled(
     assert automl.best_pipeline.threshold == 0.5
     assert (
         automl.results["pipeline_results"][0]["cv_data"][0].get(
-            "binary_classification_threshold"
+            "binary_classification_threshold",
         )
         == 0.5
     )
     assert (
         automl.results["pipeline_results"][0]["cv_data"][1].get(
-            "binary_classification_threshold"
+            "binary_classification_threshold",
         )
         == 0.5
     )
     assert (
         automl.results["pipeline_results"][0]["cv_data"][2].get(
-            "binary_classification_threshold"
+            "binary_classification_threshold",
         )
         == 0.5
     )
@@ -461,19 +480,19 @@ def test_non_optimizable_threshold(AutoMLTestEnv, X_y_binary):
     assert automl.best_pipeline.threshold is None
     assert (
         automl.results["pipeline_results"][0]["cv_data"][0].get(
-            "binary_classification_threshold"
+            "binary_classification_threshold",
         )
         is None
     )
     assert (
         automl.results["pipeline_results"][0]["cv_data"][1].get(
-            "binary_classification_threshold"
+            "binary_classification_threshold",
         )
         is None
     )
     assert (
         automl.results["pipeline_results"][0]["cv_data"][2].get(
-            "binary_classification_threshold"
+            "binary_classification_threshold",
         )
         is None
     )
@@ -540,17 +559,29 @@ def test_max_time_units(X_y_binary):
     assert str_max_time.max_time == 60
 
     hour_max_time = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", objective="F1", max_time="1 hour"
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        objective="F1",
+        max_time="1 hour",
     )
     assert hour_max_time.max_time == 3600
 
     min_max_time = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", objective="F1", max_time="30 mins"
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        objective="F1",
+        max_time="30 mins",
     )
     assert min_max_time.max_time == 1800
 
     min_max_time = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", objective="F1", max_time="30 s"
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        objective="F1",
+        max_time="30 s",
     )
     assert min_max_time.max_time == 30
 
@@ -651,7 +682,9 @@ def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
 
 @patch("IPython.display.display")
 def test_plot_iterations_ipython_mock_import_failure(
-    mock_ipython_display, X_y_binary, go
+    mock_ipython_display,
+    X_y_binary,
+    go,
 ):
     X, y = X_y_binary
 
@@ -683,7 +716,11 @@ def test_plot_iterations_ipython_mock_import_failure(
 def test_max_time(X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", max_time=1e-16, n_jobs=1
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_time=1e-16,
+        n_jobs=1,
     )
     automl.search()
     # search will always run at least one pipeline
@@ -800,7 +837,11 @@ def test_automl_time_series_classification_threshold(
 
     optimize_return_value = 0.62
     mock_split_data.return_value = split_data(
-        X, y, problem_type, test_size=0.2, random_seed=0
+        X,
+        y,
+        problem_type,
+        test_size=0.2,
+        random_seed=0,
     )
     automl = AutoMLSearch(
         X_train=X,
@@ -922,7 +963,9 @@ def test_automl_search_sampler_method(
 @pytest.mark.parametrize("sampling_ratio", [0.1, 0.2, 0.5, 1])
 @pytest.mark.parametrize("sampler", ["Undersampler", "Oversampler"])
 def test_automl_search_ratio_overrides_sampler_ratio(
-    sampler, sampling_ratio, mock_imbalanced_data_X_y
+    sampler,
+    sampling_ratio,
+    mock_imbalanced_data_X_y,
 ):
     X, y = mock_imbalanced_data_X_y("binary", "none", "small")
     search_parameters = {sampler: {"sampling_ratio": sampling_ratio}}
@@ -1088,7 +1131,8 @@ def test_automl_search_sampler_dictionary_keys(
     )
     if errors:
         with pytest.raises(
-            ValueError, match="Dictionary keys are different from target"
+            ValueError,
+            match="Dictionary keys are different from target",
         ):
             automl.search()
     else:
@@ -1119,7 +1163,8 @@ def test_automl_search_sampler_k_neighbors_param(sampler):
 
 
 @pytest.mark.parametrize(
-    "parameters", [None, {"Oversampler": {"k_neighbors_default": 5}}]
+    "parameters",
+    [None, {"Oversampler": {"k_neighbors_default": 5}}],
 )
 def test_automl_search_sampler_k_neighbors_no_error(parameters, fraud_100):
     # automatically uses SMOTE
@@ -1149,7 +1194,10 @@ def test_automl_search_sampler_k_neighbors_no_error(parameters, fraud_100):
     ],
 )
 def test_time_series_pipeline_parameter_warnings(
-    search_parameters, set_values, AutoMLTestEnv, ts_data_binary
+    search_parameters,
+    set_values,
+    AutoMLTestEnv,
+    ts_data_binary,
 ):
     search_parameters.update(
         {
@@ -1158,8 +1206,8 @@ def test_time_series_pipeline_parameter_warnings(
                 "gap": 0,
                 "max_delay": 0,
                 "forecast_horizon": 2,
-            }
-        }
+            },
+        },
     )
     X, y = ts_data_binary
     configuration = {
@@ -1264,7 +1312,8 @@ def test_automl_threshold_score(fraud_100):
 
 
 @pytest.mark.parametrize(
-    "automl_algorithm,batches", [("iterative", 10), ("default", 6)]
+    "automl_algorithm,batches",
+    [("iterative", 10), ("default", 6)],
 )
 @pytest.mark.parametrize("positive_label", [True, False])
 def test_automl_binary_label_encoder(
@@ -1292,5 +1341,5 @@ def test_automl_binary_label_encoder(
         [
             p["Label Encoder"]["positive_label"] == positive_label
             for p in automl.full_rankings["parameters"][1:]
-        ]
+        ],
     )

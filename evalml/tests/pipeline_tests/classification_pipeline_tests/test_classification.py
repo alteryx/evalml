@@ -30,7 +30,10 @@ def test_new_unique_targets_in_score(
 @pytest.mark.parametrize("num_unique", [1, 2, 3])
 @pytest.mark.parametrize("pipeline", ["binary", "multiclass"])
 def test_invalid_targets_classification_pipeline(
-    num_unique, pipeline, dummy_binary_pipeline, dummy_multiclass_pipeline
+    num_unique,
+    pipeline,
+    dummy_binary_pipeline,
+    dummy_multiclass_pipeline,
 ):
     X = pd.DataFrame([i for i in range(30)])
 
@@ -45,7 +48,8 @@ def test_invalid_targets_classification_pipeline(
         mock_binary_pipeline = dummy_binary_pipeline
         if num_unique in [1, 3]:
             with pytest.raises(
-                ValueError, match="Binary pipelines require y to have 2 unique classes!"
+                ValueError,
+                match="Binary pipelines require y to have 2 unique classes!",
             ):
                 mock_binary_pipeline.fit(X, y)
         else:
@@ -63,7 +67,8 @@ def test_invalid_targets_classification_pipeline(
 
 
 @pytest.mark.parametrize(
-    "problem_type,use_ints", product(["binary", "multi"], [True, False])
+    "problem_type,use_ints",
+    product(["binary", "multi"], [True, False]),
 )
 def test_pipeline_has_classes_property(
     breast_cancer_local,
@@ -98,7 +103,8 @@ def test_pipeline_has_classes_property(
 
 
 def test_woodwork_classification_pipeline(
-    breast_cancer_local, logistic_regression_binary_pipeline
+    breast_cancer_local,
+    logistic_regression_binary_pipeline,
 ):
     X, y = breast_cancer_local
     mock_pipeline = logistic_regression_binary_pipeline

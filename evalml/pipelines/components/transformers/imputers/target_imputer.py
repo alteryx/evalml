@@ -34,7 +34,7 @@ class TargetImputerMeta(ComponentBaseMeta):
             klass = type(self).__name__
             if not self._is_fitted and self.needs_fitting:
                 raise ComponentNotYetFittedError(
-                    f"This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}."
+                    f"This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}.",
                 )
             else:
                 return method(self, X, y)
@@ -68,7 +68,9 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         parameters.update(kwargs)
         imputer = SkImputer(strategy=impute_strategy, fill_value=fill_value, **kwargs)
         super().__init__(
-            parameters=parameters, component_obj=imputer, random_seed=random_seed
+            parameters=parameters,
+            component_obj=imputer,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y):
@@ -125,12 +127,15 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         # TODO: Fix this after WW adds inference of object type booleans to BooleanNullable
         # Iterate through categorical columns that might have been boolean and convert them back to boolean
         if {True, False}.issubset(set(y_t.unique())) and isinstance(
-            y_ww.ww.logical_type, Categorical
+            y_ww.ww.logical_type,
+            Categorical,
         ):
             y_t = y_t.astype(bool)
 
         y_t = ww.init_series(
-            y_t, logical_type=y_ww.ww.logical_type, semantic_tags=y_ww.ww.semantic_tags
+            y_t,
+            logical_type=y_ww.ww.logical_type,
+            semantic_tags=y_ww.ww.semantic_tags,
         )
         return X, y_t
 

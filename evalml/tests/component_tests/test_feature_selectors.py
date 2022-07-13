@@ -112,7 +112,7 @@ def test_feature_selectors_drop_columns_maintains_woodwork():
     "X_df",
     [
         pd.DataFrame(
-            pd.to_datetime(["20190902", "20200519", "20190607"], format="%Y%m%d")
+            pd.to_datetime(["20190902", "20200519", "20190607"], format="%Y%m%d"),
         ),
         pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
         pd.DataFrame(pd.Series([1.0, 2.0, 3.0], dtype="float")),
@@ -122,7 +122,7 @@ def test_feature_selectors_drop_columns_maintains_woodwork():
             pd.Series(
                 ["this will be a natural language column because length", "yay", "hay"],
                 dtype="string",
-            )
+            ),
         ),
     ],
 )

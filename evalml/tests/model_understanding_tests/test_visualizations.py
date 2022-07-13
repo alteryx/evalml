@@ -37,19 +37,29 @@ from evalml.utils import get_random_state, infer_feature_types
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_cost_benefit_matrix_vs_threshold(
-    data_type, X_y_binary, logistic_regression_binary_pipeline, make_data_type
+    data_type,
+    X_y_binary,
+    logistic_regression_binary_pipeline,
+    make_data_type,
 ):
     X, y = X_y_binary
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
     cbm = CostBenefitMatrix(
-        true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2
+        true_positive=1,
+        true_negative=-1,
+        false_positive=-7,
+        false_negative=-2,
     )
     logistic_regression_binary_pipeline.fit(X, y)
     original_pipeline_threshold = logistic_regression_binary_pipeline.threshold
     cost_benefit_df = binary_objective_vs_threshold(
-        logistic_regression_binary_pipeline, X, y, cbm, steps=5
+        logistic_regression_binary_pipeline,
+        X,
+        y,
+        cbm,
+        steps=5,
     )
     assert list(cost_benefit_df.columns) == ["threshold", "score"]
     assert cost_benefit_df.shape == (6, 2)
@@ -59,7 +69,10 @@ def test_cost_benefit_matrix_vs_threshold(
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_binary_objective_vs_threshold(
-    data_type, X_y_binary, logistic_regression_binary_pipeline, make_data_type
+    data_type,
+    X_y_binary,
+    logistic_regression_binary_pipeline,
+    make_data_type,
 ):
     X, y = X_y_binary
     X = make_data_type(data_type, X)
@@ -70,20 +83,31 @@ def test_binary_objective_vs_threshold(
     # test objective with score_needs_proba == True
     with pytest.raises(ValueError, match="Objective `score_needs_proba` must be False"):
         binary_objective_vs_threshold(
-            logistic_regression_binary_pipeline, X, y, "Log Loss Binary"
+            logistic_regression_binary_pipeline,
+            X,
+            y,
+            "Log Loss Binary",
         )
 
     # test with non-binary objective
     with pytest.raises(
-        ValueError, match="can only be calculated for binary classification objectives"
+        ValueError,
+        match="can only be calculated for binary classification objectives",
     ):
         binary_objective_vs_threshold(
-            logistic_regression_binary_pipeline, X, y, "f1 micro"
+            logistic_regression_binary_pipeline,
+            X,
+            y,
+            "f1 micro",
         )
 
     # test objective with score_needs_proba == False
     results_df = binary_objective_vs_threshold(
-        logistic_regression_binary_pipeline, X, y, "f1", steps=5
+        logistic_regression_binary_pipeline,
+        X,
+        y,
+        "f1",
+        steps=5,
     )
     assert list(results_df.columns) == ["threshold", "score"]
     assert results_df.shape == (6, 2)
@@ -92,16 +116,25 @@ def test_binary_objective_vs_threshold(
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 def test_binary_objective_vs_threshold_steps(
-    mock_score, X_y_binary, logistic_regression_binary_pipeline
+    mock_score,
+    X_y_binary,
+    logistic_regression_binary_pipeline,
 ):
     X, y = X_y_binary
     cbm = CostBenefitMatrix(
-        true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2
+        true_positive=1,
+        true_negative=-1,
+        false_positive=-7,
+        false_negative=-2,
     )
     logistic_regression_binary_pipeline.fit(X, y)
     mock_score.return_value = {"Cost Benefit Matrix": 0.2}
     cost_benefit_df = binary_objective_vs_threshold(
-        logistic_regression_binary_pipeline, X, y, cbm, steps=234
+        logistic_regression_binary_pipeline,
+        X,
+        y,
+        cbm,
+        steps=234,
     )
     mock_score.assert_called()
     assert list(cost_benefit_df.columns) == ["threshold", "score"]
@@ -124,15 +157,21 @@ def test_graph_binary_objective_vs_threshold(
     y = make_data_type(data_type, y)
 
     cbm = CostBenefitMatrix(
-        true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2
+        true_positive=1,
+        true_negative=-1,
+        false_positive=-7,
+        false_negative=-2,
     )
 
     mock_cb_thresholds.return_value = pd.DataFrame(
-        {"threshold": [0, 0.5, 1.0], "score": [100, -20, 5]}
+        {"threshold": [0, 0.5, 1.0], "score": [100, -20, 5]},
     )
 
     figure = graph_binary_objective_vs_threshold(
-        logistic_regression_binary_pipeline, X, y, cbm
+        logistic_regression_binary_pipeline,
+        X,
+        y,
+        cbm,
     )
     assert isinstance(figure, go.Figure)
     data = figure.data[0]
@@ -156,12 +195,19 @@ def test_jupyter_graph_check(
     y = y[:20]
     logistic_regression_binary_pipeline.fit(X, y)
     cbm = CostBenefitMatrix(
-        true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2
+        true_positive=1,
+        true_negative=-1,
+        false_positive=-7,
+        false_negative=-2,
     )
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
         graph_binary_objective_vs_threshold(
-            logistic_regression_binary_pipeline, X, y, cbm, steps=5
+            logistic_regression_binary_pipeline,
+            X,
+            y,
+            cbm,
+            steps=5,
         )
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
@@ -188,7 +234,9 @@ def test_get_prediction_vs_actual_data(data_type, make_data_type):
 
     outlier_loc = [2, 11]
     results = get_prediction_vs_actual_data(
-        y_true_in, y_pred_in, outlier_threshold=2000
+        y_true_in,
+        y_pred_in,
+        outlier_threshold=2000,
     )
     assert isinstance(results, pd.DataFrame)
     assert np.array_equal(results["prediction"], y_pred)
@@ -284,13 +332,18 @@ def test_get_prediction_vs_actual_over_time_data(ts_data):
                 "max_delay": 2,
                 "forecast_horizon": 1,
                 "time_index": "date",
-            }
+            },
         },
     )
 
     pipeline.fit(X_train, y_train)
     results = get_prediction_vs_actual_over_time_data(
-        pipeline, X_test, y_test, X_train, y_train, pd.Series(X_test.index)
+        pipeline,
+        X_test,
+        y_test,
+        X_train,
+        y_train,
+        pd.Series(X_test.index),
     )
     assert isinstance(results, pd.DataFrame)
     assert list(results.columns) == ["dates", "target", "prediction"]
@@ -310,13 +363,18 @@ def test_graph_prediction_vs_actual_over_time(ts_data, go):
                 "max_delay": 2,
                 "forecast_horizon": 1,
                 "time_index": "date",
-            }
+            },
         },
     )
     pipeline.fit(X_train, y_train)
 
     fig = graph_prediction_vs_actual_over_time(
-        pipeline, X_test, y_test, X_train, y_train, pd.Series(X_test.index)
+        pipeline,
+        X_test,
+        y_test,
+        X_train,
+        y_train,
+        pd.Series(X_test.index),
     )
 
     assert isinstance(fig, go.Figure)
@@ -344,7 +402,12 @@ def test_graph_prediction_vs_actual_over_time_value_error():
     error_msg = "graph_prediction_vs_actual_over_time only supports time series regression pipelines! Received regression."
     with pytest.raises(ValueError, match=error_msg):
         graph_prediction_vs_actual_over_time(
-            NotTSPipeline(), None, None, None, None, None
+            NotTSPipeline(),
+            None,
+            None,
+            None,
+            None,
+            None,
         )
 
 
@@ -392,23 +455,25 @@ def test_decision_tree_data_from_estimator(fitted_tree_estimators):
         [
             a == b
             for a, b in zip(
-                left_child_value_[0], tree_.value[tree_.children_left[0]][0]
+                left_child_value_[0],
+                tree_.value[tree_.children_left[0]][0],
             )
-        ]
+        ],
     )
     assert all(
         [
             a == b
             for a, b in zip(
-                right_child_value_[0], tree_.value[tree_.children_right[0]][0]
+                right_child_value_[0],
+                tree_.value[tree_.children_right[0]][0],
             )
-        ]
+        ],
     )
 
 
 def test_decision_tree_data_from_pipeline_not_fitted():
     mock_pipeline = MulticlassClassificationPipeline(
-        component_graph=["Decision Tree Classifier"]
+        component_graph=["Decision Tree Classifier"],
     )
     with pytest.raises(
         NotFittedError,
@@ -420,7 +485,7 @@ def test_decision_tree_data_from_pipeline_not_fitted():
 
 def test_decision_tree_data_from_pipeline_wrong_type():
     mock_pipeline = MulticlassClassificationPipeline(
-        component_graph=["Logistic Regression Classifier"]
+        component_graph=["Logistic Regression Classifier"],
     )
     with pytest.raises(
         ValueError,
@@ -431,7 +496,7 @@ def test_decision_tree_data_from_pipeline_wrong_type():
 
 def test_decision_tree_data_from_pipeline_feature_length(X_y_categorical_regression):
     mock_pipeline = RegressionPipeline(
-        component_graph=["One Hot Encoder", "Imputer", "Decision Tree Regressor"]
+        component_graph=["One Hot Encoder", "Imputer", "Decision Tree Regressor"],
     )
     X, y = X_y_categorical_regression
     mock_pipeline.fit(X, y)
@@ -443,7 +508,7 @@ def test_decision_tree_data_from_pipeline_feature_length(X_y_categorical_regress
 
 def test_decision_tree_data_from_pipeline(X_y_categorical_regression):
     mock_pipeline = RegressionPipeline(
-        component_graph=["One Hot Encoder", "Imputer", "Decision Tree Regressor"]
+        component_graph=["One Hot Encoder", "Imputer", "Decision Tree Regressor"],
     )
     X, y = X_y_categorical_regression
     mock_pipeline.fit(X, y)
@@ -470,17 +535,19 @@ def test_decision_tree_data_from_pipeline(X_y_categorical_regression):
         [
             a == b
             for a, b in zip(
-                left_child_value_[0], tree_.value[tree_.children_left[0]][0]
+                left_child_value_[0],
+                tree_.value[tree_.children_left[0]][0],
             )
-        ]
+        ],
     )
     assert all(
         [
             a == b
             for a, b in zip(
-                right_child_value_[0], tree_.value[tree_.children_right[0]][0]
+                right_child_value_[0],
+                tree_.value[tree_.children_right[0]][0],
             )
-        ]
+        ],
     )
 
 
@@ -552,7 +619,11 @@ def test_visualize_decision_trees(fitted_tree_estimators, tmpdir):
 
     filepath = os.path.join(str(tmpdir), "test_2")
     src = visualize_decision_tree(
-        estimator=est_class, filled=True, max_depth=3, rotate=True, filepath=filepath
+        estimator=est_class,
+        filled=True,
+        max_depth=3,
+        rotate=True,
+        filepath=filepath,
     )
     assert src.format == "pdf"  # Check that extension defaults to pdf
     assert isinstance(src, graphviz.Source)
@@ -594,13 +665,14 @@ def test_linear_coefficients_output(estimator):
     est_.fit(X, y)
 
     output_ = get_linear_coefficients(
-        est_, features=["First", "Second", "Third", "Fourth"]
+        est_,
+        features=["First", "Second", "Third", "Fourth"],
     )
     assert list(output_.index) == ["Intercept", "Second", "Fourth", "First", "Third"]
     assert output_.shape[0] == X.shape[1] + 1
     assert (
         pd.Series(est_._component_obj.intercept_, index=["Intercept"]).append(
-            pd.Series(est_.feature_importance).sort_values()
+            pd.Series(est_.feature_importance).sort_values(),
         )
         == output_.values
     ).all()
@@ -622,7 +694,8 @@ def test_t_sne_errors_perplexity(perplexity):
     X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
 
     with pytest.raises(
-        ValueError, match=f"The parameter perplexity must be non-negative"
+        ValueError,
+        match=f"The parameter perplexity must be non-negative",
     ):
         t_sne(X, perplexity=perplexity)
 
@@ -646,7 +719,8 @@ def test_t_sne_errors_marker_line_width(marker_line_width):
     X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
 
     with pytest.raises(
-        ValueError, match=f"The parameter marker_line_width must be non-negative"
+        ValueError,
+        match=f"The parameter marker_line_width must be non-negative",
     ):
         graph_t_sne(X, marker_line_width=marker_line_width)
 
@@ -656,7 +730,8 @@ def test_t_sne_errors_marker_size(marker_size):
     X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
 
     with pytest.raises(
-        ValueError, match=f"The parameter marker_size must be non-negative"
+        ValueError,
+        match=f"The parameter marker_size must be non-negative",
     ):
         graph_t_sne(X, marker_size=marker_size)
 

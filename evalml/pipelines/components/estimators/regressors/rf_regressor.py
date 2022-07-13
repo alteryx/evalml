@@ -49,5 +49,7 @@ class RandomForestRegressor(Estimator):
 
         rf_regressor = SKRandomForestRegressor(random_state=random_seed, **parameters)
         super().__init__(
-            parameters=parameters, component_obj=rf_regressor, random_seed=random_seed
+            parameters=parameters,
+            component_obj=rf_regressor,
+            random_seed=random_seed,
         )

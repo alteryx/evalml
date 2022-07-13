@@ -49,7 +49,8 @@ def infer_feature_types(data, feature_types=None):
 
     if data.ww.schema is not None:
         if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(
-            data, data.ww.schema
+            data,
+            data.ww.schema,
         ):
             ww_error = ww.get_invalid_schema_message(data, data.ww.schema)
             if "dtype mismatch" in ww_error:
@@ -88,7 +89,7 @@ def _convert_numeric_dataset_pandas(X, y):
     X_ww = infer_feature_types(X)
     if not is_all_numeric(X_ww):
         raise ValueError(
-            "Values not all numeric or there are null values provided in the dataset"
+            "Values not all numeric or there are null values provided in the dataset",
         )
     y_ww = infer_feature_types(y)
     return X_ww, y_ww

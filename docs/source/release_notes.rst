@@ -10,10 +10,11 @@ Release Notes
         * Fixed iterative graphs not appearing in documentation :pr:`3592`
         * Updated the ``load_diabetes()`` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`
     * Changes
+        * Add pre-commit hooks for linting :pr:`3608`
     * Documentation Changes
     * Testing Changes
         * Pinned GraphViz version for Windows CI Test :pr:`3596`
-        * Removed ``pytest.mark.skip_if_39`` pytest marker :pr:`3602`
+        * Removed ``pytest.mark.skip_if_39`` pytest marker :pr:`3602` :pr:`3607`
 
 .. warning::
 

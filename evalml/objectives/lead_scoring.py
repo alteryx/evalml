@@ -1,7 +1,9 @@
 """Lead scoring objective."""
 import math
 
-from .binary_classification_objective import BinaryClassificationObjective
+from evalml.objectives.binary_classification_objective import (
+    BinaryClassificationObjective,
+)
 
 
 class LeadScoring(BinaryClassificationObjective):

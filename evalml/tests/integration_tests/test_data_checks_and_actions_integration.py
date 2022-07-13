@@ -20,11 +20,7 @@ from evalml.pipelines import (
     TimeSeriesRegressionPipeline,
     TimeSeriesRegularizer,
 )
-from evalml.pipelines.components import (
-    DropColumns,
-    DropRowsTransformer,
-    TargetImputer,
-)
+from evalml.pipelines.components import DropColumns, DropRowsTransformer, TargetImputer
 from evalml.pipelines.components.transformers.imputers.per_column_imputer import (
     PerColumnImputer,
 )
@@ -39,19 +35,22 @@ def test_data_checks_with_healthy_data(X_y_binary):
     # Checks do not return any error.
     X, y = X_y_binary
     data_check = DefaultDataChecks(
-        "binary", get_default_primary_search_objective("binary")
+        "binary",
+        get_default_primary_search_objective("binary"),
     )
     data_checks_output = data_check.validate(X, y)
 
     assert make_pipeline_from_data_check_output(
-        "binary", data_checks_output
+        "binary",
+        data_checks_output,
     ) == BinaryClassificationPipeline(component_graph={}, parameters={}, random_seed=0)
 
 
 @patch("evalml.pipelines.utils.make_pipeline_from_actions")
 def test_make_pipeline_no_problem_configuration(mocked_make_pipeline_from_actions):
     with pytest.raises(
-        ValueError, match="problem_configuration must be a dict containing values"
+        ValueError,
+        match="problem_configuration must be a dict containing values",
     ):
         make_pipeline_from_data_check_output(
             problem_type="time series regression",
@@ -67,7 +66,7 @@ def test_data_checks_ts_regularizer_imputer(uneven_continuous):
             "First_Column": [1, 3, 1, 5, 1, 7] * 23,
             "Second_Column": ["First", "Second", "First", "Third", "First", "Fourth"]
             * 23,
-        }
+        },
     )
     y = pd.Series([i for i in range(len(uneven_continuous))])
 
@@ -89,7 +88,9 @@ def test_data_checks_ts_regularizer_imputer(uneven_continuous):
             break
 
     action_pipeline = make_pipeline_from_data_check_output(
-        "time series regression", data_checks_output, problem_config
+        "time series regression",
+        data_checks_output,
+        problem_config,
     )
 
     assert action_pipeline == TimeSeriesRegressionPipeline(
@@ -139,13 +140,14 @@ def test_data_checks_ts_regularizer_imputer(uneven_continuous):
             ]
             + ["First", "Third", "First", "Fourth", "First", "Second"] * 21
             + ["First", "Third", "First", "Fourth"],
-        }
+        },
     )
     X_expected.ww.init(
-        logical_types={"First_Column": "double", "Second_Column": "categorical"}
+        logical_types={"First_Column": "double", "Second_Column": "categorical"},
     )
     y_expected = pd.Series(
-        [0, 1, 2, 3, 4, 5, 6] + [i for i in range(8, 138)], name="target"
+        [0, 1, 2, 3, 4, 5, 6] + [i for i in range(8, 138)],
+        name="target",
     )
     action_pipeline.fit(X, y)
     X_t, y_t = action_pipeline.transform(X, y)
@@ -160,7 +162,7 @@ def test_data_checks_suggests_drop_and_impute_cols():
             "lots_of_null": [None, 7, None, 3, 5],
             "all_null": [None, None, None, None, None],
             "no_null": [1, 2, 3, 4, 5],
-        }
+        },
     )
     X.ww.init(logical_types={"null_with_categorical": "categorical"})
     y = pd.Series([1, 0, 0, 1, 1])
@@ -194,10 +196,13 @@ def test_data_checks_suggests_drop_and_impute_cols():
             "null_with_categorical": ["a", "c", "b", "c", "c"],
             "lots_of_null": [5, 7, 5, 3, 5],
             "no_null": [1, 2, 3, 4, 5],
-        }
+        },
     )
     X_expected.ww.init(
-        logical_types={"lots_of_null": "double", "null_with_categorical": "categorical"}
+        logical_types={
+            "lots_of_null": "double",
+            "null_with_categorical": "categorical",
+        },
     )
     action_pipeline.fit(X, y)
     X_t = action_pipeline.transform(X, y)
@@ -224,19 +229,21 @@ def test_data_checks_impute_cols(problem_type):
         objective = "R2"
         expected_pipeline_class = RegressionPipeline
         y_expected = ww.init_series(
-            pd.Series([0, 0.1, 0.2, 0.1, 0.1]), logical_type="double"
+            pd.Series([0, 0.1, 0.2, 0.1, 0.1]),
+            logical_type="double",
         )
     data_check = InvalidTargetDataCheck(problem_type, objective)
     data_checks_output = data_check.validate(None, y)
 
     action_pipeline = make_pipeline_from_data_check_output(
-        problem_type, data_checks_output
+        problem_type,
+        data_checks_output,
     )
     expected_parameters = (
         {"Target Imputer": {"impute_strategy": "mean", "fill_value": None}}
         if problem_type == "regression"
         else {
-            "Target Imputer": {"impute_strategy": "most_frequent", "fill_value": None}
+            "Target Imputer": {"impute_strategy": "most_frequent", "fill_value": None},
         }
     )
     assert action_pipeline == expected_pipeline_class(

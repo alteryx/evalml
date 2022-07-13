@@ -15,17 +15,8 @@ from evalml.data_checks import (
     InvalidTargetDataCheck,
 )
 from evalml.exceptions import DataCheckInitError
-from evalml.objectives import (
-    MAPE,
-    MeanSquaredLogError,
-    RootMeanSquaredLogError,
-)
-from evalml.problem_types import (
-    ProblemTypes,
-    is_binary,
-    is_multiclass,
-    is_regression,
-)
+from evalml.objectives import MAPE, MeanSquaredLogError, RootMeanSquaredLogError
+from evalml.problem_types import ProblemTypes, is_binary, is_multiclass, is_regression
 from evalml.utils.woodwork_utils import numeric_and_boolean_ww
 
 invalid_targets_data_check_name = InvalidTargetDataCheck.name
@@ -33,7 +24,8 @@ invalid_targets_data_check_name = InvalidTargetDataCheck.name
 
 def test_invalid_target_data_check_invalid_n_unique():
     with pytest.raises(
-        ValueError, match="`n_unique` must be a non-negative integer value."
+        ValueError,
+        match="`n_unique` must be a non-negative integer value.",
     ):
         InvalidTargetDataCheck(
             "regression",
@@ -45,7 +37,8 @@ def test_invalid_target_data_check_invalid_n_unique():
 def test_invalid_target_data_check_nan_error():
     X = pd.DataFrame({"col": [1, 2, 3]})
     invalid_targets_check = InvalidTargetDataCheck(
-        "regression", get_default_primary_search_objective("regression")
+        "regression",
+        get_default_primary_search_objective("regression"),
     )
 
     assert invalid_targets_check.validate(X, y=pd.Series([1, 2, 3])) == []
@@ -63,7 +56,8 @@ def test_invalid_target_data_check_numeric_binary_classification_valid_float():
     y = pd.Series([0.0, 1.0, 0.0, 1.0])
     X = pd.DataFrame({"col": range(len(y))})
     invalid_targets_check = InvalidTargetDataCheck(
-        "binary", get_default_primary_search_objective("binary")
+        "binary",
+        get_default_primary_search_objective("binary"),
     )
     assert invalid_targets_check.validate(X, y) == []
 
@@ -72,7 +66,8 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
     y = pd.Series([0] + [1] * 19 + [2] * 80)
     X = pd.DataFrame({"col": range(len(y))})
     invalid_targets_check = InvalidTargetDataCheck(
-        "multiclass", get_default_primary_search_objective("binary")
+        "multiclass",
+        get_default_primary_search_objective("binary"),
     )
     expected_message = "Target does not have at least two instances per class which is required for multiclass classification"
 
@@ -83,7 +78,7 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS,
             details={"least_populated_class_labels": [0]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     y = pd.Series([0] + [1] + [2] * 98)
@@ -95,12 +90,13 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS,
             details={"least_populated_class_labels": [0, 1]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
 @pytest.mark.parametrize(
-    "pd_type", ["int16", "int32", "int64", "float16", "float32", "float64", "bool"]
+    "pd_type",
+    ["int16", "int32", "int64", "float16", "float32", "float64", "bool"],
 )
 def test_invalid_target_data_check_invalid_pandas_data_types_error(pd_type):
     y = pd.Series([0, 1, 0, 0, 1, 0, 1, 0])
@@ -108,7 +104,8 @@ def test_invalid_target_data_check_invalid_pandas_data_types_error(pd_type):
     X = pd.DataFrame({"col": range(len(y))})
 
     invalid_targets_check = InvalidTargetDataCheck(
-        "binary", get_default_primary_search_objective("binary")
+        "binary",
+        get_default_primary_search_objective("binary"),
     )
 
     assert invalid_targets_check.validate(X, y) == []
@@ -138,7 +135,8 @@ def test_invalid_target_data_check_invalid_pandas_data_types_error(pd_type):
 
 def test_invalid_target_y_none():
     invalid_targets_check = InvalidTargetDataCheck(
-        "binary", get_default_primary_search_objective("binary")
+        "binary",
+        get_default_primary_search_objective("binary"),
     )
     assert invalid_targets_check.validate(pd.DataFrame(), y=None) == [
         DataCheckError(
@@ -146,13 +144,14 @@ def test_invalid_target_y_none():
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_IS_NONE,
             details={},
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
 def test_invalid_target_data_input_formats():
     invalid_targets_check = InvalidTargetDataCheck(
-        "binary", get_default_primary_search_objective("binary")
+        "binary",
+        get_default_primary_search_objective("binary"),
     )
 
     # test empty pd.Series
@@ -164,7 +163,7 @@ def test_invalid_target_data_input_formats():
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
             details={},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     expected = [
@@ -183,10 +182,10 @@ def test_invalid_target_data_input_formats():
                             "type": "category",
                             "categories": ["most_frequent"],
                             "default_value": "most_frequent",
-                        }
+                        },
                     },
                     metadata={"is_target": True},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckError(
@@ -219,7 +218,8 @@ def test_invalid_target_data_input_formats():
 
 
 @pytest.mark.parametrize(
-    "problem_type", [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
+    "problem_type",
+    [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY],
 )
 def test_invalid_target_data_check_n_unique(problem_type):
     y = pd.Series(list(range(100, 200)) + list(range(200)))
@@ -227,7 +227,8 @@ def test_invalid_target_data_check_n_unique(problem_type):
     X = pd.DataFrame({"col": range(len(y))})
 
     invalid_targets_check = InvalidTargetDataCheck(
-        problem_type, get_default_primary_search_objective(problem_type)
+        problem_type,
+        get_default_primary_search_objective(problem_type),
     )
     # Test default value of n_unique
     assert invalid_targets_check.validate(X, y) == [
@@ -236,7 +237,7 @@ def test_invalid_target_data_check_n_unique(problem_type):
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
             details={"target_values": unique_values},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     # Test number of unique values < n_unique
@@ -250,12 +251,14 @@ def test_invalid_target_data_check_n_unique(problem_type):
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
             details={"target_values": unique_values},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     # Test n_unique is None
     invalid_targets_check = InvalidTargetDataCheck(
-        "binary", get_default_primary_search_objective("binary"), n_unique=None
+        "binary",
+        get_default_primary_search_objective("binary"),
+        n_unique=None,
     )
     y = pd.Series(range(150))
     X = pd.DataFrame({"col": range(len(y))})
@@ -267,7 +270,7 @@ def test_invalid_target_data_check_n_unique(problem_type):
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
             details={"target_values": unique_values},
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
@@ -291,7 +294,7 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_name
             "InvalidTargetDataCheck": {
                 "problem_type": "multiclass",
                 "objective": objective,
-            }
+            },
         },
     )
     assert data_checks.validate(X, y) == [
@@ -300,16 +303,19 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_name
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
             details={
-                "Count of offending values": sum(val <= 0 for val in y.values.flatten())
+                "Count of offending values": sum(
+                    val <= 0 for val in y.values.flatten()
+                ),
             },
-        ).to_dict()
+        ).to_dict(),
     ]
 
     X = pd.DataFrame({"column_one": [100, 200, 100, 200, 100]})
     y = pd.Series([2, 3, 0, 1, 1])
 
     invalid_targets_check = InvalidTargetDataCheck(
-        problem_type="regression", objective=objective
+        problem_type="regression",
+        objective=objective,
     )
 
     assert invalid_targets_check.validate(X, y) == [
@@ -318,14 +324,17 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_name
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
             details={
-                "Count of offending values": sum(val <= 0 for val in y.values.flatten())
+                "Count of offending values": sum(
+                    val <= 0 for val in y.values.flatten()
+                ),
             },
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
 @pytest.mark.parametrize(
-    "objective", [RootMeanSquaredLogError(), MeanSquaredLogError(), MAPE()]
+    "objective",
+    [RootMeanSquaredLogError(), MeanSquaredLogError(), MAPE()],
 )
 def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_instances(
     objective,
@@ -339,7 +348,7 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_inst
             "InvalidTargetDataCheck": {
                 "problem_type": "multiclass",
                 "objective": objective,
-            }
+            },
         },
     )
 
@@ -349,9 +358,11 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_inst
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
             details={
-                "Count of offending values": sum(val <= 0 for val in y.values.flatten())
+                "Count of offending values": sum(
+                    val <= 0 for val in y.values.flatten()
+                ),
             },
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
@@ -369,7 +380,7 @@ def test_invalid_target_data_check_invalid_labels_for_objectives(
                     "InvalidTargetDataCheck": {
                         "problem_type": "multiclass",
                         "objective": objective,
-                    }
+                    },
                 },
             )
             assert data_checks.validate(X, y) == []
@@ -380,7 +391,8 @@ def test_invalid_target_data_check_invalid_labels_for_objectives(
     for objective in time_series_core_objectives:
         if not objective.positive_only:
             invalid_targets_check = InvalidTargetDataCheck(
-                problem_type="regression", objective=objective
+                problem_type="regression",
+                objective=objective,
             )
             assert invalid_targets_check.validate(X, y) == []
 
@@ -403,7 +415,7 @@ def test_invalid_target_data_check_valid_labels_for_nonnegative_objectives(objec
             "InvalidTargetDataCheck": {
                 "problem_type": "multiclass",
                 "objective": objective,
-            }
+            },
         },
     )
     assert data_checks.validate(X, y) == []
@@ -417,13 +429,14 @@ def test_invalid_target_data_check_initialize_with_none_objective():
                 "InvalidTargetDataCheck": {
                     "problem_type": "multiclass",
                     "objective": None,
-                }
+                },
             },
         )
 
 
 @pytest.mark.parametrize(
-    "problem_type", [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.REGRESSION]
+    "problem_type",
+    [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.REGRESSION],
 )
 def test_invalid_target_data_check_regression_problem_nonnumeric_data(problem_type):
     y_categorical = pd.Series(["Peace", "Is", "A", "Lie"] * 100)
@@ -440,36 +453,43 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data(problem_ty
     ).to_dict()
 
     invalid_targets_check = InvalidTargetDataCheck(
-        problem_type, get_default_primary_search_objective(problem_type)
+        problem_type,
+        get_default_primary_search_objective(problem_type),
     )
     assert invalid_targets_check.validate(
-        X=pd.DataFrame({"col": range(len(y_categorical))}), y=y_categorical
+        X=pd.DataFrame({"col": range(len(y_categorical))}),
+        y=y_categorical,
     ) == [data_check_error]
     assert invalid_targets_check.validate(
-        X=pd.DataFrame({"col": range(len(y_mixed_cat_numeric))}), y=y_mixed_cat_numeric
+        X=pd.DataFrame({"col": range(len(y_mixed_cat_numeric))}),
+        y=y_mixed_cat_numeric,
     ) == [data_check_error]
     assert (
         invalid_targets_check.validate(
-            X=pd.DataFrame({"col": range(len(y_integer))}), y=y_integer
+            X=pd.DataFrame({"col": range(len(y_integer))}),
+            y=y_integer,
         )
         == []
     )
     assert (
         invalid_targets_check.validate(
-            X=pd.DataFrame({"col": range(len(y_float))}), y=y_float
+            X=pd.DataFrame({"col": range(len(y_float))}),
+            y=y_float,
         )
         == []
     )
     assert (
         invalid_targets_check.validate(
-            X=pd.DataFrame({"col": range(len(y_numeric))}), y=y_numeric
+            X=pd.DataFrame({"col": range(len(y_numeric))}),
+            y=y_numeric,
         )
         == []
     )
 
 
 @pytest.mark.parametrize(
-    "problem_type", [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS]
+    "problem_type",
+    [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS],
 )
 def test_invalid_target_data_check_multiclass_problem_binary_data(problem_type):
     y_multiclass = pd.Series([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3] * 25)
@@ -483,30 +503,35 @@ def test_invalid_target_data_check_multiclass_problem_binary_data(problem_type):
     ).to_dict()
 
     invalid_targets_check = InvalidTargetDataCheck(
-        "multiclass", get_default_primary_search_objective("multiclass")
+        "multiclass",
+        get_default_primary_search_objective("multiclass"),
     )
     assert (
         invalid_targets_check.validate(
-            X=pd.DataFrame({"col": range(len(y_multiclass))}), y=y_multiclass
+            X=pd.DataFrame({"col": range(len(y_multiclass))}),
+            y=y_multiclass,
         )
         == []
     )
     assert invalid_targets_check.validate(
-        X=pd.DataFrame({"col": range(len(y_binary))}), y=y_binary
+        X=pd.DataFrame({"col": range(len(y_binary))}),
+        y=y_binary,
     ) == [data_check_error]
 
 
 @pytest.mark.parametrize(
-    "problem_type", [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS]
+    "problem_type",
+    [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS],
 )
 def test_invalid_target_data_check_multiclass_problem_almost_continuous_data(
     problem_type,
 ):
     invalid_targets_check = InvalidTargetDataCheck(
-        problem_type, get_default_primary_search_objective(problem_type)
+        problem_type,
+        get_default_primary_search_objective(problem_type),
     )
     y_multiclass_high_classes = pd.Series(
-        list(range(0, 100)) * 3
+        list(range(0, 100)) * 3,
     )  # 100 classes, 300 samples, .33 class/sample ratio
     X = pd.DataFrame({"col": range(len(y_multiclass_high_classes))})
     data_check_warning = DataCheckWarning(
@@ -516,11 +541,11 @@ def test_invalid_target_data_check_multiclass_problem_almost_continuous_data(
         details={"class_to_value_ratio": 1 / 3},
     ).to_dict()
     assert invalid_targets_check.validate(X, y=y_multiclass_high_classes) == [
-        data_check_warning
+        data_check_warning,
     ]
 
     y_multiclass_med_classes = pd.Series(
-        list(range(0, 5)) * 20
+        list(range(0, 5)) * 20,
     )  # 5 classes, 100 samples, .05 class/sample ratio
     X = pd.DataFrame({"col": range(len(y_multiclass_med_classes))})
     data_check_warning = DataCheckWarning(
@@ -530,11 +555,11 @@ def test_invalid_target_data_check_multiclass_problem_almost_continuous_data(
         details={"class_to_value_ratio": 0.05},
     ).to_dict()
     assert invalid_targets_check.validate(X, y=y_multiclass_med_classes) == [
-        data_check_warning
+        data_check_warning,
     ]
 
     y_multiclass_low_classes = pd.Series(
-        list(range(0, 3)) * 100
+        list(range(0, 3)) * 100,
     )  # 2 classes, 300 samples, .01 class/sample ratio
     X = pd.DataFrame({"col": range(len(y_multiclass_low_classes))})
     assert invalid_targets_check.validate(X, y=y_multiclass_low_classes) == []
@@ -547,7 +572,8 @@ def test_invalid_target_data_check_mismatched_indices():
     y_diff_index_order = pd.Series([0, 1, 0], index=[0, 2, 1])
 
     invalid_targets_check = InvalidTargetDataCheck(
-        "binary", get_default_primary_search_objective("binary")
+        "binary",
+        get_default_primary_search_objective("binary"),
     )
     assert invalid_targets_check.validate(X=None, y=y_same_index) == []
     assert invalid_targets_check.validate(X, y_same_index) == []
@@ -563,7 +589,7 @@ def test_invalid_target_data_check_mismatched_indices():
                 "indices_not_in_features": X_index_missing,
                 "indices_not_in_target": y_index_missing,
             },
-        ).to_dict()
+        ).to_dict(),
     ]
     assert invalid_targets_check.validate(X, y_diff_index_order) == [
         DataCheckWarning(
@@ -571,7 +597,7 @@ def test_invalid_target_data_check_mismatched_indices():
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.MISMATCHED_INDICES_ORDER,
             details={},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     # Test that we only store ten mismatches when there are more than 10 differences in indices found
@@ -588,7 +614,7 @@ def test_invalid_target_data_check_mismatched_indices():
                 "indices_not_in_features": X_index_missing[:10],
                 "indices_not_in_target": y_index_missing[:10],
             },
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
@@ -596,7 +622,8 @@ def test_invalid_target_data_check_different_lengths():
     X = pd.DataFrame({"col": [1, 2, 3]})
     y_diff_len = pd.Series([0, 1])
     invalid_targets_check = InvalidTargetDataCheck(
-        "binary", get_default_primary_search_objective("binary")
+        "binary",
+        get_default_primary_search_objective("binary"),
     )
     assert invalid_targets_check.validate(X, y_diff_len) == [
         DataCheckWarning(
@@ -618,7 +645,8 @@ def test_invalid_target_data_check_different_lengths():
 
 
 @pytest.mark.parametrize(
-    "problem_type", [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
+    "problem_type",
+    [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY],
 )
 def test_invalid_target_data_check_numeric_binary_does_not_return_warnings(
     problem_type,
@@ -626,7 +654,8 @@ def test_invalid_target_data_check_numeric_binary_does_not_return_warnings(
     y = pd.Series([1, 5, 1, 5, 1, 1])
     X = pd.DataFrame({"col": range(len(y))})
     invalid_targets_check = InvalidTargetDataCheck(
-        problem_type, get_default_primary_search_objective(problem_type)
+        problem_type,
+        get_default_primary_search_objective(problem_type),
     )
     assert invalid_targets_check.validate(X, y) == []
 
@@ -634,7 +663,8 @@ def test_invalid_target_data_check_numeric_binary_does_not_return_warnings(
 @pytest.mark.parametrize("use_nullable_types", [True, False])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_invalid_target_data_check_action_for_data_with_null(
-    use_nullable_types, problem_type
+    use_nullable_types,
+    problem_type,
 ):
     y = pd.Series([None, None, None, 0, 0, 0, 0, 0, 0, 0])
     if use_nullable_types:
@@ -642,7 +672,8 @@ def test_invalid_target_data_check_action_for_data_with_null(
 
     X = pd.DataFrame({"col": range(len(y))})
     invalid_targets_check = InvalidTargetDataCheck(
-        problem_type, get_default_primary_search_objective(problem_type)
+        problem_type,
+        get_default_primary_search_objective(problem_type),
     )
     expected = [
         DataCheckError(
@@ -664,12 +695,12 @@ def test_invalid_target_data_check_action_for_data_with_null(
                             "default_value": "mean"
                             if is_regression(problem_type)
                             else "most_frequent",
-                        }
+                        },
                     },
                     metadata={"is_target": True},
-                )
+                ),
             ],
-        ).to_dict()
+        ).to_dict(),
     ]
     if is_binary(problem_type):
         expected.append(
@@ -678,7 +709,7 @@ def test_invalid_target_data_check_action_for_data_with_null(
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                 details={"target_values": [0]},
-            ).to_dict()
+            ).to_dict(),
         )
     elif is_multiclass(problem_type):
         expected.append(
@@ -687,7 +718,7 @@ def test_invalid_target_data_check_action_for_data_with_null(
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_ENOUGH_CLASSES,
                 details={"num_classes": 1},
-            ).to_dict()
+            ).to_dict(),
         )
         expected.append(
             DataCheckWarning(
@@ -695,7 +726,7 @@ def test_invalid_target_data_check_action_for_data_with_null(
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
                 details={"class_to_value_ratio": 0.1},
-            ).to_dict()
+            ).to_dict(),
         )
 
     messages = invalid_targets_check.validate(X, y)
@@ -705,7 +736,8 @@ def test_invalid_target_data_check_action_for_data_with_null(
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_invalid_target_data_check_action_for_all_null(problem_type):
     invalid_targets_check = InvalidTargetDataCheck(
-        problem_type, get_default_primary_search_objective(problem_type)
+        problem_type,
+        get_default_primary_search_objective(problem_type),
     )
 
     y_all_null = pd.Series([None, None, None])

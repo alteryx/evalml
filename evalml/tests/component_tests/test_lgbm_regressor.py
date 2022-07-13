@@ -29,12 +29,16 @@ def test_lightgbm_regressor_random_seed_bounds_seed(X_y_regression):
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
     clf = LightGBMRegressor(
-        n_estimators=1, max_depth=1, random_seed=SEED_BOUNDS.min_bound
+        n_estimators=1,
+        max_depth=1,
+        random_seed=SEED_BOUNDS.min_bound,
     )
     fitted = clf.fit(X, y)
     assert isinstance(fitted, LightGBMRegressor)
     clf = LightGBMRegressor(
-        n_estimators=1, max_depth=1, random_seed=SEED_BOUNDS.max_bound
+        n_estimators=1,
+        max_depth=1,
+        random_seed=SEED_BOUNDS.max_bound,
     )
     clf.fit(X, y)
 
@@ -124,12 +128,12 @@ def test_correct_args(mock_predict, X_y_regression):
 @patch("evalml.pipelines.components.estimators.estimator.Estimator.predict")
 def test_categorical_data_subset(mock_predict, X_y_regression):
     X = pd.DataFrame(
-        {"feature_1": [0, 0, 1, 1, 0, 1], "feature_2": ["a", "a", "b", "b", "c", "c"]}
+        {"feature_1": [0, 0, 1, 1, 0, 1], "feature_2": ["a", "a", "b", "b", "c", "c"]},
     )
     X.ww.init(logical_types={"feature_2": "categorical"})
     y = pd.Series([1, 1, 0, 0, 0, 1])
     X_expected = pd.DataFrame(
-        {0: [0, 0, 1, 1, 0, 1], 1: [0.0, 0.0, 1.0, 1.0, 2.0, 2.0]}
+        {0: [0, 0, 1, 1, 0, 1], 1: [0.0, 0.0, 1.0, 1.0, 2.0, 2.0]},
     )
     X_expected.iloc[:, 1] = X_expected.iloc[:, 1].astype("category")
 
@@ -180,7 +184,9 @@ def test_regression_rf(X_y_regression, lgbm):
 
     with pytest.raises(lgbm.basic.LightGBMError, match="bagging_fraction"):
         clf = LightGBMRegressor(
-            boosting_type="rf", bagging_freq=1, bagging_fraction=1.01
+            boosting_type="rf",
+            bagging_freq=1,
+            bagging_fraction=1.01,
         )
         clf.fit(X, y)
 

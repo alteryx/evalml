@@ -97,7 +97,7 @@ def test_automl_algorithm_create_ensemble_cache():
         "hash1": {
             "Linear Pipeline - Logistic Regression Classifier": lrc,
             "Decision Tree Pipeline - Decision Tree Classifier": dtc,
-        }
+        },
     }
     assert pipelines.component_graph.cached_data == expected_comp_graph
 

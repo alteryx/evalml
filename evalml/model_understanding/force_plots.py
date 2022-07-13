@@ -3,9 +3,7 @@ import numpy as np
 import shap
 from shap import initjs
 
-from evalml.model_understanding.prediction_explanations import (
-    explain_predictions,
-)
+from evalml.model_understanding.prediction_explanations import explain_predictions
 from evalml.utils import jupyter_check
 
 
@@ -29,7 +27,10 @@ def graph_force_plot(pipeline, rows_to_explain, training_data, y, matplotlib=Fal
     def gen_force_plot(shap_values, training_data, expected_value, matplotlib):
         """Helper function to generate a single force plot."""
         shap_plot = shap.force_plot(
-            expected_value, np.array(shap_values), training_data, matplotlib=matplotlib
+            expected_value,
+            np.array(shap_values),
+            training_data,
+            matplotlib=matplotlib,
         )
         return shap_plot
 
@@ -85,7 +86,7 @@ def force_plot(pipeline, rows_to_explain, training_data, y):
     """
     if not isinstance(rows_to_explain, list):
         raise TypeError(
-            "rows_to_explain should be provided as a list of row index integers!"
+            "rows_to_explain should be provided as a list of row index integers!",
         )
     if not all([isinstance(x, int) for x in rows_to_explain]):
         raise TypeError("rows_to_explain should only contain integers!")

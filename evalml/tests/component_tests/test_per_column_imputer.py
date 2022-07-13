@@ -25,7 +25,7 @@ def non_numeric_df():
             ["b", "b", "b", "b"],
             ["a", "a", "a", "a"],
             [np.nan, np.nan, np.nan, np.nan],
-        ]
+        ],
     )
     X.columns = ["A", "B", "C", "D"]
     return X
@@ -48,7 +48,7 @@ def test_all_strategies():
             "B": pd.Series([4, 6, 4, np.nan]),
             "C": pd.Series([6, 8, 8, np.nan]),
             "D": pd.Series(["a", "a", "b", np.nan]),
-        }
+        },
     )
     X.ww.init(logical_types={"D": "categorical"})
 
@@ -58,7 +58,7 @@ def test_all_strategies():
             "B": pd.Series([4, 6, 4, 4]),
             "C": pd.Series([6, 8, 8, 100]),
             "D": pd.Series(["a", "a", "b", "a"], dtype="category"),
-        }
+        },
     )
 
     strategies = {
@@ -101,17 +101,19 @@ def test_non_numeric_errors(non_numeric_df):
             "B": "categorical",
             "C": "categorical",
             "D": "categorical",
-        }
+        },
     )
     # mean with all strings
     strategies = {"A": {"impute_strategy": "mean"}}
     with pytest.raises(
-        ValueError, match="Cannot use mean strategy with non-numeric data"
+        ValueError,
+        match="Cannot use mean strategy with non-numeric data",
     ):
         transformer = PerColumnImputer(impute_strategies=strategies)
         transformer.fit_transform(X)
     with pytest.raises(
-        ValueError, match="Cannot use mean strategy with non-numeric data"
+        ValueError,
+        match="Cannot use mean strategy with non-numeric data",
     ):
         transformer = PerColumnImputer(impute_strategies=strategies)
         transformer.fit(X)
@@ -119,12 +121,14 @@ def test_non_numeric_errors(non_numeric_df):
     # median with all strings
     strategies = {"B": {"impute_strategy": "median"}}
     with pytest.raises(
-        ValueError, match="Cannot use median strategy with non-numeric data"
+        ValueError,
+        match="Cannot use median strategy with non-numeric data",
     ):
         transformer = PerColumnImputer(impute_strategies=strategies)
         transformer.fit_transform(X)
     with pytest.raises(
-        ValueError, match="Cannot use median strategy with non-numeric data"
+        ValueError,
+        match="Cannot use median strategy with non-numeric data",
     ):
         transformer = PerColumnImputer(impute_strategies=strategies)
         transformer.fit(X)
@@ -138,7 +142,7 @@ def test_non_numeric_valid(non_numeric_df):
             "B": "categorical",
             "C": "categorical",
             "D": "categorical",
-        }
+        },
     )
     # most frequent with all strings
     strategies = {
@@ -155,7 +159,7 @@ def test_non_numeric_valid(non_numeric_df):
             "B": pd.Series(["a", "b", "a", "a"], dtype="category"),
             "C": pd.Series(["a", "b", "a", "a"], dtype="category"),
             "D": pd.Series(["a", "b", "a", "a"], dtype="category"),
-        }
+        },
     )
 
     X_t = transformer.fit_transform(X)
@@ -176,7 +180,7 @@ def test_non_numeric_valid(non_numeric_df):
             "B": "categorical",
             "C": "categorical",
             "D": "categorical",
-        }
+        },
     )
     X_expected = pd.DataFrame(
         {
@@ -184,7 +188,7 @@ def test_non_numeric_valid(non_numeric_df):
             "B": pd.Series(["a", "b", "a", "a"], dtype="category"),
             "C": pd.Series(["a", "b", "a", "a"], dtype="category"),
             "D": pd.Series(["a", "b", "a", 100], dtype="category"),
-        }
+        },
     )
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected, X_t)
@@ -193,7 +197,7 @@ def test_non_numeric_valid(non_numeric_df):
 def test_datetime_does_not_error(fraud_100):
     X, y = fraud_100
     pci = PerColumnImputer(
-        impute_strategies={"country": {"impute_strategy": "most_frequent"}}
+        impute_strategies={"country": {"impute_strategy": "most_frequent"}},
     )
     pci.fit(X, y)
 
@@ -206,7 +210,7 @@ def test_fit_transform_drop_all_nan_columns():
             "all_nan": [np.nan, np.nan, np.nan],
             "some_nan": [np.nan, 1, 0],
             "another_col": [0, 1, 2],
-        }
+        },
     )
     X.ww.init(logical_types={"all_nan": "Double"})
     strategies = {
@@ -225,7 +229,7 @@ def test_fit_transform_drop_all_nan_columns():
                 "all_nan": [np.nan, np.nan, np.nan],
                 "some_nan": [0.0, 1.0, 0.0],
                 "another_col": [0, 1, 2],
-            }
+            },
         ),
     )
 
@@ -236,7 +240,7 @@ def test_transform_drop_all_nan_columns():
             "all_nan": [np.nan, np.nan, np.nan],
             "some_nan": [np.nan, 1, 0],
             "another_col": [0, 1, 2],
-        }
+        },
     )
     X.ww.init(logical_types={"all_nan": "Double"})
     strategies = {
@@ -257,7 +261,7 @@ def test_transform_drop_all_nan_columns():
                 "all_nan": [np.nan, np.nan, np.nan],
                 "some_nan": [0.0, 1.0, 0.0],
                 "another_col": [0, 1, 2],
-            }
+            },
         ),
     )
 
@@ -288,13 +292,14 @@ def test_transform_drop_all_nan_columns_empty():
             pd.Series(
                 ["this will be a natural language column because length", "yay", "hay"],
                 dtype="string",
-            )
+            ),
         ),
     ],
 )
 @pytest.mark.parametrize("has_nan", [True, False])
 def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(
-    X_df, has_nan
+    X_df,
+    has_nan,
 ):
     y = pd.Series([1, 2, 1])
     override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
@@ -315,7 +320,7 @@ def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(
         transformed = imputer.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            0: logical_type
+            0: logical_type,
         }
 
 
@@ -326,7 +331,7 @@ def test_per_column_imputer_column_subset():
             "all_nan_included": [np.nan, np.nan, np.nan],
             "column_with_nan_not_included": [np.nan, 1, 0],
             "column_with_nan_included": [0, 1, np.nan],
-        }
+        },
     )
     strategies = {
         "all_nan_included": {"impute_strategy": "most_frequent"},
@@ -338,16 +343,16 @@ def test_per_column_imputer_column_subset():
             "all_nan_not_included": [np.nan, np.nan, np.nan],
             "column_with_nan_not_included": [np.nan, 1, 0],
             "column_with_nan_included": [0, 1, 0],
-        }
+        },
     )
     X_expected.ww.init(
         logical_types={
             "all_nan_not_included": "double",
             "column_with_nan_included": "double",
-        }
+        },
     )
     X.ww.init(
-        logical_types={"all_nan_included": "Double", "all_nan_not_included": "Double"}
+        logical_types={"all_nan_included": "Double", "all_nan_not_included": "Double"},
     )
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected, X_t)
@@ -360,7 +365,7 @@ def test_per_column_imputer_column_subset():
                 "column_with_nan_not_included": [np.nan, 1, 0],
                 # Because of https://github.com/alteryx/evalml/issues/2055
                 "column_with_nan_included": [0.0, 1.0, 0.0],
-            }
+            },
         ),
     )
 
@@ -372,7 +377,7 @@ def test_per_column_imputer_impute_strategies_is_None():
             "all_nan_included": [np.nan, np.nan, np.nan],
             "column_with_nan_not_included": [np.nan, 1, 0],
             "column_with_nan_included": [0, 1, np.nan],
-        }
+        },
     )
     X_expected = infer_feature_types(X)
     transformer = PerColumnImputer(impute_strategies=None)
@@ -382,6 +387,6 @@ def test_per_column_imputer_impute_strategies_is_None():
         X_t = transformer.fit_transform(X)
     assert len(w) == 1
     assert "No columns to impute. Please check `impute_strategies` parameter." in str(
-        w[-1].message
+        w[-1].message,
     )
     assert_frame_equal(X_expected, X_t)

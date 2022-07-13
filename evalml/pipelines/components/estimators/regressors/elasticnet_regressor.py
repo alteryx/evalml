@@ -59,7 +59,9 @@ class ElasticNetRegressor(Estimator):
         parameters.update(kwargs)
         en_regressor = SKElasticNet(random_state=random_seed, **parameters)
         super().__init__(
-            parameters=parameters, component_obj=en_regressor, random_seed=random_seed
+            parameters=parameters,
+            component_obj=en_regressor,
+            random_seed=random_seed,
         )
 
     @property

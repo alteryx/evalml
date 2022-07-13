@@ -28,7 +28,12 @@ from evalml.utils import import_or_raise, infer_feature_types, jupyter_check
 
 
 def partial_dependence(
-    pipeline, X, features, percentiles=(0.05, 0.95), grid_resolution=100, kind="average"
+    pipeline,
+    X,
+    features,
+    percentiles=(0.05, 0.95),
+    grid_resolution=100,
+    kind="average",
 ):
     """Calculates one or two-way partial dependence.
 
@@ -139,7 +144,7 @@ def partial_dependence(
         if len(X_not_allowed.columns):
             # these three logical types aren't allowed for partial dependence
             types = sorted(
-                set(X_not_allowed.ww.types["Logical Type"].astype(str).tolist())
+                set(X_not_allowed.ww.types["Logical Type"].astype(str).tolist()),
             )
             raise PartialDependenceError(
                 f"Columns {X_not_allowed.columns.tolist()} are of types {types}, which cannot be used for partial dependence",
@@ -156,7 +161,9 @@ def partial_dependence(
         elif any(is_datetime):
             custom_range = {
                 date: _range_for_dates(
-                    X_dt.ww.loc[:, date], percentiles, grid_resolution
+                    X_dt.ww.loc[:, date],
+                    percentiles,
+                    grid_resolution,
                 )
                 for date in X_dt.columns
             }
@@ -222,9 +229,9 @@ def partial_dependence(
                     {
                         "feature_values": np.tile(values[0], avg_pred.shape[0]),
                         "partial_dependence": np.concatenate(
-                            [pred for pred in avg_pred]
+                            [pred for pred in avg_pred],
                         ),
-                    }
+                    },
                 )
             elif isinstance(features, (list, tuple)):
                 avg_data = pd.DataFrame(avg_pred.reshape((-1, avg_pred.shape[-1])))
@@ -247,7 +254,9 @@ def partial_dependence(
                 if classes is not None:
                     ind_data["class_label"] = np.repeat(classes, len(values[0]))
                 ind_data.insert(
-                    0, "feature_values", np.tile(values[0], ind_preds.shape[0])
+                    0,
+                    "feature_values",
+                    np.tile(values[0], ind_preds.shape[0]),
                 )
 
             elif isinstance(features, (list, tuple)):
@@ -277,12 +286,18 @@ def partial_dependence(
             raise e
         else:
             raise PartialDependenceError(
-                str(e), PartialDependenceErrorCode.ALL_OTHER_ERRORS
+                str(e),
+                PartialDependenceErrorCode.ALL_OTHER_ERRORS,
             ) from e
 
 
 def graph_partial_dependence(
-    pipeline, X, features, class_label=None, grid_resolution=100, kind="average"
+    pipeline,
+    X,
+    features,
+    class_label=None,
+    grid_resolution=100,
+    kind="average",
 ):
     """Create an one-way or two-way partial dependence plot.
 
@@ -333,7 +348,8 @@ def graph_partial_dependence(
         is_categorical = _is_feature_of_semantic_type(features, X, "category")
 
     _go = import_or_raise(
-        "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
+        "plotly.graph_objects",
+        error_msg="Cannot find dependency plotly.graph_objects",
     )
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
@@ -344,11 +360,16 @@ def graph_partial_dependence(
         if class_label not in pipeline.classes_:
             msg = f"Class {class_label} is not one of the classes the pipeline was fit on: {', '.join(list(pipeline.classes_))}"
             raise PartialDependenceError(
-                msg, code=PartialDependenceErrorCode.INVALID_CLASS_LABEL
+                msg,
+                code=PartialDependenceErrorCode.INVALID_CLASS_LABEL,
             )
 
     part_dep = partial_dependence(
-        pipeline, X, features=features, grid_resolution=grid_resolution, kind=kind
+        pipeline,
+        X,
+        features=features,
+        grid_resolution=grid_resolution,
+        kind=kind,
     )
 
     ice_data = None
@@ -385,7 +406,8 @@ def graph_partial_dependence(
     if isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
         class_labels = [class_label] if class_label is not None else pipeline.classes_
         _subplots = import_or_raise(
-            "plotly.subplots", error_msg="Cannot find dependency plotly.graph_objects"
+            "plotly.subplots",
+            error_msg="Cannot find dependency plotly.graph_objects",
         )
 
         # If the user passes in a value for class_label, we want to create a 1 x 1 subplot or else there would
@@ -433,7 +455,12 @@ def graph_partial_dependence(
                     else:
                         if ice_data is not None:
                             fig = _add_ice_plot(
-                                _go, fig, ice_data, row=row, col=col, label=label
+                                _go,
+                                fig,
+                                ice_data,
+                                row=row,
+                                col=col,
+                                label=label,
                             )
                         trace = _go.Scatter(
                             x=x,
@@ -458,7 +485,7 @@ def graph_partial_dependence(
             yrange = _calculate_axis_range(
                 ice_data.drop("class_label", axis=1)
                 if ice_data is not None
-                else part_dep["partial_dependence"]
+                else part_dep["partial_dependence"],
             )
             fig.update_xaxes(title=title, range=xrange)
             fig.update_yaxes(range=yrange)
@@ -521,7 +548,7 @@ def _update_fig_with_two_way_partial_dependence(
         fig.update_xaxes(
             title=f"{features[1]}",
             range=_calculate_axis_range(
-                np.array([x for x in part_dep.columns if x != "class_label"])
+                np.array([x for x in part_dep.columns if x != "class_label"]),
             ),
             row=row,
             col=col,
@@ -536,7 +563,7 @@ def _update_fig_with_two_way_partial_dependence(
         fig.update_xaxes(
             title=f"{features[1]}",
             range=_calculate_axis_range(
-                np.array([x for x in part_dep.columns if x != "class_label"])
+                np.array([x for x in part_dep.columns if x != "class_label"]),
             ),
             row=row,
             col=col,
@@ -566,5 +593,7 @@ def _update_fig_with_two_way_partial_dependence(
             col=col,
         )
     fig.add_trace(
-        _go.Contour(z=z, name=label, coloraxis="coloraxis", **kwargs), row=row, col=col
+        _go.Contour(z=z, name=label, coloraxis="coloraxis", **kwargs),
+        row=row,
+        col=col,
     )

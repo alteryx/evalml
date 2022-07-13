@@ -1,9 +1,5 @@
 """Data check to check if any set features are likely to be multicollinear."""
-from evalml.data_checks import (
-    DataCheck,
-    DataCheckMessageCode,
-    DataCheckWarning,
-)
+from evalml.data_checks import DataCheck, DataCheckMessageCode, DataCheckWarning
 from evalml.utils import infer_feature_types
 
 
@@ -62,7 +58,8 @@ class MulticollinearityDataCheck(DataCheck):
         correlated_cols = [
             (col_1, col_2)
             for col_1, col_2 in zip(
-                above_threshold["column_1"], above_threshold["column_2"]
+                above_threshold["column_1"],
+                above_threshold["column_2"],
             )
         ]
         if correlated_cols:
@@ -73,6 +70,6 @@ class MulticollinearityDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.IS_MULTICOLLINEAR,
                     details={"columns": correlated_cols},
-                ).to_dict()
+                ).to_dict(),
             )
         return messages

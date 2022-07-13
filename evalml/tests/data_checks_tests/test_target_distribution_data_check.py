@@ -28,7 +28,7 @@ def test_target_distribution_data_check_no_y(X_y_regression):
             data_check_name=target_dist_check_name,
             message_code=DataCheckMessageCode.TARGET_IS_NONE,
             details={},
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
@@ -58,7 +58,7 @@ def test_target_distribution_data_check_unsupported_target_type(target_type):
                 data_check_name=target_dist_check_name,
                 message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
                 details={"unsupported_type": y.ww.logical_type.type_string},
-            ).to_dict()
+            ).to_dict(),
         ]
 
 
@@ -69,7 +69,12 @@ def test_target_distribution_data_check_unsupported_target_type(target_type):
     [(10000, "jarque_bera", jarque_bera), (5000, "shapiro", shapiro)],
 )
 def test_target_distribution_data_check_warning_action(
-    size, name, statistic, distribution, data_type, X_y_regression
+    size,
+    name,
+    statistic,
+    distribution,
+    data_type,
+    X_y_regression,
 ):
     X, y = X_y_regression
     # set this to avoid flaky tests. This is primarily because when we have smaller samples,
@@ -122,7 +127,7 @@ def test_target_distribution_data_check_warning_action(
                             "is_target": True,
                             "transformation_strategy": "lognormal",
                         },
-                    )
+                    ),
                 ],
-            ).to_dict()
+            ).to_dict(),
         ]

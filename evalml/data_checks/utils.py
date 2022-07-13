@@ -1,5 +1,5 @@
 """Utility methods for the data checks in EvalML."""
-from .data_check_action_code import DataCheckActionCode
+from evalml.data_checks.data_check_action_code import DataCheckActionCode
 
 
 def handle_data_check_action_code(action_code):
@@ -29,5 +29,5 @@ def handle_data_check_action_code(action_code):
     if isinstance(action_code, DataCheckActionCode):
         return action_code
     raise ValueError(
-        "`handle_data_check_action_code` was not passed a str or DataCheckActionCode object"
+        "`handle_data_check_action_code` was not passed a str or DataCheckActionCode object",
     )

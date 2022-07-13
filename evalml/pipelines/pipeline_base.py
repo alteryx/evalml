@@ -12,18 +12,17 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 
-from .components import (
+from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
+from evalml.objectives import get_objective
+from evalml.pipelines import ComponentGraph
+from evalml.pipelines.components import (
     PCA,
     ComponentBase,
     DFSTransformer,
     Estimator,
     LinearDiscriminantAnalysis,
 )
-from .components.utils import all_components, handle_component_class
-
-from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
-from evalml.objectives import get_objective
-from evalml.pipelines import ComponentGraph
+from evalml.pipelines.components.utils import all_components, handle_component_class
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.problem_types import is_binary
 from evalml.utils import (
@@ -72,17 +71,18 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 component = handle_component_class(component)
                 if not component._supported_by_list_API:
                     raise ValueError(
-                        f"{component.name} cannot be defined in a list because edges may be ambiguous. Please use a dictionary to specify the appropriate component graph for this pipeline instead."
+                        f"{component.name} cannot be defined in a list because edges may be ambiguous. Please use a dictionary to specify the appropriate component graph for this pipeline instead.",
                     )
             self.component_graph = ComponentGraph(
                 component_dict=PipelineBase._make_component_dict_from_component_list(
-                    component_graph
+                    component_graph,
                 ),
                 random_seed=self.random_seed,
             )
         elif isinstance(component_graph, dict):
             self.component_graph = ComponentGraph(
-                component_dict=component_graph, random_seed=self.random_seed
+                component_dict=component_graph,
+                random_seed=self.random_seed,
             )
         elif isinstance(component_graph, ComponentGraph):
             self.component_graph = ComponentGraph(
@@ -92,7 +92,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             )
         else:
             raise ValueError(
-                "component_graph must be a list, dict, or ComponentGraph object"
+                "component_graph must be a list, dict, or ComponentGraph object",
             )
         self.component_graph.instantiate(parameters)
 
@@ -149,7 +149,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         component_graph[-1] = component_graph[-1]
 
         if inspect.isclass(component_graph[-1]) and issubclass(
-            component_graph[-1], Estimator
+            component_graph[-1],
+            Estimator,
         ):
             estimator_class = component_graph.pop(-1)
             summary = estimator_class.name
@@ -196,8 +197,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         if self.problem_type not in estimator_problem_types:
             raise ValueError(
                 "Problem type {} not valid for this component graph. Valid problem types include {}.".format(
-                    self.problem_type, estimator_problem_types
-                )
+                    self.problem_type,
+                    estimator_problem_types,
+                ),
             )
 
     def __getitem__(self, index):
@@ -238,8 +240,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         if self._estimator_name in self.input_feature_names:
             logger.info(
                 "Number of features: {}".format(
-                    len(self.input_feature_names[self._estimator_name])
-                )
+                    len(self.input_feature_names[self._estimator_name]),
+                ),
             )
 
         # Summary of steps
@@ -357,10 +359,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             try:
                 if not objective.is_defined_for_problem_type(self.problem_type):
                     raise ValueError(
-                        f"Invalid objective {objective.name} specified for problem type {self.problem_type}"
+                        f"Invalid objective {objective.name} specified for problem type {self.problem_type}",
                     )
                 y_pred = self._select_y_pred_for_score(
-                    X, y, y_pred, y_pred_proba, objective
+                    X,
+                    y,
+                    y_pred,
+                    y_pred_proba,
+                    objective,
                 )
                 score = self._score(
                     X,
@@ -391,7 +397,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             order = ComponentGraph.generate_order(component_graph.component_dict)
             final_component = order[-1]
             return handle_component_class(
-                component_graph[final_component].__class__
+                component_graph[final_component].__class__,
             ).model_family
 
     @property
@@ -421,7 +427,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         feature_names = self.input_feature_names[self._estimator_name]
         importance = list(
-            zip(feature_names, self.estimator.feature_importance)
+            zip(feature_names, self.estimator.feature_importance),
         )  # note: this only works for binary
         importance.sort(key=lambda x: -abs(x[1]))
         df = pd.DataFrame(importance, columns=["feature", "importance"])
@@ -456,10 +462,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             nodes[comp_] = {"Parameters": param_dict, "Name": att_.name}
 
         x_edges_list = self.component_graph._get_edges(
-            self.component_graph.component_dict, "features"
+            self.component_graph.component_dict,
+            "features",
         )
         y_edges_list = self.component_graph._get_edges(
-            self.component_graph.component_dict, "target"
+            self.component_graph.component_dict,
+            "target",
         )
         x_edges = [{"from": edge[0], "to": edge[1]} for edge in x_edges_list]
         y_edges = [{"from": edge[0], "to": edge[1]} for edge in y_edges_list]
@@ -498,7 +506,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             ValueError: If path is not writeable.
         """
         graphviz = import_or_raise(
-            "graphviz", error_msg="Please install graphviz to visualize pipelines."
+            "graphviz",
+            error_msg="Please install graphviz to visualize pipelines.",
         )
 
         # Try rendering a dummy graph to see if a working backend is installed
@@ -510,7 +519,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 + "Install the backend using one of the following commands:\n"
                 + "  Mac OS: brew install graphviz\n"
                 + "  Linux (Ubuntu): sudo apt-get install graphviz\n"
-                + "  Windows: conda install python-graphviz\n"
+                + "  Windows: conda install python-graphviz\n",
             )
 
         graph_format = None
@@ -523,7 +532,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 f.close()
             except (IOError, FileNotFoundError):
                 raise ValueError(
-                    ("Specified filepath is not writeable: {}".format(filepath))
+                    ("Specified filepath is not writeable: {}".format(filepath)),
                 )
             path_and_name, graph_format = os.path.splitext(filepath)
             graph_format = graph_format[1:].lower()  # ignore the dot
@@ -533,7 +542,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                     (
                         "Unknown format '{}'. Make sure your format is one of the "
                         + "following: {}"
-                    ).format(graph_format, supported_filetypes)
+                    ).format(graph_format, supported_filetypes),
                 )
 
         graph = self.component_graph.graph(path_and_name, graph_format)
@@ -567,7 +576,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         if importance_threshold < 0:
             raise ValueError(
-                f"Provided importance threshold of {importance_threshold} must be greater than or equal to 0"
+                f"Provided importance threshold of {importance_threshold} must be greater than or equal to 0",
             )
 
         # Remove features with importance whose absolute value is less than importance threshold
@@ -579,7 +588,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         title = "Feature Importance"
         subtitle = "May display fewer features due to feature selection"
         data = [
-            go.Bar(x=feat_imp["importance"], y=feat_imp["feature"], orientation="h")
+            go.Bar(x=feat_imp["importance"], y=feat_imp["feature"], orientation="h"),
         ]
 
         layout = {
@@ -678,7 +687,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         def repr_component(parameters):
             return ", ".join(
-                [f"'{key}': {safe_repr(value)}" for key, value in parameters.items()]
+                [f"'{key}': {safe_repr(value)}" for key, value in parameters.items()],
             )
 
         component_dict_str = repr(self.component_graph)
@@ -686,7 +695,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             [
                 f"'{component}':{{{repr_component(parameters)}}}"
                 for component, parameters in self.parameters.items()
-            ]
+            ],
         )
         parameters_str = f"parameters={{{parameters_repr}}}"
 
@@ -703,7 +712,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                     random_seed_str,
                 ]
                 if arg is not None
-            ]
+            ],
         )
 
         return f"pipeline = {(type(self).__name__)}(component_graph={component_dict_str}, {additional_args_str})"
@@ -739,7 +748,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 has_custom_components,
                 has_dim_reduction,
                 has_dfs,
-            ]
+            ],
         )
 
     @staticmethod
@@ -749,7 +758,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         for objective in objectives:
             try:
                 objective_instances.append(
-                    get_objective(objective, return_instance=True)
+                    get_objective(objective, return_instance=True),
                 )
             except ObjectiveCreationError as e:
                 msg = f"Cannot pass {objective} as a string in pipeline.score. Instantiate first and then add it to the list of objectives."

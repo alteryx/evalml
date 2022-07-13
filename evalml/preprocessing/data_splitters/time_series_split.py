@@ -53,7 +53,12 @@ class TimeSeriesSplit(BaseCrossValidator):
     """
 
     def __init__(
-        self, max_delay=0, gap=0, forecast_horizon=1, time_index=None, n_splits=3
+        self,
+        max_delay=0,
+        gap=0,
+        forecast_horizon=1,
+        time_index=None,
+        n_splits=3,
     ):
         self.max_delay = max_delay
         self.gap = gap
@@ -111,7 +116,7 @@ class TimeSeriesSplit(BaseCrossValidator):
         # We'll do this by passing X=y if X is empty
         if self._check_if_empty(X) and self._check_if_empty(y):
             raise ValueError(
-                "Both X and y cannot be None or empty in TimeSeriesSplit.split"
+                "Both X and y cannot be None or empty in TimeSeriesSplit.split",
             )
         elif self._check_if_empty(X) and not self._check_if_empty(y):
             split_kwargs = dict(X=y, groups=groups)
@@ -119,7 +124,11 @@ class TimeSeriesSplit(BaseCrossValidator):
             split_kwargs = dict(X=X, y=y, groups=groups)
 
         result = are_ts_parameters_valid_for_split(
-            self.gap, self.max_delay, self.forecast_horizon, X.shape[0], self.n_splits
+            self.gap,
+            self.max_delay,
+            self.forecast_horizon,
+            X.shape[0],
+            self.n_splits,
         )
         if not result.is_valid:
             raise ValueError(result.msg)

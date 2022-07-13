@@ -66,7 +66,8 @@ class ExponentialSmoothingRegressor(Estimator):
             "sktime is not installed. Please install using `pip install sktime.`"
         )
         sktime_smoothing = import_or_raise(
-            "sktime.forecasting.exp_smoothing", error_msg=smoothing_model_msg
+            "sktime.forecasting.exp_smoothing",
+            error_msg=smoothing_model_msg,
         )
         smoothing_model = sktime_smoothing.ExponentialSmoothing(**parameters)
 
@@ -79,7 +80,8 @@ class ExponentialSmoothingRegressor(Estimator):
     def _remove_datetime(self, data):
         data_no_dt = data.copy()
         if isinstance(
-            data_no_dt.index, (pd.DatetimeIndex, pd.PeriodIndex, pd.IntervalIndex)
+            data_no_dt.index,
+            (pd.DatetimeIndex, pd.PeriodIndex, pd.IntervalIndex),
         ):
             data_no_dt = data_no_dt.reset_index(drop=True)
 

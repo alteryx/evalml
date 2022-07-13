@@ -77,7 +77,7 @@ class CatBoostClassifier(Estimator):
         }
         if kwargs.get("thread_count", None) is not None:
             warnings.warn(
-                "Parameter 'thread_count' will be ignored. To use parallel threads, use the 'n_jobs' parameter instead."
+                "Parameter 'thread_count' will be ignored. To use parallel threads, use the 'n_jobs' parameter instead.",
             )
         parameters.update(kwargs)
 
@@ -96,7 +96,9 @@ class CatBoostClassifier(Estimator):
         )
         parameters["n_jobs"] = n_jobs
         super().__init__(
-            parameters=parameters, component_obj=cb_classifier, random_seed=random_seed
+            parameters=parameters,
+            component_obj=cb_classifier,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):
@@ -135,7 +137,7 @@ class CatBoostClassifier(Estimator):
             predictions = predictions.flatten()
         if self._label_encoder:
             predictions = self._label_encoder.inverse_transform(
-                predictions.astype(np.int64)
+                predictions.astype(np.int64),
             )
         predictions = infer_feature_types(predictions)
         predictions.index = X.index

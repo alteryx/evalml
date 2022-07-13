@@ -84,7 +84,7 @@ class OutliersDataCheck(DataCheck):
             return messages
 
         warning_msg = "Column(s) {} are likely to have outlier data.".format(
-            ", ".join([f"'{col}'" for col in has_outliers])
+            ", ".join([f"'{col}'" for col in has_outliers]),
         )
         all_rows_with_indices_set = set()
         for row_indices in outlier_row_indices.values():
@@ -107,9 +107,9 @@ class OutliersDataCheck(DataCheck):
                         DataCheckActionCode.DROP_ROWS,
                         data_check_name=self.name,
                         metadata={"rows": all_rows_with_indices},
-                    )
+                    ),
                 ],
-            ).to_dict()
+            ).to_dict(),
         )
         return messages
 

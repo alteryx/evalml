@@ -16,13 +16,15 @@ class ColumnSelector(Transformer):
     def __init__(self, columns=None, random_seed=0, **kwargs):
         if columns and not isinstance(columns, list):
             raise ValueError(
-                f"Parameter columns must be a list. Received {type(columns)}."
+                f"Parameter columns must be a list. Received {type(columns)}.",
             )
 
         parameters = {"columns": columns}
         parameters.update(kwargs)
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def _check_input_for_columns(self, X):
@@ -131,7 +133,7 @@ class SelectColumns(ColumnSelector):
 
     def _modify_columns(self, cols, X, y=None):
         column_intersection = list(
-            sorted(set(cols).intersection(X.columns), key=cols.index)
+            sorted(set(cols).intersection(X.columns), key=cols.index),
         )
         return X.ww[column_intersection]
 

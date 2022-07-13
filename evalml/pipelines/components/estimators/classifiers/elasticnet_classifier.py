@@ -80,7 +80,9 @@ class ElasticNetClassifier(Estimator):
         parameters.update(kwargs)
         lr_classifier = LogisticRegression(random_state=random_seed, **parameters)
         super().__init__(
-            parameters=parameters, component_obj=lr_classifier, random_seed=random_seed
+            parameters=parameters,
+            component_obj=lr_classifier,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y):

@@ -64,7 +64,7 @@ class TimeSeriesRegularizer(Transformer):
 
         if self.frequency_payload and not isinstance(self.frequency_payload, tuple):
             raise ValueError(
-                "The frequency_payload parameter must be a tuple returned from Woodwork's infer_frequency function where debug is True."
+                "The frequency_payload parameter must be a tuple returned from Woodwork's infer_frequency function where debug is True.",
             )
 
         parameters = {
@@ -96,21 +96,21 @@ class TimeSeriesRegularizer(Transformer):
             raise ValueError("The argument time_index cannot be None!")
         elif self.time_index not in X.columns:
             raise KeyError(
-                f"The time_index column `{self.time_index}` does not exist in X!"
+                f"The time_index column `{self.time_index}` does not exist in X!",
             )
 
         X_ww = infer_feature_types(X)
 
         if not isinstance(X_ww.ww.logical_types[self.time_index], Datetime):
             raise TypeError(
-                f"The time_index column `{self.time_index}` must be of type Datetime."
+                f"The time_index column `{self.time_index}` must be of type Datetime.",
             )
 
         if y is not None:
             y = infer_feature_types(y)
             if len(X_ww) != len(y):
                 raise ValueError(
-                    "If y has been passed, then it must be the same length as X."
+                    "If y has been passed, then it must be the same length as X.",
                 )
 
         if self.frequency_payload:
@@ -132,7 +132,7 @@ class TimeSeriesRegularizer(Transformer):
             self.debug_payload["estimated_freq"] is None
         ):  # If even WW can't infer the frequency
             raise ValueError(
-                f"The column {self.time_index} does not have a frequency that can be inferred."
+                f"The column {self.time_index} does not have a frequency that can be inferred.",
             )
 
         estimated_freq = self.debug_payload["estimated_freq"]
@@ -142,14 +142,26 @@ class TimeSeriesRegularizer(Transformer):
         nan = self.debug_payload["nan_values"]
 
         self.error_dict = self._identify_indices(
-            self.time_index, X_ww, estimated_freq, duplicates, missing, extra, nan
+            self.time_index,
+            X_ww,
+            estimated_freq,
+            duplicates,
+            missing,
+            extra,
+            nan,
         )
 
         return self
 
     @staticmethod
     def _identify_indices(
-        time_index, X, estimated_freq, duplicates, missing, extra, nan
+        time_index,
+        X,
+        estimated_freq,
+        duplicates,
+        missing,
+        extra,
+        nan,
     ):
         """Identifies which of the problematic indices is actually misaligned.
 
@@ -273,8 +285,8 @@ class TimeSeriesRegularizer(Transformer):
                     self.debug_payload["estimated_range_start"],
                     self.debug_payload["estimated_range_end"],
                     freq=self.debug_payload["estimated_freq"],
-                )
-            }
+                ),
+            },
         )
 
         cleaned_x = cleaned_df.merge(X, on=[self.time_index], how="left")

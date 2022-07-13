@@ -6,7 +6,8 @@ from evalml.pipelines.components import EmailFeaturizer, URLFeaturizer
 
 
 @pytest.mark.parametrize(
-    "component_class,params", [(URLFeaturizer, {}), (EmailFeaturizer, {})]
+    "component_class,params",
+    [(URLFeaturizer, {}), (EmailFeaturizer, {})],
 )
 def test_init(component_class, params):
     assert component_class().parameters == params
@@ -50,7 +51,8 @@ def make_answer_email_fit_transform(df_with_url_and_email):
         dtype="category",
     )
     expected.ww["IS_FREE_EMAIL_DOMAIN(email)"] = pd.Series(
-        [True, True, False, True, True], dtype="category"
+        [True, True, False, True, True],
+        dtype="category",
     )
     expected.ww.drop(["email"], inplace=True)
     return expected
@@ -76,29 +78,33 @@ def make_answer_url_fit_transform(df_with_url_and_email):
 
 def make_answer_email_fit_transform_missing_values(df_with_url_and_email):
     df_with_missing_values = make_data_email_fit_transform_missing_values(
-        df_with_url_and_email
+        df_with_url_and_email,
     )
     expected = df_with_missing_values.ww.copy()
     expected.ww.drop(["email", "email_2"], inplace=True)
     # Missing values in the original features are passed through
     expected.ww["EMAIL_ADDRESS_TO_DOMAIN(email)"] = pd.Series(
-        [None, None, "abalone.com", "hotmail.com", "email.org"], dtype="category"
+        [None, None, "abalone.com", "hotmail.com", "email.org"],
+        dtype="category",
     )
     expected.ww["EMAIL_ADDRESS_TO_DOMAIN(email_2)"] = pd.Series(
-        [None, None, "abalone.com", "hotmail.com", None], dtype="category"
+        [None, None, "abalone.com", "hotmail.com", None],
+        dtype="category",
     )
     expected.ww["IS_FREE_EMAIL_DOMAIN(email)"] = pd.Series(
-        [None, None, False, True, True], dtype="category"
+        [None, None, False, True, True],
+        dtype="category",
     )
     expected.ww["IS_FREE_EMAIL_DOMAIN(email_2)"] = pd.Series(
-        [None, None, False, True, None], dtype="category"
+        [None, None, False, True, None],
+        dtype="category",
     )
     return expected
 
 
 def make_answer_url_fit_transform_missing_values(df_with_url_and_email):
     df_with_missing_values = make_data_url_fit_transform_missing_values(
-        df_with_url_and_email
+        df_with_url_and_email,
     )
     expected = df_with_missing_values.ww.copy()
     expected.ww.drop(["url", "url_2"], inplace=True)
@@ -108,20 +114,25 @@ def make_answer_url_fit_transform_missing_values(df_with_url_and_email):
         dtype="category",
     )
     expected.ww["URL_TO_DOMAIN(url_2)"] = pd.Series(
-        [None, None, "twitter.com", "twitter.com", None], dtype="category"
+        [None, None, "twitter.com", "twitter.com", None],
+        dtype="category",
     )
     expected.ww["URL_TO_PROTOCOL(url)"] = pd.Series(
-        [None, None] + ["https"] * 3, dtype="category"
+        [None, None] + ["https"] * 3,
+        dtype="category",
     )
     expected.ww["URL_TO_PROTOCOL(url_2)"] = pd.Series(
-        [None, None] + ["https"] * 2 + [None], dtype="category"
+        [None, None] + ["https"] * 2 + [None],
+        dtype="category",
     )
     expected.ww["URL_TO_TLD(url)"] = pd.Series(
-        [None, None] + ["com"] * 3, dtype="category"
+        [None, None] + ["com"] * 3,
+        dtype="category",
     )
 
     expected.ww["URL_TO_TLD(url_2)"] = pd.Series(
-        [None, None] + ["com"] * 2 + [None], dtype="category"
+        [None, None] + ["com"] * 2 + [None],
+        dtype="category",
     )
     return expected
 
@@ -215,7 +226,11 @@ def make_expected_logical_types_url_fit_transform_missing_values():
     ],
 )
 def test_component_fit_transform(
-    component, make_data, make_expected, make_expected_ltypes, df_with_url_and_email
+    component,
+    make_data,
+    make_expected,
+    make_expected_ltypes,
+    df_with_url_and_email,
 ):
 
     data = make_data(df_with_url_and_email)

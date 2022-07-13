@@ -34,7 +34,7 @@ def test_model_family():
 
 def test_problem_types():
     assert set(ARIMARegressor.supported_problem_types) == {
-        ProblemTypes.TIME_SERIES_REGRESSION
+        ProblemTypes.TIME_SERIES_REGRESSION,
     }
 
 
@@ -306,7 +306,10 @@ def test_arima_sp_changes_result():
 @pytest.mark.parametrize("freq_num", ["1", "2"])
 @pytest.mark.parametrize("freq_str", ["T", "M", "Y"])
 def test_different_time_units_out_of_sample(
-    freq_str, freq_num, sktime_arima, forecasting
+    freq_str,
+    freq_num,
+    sktime_arima,
+    forecasting,
 ):
     from sktime.forecasting.arima import AutoARIMA
     from sktime.forecasting.base import ForecastingHorizon
@@ -351,10 +354,12 @@ def test_arima_supports_boolean_features(mock_fit):
     ar.fit(X, y)
 
     pd.testing.assert_series_equal(
-        mock_fit.call_args[1]["X"]["bool_1"], X["bool_1"].astype(float)
+        mock_fit.call_args[1]["X"]["bool_1"],
+        X["bool_1"].astype(float),
     )
     pd.testing.assert_series_equal(
-        mock_fit.call_args[1]["X"]["bool_2"], X["bool_2"].astype(float)
+        mock_fit.call_args[1]["X"]["bool_2"],
+        X["bool_2"].astype(float),
     )
 
 

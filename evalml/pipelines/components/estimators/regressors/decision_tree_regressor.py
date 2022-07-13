@@ -82,5 +82,7 @@ class DecisionTreeRegressor(Estimator):
         parameters.update(kwargs)
         dt_regressor = SKDecisionTreeRegressor(random_state=random_seed, **parameters)
         super().__init__(
-            parameters=parameters, component_obj=dt_regressor, random_seed=random_seed
+            parameters=parameters,
+            component_obj=dt_regressor,
+            random_seed=random_seed,
         )

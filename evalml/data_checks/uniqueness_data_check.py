@@ -6,11 +6,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning,
 )
-from evalml.problem_types import (
-    handle_problem_types,
-    is_multiclass,
-    is_regression,
-)
+from evalml.problem_types import handle_problem_types, is_multiclass, is_regression
 from evalml.utils.woodwork_utils import infer_feature_types
 
 warning_not_unique_enough = (
@@ -116,7 +112,7 @@ class UniquenessDataCheck(DataCheck):
                 DataCheckWarning(
                     message=warning_not_unique_enough.format(
                         (", ").join(
-                            ["'{}'".format(str(col)) for col in not_unique_enough_cols]
+                            ["'{}'".format(str(col)) for col in not_unique_enough_cols],
                         ),
                         self.problem_type,
                     ),
@@ -133,9 +129,9 @@ class UniquenessDataCheck(DataCheck):
                             action_code=DataCheckActionCode.DROP_COL,
                             data_check_name=self.name,
                             metadata={"columns": not_unique_enough_cols},
-                        )
+                        ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             )
 
         elif is_multiclass(self.problem_type):
@@ -144,7 +140,7 @@ class UniquenessDataCheck(DataCheck):
                 DataCheckWarning(
                     message=warning_too_unique.format(
                         (", ").join(
-                            ["'{}'".format(str(col)) for col in too_unique_cols]
+                            ["'{}'".format(str(col)) for col in too_unique_cols],
                         ),
                         self.problem_type,
                     ),
@@ -163,7 +159,7 @@ class UniquenessDataCheck(DataCheck):
                             metadata={"columns": too_unique_cols},
                         ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             )
 
         return messages

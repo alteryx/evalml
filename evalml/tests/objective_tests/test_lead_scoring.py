@@ -97,7 +97,8 @@ def test_binary_more_than_two_unique_values():
     y_predicted = np.array([0, 1, 2])
     y_true = np.array([1, 0, 1])
     with pytest.raises(
-        ValueError, match="y_predicted contains more than two unique values"
+        ValueError,
+        match="y_predicted contains more than two unique values",
     ):
         objective.score(y_true, y_predicted)
 
@@ -108,7 +109,8 @@ def test_binary_more_than_two_unique_values():
 
 
 @pytest.mark.parametrize(
-    "predicted,score", [([0, 1, 1, 1], 0.25), ([0, 0, 0, 0], 0), ([1, 1, 1, 1], 0)]
+    "predicted,score",
+    [([0, 1, 1, 1], 0.25), ([0, 0, 0, 0], 0), ([1, 1, 1, 1], 0)],
 )
 def test_lead_scoring_objective_penalty(predicted, score):
     objective = LeadScoring(true_positives=1, false_positives=-1)

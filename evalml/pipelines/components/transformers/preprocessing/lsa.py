@@ -4,9 +4,7 @@ from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import make_pipeline
 
-from evalml.pipelines.components.transformers.preprocessing import (
-    TextTransformer,
-)
+from evalml.pipelines.components.transformers.preprocessing import TextTransformer
 from evalml.utils import infer_feature_types
 
 
@@ -23,7 +21,8 @@ class LSA(TextTransformer):
 
     def __init__(self, random_seed=0, **kwargs):
         self._lsa_pipeline = make_pipeline(
-            TfidfVectorizer(), TruncatedSVD(random_state=random_seed)
+            TfidfVectorizer(),
+            TruncatedSVD(random_state=random_seed),
         )
         self._provenance = {}
         super().__init__(random_seed=random_seed, **kwargs)
@@ -68,10 +67,12 @@ class LSA(TextTransformer):
         for col in self._text_columns:
             transformed = self._lsa_pipeline.transform(X_ww[col])
             X_ww.ww["LSA({})[0]".format(col)] = pd.Series(
-                transformed[:, 0], index=X_ww.index
+                transformed[:, 0],
+                index=X_ww.index,
             )
             X_ww.ww["LSA({})[1]".format(col)] = pd.Series(
-                transformed[:, 1], index=X_ww.index
+                transformed[:, 1],
+                index=X_ww.index,
             )
             provenance[col] = ["LSA({})[0]".format(col), "LSA({})[1]".format(col)]
         self._provenance = provenance

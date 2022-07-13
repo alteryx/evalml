@@ -33,7 +33,7 @@ class Imputer(Transformer):
     }"""
     _valid_categorical_impute_strategies = set(["most_frequent", "constant"])
     _valid_numeric_impute_strategies = set(
-        ["mean", "median", "most_frequent", "constant"]
+        ["mean", "median", "most_frequent", "constant"],
     )
     _valid_boolean_impute_strategies = set(["most_frequent", "constant"])
 
@@ -50,15 +50,15 @@ class Imputer(Transformer):
     ):
         if categorical_impute_strategy not in self._valid_categorical_impute_strategies:
             raise ValueError(
-                f"{categorical_impute_strategy} is an invalid parameter. Valid categorical imputation strategies are {', '.join(self._valid_numeric_impute_strategies)}"
+                f"{categorical_impute_strategy} is an invalid parameter. Valid categorical imputation strategies are {', '.join(self._valid_numeric_impute_strategies)}",
             )
         if numeric_impute_strategy not in self._valid_numeric_impute_strategies:
             raise ValueError(
-                f"{numeric_impute_strategy} is an invalid parameter. Valid numeric imputation strategies are {', '.join(self._valid_numeric_impute_strategies)}"
+                f"{numeric_impute_strategy} is an invalid parameter. Valid numeric imputation strategies are {', '.join(self._valid_numeric_impute_strategies)}",
             )
         if boolean_impute_strategy not in self._valid_boolean_impute_strategies:
             raise ValueError(
-                f"{boolean_impute_strategy} is an invalid parameter. Valid boolean imputation strategies are {', '.join(self._valid_boolean_impute_strategies)}"
+                f"{boolean_impute_strategy} is an invalid parameter. Valid boolean imputation strategies are {', '.join(self._valid_boolean_impute_strategies)}",
             )
 
         parameters = {
@@ -90,7 +90,9 @@ class Imputer(Transformer):
         self._categorical_cols = None
         self._boolean_cols = None
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):
@@ -106,7 +108,7 @@ class Imputer(Transformer):
         X = infer_feature_types(X)
         cat_cols = list(X.ww.select(["category"], return_schema=True).columns)
         bool_cols = list(
-            X.ww.select(["BooleanNullable", "Boolean"], return_schema=True).columns
+            X.ww.select(["BooleanNullable", "Boolean"], return_schema=True).columns,
         )
         numeric_cols = list(X.ww.select(["numeric"], return_schema=True).columns)
 

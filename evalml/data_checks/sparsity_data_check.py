@@ -101,7 +101,7 @@ class SparsityDataCheck(DataCheck):
                 DataCheckWarning(
                     message=warning_too_unique.format(
                         (", ").join(
-                            ["'{}'".format(str(col)) for col in too_sparse_cols]
+                            ["'{}'".format(str(col)) for col in too_sparse_cols],
                         ),
                         self.problem_type,
                     ),
@@ -118,9 +118,9 @@ class SparsityDataCheck(DataCheck):
                             DataCheckActionCode.DROP_COL,
                             data_check_name=self.name,
                             metadata={"columns": too_sparse_cols},
-                        )
+                        ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             )
 
         return messages

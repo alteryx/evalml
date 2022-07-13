@@ -101,7 +101,7 @@ def convert_to_seconds(input_str):
     else:
         msg = (
             "Invalid unit. Units must be hours, mins, or seconds. Received '{}'".format(
-                unit
+                unit,
             )
         )
         raise AssertionError(msg)
@@ -130,14 +130,18 @@ def get_random_state(seed):
     ):
         raise ValueError(
             'Seed "{}" is not in the range [{}, {}], inclusive'.format(
-                seed, SEED_BOUNDS.min_bound, SEED_BOUNDS.max_bound
-            )
+                seed,
+                SEED_BOUNDS.min_bound,
+                SEED_BOUNDS.max_bound,
+            ),
         )
     return check_random_state(seed)
 
 
 def get_random_seed(
-    random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEED_BOUNDS.max_bound
+    random_state,
+    min_bound=SEED_BOUNDS.min_bound,
+    max_bound=SEED_BOUNDS.max_bound,
 ):
     """Given a numpy.random.RandomState object, generate an int representing a seed value for another random number generator. Or, if given an int, return that int.
 
@@ -157,8 +161,9 @@ def get_random_seed(
     if not min_bound < max_bound:
         raise ValueError(
             "Provided min_bound {} is not less than max_bound {}".format(
-                min_bound, max_bound
-            )
+                min_bound,
+                max_bound,
+            ),
         )
     if isinstance(random_state, np.random.RandomState):
         return random_state.randint(min_bound, max_bound)
@@ -259,7 +264,7 @@ def get_importable_subclasses(base_class, used_in_automl=True):
             classes.append(cls)
         except (ImportError, MissingComponentError, TypeError):
             logger.debug(
-                f"Could not import class {cls.__name__} in get_importable_subclasses"
+                f"Could not import class {cls.__name__} in get_importable_subclasses",
             )
     if used_in_automl:
         classes = [cls for cls in classes if cls.__name__ not in _not_used_in_automl]
@@ -294,7 +299,7 @@ def _rename_column_names_to_numeric(X):
         )
     X_renamed.rename(columns=rename_cols_dict, inplace=True)
     X_renamed.ww.init(
-        logical_types={rename_cols_dict[k]: v for k, v in logical_types.items()}
+        logical_types={rename_cols_dict[k]: v for k, v in logical_types.items()},
     )
     return X_renamed
 
@@ -445,13 +450,17 @@ def _file_path_check(filepath=None, format="png", interactive=False, is_plotly=F
             f.close()
         except (IOError, FileNotFoundError):
             raise ValueError(
-                ("Specified filepath is not writeable: {}".format(filepath))
+                ("Specified filepath is not writeable: {}".format(filepath)),
             )
     return filepath
 
 
 def save_plot(
-    fig, filepath=None, format="png", interactive=False, return_filepath=False
+    fig,
+    filepath=None,
+    format="png",
+    interactive=False,
+    return_filepath=False,
 ):
     """Saves fig to filepath if specified, or to a default location if not.
 
@@ -470,10 +479,12 @@ def save_plot(
     """
     plotly_ = import_or_raise("plotly", error_msg="Cannot find dependency plotly")
     graphviz_ = import_or_raise(
-        "graphviz", error_msg="Please install graphviz to visualize trees."
+        "graphviz",
+        error_msg="Please install graphviz to visualize trees.",
     )
     matplotlib = import_or_raise(
-        "matplotlib", error_msg="Cannot find dependency matplotlib"
+        "matplotlib",
+        error_msg="Cannot find dependency matplotlib",
     )
     plt_ = matplotlib.pyplot
     axes_ = matplotlib.axes
@@ -498,7 +509,10 @@ def save_plot(
         filepath = os.path.join(os.getcwd(), f"test_plot.{extension}")
 
     filepath = _file_path_check(
-        filepath, format=format, interactive=interactive, is_plotly=is_plotly
+        filepath,
+        format=format,
+        interactive=interactive,
+        is_plotly=is_plotly,
     )
 
     if is_plotly and interactive:
@@ -536,7 +550,7 @@ def deprecate_arg(old_arg, new_arg, old_value, new_value):
     if old_value is not None:
         warnings.warn(
             f"Argument '{old_arg}' has been deprecated in favor of '{new_arg}'. "
-            f"Passing '{old_arg}' in future versions will result in an error."
+            f"Passing '{old_arg}' in future versions will result in an error.",
         )
         value_to_use = old_value
     return value_to_use
@@ -573,7 +587,11 @@ _validation_result = namedtuple(
 
 
 def are_ts_parameters_valid_for_split(
-    gap, max_delay, forecast_horizon, n_obs, n_splits
+    gap,
+    max_delay,
+    forecast_horizon,
+    n_obs,
+    n_splits,
 ):
     """Validates the time series parameters in problem_configuration are compatible with split sizes.
 
@@ -628,7 +646,7 @@ def are_datasets_separated_by_gap_time_index(train, test, pipeline_params):
     test_copy.ww.init(time_index=pipeline_params["time_index"])
 
     X_frequency_dict = train_copy.ww.infer_temporal_frequencies(
-        temporal_columns=[train_copy.ww.time_index]
+        temporal_columns=[train_copy.ww.time_index],
     )
     freq = X_frequency_dict[test_copy.ww.time_index]
     if freq is None:
@@ -668,7 +686,9 @@ def validate_holdout_datasets(X, X_train, pipeline_params):
     time_index = pipeline_params["time_index"]
     right_length = len(X) <= forecast_horizon
     X_separated_by_gap = are_datasets_separated_by_gap_time_index(
-        X_train, X, pipeline_params
+        X_train,
+        X,
+        pipeline_params,
     )
     errors = []
     error_msg = []
@@ -676,14 +696,14 @@ def validate_holdout_datasets(X, X_train, pipeline_params):
         errors.append(ValidationErrorCode.INVALID_HOLDOUT_LENGTH)
         error_msg.append(
             f"Holdout data X must have {forecast_horizon} rows (value of forecast horizon) "
-            f"Data received - Length X: {len(X)}"
+            f"Data received - Length X: {len(X)}",
         )
     if not X_separated_by_gap:
         errors.append(ValidationErrorCode.INVALID_HOLDOUT_GAP_SEPARATION)
         error_msg.append(
             f"The first value indicated by the column {time_index} needs to start {gap + 1} "
             f"units ahead of the training data. "
-            f"X value start: {X[time_index].iloc[0]}, X_train value end {X_train[time_index].iloc[-1]}."
+            f"X value start: {X[time_index].iloc[0]}, X_train value end {X_train[time_index].iloc[-1]}.",
         )
 
     return _holdout_validation_result(not errors, error_msg, errors)

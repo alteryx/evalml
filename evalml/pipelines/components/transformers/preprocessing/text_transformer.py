@@ -15,7 +15,9 @@ class TextTransformer(Transformer):
         parameters.update(kwargs)
 
         super().__init__(
-            parameters=parameters, component_obj=component_obj, random_seed=random_seed
+            parameters=parameters,
+            component_obj=component_obj,
+            random_seed=random_seed,
         )
 
     def _get_text_columns(self, X):

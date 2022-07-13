@@ -25,7 +25,8 @@ class FeatureSelector(Transformer):
         return [
             feature_name
             for (selected, feature_name) in zip(
-                selected_masks, self.input_feature_names
+                selected_masks,
+                self.input_feature_names,
             )
             if selected
         ]
@@ -50,7 +51,7 @@ class FeatureSelector(Transformer):
             X_t = self._component_obj.transform(X)
         except AttributeError:
             raise MethodPropertyNotFoundError(
-                "Feature selector requires a transform method or a component_obj that implements transform"
+                "Feature selector requires a transform method or a component_obj that implements transform",
             )
 
         selected_col_names = self.get_names()

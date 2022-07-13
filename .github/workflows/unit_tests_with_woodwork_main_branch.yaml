@@ -28,7 +28,7 @@ jobs:
         run: |
           make installdeps-prophet
           make installdeps-test
-          python -m pip uninstall -y woodwork 
+          python -m pip uninstall -y woodwork
           python -m pip install https://github.com/alteryx/woodwork/archive/main.zip
       - name: Run unit tests without code coverage
         run: |

@@ -93,7 +93,8 @@ class ARIMARegressor(Estimator):
             "sktime is not installed. Please install using `pip install sktime.`"
         )
         sktime_arima = import_or_raise(
-            "sktime.forecasting.arima", error_msg=arima_model_msg
+            "sktime.forecasting.arima",
+            error_msg=arima_model_msg,
         )
         arima_model = sktime_arima.AutoARIMA(**parameters)
 
@@ -104,7 +105,9 @@ class ARIMARegressor(Estimator):
         self.use_covariates = use_covariates
 
         super().__init__(
-            parameters=parameters, component_obj=arima_model, random_seed=random_seed
+            parameters=parameters,
+            component_obj=arima_model,
+            random_seed=random_seed,
         )
 
     def _remove_datetime(self, data, features=False):
@@ -112,7 +115,8 @@ class ARIMARegressor(Estimator):
             return None
         data_no_dt = data.ww.copy()
         if isinstance(
-            data_no_dt.index, (pd.DatetimeIndex, pd.PeriodIndex, pd.IntervalIndex)
+            data_no_dt.index,
+            (pd.DatetimeIndex, pd.PeriodIndex, pd.IntervalIndex),
         ):
             data_no_dt = data_no_dt.ww.reset_index(drop=True)
         if features:
@@ -180,7 +184,7 @@ class ARIMARegressor(Estimator):
                 {
                     col: "Double"
                     for col in X.ww.select(["Boolean"], return_schema=True).columns
-                }
+                },
             )
         y = self._remove_datetime(y)
         X, y = self._match_indices(X, y)
@@ -211,7 +215,7 @@ class ARIMARegressor(Estimator):
             {
                 col: "Double"
                 for col in X.ww.select(["Boolean"], return_schema=True).columns
-            }
+            },
         )
         if not X.empty and self.use_covariates:
             y_pred = self._component_obj.predict(fh=fh_, X=X)

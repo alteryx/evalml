@@ -14,7 +14,12 @@ from evalml.problem_types import (
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_split_data(
-    problem_type, data_type, X_y_binary, X_y_multi, X_y_regression, make_data_type
+    problem_type,
+    data_type,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
+    make_data_type,
 ):
     if is_binary(problem_type):
         X, y = X_y_binary

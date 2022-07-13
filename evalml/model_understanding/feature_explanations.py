@@ -34,24 +34,24 @@ def readable_explanation(
 
     if not pipeline._is_fitted:
         raise ValueError(
-            "Pipelines must be fitted in order to run feature explanations."
+            "Pipelines must be fitted in order to run feature explanations.",
         )
 
     if min_importance_threshold >= 1 or min_importance_threshold < 0:
         raise ValueError(
-            f"The minimum importance threshold must be a percentage value in the range [0, 1), not {min_importance_threshold}."
+            f"The minimum importance threshold must be a percentage value in the range [0, 1), not {min_importance_threshold}.",
         )
 
     if importance_method == "permutation":
 
         if objective == "auto":
             objective = evalml.automl.get_default_primary_search_objective(
-                pipeline.problem_type
+                pipeline.problem_type,
             )
 
         if X is None or y is None:
             raise ValueError(
-                "X and y are required parameters for explaining pipelines with permutation importance."
+                "X and y are required parameters for explaining pipelines with permutation importance.",
             )
 
         X = infer_feature_types(X)
@@ -93,7 +93,10 @@ def readable_explanation(
 
 
 def get_influential_features(
-    imp_df, max_features=5, min_importance_threshold=0.05, linear_importance=False
+    imp_df,
+    max_features=5,
+    min_importance_threshold=0.05,
+    linear_importance=False,
 ):
     """Finds the most influential features as well as any detrimental features from a dataframe of feature importances.
 
@@ -135,14 +138,19 @@ def get_influential_features(
         list(
             somewhat_importance[
                 somewhat_importance["importance"] >= min_importance_threshold
-            ]["feature"]
+            ]["feature"],
         ),
         list(neg_imp_df["feature"]),
     )
 
 
 def _fill_template(
-    estimator, target, objective, most_important, somewhat_important, detrimental_feats
+    estimator,
+    target,
+    objective,
+    most_important,
+    somewhat_important,
+    detrimental_feats,
 ):
     # Get the objective to a printable string
     if objective is not None:

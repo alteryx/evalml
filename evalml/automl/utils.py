@@ -84,7 +84,7 @@ def make_data_splitter(
     if is_time_series(problem_type):
         if not problem_configuration:
             raise ValueError(
-                "problem_configuration is required for time series problem types"
+                "problem_configuration is required for time series problem types",
             )
         return TimeSeriesSplit(
             n_splits=n_splits,
@@ -95,13 +95,16 @@ def make_data_splitter(
         )
     if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
         return TrainingValidationSplit(
-            test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle
+            test_size=_LARGE_DATA_PERCENT_VALIDATION,
+            shuffle=shuffle,
         )
     if problem_type == ProblemTypes.REGRESSION:
         return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         return StratifiedKFold(
-            n_splits=n_splits, random_state=random_seed, shuffle=shuffle
+            n_splits=n_splits,
+            random_state=random_seed,
+            shuffle=shuffle,
         )
 
 
@@ -134,13 +137,19 @@ def tune_binary_threshold(
         if X_threshold_tuning is not None:
             if problem_type == ProblemTypes.TIME_SERIES_BINARY:
                 y_predict_proba = pipeline.predict_proba_in_sample(
-                    X_threshold_tuning, y_threshold_tuning, X, y
+                    X_threshold_tuning,
+                    y_threshold_tuning,
+                    X,
+                    y,
                 )
             else:
                 y_predict_proba = pipeline.predict_proba(X_threshold_tuning, X, y)
             y_predict_proba = y_predict_proba.iloc[:, 1]
             pipeline.optimize_threshold(
-                X_threshold_tuning, y_threshold_tuning, y_predict_proba, objective
+                X_threshold_tuning,
+                y_threshold_tuning,
+                y_predict_proba,
+                objective,
             )
 
 
@@ -160,7 +169,7 @@ def check_all_pipeline_names_unique(pipelines):
         plural, tense = ("s", "were") if len(duplicate_names) > 1 else ("", "was")
         duplicates = ", ".join([f"'{name}'" for name in sorted(duplicate_names)])
         raise ValueError(
-            f"All pipeline names must be unique. The name{plural} {duplicates} {tense} repeated."
+            f"All pipeline names must be unique. The name{plural} {duplicates} {tense} repeated.",
         )
 
 
@@ -207,7 +216,8 @@ def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
     else:
         try:
             import_or_raise(
-                "imblearn.over_sampling", error_msg="imbalanced-learn is not installed"
+                "imblearn.over_sampling",
+                error_msg="imbalanced-learn is not installed",
             )
             return "Oversampler"
         except ImportError:
@@ -215,7 +225,10 @@ def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
 
 
 def get_pipelines_from_component_graphs(
-    component_graphs_dict, problem_type, parameters=None, random_seed=0
+    component_graphs_dict,
+    problem_type,
+    parameters=None,
+    random_seed=0,
 ):
     """Returns created pipelines from passed component graphs based on the specified problem type.
 
@@ -244,6 +257,6 @@ def get_pipelines_from_component_graphs(
                 parameters=parameters,
                 custom_name=graph_name,
                 random_seed=random_seed,
-            )
+            ),
         )
     return created_pipelines

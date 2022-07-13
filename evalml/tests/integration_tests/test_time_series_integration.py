@@ -23,7 +23,7 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
         {
             "features": range(101, 101 + PERIODS),
             "date": pd.date_range("2010-10-01", periods=PERIODS),
-        }
+        },
     )
     y = pd.Series(range(PERIODS))
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
@@ -60,9 +60,10 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
     X_valid = pd.DataFrame(
         {
             "date": pd.date_range(
-                pd.Timestamp(X.date.iloc[-1]) + pd.Timedelta("4d"), periods=2
-            )
-        }
+                pd.Timestamp(X.date.iloc[-1]) + pd.Timedelta("4d"),
+                periods=2,
+            ),
+        },
     )
     # Treat all features as not known-in-advanced
     automl.best_pipeline.predict(X_valid, X_train=X, y_train=y)
@@ -86,7 +87,7 @@ def test_can_run_automl_for_time_series_known_in_advance(
         {
             "features": range(101, 101 + PERIODS),
             "date": pd.date_range("2010-10-01", periods=PERIODS),
-        }
+        },
     )
     y = pd.Series(range(PERIODS))
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
@@ -130,11 +131,12 @@ def test_can_run_automl_for_time_series_known_in_advance(
     X_valid = pd.DataFrame(
         {
             "date": pd.date_range(
-                pd.Timestamp(X.date.iloc[-1]) + pd.Timedelta("4d"), periods=2
+                pd.Timestamp(X.date.iloc[-1]) + pd.Timedelta("4d"),
+                periods=2,
             ),
             "bool_feature": [True, False],
             "cat_feature": ["a", "c"],
-        }
+        },
     )
     # Treat all features as not known-in-advanced
     automl.best_pipeline.predict(X_valid, X_train=X, y_train=y)

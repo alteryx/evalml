@@ -62,7 +62,9 @@ def test_class_imbalance_data_check_binary(test_size, input_type):
         y_balanced = ww.init_series(y_balanced)
 
     class_imbalance_check = ClassImbalanceDataCheck(
-        min_samples=1, num_cv_folds=0, test_size=test_size
+        min_samples=1,
+        num_cv_folds=0,
+        test_size=test_size,
     )
     assert class_imbalance_check.validate(X, y) == []
     assert class_imbalance_check.validate(X, y_long) == [
@@ -71,17 +73,20 @@ def test_class_imbalance_data_check_binary(test_size, input_type):
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
             details={"target_values": [0]},
-        ).to_dict()
+        ).to_dict(),
     ]
     assert ClassImbalanceDataCheck(
-        threshold=0.25, min_samples=1, num_cv_folds=0, test_size=test_size
+        threshold=0.25,
+        min_samples=1,
+        num_cv_folds=0,
+        test_size=test_size,
     ).validate(X, y_long) == [
         DataCheckWarning(
             message="The following labels fall below 25% of the target: [0]",
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
             details={"target_values": [0]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=1, test_size=test_size)
@@ -91,7 +96,7 @@ def test_class_imbalance_data_check_binary(test_size, input_type):
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": [1]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     assert class_imbalance_check.validate(X, y_balanced) == []
@@ -103,7 +108,7 @@ def test_class_imbalance_data_check_binary(test_size, input_type):
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": [0, 1]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
@@ -113,14 +118,14 @@ def test_class_imbalance_data_check_multiclass(test_size, input_type):
     X = pd.DataFrame()
     y = pd.Series([0, 2, 1, 1] * int(1 / test_size))
     y_imbalanced_default_threshold = pd.Series(
-        [0, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * int(1 / test_size)
+        [0, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * int(1 / test_size),
     )
     y_imbalanced_set_threshold = pd.Series(
-        [0, 2, 2, 2, 2, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * int(1 / test_size)
+        [0, 2, 2, 2, 2, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * int(1 / test_size),
     )
     y_imbalanced_cv = pd.Series([0, 1, 2, 2, 1, 1, 1] * int(1 / test_size))
     y_long = pd.Series(
-        [0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4] * int(1 / test_size)
+        [0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4] * int(1 / test_size),
     )
 
     if input_type == "np":
@@ -157,14 +162,17 @@ def test_class_imbalance_data_check_multiclass(test_size, input_type):
     ]
 
     assert ClassImbalanceDataCheck(
-        threshold=0.25, num_cv_folds=0, min_samples=1, test_size=test_size
+        threshold=0.25,
+        num_cv_folds=0,
+        min_samples=1,
+        test_size=test_size,
     ).validate(X, y_imbalanced_set_threshold) == [
         DataCheckWarning(
             message="The following labels fall below 25% of the target: [3, 0]",
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
             details={"target_values": [3, 0]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=2, test_size=test_size)
@@ -174,7 +182,7 @@ def test_class_imbalance_data_check_multiclass(test_size, input_type):
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": [0, 2]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     assert class_imbalance_check.validate(X, y_long) == [
@@ -183,7 +191,7 @@ def test_class_imbalance_data_check_multiclass(test_size, input_type):
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": [0, 1]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     class_imbalance_check = ClassImbalanceDataCheck(test_size=test_size)
@@ -193,7 +201,7 @@ def test_class_imbalance_data_check_multiclass(test_size, input_type):
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": [0, 1, 2, 3]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
@@ -203,7 +211,7 @@ def test_class_imbalance_empty_and_nan(test_size, input_type):
     X = pd.DataFrame()
     y_empty = pd.Series([])
     y_has_nan = pd.Series(
-        [np.nan, np.nan, np.nan, np.nan, 1, 1, 1, 1, 2] * int(1 / test_size)
+        [np.nan, np.nan, np.nan, np.nan, 1, 1, 1, 1, 2] * int(1 / test_size),
     )
 
     if input_type == "np":
@@ -219,18 +227,23 @@ def test_class_imbalance_empty_and_nan(test_size, input_type):
 
     assert class_imbalance_check.validate(X, y_empty) == []
     assert ClassImbalanceDataCheck(
-        threshold=0.5, min_samples=1, num_cv_folds=0, test_size=test_size
+        threshold=0.5,
+        min_samples=1,
+        num_cv_folds=0,
+        test_size=test_size,
     ).validate(X, y_has_nan) == [
         DataCheckWarning(
             message="The following labels fall below 50% of the target: [2.0]",
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
             details={"target_values": [2.0]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     assert ClassImbalanceDataCheck(
-        threshold=0.5, num_cv_folds=0, test_size=test_size
+        threshold=0.5,
+        num_cv_folds=0,
+        test_size=test_size,
     ).validate(X, y_has_nan) == [
         DataCheckWarning(
             message="The following labels fall below 50% of the target: [2.0]",
@@ -249,7 +262,9 @@ def test_class_imbalance_empty_and_nan(test_size, input_type):
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=1, test_size=test_size)
     assert class_imbalance_check.validate(X, y_empty) == []
     assert ClassImbalanceDataCheck(
-        threshold=0.5, num_cv_folds=1, test_size=test_size
+        threshold=0.5,
+        num_cv_folds=1,
+        test_size=test_size,
     ).validate(X, y_has_nan) == [
         DataCheckError(
             message="The number of instances of these targets is less than 2 * the number of cross folds = 2 instances: [2.0]",
@@ -293,13 +308,13 @@ def test_class_imbalance_nonnumeric(test_size, input_type):
             "red",
             "red",
         ]
-        * int(1 / test_size)
+        * int(1 / test_size),
     )
     y_multiclass_imbalanced_folds = pd.Series(
-        ["No", "Maybe", "Maybe", "No", "Yes"] * int(1 / test_size)
+        ["No", "Maybe", "Maybe", "No", "Yes"] * int(1 / test_size),
     )
     y_binary_imbalanced_folds = pd.Series(
-        ["No", "Yes", "No", "Yes", "No"] * int(1 / test_size)
+        ["No", "Yes", "No", "Yes", "No"] * int(1 / test_size),
     )
 
     if input_type == "ww":
@@ -309,7 +324,10 @@ def test_class_imbalance_nonnumeric(test_size, input_type):
         y_multiclass = ww.init_series(y_multiclass)
 
     class_imbalance_check = ClassImbalanceDataCheck(
-        threshold=0.25, min_samples=1, num_cv_folds=0, test_size=test_size
+        threshold=0.25,
+        min_samples=1,
+        num_cv_folds=0,
+        test_size=test_size,
     )
     assert class_imbalance_check.validate(X, y_bools) == [
         DataCheckWarning(
@@ -317,7 +335,7 @@ def test_class_imbalance_nonnumeric(test_size, input_type):
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
             details={"target_values": [True]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     assert class_imbalance_check.validate(X, y_binary) == [
@@ -326,11 +344,13 @@ def test_class_imbalance_nonnumeric(test_size, input_type):
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
             details={"target_values": ["no"]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     assert ClassImbalanceDataCheck(
-        threshold=0.35, num_cv_folds=0, test_size=test_size
+        threshold=0.35,
+        num_cv_folds=0,
+        test_size=test_size,
     ).validate(X, y_multiclass) == [
         DataCheckWarning(
             message="The following labels fall below 35% of the target: ['green', 'blue']",
@@ -353,7 +373,7 @@ def test_class_imbalance_nonnumeric(test_size, input_type):
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": ["Yes"]},
-        ).to_dict()
+        ).to_dict(),
     ]
     assert class_imbalance_check.validate(X, y_multiclass) == []
 
@@ -364,7 +384,7 @@ def test_class_imbalance_nonnumeric(test_size, input_type):
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": ["No", "Yes"]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
     assert class_imbalance_check.validate(X, y_multiclass) == [
@@ -373,7 +393,7 @@ def test_class_imbalance_nonnumeric(test_size, input_type):
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": ["blue", "green"]},
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
@@ -385,7 +405,7 @@ def test_class_imbalance_nonnumeric_balanced(test_size, input_type):
     y_binary_balanced = pd.Series(["No", "Yes", "No", "Yes"] * int(1 / test_size))
     y_multiclass_balanced = pd.Series(
         ["red", "green", "red", "red", "blue", "green", "red", "blue", "green", "red"]
-        * int(1 / test_size)
+        * int(1 / test_size),
     )
     if input_type == "ww":
         X.ww.init()
@@ -407,10 +427,12 @@ def test_class_imbalance_severe(test_size, min_samples, input_type):
     X = pd.DataFrame()
     # 0 will be < 10% of the data, but there will be 50 samples of it
     y_values_binary = pd.Series(
-        [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * 50 * int(1 / test_size)
+        [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * 50 * int(1 / test_size),
     )
     y_values_multiclass = pd.Series(
-        [0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2] * 50 * int(1 / test_size)
+        [0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+        * 50
+        * int(1 / test_size),
     )
     if input_type == "ww":
         X.ww.init()
@@ -418,7 +440,9 @@ def test_class_imbalance_severe(test_size, min_samples, input_type):
         y_values_multiclass = ww.init_series(y_values_multiclass)
 
     class_imbalance_check = ClassImbalanceDataCheck(
-        min_samples=min_samples, num_cv_folds=1, test_size=test_size
+        min_samples=min_samples,
+        num_cv_folds=1,
+        test_size=test_size,
     )
     warnings = [
         DataCheckWarning(
@@ -426,7 +450,7 @@ def test_class_imbalance_severe(test_size, min_samples, input_type):
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
             details={"target_values": [0]},
-        ).to_dict()
+        ).to_dict(),
     ]
     if min_samples > 50:
         warnings.append(
@@ -435,7 +459,7 @@ def test_class_imbalance_severe(test_size, min_samples, input_type):
                 data_check_name=class_imbalance_data_check_name,
                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_SEVERE,
                 details={"target_values": [0]},
-            ).to_dict()
+            ).to_dict(),
         )
     assert class_imbalance_check.validate(X, y_values_binary) == warnings
     assert class_imbalance_check.validate(X, y_values_multiclass) == warnings
@@ -445,23 +469,25 @@ def test_class_imbalance_severe(test_size, min_samples, input_type):
 def test_class_imbalance_large_multiclass(test_size):
     X = pd.DataFrame()
     y_values_multiclass_large = pd.Series(
-        [0] * 20 + [1] * 25 + [2] * 99 + [3] * 105 + [4] * 900 + [5] * 900
+        [0] * 20 + [1] * 25 + [2] * 99 + [3] * 105 + [4] * 900 + [5] * 900,
     )
     y_multiclass_huge = pd.Series([i % 200 for i in range(100000)])
     y_imbalanced_multiclass_huge = y_multiclass_huge.append(
-        pd.Series([200] * 10), ignore_index=True
+        pd.Series([200] * 10),
+        ignore_index=True,
     )
     y_imbalanced_multiclass_nan = y_multiclass_huge.append(
-        pd.Series([np.nan] * 10), ignore_index=True
+        pd.Series([np.nan] * 10),
+        ignore_index=True,
     )
 
     y_values_multiclass_large = y_values_multiclass_large.tolist() * int(1 / test_size)
     y_multiclass_huge = y_multiclass_huge.tolist() * int(1 / test_size)
     y_imbalanced_multiclass_huge = y_imbalanced_multiclass_huge.tolist() * int(
-        1 / test_size
+        1 / test_size,
     )
     y_imbalanced_multiclass_nan = y_imbalanced_multiclass_nan.tolist() * int(
-        1 / test_size
+        1 / test_size,
     )
 
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=1, test_size=test_size)

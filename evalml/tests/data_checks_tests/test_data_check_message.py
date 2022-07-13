@@ -67,7 +67,8 @@ def test_data_check_message_eq(data_check_message):
     assert data_check_message == equal_msg
 
     equal_msg = DataCheckMessage(
-        "different test message", "different test data check message name"
+        "different test message",
+        "different test data check message name",
     )
     assert data_check_message != equal_msg
 
@@ -98,7 +99,8 @@ def test_data_check_warning_eq(data_check_warning):
     assert data_check_warning == equal_msg
 
     equal_msg = DataCheckWarning(
-        "different test warning", "different test data check warning name"
+        "different test warning",
+        "different test data check warning name",
     )
     assert data_check_warning != equal_msg
 
@@ -129,14 +131,16 @@ def test_data_check_error_eq(data_check_error):
     assert data_check_error == equal_msg
 
     equal_msg = DataCheckError(
-        "different test warning", "different test data check error name"
+        "different test warning",
+        "different test data check error name",
     )
     assert data_check_error != equal_msg
 
 
 def test_data_check_message_attributes_optional():
     data_check_warning = DataCheckWarning(
-        message="test warning", data_check_name="test data check warning name"
+        message="test warning",
+        data_check_name="test data check warning name",
     )
     assert data_check_warning.message == "test warning"
     assert data_check_warning.data_check_name == "test data check warning name"
@@ -145,7 +149,8 @@ def test_data_check_message_attributes_optional():
     assert data_check_warning.details == {"columns": None, "rows": None}
 
     data_check_error = DataCheckError(
-        message="test error", data_check_name="test data check error name"
+        message="test error",
+        data_check_name="test data check error name",
     )
     assert data_check_error.message == "test error"
     assert data_check_error.data_check_name == "test data check error name"
@@ -175,7 +180,7 @@ def test_data_check_message_to_dict():
                 DataCheckActionCode.DROP_COL,
                 data_check_name="test_name",
                 metadata={"columns": ["all_null", "also_all_null"]},
-            )
+            ),
         ],
     )
     assert error.to_dict() == {
@@ -194,7 +199,7 @@ def test_data_check_message_to_dict():
                 "data_check_name": "test_name",
                 "metadata": {"columns": ["all_null", "also_all_null"], "rows": None},
                 "parameters": {},
-            }
+            },
         ],
     }
 

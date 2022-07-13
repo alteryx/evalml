@@ -110,7 +110,9 @@ class ProphetRegressor(Estimator):
         X, y = super()._manage_woodwork(X, y)
 
         prophet_df = ProphetRegressor.build_prophet_df(
-            X=X, y=y, time_index=self.time_index
+            X=X,
+            y=y,
+            time_index=self.time_index,
         )
 
         self._component_obj.fit(prophet_df)
@@ -129,7 +131,9 @@ class ProphetRegressor(Estimator):
         X = infer_feature_types(X)
 
         prophet_df = ProphetRegressor.build_prophet_df(
-            X=X, y=y, time_index=self.time_index
+            X=X,
+            y=y,
+            time_index=self.time_index,
         )
 
         prophet_output = self._component_obj.predict(prophet_df)

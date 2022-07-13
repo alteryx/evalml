@@ -30,9 +30,7 @@ from evalml.pipelines.components import (
     Transformer,
     URLFeaturizer,
 )
-from evalml.pipelines.components.transformers.encoders.label_encoder import (
-    LabelEncoder,
-)
+from evalml.pipelines.components.transformers.encoders.label_encoder import LabelEncoder
 from evalml.pipelines.components.transformers.imputers.per_column_imputer import (
     PerColumnImputer,
 )
@@ -255,10 +253,10 @@ def test_make_pipeline_known_in_advance(
                 "forecast_horizon": 3,
             },
             "Known In Advance Pipeline - Select Columns Transformer": {
-                "columns": known_in_advance
+                "columns": known_in_advance,
             },
             "Not Known In Advance Pipeline - Select Columns Transformer": {
-                "columns": ["numerical"]
+                "columns": ["numerical"],
             },
         }
 
@@ -284,7 +282,7 @@ def test_make_pipeline_known_in_advance(
             if c.name != "Label Encoder"
         ]
         expected_known_in_advance_components = [
-            "Select Columns Transformer"
+            "Select Columns Transformer",
         ] + expected_known_in_advance_components
         known_in_advance_components = [
             c.split("-")[1].strip()
@@ -323,7 +321,10 @@ def test_make_pipeline_problem_type_mismatch():
         match=f"{LinearRegressor.name} is not a valid estimator for problem type",
     ):
         make_pipeline(
-            pd.DataFrame(), pd.Series(), LinearRegressor, ProblemTypes.MULTICLASS
+            pd.DataFrame(),
+            pd.Series(),
+            LinearRegressor,
+            ProblemTypes.MULTICLASS,
         )
     with pytest.raises(
         ValueError,
@@ -337,11 +338,11 @@ def test_make_pipeline_from_actions(problem_type):
     pipeline_class = _get_pipeline_base_class(problem_type)
 
     assert make_pipeline_from_actions(problem_type, []) == pipeline_class(
-        component_graph={}
+        component_graph={},
     )
 
     actions = [
-        DataCheckAction(DataCheckActionCode.DROP_COL, None, {"columns": ["some col"]})
+        DataCheckAction(DataCheckActionCode.DROP_COL, None, {"columns": ["some col"]}),
     ]
     assert make_pipeline_from_actions(problem_type, actions) == pipeline_class(
         component_graph={"Drop Columns Transformer": [DropColumns, "X", "y"]},
@@ -351,7 +352,9 @@ def test_make_pipeline_from_actions(problem_type):
 
     actions = [
         DataCheckAction(
-            DataCheckActionCode.DROP_COL, None, metadata={"columns": ["some col"]}
+            DataCheckActionCode.DROP_COL,
+            None,
+            metadata={"columns": ["some col"]},
         ),
         DataCheckAction(
             DataCheckActionCode.IMPUTE_COL,
@@ -425,7 +428,8 @@ def test_make_pipeline_from_actions(problem_type):
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
 @pytest.mark.parametrize("different_names", [True, False])
 def test_make_pipeline_from_actions_with_duplicate_actions(
-    problem_type, different_names
+    problem_type,
+    different_names,
 ):
     pipeline_class = _get_pipeline_base_class(problem_type)
 
@@ -440,13 +444,15 @@ def test_make_pipeline_from_actions_with_duplicate_actions(
     assert make_pipeline_from_actions(problem_type, actions) == pipeline_class(
         component_graph={"Drop Columns Transformer": [DropColumns, "X", "y"]},
         parameters={
-            "Drop Columns Transformer": {"columns": ["some col", "some other col"]}
+            "Drop Columns Transformer": {"columns": ["some col", "some other col"]},
         },
         random_seed=0,
     )
     actions = [
         DataCheckAction(
-            DataCheckActionCode.DROP_ROWS, None, metadata={"rows": [0, 1, 3]}
+            DataCheckActionCode.DROP_ROWS,
+            None,
+            metadata={"rows": [0, 1, 3]},
         ),
         DataCheckAction(
             DataCheckActionCode.DROP_ROWS,
@@ -491,7 +497,11 @@ def test_make_pipeline_samplers(
                 make_pipeline(X, y, estimator, problem_type, sampler_name=sampler)
         else:
             pipeline = make_pipeline(
-                X, y, estimator, problem_type, sampler_name=sampler
+                X,
+                y,
+                estimator,
+                problem_type,
+                sampler_name=sampler,
             )
             # check that we do add the sampler properly
             if sampler is not None and problem_type != "regression":
@@ -509,7 +519,7 @@ def test_get_estimators():
             get_estimators(
                 problem_type=ProblemTypes.BINARY,
                 model_families=[ModelFamily.LINEAR_MODEL],
-            )
+            ),
         )
         == 2
     )
@@ -533,7 +543,8 @@ def test_get_estimators():
         )
     with pytest.raises(TypeError, match="model_families parameter is not a list."):
         get_estimators(
-            problem_type=ProblemTypes.REGRESSION, model_families="random_forest"
+            problem_type=ProblemTypes.REGRESSION,
+            model_families="random_forest",
         )
     with pytest.raises(KeyError):
         get_estimators(problem_type="Not A Valid Problem Type")
@@ -570,7 +581,9 @@ def test_generate_code_pipeline_json_with_objects():
             parameters = {"random_arg": random_arg, "numpy_arg": numpy_arg}
 
             super().__init__(
-                parameters=parameters, component_obj=None, random_seed=random_seed
+                parameters=parameters,
+                component_obj=None,
+                random_seed=random_seed,
             )
 
     component_graph = ["Imputer", CustomEstimator]
@@ -607,7 +620,7 @@ def test_generate_code_pipeline_json_with_objects():
 def test_generate_code_pipeline():
 
     binary_pipeline = BinaryClassificationPipeline(
-        ["Imputer", "Random Forest Classifier"]
+        ["Imputer", "Random Forest Classifier"],
     )
     expected_code = (
         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
@@ -619,7 +632,8 @@ def test_generate_code_pipeline():
     assert expected_code == pipeline
 
     regression_pipeline = RegressionPipeline(
-        ["Imputer", "Random Forest Regressor"], custom_name="Mock Regression Pipeline"
+        ["Imputer", "Random Forest Regressor"],
+        custom_name="Mock Regression Pipeline",
     )
     expected_code = (
         "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
@@ -663,7 +677,8 @@ def test_generate_code_nonlinear_pipeline():
         ],
     }
     pipeline = BinaryClassificationPipeline(
-        component_graph=component_graph, custom_name=custom_name
+        component_graph=component_graph,
+        custom_name=custom_name,
     )
     expected = (
         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
@@ -695,7 +710,9 @@ def test_generate_code_pipeline_with_custom_components():
             parameters = {}
 
             super().__init__(
-                parameters=parameters, component_obj=None, random_seed=random_seed
+                parameters=parameters,
+                component_obj=None,
+                random_seed=random_seed,
             )
 
         def transform(self, X, y=None):
@@ -711,11 +728,13 @@ def test_generate_code_pipeline_with_custom_components():
             parameters = {"random_arg": random_arg}
 
             super().__init__(
-                parameters=parameters, component_obj=None, random_seed=random_seed
+                parameters=parameters,
+                component_obj=None,
+                random_seed=random_seed,
             )
 
     mock_pipeline_with_custom_components = BinaryClassificationPipeline(
-        [CustomTransformer, CustomEstimator]
+        [CustomTransformer, CustomEstimator],
     )
     expected_code = (
         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
@@ -728,10 +747,10 @@ def test_generate_code_pipeline_with_custom_components():
 
 def test_rows_of_interest_errors(X_y_binary):
     pipeline = BinaryClassificationPipeline(
-        component_graph=["Logistic Regression Classifier"]
+        component_graph=["Logistic Regression Classifier"],
     )
     pipeline_mc = MulticlassClassificationPipeline(
-        component_graph=["Logistic Regression Classifier"]
+        component_graph=["Logistic Regression Classifier"],
     )
     X, y = X_y_binary
 
@@ -764,7 +783,11 @@ def test_rows_of_interest_errors(X_y_binary):
 @pytest.mark.parametrize("y", [pd.Series([i % 2 for i in range(100)]), None])
 def test_rows_of_interest_threshold(mock_fit, mock_pred_proba, threshold, y):
     pipeline = BinaryClassificationPipeline(
-        component_graph=["Imputer", "Standard Scaler", "Logistic Regression Classifier"]
+        component_graph=[
+            "Imputer",
+            "Standard Scaler",
+            "Logistic Regression Classifier",
+        ],
     )
     X = pd.DataFrame([i for i in range(100)])
     y = y
@@ -774,7 +797,12 @@ def test_rows_of_interest_threshold(mock_fit, mock_pred_proba, threshold, y):
     predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
     mock_pred_proba.return_value = predicted_proba_values
     vals = rows_of_interest(
-        pipeline, X, y, threshold=threshold, epsilon=0.5, sort_values=True
+        pipeline,
+        X,
+        y,
+        threshold=threshold,
+        epsilon=0.5,
+        sort_values=True,
     )
     if threshold == 0.3:
         assert vals == list(range(100))
@@ -785,7 +813,12 @@ def test_rows_of_interest_threshold(mock_fit, mock_pred_proba, threshold, y):
 
     pipeline._threshold = 0.9
     vals = rows_of_interest(
-        pipeline, X, y, threshold=None, epsilon=0.5, sort_values=True
+        pipeline,
+        X,
+        y,
+        threshold=None,
+        epsilon=0.5,
+        sort_values=True,
     )
     assert vals == list(range(75, 100)) + list(range(25, 75))
 
@@ -804,7 +837,7 @@ def test_rows_of_interest_threshold(mock_fit, mock_pred_proba, threshold, y):
 )
 def test_rows_of_interest_types(mock_fit, mock_pred_proba, types, expected_val):
     pipeline = BinaryClassificationPipeline(
-        component_graph=["Logistic Regression Classifier"]
+        component_graph=["Logistic Regression Classifier"],
     )
     X = pd.DataFrame([i for i in range(100)])
     y = pd.Series([0] * 25 + [1] * 50 + [0] * 25)
@@ -822,7 +855,7 @@ def test_rows_of_interest_types(mock_fit, mock_pred_proba, types, expected_val):
 @pytest.mark.parametrize("epsilon,expected_len", [(0.01, 50), (0.3, 75), (0.5, 100)])
 def test_rows_of_interest_epsilon(mock_fit, mock_pred_proba, epsilon, expected_len):
     pipeline = BinaryClassificationPipeline(
-        component_graph=["Logistic Regression Classifier"]
+        component_graph=["Logistic Regression Classifier"],
     )
     X = pd.DataFrame([i for i in range(100)])
     y = pd.Series([0] * 25 + [1] * 50 + [0] * 25)
@@ -853,7 +886,7 @@ def test_rows_of_interest_epsilon(mock_fit, mock_pred_proba, epsilon, expected_l
 )
 def test_rows_of_interest_sorted(mock_fit, mock_pred_proba, sorts, expected_val):
     pipeline = BinaryClassificationPipeline(
-        component_graph=["Logistic Regression Classifier"]
+        component_graph=["Logistic Regression Classifier"],
     )
     X = pd.DataFrame([i for i in range(100)])
     y = pd.Series([0] * 25 + [1] * 50 + [0] * 25)
@@ -863,7 +896,12 @@ def test_rows_of_interest_sorted(mock_fit, mock_pred_proba, sorts, expected_val)
     predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
     mock_pred_proba.return_value = predicted_proba_values
     vals = rows_of_interest(
-        pipeline, X, y, threshold=0.9, epsilon=0.9, sort_values=sorts
+        pipeline,
+        X,
+        y,
+        threshold=0.9,
+        epsilon=0.9,
+        sort_values=sorts,
     )
     assert vals == expected_val
 
@@ -872,10 +910,11 @@ def test_rows_of_interest_sorted(mock_fit, mock_pred_proba, sorts, expected_val)
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_rows_of_interest_index(mock_fit, mock_pred_proba):
     pipeline = BinaryClassificationPipeline(
-        component_graph=["Logistic Regression Classifier"]
+        component_graph=["Logistic Regression Classifier"],
     )
     X = pd.DataFrame(
-        [i for i in range(100)], index=["index_{}".format(i) for i in range(100)]
+        [i for i in range(100)],
+        index=["index_{}".format(i) for i in range(100)],
     )
     pipeline._is_fitted = True
 
@@ -897,10 +936,15 @@ def test_rows_of_interest_index(mock_fit, mock_pred_proba):
     ],
 )
 def test_rows_of_interest(
-    mock_fit, mock_pred_proba, types, sorts, epsilon, expected_vals
+    mock_fit,
+    mock_pred_proba,
+    types,
+    sorts,
+    epsilon,
+    expected_vals,
 ):
     pipeline = BinaryClassificationPipeline(
-        component_graph=["Logistic Regression Classifier"]
+        component_graph=["Logistic Regression Classifier"],
     )
     X = pd.DataFrame([i for i in range(100)])
     y = pd.Series([0] * 25 + [1] * 50 + [0] * 25)
@@ -910,13 +954,22 @@ def test_rows_of_interest(
     predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
     mock_pred_proba.return_value = predicted_proba_values
     vals = rows_of_interest(
-        pipeline, X, y, types=types, sort_values=sorts, epsilon=epsilon
+        pipeline,
+        X,
+        y,
+        types=types,
+        sort_values=sorts,
+        epsilon=epsilon,
     )
     assert vals == expected_vals
 
     if types == "all":
         vals = rows_of_interest(
-            pipeline, X, types=types, sort_values=sorts, epsilon=epsilon
+            pipeline,
+            X,
+            types=types,
+            sort_values=sorts,
+            epsilon=epsilon,
         )
         assert vals == expected_vals
 
@@ -925,7 +978,7 @@ def test_rows_of_interest(
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_rows_of_interest_empty(mock_fit, mock_pred_proba):
     pipeline = BinaryClassificationPipeline(
-        component_graph=["Logistic Regression Classifier"]
+        component_graph=["Logistic Regression Classifier"],
     )
     X = pd.DataFrame([i for i in range(100)])
     y = pd.Series([0] * 25 + [1] * 50 + [0] * 25)

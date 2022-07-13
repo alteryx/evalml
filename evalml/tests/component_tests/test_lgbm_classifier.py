@@ -31,12 +31,18 @@ def test_lightgbm_classifier_random_seed_bounds_seed(X_y_binary):
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
     clf = LightGBMClassifier(
-        n_estimators=1, max_depth=1, random_seed=SEED_BOUNDS.min_bound, n_jobs=1
+        n_estimators=1,
+        max_depth=1,
+        random_seed=SEED_BOUNDS.min_bound,
+        n_jobs=1,
     )
     fitted = clf.fit(X, y)
     assert isinstance(fitted, LightGBMClassifier)
     clf = LightGBMClassifier(
-        n_estimators=1, max_depth=1, random_seed=SEED_BOUNDS.max_bound, n_jobs=1
+        n_estimators=1,
+        max_depth=1,
+        random_seed=SEED_BOUNDS.max_bound,
+        n_jobs=1,
     )
     clf.fit(X, y)
 
@@ -177,12 +183,12 @@ def test_categorical_data_subset(mock_predict, mock_predict_proba, X_y_binary):
         {
             "feature_1": [0, 0, 1, 1, 0, 1],
             "feature_2": ["a", "a", "b", "b", "c", "c"],
-        }
+        },
     )
     X.ww.init(logical_types={"feature_2": "categorical"})
     y = pd.Series([1, 1, 0, 0, 0, 1])
     X_expected = pd.DataFrame(
-        {0: [0, 0, 1, 1, 0, 1], 1: [0.0, 0.0, 1.0, 1.0, 2.0, 2.0]}
+        {0: [0, 0, 1, 1, 0, 1], 1: [0.0, 0.0, 1.0, 1.0, 2.0, 2.0]},
     )
     X_expected.iloc[:, 1] = X_expected.iloc[:, 1].astype("category")
 
@@ -241,7 +247,7 @@ def test_multiclass_label(mock_predict, X_y_multi):
     X, y = X_y_multi
     y_numeric = pd.Series(y, dtype="int64")
     y_alpha = pd.Series(
-        y_numeric.copy().replace({0: "alright", 1: "better", 2: "great"})
+        y_numeric.copy().replace({0: "alright", 1: "better", 2: "great"}),
     )
 
     clf = LightGBMClassifier()
@@ -269,7 +275,9 @@ def test_binary_rf(X_y_binary, lgbm):
 
     with pytest.raises(lgbm.basic.LightGBMError, match="bagging_fraction"):
         clf = LightGBMClassifier(
-            boosting_type="rf", bagging_freq=1, bagging_fraction=1.01
+            boosting_type="rf",
+            bagging_freq=1,
+            bagging_fraction=1.01,
         )
         clf.fit(X, y)
 
