@@ -55,10 +55,6 @@ def pytest_configure(config):
         "markers",
         "skip_during_conda: mark test to be skipped if running during conda build",
     )
-    config.addinivalue_line(
-        "markers",
-        "skip_if_39: mark test to be skipped if running during conda build",
-    )
 
 
 @pytest.fixture(scope="session")
@@ -386,11 +382,6 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "skip_during_conda" in item.keywords:
                 item.add_marker(skip_conda)
-    if sys.version_info >= (3, 9):
-        skip_39 = pytest.mark.skip(reason="Test dependency not supported in python 3.9")
-        for item in items:
-            if "skip_if_39" in item.keywords:
-                item.add_marker(skip_39)
 
 
 @pytest.fixture
@@ -401,11 +392,6 @@ def is_using_conda(pytestconfig):
 @pytest.fixture
 def is_using_windows(pytestconfig):
     return sys.platform in ["win32", "cygwin"]
-
-
-@pytest.fixture
-def is_running_py_39_or_above():
-    return sys.version_info >= (3, 9)
 
 
 @pytest.fixture
