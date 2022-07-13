@@ -90,13 +90,25 @@ class EngineBase(ABC):
 
     @abstractmethod
     def submit_evaluation_job(
-        self, automl_config, pipeline, X, y, X_holdout=None, y_holdout=None
+        self,
+        automl_config,
+        pipeline,
+        X,
+        y,
+        X_holdout=None,
+        y_holdout=None,
     ):
         """Submit job for pipeline evaluation during AutoMLSearch."""
 
     @abstractmethod
     def submit_training_job(
-        self, automl_config, pipeline, X, y, X_holdout=None, y_holdout=None
+        self,
+        automl_config,
+        pipeline,
+        X,
+        y,
+        X_holdout=None,
+        y_holdout=None,
     ):
         """Submit job for pipeline training."""
 
@@ -223,7 +235,7 @@ def train_and_score_pipeline(
             holdout_y_mapping = {
                 original_target: encoded_target
                 for (encoded_target, original_target) in enumerate(
-                    y_holdout.value_counts().index
+                    y_holdout.value_counts().index,
                 )
             }
             y_holdout = ww.init_series(y_holdout.map(holdout_y_mapping))
@@ -339,7 +351,7 @@ def train_and_score_pipeline(
     cv_scores = pd.Series([fold["mean_cv_score"] for fold in cv_data])
     cv_score_mean = cv_scores.mean()
     logger.info(
-        f"\tFinished cross validation - mean {automl_config.objective.name}: {cv_score_mean:.3f}"
+        f"\tFinished cross validation - mean {automl_config.objective.name}: {cv_score_mean:.3f}",
     )
 
     holdout_score = np.NaN
@@ -365,7 +377,7 @@ def train_and_score_pipeline(
                 and full_pipeline.threshold is not None
             ):
                 logger.debug(
-                    f"\t\t\tFull data pipeline: Optimal threshold found ({full_pipeline.threshold:.3f})"
+                    f"\t\t\tFull data pipeline: Optimal threshold found ({full_pipeline.threshold:.3f})",
                 )
             logger.debug(f"\t\t\tScoring trained full training data pipeline")
             holdout_scores = full_pipeline.score(
@@ -376,7 +388,7 @@ def train_and_score_pipeline(
                 y_train=full_y_train,
             )
             logger.debug(
-                f"\t\t\tFull training data pipeline: {automl_config.objective.name} score: {holdout_scores[automl_config.objective.name]:.3f}"
+                f"\t\t\tFull training data pipeline: {automl_config.objective.name} score: {holdout_scores[automl_config.objective.name]:.3f}",
             )
             holdout_score = holdout_scores[automl_config.objective.name]
             pipeline_cache[hashes] = full_pipeline.component_graph.component_instances
@@ -397,7 +409,7 @@ def train_and_score_pipeline(
                         o.name: holdout_scores[o.name]
                         for o in [automl_config.objective]
                         + automl_config.additional_objectives
-                    }
+                    },
                 )
                 holdout_score = holdout_scores[automl_config.objective.name]
             else:
@@ -406,10 +418,10 @@ def train_and_score_pipeline(
                     zip(
                         [n.name for n in automl_config.additional_objectives],
                         [np.nan] * len(automl_config.additional_objectives),
-                    )
+                    ),
                 )
         logger.info(
-            f"\tFinished holdout set scoring - {automl_config.objective.name}: {holdout_score:.3f}"
+            f"\tFinished holdout set scoring - {automl_config.objective.name}: {holdout_score:.3f}",
         )
 
     training_time = time.time() - start
@@ -429,7 +441,13 @@ def train_and_score_pipeline(
 
 
 def evaluate_pipeline(
-    pipeline, automl_config, X, y, logger, X_holdout=None, y_holdout=None
+    pipeline,
+    automl_config,
+    X,
+    y,
+    logger,
+    X_holdout=None,
+    y_holdout=None,
 ):
     """Function submitted to the submit_evaluation_job engine method.
 

@@ -57,7 +57,13 @@ class SequentialEngine(EngineBase):
     """
 
     def submit_evaluation_job(
-        self, automl_config, pipeline, X, y, X_holdout=None, y_holdout=None
+        self,
+        automl_config,
+        pipeline,
+        X,
+        y,
+        X_holdout=None,
+        y_holdout=None,
     ):
         """Submit a job to evaluate a pipeline.
 

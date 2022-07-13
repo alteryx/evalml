@@ -106,7 +106,13 @@ class CFEngine(EngineBase):
         self._data_futures_cache = {}
 
     def submit_evaluation_job(
-        self, automl_config, pipeline, X, y, X_holdout=None, y_holdout=None
+        self,
+        automl_config,
+        pipeline,
+        X,
+        y,
+        X_holdout=None,
+        y_holdout=None,
     ):
         """Send evaluation job to cluster.
 

@@ -475,11 +475,11 @@ class AutoMLSearch:
         if X_train is not None or y_train is not None:
             if X_train is None:
                 raise ValueError(
-                    "Must specify training data as a 2d array using the X_train argument"
+                    "Must specify training data as a 2d array using the X_train argument",
                 )
             if y_train is None:
                 raise ValueError(
-                    "Must specify training data target values as a 1d vector using the y_train argument"
+                    "Must specify training data target values as a 1d vector using the y_train argument",
                 )
         if X_holdout is not None and y_holdout is not None:
             self.passed_holdout_set = True
@@ -487,11 +487,11 @@ class AutoMLSearch:
             self.passed_holdout_set = False
         elif X_holdout is None and y_holdout is not None:
             raise ValueError(
-                "Must specify holdout data as a 2d array using the X_holdout argument"
+                "Must specify holdout data as a 2d array using the X_holdout argument",
             )
         elif X_holdout is not None and y_holdout is None:
             raise ValueError(
-                "Must specify training data target values as a 1d vector using the y_holdout argument"
+                "Must specify training data target values as a 1d vector using the y_holdout argument",
             )
 
         try:
@@ -657,7 +657,7 @@ class AutoMLSearch:
                     random_seed=self.random_seed,
                 )
                 self.logger.info(
-                    f"Created a holdout dataset with {len(self.X_holdout)} rows. Training dataset has {len(self.X_train)} rows. AutoMLSearch will use the holdout set to score and rank pipelines."
+                    f"Created a holdout dataset with {len(self.X_holdout)} rows. Training dataset has {len(self.X_train)} rows. AutoMLSearch will use the holdout set to score and rank pipelines.",
                 )
             else:
                 self.X_train = X_train
@@ -665,11 +665,11 @@ class AutoMLSearch:
                 self.X_holdout = None
                 self.y_holdout = None
                 self.logger.info(
-                    f"Dataset size is too small to create holdout set. Mininum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(self.X_train)} rows. AutoMLSearch will use mean CV score to rank pipelines."
+                    f"Dataset size is too small to create holdout set. Mininum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(self.X_train)} rows. AutoMLSearch will use mean CV score to rank pipelines.",
                 )
         elif self._holdout_set_size < 0:
             raise ValueError(
-                "Holdout set size must be greater than 0. Set holdout set size to 0 to disable holdout set evaluation."
+                "Holdout set size must be greater than 0. Set holdout set size to 0 to disable holdout set evaluation.",
             )
         else:
             self.X_train = X_train
@@ -682,7 +682,7 @@ class AutoMLSearch:
             )
             if self.passed_holdout_set is False:
                 self.logger.info(
-                    f"Holdout set evaluation is disabled. AutoMLSearch will use mean CV score to rank pipelines."
+                    f"Holdout set evaluation is disabled. AutoMLSearch will use mean CV score to rank pipelines.",
                 )
         self.X_train = infer_feature_types(self.X_train)
         self.y_train = infer_feature_types(self.y_train)
