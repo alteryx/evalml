@@ -120,12 +120,8 @@ def test_get_random_seed_int():
     assert get_random_seed(SEED_BOUNDS.min_bound + 2) == SEED_BOUNDS.min_bound + 2
 
     # vectorize get_random_seed via a wrapper for easy evaluation
-    default_min_bound = (
-        inspect.signature(get_random_seed).parameters["min_bound"].default
-    )
-    default_max_bound = (
-        inspect.signature(get_random_seed).parameters["max_bound"].default
-    )
+    default_min_bound = inspect.signature(get_random_seed).parameters["min_bound"].default
+    default_max_bound = inspect.signature(get_random_seed).parameters["max_bound"].default
     assert default_min_bound == SEED_BOUNDS.min_bound
     assert default_max_bound == SEED_BOUNDS.max_bound
 
@@ -335,6 +331,19 @@ def test_rename_column_names_to_numeric():
     pd.testing.assert_frame_equal(X_renamed, X_expected)
 
 
+@pytest.fixture(scope="session")
+def in_container_arm64():
+    """Helper fixture to run chromium as a single process for kaleido.
+
+    The env var is set in the Dockerfile.arm for the purposes of local
+    testing in a container on a mac M1, otherwise it's a noop.
+    """
+    if os.getenv("DOCKER_ARM", None):
+        import plotly.io as pio
+
+        pio.kaleido.scope.chromium_args += ("--single-process",)
+
+
 @pytest.mark.parametrize(
     "file_name,format,interactive",
     [
@@ -345,6 +354,7 @@ def test_rename_column_names_to_numeric():
     ],
 )
 def test_save_plotly_static_default_format(
+    in_container_arm64,
     file_name,
     format,
     interactive,
@@ -548,9 +558,7 @@ def test_save_graphviz_different_format(
     assert os.path.basename(output_) == "test_plot.png"
 
 
-@pytest.mark.parametrize(
-    "file_name,format,interactive",
-    [("Output/in_folder_plot", "jpeg", True)],
+@pytest.mark.parametrize("file_name,format,interactive", [("Output/in_folder_plot", "jpeg", True)],
 )
 def test_save_graphviz_invalid_filepath(
     file_name,
@@ -842,18 +850,13 @@ def test_time_series_pipeline_validates_holdout_data(
         assert result.error_codes[0] == ValidationErrorCode.INVALID_HOLDOUT_LENGTH
     else:
         assert result.error_messages[0] == gap_error
-        assert (
-            result.error_codes[0] == ValidationErrorCode.INVALID_HOLDOUT_GAP_SEPARATION
-        )
+        assert result.error_codes[0] == ValidationErrorCode.INVALID_HOLDOUT_GAP_SEPARATION
 
 
 def test_year_start_separated_by_gap():
     X = pd.DataFrame(
-        {
-            "time_index": pd.Series(
-                pd.date_range("1960-01-01", freq="AS-JAN", periods=35),
-            ),
-        },
+        {"time_index": pd.Series(pd.date_range("1960-01-01", freq="AS-JAN", periods=35),
+            ),},
     )
     train = X.iloc[:30]
     test = X.iloc[32:36]
