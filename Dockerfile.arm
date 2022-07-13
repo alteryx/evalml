@@ -1,4 +1,4 @@
-# Dockerfile for creating a container to test python 3.10
+# Dockerfile for creating an image for testing python versions
 #
 # Notes:
 # - this is not an optimized Dockerfile
@@ -8,7 +8,8 @@
 #   just kill the container
 # Build: docker build --rm -t evalml_test . -f Dockerfile.arm
 # Test: docker run --rm -it evalml_test make test
-FROM --platform=linux/x86_64 python:3.10-buster
+ARG VERSION=3.10-buster
+FROM --platform=linux/x86_64 python:$VERSION
 
 ARG DOCKER_ARM=1
 ARG TIMEOUT=1200
