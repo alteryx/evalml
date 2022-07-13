@@ -473,7 +473,6 @@ class AutoMLSearch:
             self.logger = logging.getLogger(__name__)
         self.timing = timing
         if X_train is not None or y_train is not None:
-            self.passed_holdout_set = False
             if X_train is None:
                 raise ValueError(
                     "Must specify training data as a 2d array using the X_train argument"
@@ -486,9 +485,13 @@ class AutoMLSearch:
             self.passed_holdout_set = True
         elif X_holdout is None and y_holdout is None:
             self.passed_holdout_set = False
-        else:
+        elif X_holdout is None and y_holdout is not None:
             raise ValueError(
-                "When specifying holdout data, all of X_train, y_train, X_holdout, and y_holdout must be passed in"
+                "Must specify holdout data as a 2d array using the X_holdout argument"
+            )
+        elif X_holdout is not None and y_holdout is None:
+            raise ValueError(
+                "Must specify training data target values as a 1d vector using the y_holdout argument"
             )
 
         try:
@@ -654,7 +657,7 @@ class AutoMLSearch:
                     random_seed=self.random_seed,
                 )
                 self.logger.info(
-                    f"Created holdout dataset with {len(self.X_holdout)} rows. Training dataset has {len(self.X_train)} rows. AutoMLSearch will use holdout set to score and rank pipelines."
+                    f"Created a holdout dataset with {len(self.X_holdout)} rows. Training dataset has {len(self.X_train)} rows. AutoMLSearch will use the holdout set to score and rank pipelines."
                 )
             else:
                 self.X_train = X_train
@@ -664,7 +667,10 @@ class AutoMLSearch:
                 self.logger.info(
                     f"Dataset size is too small to create holdout set. Mininum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(self.X_train)} rows. AutoMLSearch will use mean CV score to rank pipelines."
                 )
-
+        elif self._holdout_set_size < 0:
+            raise ValueError(
+                "Holdout set size must be greater than 0. Set holdout set size to 0 to disable holdout set evaluation."
+            )
         else:
             self.X_train = X_train
             self.y_train = y_train

@@ -5051,7 +5051,7 @@ def test_init_holdout_set(X_y_binary):
     X, y = X_y_binary
     X_train, X_holdout, y_train, y_holdout = split_data(X, y, "binary")
 
-    match_text = "When specifying holdout data, all of X_train, y_train, X_holdout, and y_holdout must be passed in"
+    match_text = "Must specify training data target values as a 1d vector using the y_holdout argument"
     with pytest.raises(
         ValueError,
         match=match_text,
@@ -5059,6 +5059,7 @@ def test_init_holdout_set(X_y_binary):
         AutoMLSearch(
             X_train=X_train, y_train=y_train, X_holdout=X_holdout, problem_type="binary"
         )
+    match_text = "Must specify holdout data as a 2d array using the X_holdout argument"
     with pytest.raises(
         ValueError,
         match=match_text,
@@ -5104,7 +5105,7 @@ def test_init_create_holdout_set(caplog):
 
     expected_holdout_size = int(automl._holdout_set_size * len(X))
     expected_train_size = int((1 - automl._holdout_set_size) * len(X))
-    match_text = f"Created holdout dataset with {expected_holdout_size} rows. Training dataset has {expected_train_size} rows. AutoMLSearch will use holdout set to score and rank pipelines."
+    match_text = f"Created a holdout dataset with {expected_holdout_size} rows. Training dataset has {expected_train_size} rows. AutoMLSearch will use the holdout set to score and rank pipelines."
     assert match_text in out
     assert len(automl.X_train) == expected_train_size
     assert len(automl.y_train) == expected_train_size
@@ -5128,3 +5129,12 @@ def test_init_create_holdout_set(caplog):
     assert automl.X_holdout is None
     assert automl.y_holdout is None
     assert automl.passed_holdout_set is False
+
+    match_text = "Holdout set size must be greater than 0. Set holdout set size to 0 to disable holdout set evaluation."
+    with pytest.raises(
+        ValueError,
+        match=match_text,
+    ):
+        AutoMLSearch(
+            X_train=X, y_train=y, problem_type="binary", _holdout_set_size=-0.1
+        )

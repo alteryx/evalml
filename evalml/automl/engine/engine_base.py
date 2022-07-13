@@ -219,7 +219,7 @@ def train_and_score_pipeline(
         }
         full_y_train = ww.init_series(full_y_train.map(train_y_mapping))
 
-        if y_holdout is not None:
+        if use_holdout:
             holdout_y_mapping = {
                 original_target: encoded_target
                 for (encoded_target, original_target) in enumerate(
@@ -376,7 +376,7 @@ def train_and_score_pipeline(
                 y_train=full_y_train,
             )
             logger.debug(
-                f"\t\t\tFull data pipeline: {automl_config.objective.name} score: {holdout_scores[automl_config.objective.name]:.3f}"
+                f"\t\t\tFull training data pipeline: {automl_config.objective.name} score: {holdout_scores[automl_config.objective.name]:.3f}"
             )
             holdout_score = holdout_scores[automl_config.objective.name]
             pipeline_cache[hashes] = full_pipeline.component_graph.component_instances
