@@ -43,7 +43,7 @@ class UnknownTypeDataCheck(DataCheck):
             ... })
             ...
             >>> unknown_type_dc = UnknownTypeDataCheck()
-            >>> assert 1 == 1
+            >>> assert 1 == 0
         """
         messages = []
 
