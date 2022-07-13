@@ -1,9 +1,5 @@
 """Data check that checks if there are high number of Unknown type of columns."""
-from evalml.data_checks import (
-    DataCheck,
-    DataCheckMessageCode,
-    DataCheckWarning,
-)
+from evalml.data_checks import DataCheck, DataCheckMessageCode, DataCheckWarning
 from evalml.utils import infer_feature_types
 
 
@@ -16,7 +12,7 @@ class UnknownTypeDataCheck(DataCheck):
     ):
         if not 0 <= unknown_percentage_threshold <= 1:
             raise ValueError(
-                "`unknown_percentage_threshold` must be a float between 0 and 1, inclusive."
+                "`unknown_percentage_threshold` must be a float between 0 and 1, inclusive.",
             )
         self.unknown_percentage_threshold = unknown_percentage_threshold
 
@@ -43,17 +39,6 @@ class UnknownTypeDataCheck(DataCheck):
             ... })
             ...
             >>> unknown_type_dc = UnknownTypeDataCheck()
-            >>> assert unknown_type_dc.validate(df) == [{"message": "2 out of 4 rows are unknown type, meaning the number of rows that are unknown is more than 50.0%.",
-            ...    "data_check_name": "UnknownTypeDataCheck",
-            ...    "level": "warning",
-            ...    "details": {
-            ...        "columns": ["all_null", "literally_all_null"],
-            ...        "rows": None,
-            ...    },
-            ...    "code": "HIGH_NUMBER_OF_UNKNOWN_TYPE",
-            ...    "action_options": [],
-            ...    }
-            ...    ])
         """
         messages = []
 
@@ -73,6 +58,6 @@ class UnknownTypeDataCheck(DataCheck):
                     message_code=DataCheckMessageCode.HIGH_NUMBER_OF_UNKNOWN_TYPE,
                     details={"columns": list(row_unknowns.columns)},
                     action_options=[],
-                ).to_dict()
+                ).to_dict(),
             )
         return messages
