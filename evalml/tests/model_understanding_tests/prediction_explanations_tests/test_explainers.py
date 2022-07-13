@@ -35,11 +35,13 @@ def compare_two_tables(table_1, table_2):
 def test_error_metrics():
 
     np.testing.assert_array_equal(
-        abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])), np.array([3, 1, 3])
+        abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])),
+        np.array([3, 1, 3]),
     )
     np.testing.assert_allclose(
         cross_entropy(
-            pd.Series([1, 0]), pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]})
+            pd.Series([1, 0]),
+            pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]}),
         ),
         np.array([-np.log(0.9), -np.log(0.2)]),
     )
@@ -65,10 +67,13 @@ input_features_and_y_true = [
 
 
 @pytest.mark.parametrize(
-    "input_features,y_true,error_message", input_features_and_y_true
+    "input_features,y_true,error_message",
+    input_features_and_y_true,
 )
 def test_explain_predictions_best_worst_value_errors(
-    input_features, y_true, error_message
+    input_features,
+    y_true,
+    error_message,
 ):
     with pytest.raises(ValueError, match=error_message):
         explain_predictions_best_worst(None, input_features, y_true)
@@ -84,13 +89,16 @@ def test_explain_predictions_raises_pipeline_score_error():
         pipeline.problem_type = ProblemTypes.BINARY
         pipeline.predict_proba.side_effect = raise_zero_division
         explain_predictions_best_worst(
-            pipeline, pd.DataFrame({"a": range(15)}), pd.Series(range(15))
+            pipeline,
+            pd.DataFrame({"a": range(15)}),
+            pd.Series(range(15)),
         )
 
 
 def test_explain_predictions_value_errors():
     with pytest.raises(
-        ValueError, match="Parameter input_features must be a non-empty dataframe."
+        ValueError,
+        match="Parameter input_features must be a non-empty dataframe.",
     ):
         explain_predictions(MagicMock(), pd.DataFrame(), y=None, indices_to_explain=[0])
 
@@ -130,7 +138,9 @@ def test_explain_predictions_value_errors():
     ],
 )
 def test_time_series_training_target_and_training_data_are_not_None(
-    training_target, training_data, problem_type
+    training_target,
+    training_data,
+    problem_type,
 ):
     mock_ts_pipeline = MagicMock(problem_type=problem_type)
 
@@ -138,7 +148,8 @@ def test_time_series_training_target_and_training_data_are_not_None(
         pytest.xfail("No exception raised in this case")
 
     with pytest.raises(
-        ValueError, match="training_target and training_data are not None"
+        ValueError,
+        match="training_target and training_data are not None",
     ):
         explain_predictions(
             mock_ts_pipeline,
@@ -150,7 +161,8 @@ def test_time_series_training_target_and_training_data_are_not_None(
         )
 
     with pytest.raises(
-        ValueError, match="training_target and training_data are not None"
+        ValueError,
+        match="training_target and training_data are not None",
     ):
         explain_predictions_best_worst(
             mock_ts_pipeline,
@@ -239,7 +251,7 @@ regression_best_worst_answer_dict = {
             },
             "explanations": ["explanation_dictionary_goes_here"],
         },
-    ]
+    ],
 }
 
 regression_best_worst_answer_df = pd.DataFrame(
@@ -254,7 +266,7 @@ regression_best_worst_answer_df = pd.DataFrame(
         "error_name": ["Absolute Difference"] * 2,
         "error_value": [1.0, 4.0],
         "prefix": ["best", "worst"],
-    }
+    },
 )
 
 no_best_worst_answer = """Test Pipeline Name
@@ -277,7 +289,7 @@ no_best_worst_answer_dict = {
     "explanations": [
         {"explanations": ["explanation_dictionary_goes_here"]},
         {"explanations": ["explanation_dictionary_goes_here"]},
-    ]
+    ],
 }
 
 no_best_worst_answer_df = pd.DataFrame(
@@ -287,7 +299,7 @@ no_best_worst_answer_df = pd.DataFrame(
         "qualitative_explanation": [0, 0],
         "quantitative_explanation": [0, 0],
         "prediction_number": [0, 1],
-    }
+    },
 )
 
 binary_best_worst_answer = """Test Pipeline Name
@@ -342,7 +354,7 @@ binary_best_worst_answer_dict = {
             },
             "explanations": ["explanation_dictionary_goes_here"],
         },
-    ]
+    ],
 }
 
 binary_best_worst_answer_df = pd.DataFrame(
@@ -359,7 +371,7 @@ binary_best_worst_answer_df = pd.DataFrame(
         "target_value": ["malignant", "benign"],
         "error_name": ["Cross Entropy"] * 2,
         "error_value": [0.2, 0.78],
-    }
+    },
 )
 
 multiclass_table = """Class: setosa
@@ -403,7 +415,7 @@ multiclass_best_worst_answer = """Test Pipeline Name
 
 
 """.format(
-    multiclass_table=multiclass_table
+    multiclass_table=multiclass_table,
 )
 
 multiclass_best_worst_answer_dict = {
@@ -430,7 +442,7 @@ multiclass_best_worst_answer_dict = {
             },
             "explanations": ["explanation_dictionary_goes_here"],
         },
-    ]
+    ],
 }
 
 multiclass_best_worst_answer_df = pd.DataFrame(
@@ -448,7 +460,7 @@ multiclass_best_worst_answer_df = pd.DataFrame(
         "target_value": ["setosa", "versicolor"],
         "error_name": ["Cross Entropy"] * 2,
         "error_value": [0.15, 0.34],
-    }
+    },
 )
 
 multiclass_no_best_worst_answer = """Test Pipeline Name
@@ -466,7 +478,7 @@ multiclass_no_best_worst_answer = """Test Pipeline Name
 
 
 """.format(
-    multiclass_table=multiclass_table
+    multiclass_table=multiclass_table,
 )
 
 
@@ -499,7 +511,7 @@ def _compare_reports(report, predicted_report, output_format):
         compare_two_tables(report.splitlines(), predicted_report.splitlines())
     elif output_format == "dataframe":
         assert sorted(report.columns.tolist()) == sorted(
-            predicted_report.columns.tolist()
+            predicted_report.columns.tolist(),
         )
         pd.testing.assert_frame_equal(report, predicted_report[report.columns])
     else:
@@ -518,12 +530,15 @@ regression_custom_indices = [[0, 1], [4, 10], ["foo", "bar"]]
 @pytest.mark.parametrize(
     "problem_type,output_format,custom_index,algorithm",
     product(
-        regression_problem_types, output_formats, regression_custom_indices, algorithms
+        regression_problem_types,
+        output_formats,
+        regression_custom_indices,
+        algorithms,
     ),
 )
 @patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
 @patch(
-    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table"
+    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table",
 )
 def test_explain_predictions_best_worst_and_explain_predictions_regression(
     mock_make_table,
@@ -544,7 +559,7 @@ def test_explain_predictions_best_worst_and_explain_predictions_regression(
                 "feature_values": [0],
                 "qualitative_explanation": [0],
                 "quantitative_explanation": [0],
-            }
+            },
         )
         # Use side effect so that we always get a new copy of the dataframe
         mock_make_table.side_effect = lambda *args, **kwargs: explanation_table.copy()
@@ -552,7 +567,7 @@ def test_explain_predictions_best_worst_and_explain_predictions_regression(
         explain_predictions_answer = no_best_worst_answer_df
     else:
         mock_make_table.return_value = {
-            "explanations": ["explanation_dictionary_goes_here"]
+            "explanations": ["explanation_dictionary_goes_here"],
         }
         answer = regression_best_worst_answer_dict
         explain_predictions_answer = no_best_worst_answer_dict
@@ -630,7 +645,7 @@ binary_custom_indices = [[0, 1], [7, 11], ["first", "second"]]
 )
 @patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
 @patch(
-    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table"
+    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table",
 )
 def test_explain_predictions_best_worst_and_explain_predictions_binary(
     mock_make_table,
@@ -651,7 +666,7 @@ def test_explain_predictions_best_worst_and_explain_predictions_binary(
                 "feature_values": [0],
                 "qualitative_explanation": [0],
                 "quantitative_explanation": [0],
-            }
+            },
         )
         # Use side effect so that we always get a new copy of the dataframe
         mock_make_table.side_effect = lambda *args, **kwargs: explanation_table.copy()
@@ -659,7 +674,7 @@ def test_explain_predictions_best_worst_and_explain_predictions_binary(
         explain_predictions_answer = no_best_worst_answer_df
     else:
         mock_make_table.return_value = {
-            "explanations": ["explanation_dictionary_goes_here"]
+            "explanations": ["explanation_dictionary_goes_here"],
         }
         answer = binary_best_worst_answer_dict
         explain_predictions_answer = no_best_worst_answer_dict
@@ -678,7 +693,7 @@ def test_explain_predictions_best_worst_and_explain_predictions_binary(
     pipeline.predict_proba_in_sample.return_value = proba
     pipeline.predict.return_value = ww.init_series(pd.Series(["malignant"] * 2))
     pipeline.predict_in_sample.return_value = ww.init_series(
-        pd.Series(["malignant"] * 2)
+        pd.Series(["malignant"] * 2),
     )
     pipeline.transform_all_but_final.return_value = input_features
     y_true = pd.Series(["malignant", "benign"], index=custom_index)
@@ -744,12 +759,15 @@ multiclass_custom_indices = [[0, 1], [17, 235], ["2020-15", "2020-15"]]
 @pytest.mark.parametrize(
     "problem_type,output_format,custom_index,algorithm",
     product(
-        multiclass_problem_types, output_formats, multiclass_custom_indices, algorithms
+        multiclass_problem_types,
+        output_formats,
+        multiclass_custom_indices,
+        algorithms,
     ),
 )
 @patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
 @patch(
-    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table"
+    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table",
 )
 def test_explain_predictions_best_worst_and_explain_predictions_multiclass(
     mock_make_table,
@@ -770,7 +788,7 @@ def test_explain_predictions_best_worst_and_explain_predictions_multiclass(
                 "feature_values": [0],
                 "qualitative_explanation": [0],
                 "quantitative_explanation": [0],
-            }
+            },
         )
         # Use side effect so that we always get a new copy of the dataframe
         mock_make_table.side_effect = lambda *args, **kwargs: explanation_table.copy()
@@ -778,7 +796,7 @@ def test_explain_predictions_best_worst_and_explain_predictions_multiclass(
         explain_predictions_answer = no_best_worst_answer_df
     else:
         mock_make_table.return_value = {
-            "explanations": ["explanation_dictionary_goes_here"]
+            "explanations": ["explanation_dictionary_goes_here"],
         }
         answer = multiclass_best_worst_answer_dict
         explain_predictions_answer = no_best_worst_answer_dict
@@ -795,14 +813,14 @@ def test_explain_predictions_best_worst_and_explain_predictions_multiclass(
     mock_default_metrics.__getitem__.return_value = cross_entropy_mock
     cross_entropy_mock.return_value = pd.Series([0.15, 0.34])
     proba = pd.DataFrame(
-        {"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75], "virginica": [0.1, 0.05]}
+        {"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75], "virginica": [0.1, 0.05]},
     )
     proba.ww.init()
     pipeline.predict_proba.return_value = proba
     pipeline.predict_proba_in_sample.return_value = proba
     pipeline.predict.return_value = ww.init_series(pd.Series(["setosa", "versicolor"]))
     pipeline.predict_in_sample.return_value = ww.init_series(
-        pd.Series(["setosa", "versicolor"])
+        pd.Series(["setosa", "versicolor"]),
     )
     pipeline.transform_all_but_final.return_value = input_features
     y_true = pd.Series(["setosa", "versicolor"], index=custom_index)
@@ -910,7 +928,7 @@ regression_custom_metric_answer_dict = {
             },
             "explanations": ["explanation_dictionary_goes_here"],
         },
-    ]
+    ],
 }
 
 
@@ -922,10 +940,12 @@ regression_custom_metric_answer_dict = {
     ],
 )
 @patch(
-    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table"
+    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table",
 )
 def test_explain_predictions_best_worst_custom_metric(
-    mock_make_table, output_format, answer
+    mock_make_table,
+    output_format,
+    answer,
 ):
 
     mock_make_table.return_value = (
@@ -958,7 +978,8 @@ def test_explain_predictions_best_worst_custom_metric(
 
     if output_format == "text":
         compare_two_tables(
-            best_worst_report.splitlines(), regression_custom_metric_answer.splitlines()
+            best_worst_report.splitlines(),
+            regression_custom_metric_answer.splitlines(),
         )
     else:
         assert best_worst_report == answer
@@ -1019,7 +1040,7 @@ def test_explain_predictions_time_series(ts_data):
     # Check that the computed features to be explained aren't NaN.
     for exp_idx in range(len(exp["explanations"])):
         assert not np.isnan(
-            np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"])
+            np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"]),
         ).any()
 
 
@@ -1032,7 +1053,11 @@ def test_explain_predictions_time_series(ts_data):
     ],
 )
 def test_explain_predictions_best_worst_time_series(
-    output_format, pipeline_class, estimator, ts_data, ts_data_binary
+    output_format,
+    pipeline_class,
+    estimator,
+    ts_data,
+    ts_data_binary,
 ):
     X, y = ts_data
 
@@ -1091,8 +1116,8 @@ def test_explain_predictions_best_worst_time_series(
         for exp_idx in range(len(exp["explanations"])):
             assert not np.isnan(
                 np.array(
-                    exp["explanations"][exp_idx]["explanations"][0]["feature_values"]
-                )
+                    exp["explanations"][exp_idx]["explanations"][0]["feature_values"],
+                ),
             ).any()
 
 
@@ -1126,12 +1151,20 @@ def test_json_serialization(
     pipeline.fit(X, y)
 
     best_worst = explain_predictions_best_worst(
-        pipeline, pd.DataFrame(X), y, num_to_explain=1, output_format="dict"
+        pipeline,
+        pd.DataFrame(X),
+        y,
+        num_to_explain=1,
+        output_format="dict",
     )
     assert json.loads(json.dumps(best_worst)) == best_worst
 
     report = explain_predictions(
-        pipeline, pd.DataFrame(X), y=y, output_format="dict", indices_to_explain=[0]
+        pipeline,
+        pd.DataFrame(X),
+        y=y,
+        output_format="dict",
+        indices_to_explain=[0],
     )
     assert json.loads(json.dumps(report)) == report
 
@@ -1221,7 +1254,9 @@ pipeline_test_cases = [
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_linear_pipeline(
-    pipeline_class_and_estimator, algorithm, fraud_100
+    pipeline_class_and_estimator,
+    algorithm,
+    fraud_100,
 ):
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
@@ -1235,7 +1270,7 @@ def test_categories_aggregated_linear_pipeline(
         ],
         parameters={
             "Select Columns Transformer": {
-                "columns": ["amount", "provider", "currency"]
+                "columns": ["amount", "provider", "currency"],
             },
             estimator: {"n_jobs": 1},
         },
@@ -1278,7 +1313,7 @@ def test_categories_aggregated_text(pipeline_class_and_estimator, algorithm, fra
     X.ww.set_types(
         logical_types={
             "provider": "NaturalLanguage",
-        }
+        },
     )
     component_graph = [
         "Select Columns Transformer",
@@ -1292,7 +1327,7 @@ def test_categories_aggregated_text(pipeline_class_and_estimator, algorithm, fra
         component_graph,
         parameters={
             "Select Columns Transformer": {
-                "columns": ["amount", "provider", "currency", "datetime"]
+                "columns": ["amount", "provider", "currency", "datetime"],
             },
             estimator: {"n_jobs": 1},
         },
@@ -1344,7 +1379,9 @@ def test_categories_aggregated_text(pipeline_class_and_estimator, algorithm, fra
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_date_ohe(
-    pipeline_class_and_estimator, algorithm, fraud_100
+    pipeline_class_and_estimator,
+    algorithm,
+    fraud_100,
 ):
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
@@ -1358,7 +1395,7 @@ def test_categories_aggregated_date_ohe(
         ],
         parameters={
             "Select Columns Transformer": {
-                "columns": ["datetime", "amount", "provider", "currency"]
+                "columns": ["datetime", "amount", "provider", "currency"],
             },
             "DateTime Featurizer": {"encode_as_categories": True},
             estimator: {"n_jobs": 1},
@@ -1410,7 +1447,9 @@ def test_categories_aggregated_date_ohe(
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_pca_dag(
-    pipeline_class_and_estimator, algorithm, fraud_100
+    pipeline_class_and_estimator,
+    algorithm,
+    fraud_100,
 ):
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
@@ -1461,7 +1500,7 @@ def test_categories_aggregated_pca_dag(
                     "Mastercard",
                     "CUC",
                 ]
-            ]
+            ],
         )
         assert explanation["drill_down"].keys() == {"currency", "provider", "datetime"}
         assert (
@@ -1483,7 +1522,9 @@ def test_categories_aggregated_pca_dag(
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_but_not_those_that_are_dropped(
-    pipeline_class_and_estimator, algorithm, fraud_100
+    pipeline_class_and_estimator,
+    algorithm,
+    fraud_100,
 ):
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
@@ -1497,7 +1538,7 @@ def test_categories_aggregated_but_not_those_that_are_dropped(
     ]
     parameters = {
         "Select Columns Transformer": {
-            "columns": ["amount", "provider", "currency", "datetime"]
+            "columns": ["amount", "provider", "currency", "datetime"],
         },
         "Drop Columns Transformer": {"columns": list(EXPECTED_DATETIME_FEATURES)},
         estimator: {"n_jobs": 1},
@@ -1535,7 +1576,9 @@ def test_categories_aggregated_but_not_those_that_are_dropped(
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_when_some_are_dropped(
-    pipeline_class_and_estimator, algorithm, fraud_100
+    pipeline_class_and_estimator,
+    algorithm,
+    fraud_100,
 ):
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
@@ -1549,7 +1592,7 @@ def test_categories_aggregated_when_some_are_dropped(
     ]
     parameters = {
         "Select Columns Transformer": {
-            "columns": ["amount", "provider", "currency", "datetime"]
+            "columns": ["amount", "provider", "currency", "datetime"],
         },
         "Drop Columns Transformer": {"columns": ["datetime_month", "datetime_hour"]},
         estimator: {"n_jobs": 1},
@@ -1636,7 +1679,7 @@ def test_explain_predictions_stacked_ensemble(
                     "RF.x",
                     "y",
                 ],
-            }
+            },
         )
         exp_feature_names = {"Col 1 RF.x", "Col 1 Regression.x"}
     elif is_multiclass(problem_type):
@@ -1652,7 +1695,7 @@ def test_explain_predictions_stacked_ensemble(
                     "RF.x",
                     "y",
                 ],
-            }
+            },
         )
         exp_feature_names = {
             "Col 0 RF.x",
@@ -1679,7 +1722,7 @@ def test_explain_predictions_stacked_ensemble(
                     "RF.x",
                     "y",
                 ],
-            }
+            },
         )
         exp_feature_names = {"RF.x", "Regression.x"}
     pipeline.fit(X, y)
@@ -1703,7 +1746,12 @@ def test_explain_predictions_stacked_ensemble(
     )
 
     report = explain_predictions_best_worst(
-        pipeline, X, y, top_k_features=10, output_format="dict", algorithm=algorithm
+        pipeline,
+        X,
+        y,
+        top_k_features=10,
+        output_format="dict",
+        algorithm=algorithm,
     )
     explanations_data = report["explanations"]
     for entry in explanations_data:
@@ -1744,7 +1792,7 @@ def test_explain_predictions_oversampler(estimator, algorithm, fraud_100):
                 "y",
             ],
             estimator: [estimator, "Oversampler.x", "Oversampler.y"],
-        }
+        },
     )
 
     pipeline.fit(X, y)
@@ -1763,7 +1811,8 @@ def test_explain_predictions_oversampler(estimator, algorithm, fraud_100):
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.MULTICLASS, ProblemTypes.BINARY])
 def test_explain_predictions_class_name_matches_class_name_in_y(
-    problem_type, fraud_100
+    problem_type,
+    fraud_100,
 ):
     X, y = fraud_100
     if problem_type == ProblemTypes.BINARY:
@@ -1790,7 +1839,7 @@ def test_explain_predictions_class_name_matches_class_name_in_y(
                 "Oversampler.x",
                 "Oversampler.y",
             ],
-        }
+        },
     )
 
     pipeline.fit(X, y)
@@ -1815,7 +1864,7 @@ def test_explain_predictions_class_name_matches_class_name_in_y(
 
 
 @patch(
-    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table"
+    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table",
 )
 def test_explain_predictions_best_worst_callback(mock_make_table):
     pipeline = MagicMock()
@@ -1839,7 +1888,11 @@ def test_explain_predictions_best_worst_callback(mock_make_table):
 
     mock_callback = MockCallback()
     explain_predictions_best_worst(
-        pipeline, input_features, y_true, num_to_explain=1, callback=mock_callback
+        pipeline,
+        input_features,
+        y_true,
+        num_to_explain=1,
+        callback=mock_callback,
     )
     assert mock_callback.progress_stages == [e for e in ExplainPredictionsStage]
     assert mock_callback.total_elapsed_time > 0
@@ -1866,7 +1919,10 @@ def test_explain_predictions_unknown(indices, X_y_binary):
     if indices == 0:
         # make sure we only run this part once
         exp = explain_predictions_best_worst(
-            pipeline=pl, input_features=X, y_true=y, output_format="dataframe"
+            pipeline=pl,
+            input_features=X,
+            y_true=y,
+            output_format="dataframe",
         )
         assert exp["feature_names"].isnull().sum() == 0
         assert exp["feature_values"].isnull().sum() == 0
@@ -1883,7 +1939,7 @@ def test_explain_predictions_url_email(df_with_url_and_email, algorithm):
             "Email Featurizer",
             "One Hot Encoder",
             "Random Forest Classifier",
-        ]
+        ],
     )
     pl.fit(X, y)
     explanations = explain_predictions_best_worst(
@@ -1907,7 +1963,7 @@ def test_explain_predictions_url_email(df_with_url_and_email, algorithm):
         not pd.Series(
             explanations["explanations"][0]["explanations"][0][
                 "qualitative_explanation"
-            ]
+            ],
         )
         .isnull()
         .any()
@@ -1916,7 +1972,7 @@ def test_explain_predictions_url_email(df_with_url_and_email, algorithm):
         not pd.Series(
             explanations["explanations"][1]["explanations"][0][
                 "qualitative_explanation"
-            ]
+            ],
         )
         .isnull()
         .any()
@@ -1935,7 +1991,7 @@ def test_explain_predictions_postalcodes(
             "store_id": "PostalCode",
             "country": "CountryCode",
             "region": "SubRegionCode",
-        }
+        },
     )
 
     pipeline = logistic_regression_binary_pipeline
@@ -1973,7 +2029,7 @@ def test_explain_predictions_postalcodes(
         not pd.Series(
             explanations["explanations"][0]["explanations"][0][
                 "qualitative_explanation"
-            ]
+            ],
         )
         .isnull()
         .any()
@@ -1982,7 +2038,7 @@ def test_explain_predictions_postalcodes(
         not pd.Series(
             explanations["explanations"][1]["explanations"][0][
                 "qualitative_explanation"
-            ]
+            ],
         )
         .isnull()
         .any()
@@ -2009,7 +2065,9 @@ def test_explain_predictions_postalcodes(
     product(pipeline_test_cases, algorithms),
 )
 def test_explain_predictions_report_shows_original_value_if_possible(
-    pipeline_class_and_estimator, algorithm, fraud_100
+    pipeline_class_and_estimator,
+    algorithm,
+    fraud_100,
 ):
     pipeline_class, estimator = pipeline_class_and_estimator
     X, y = fraud_100
@@ -2064,7 +2122,8 @@ def test_explain_predictions_report_shows_original_value_if_possible(
     for explanation in report["explanations"][0]["explanations"]:
         assert set(explanation["feature_names"]) == set(X.columns)
         for feature_name, feature_value in zip(
-            explanation["feature_names"], explanation["feature_values"]
+            explanation["feature_names"],
+            explanation["feature_values"],
         ):
             if feature_name == "lat":
                 assert np.isnan(feature_value)
@@ -2072,7 +2131,8 @@ def test_explain_predictions_report_shows_original_value_if_possible(
 
 @pytest.mark.parametrize("algorithm", algorithms)
 def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
-    algorithm, fraud_100
+    algorithm,
+    fraud_100,
 ):
     X, y = fraud_100
     X.ww.set_types({"country": "NaturalLanguage"})
@@ -2088,7 +2148,8 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
         "Random Forest Classifier": {"n_jobs": 1},
     }
     pipeline = BinaryClassificationPipeline(
-        component_graph=component_graph, parameters=parameters
+        component_graph=component_graph,
+        parameters=parameters,
     )
 
     y = transform_y_for_problem_type(pipeline.problem_type, y)
@@ -2111,7 +2172,7 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
         for exp in explanation["explanations"]:
             assert set(exp["feature_names"]) == set(X.columns)
             assert set(exp["feature_values"]) == set(
-                X_dt.ww.iloc[explanation["predicted_values"]["index_id"], :]
+                X_dt.ww.iloc[explanation["predicted_values"]["index_id"], :],
             )
 
     X_null = X.ww.copy()
@@ -2131,7 +2192,8 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
         for exp in explanation["explanations"]:
             assert set(exp["feature_names"]) == set(X.columns)
             for feature_name, feature_value in zip(
-                exp["feature_names"], exp["feature_values"]
+                exp["feature_names"],
+                exp["feature_values"],
             ):
                 if feature_name == "lat":
                     assert np.isnan(feature_value)
@@ -2145,13 +2207,17 @@ def test_explain_predictions_best_worst_json(algorithm, fraud_100):
             "DateTime Featurizer",
             "One Hot Encoder",
             "Logistic Regression Classifier",
-        ]
+        ],
     )
     X, y = fraud_100
     pipeline.fit(X, y)
 
     report = explain_predictions_best_worst(
-        pipeline, X, y, algorithm=algorithm, output_format="dict"
+        pipeline,
+        X,
+        y,
+        algorithm=algorithm,
+        output_format="dict",
     )
     json_output = json.dumps(report)
     assert isinstance(json_output, str)
@@ -2168,7 +2234,11 @@ def test_explain_predictions_invalid_algorithm():
 
     with pytest.raises(ValueError, match="Unknown algorithm"):
         explain_predictions_best_worst(
-            pipeline, input_features, y, top_k_features=1, algorithm="lIMe"
+            pipeline,
+            input_features,
+            y,
+            top_k_features=1,
+            algorithm="lIMe",
         )
 
 
@@ -2177,7 +2247,7 @@ def test_explain_predictions_lime_catboost(X_y_binary):
         {
             "Label Encoder": ["Label Encoder", "X", "y"],
             "CatBoost": ["CatBoost Classifier", "X", "Label Encoder.y"],
-        }
+        },
     )
     X, y = X_y_binary
     error_msg = "CatBoost models are not supported by LIME at this time"

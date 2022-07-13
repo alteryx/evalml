@@ -97,7 +97,7 @@ class BaseSampler(Transformer):
         y_unique = y.unique()
         if len(sampling_dict) != len(y_unique):
             raise ValueError(
-                "Sampling dictionary contains a different number of targets than are provided in the data."
+                "Sampling dictionary contains a different number of targets than are provided in the data.",
             )
 
         if len(set(sampling_dict.keys()).intersection(set(y_unique))) != len(y_unique):
@@ -130,7 +130,8 @@ class BaseSampler(Transformer):
         param_copy = copy.copy(self.parameters)
         if self.parameters["sampling_ratio_dict"]:
             new_dic = self._convert_dictionary(
-                self.parameters["sampling_ratio_dict"], y
+                self.parameters["sampling_ratio_dict"],
+                y,
             )
             param_copy["sampling_ratio_dict"] = new_dic
         return param_copy

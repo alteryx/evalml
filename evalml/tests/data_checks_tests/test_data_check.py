@@ -2,10 +2,7 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks.data_check import DataCheck
-from evalml.data_checks.data_check_message import (
-    DataCheckError,
-    DataCheckWarning,
-)
+from evalml.data_checks.data_check_message import DataCheckError, DataCheckWarning
 
 
 @pytest.fixture
@@ -66,5 +63,5 @@ def test_data_check_with_param():
 
     data_check = MockDataCheckWithParam(num=0)
     assert data_check.validate(X, y=None) == [
-        DataCheckError("Expected num == 10", "MockDataCheckWithParam")
+        DataCheckError("Expected num == 10", "MockDataCheckWithParam"),
     ]

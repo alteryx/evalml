@@ -35,7 +35,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         if not parameters or "pipeline" not in parameters:
             raise ValueError(
                 "time_index, gap, max_delay, and forecast_horizon parameters cannot be omitted from the parameters dict. "
-                "Please specify them as a dictionary with the key 'pipeline'."
+                "Please specify them as a dictionary with the key 'pipeline'.",
             )
         self.pipeline_params = parameters["pipeline"]
         self.gap = self.pipeline_params["gap"]
@@ -86,11 +86,13 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             # These do not show up in the features used for prediction
             gap_features = X_train.iloc[[-1] * self.gap]
             gap_features.index = self._move_index_forward(
-                X_train.index[-self.gap :], self.gap
+                X_train.index[-self.gap :],
+                self.gap,
             )
             gap_target = y_train.iloc[[-1] * self.gap]
             gap_target.index = self._move_index_forward(
-                y_train.index[-self.gap :], self.gap
+                y_train.index[-self.gap :],
+                self.gap,
             )
 
         features_to_concat = [
@@ -107,7 +109,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         padded_target = pd.concat(targets_to_concat, axis=0).fillna(method="ffill")
         padded_features.ww.init(schema=X_train.ww.schema)
         padded_target = ww.init_series(
-            padded_target, logical_type=y_train.ww.logical_type
+            padded_target,
+            logical_type=y_train.ww.logical_type,
         )
         return padded_features, padded_target
 
@@ -133,7 +136,10 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             features_holdout = super().transform_all_but_final(X, y)
         else:
             padded_features, padded_target = self._add_training_data_to_X_Y(
-                X, y, X_train, y_train
+                X,
+                y,
+                X_train,
+                y_train,
             )
             features = super().transform_all_but_final(padded_features, padded_target)
             features_holdout = features.iloc[-len(y) :]
@@ -157,7 +163,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         """
         if self.estimator is None:
             raise ValueError(
-                "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator."
+                "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator.",
             )
         target = infer_feature_types(y)
         features = self.transform_all_but_final(X, target, X_train, y_train)
@@ -190,26 +196,31 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         """
         if X_train is None:
             raise ValueError(
-                "Make sure to include an input for X_train when calling time series' predict"
+                "Make sure to include an input for X_train when calling time series' predict",
             )
         elif y_train is None:
             raise ValueError(
-                "Make sure to include an input for y_train when calling time series' predict"
+                "Make sure to include an input for y_train when calling time series' predict",
             )
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         if self.estimator is None:
             raise ValueError(
-                "Cannot call predict() on a component graph because the final component is not an Estimator."
+                "Cannot call predict() on a component graph because the final component is not an Estimator.",
             )
         X = infer_feature_types(X)
         X.index = self._move_index_forward(
-            X_train.index[-X.shape[0] :], self.gap + X.shape[0]
+            X_train.index[-X.shape[0] :],
+            self.gap + X.shape[0],
         )
         y_holdout = self._create_empty_series(y_train, X.shape[0])
         y_holdout = infer_feature_types(y_holdout)
         y_holdout.index = X.index
         return self.predict_in_sample(
-            X, y_holdout, X_train, y_train, objective=objective
+            X,
+            y_holdout,
+            X_train,
+            y_train,
+            objective=objective,
         )
 
     def _estimator_predict(self, features):

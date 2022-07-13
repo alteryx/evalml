@@ -1,5 +1,7 @@
 """Score the percentage of money lost of the total transaction amount process due to fraud."""
-from .binary_classification_objective import BinaryClassificationObjective
+from evalml.objectives.binary_classification_objective import (
+    BinaryClassificationObjective,
+)
 
 
 class FraudCost(BinaryClassificationObjective):

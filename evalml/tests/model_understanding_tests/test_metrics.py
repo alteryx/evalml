@@ -53,7 +53,7 @@ def test_confusion_matrix(data_type, test_nullable, dtype, make_data_type):
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method="true")
     if dtype == "int":
         conf_mat_expected = np.array(
-            [[2 / 3.0, 1 / 3.0, 0], [0, 0.5, 0.5], [0.25, 0.25, 0.5]]
+            [[2 / 3.0, 1 / 3.0, 0], [0, 0.5, 0.5], [0.25, 0.25, 0.5]],
         )
     elif dtype == "bool":
         conf_mat_expected = np.array([[0.666667, 0.33333], [0.166667, 0.83333]])
@@ -63,7 +63,7 @@ def test_confusion_matrix(data_type, test_nullable, dtype, make_data_type):
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method="pred")
     if dtype == "int":
         conf_mat_expected = np.array(
-            [[2 / 3.0, 1 / 3.0, 0], [0, 1 / 3.0, 1 / 3.0], [1 / 3.0, 1 / 3.0, 2 / 3.0]]
+            [[2 / 3.0, 1 / 3.0, 0], [0, 1 / 3.0, 1 / 3.0], [1 / 3.0, 1 / 3.0, 2 / 3.0]],
         )
     elif dtype == "bool":
         conf_mat_expected = np.array([[0.666667, 0.166667], [0.333333, 0.83333]])
@@ -72,7 +72,9 @@ def test_confusion_matrix(data_type, test_nullable, dtype, make_data_type):
 
     with pytest.raises(ValueError, match="Invalid value provided"):
         conf_mat = confusion_matrix(
-            y_true, y_predicted, normalize_method="Invalid Option"
+            y_true,
+            y_predicted,
+            normalize_method="Invalid Option",
         )
 
 
@@ -228,10 +230,12 @@ def test_precision_recall_curve(data_type, make_data_type):
 def test_precision_recall_curve_pos_label_idx():
     y_true = pd.Series(np.array([0, 0, 1, 1]))
     y_predict_proba = pd.DataFrame(
-        np.array([[0.9, 0.1], [0.6, 0.4], [0.65, 0.35], [0.2, 0.8]])
+        np.array([[0.9, 0.1], [0.6, 0.4], [0.65, 0.35], [0.2, 0.8]]),
     )
     precision_recall_curve_data = precision_recall_curve(
-        y_true, y_predict_proba, pos_label_idx=1
+        y_true,
+        y_predict_proba,
+        pos_label_idx=1,
     )
 
     precision = precision_recall_curve_data.get("precision")
@@ -246,10 +250,12 @@ def test_precision_recall_curve_pos_label_idx():
     np.testing.assert_almost_equal(thresholds_expected, thresholds, decimal=5)
 
     y_predict_proba = pd.DataFrame(
-        np.array([[0.1, 0.9], [0.4, 0.6], [0.35, 0.65], [0.8, 0.2]])
+        np.array([[0.1, 0.9], [0.4, 0.6], [0.35, 0.65], [0.8, 0.2]]),
     )
     precision_recall_curve_data = precision_recall_curve(
-        y_true, y_predict_proba, pos_label_idx=0
+        y_true,
+        y_predict_proba,
+        pos_label_idx=0,
     )
     np.testing.assert_almost_equal(precision_expected, precision, decimal=5)
     np.testing.assert_almost_equal(recall_expected, recall, decimal=5)
@@ -283,13 +289,15 @@ def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type, go)
 
     precision_recall_curve_data = precision_recall_curve(y_true, y_pred_proba)
     assert np.array_equal(
-        fig_dict["data"][0]["x"], precision_recall_curve_data["recall"]
+        fig_dict["data"][0]["x"],
+        precision_recall_curve_data["recall"],
     )
     assert np.array_equal(
-        fig_dict["data"][0]["y"], precision_recall_curve_data["precision"]
+        fig_dict["data"][0]["y"],
+        precision_recall_curve_data["precision"],
     )
     assert fig_dict["data"][0]["name"] == "Precision-Recall (AUC {:06f})".format(
-        precision_recall_curve_data["auc_score"]
+        precision_recall_curve_data["auc_score"],
     )
 
 
@@ -299,7 +307,9 @@ def test_graph_precision_recall_curve_title_addition(X_y_binary, go):
     rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
     fig = graph_precision_recall_curve(
-        y_true, y_pred_proba, title_addition="with added title text"
+        y_true,
+        y_pred_proba,
+        title_addition="with added title text",
     )
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
@@ -369,7 +379,7 @@ def test_roc_curve_multiclass(data_type, make_data_type):
             [0.8, 0.1, 0.1],
             [0.1, 0.1, 0.8],
             [0.3, 0.4, 0.3],
-        ]
+        ],
     )
     y_true = make_data_type(data_type, y_true)
     y_predict_proba = make_data_type(data_type, y_predict_proba)
@@ -424,7 +434,7 @@ def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type, go):
         np.array(roc_curve_data["thresholds"]).astype(float),
     )
     assert fig_dict["data"][0]["name"] == "Class 1 (AUC {:06f})".format(
-        roc_curve_data["auc_score"]
+        roc_curve_data["auc_score"],
     )
     assert np.array_equal(fig_dict["data"][1]["x"], np.array([0, 1]))
     assert np.array_equal(fig_dict["data"][1]["y"], np.array([0, 1]))
@@ -440,13 +450,17 @@ def test_graph_roc_curve_nans(go):
     fig_dict = fig.to_dict()
     assert np.array_equal(fig_dict["data"][0]["x"], np.array([0.0, 1.0]))
     assert np.allclose(
-        fig_dict["data"][0]["y"], np.array([np.nan, np.nan]), equal_nan=True
+        fig_dict["data"][0]["y"],
+        np.array([np.nan, np.nan]),
+        equal_nan=True,
     )
     fig1 = graph_roc_curve(
-        np.array([np.nan, 1, 1, 0, 1]), np.array([0, 0, 0.5, 0.1, 0.9])
+        np.array([np.nan, 1, 1, 0, 1]),
+        np.array([0, 0, 0.5, 0.1, 0.9]),
     )
     fig2 = graph_roc_curve(
-        np.array([1, 0, 1, 0, 1]), np.array([0, np.nan, 0.5, 0.1, 0.9])
+        np.array([1, 0, 1, 0, 1]),
+        np.array([0, np.nan, 0.5, 0.1, 0.9]),
     )
     assert fig1 == fig2
 
@@ -468,7 +482,8 @@ def test_graph_roc_curve_multiclass(binarized_ys, go):
             np.array(roc_curve_data["thresholds"]).astype(float),
         )
         assert fig_dict["data"][i]["name"] == "Class {name} (AUC {:06f})".format(
-            roc_curve_data["auc_score"], name=i + 1
+            roc_curve_data["auc_score"],
+            name=i + 1,
         )
     assert np.array_equal(fig_dict["data"][3]["x"], np.array([0, 1]))
     assert np.array_equal(fig_dict["data"][3]["y"], np.array([0, 1]))
@@ -494,7 +509,8 @@ def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys, go):
         assert np.array_equal(fig_dict["data"][i]["x"], roc_curve_data["fpr_rates"])
         assert np.array_equal(fig_dict["data"][i]["y"], roc_curve_data["tpr_rates"])
         assert fig_dict["data"][i]["name"] == "Class {name} (AUC {:06f})".format(
-            roc_curve_data["auc_score"], name=custom_class_names[i]
+            roc_curve_data["auc_score"],
+            name=custom_class_names[i],
         )
     assert np.array_equal(fig_dict["data"][3]["x"], np.array([0, 1]))
     assert np.array_equal(fig_dict["data"][3]["y"], np.array([0, 1]))

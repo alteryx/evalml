@@ -44,53 +44,77 @@ def _report_creator_factory(
     if report_type == "explain_predictions" and output_format == "text":
         heading = _Heading([""], len(data.index_list))
         explanation_table = _ExplanationTable(
-            top_k_features, include_explainer_values, algorithm
+            top_k_features,
+            include_explainer_values,
+            algorithm,
         )
         report_maker = _ReportMaker(heading, None, explanation_table).make_text
     elif report_type == "explain_predictions" and output_format == "dict":
         explanation_table = _ExplanationTable(
-            top_k_features, include_explainer_values, algorithm
+            top_k_features,
+            include_explainer_values,
+            algorithm,
         )
         report_maker = _ReportMaker(None, None, explanation_table).make_dict
     elif report_type == "explain_predictions" and output_format == "dataframe":
         explanation_table = _ExplanationTable(
-            top_k_features, include_explainer_values, algorithm
+            top_k_features,
+            include_explainer_values,
+            algorithm,
         )
         report_maker = _ReportMaker(None, None, explanation_table).make_dataframe
     elif report_type == "explain_predictions_best_worst" and output_format == "text":
         heading_maker = _Heading(["Best ", "Worst "], n_indices=num_to_explain)
         predicted_values = _best_worst_predicted_values_section(
-            data, _RegressionPredictedValues, _ClassificationPredictedValues
+            data,
+            _RegressionPredictedValues,
+            _ClassificationPredictedValues,
         )
         table_maker = _ExplanationTable(
-            top_k_features, include_explainer_values, algorithm
+            top_k_features,
+            include_explainer_values,
+            algorithm,
         )
         report_maker = _ReportMaker(
-            heading_maker, predicted_values, table_maker
+            heading_maker,
+            predicted_values,
+            table_maker,
         ).make_text
     elif (
         report_type == "explain_predictions_best_worst" and output_format == "dataframe"
     ):
         heading_maker = _Heading(["best", "worst"], n_indices=num_to_explain)
         table_maker = _ExplanationTable(
-            top_k_features, include_explainer_values, algorithm
+            top_k_features,
+            include_explainer_values,
+            algorithm,
         )
         predicted_values = _best_worst_predicted_values_section(
-            data, _RegressionPredictedValues, _ClassificationPredictedValues
+            data,
+            _RegressionPredictedValues,
+            _ClassificationPredictedValues,
         )
         report_maker = _ReportMaker(
-            heading_maker, predicted_values, table_maker
+            heading_maker,
+            predicted_values,
+            table_maker,
         ).make_dataframe
     else:
         heading_maker = _Heading(["best", "worst"], n_indices=num_to_explain)
         table_maker = _ExplanationTable(
-            top_k_features, include_explainer_values, algorithm
+            top_k_features,
+            include_explainer_values,
+            algorithm,
         )
         predicted_values = _best_worst_predicted_values_section(
-            data, _RegressionPredictedValues, _ClassificationPredictedValues
+            data,
+            _RegressionPredictedValues,
+            _ClassificationPredictedValues,
         )
         report_maker = _ReportMaker(
-            heading_maker, predicted_values, table_maker
+            heading_maker,
+            predicted_values,
+            table_maker,
         ).make_dict
 
     return report_maker

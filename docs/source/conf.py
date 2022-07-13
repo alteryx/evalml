@@ -12,16 +12,15 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import evalml
 import os
-import sys
-import subprocess
 import shutil
+import subprocess
+import sys
 from pathlib import Path
+
 from sphinx.ext.autodoc import Documenter, MethodDocumenter
 
-
-from sphinx.ext.autodoc import MethodDocumenter, Documenter
+import evalml
 
 path = os.path.join("..", "..")
 sys.path.insert(0, os.path.abspath(path))
@@ -61,9 +60,15 @@ extensions = [
     "myst_parser",
 ]
 
-autoapi_dirs = ['../../evalml']
+autoapi_dirs = ["../../evalml"]
 autoapi_ignore = ["*/evalml/tests/*"]
-autoapi_options = ['members', 'undoc-members', 'show-module-summary', 'imported-members', 'inherited-members']
+autoapi_options = [
+    "members",
+    "undoc-members",
+    "show-module-summary",
+    "imported-members",
+    "inherited-members",
+]
 autoapi_add_toctree_entry = False
 autoapi_template_dir = "_auto_api_templates"
 
@@ -159,19 +164,21 @@ html_static_path = ["_static"]
 # 'searchbox.html']``.
 #
 # html_sidebars = {}
-html_js_files = ["https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js"]
+html_js_files = [
+    "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js"
+]
 
 
 # Downgrading MathJax to version 2 to fix plot rendering. For some reason, not fixed in latest plotly.
 # See https://github.com/spatialaudio/nbsphinx/issues/572 for more details.
 mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js"
 mathjax2_config = {
-    'tex2jax': {
-        'inlineMath': [['$', '$'], ['\\(', '\\)']],
-        'processEscapes': True,
-        'ignoreClass': 'document',
-        'processClass': 'math|output_area',
-    }
+    "tex2jax": {
+        "inlineMath": [["$", "$"], ["\\(", "\\)"]],
+        "processEscapes": True,
+        "ignoreClass": "document",
+        "processClass": "math|output_area",
+    },
 }
 
 # -- Options for HTMLHelp output ---------------------------------------------
@@ -301,28 +308,39 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
     # lower than MethodDocumenter so this is not chosen for normal methods
     priority = 0.6
 
+
 from sphinx.domains.python import PythonDomain
 
 
 class PatchedPythonDomain(PythonDomain):
     """To disable cross-reference warning: https://github.com/sphinx-doc/sphinx/issues/3866."""
+
     def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
-        if 'refspecific' in node:
-            del node['refspecific']
+        if "refspecific" in node:
+            del node["refspecific"]
         return super(PatchedPythonDomain, self).resolve_xref(
-            env, fromdocname, builder, typ, target, node, contnode)
+            env,
+            fromdocname,
+            builder,
+            typ,
+            target,
+            node,
+            contnode,
+        )
 
 
 def setup(app):
     p = Path("/home/docs/.ipython/profile_default/startup")
     if p.exists():
-        print(f'Adding disable-warnings.py and set-headers.py to {str(p)}')
+        print(f"Adding disable-warnings.py and set-headers.py to {str(p)}")
         p.mkdir(parents=True, exist_ok=True)
-        shutil.copy("disable-warnings.py", "/home/docs/.ipython/profile_default/startup/")
+        shutil.copy(
+            "disable-warnings.py", "/home/docs/.ipython/profile_default/startup/"
+        )
         shutil.copy("set-headers.py", "/home/docs/.ipython/profile_default/startup")
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_js_file(
-       "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
+        "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js",
     )
     app.add_css_file("style.css")
     app.add_autodocumenter(AccessorCallableDocumenter)

@@ -3,7 +3,9 @@ import logging
 
 import numpy as np
 
-from .binary_classification_objective import BinaryClassificationObjective
+from evalml.objectives.binary_classification_objective import (
+    BinaryClassificationObjective,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +43,7 @@ class SensitivityLowAlert(BinaryClassificationObjective):
         ypred_proba = self._standardize_input_type(ypred_proba)
         if len(ypred_proba.unique()) == 1:
             logger.debug(
-                f"All predicted probabilities have the same value: {ypred_proba.unique()}"
+                f"All predicted probabilities have the same value: {ypred_proba.unique()}",
             )
 
         prob_thresh = np.quantile(ypred_proba, 1 - self.alert_rate)

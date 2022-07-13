@@ -26,7 +26,8 @@ def test_datetime_featurizer_init():
     }
 
     datetime_transformer = DateTimeFeaturizer(
-        features_to_extract=["year", "month"], encode_as_categories=True
+        features_to_extract=["year", "month"],
+        encode_as_categories=True,
     )
     assert datetime_transformer.parameters == {
         "features_to_extract": ["year", "month"],
@@ -47,8 +48,8 @@ def test_datetime_featurizer_encodes_as_ints():
                 "2018-07-10 07:15:10",
                 "2019-08-19 20:20:20",
                 "2020-01-03 06:45:12",
-            ]
-        }
+            ],
+        },
     )
     dt = DateTimeFeaturizer()
     X_transformed_df = dt.fit_transform(X)
@@ -58,7 +59,7 @@ def test_datetime_featurizer_encodes_as_ints():
             "date_month": pd.Series([3, 2, 6, 7, 0]),
             "date_day_of_week": pd.Series([0, 3, 2, 1, 5]),
             "date_hour": pd.Series([16, 13, 7, 20, 6]),
-        }
+        },
     )
     feature_names = {
         "date_month": {"April": 3, "March": 2, "July": 6, "August": 7, "January": 0},
@@ -91,7 +92,7 @@ def test_datetime_featurizer_encodes_as_ints():
             "date_month": pd.Series([3, 2, 7]),
             "date_day_of_week": pd.Series([5, 3, 1]),
             "date_hour": pd.Series([0, 0, 0]),
-        }
+        },
     )
     assert_frame_equal(expected, X_transformed_df)
     assert dt.get_feature_names() == {
@@ -112,7 +113,7 @@ def test_datetime_featurizer_transform():
             "Date Col 1": pd.date_range("2000-05-19", periods=20, freq="D"),
             "Date Col 2": pd.date_range("2000-02-03", periods=20, freq="W"),
             "Numerical 2": [0] * 20,
-        }
+        },
     )
     X_test = pd.DataFrame(
         {
@@ -120,7 +121,7 @@ def test_datetime_featurizer_transform():
             "Date Col 1": pd.date_range("2020-05-19", periods=20, freq="D"),
             "Date Col 2": pd.date_range("2020-02-03", periods=20, freq="W"),
             "Numerical 2": [0] * 20,
-        }
+        },
     )
     datetime_transformer.fit(X)
     transformed_df = datetime_transformer.transform(X_test)
@@ -143,7 +144,7 @@ def test_datetime_featurizer_fit_transform():
             "Date Col 1": pd.date_range("2020-05-19", periods=20, freq="D"),
             "Date Col 2": pd.date_range("2020-02-03", periods=20, freq="W"),
             "Numerical 2": [0] * 20,
-        }
+        },
     )
     transformed_df = datetime_transformer.fit_transform(X)
     assert list(transformed_df.columns) == [
@@ -159,7 +160,8 @@ def test_datetime_featurizer_fit_transform():
 
 def test_datetime_featurizer_fit_transform_time_index():
     datetime_transformer = DateTimeFeaturizer(
-        features_to_extract=["year"], time_index="Date Col 1"
+        features_to_extract=["year"],
+        time_index="Date Col 1",
     )
     X = pd.DataFrame(
         {
@@ -167,7 +169,7 @@ def test_datetime_featurizer_fit_transform_time_index():
             "Date Col 1": pd.date_range("2020-05-19", periods=20, freq="D"),
             "Date Col 2": pd.date_range("2020-02-03", periods=20, freq="W"),
             "Numerical 2": [0] * 20,
-        }
+        },
     )
     transformed_df = datetime_transformer.fit_transform(X)
     assert list(transformed_df.columns) == [
@@ -177,10 +179,10 @@ def test_datetime_featurizer_fit_transform_time_index():
         "Date Col 2_year",
     ]
     assert transformed_df["Date Col 1_year"].equals(
-        pd.Series([2020] * 20, dtype="int64")
+        pd.Series([2020] * 20, dtype="int64"),
     )
     assert transformed_df["Date Col 2_year"].equals(
-        pd.Series([2020] * 20, dtype="int64")
+        pd.Series([2020] * 20, dtype="int64"),
     )
     assert datetime_transformer.get_feature_names() == {}
 
@@ -232,7 +234,7 @@ def test_datetime_featurizer_custom_features_to_extract():
         "date col_year",
     ]
     assert datetime_transformer.get_feature_names() == {
-        "date col_month": {"February": 1, "March": 2}
+        "date col_month": {"February": 1, "March": 2},
     }
 
 
@@ -290,7 +292,7 @@ def test_datetime_featurizer_with_inconsistent_date_format():
             "date col_month": [9.0] * 18 + [np.nan] * 2,
             "date col_day_of_week": expected_dow,
             "date col_hour": [0.0] * 18 + [np.nan] * 2,
-        }
+        },
     )
     pd.testing.assert_frame_equal(answer, expected)
 
@@ -299,7 +301,7 @@ def test_datetime_featurizer_with_inconsistent_date_format():
     "X_df",
     [
         pd.DataFrame(
-            pd.to_datetime(["20190902", "20200519", "20190607"], format="%Y%m%d")
+            pd.to_datetime(["20190902", "20200519", "20190607"], format="%Y%m%d"),
         ),
         pd.DataFrame(pd.Series([1, 2, 3])),
         pd.DataFrame(pd.Series([1.0, 2.0, 3.0], dtype="float")),
@@ -308,19 +310,22 @@ def test_datetime_featurizer_with_inconsistent_date_format():
             pd.Series(
                 ["this will be a natural language column because length", "yay", "hay"],
                 dtype="string",
-            )
+            ),
         ),
     ],
 )
 @pytest.mark.parametrize("with_datetime_col", [True, False])
 @pytest.mark.parametrize("encode_as_categories", [True, False])
 def test_datetime_featurizer_woodwork_custom_overrides_returned_by_components(
-    with_datetime_col, encode_as_categories, X_df
+    with_datetime_col,
+    encode_as_categories,
+    X_df,
 ):
     override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime]
     if with_datetime_col:
         X_df["datetime col"] = pd.to_datetime(
-            ["20200101", "20200519", "20190607"], format="%Y%m%d"
+            ["20200101", "20200519", "20190607"],
+            format="%Y%m%d",
         )
     for logical_type in override_types:
         try:
@@ -332,7 +337,7 @@ def test_datetime_featurizer_woodwork_custom_overrides_returned_by_components(
             # Casting the fourth and fifth dataframes to datetime will produce all NaNs
             continue
         datetime_transformer = DateTimeFeaturizer(
-            encode_as_categories=encode_as_categories
+            encode_as_categories=encode_as_categories,
         )
         datetime_transformer.fit(X)
         transformed = datetime_transformer.transform(X)

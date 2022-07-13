@@ -25,11 +25,13 @@ def test_multicollinearity_data_check_init():
     assert multi_check.threshold == 1.0
 
     with pytest.raises(
-        ValueError, match="threshold must be a float between 0 and 1, inclusive."
+        ValueError,
+        match="threshold must be a float between 0 and 1, inclusive.",
     ):
         MulticollinearityDataCheck(threshold=-0.1)
     with pytest.raises(
-        ValueError, match="threshold must be a float between 0 and 1, inclusive."
+        ValueError,
+        match="threshold must be a float between 0 and 1, inclusive.",
     ):
         MulticollinearityDataCheck(threshold=1.1)
 
@@ -46,12 +48,13 @@ def test_multicollinearity_returns_warning(use_nullable_types):
             "col_4": col / 2,
             "col_5": col + 1,
             "not_collinear": [0, 1, 0, 0, 0] * 6,
-        }
+        },
     )
     if use_nullable_types:
         data[1] = None
         X["col_nullable"] = woodwork.init_series(
-            pd.Series(data), logical_type="IntegerNullable"
+            pd.Series(data),
+            logical_type="IntegerNullable",
         )
         X.ww.init()
 
@@ -73,7 +76,7 @@ def test_multicollinearity_returns_warning(use_nullable_types):
             data_check_name=multi_data_check_name,
             message_code=DataCheckMessageCode.IS_MULTICOLLINEAR,
             details={"columns": msg_list},
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
@@ -87,7 +90,7 @@ def test_multicollinearity_nonnumeric_cols(data_type, make_data_type):
             "col_4": ["a", "b", "c", "d", "a"],
             "col_5": ["0", "0", "1", "2", "0"],
             "col_6": [1, 1, 2, 3, 1],
-        }
+        },
     )
     X = pd.concat([X] * 10, axis=0).reset_index(drop=True)
     X.ww.init(
@@ -97,7 +100,7 @@ def test_multicollinearity_nonnumeric_cols(data_type, make_data_type):
             "col_3": "categorical",
             "col_4": "categorical",
             "col_5": "categorical",
-        }
+        },
     )
 
     multi_check = MulticollinearityDataCheck(threshold=0.9)
@@ -112,9 +115,9 @@ def test_multicollinearity_nonnumeric_cols(data_type, make_data_type):
                     ("col_3", "col_5"),
                     ("col_3", "col_6"),
                     ("col_5", "col_6"),
-                ]
+                ],
             },
-        ).to_dict()
+        ).to_dict(),
     ]
 
 

@@ -125,7 +125,9 @@ class LightGBMRegressor(Estimator):
         )
 
         super().__init__(
-            parameters=parameters, component_obj=lgbm_regressor, random_seed=random_seed
+            parameters=parameters,
+            component_obj=lgbm_regressor,
+            random_seed=random_seed,
         )
 
     def _encode_categories(self, X, fit=False):

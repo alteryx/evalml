@@ -1,5 +1,5 @@
 """Model understanding tools."""
-from .visualizations import (
+from evalml.model_understanding.visualizations import (
     binary_objective_vs_threshold,
     get_linear_coefficients,
     get_prediction_vs_actual_data,
@@ -10,7 +10,7 @@ from .visualizations import (
     graph_t_sne,
     t_sne,
 )
-from .metrics import (
+from evalml.model_understanding.metrics import (
     confusion_matrix,
     graph_confusion_matrix,
     graph_precision_recall_curve,
@@ -19,15 +19,23 @@ from .metrics import (
     precision_recall_curve,
     roc_curve,
 )
-from .partial_dependence_functions import (
+from evalml.model_understanding.partial_dependence_functions import (
     graph_partial_dependence,
     partial_dependence,
 )
-from .prediction_explanations import explain_predictions, explain_predictions_best_worst
-from .permutation_importance import (
+from evalml.model_understanding.prediction_explanations import (
+    explain_predictions,
+    explain_predictions_best_worst,
+)
+from evalml.model_understanding.permutation_importance import (
     calculate_permutation_importance,
     calculate_permutation_importance_one_column,
     graph_permutation_importance,
 )
-from .feature_explanations import readable_explanation, get_influential_features
-from .decision_boundary import find_confusion_matrix_per_thresholds
+from evalml.model_understanding.feature_explanations import (
+    readable_explanation,
+    get_influential_features,
+)
+from evalml.model_understanding.decision_boundary import (
+    find_confusion_matrix_per_thresholds,
+)

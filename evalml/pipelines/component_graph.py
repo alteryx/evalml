@@ -87,7 +87,7 @@ class ComponentGraph:
         self.component_dict = component_dict or {}
         if not isinstance(self.component_dict, dict):
             raise ValueError(
-                "component_dict must be a dictionary which specifies the components and edges between components"
+                "component_dict must be a dictionary which specifies the components and edges between components",
             )
         self._validate_component_dict()
         self.cached_data = cached_data
@@ -110,7 +110,7 @@ class ComponentGraph:
         for _, component_inputs in self.component_dict.items():
             if not isinstance(component_inputs, list):
                 raise ValueError(
-                    "All component information should be passed in as a list"
+                    "All component information should be passed in as a list",
                 )
 
     def _validate_component_dict_edges(self):
@@ -126,11 +126,11 @@ class ComponentGraph:
             )
             if not has_feature_input:
                 raise ValueError(
-                    "All components must have at least one input feature (.x/X) edge."
+                    "All components must have at least one input feature (.x/X) edge.",
                 )
             if num_target_inputs != 1:
                 raise ValueError(
-                    "All components must have exactly one target (.y/y) edge."
+                    "All components must have exactly one target (.y/y) edge.",
                 )
 
             def check_all_inputs_have_correct_syntax(edge):
@@ -143,12 +143,14 @@ class ComponentGraph:
 
             if (
                 len(
-                    list(filter(check_all_inputs_have_correct_syntax, component_inputs))
+                    list(
+                        filter(check_all_inputs_have_correct_syntax, component_inputs)
+                    ),
                 )
                 != 0
             ):
                 raise ValueError(
-                    "All edges must be specified as either an input feature ('X'/.x) or input target ('y'/.y)."
+                    "All edges must be specified as either an input feature ('X'/.x) or input target ('y'/.y).",
                 )
 
             target_inputs = [
@@ -161,7 +163,7 @@ class ComponentGraph:
                 target_component_class = self.get_component(target_component_name)
                 if not target_component_class.modifies_target:
                     raise ValueError(
-                        f"{target_inputs[0]} is not a valid input edge because {target_component_name} does not return a target."
+                        f"{target_inputs[0]} is not a valid input edge because {target_component_name} does not return a target.",
                     )
 
     @property
@@ -198,7 +200,7 @@ class ComponentGraph:
         """
         if self._is_instantiated:
             raise ValueError(
-                f"Cannot reinstantiate a component graph that was previously instantiated"
+                f"Cannot reinstantiate a component graph that was previously instantiated",
             )
         parameters = parameters or {}
         param_set = set(s for s in parameters.keys() if s not in ["pipeline"])
@@ -217,7 +219,8 @@ class ComponentGraph:
                 except (ValueError, TypeError) as e:
                     self._is_instantiated = False
                     err = "Error received when instantiating component {} with the following arguments {}".format(
-                        component_name, component_parameters
+                        component_name,
+                        component_parameters,
                     )
                     raise ValueError(err) from e
                 component_instances[component_name] = new_component
@@ -290,16 +293,23 @@ class ComponentGraph:
             evaluate_training_only_components=needs_fitting,
         )
         x_inputs, y_output = self._consolidate_inputs_for_component(
-            component_outputs, self.compute_order[-1], X, y
+            component_outputs,
+            self.compute_order[-1],
+            X,
+            y,
         )
         if needs_fitting:
             self.input_feature_names.update(
-                {self.compute_order[-1]: list(x_inputs.columns)}
+                {self.compute_order[-1]: list(x_inputs.columns)},
             )
         return x_inputs, y_output
 
     def _consolidate_inputs_for_component(
-        self, component_outputs, component, X, y=None
+        self,
+        component_outputs,
+        component,
+        X,
+        y=None,
     ):
         x_inputs = []
         y_input = None
@@ -337,11 +347,15 @@ class ComponentGraph:
         final_component_instance = self.get_last_component()
         if not isinstance(final_component_instance, Transformer):
             raise ValueError(
-                "Cannot call transform() on a component graph because the final component is not a Transformer."
+                "Cannot call transform() on a component graph because the final component is not a Transformer.",
             )
 
         outputs = self._transform_features(
-            self.compute_order, X, y, fit=False, evaluate_training_only_components=True
+            self.compute_order,
+            X,
+            y,
+            fit=False,
+            evaluate_training_only_components=True,
         )
         output_x = infer_feature_types(outputs.get(f"{final_component_name}.x"))
         output_y = outputs.get(f"{final_component_name}.y", None)
@@ -367,10 +381,12 @@ class ComponentGraph:
         final_component_instance = self.get_last_component()
         if not isinstance(final_component_instance, Estimator):
             raise ValueError(
-                "Cannot call predict() on a component graph because the final component is not an Estimator."
+                "Cannot call predict() on a component graph because the final component is not an Estimator.",
             )
         outputs = self._transform_features(
-            self.compute_order, X, evaluate_training_only_components=False
+            self.compute_order,
+            X,
+            evaluate_training_only_components=False,
         )
         return infer_feature_types(outputs.get(f"{final_component}.x"))
 
@@ -441,14 +457,19 @@ class ComponentGraph:
         output_cache = {}
         for component_name in component_list:
             component_instance = self._get_component_from_cache(
-                hashes, component_name, fit
+                hashes,
+                component_name,
+                fit,
             )
             if not isinstance(component_instance, ComponentBase):
                 raise ValueError(
-                    "All components must be instantiated before fitting or predicting"
+                    "All components must be instantiated before fitting or predicting",
                 )
             x_inputs, y_input = self._consolidate_inputs_for_component(
-                output_cache, component_name, X, y
+                output_cache,
+                component_name,
+                X,
+                y,
             )
             self.input_feature_names.update({component_name: list(x_inputs.columns)})
             self._feature_logical_types[component_name] = x_inputs.ww.logical_types
@@ -490,7 +511,7 @@ class ComponentGraph:
                                 {
                                     col: f"Col {str(col)} {component_name}.x"
                                     for col in output.columns
-                                }
+                                },
                             )
                     except MethodPropertyNotFoundError:
                         output = component_instance.predict(x_inputs)
@@ -548,7 +569,7 @@ class ComponentGraph:
                 # Case 1: The transformer created features from one of the original features
                 if component_input in provenance:
                     provenance[component_input] = provenance[component_input].union(
-                        set(component_output)
+                        set(component_output),
                     )
 
                 # Case 2: The transformer created features from a feature created from an original feature.
@@ -557,16 +578,16 @@ class ComponentGraph:
                     for in_feature, out_feature in provenance.items():
                         if component_input in out_feature:
                             provenance[in_feature] = out_feature.union(
-                                set(component_output)
+                                set(component_output),
                             )
 
         # Get rid of features that are not in the dataset the final estimator uses
         final_estimator_features = set(
-            self.input_feature_names.get(self.compute_order[-1], [])
+            self.input_feature_names.get(self.compute_order[-1], []),
         )
         for feature in provenance:
             provenance[feature] = provenance[feature].intersection(
-                final_estimator_features
+                final_estimator_features,
             )
 
         # Delete features that weren't used to create other features
@@ -651,7 +672,7 @@ class ComponentGraph:
         """
         if not isinstance(self.get_last_component(), ComponentBase):
             raise ValueError(
-                "Cannot get estimators until the component graph is instantiated"
+                "Cannot get estimators until the component graph is instantiated",
             )
         return [
             component_class
@@ -700,13 +721,14 @@ class ComponentGraph:
                 components.update(
                     {
                         component.name: component.describe(
-                            print_name=False, return_dict=return_dict
-                        )
-                    }
+                            print_name=False,
+                            return_dict=return_dict,
+                        ),
+                    },
                 )
             except TypeError:
                 raise ValueError(
-                    "You need to instantiate ComponentGraph before calling describe()"
+                    "You need to instantiate ComponentGraph before calling describe()",
                 )
         if return_dict:
             return components
@@ -725,7 +747,8 @@ class ComponentGraph:
             RuntimeError: If graphviz is not installed.
         """
         graphviz = import_or_raise(
-            "graphviz", error_msg="Please install graphviz to visualize pipelines."
+            "graphviz",
+            error_msg="Please install graphviz to visualize pipelines.",
         )
 
         # Try rendering a dummy graph to see if a working backend is installed
@@ -737,7 +760,7 @@ class ComponentGraph:
                 + "Install the backend using one of the following commands:\n"
                 + "  Mac OS: brew install graphviz\n"
                 + "  Linux (Ubuntu): sudo apt-get install graphviz\n"
-                + "  Windows: conda install python-graphviz\n"
+                + "  Windows: conda install python-graphviz\n",
             )
 
         graph = graphviz.Digraph(
@@ -754,7 +777,7 @@ class ComponentGraph:
                         if (isinstance(val, float))
                         else key + " : " + str(val)
                         for key, val in component_class.parameters.items()
-                    ]
+                    ],
                 )  # noqa: W605
                 label = "%s |%s\l" % (component_name, parameters)  # noqa: W605
             graph.node(component_name, shape="record", label=label, nodesep="0.03")
@@ -830,7 +853,7 @@ class ComponentGraph:
         ]
         if len(end_components) != 1:
             raise ValueError(
-                "The given graph has more than one final (childless) component"
+                "The given graph has more than one final (childless) component",
             )
         return compute_order
 
@@ -894,7 +917,7 @@ class ComponentGraph:
             if len(component_info) > 1:
                 component_edges_str = ", "
                 component_edges_str += ", ".join(
-                    [f"'{info}'" for info in component_info[1:]]
+                    [f"'{info}'" for info in component_info[1:]],
                 )
 
             component_str = f"{component_key}[{component_name}{component_edges_str}]"

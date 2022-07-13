@@ -23,27 +23,30 @@ class Tuner(ABC):
         if not isinstance(pipeline_hyperparameter_ranges, dict):
             raise ValueError(
                 "pipeline_hyperparameter_ranges must be a dict but is of type {}".format(
-                    type(pipeline_hyperparameter_ranges)
-                )
+                    type(pipeline_hyperparameter_ranges),
+                ),
             )
         self._component_names = list(pipeline_hyperparameter_ranges.keys())
         for component_name, component_ranges in pipeline_hyperparameter_ranges.items():
             if not isinstance(component_ranges, dict):
                 raise ValueError(
                     "pipeline_hyperparameter_ranges has invalid entry for {}: {}".format(
-                        component_name, component_ranges
-                    )
+                        component_name,
+                        component_ranges,
+                    ),
                 )
             for parameter_name, parameter_range in component_ranges.items():
                 if parameter_range is None:
                     raise ValueError(
                         "pipeline_hyperparameter_ranges has invalid dimensions for "
                         + "{} parameter {}: None.".format(
-                            component_name, parameter_name
-                        )
+                            component_name,
+                            parameter_name,
+                        ),
                     )
                 if not isinstance(
-                    parameter_range, (Real, Integer, Categorical, list, tuple)
+                    parameter_range,
+                    (Real, Integer, Categorical, list, tuple),
                 ):
                     continue
                 flat_parameter_name = "{}: {}".format(component_name, parameter_name)
@@ -67,11 +70,12 @@ class Tuner(ABC):
             ):
                 raise TypeError(
                     'Pipeline parameters missing required field "{}" for component "{}"'.format(
-                        parameter_name, component_name
-                    )
+                        parameter_name,
+                        component_name,
+                    ),
                 )
             flat_parameter_values.append(
-                pipeline_parameters[component_name][parameter_name]
+                pipeline_parameters[component_name][parameter_name],
             )
         return flat_parameter_values
 
@@ -81,7 +85,8 @@ class Tuner(ABC):
             component_name: dict() for component_name in self._component_names
         }
         for flat_parameter_name, parameter_value in zip(
-            self._search_space_names, flat_parameters
+            self._search_space_names,
+            flat_parameters,
         ):
             component_name, parameter_name = self._parameter_names_map[
                 flat_parameter_name
@@ -106,12 +111,12 @@ class Tuner(ABC):
                 if isinstance(value, (Integer, Real)):
                     # get a random value in the space
                     component_parameters[param_name] = value.rvs(
-                        random_state=random_seed
+                        random_state=random_seed,
                     )[0]
                 elif isinstance(value, Categorical):
                     # Categorical
                     component_parameters[param_name] = value.rvs(
-                        random_state=random_seed
+                        random_state=random_seed,
                     )
                 elif isinstance(value, (list, tuple)):
                     # list value from our internal hyperparameter_ranges

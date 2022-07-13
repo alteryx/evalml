@@ -141,7 +141,7 @@ class IDColumnsDataCheck(DataCheck):
             [
                 (col, 1.0) if col in id_cols else (col, 0.95)
                 for col in cols_with_all_unique
-            ]
+            ],
         )
 
         col_ends_with_id = [
@@ -151,7 +151,7 @@ class IDColumnsDataCheck(DataCheck):
             [
                 (col, 1.0) if str(col) in id_cols else (col, 0.95)
                 for col in col_ends_with_id
-            ]
+            ],
         )
 
         id_cols_above_threshold = {
@@ -163,7 +163,10 @@ class IDColumnsDataCheck(DataCheck):
                 DataCheckWarning(
                     message=warning_msg.format(
                         (", ").join(
-                            ["'{}'".format(str(col)) for col in id_cols_above_threshold]
+                            [
+                                "'{}'".format(str(col))
+                                for col in id_cols_above_threshold
+                            ],
                         ),
                         self.id_threshold * 100,
                     ),
@@ -175,9 +178,9 @@ class IDColumnsDataCheck(DataCheck):
                             DataCheckActionCode.DROP_COL,
                             data_check_name=self.name,
                             metadata={"columns": list(id_cols_above_threshold)},
-                        )
+                        ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             )
 
         return messages

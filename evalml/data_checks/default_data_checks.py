@@ -1,16 +1,17 @@
 """A default set of data checks that can be used for a variety of datasets."""
-from .class_imbalance_data_check import ClassImbalanceDataCheck
-from .data_checks import DataChecks
-from .datetime_format_data_check import DateTimeFormatDataCheck
-from .id_columns_data_check import IDColumnsDataCheck
-from .invalid_target_data_check import InvalidTargetDataCheck
-from .no_variance_data_check import NoVarianceDataCheck
-from .null_data_check import NullDataCheck
-from .target_distribution_data_check import TargetDistributionDataCheck
-from .target_leakage_data_check import TargetLeakageDataCheck
-from .ts_parameters_data_check import TimeSeriesParametersDataCheck
-from .ts_splitting_data_check import TimeSeriesSplittingDataCheck
-
+from evalml.data_checks.class_imbalance_data_check import ClassImbalanceDataCheck
+from evalml.data_checks.data_checks import DataChecks
+from evalml.data_checks.datetime_format_data_check import DateTimeFormatDataCheck
+from evalml.data_checks.id_columns_data_check import IDColumnsDataCheck
+from evalml.data_checks.invalid_target_data_check import InvalidTargetDataCheck
+from evalml.data_checks.no_variance_data_check import NoVarianceDataCheck
+from evalml.data_checks.null_data_check import NullDataCheck
+from evalml.data_checks.target_distribution_data_check import (
+    TargetDistributionDataCheck,
+)
+from evalml.data_checks.target_leakage_data_check import TargetLeakageDataCheck
+from evalml.data_checks.ts_parameters_data_check import TimeSeriesParametersDataCheck
+from evalml.data_checks.ts_splitting_data_check import TimeSeriesSplittingDataCheck
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -59,7 +60,7 @@ class DefaultDataChecks(DataChecks):
         if is_time_series(problem_type):
             if problem_configuration is None:
                 raise ValueError(
-                    "problem_configuration cannot be None for time series problems!"
+                    "problem_configuration cannot be None for time series problems!",
                 )
             if is_classification(problem_type):
                 default_checks = default_checks + [TimeSeriesSplittingDataCheck]
@@ -68,8 +69,8 @@ class DefaultDataChecks(DataChecks):
                         "TimeSeriesSplittingDataCheck": {
                             "problem_type": problem_type,
                             "n_splits": n_splits,
-                        }
-                    }
+                        },
+                    },
                 )
             default_checks = default_checks + [
                 DateTimeFormatDataCheck,
@@ -84,7 +85,7 @@ class DefaultDataChecks(DataChecks):
                         "problem_configuration": problem_configuration,
                         "n_splits": n_splits,
                     },
-                }
+                },
             )
 
         if handle_problem_types(problem_type) in [
@@ -97,8 +98,8 @@ class DefaultDataChecks(DataChecks):
                     "InvalidTargetDataCheck": {
                         "problem_type": problem_type,
                         "objective": objective,
-                    }
-                }
+                    },
+                },
             )
         else:
             default_checks = default_checks + [ClassImbalanceDataCheck]
@@ -109,7 +110,7 @@ class DefaultDataChecks(DataChecks):
                         "objective": objective,
                     },
                     "ClassImbalanceDataCheck": {"num_cv_folds": n_splits},
-                }
+                },
             )
 
         super().__init__(

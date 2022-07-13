@@ -1,6 +1,6 @@
 """EvalML estimator components."""
-from .estimator import Estimator
-from .classifiers import (
+from evalml.pipelines.components.estimators.estimator import Estimator
+from evalml.pipelines.components.estimators.classifiers import (
     LogisticRegressionClassifier,
     RandomForestClassifier,
     XGBoostClassifier,
@@ -15,7 +15,7 @@ from .classifiers import (
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
 )
-from .regressors import (
+from evalml.pipelines.components.estimators.regressors import (
     LinearRegressor,
     LightGBMRegressor,
     RandomForestRegressor,

@@ -2,9 +2,7 @@
 import numpy as np
 import pandas as pd
 
-from evalml.pipelines.components.transformers.samplers.base_sampler import (
-    BaseSampler,
-)
+from evalml.pipelines.components.transformers.samplers.base_sampler import BaseSampler
 from evalml.utils.woodwork_utils import infer_feature_types
 
 
@@ -48,15 +46,15 @@ class Undersampler(BaseSampler):
     ):
         if sampling_ratio <= 0 or sampling_ratio > 1:
             raise ValueError(
-                f"sampling_ratio must be within (0, 1], but received {sampling_ratio}"
+                f"sampling_ratio must be within (0, 1], but received {sampling_ratio}",
             )
         if min_samples <= 0:
             raise ValueError(
-                f"min_sample must be greater than 0, but received {min_samples}"
+                f"min_sample must be greater than 0, but received {min_samples}",
             )
         if min_percentage <= 0 or min_percentage > 0.5:
             raise ValueError(
-                f"min_percentage must be between 0 and 0.5, inclusive, but received {min_percentage}"
+                f"min_percentage must be between 0 and 0.5, inclusive, but received {min_percentage}",
             )
 
         parameters = {
@@ -73,7 +71,9 @@ class Undersampler(BaseSampler):
 
         parameters.update(kwargs)
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def _initialize_sampler(self, X, y):
@@ -122,7 +122,7 @@ class Undersampler(BaseSampler):
         # if any classes have less than min_samples counts and are less than min_percentage of the total data,
         # then it's severely imbalanced
         if any(counts < self.min_samples) and any(
-            normalized_counts < self.min_percentage
+            normalized_counts < self.min_percentage,
         ):
             return {}
         # otherwise, we are imbalanced enough to perform on this
@@ -130,7 +130,8 @@ class Undersampler(BaseSampler):
         # find goal size, round it down if it's a float
         minority_class = min(counts.values)
         goal_value = max(
-            int((minority_class / self.sampling_ratio) // 1), self.min_samples
+            int((minority_class / self.sampling_ratio) // 1),
+            self.min_samples,
         )
         # we don't want to drop less than 0 rows
         drop_values = {k: max(0, counts[k] - goal_value) for k in undersample_classes}
@@ -164,7 +165,8 @@ class Undersampler(BaseSampler):
         """
         if self.parameters["sampling_ratio_dict"]:
             self.sampling_ratio_dict = self._convert_dictionary(
-                self.parameters["sampling_ratio_dict"], y
+                self.parameters["sampling_ratio_dict"],
+                y,
             )
 
         y = infer_feature_types(y)

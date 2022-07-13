@@ -68,7 +68,7 @@ def test_target_leakage_data_check_warnings():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
                     metadata={"columns": ["a", "b", "c"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -92,7 +92,7 @@ def test_target_leakage_data_check_singular_warning():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
                     metadata={"columns": ["a"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -153,7 +153,7 @@ def test_target_leakage_data_check_input_formats():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
                     metadata={"columns": [0, 1, 2]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -200,7 +200,7 @@ def test_target_leakage_types():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
                     metadata={"columns": ["a", "b"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -215,7 +215,7 @@ def test_target_leakage_multi():
     assert leakage_check.validate(pd.DataFrame(), pd.Series()) == []
 
     y = pd.Series(
-        [1, 0, 2, 1, 2, 0, 1, 0, 2, 1, 2, 0, 1, 0, 2, 1, 2, 0, 1, 0, 2, 1, 2, 0, 1]
+        [1, 0, 2, 1, 2, 0, 1, 0, 2, 1, 2, 0, 1, 0, 2, 1, 2, 0, 1, 0, 2, 1, 2, 0, 1],
     )
     X = pd.DataFrame()
     X["a"] = y * 3
@@ -261,7 +261,7 @@ def test_target_leakage_multi():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
                     metadata={"columns": ["a", "b", "c"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -310,7 +310,7 @@ def test_target_leakage_regression():
             23.3,
             25.3,
             25.8,
-        ]
+        ],
     )
     X = pd.DataFrame()
     X["a"] = y * 3
@@ -330,7 +330,7 @@ def test_target_leakage_regression():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
                     metadata={"columns": ["a", "b", "c"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -401,7 +401,7 @@ def test_target_leakage_data_check_input_formats_pearson():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
                     metadata={"columns": ["a", "b", "c", "d"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -418,7 +418,7 @@ def test_target_leakage_data_check_input_formats_pearson():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
                     metadata={"columns": [0, 1, 2, 3]},
-                )
+                ),
             ],
         ).to_dict(),
     ]

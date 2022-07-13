@@ -75,7 +75,11 @@ class RegressionPipeline(PipelineBase):
         objectives = self.create_objectives(objectives)
         y_predicted = self.predict(X)
         return self._score_all_objectives(
-            X, y, y_predicted, y_pred_proba=None, objectives=objectives
+            X,
+            y,
+            y_predicted,
+            y_pred_proba=None,
+            objectives=objectives,
         )
 
     def predict(self, X, objective=None, X_train=None, y_train=None):

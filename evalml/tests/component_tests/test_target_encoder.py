@@ -52,7 +52,8 @@ def test_invalid_inputs():
     with pytest.raises(ValueError, match="Invalid input 'test2' for handle_missing"):
         TargetEncoder(handle_missing="test2")
     with pytest.raises(
-        ValueError, match="Smoothing value needs to be strictly larger than 0"
+        ValueError,
+        match="Smoothing value needs to be strictly larger than 0",
     ):
         TargetEncoder(smoothing=0)
 
@@ -63,14 +64,14 @@ def test_null_values_in_dataframe():
             "col_1": ["a", "b", "c", "d", np.nan],
             "col_2": ["a", "b", "a", "c", "b"],
             "col_3": ["a", "a", "a", "a", "a"],
-        }
+        },
     )
     X.ww.init(
         logical_types={
             "col_1": "categorical",
             "col_2": "categorical",
             "col_3": "categorical",
-        }
+        },
     )
     y = pd.Series([0, 1, 1, 1, 0])
     encoder = TargetEncoder(handle_missing="value")
@@ -87,7 +88,7 @@ def test_null_values_in_dataframe():
                 0.6,
                 0.6,
             ],
-        }
+        },
     )
 
     assert_frame_equal(X_expected, X_t)
@@ -106,7 +107,7 @@ def test_null_values_in_dataframe():
                 0.6,
                 0.6,
             ],
-        }
+        },
     )
     assert_frame_equal(X_expected, X_t)
 
@@ -121,7 +122,7 @@ def test_cols():
             "col_1": [1, 2, 1, 1, 2] * 2,
             "col_2": ["2", "1", "1", "1", "1"] * 2,
             "col_3": ["a", "a", "a", "a", "a"] * 2,
-        }
+        },
     )
     X_expected = X.astype({"col_1": "int64", "col_2": "category", "col_3": "category"})
     y = pd.Series([0, 1, 1, 1, 0] * 2)
@@ -138,7 +139,7 @@ def test_cols():
             "col_1": pd.Series([1, 2, 1, 1, 2] * 2, dtype="int64"),
             "col_2": [0.161365, 0.749863, 0.749863, 0.749863, 0.749863] * 2,
             "col_3": pd.Series(["a", "a", "a", "a", "a"] * 2, dtype="category"),
-        }
+        },
     )
     assert_frame_equal(X_expected, X_t, check_less_precise=True)
 
@@ -157,7 +158,7 @@ def test_transform():
             "col_1": [1, 2, 1, 1, 2],
             "col_2": ["r", "t", "s", "t", "t"],
             "col_3": ["a", "a", "a", "b", "a"],
-        }
+        },
     )
     X.ww.init(logical_types={"col_2": "categorical", "col_3": "categorical"})
     y = pd.Series([0, 1, 1, 1, 0])
@@ -169,7 +170,7 @@ def test_transform():
             "col_1": pd.Series([1, 2, 1, 1, 2], dtype="int64"),
             "col_2": [0.6, 0.65872, 0.6, 0.65872, 0.65872],
             "col_3": [0.504743, 0.504743, 0.504743, 0.6, 0.504743],
-        }
+        },
     )
     assert_frame_equal(X_expected, X_t)
 
@@ -181,7 +182,7 @@ def test_smoothing():
             "col_1": [1, 2, 1, 1, 2],
             "col_2": [2, 1, 1, 1, 1],
             "col_3": ["a", "a", "a", "a", "b"],
-        }
+        },
     )
     X.ww.init(logical_types={"col_3": "categorical"})
     y = pd.Series([0, 1, 1, 1, 0])
@@ -193,7 +194,7 @@ def test_smoothing():
             "col_1": pd.Series([1, 2, 1, 1, 2], dtype="int64"),
             "col_2": pd.Series([2, 1, 1, 1, 1], dtype="int64"),
             "col_3": [0.742886, 0.742886, 0.742886, 0.742886, 0.6],
-        }
+        },
     )
     assert_frame_equal(X_expected, X_t)
 
@@ -205,7 +206,7 @@ def test_smoothing():
             "col_1": pd.Series([1, 2, 1, 1, 2], dtype="int64"),
             "col_2": pd.Series([2, 1, 1, 1, 1], dtype="int64"),
             "col_3": [0.686166, 0.686166, 0.686166, 0.686166, 0.6],
-        }
+        },
     )
     assert_frame_equal(X_expected, X_t)
 
@@ -217,7 +218,7 @@ def test_smoothing():
             "col_1": pd.Series([1, 2, 1, 1, 2], dtype="int64"),
             "col_2": pd.Series([2, 1, 1, 1, 1], dtype="int64"),
             "col_3": [0.676125, 0.676125, 0.676125, 0.676125, 0.6],
-        }
+        },
     )
     assert_frame_equal(X_expected, X_t)
 
@@ -228,7 +229,7 @@ def test_get_feature_names():
             "col_1": [1, 2, 1, 1, 2],
             "col_2": ["r", "t", "s", "t", "t"],
             "col_3": ["a", "a", "a", "b", "a"],
-        }
+        },
     )
     y = pd.Series([0, 1, 1, 1, 0])
     encoder = TargetEncoder()
@@ -239,7 +240,8 @@ def test_get_feature_names():
         encoder.get_feature_names()
     encoder.fit(X, y)
     np.testing.assert_array_equal(
-        encoder.get_feature_names(), np.array(["col_1", "col_2", "col_3"])
+        encoder.get_feature_names(),
+        np.array(["col_1", "col_2", "col_3"]),
     )
 
 
@@ -261,7 +263,7 @@ def test_pandas_numpy(mock_fit, X_y_binary):
     "X_df",
     [
         pd.DataFrame(
-            pd.to_datetime(["20190902", "20200519", "20190607"], format="%Y%m%d")
+            pd.to_datetime(["20190902", "20200519", "20190607"], format="%Y%m%d"),
         ),
         pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
         pd.DataFrame(pd.Series([1.0, 2.0, 3.0], dtype="float")),
@@ -271,7 +273,7 @@ def test_pandas_numpy(mock_fit, X_y_binary):
             pd.Series(
                 ["this will be a natural language column because length", "yay", "hay"],
                 dtype="string",
-            )
+            ),
         ),
     ],
 )
@@ -292,9 +294,9 @@ def test_target_encoder_woodwork_custom_overrides_returned_by_components(X_df):
 
         if logical_type == Categorical:
             assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-                0: Double
+                0: Double,
             }
         else:
             assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-                0: logical_type
+                0: logical_type,
             }

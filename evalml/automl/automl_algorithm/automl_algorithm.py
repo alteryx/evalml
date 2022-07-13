@@ -74,10 +74,11 @@ class AutoMLAlgorithm(ABC):
     def _create_tuner(self, pipeline):
         """Creates a tuner given the input pipeline."""
         pipeline_hyperparameters = pipeline.get_hyperparameter_ranges(
-            self._hyperparameters
+            self._hyperparameters,
         )
         self._tuners[pipeline.name] = self._tuner_class(
-            pipeline_hyperparameters, random_seed=self.random_seed
+            pipeline_hyperparameters,
+            random_seed=self.random_seed,
         )
 
     def _separate_hyperparameters_from_parameters(self):
@@ -142,7 +143,7 @@ class AutoMLAlgorithm(ABC):
         """
         if pipeline.name not in self._tuners:
             raise PipelineNotFoundError(
-                f"No such pipeline allowed in this AutoML search: {pipeline.name}"
+                f"No such pipeline allowed in this AutoML search: {pipeline.name}",
             )
         self._tuners[pipeline.name].add(pipeline.parameters, score_to_minimize)
 
@@ -198,19 +199,20 @@ class AutoMLAlgorithm(ABC):
             else None
         )
         index_and_unknown_columns = list(
-            self.X.ww.select(["index", "unknown"], return_schema=True).columns
+            self.X.ww.select(["index", "unknown"], return_schema=True).columns,
         )
         unknown_columns = list(self.X.ww.select("unknown", return_schema=True).columns)
         if len(index_and_unknown_columns) > 0 and drop_columns is None:
             self.search_parameters["Drop Columns Transformer"] = {
-                "columns": index_and_unknown_columns
+                "columns": index_and_unknown_columns,
             }
             if len(unknown_columns):
                 self.logger.info(
-                    f"Removing columns {unknown_columns} because they are of 'Unknown' type"
+                    f"Removing columns {unknown_columns} because they are of 'Unknown' type",
                 )
         kina_columns = self.search_parameters.get("pipeline", {}).get(
-            "known_in_advance", []
+            "known_in_advance",
+            [],
         )
         if kina_columns:
             no_kin_columns = [c for c in self.X.columns if c not in kina_columns]
@@ -247,7 +249,7 @@ class AutoMLAlgorithm(ABC):
                     ", ".join(sorted([e.name for e in dropped_estimators])),
                     y_unique,
                     allow_long_running_models,
-                )
+                ),
             )
         estimators = [e for e in estimators if e not in dropped_estimators]
         return estimators

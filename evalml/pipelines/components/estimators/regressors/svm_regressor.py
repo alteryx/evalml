@@ -50,7 +50,9 @@ class SVMRegressor(Estimator):
         # SVR doesn't take a random_state arg
         svm_regressor = SVR(**parameters)
         super().__init__(
-            parameters=parameters, component_obj=svm_regressor, random_seed=random_seed
+            parameters=parameters,
+            component_obj=svm_regressor,
+            random_seed=random_seed,
         )
 
     @property

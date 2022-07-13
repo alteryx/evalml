@@ -17,10 +17,7 @@ from evalml.problem_types import (
     is_multiclass,
     is_regression,
 )
-from evalml.utils.woodwork_utils import (
-    infer_feature_types,
-    numeric_and_boolean_ww,
-)
+from evalml.utils.woodwork_utils import infer_feature_types, numeric_and_boolean_ww
 
 
 class InvalidTargetDataCheck(DataCheck):
@@ -197,7 +194,7 @@ class InvalidTargetDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_IS_NONE,
                     details={},
-                ).to_dict()
+                ).to_dict(),
             )
             return messages
 
@@ -227,7 +224,7 @@ class InvalidTargetDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
                     details={"unsupported_type": y.ww.logical_type.type_string},
-                ).to_dict()
+                ).to_dict(),
             )
         return messages
 
@@ -240,7 +237,7 @@ class InvalidTargetDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
                     details={},
-                ).to_dict()
+                ).to_dict(),
             )
             return messages
         elif null_rows.any():
@@ -249,7 +246,8 @@ class InvalidTargetDataCheck(DataCheck):
             messages.append(
                 DataCheckError(
                     message="{} row(s) ({}%) of target values are null".format(
-                        num_null_rows, pct_null_rows
+                        num_null_rows,
+                        pct_null_rows,
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_HAS_NULL,
@@ -271,12 +269,12 @@ class InvalidTargetDataCheck(DataCheck):
                                     "default_value": "mean"
                                     if is_regression(self.problem_type)
                                     else "most_frequent",
-                                }
+                                },
                             },
                             metadata={"is_target": True},
-                        )
+                        ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             )
 
         return messages
@@ -298,7 +296,7 @@ class InvalidTargetDataCheck(DataCheck):
                             "features_length": X_length,
                             "target_length": y_length,
                         },
-                    ).to_dict()
+                    ).to_dict(),
                 )
 
             if X_index != y_index:
@@ -309,7 +307,7 @@ class InvalidTargetDataCheck(DataCheck):
                             data_check_name=self.name,
                             message_code=DataCheckMessageCode.MISMATCHED_INDICES_ORDER,
                             details={},
-                        ).to_dict()
+                        ).to_dict(),
                     )
                 else:
                     index_diff_not_in_X = list(set(y_index) - set(X_index))[:10]
@@ -323,7 +321,7 @@ class InvalidTargetDataCheck(DataCheck):
                                 "indices_not_in_features": index_diff_not_in_X,
                                 "indices_not_in_target": index_diff_not_in_y,
                             },
-                        ).to_dict()
+                        ).to_dict(),
                     )
         return messages
 
@@ -339,7 +337,9 @@ class InvalidTargetDataCheck(DataCheck):
         )
         if any_neg and self.objective.positive_only:
             details = {
-                "Count of offending values": sum(val <= 0 for val in y.values.flatten())
+                "Count of offending values": sum(
+                    val <= 0 for val in y.values.flatten()
+                ),
             }
             messages.append(
                 DataCheckError(
@@ -347,7 +347,7 @@ class InvalidTargetDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
                     details=details,
-                ).to_dict()
+                ).to_dict(),
             )
         return messages
 
@@ -359,7 +359,7 @@ class InvalidTargetDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
                     details={},
-                ).to_dict()
+                ).to_dict(),
             )
         return messages
 
@@ -374,7 +374,7 @@ class InvalidTargetDataCheck(DataCheck):
                 details = {
                     "target_values": unique_values[
                         : min(self.n_unique, len(unique_values))
-                    ]
+                    ],
                 }
             messages.append(
                 DataCheckError(
@@ -382,15 +382,15 @@ class InvalidTargetDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                     details=details,
-                ).to_dict()
+                ).to_dict(),
             )
         elif is_multiclass(self.problem_type):
             if value_counts.min() <= 1:
                 least_populated = value_counts[value_counts <= 1]
                 details = {
                     "least_populated_class_labels": sorted(
-                        least_populated.index.tolist()
-                    )
+                        least_populated.index.tolist(),
+                    ),
                 }
                 messages.append(
                     DataCheckError(
@@ -398,7 +398,7 @@ class InvalidTargetDataCheck(DataCheck):
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS,
                         details=details,
-                    ).to_dict()
+                    ).to_dict(),
                 )
             if len(unique_values) <= 2:
                 details = {"num_classes": len(unique_values)}
@@ -408,7 +408,7 @@ class InvalidTargetDataCheck(DataCheck):
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_ENOUGH_CLASSES,
                         details=details,
-                    ).to_dict()
+                    ).to_dict(),
                 )
 
             num_class_to_num_value_ratio = len(unique_values) / len(y)
@@ -420,6 +420,6 @@ class InvalidTargetDataCheck(DataCheck):
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
                         details=details,
-                    ).to_dict()
+                    ).to_dict(),
                 )
         return messages

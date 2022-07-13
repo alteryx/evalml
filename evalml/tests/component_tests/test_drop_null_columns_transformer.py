@@ -43,7 +43,7 @@ def test_drop_null_transformer_init():
 def test_drop_null_transformer_transform_default_pct_null_threshold():
     drop_null_transformer = DropNullColumns()
     X = pd.DataFrame(
-        {"lots_of_null": [None, None, None, None, 5], "no_null": [1, 2, 3, 4, 5]}
+        {"lots_of_null": [None, None, None, None, 5], "no_null": [1, 2, 3, 4, 5]},
     )
     X_expected = X.astype({"lots_of_null": "float64", "no_null": "int64"})
     drop_null_transformer.fit(X)
@@ -57,7 +57,7 @@ def test_drop_null_transformer_transform_custom_pct_null_threshold():
             "lots_of_null": [None, None, None, None, 5],
             "all_null": [None, None, None, None, None],
             "no_null": [1, 2, 3, 4, 5],
-        }
+        },
     )
 
     drop_null_transformer = DropNullColumns(pct_null_threshold=0.5)
@@ -73,8 +73,8 @@ def test_drop_null_transformer_transform_custom_pct_null_threshold():
                 "lots_of_null": [None, None, None, None, 5],
                 "all_null": [None, None, None, None, None],
                 "no_null": [1, 2, 3, 4, 5],
-            }
-        )
+            },
+        ),
     )
 
 
@@ -85,7 +85,7 @@ def test_drop_null_transformer_transform_boundary_pct_null_threshold():
             "all_null": [None, None, None, None, None],
             "lots_of_null": [None, None, None, None, 5],
             "some_null": [None, 0, 3, 4, 5],
-        }
+        },
     )
     drop_null_transformer.fit(X)
     X_t = drop_null_transformer.transform(X)
@@ -102,15 +102,15 @@ def test_drop_null_transformer_transform_boundary_pct_null_threshold():
                 "all_null": [None, None, None, None, None],
                 "lots_of_null": [None, None, None, None, 5],
                 "some_null": [None, 0, 3, 4, 5],
-            }
-        )
+            },
+        ),
     )
 
 
 def test_drop_null_transformer_fit_transform():
     drop_null_transformer = DropNullColumns()
     X = pd.DataFrame(
-        {"lots_of_null": [None, None, None, None, 5], "no_null": [1, 2, 3, 4, 5]}
+        {"lots_of_null": [None, None, None, None, 5], "no_null": [1, 2, 3, 4, 5]},
     )
     X_expected = X.astype({"lots_of_null": "float64", "no_null": "int64"})
     X_t = drop_null_transformer.fit_transform(X)
@@ -121,7 +121,7 @@ def test_drop_null_transformer_fit_transform():
             "lots_of_null": [None, None, None, None, 5],
             "all_null": [None, None, None, None, None],
             "no_null": [1, 2, 3, 4, 5],
-        }
+        },
     )
     drop_null_transformer = DropNullColumns(pct_null_threshold=0.5)
     X_expected = X.drop(["lots_of_null", "all_null"], axis=1)
@@ -135,13 +135,13 @@ def test_drop_null_transformer_fit_transform():
                 "lots_of_null": [None, None, None, None, 5],
                 "all_null": [None, None, None, None, None],
                 "no_null": [1, 2, 3, 4, 5],
-            }
-        )
+            },
+        ),
     )
 
     drop_null_transformer = DropNullColumns(pct_null_threshold=0.0)
     X = pd.DataFrame(
-        {"lots_of_null": [None, None, None, None, 5], "some_null": [None, 0, 3, 4, 5]}
+        {"lots_of_null": [None, None, None, None, 5], "some_null": [None, 0, 3, 4, 5]},
     )
     X_t = drop_null_transformer.fit_transform(X)
     assert X_t.empty
@@ -151,7 +151,7 @@ def test_drop_null_transformer_fit_transform():
             "all_null": [None, None, None, None, None],
             "lots_of_null": [None, None, None, None, 5],
             "some_null": [None, 0, 3, 4, 5],
-        }
+        },
     )
     drop_null_transformer = DropNullColumns(pct_null_threshold=1.0)
     X_t = drop_null_transformer.fit_transform(X)
@@ -166,7 +166,7 @@ def test_drop_null_transformer_np_array():
             [np.nan, 1, np.nan, 0],
             [np.nan, 2, np.nan, 0],
             [np.nan, 1, 1, 0],
-        ]
+        ],
     )
     X_t = drop_null_transformer.fit_transform(X)
     assert_frame_equal(X_t, pd.DataFrame(np.delete(X, [0, 2], axis=1), columns=[1, 3]))
@@ -180,7 +180,7 @@ def test_drop_null_transformer_np_array():
                 [np.nan, 1, np.nan, 0],
                 [np.nan, 2, np.nan, 0],
                 [np.nan, 1, 1, 0],
-            ]
+            ],
         ),
     )
 
@@ -196,13 +196,14 @@ def test_drop_null_transformer_np_array():
             pd.Series(
                 ["this will be a natural language column because length", "yay", "hay"],
                 dtype="string",
-            )
+            ),
         ),
     ],
 )
 @pytest.mark.parametrize("has_nan", [True, False])
 def test_drop_null_transformer_woodwork_custom_overrides_returned_by_components(
-    X_df, has_nan
+    X_df,
+    has_nan,
 ):
     y = pd.Series([1, 2, 1])
     if has_nan:
@@ -220,5 +221,5 @@ def test_drop_null_transformer_woodwork_custom_overrides_returned_by_components(
         transformed = drop_null_transformer.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            0: logical_type
+            0: logical_type,
         }

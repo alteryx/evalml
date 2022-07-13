@@ -36,7 +36,7 @@ def test_automl_allowed_component_graphs_specified_component_graphs_iterative(
         y_train=y,
         problem_type="regression",
         allowed_component_graphs={
-            "Mock Regression Pipeline": [dummy_regressor_estimator_class]
+            "Mock Regression Pipeline": [dummy_regressor_estimator_class],
         },
         allowed_model_families=None,
         automl_algorithm="iterative",
@@ -61,7 +61,9 @@ def test_automl_allowed_component_graphs_specified_component_graphs_iterative(
 
 
 def test_automl_allowed_component_graphs_specified_allowed_model_families_iterative(
-    AutoMLTestEnv, X_y_regression, assert_allowed_pipelines_equal_helper
+    AutoMLTestEnv,
+    X_y_regression,
+    assert_allowed_pipelines_equal_helper,
 ):
     X, y = X_y_regression
     automl = AutoMLSearch(
@@ -75,7 +77,8 @@ def test_automl_allowed_component_graphs_specified_allowed_model_families_iterat
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.REGRESSION)
         for estimator in get_estimators(
-            ProblemTypes.REGRESSION, model_families=[ModelFamily.RANDOM_FOREST]
+            ProblemTypes.REGRESSION,
+            model_families=[ModelFamily.RANDOM_FOREST],
         )
     ]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -95,7 +98,8 @@ def test_automl_allowed_component_graphs_specified_allowed_model_families_iterat
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.REGRESSION)
         for estimator in get_estimators(
-            ProblemTypes.REGRESSION, model_families=[ModelFamily.RANDOM_FOREST]
+            ProblemTypes.REGRESSION,
+            model_families=[ModelFamily.RANDOM_FOREST],
         )
     ]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -107,7 +111,9 @@ def test_automl_allowed_component_graphs_specified_allowed_model_families_iterat
 
 
 def test_automl_allowed_component_graphs_init_allowed_both_not_specified_iterative(
-    AutoMLTestEnv, X_y_regression, assert_allowed_pipelines_equal_helper
+    AutoMLTestEnv,
+    X_y_regression,
+    assert_allowed_pipelines_equal_helper,
 ):
     X, y = X_y_regression
     automl = AutoMLSearch(
@@ -124,7 +130,7 @@ def test_automl_allowed_component_graphs_init_allowed_both_not_specified_iterati
     ]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set(
-        [p.model_family for p in expected_pipelines]
+        [p.model_family for p in expected_pipelines],
     )
     env = AutoMLTestEnv("regression")
     with env.test_context(score_return_value={automl.objective.name: 1.0}):
@@ -146,7 +152,7 @@ def test_automl_allowed_component_graphs_init_allowed_both_specified_iterative(
         y_train=y,
         problem_type="regression",
         allowed_component_graphs={
-            "Mock Regression Pipeline": [dummy_regressor_estimator_class]
+            "Mock Regression Pipeline": [dummy_regressor_estimator_class],
         },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
         automl_algorithm="iterative",
@@ -154,7 +160,7 @@ def test_automl_allowed_component_graphs_init_allowed_both_specified_iterative(
     expected_pipelines = [dummy_regression_pipeline]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set(
-        [p.model_family for p in expected_pipelines]
+        [p.model_family for p in expected_pipelines],
     )
     env = AutoMLTestEnv("regression")
     with env.test_context(score_return_value={automl.objective.name: 1.0}):
@@ -187,8 +193,10 @@ def test_automl_allowed_component_graphs_search_iterative(
 
     assert start_iteration_callback.call_count == 2
     assert isinstance(
-        start_iteration_callback.call_args_list[0][0][0], RegressionPipeline
+        start_iteration_callback.call_args_list[0][0][0],
+        RegressionPipeline,
     )
     assert isinstance(
-        start_iteration_callback.call_args_list[1][0][0], RegressionPipeline
+        start_iteration_callback.call_args_list[1][0][0],
+        RegressionPipeline,
     )

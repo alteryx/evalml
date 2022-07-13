@@ -13,22 +13,13 @@ from evalml.automl.utils import (
     make_data_splitter,
     tune_binary_threshold,
 )
-from evalml.objectives import (
-    F1,
-    R2,
-    LogLossBinary,
-    LogLossMulticlass,
-    MedianAE,
-)
+from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass, MedianAE
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
-from evalml.preprocessing.data_splitters import (
-    TimeSeriesSplit,
-    TrainingValidationSplit,
-)
+from evalml.preprocessing.data_splitters import TimeSeriesSplit, TrainingValidationSplit
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
 
@@ -36,25 +27,30 @@ from evalml.utils.woodwork_utils import infer_feature_types
 def test_get_default_primary_search_objective():
     assert isinstance(get_default_primary_search_objective("binary"), LogLossBinary)
     assert isinstance(
-        get_default_primary_search_objective(ProblemTypes.BINARY), LogLossBinary
+        get_default_primary_search_objective(ProblemTypes.BINARY),
+        LogLossBinary,
     )
     assert isinstance(
-        get_default_primary_search_objective("multiclass"), LogLossMulticlass
+        get_default_primary_search_objective("multiclass"),
+        LogLossMulticlass,
     )
     assert isinstance(
-        get_default_primary_search_objective(ProblemTypes.MULTICLASS), LogLossMulticlass
+        get_default_primary_search_objective(ProblemTypes.MULTICLASS),
+        LogLossMulticlass,
     )
     assert isinstance(get_default_primary_search_objective("regression"), R2)
     assert isinstance(get_default_primary_search_objective(ProblemTypes.REGRESSION), R2)
     assert isinstance(
-        get_default_primary_search_objective("time series regression"), MedianAE
+        get_default_primary_search_objective("time series regression"),
+        MedianAE,
     )
     assert isinstance(
         get_default_primary_search_objective(ProblemTypes.TIME_SERIES_REGRESSION),
         MedianAE,
     )
     assert isinstance(
-        get_default_primary_search_objective("time series binary"), LogLossBinary
+        get_default_primary_search_objective("time series binary"),
+        LogLossBinary,
     )
     assert isinstance(
         get_default_primary_search_objective(ProblemTypes.TIME_SERIES_BINARY),
@@ -95,7 +91,10 @@ def test_make_data_splitter_default(problem_type, large_data):
         }
 
     data_splitter = make_data_splitter(
-        X, y, problem_type, problem_configuration=problem_configuration
+        X,
+        y,
+        problem_type,
+        problem_configuration=problem_configuration,
     )
     if large_data and problem_type in [
         ProblemTypes.REGRESSION,
@@ -153,7 +152,11 @@ def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     random_seed = 42
 
     data_splitter = make_data_splitter(
-        X, y, problem_type, n_splits=5, random_seed=random_seed
+        X,
+        y,
+        problem_type,
+        n_splits=5,
+        random_seed=random_seed,
     )
     assert isinstance(data_splitter, expected_data_splitter)
     assert data_splitter.n_splits == 5
@@ -215,7 +218,12 @@ def test_make_data_splitter_error_shuffle_random_state(problem_type, large_data)
 
     if large_data:
         make_data_splitter(
-            X, y, problem_type, n_splits=5, shuffle=False, random_seed=42
+            X,
+            y,
+            problem_type,
+            n_splits=5,
+            shuffle=False,
+            random_seed=42,
         )
     else:
         with pytest.raises(
@@ -223,7 +231,12 @@ def test_make_data_splitter_error_shuffle_random_state(problem_type, large_data)
             match="Setting a random_state has no effect since shuffle is False.",
         ):
             make_data_splitter(
-                X, y, problem_type, n_splits=5, shuffle=False, random_seed=42
+                X,
+                y,
+                problem_type,
+                n_splits=5,
+                shuffle=False,
+                random_seed=42,
             )
 
 
@@ -339,12 +352,14 @@ def test_get_pipelines_from_component_graphs(problem_type, estimator):
     }
     if problem_type == "time series regression":
         with pytest.raises(
-            ValueError, match="time_index, gap, max_delay, and forecast_horizon"
+            ValueError,
+            match="time_index, gap, max_delay, and forecast_horizon",
         ):
             get_pipelines_from_component_graphs(component_graphs, problem_type)
     else:
         returned_pipelines = get_pipelines_from_component_graphs(
-            component_graphs, problem_type
+            component_graphs,
+            problem_type,
         )
         assert returned_pipelines[0].random_seed == 0
         assert returned_pipelines[1].random_seed == 0

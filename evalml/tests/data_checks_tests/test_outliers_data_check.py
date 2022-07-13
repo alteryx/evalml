@@ -51,9 +51,9 @@ def test_outliers_data_check_warnings():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     metadata={"rows": [0, 3, 5, 10]},
-                )
+                ),
             ],
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
@@ -84,9 +84,9 @@ def test_outliers_data_check_warnings_with_duplicate_outlier_indices():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     metadata={"rows": [0, 3]},
-                )
+                ),
             ],
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
@@ -122,9 +122,9 @@ def test_outliers_data_check_input_formats():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     metadata={"rows": [0, 3, 5, 10]},
-                )
+                ),
             ],
-        ).to_dict()
+        ).to_dict(),
     ]
 
     # test Woodwork
@@ -145,9 +145,9 @@ def test_outliers_data_check_input_formats():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     metadata={"rows": [0, 3, 5, 10]},
-                )
+                ),
             ],
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
@@ -157,7 +157,8 @@ def test_outliers_data_check_string_cols():
     n_cols = 20
 
     X = pd.DataFrame(
-        data=data, columns=[string.ascii_lowercase[i] for i in range(n_cols)]
+        data=data,
+        columns=[string.ascii_lowercase[i] for i in range(n_cols)],
     )
     X.iloc[0, 3] = 1000
 
@@ -177,15 +178,15 @@ def test_outliers_data_check_string_cols():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     metadata={"rows": [0]},
-                )
+                ),
             ],
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
 def test_outlier_score_all_nan():
     all_nan = pd.DataFrame(
-        [[np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan]]
+        [[np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan]],
     )
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(all_nan) == []
@@ -218,16 +219,16 @@ def test_outliers_data_check_warnings_has_nan():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     metadata={"rows": [3, 5, 10]},
-                )
+                ),
             ],
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
 @pytest.mark.parametrize("data_type", ["int", "mixed"])
 def test_boxplot_stats(data_type):
     test = pd.Series(
-        [32, 33, 34, None, 96, 36, 37, 1.5 if data_type == "mixed" else 1, 2]
+        [32, 33, 34, None, 96, 36, 37, 1.5 if data_type == "mixed" else 1, 2],
     )
 
     quantiles = test.quantile([0.25, 0.5, 0.75]).to_dict()

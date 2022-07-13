@@ -100,7 +100,7 @@ class RandomSearchTuner(Tuner):
             while curr_params in self._used_parameters:
                 if attempts >= self._replacement_max_attempts:
                     raise NoParamsException(
-                        "Cannot create a unique set of unexplored parameters. Try expanding the search space."
+                        "Cannot create a unique set of unexplored parameters. Try expanding the search space.",
                     )
                     return True
                 attempts += 1

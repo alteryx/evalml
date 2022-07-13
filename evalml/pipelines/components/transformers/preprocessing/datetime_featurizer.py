@@ -105,13 +105,13 @@ class DateTimeFeaturizer(Transformer):
         if features_to_extract is None:
             features_to_extract = ["year", "month", "day_of_week", "hour"]
         invalid_features = set(features_to_extract) - set(
-            self._function_mappings.keys()
+            self._function_mappings.keys(),
         )
         if len(invalid_features) > 0:
             raise ValueError(
                 "{} are not valid options for features_to_extract".format(
-                    ", ".join([f"'{feature}'" for feature in invalid_features])
-                )
+                    ", ".join([f"'{feature}'" for feature in invalid_features]),
+                ),
             )
 
         parameters = {
@@ -124,7 +124,9 @@ class DateTimeFeaturizer(Transformer):
         self._categories = {}
         self.encode_as_categories = encode_as_categories
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):
@@ -139,7 +141,7 @@ class DateTimeFeaturizer(Transformer):
         """
         X = infer_feature_types(X)
         self._date_time_col_names = list(
-            X.ww.select("datetime", return_schema=True).columns
+            X.ww.select("datetime", return_schema=True).columns,
         )
         return self
 
@@ -162,7 +164,8 @@ class DateTimeFeaturizer(Transformer):
             for feature in features_to_extract:
                 name = f"{col_name}_{feature}"
                 features, categories = self._function_mappings[feature](
-                    X[col_name], self.encode_as_categories
+                    X[col_name],
+                    self.encode_as_categories,
                 )
                 X.ww[name] = features
                 if categories:

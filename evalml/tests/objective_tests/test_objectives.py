@@ -121,7 +121,8 @@ def test_objective_outputs(
     # convert to a simulated predicted probability, which must range between 0 and 1
     classes = np.unique(y_multi_np)
     y_pred_proba_multi_np = np.concatenate(
-        [(y_multi_np == val).astype(float).reshape(-1, 1) for val in classes], axis=1
+        [(y_multi_np == val).astype(float).reshape(-1, 1) for val in classes],
+        axis=1,
     )
 
     all_objectives = (
@@ -135,7 +136,8 @@ def test_objective_outputs(
         expected_value = 1.0 if objective.greater_is_better else 0.0
         if isinstance(objective, (RegressionObjective, BinaryClassificationObjective)):
             np.testing.assert_almost_equal(
-                objective.score(y_binary_np, y_binary_np), expected_value
+                objective.score(y_binary_np, y_binary_np),
+                expected_value,
             )
             np.testing.assert_almost_equal(
                 objective.score(pd.Series(y_binary_np), pd.Series(y_binary_np)),
@@ -148,7 +150,8 @@ def test_objective_outputs(
                 y_predicted = y_pred_proba_multi_np
                 y_predicted_pd = pd.DataFrame(y_predicted)
             np.testing.assert_almost_equal(
-                objective.score(y_true_multi_np, y_predicted), expected_value
+                objective.score(y_true_multi_np, y_predicted),
+                expected_value,
             )
             np.testing.assert_almost_equal(
                 objective.score(pd.Series(y_true_multi_np), y_predicted_pd),

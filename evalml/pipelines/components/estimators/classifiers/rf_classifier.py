@@ -52,5 +52,7 @@ class RandomForestClassifier(Estimator):
         parameters.update(kwargs)
         rf_classifier = SKRandomForestClassifier(random_state=random_seed, **parameters)
         super().__init__(
-            parameters=parameters, component_obj=rf_classifier, random_seed=random_seed
+            parameters=parameters,
+            component_obj=rf_classifier,
+            random_seed=random_seed,
         )

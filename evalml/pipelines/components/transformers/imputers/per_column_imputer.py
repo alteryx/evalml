@@ -37,10 +37,12 @@ class PerColumnImputer(Transformer):
         self.impute_strategies = impute_strategies or dict()
         if not isinstance(self.impute_strategies, dict):
             raise ValueError(
-                "`impute_strategies` is not a dictionary. Please provide in Column and {`impute_strategy`: strategy, `fill_value`:value} pairs. "
+                "`impute_strategies` is not a dictionary. Please provide in Column and {`impute_strategy`: strategy, `fill_value`:value} pairs. ",
             )
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):
@@ -59,7 +61,7 @@ class PerColumnImputer(Transformer):
         columns_to_impute = self.impute_strategies.keys()
         if len(columns_to_impute) == 0:
             warnings.warn(
-                "No columns to impute. Please check `impute_strategies` parameter."
+                "No columns to impute. Please check `impute_strategies` parameter.",
             )
 
         for column in columns_to_impute:
@@ -67,7 +69,8 @@ class PerColumnImputer(Transformer):
             strategy = strategy_dict["impute_strategy"]
             fill_value = strategy_dict.get("fill_value", None)
             self.imputers[column] = SimpleImputer(
-                impute_strategy=strategy, fill_value=fill_value
+                impute_strategy=strategy,
+                fill_value=fill_value,
             )
 
         for column, imputer in self.imputers.items():

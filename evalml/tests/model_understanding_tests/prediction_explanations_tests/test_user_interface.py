@@ -51,12 +51,15 @@ make_rows_test_cases = [
     product(make_rows_test_cases, [True, False], [True, False]),
 )
 def test_make_rows_and_make_table(
-    test_case, include_explainer_values, include_string_features
+    test_case,
+    include_explainer_values,
+    include_string_features,
 ):
     values, top_k, answer = test_case
 
     pipeline_features = pd.DataFrame(
-        {name: value[0] + 1 for name, value in values.items()}, index=[5]
+        {name: value[0] + 1 for name, value in values.items()},
+        index=[5],
     )
 
     if include_string_features:
@@ -197,8 +200,8 @@ regression_dict = {
             "drill_down": {},
             "class_name": None,
             "expected_value": [0],
-        }
-    ]
+        },
+    ],
 }
 
 regression_dict_shap = {
@@ -211,8 +214,8 @@ regression_dict_shap = {
             "drill_down": {},
             "class_name": None,
             "expected_value": [0],
-        }
-    ]
+        },
+    ],
 }
 
 binary = [
@@ -280,8 +283,8 @@ binary_dict = {
             "drill_down": {},
             "class_name": "1",
             "expected_value": [0],
-        }
-    ]
+        },
+    ],
 }
 
 binary_dict_shap = {
@@ -294,8 +297,8 @@ binary_dict_shap = {
             "drill_down": {},
             "class_name": "1",
             "expected_value": [0],
-        }
-    ]
+        },
+    ],
 }
 
 multiclass = [
@@ -439,7 +442,7 @@ multiclass_dict = {
             "class_name": "2",
             "expected_value": 2,
         },
-    ]
+    ],
 }
 
 multiclass_dict_shap = {
@@ -471,7 +474,7 @@ multiclass_dict_shap = {
             "class_name": "2",
             "expected_value": 2,
         },
-    ]
+    ],
 }
 
 
@@ -655,7 +658,7 @@ def test_make_single_prediction_table(
     # Making sure the content is the same, regardless of formatting.
     if output_format == "text":
         for index, (row_table, row_answer) in enumerate(
-            zip(table.splitlines(), answer)
+            zip(table.splitlines(), answer),
         ):
             assert row_table.strip().split() == row_answer.strip().split()
     else:
@@ -663,16 +666,18 @@ def test_make_single_prediction_table(
 
 
 @patch(
-    "evalml.model_understanding.prediction_explanations._user_interface._BinaryExplanationTable.make_text"
+    "evalml.model_understanding.prediction_explanations._user_interface._BinaryExplanationTable.make_text",
 )
 @patch(
-    "evalml.model_understanding.prediction_explanations._user_interface._compute_lime_values"
+    "evalml.model_understanding.prediction_explanations._user_interface._compute_lime_values",
 )
 @patch(
-    "evalml.model_understanding.prediction_explanations._user_interface._compute_shap_values"
+    "evalml.model_understanding.prediction_explanations._user_interface._compute_shap_values",
 )
 def test_make_single_prediction_table_calls_correct_algorithm(
-    mock_shap, mock_lime, mock_make_text
+    mock_shap,
+    mock_lime,
+    mock_make_text,
 ):
     pipeline = MagicMock()
     pipeline.problem_type = ProblemTypes.BINARY

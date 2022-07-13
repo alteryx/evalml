@@ -30,15 +30,15 @@ class NullDataCheck(DataCheck):
     ):
         if not 0 <= pct_null_col_threshold <= 1:
             raise ValueError(
-                "`pct_null_col_threshold` must be a float between 0 and 1, inclusive."
+                "`pct_null_col_threshold` must be a float between 0 and 1, inclusive.",
             )
         if not 0 <= pct_moderately_null_col_threshold <= pct_null_col_threshold <= 1:
             raise ValueError(
-                "`pct_moderately_null_col_threshold` must be a float between 0 and 1, inclusive, and must be less than or equal to `pct_null_col_threshold`."
+                "`pct_moderately_null_col_threshold` must be a float between 0 and 1, inclusive, and must be less than or equal to `pct_null_col_threshold`.",
             )
         if not 0 <= pct_null_row_threshold <= 1:
             raise ValueError(
-                "`pct_null_row_threshold` must be a float between 0 and 1, inclusive."
+                "`pct_null_row_threshold` must be a float between 0 and 1, inclusive.",
             )
 
         self.pct_null_col_threshold = pct_null_col_threshold
@@ -203,7 +203,8 @@ class NullDataCheck(DataCheck):
         X = infer_feature_types(X)
 
         highly_null_rows = NullDataCheck.get_null_row_information(
-            X, pct_null_row_threshold=self.pct_null_row_threshold
+            X,
+            pct_null_row_threshold=self.pct_null_row_threshold,
         )
         if len(highly_null_rows) > 0:
             warning_msg = f"{len(highly_null_rows)} out of {len(X)} rows are {self.pct_null_row_threshold*100}% or more null"
@@ -223,13 +224,14 @@ class NullDataCheck(DataCheck):
                             DataCheckActionCode.DROP_ROWS,
                             data_check_name=self.name,
                             metadata={"rows": rows_to_drop},
-                        )
+                        ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             )
 
         highly_null_cols, _ = NullDataCheck.get_null_column_information(
-            X, pct_null_col_threshold=self.pct_null_col_threshold
+            X,
+            pct_null_col_threshold=self.pct_null_col_threshold,
         )
 
         X_to_check_for_any_null = X.ww.select(
@@ -239,7 +241,7 @@ class NullDataCheck(DataCheck):
                 "numeric",
                 "IntegerNullable",
                 "BooleanNullable",
-            ]
+            ],
         )
 
         cols_at_least_moderately_null, _ = NullDataCheck.get_null_column_information(
@@ -257,7 +259,7 @@ class NullDataCheck(DataCheck):
                 DataCheckWarning(
                     message=warning_msg.format(
                         (", ").join(
-                            ["'{}'".format(str(col)) for col in highly_null_cols]
+                            ["'{}'".format(str(col)) for col in highly_null_cols],
                         ),
                         self.pct_null_col_threshold * 100,
                     ),
@@ -272,9 +274,9 @@ class NullDataCheck(DataCheck):
                             DataCheckActionCode.DROP_COL,
                             data_check_name=self.name,
                             metadata={"columns": list(highly_null_cols)},
-                        )
+                        ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             )
 
         if moderately_null_cols:
@@ -295,14 +297,14 @@ class NullDataCheck(DataCheck):
                         "categories": categories,
                         "type": "category",
                         "default_value": default_value,
-                    }
+                    },
                 }
 
             messages.append(
                 DataCheckWarning(
                     message="Column(s) {} have between {}% and {}% null values".format(
                         (", ").join(
-                            ["'{}'".format(str(col)) for col in moderately_null_cols]
+                            ["'{}'".format(str(col)) for col in moderately_null_cols],
                         ),
                         self.pct_moderately_null_col_threshold * 100,
                         self.pct_null_col_threshold * 100,
@@ -320,15 +322,15 @@ class NullDataCheck(DataCheck):
                                 "impute_strategies": {
                                     "parameter_type": "column",
                                     "columns": impute_strategies_dict,
-                                }
+                                },
                             },
                             metadata={
                                 "columns": list(moderately_null_cols),
                                 "is_target": False,
                             },
-                        )
+                        ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             )
         return messages
 

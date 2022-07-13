@@ -1,11 +1,10 @@
 """Pipeline base class for time-series classification problems."""
 import pandas as pd
 
-from .binary_classification_pipeline_mixin import (
+from evalml.objectives import get_objective
+from evalml.pipelines.binary_classification_pipeline_mixin import (
     BinaryClassificationPipelineMixin,
 )
-
-from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes
@@ -53,13 +52,15 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         """
         if self.estimator is None:
             raise ValueError(
-                "Cannot call predict_proba_in_sample() on a component graph because the final component is not an Estimator."
+                "Cannot call predict_proba_in_sample() on a component graph because the final component is not an Estimator.",
             )
         features = self.transform_all_but_final(X_holdout, y_holdout, X_train, y_train)
         proba = self._estimator_predict_proba(features)
         proba.index = y_holdout.index
         proba = proba.ww.rename(
-            columns={col: new_col for col, new_col in zip(proba.columns, self.classes_)}
+            columns={
+                col: new_col for col, new_col in zip(proba.columns, self.classes_)
+            },
         )
         return infer_feature_types(proba)
 
@@ -85,7 +86,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         """
         if self.estimator is None:
             raise ValueError(
-                "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator."
+                "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator.",
             )
         features = self.transform_all_but_final(X, y, X_train, y_train)
         predictions = self._estimator_predict(features)
@@ -112,12 +113,13 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         """
         if self.estimator is None:
             raise ValueError(
-                "Cannot call predict_proba() on a component graph because the final component is not an Estimator."
+                "Cannot call predict_proba() on a component graph because the final component is not an Estimator.",
             )
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         X = infer_feature_types(X)
         X.index = self._move_index_forward(
-            X_train.index[-X.shape[0] :], self.gap + X.shape[0]
+            X_train.index[-X.shape[0] :],
+            self.gap + X.shape[0],
         )
         y_holdout = self._create_empty_series(y_train, X.shape[0])
         y_holdout = infer_feature_types(y_holdout)
@@ -234,7 +236,7 @@ class TimeSeriesBinaryClassificationPipeline(
             objective = get_objective(objective, return_instance=True)
             if not objective.is_defined_for_problem_type(self.problem_type):
                 raise ValueError(
-                    f"Objective {objective.name} is not defined for time series binary classification."
+                    f"Objective {objective.name} is not defined for time series binary classification.",
                 )
 
         if self.threshold is not None:
@@ -245,7 +247,9 @@ class TimeSeriesBinaryClassificationPipeline(
                 predictions = predictions.astype(int)
             else:
                 predictions = objective.decision_function(
-                    proba, threshold=self.threshold, X=X
+                    proba,
+                    threshold=self.threshold,
+                    X=X,
                 )
             predictions = pd.Series(
                 predictions,

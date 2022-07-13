@@ -371,7 +371,7 @@ class DateTimeFormatDataCheck(DataCheck):
                     message=f"Datetime information could not be found in the data, or was not in a supported datetime format.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_INFORMATION_NOT_FOUND,
-                ).to_dict()
+                ).to_dict(),
             )
             return messages
 
@@ -383,7 +383,7 @@ class DateTimeFormatDataCheck(DataCheck):
                     message="Datetime values must be sorted in ascending order.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_IS_NOT_MONOTONIC,
-                ).to_dict()
+                ).to_dict(),
             )
 
         col_name = (
@@ -408,7 +408,7 @@ class DateTimeFormatDataCheck(DataCheck):
                     message=f"Input datetime column '{col_name}' contains NaN values. Please impute NaN values or drop these rows.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-                ).to_dict()
+                ).to_dict(),
             )
 
         # Check for only one row per datetime
@@ -418,7 +418,7 @@ class DateTimeFormatDataCheck(DataCheck):
                     message=f"Column '{col_name}' has more than one row with the same datetime value.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
-                ).to_dict()
+                ).to_dict(),
             )
 
         # Check for no date missing in ordered dates
@@ -428,7 +428,7 @@ class DateTimeFormatDataCheck(DataCheck):
                     message=f"Column '{col_name}' has datetime values missing between start and end date.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
-                ).to_dict()
+                ).to_dict(),
             )
 
         # Check for dates that don't line up with the frequency
@@ -438,7 +438,7 @@ class DateTimeFormatDataCheck(DataCheck):
                     message=f"Column '{col_name}' has datetime values that do not align with the inferred frequency.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_HAS_MISALIGNED_VALUES,
-                ).to_dict()
+                ).to_dict(),
             )
 
         # Give a generic uneven interval error no frequency can be estimated by woodwork
@@ -448,7 +448,7 @@ class DateTimeFormatDataCheck(DataCheck):
                     message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_INFERRED,
-                ).to_dict()
+                ).to_dict(),
             )
         else:
             messages.append(
@@ -473,9 +473,9 @@ class DateTimeFormatDataCheck(DataCheck):
                                 },
                             },
                             metadata={"is_target": True},
-                        )
+                        ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             )
 
         return messages

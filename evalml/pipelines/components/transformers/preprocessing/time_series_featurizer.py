@@ -89,7 +89,7 @@ class TimeSeriesFeaturizer(Transformer):
 
         if conf_level <= 0 or conf_level > 1:
             raise ValueError(
-                f"Parameter conf_level must be in range (0, 1]. Received {conf_level}."
+                f"Parameter conf_level must be in range (0, 1]. Received {conf_level}.",
             )
 
         self.conf_level = conf_level
@@ -125,7 +125,9 @@ class TimeSeriesFeaturizer(Transformer):
         if self.time_index is None:
             raise ValueError("time_index cannot be None!")
         self.statistically_significant_lags = self._find_significant_lags(
-            y, conf_level=self.conf_level, max_delay=self.max_delay
+            y,
+            conf_level=self.conf_level,
+            max_delay=self.max_delay,
         )
         return self
 
@@ -153,7 +155,10 @@ class TimeSeriesFeaturizer(Transformer):
         if y is not None:
             # Compute the acf and find its peaks
             acf_values, ci_intervals = acf(
-                y, nlags=len(y) - 1, fft=True, alpha=conf_level
+                y,
+                nlags=len(y) - 1,
+                fft=True,
+                alpha=conf_level,
             )
             peaks, _ = find_peaks(acf_values)
 
@@ -192,12 +197,12 @@ class TimeSeriesFeaturizer(Transformer):
         rolling_mean = rolling_mean.get_function()
         numerics = sorted(
             set(X.ww.select(["numeric"], return_schema=True).columns).intersection(
-                original_features
-            )
+                original_features,
+            ),
         )
 
         data = pd.DataFrame(
-            {f"{col}_rolling_mean": rolling_mean(X.index, X[col]) for col in numerics}
+            {f"{col}_rolling_mean": rolling_mean(X.index, X[col]) for col in numerics},
         )
         if y is not None and "numeric" in y.ww.semantic_tags:
             data[f"target_rolling_mean"] = rolling_mean(y.index, y)
@@ -219,15 +224,16 @@ class TimeSeriesFeaturizer(Transformer):
         """
         cols_to_delay = list(
             X_ww.ww.select(
-                ["numeric", "category", "boolean"], return_schema=True
-            ).columns
+                ["numeric", "category", "boolean"],
+                return_schema=True,
+            ).columns,
         )
         categorical_columns = self._get_categorical_columns(X_ww)
         cols_derived_from_categoricals = []
         lagged_features = {}
         if self.delay_features and len(X_ww) > 0:
             X_categorical = self._encode_X_while_preserving_index(
-                X_ww[categorical_columns]
+                X_ww[categorical_columns],
             )
             for col_name in cols_to_delay:
 
@@ -252,7 +258,7 @@ class TimeSeriesFeaturizer(Transformer):
         # Features created from categorical columns should no longer be categorical
         lagged_features = pd.DataFrame(lagged_features)
         lagged_features.ww.init(
-            logical_types={col: "Double" for col in cols_derived_from_categoricals}
+            logical_types={col: "Double" for col in cols_derived_from_categoricals},
         )
         lagged_features.index = X_ww.index
         return ww.concat_columns([X_ww, lagged_features])

@@ -19,7 +19,7 @@ def test_lda_invalid_init():
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_lda_numeric(data_type, make_data_type):
     X = pd.DataFrame(
-        [[3, 0, 1, 6], [1, 2, 1, 6], [10, 2, 1, 6], [10, 2, 2, 5], [6, 2, 2, 5]]
+        [[3, 0, 1, 6], [1, 2, 1, 6], [10, 2, 1, 6], [10, 2, 2, 5], [6, 2, 2, 5]],
     )
     y = pd.Series([0, 1, 0, 1, 1])
     X = make_data_type(data_type, X)
@@ -41,7 +41,7 @@ def test_lda_numeric(data_type, make_data_type):
 
 def test_lda_array():
     X = np.array(
-        [[3, 0, 1, 6], [1, 2, 1, 6], [10, 2, 1, 6], [10, 2, 2, 5], [6, 2, 2, 5]]
+        [[3, 0, 1, 6], [1, 2, 1, 6], [10, 2, 1, 6], [10, 2, 2, 5], [6, 2, 2, 5]],
     )
     y = np.array([2, 2, 0, 1, 0])
     lda = LinearDiscriminantAnalysis()
@@ -68,7 +68,7 @@ def test_lda_invalid():
             [10, 2, 1, 6],
             [10, 2, 2, np.nan],
             [None, 2, 2, 5],
-        ]
+        ],
     )
     y = [2, 0, 1, 1, 0]
     lda = LinearDiscriminantAnalysis()
@@ -82,14 +82,14 @@ def test_lda_invalid():
             [10, 2, 1, 6],
             [10, 2, 2, 23],
             [0, 2, 2, 5],
-        ]
+        ],
     )
     lda = LinearDiscriminantAnalysis()
     with pytest.raises(ValueError, match="must be all numeric"):
         lda.fit_transform(X, y)
 
     X_ok = pd.DataFrame(
-        [[3, 0, 1, 6], [1, 2, 1, 6], [10, 2, 1, 6], [10, 2, 2, 5], [6, 2, 2, 5]]
+        [[3, 0, 1, 6], [1, 2, 1, 6], [10, 2, 1, 6], [10, 2, 2, 5], [6, 2, 2, 5]],
     )
     lda = LinearDiscriminantAnalysis()
     lda.fit(X_ok, y)
@@ -107,7 +107,7 @@ def test_n_components():
             [6, 8, 9, 3, 3, 5],
             [3, 2, 1, 2, 1, 3],
             [12, 11, 1, 1, 3, 3],
-        ]
+        ],
     )
     y = [0, 3, 3, 1, 2, 0, 2]
 
@@ -130,7 +130,7 @@ def test_invalid_n_components():
             [6, 8, 9, 3, 3, 5],
             [3, 2, 1, 2, 1, 3],
             [12, 11, 1, 1, 3, 3],
-        ]
+        ],
     )
     y = [0, 1, 2, 1, 2, 0, 2]
     lda_invalid = LinearDiscriminantAnalysis(n_components=4)
@@ -146,7 +146,7 @@ def test_invalid_n_components():
             [6, 8, 9],
             [3, 2, 1],
             [12, 11, 1],
-        ]
+        ],
     )
     y = [0, 1, 2, 3, 4, 3, 4, 5]
     lda_invalid = LinearDiscriminantAnalysis(n_components=4)
@@ -156,7 +156,7 @@ def test_invalid_n_components():
 
 def test_lda_woodwork_custom_overrides_returned_by_components():
     X_df = pd.DataFrame(
-        [[3, 0, 1, 6], [1, 2, 1, 6], [10, 2, 1, 6], [10, 2, 2, 5], [6, 2, 2, 5]]
+        [[3, 0, 1, 6], [1, 2, 1, 6], [10, 2, 1, 6], [10, 2, 2, 5], [6, 2, 2, 5]],
     )
     y = pd.Series([0, 1, 0, 1, 1])
     override_types = [Integer, Double]
@@ -167,12 +167,12 @@ def test_lda_woodwork_custom_overrides_returned_by_components():
                 1: logical_type,
                 2: logical_type,
                 3: logical_type,
-            }
+            },
         )
         lda = LinearDiscriminantAnalysis(n_components=1)
         lda.fit(X_df, y)
         transformed = lda.transform(X_df, y)
         assert isinstance(transformed, pd.DataFrame)
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            "component_0": ww.logical_types.Double
+            "component_0": ww.logical_types.Double,
         }

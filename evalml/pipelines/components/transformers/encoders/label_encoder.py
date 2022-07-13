@@ -1,8 +1,7 @@
 """A transformer that encodes target labels using values between 0 and num_classes - 1."""
 import woodwork as ww
 
-from ..transformer import Transformer
-
+from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import infer_feature_types
 
 
@@ -51,11 +50,11 @@ class LabelEncoder(Transformer):
         if self.parameters["positive_label"] is not None:
             if len(self.mapping) != 2:
                 raise ValueError(
-                    "positive_label should only be set for binary classification targets. Otherwise, positive_label should be None."
+                    "positive_label should only be set for binary classification targets. Otherwise, positive_label should be None.",
                 )
             if self.parameters["positive_label"] not in self.mapping:
                 raise ValueError(
-                    f"positive_label was set to `{self.parameters['positive_label']}` but was not found in the input target data."
+                    f"positive_label was set to `{self.parameters['positive_label']}` but was not found in the input target data.",
                 )
             self.mapping = {
                 val: int(val == self.parameters["positive_label"])
@@ -83,7 +82,7 @@ class LabelEncoder(Transformer):
         y_unique_values = set(y_ww.unique())
         if y_unique_values.difference(self.mapping.keys()):
             raise ValueError(
-                f"y contains previously unseen labels: {y_unique_values.difference(self.mapping.keys())}"
+                f"y contains previously unseen labels: {y_unique_values.difference(self.mapping.keys())}",
             )
         y_t = y_ww.map(self.mapping)
         return X, ww.init_series(y_t, logical_type="integer")

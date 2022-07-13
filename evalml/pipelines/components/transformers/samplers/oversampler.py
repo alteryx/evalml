@@ -1,7 +1,5 @@
 """SMOTE Oversampler component. Will automatically select whether to use SMOTE, SMOTEN, or SMOTENC based on inputs to the component."""
-from evalml.pipelines.components.transformers.samplers.base_sampler import (
-    BaseSampler,
-)
+from evalml.pipelines.components.transformers.samplers.base_sampler import BaseSampler
 from evalml.pipelines.components.utils import make_balancing_dictionary
 from evalml.utils import import_or_raise
 from evalml.utils.woodwork_utils import infer_feature_types
@@ -52,7 +50,9 @@ class Oversampler(BaseSampler):
         }
         parameters.update(kwargs)
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y):
@@ -128,7 +128,7 @@ class Oversampler(BaseSampler):
         min_counts = y_pd.value_counts().values[-1]
         if min_counts == 1:
             raise ValueError(
-                f"Minority class needs more than 1 sample to use SMOTE!, received {min_counts} sample"
+                f"Minority class needs more than 1 sample to use SMOTE!, received {min_counts} sample",
             )
         if min_counts <= neighbors:
             neighbors = min_counts - 1

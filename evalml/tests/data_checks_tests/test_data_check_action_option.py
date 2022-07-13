@@ -12,7 +12,8 @@ from evalml.data_checks.data_check_action import DataCheckAction
 
 def test_data_check_action_option_attributes(dummy_data_check_name):
     data_check_action_option = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL, dummy_data_check_name
+        DataCheckActionCode.DROP_COL,
+        dummy_data_check_name,
     )
     assert data_check_action_option.data_check_name == dummy_data_check_name
     assert data_check_action_option.action_code == DataCheckActionCode.DROP_COL
@@ -20,7 +21,10 @@ def test_data_check_action_option_attributes(dummy_data_check_name):
     assert data_check_action_option.parameters == {}
 
     data_check_action_option = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL, None, metadata={}, parameters={}
+        DataCheckActionCode.DROP_COL,
+        None,
+        metadata={},
+        parameters={},
     )
     assert data_check_action_option.action_code == DataCheckActionCode.DROP_COL
     assert data_check_action_option.data_check_name is None
@@ -61,10 +65,12 @@ def test_data_check_action_option_attributes(dummy_data_check_name):
 
 def test_data_check_action_option_equality(dummy_data_check_name):
     data_check_action_option = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL, dummy_data_check_name
+        DataCheckActionCode.DROP_COL,
+        dummy_data_check_name,
     )
     data_check_action_option_eq = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL, dummy_data_check_name
+        DataCheckActionCode.DROP_COL,
+        dummy_data_check_name,
     )
     assert data_check_action_option == data_check_action_option
     assert data_check_action_option == data_check_action_option_eq
@@ -102,7 +108,9 @@ def test_data_check_action_option_equality(dummy_data_check_name):
 def test_data_check_action_option_inequality():
     data_check_action_option = DataCheckActionOption(DataCheckActionCode.DROP_COL, None)
     data_check_action_option_diff = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL, None, metadata={"metadata": ["this is different"]}
+        DataCheckActionCode.DROP_COL,
+        None,
+        metadata={"metadata": ["this is different"]},
     )
 
     assert data_check_action_option != data_check_action_option_diff
@@ -117,7 +125,7 @@ def test_data_check_action_option_inequality():
                 "parameter_type": DCAOParameterType.GLOBAL,
                 "type": "float",
                 "default_value": 0.0,
-            }
+            },
         },
     )
     data_check_action_option_diff_parameters = DataCheckActionOption(
@@ -129,7 +137,7 @@ def test_data_check_action_option_inequality():
                 "parameter_type": DCAOParameterType.GLOBAL,
                 "type": "float",
                 "default_value": 0.0,
-            }
+            },
         },
     )
 
@@ -163,7 +171,7 @@ def test_data_check_action_option_to_dict(dummy_data_check_name):
                 "parameter_type": DCAOParameterType.GLOBAL.value,
                 "type": "float",
                 "default_value": 0.0,
-            }
+            },
         },
     )
 
@@ -202,7 +210,7 @@ def test_data_check_action_option_to_dict(dummy_data_check_name):
                 "parameter_type": DCAOParameterType.GLOBAL.value,
                 "type": "float",
                 "default_value": 0.0,
-            }
+            },
         },
     }
 
@@ -213,7 +221,7 @@ def test_convert_dict_to_option_bad_input():
     }
     with pytest.raises(ValueError, match="The input dictionary should have the keys"):
         DataCheckActionOption.convert_dict_to_option(
-            data_check_action_option_dict_no_code
+            data_check_action_option_dict_no_code,
         )
 
     data_check_action_option_dict_no_metadata = {
@@ -221,7 +229,7 @@ def test_convert_dict_to_option_bad_input():
     }
     with pytest.raises(ValueError, match="The input dictionary should have the keys"):
         DataCheckActionOption.convert_dict_to_option(
-            data_check_action_option_dict_no_metadata
+            data_check_action_option_dict_no_metadata,
         )
 
     data_check_action_option_dict_no_columns = {
@@ -229,16 +237,18 @@ def test_convert_dict_to_option_bad_input():
         "metadata": {"cow": None},
     }
     with pytest.raises(
-        ValueError, match="The metadata dictionary should have the keys"
+        ValueError,
+        match="The metadata dictionary should have the keys",
     ):
         DataCheckActionOption.convert_dict_to_option(
-            data_check_action_option_dict_no_columns
+            data_check_action_option_dict_no_columns,
         )
 
 
 def test_convert_dict_to_option_bad_parameter_input(dummy_data_check_name):
     with pytest.raises(
-        ValueError, match="Each parameter must have a parameter_type key."
+        ValueError,
+        match="Each parameter must have a parameter_type key.",
     ):
         DataCheckActionOption(
             action_code=DataCheckActionCode.DROP_COL,
@@ -248,7 +258,7 @@ def test_convert_dict_to_option_bad_parameter_input(dummy_data_check_name):
                 "global_parameter_name": {
                     "type": "float",
                     "default_value": 0.0,
-                }
+                },
             },
         )
     with pytest.raises(
@@ -264,7 +274,7 @@ def test_convert_dict_to_option_bad_parameter_input(dummy_data_check_name):
                     "parameter_type": "invalid_parameter_type",
                     "type": "float",
                     "default_value": 0.0,
-                }
+                },
             },
         )
 
@@ -277,14 +287,14 @@ def test_convert_dict_to_option_bad_parameter_input(dummy_data_check_name):
                 "global_parameter_name": {
                     "parameter_type": DCAOParameterType.GLOBAL,
                     "default_value": 0.0,
-                }
+                },
             },
         )
 
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Each `column` parameter type must also have a `columns` key indicating which columns the parameter should address"
+            "Each `column` parameter type must also have a `columns` key indicating which columns the parameter should address",
         ),
     ):
         DataCheckActionOption(
@@ -294,13 +304,13 @@ def test_convert_dict_to_option_bad_parameter_input(dummy_data_check_name):
             parameters={
                 "columns_parameter_name": {
                     "parameter_type": "column",
-                }
+                },
             },
         )
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "`columns` must be a dictionary, where each key is the name of a column and the associated value is a dictionary of parameters for that column"
+            "`columns` must be a dictionary, where each key is the name of a column and the associated value is a dictionary of parameters for that column",
         ),
     ):
         DataCheckActionOption(
@@ -311,7 +321,7 @@ def test_convert_dict_to_option_bad_parameter_input(dummy_data_check_name):
                 "columns_parameter_name": {
                     "parameter_type": "column",
                     "columns": "some incorrect string input",
-                }
+                },
             },
         )
     with pytest.raises(ValueError, match="Each column parameter must have a type key."):
@@ -326,14 +336,15 @@ def test_convert_dict_to_option_bad_parameter_input(dummy_data_check_name):
                         "some_column_name": {
                             "per_column_parameter": {
                                 "default_value": 0.0,
-                            }
-                        }
+                            },
+                        },
                     },
-                }
+                },
             },
         )
     with pytest.raises(
-        ValueError, match="Each column parameter must have a default_value key."
+        ValueError,
+        match="Each column parameter must have a default_value key.",
     ):
         DataCheckActionOption(
             action_code=DataCheckActionCode.DROP_COL,
@@ -343,9 +354,9 @@ def test_convert_dict_to_option_bad_parameter_input(dummy_data_check_name):
                 "columns_parameter_name": {
                     "parameter_type": "column",
                     "columns": {
-                        "some_column_name": {"per_column_parameter": {"type": "float"}}
+                        "some_column_name": {"per_column_parameter": {"type": "float"}},
                     },
-                }
+                },
             },
         )
 
@@ -356,10 +367,11 @@ def test_convert_dict_to_option(dummy_data_check_name):
         "metadata": {"columns": None, "rows": None},
     }
     expected_data_check_action_option = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL, None
+        DataCheckActionCode.DROP_COL,
+        None,
     )
     data_check_action_option = DataCheckActionOption.convert_dict_to_option(
-        data_check_action_option_dict
+        data_check_action_option_dict,
     )
     assert data_check_action_option == expected_data_check_action_option
 
@@ -379,7 +391,7 @@ def test_convert_dict_to_option(dummy_data_check_name):
         metadata={"some detail": ["this is different"]},
     )
     data_check_action_option = DataCheckActionOption.convert_dict_to_option(
-        data_check_action_option_dict_with_other_metadata
+        data_check_action_option_dict_with_other_metadata,
     )
     assert data_check_action_option == expected_data_check_action_option
 
@@ -425,7 +437,7 @@ def test_get_action_from_defaults(dummy_data_check_name):
                         "fill_value": {"type": "float", "default_value": 1.0},
                     },
                 },
-            }
+            },
         },
     )
     assert (
@@ -446,7 +458,7 @@ def test_get_action_from_defaults(dummy_data_check_name):
                             "impute_strategy": "mean",
                             "fill_value": 1.0,
                         },
-                    }
+                    },
                 },
             },
         )
@@ -460,7 +472,7 @@ def test_get_action_from_defaults(dummy_data_check_name):
                 "parameter_type": DCAOParameterType.GLOBAL,
                 "type": "float",
                 "default_value": 0.0,
-            }
+            },
         },
     )
     assert (
@@ -547,10 +559,10 @@ def test_handle_dcao_parameter_type():
     DCAOParameterType.handle_dcao_parameter_type("COLUMN") == DCAOParameterType.COLUMN
 
     DCAOParameterType.handle_dcao_parameter_type(
-        DCAOParameterType.GLOBAL
+        DCAOParameterType.GLOBAL,
     ) == DCAOParameterType.GLOBAL
     DCAOParameterType.handle_dcao_parameter_type(
-        DCAOParameterType.COLUMN
+        DCAOParameterType.COLUMN,
     ) == DCAOParameterType.COLUMN
 
 

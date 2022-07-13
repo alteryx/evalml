@@ -57,7 +57,10 @@ def test_init(process_pool):
 
 @pytest.mark.parametrize("pool_type", ["threads", "processes"])
 def test_submit_training_job_single(
-    X_y_binary_cls, pool_type, thread_pool, process_pool
+    X_y_binary_cls,
+    pool_type,
+    thread_pool,
+    process_pool,
 ):
     """Test that training a single pipeline using the parallel engine produces the
     same results as simply running the train_pipeline function."""
@@ -72,24 +75,34 @@ def test_submit_training_job_single(
 
         # Verify that engine fits a pipeline
         pipeline_future = engine.submit_training_job(
-            X=X, y=y, automl_config=automl_data, pipeline=pipeline
+            X=X,
+            y=y,
+            automl_config=automl_data,
+            pipeline=pipeline,
         )
         dask_pipeline_fitted = pipeline_future.get_result()[0]
         assert dask_pipeline_fitted._is_fitted
 
         # Verify parallelization has no effect on output of function
         original_pipeline_fitted = train_pipeline(
-            pipeline, X, y, automl_config=automl_data
+            pipeline,
+            X,
+            y,
+            automl_config=automl_data,
         )[0]
         assert dask_pipeline_fitted == original_pipeline_fitted
         pd.testing.assert_series_equal(
-            dask_pipeline_fitted.predict(X), original_pipeline_fitted.predict(X)
+            dask_pipeline_fitted.predict(X),
+            original_pipeline_fitted.predict(X),
         )
 
 
 @pytest.mark.parametrize("pool_type", ["threads", "processes"])
 def test_submit_training_jobs_multiple(
-    X_y_binary_cls, pool_type, thread_pool, process_pool
+    X_y_binary_cls,
+    pool_type,
+    thread_pool,
+    process_pool,
 ):
     """Test that training multiple pipelines using the parallel engine produces the
     same results as the sequential engine."""
@@ -110,8 +123,11 @@ def test_submit_training_jobs_multiple(
             for pipeline in pipelines:
                 futures.append(
                     engine.submit_training_job(
-                        X=X, y=y, automl_config=automl_data, pipeline=pipeline
-                    )
+                        X=X,
+                        y=y,
+                        automl_config=automl_data,
+                        pipeline=pipeline,
+                    ),
                 )
             results = [f.get_result()[0] for f in futures]
             return results
@@ -134,7 +150,10 @@ def test_submit_training_jobs_multiple(
 
 @pytest.mark.parametrize("pool_type", ["threads", "processes"])
 def test_submit_evaluate_job_single(
-    X_y_binary_cls, pool_type, thread_pool, process_pool
+    X_y_binary_cls,
+    pool_type,
+    thread_pool,
+    process_pool,
 ):
     """Test that evaluating a single pipeline using the parallel engine produces the
     same results as simply running the evaluate_pipeline function."""
@@ -154,14 +173,21 @@ def test_submit_evaluate_job_single(
 
         # Verify that engine evaluates a pipeline
         pipeline_future = engine.submit_evaluation_job(
-            X=X, y=y, automl_config=automl_data, pipeline=pipeline
+            X=X,
+            y=y,
+            automl_config=automl_data,
+            pipeline=pipeline,
         )
         assert isinstance(pipeline_future, CFComputation)
 
         par_eval_results = pipeline_future.get_result()
 
         original_eval_results = evaluate_pipeline(
-            pipeline, automl_config=automl_data, X=X, y=y, logger=JobLogger()
+            pipeline,
+            automl_config=automl_data,
+            X=X,
+            y=y,
+            logger=JobLogger(),
         )
 
         # Ensure we get back the same output as the parallelized function.
@@ -189,7 +215,10 @@ def test_submit_evaluate_job_single(
 
 @pytest.mark.parametrize("pool_type", ["threads", "processes"])
 def test_submit_evaluate_jobs_multiple(
-    X_y_binary_cls, pool_type, thread_pool, process_pool
+    X_y_binary_cls,
+    pool_type,
+    thread_pool,
+    process_pool,
 ):
     """Test that evaluating multiple pipelines using the parallel engine produces the
     same results as the sequential engine."""
@@ -214,8 +243,11 @@ def test_submit_evaluate_jobs_multiple(
             for pipeline in pipelines:
                 futures.append(
                     engine.submit_evaluation_job(
-                        X=X, y=y, automl_config=automl_data, pipeline=pipeline
-                    )
+                        X=X,
+                        y=y,
+                        automl_config=automl_data,
+                        pipeline=pipeline,
+                    ),
                 )
             results = [f.get_result() for f in futures]
             return results
@@ -246,7 +278,10 @@ def test_submit_evaluate_jobs_multiple(
 
 @pytest.mark.parametrize("pool_type", ["threads", "processes"])
 def test_submit_scoring_job_single(
-    X_y_binary_cls, pool_type, thread_pool, process_pool
+    X_y_binary_cls,
+    pool_type,
+    thread_pool,
+    process_pool,
 ):
     """Test that scoring a single pipeline using the parallel engine produces the
     same results as simply running the score_pipeline function."""
@@ -265,7 +300,10 @@ def test_submit_scoring_job_single(
         objectives = [automl_data.objective]
 
         pipeline_future = engine.submit_training_job(
-            X=X, y=y, automl_config=automl_data, pipeline=pipeline
+            X=X,
+            y=y,
+            automl_config=automl_data,
+            pipeline=pipeline,
         )
         pipeline = pipeline_future.get_result()[0]
         pipeline_score_future = engine.submit_scoring_job(
@@ -286,7 +324,10 @@ def test_submit_scoring_job_single(
 
 @pytest.mark.parametrize("pool_type", ["threads", "processes"])
 def test_submit_scoring_jobs_multiple(
-    X_y_binary_cls, pool_type, thread_pool, process_pool
+    X_y_binary_cls,
+    pool_type,
+    thread_pool,
+    process_pool,
 ):
     """Test that scoring multiple pipelines using the parallel engine produces the
     same results as the sequential engine."""
@@ -311,8 +352,11 @@ def test_submit_scoring_jobs_multiple(
             for pipeline in pipelines:
                 futures.append(
                     engine.submit_training_job(
-                        X=X, y=y, automl_config=automl_data, pipeline=pipeline
-                    )
+                        X=X,
+                        y=y,
+                        automl_config=automl_data,
+                        pipeline=pipeline,
+                    ),
                 )
             pipelines = [f.get_result()[0] for f in futures]
             futures = []
@@ -324,7 +368,7 @@ def test_submit_scoring_jobs_multiple(
                         automl_config=automl_data,
                         pipeline=pipeline,
                         objectives=[automl_data.objective],
-                    )
+                    ),
                 )
             results = [f.get_result() for f in futures]
             return results
@@ -355,7 +399,10 @@ def test_cancel_job(X_y_binary_cls, pool_type, thread_pool, process_pool):
 
         # Verify that engine fits a pipeline
         pipeline_future = engine.submit_training_job(
-            X=X, y=y, automl_config=automl_data, pipeline=pipeline
+            X=X,
+            y=y,
+            automl_config=automl_data,
+            pipeline=pipeline,
         )
         pipeline_future.cancel()
         assert pipeline_future.is_cancelled
@@ -363,7 +410,10 @@ def test_cancel_job(X_y_binary_cls, pool_type, thread_pool, process_pool):
 
 @pytest.mark.parametrize("pool_type", ["threads", "processes"])
 def test_cfengine_sends_woodwork_schema(
-    X_y_binary_cls, pool_type, thread_pool, process_pool
+    X_y_binary_cls,
+    pool_type,
+    thread_pool,
+    process_pool,
 ):
     X, y = X_y_binary_cls
     pool = get_pool(pool_type, thread_pool, process_pool)
@@ -372,7 +422,8 @@ def test_cfengine_sends_woodwork_schema(
         engine = CFEngine(client=client)
 
         X.ww.init(
-            logical_types={0: "Categorical"}, semantic_tags={0: ["my cool feature"]}
+            logical_types={0: "Categorical"},
+            semantic_tags={0: ["my cool feature"]},
         )
         y = ww.init_series(y)
 
@@ -399,7 +450,10 @@ def test_cfengine_sends_woodwork_schema(
         )
 
         future = engine.submit_training_job(
-            X=X, y=y, automl_config=new_config, pipeline=pipeline
+            X=X,
+            y=y,
+            automl_config=new_config,
+            pipeline=pipeline,
         )
         fitted_pipeline = future.get_result()[0]
 
@@ -433,7 +487,8 @@ def test_cfengine_convenience():
     assert isinstance(cf_engine.client.pool, ProcessPoolExecutor)
 
     with pytest.raises(
-        TypeError, match="Expected evalml.automl.engine.cf_engine.CFClient, received"
+        TypeError,
+        match="Expected evalml.automl.engine.cf_engine.CFClient, received",
     ):
         cf_engine = CFEngine(client="Processes!")
 

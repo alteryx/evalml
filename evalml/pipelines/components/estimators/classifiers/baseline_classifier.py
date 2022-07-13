@@ -29,7 +29,7 @@ class BaselineClassifier(Estimator):
     def __init__(self, strategy="mode", random_seed=0, **kwargs):
         if strategy not in ["mode", "random", "random_weighted"]:
             raise ValueError(
-                "'strategy' parameter must equal either 'mode', 'random', or 'random_weighted'"
+                "'strategy' parameter must equal either 'mode', 'random', or 'random_weighted'",
             )
         parameters = {"strategy": strategy}
         parameters.update(kwargs)
@@ -39,7 +39,9 @@ class BaselineClassifier(Estimator):
         self._num_unique = None
         self._mode = None
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):
@@ -85,11 +87,14 @@ class BaselineClassifier(Estimator):
             predictions = pd.Series([self._mode] * len(X))
         elif strategy == "random":
             predictions = get_random_state(self.random_seed).choice(
-                self._classes, len(X)
+                self._classes,
+                len(X),
             )
         else:
             predictions = get_random_state(self.random_seed).choice(
-                self._classes, len(X), p=self._percentage_freq
+                self._classes,
+                len(X),
+                p=self._percentage_freq,
             )
         return infer_feature_types(predictions)
 
@@ -108,15 +113,15 @@ class BaselineClassifier(Estimator):
             mode_index = self._classes.index(self._mode)
             proba_arr = np.array(
                 [[1.0 if i == mode_index else 0.0 for i in range(self._num_unique)]]
-                * len(X)
+                * len(X),
             )
         elif strategy == "random":
             proba_arr = np.array(
-                [[1.0 / self._num_unique for i in range(self._num_unique)]] * len(X)
+                [[1.0 / self._num_unique for i in range(self._num_unique)]] * len(X),
             )
         else:
             proba_arr = np.array(
-                [[self._percentage_freq[i] for i in range(self._num_unique)]] * len(X)
+                [[self._percentage_freq[i] for i in range(self._num_unique)]] * len(X),
             )
         predictions = pd.DataFrame(proba_arr, columns=self._classes)
         return infer_feature_types(predictions)

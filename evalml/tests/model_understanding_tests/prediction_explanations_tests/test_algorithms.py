@@ -82,7 +82,8 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
         ),
         (
             make_test_pipeline(
-                TimeSeriesBaselineEstimator, TimeSeriesRegressionPipeline
+                TimeSeriesBaselineEstimator,
+                TimeSeriesRegressionPipeline,
             ),
             ValueError,
             baseline_message,
@@ -120,7 +121,8 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
         ),
         (
             make_test_pipeline(
-                TimeSeriesBaselineEstimator, TimeSeriesRegressionPipeline
+                TimeSeriesBaselineEstimator,
+                TimeSeriesRegressionPipeline,
             ),
             ValueError,
             baseline_lime_message,
@@ -129,10 +131,14 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
     ],
 )
 @patch(
-    "evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer"
+    "evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer",
 )
 def test_explainer_value_errors_raised(
-    mock_tree_explainer, pipeline, exception, match, algorithm
+    mock_tree_explainer,
+    pipeline,
+    exception,
+    match,
+    algorithm,
 ):
     pipeline = pipeline(
         {
@@ -141,21 +147,24 @@ def test_explainer_value_errors_raised(
                 "gap": 1,
                 "max_delay": 1,
                 "forecast_horizon": 1,
-            }
-        }
+            },
+        },
     )
     with pytest.raises(exception, match=match):
         if algorithm == "shap":
             _ = _compute_shap_values(pipeline, pd.DataFrame(np.random.random((2, 16))))
         else:
             _ = _compute_lime_values(
-                pipeline, pd.DataFrame(np.random.random((2, 16))), 0
+                pipeline,
+                pd.DataFrame(np.random.random((2, 16))),
+                0,
             )
 
 
 def test_create_dictionary_exception():
     with pytest.raises(
-        ValueError, match="Explainer values must be stored in a numpy array!"
+        ValueError,
+        match="Explainer values must be stored in a numpy array!",
     ):
         _create_dictionary([1, 2, 3], ["a", "b", "c"])
 
@@ -170,7 +179,9 @@ def calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain):
     points_to_explain = training_data[:n_points_to_explain]
     pipeline.fit(training_data, y)
     shap_values, expected_value = _compute_shap_values(
-        pipeline, pd.DataFrame(points_to_explain), training_data
+        pipeline,
+        pd.DataFrame(points_to_explain),
+        training_data,
     )
     return shap_values
 
@@ -199,7 +210,10 @@ algorithms = ["shap", "lime"]
 @pytest.mark.parametrize(
     "estimator,problem_type,n_points_to_explain,algorithm",
     product(
-        interpretable_estimators, all_problems, all_n_points_to_explain, algorithms
+        interpretable_estimators,
+        all_problems,
+        all_n_points_to_explain,
+        algorithms,
     ),
 )
 def test_explainers(
@@ -227,21 +241,29 @@ def test_explainers(
     parameters = {estimator.name: {"n_jobs": 1}}
     try:
         pipeline = make_pipeline(
-            training_data, y, estimator, problem_type, parameters=parameters
+            training_data,
+            y,
+            estimator,
+            problem_type,
+            parameters=parameters,
         )
     except ValueError:
         pipeline = make_pipeline(training_data, y, estimator, problem_type)
 
     if algorithm == "shap":
         explainer_values = calculate_shap_for_test(
-            training_data, y, pipeline, n_points_to_explain
+            training_data,
+            y,
+            pipeline,
+            n_points_to_explain,
         )
     else:
         explainer_values = calculate_lime_for_test(training_data, y, pipeline, 0)
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         assert isinstance(
-            explainer_values, list
+            explainer_values,
+            list,
         ), "For binary classification, returned values must be a list"
         assert all(
             isinstance(class_values, dict) for class_values in explainer_values
@@ -267,7 +289,8 @@ def test_explainers(
                 ), f"A SHAP value must be computed for every data point to explain!"
     elif problem_type == ProblemTypes.REGRESSION:
         assert isinstance(
-            explainer_values, dict
+            explainer_values,
+            dict,
         ), "For regression, returned values must be a dictionary!"
         assert (
             len(explainer_values) == N_FEATURES
@@ -296,7 +319,10 @@ def test_lime_xgboost(X_y_multi):
 @patch("evalml.model_understanding.prediction_explanations._algorithms.logger")
 @patch("shap.TreeExplainer")
 def test_compute_shap_values_catches_shap_tree_warnings(
-    mock_tree_explainer, mock_debug, X_y_binary, caplog
+    mock_tree_explainer,
+    mock_debug,
+    X_y_binary,
+    caplog,
 ):
     X, y = X_y_binary
     pipeline = BinaryClassificationPipeline(["Random Forest Classifier"])
@@ -311,7 +337,7 @@ def test_compute_shap_values_catches_shap_tree_warnings(
 
     _ = _compute_shap_values(pipeline, pd.DataFrame(X))
     mock_debug.debug.assert_called_with(
-        "_compute_shap_values TreeExplainer: Shap raised a warning!"
+        "_compute_shap_values TreeExplainer: Shap raised a warning!",
     )
 
 
@@ -335,7 +361,8 @@ def test_compute_shap_values_absolute_probs(mock_predict_proba, X_y_binary):
 def test_normalize_values_exceptions():
 
     with pytest.raises(
-        ValueError, match="^Unsupported data type for _normalize_explainer_values"
+        ValueError,
+        match="^Unsupported data type for _normalize_explainer_values",
     ):
         _normalize_explainer_values(1)
 

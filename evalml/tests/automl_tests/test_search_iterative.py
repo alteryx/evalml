@@ -19,7 +19,9 @@ def test_search_iterative(
 
     mock_data_checks_validate.return_value = dummy_data_check_validate_output_warnings
     automl, data_check_results = search_iterative(
-        X_train=X, y_train=y, problem_type="binary"
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
     )
     assert isinstance(automl, AutoMLSearch)
     assert data_check_results is dummy_data_check_validate_output_warnings
@@ -44,7 +46,9 @@ def test_search_iterative_data_check_error(
     X, y = X_y_binary
     mock_data_checks_validate.return_value = dummy_data_check_validate_output_errors
     automl, data_check_results = search_iterative(
-        X_train=X, y_train=y, problem_type="binary"
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
     )
     assert automl is None
     assert data_check_results == dummy_data_check_validate_output_errors
@@ -78,14 +82,15 @@ def test_n_splits_passed_to_ts_splitting_data_check():
 
 
 @pytest.mark.parametrize(
-    "problem_config", [None, "missing_time_index", "missing_other_index"]
+    "problem_config",
+    [None, "missing_time_index", "missing_other_index"],
 )
 def test_search_iterative_data_check_error_timeseries(problem_config):
     X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
     problem_configuration = None
 
     dates = pd.date_range("2021-01-01", periods=29).append(
-        pd.date_range("2021-01-31", periods=1)
+        pd.date_range("2021-01-31", periods=1),
     )
     X["dates"] = dates
 
@@ -111,10 +116,15 @@ def test_search_iterative_data_check_error_timeseries(problem_config):
 @patch("evalml.data_checks.default_data_checks.DefaultDataChecks.validate")
 @patch("evalml.automl.AutoMLSearch.search")
 def test_search_iterative_kwargs(
-    mock_automl_search, mock_data_checks_validate, X_y_binary
+    mock_automl_search,
+    mock_data_checks_validate,
+    X_y_binary,
 ):
     X, y = X_y_binary
     automl, data_check_results = search_iterative(
-        X_train=X, y_train=y, problem_type="binary", max_iterations=42
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=42,
     )
     assert automl.max_iterations == 42

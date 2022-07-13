@@ -4,9 +4,7 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components.estimators.classifiers import (
-    ElasticNetClassifier,
-)
+from evalml.pipelines.components.estimators.classifiers import ElasticNetClassifier
 from evalml.problem_types import ProblemTypes
 
 
@@ -93,7 +91,9 @@ def test_feature_importance(X_y_binary):
     clf.fit(X, y)
 
     np.testing.assert_almost_equal(
-        sk_clf.coef_.flatten(), clf.feature_importance, decimal=5
+        sk_clf.coef_.flatten(),
+        clf.feature_importance,
+        decimal=5,
     )
 
 

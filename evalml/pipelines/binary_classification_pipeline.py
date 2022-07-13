@@ -1,16 +1,16 @@
 """Pipeline subclass for all binary classification pipelines."""
-from .binary_classification_pipeline_mixin import (
+from evalml.objectives import get_objective
+from evalml.pipelines.binary_classification_pipeline_mixin import (
     BinaryClassificationPipelineMixin,
 )
-
-from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
 
 class BinaryClassificationPipeline(
-    BinaryClassificationPipelineMixin, ClassificationPipeline
+    BinaryClassificationPipelineMixin,
+    ClassificationPipeline,
 ):
     """Pipeline subclass for all binary classification pipelines.
 
@@ -64,7 +64,7 @@ class BinaryClassificationPipeline(
             objective = get_objective(objective, return_instance=True)
             if not objective.is_defined_for_problem_type(self.problem_type):
                 raise ValueError(
-                    "You can only use a binary classification objective to make predictions for a binary classification pipeline."
+                    "You can only use a binary classification objective to make predictions for a binary classification pipeline.",
                 )
 
         if self.threshold is None:

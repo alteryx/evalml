@@ -23,7 +23,7 @@ def set_first_three_columns_to_categorical(X):
             "col_1": "categorical",
             "col_2": "categorical",
             "col_3": "categorical",
-        }
+        },
     )
     return X
 
@@ -68,7 +68,7 @@ def test_invalid_inputs():
             "col_1": ["a", "b", "c", "d", "a"],
             "col_2": ["a", "b", "a", "c", "b"],
             "col_3": ["a", "a", "a", "a", "a"],
-        }
+        },
     )
     encoder = OneHotEncoder(top_n=None, categories=[["a", "b"], ["a", "c"]])
     error_msg = "Categories argument must contain a list of categories for each categorical feature"
@@ -89,7 +89,7 @@ def test_ohe_is_no_op_for_not_categorical_features():
             "col_1": [1.2, 3.2, None, 4.7],
             "col_2": [4.5, 8.9, 11.2, 23.4],
             "col_3": [True, False, True, True],
-        }
+        },
     )
     X.ww.init(logical_types={"col_1": "Double", "col_2": "Integer", "col_3": "Boolean"})
     X_t = ohe.fit_transform(X)
@@ -102,7 +102,7 @@ def test_null_values_in_dataframe():
             "col_1": ["a", "b", "c", "d", np.nan],
             "col_2": ["a", "b", "a", "c", "b"],
             "col_3": ["a", "a", "a", "a", "a"],
-        }
+        },
     )
     X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical"})
     # Test NaN will be counted as a category if within the top_n
@@ -121,7 +121,7 @@ def test_null_values_in_dataframe():
             "col_2_b",
             "col_2_c",
             "col_3_a",
-        ]
+        ],
     )
     col_names = set(X_t.columns)
     assert col_names == expected_col_names
@@ -134,7 +134,7 @@ def test_null_values_in_dataframe():
             "col_2": ["a", "b", "a", "c", "b"],
             "col_3": ["a", "a", "a", "a", "a"],
             "col_4": [2, 0, 1, np.nan, 0],
-        }
+        },
     )
     X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical"})
     encoder = OneHotEncoder(top_n=2, handle_missing="as_category")
@@ -142,7 +142,7 @@ def test_null_values_in_dataframe():
     X_t = encoder.transform(X)
 
     expected_col_names = set(
-        ["col_1_a", "col_1_c", "col_2_a", "col_2_b", "col_3_a", "col_4"]
+        ["col_1_a", "col_1_c", "col_2_a", "col_2_b", "col_3_a", "col_4"],
     )
     col_names = set(X_t.columns)
     assert col_names == expected_col_names
@@ -157,7 +157,7 @@ def test_null_values_in_dataframe():
             "col_2": ["a", "c", "d", "b", "e", "e", "f"],
             "col_3": ["a", "a", "a", "a", "a", "a", "b"],
             "col_4": [2, 0, 1, 3, 0, 1, 2],
-        }
+        },
     )
     X.ww.init(logical_types={"col_1": "categorical"})
     with pytest.raises(ValueError, match="Input contains NaN"):
@@ -169,7 +169,7 @@ def test_null_values_in_dataframe():
             "col_1": ["a", "b", "c", "d", "d"],
             "col_2": ["a", "b", "a", "c", "b"],
             "col_3": ["a", "a", "a", "a", "a"],
-        }
+        },
     )
     encoder = OneHotEncoder(handle_missing="error")
     encoder.fit(X)
@@ -178,7 +178,7 @@ def test_null_values_in_dataframe():
             "col_1": ["a", "b", "c", "d", "d"],
             "col_2": ["a", "b", np.nan, "c", "b"],
             "col_3": ["a", "a", "a", "a", "a"],
-        }
+        },
     )
     X_missing.ww.init(logical_types={"col_2": "categorical"})
     encoder_error = OneHotEncoder(handle_missing="error")
@@ -192,7 +192,7 @@ def test_drop_first():
             "col_1": ["a", "b", "c", "d", "d"],
             "col_2": ["a", "b", "a", "c", "b"],
             "col_3": ["a", "a", "a", "a", "a"],
-        }
+        },
     )
     X = set_first_three_columns_to_categorical(X)
     encoder = OneHotEncoder(top_n=None, drop="first", handle_unknown="error")
@@ -209,7 +209,7 @@ def test_drop_binary():
             "col_1": ["a", "b", "b", "a", "b"],
             "col_2": ["a", "b", "a", "c", "b"],
             "col_3": ["a", "a", "a", "a", "a"],
-        }
+        },
     )
     X = set_first_three_columns_to_categorical(X)
     encoder = OneHotEncoder(top_n=None, drop="if_binary", handle_unknown="error")
@@ -226,7 +226,7 @@ def test_drop_parameter_is_array():
             "col_1": ["a", "b", "b", "a", "b"],
             "col_2": ["a", "b", "a", "c", "b"],
             "col_3": ["a", "a", "a", "a", "a"],
-        }
+        },
     )
     X = set_first_three_columns_to_categorical(X)
     encoder = OneHotEncoder(top_n=None, drop=["b", "c", "a"], handle_unknown="error")
@@ -245,7 +245,7 @@ def test_drop_binary_and_top_n_2():
             "col_1": ["a", "b", "b", "a", "b"],
             "col_2": ["a", "b", "a", "c", "b"],
             "col_3": ["a", "a", "a", "a", "a"],
-        }
+        },
     )
     X = set_first_three_columns_to_categorical(X)
     encoder = OneHotEncoder(top_n=2, drop="if_binary")
@@ -263,7 +263,7 @@ def test_handle_unknown():
             "col_2": ["a", "c", "d", "b", "e", "e", "f"],
             "col_3": ["a", "a", "a", "a", "a", "a", "b"],
             "col_4": [2, 0, 1, 3, 0, 1, 2],
-        }
+        },
     )
     X = set_first_three_columns_to_categorical(X)
     encoder = OneHotEncoder(handle_unknown="error")
@@ -276,7 +276,7 @@ def test_handle_unknown():
             "col_2": ["a", "c", "d", "b", "e", "e", "f"],
             "col_3": ["a", "a", "a", "a", "a", "a", "b"],
             "col_4": [2, 0, 1, 3, 0, 1, 2],
-        }
+        },
     )
     with pytest.raises(ValueError) as exec_info:
         encoder.transform(X)
@@ -291,7 +291,7 @@ def test_no_top_n():
             "col_2": ["a", "c", "d", "b", "e", "e", "f", "a", "b", "c", "d"],
             "col_3": ["a", "a", "a", "a", "a", "a", "b", "a", "a", "b", "b"],
             "col_4": [2, 0, 1, 3, 0, 1, 2, 0, 2, 1, 2],
-        }
+        },
     )
     X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical"})
     expected_col_names = set(["col_3_b", "col_4"])
@@ -315,7 +315,7 @@ def test_no_top_n():
             "col_2": ["a", "c", "d", "b"],
             "col_3": ["a", "a", "a", "a"],
             "col_4": [2, 0, 1, 3],
-        }
+        },
     )
 
     with pytest.raises(ValueError) as exec_info:
@@ -330,7 +330,7 @@ def test_categories():
             "col_2": ["a", "c", "d", "b", "e", "e", "f"],
             "col_3": ["a", "a", "a", "a", "a", "a", "b"],
             "col_4": [2, 0, 1, 3, 0, 1, 2],
-        }
+        },
     )
     X = set_first_three_columns_to_categorical(X)
 
@@ -354,14 +354,15 @@ def test_categories():
             "col_3_a",
             "col_3_b",
             "col_4",
-        ]
+        ],
     )
     assert X_t.shape == (7, 10)
     assert col_names == expected_col_names
 
     # test categories with top_n errors
     with pytest.raises(
-        ValueError, match="Cannot use categories and top_n arguments simultaneously"
+        ValueError,
+        match="Cannot use categories and top_n arguments simultaneously",
     ):
         encoder = OneHotEncoder(top_n=10, categories=categories, random_seed=2)
 
@@ -374,7 +375,7 @@ def test_less_than_top_n_unique_values():
             "col_2": ["a", "b", "a", "c", "b"],
             "col_3": ["a", "a", "a", "a", "a"],
             "col_4": [2, 0, 1, 0, 0],
-        }
+        },
     )
     X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical"})
     encoder = OneHotEncoder(top_n=5)
@@ -391,7 +392,7 @@ def test_less_than_top_n_unique_values():
             "col_2_c",
             "col_3_a",
             "col_4",
-        ]
+        ],
     )
     col_names = set(X_t.columns)
     assert col_names == expected_col_names
@@ -405,7 +406,7 @@ def test_more_top_n_unique_values():
             "col_2": ["a", "c", "d", "b", "e", "e", "f"],
             "col_3": ["a", "a", "a", "a", "a", "a", "b"],
             "col_4": [2, 0, 1, 3, 0, 1, 2],
-        }
+        },
     )
     X = set_first_three_columns_to_categorical(X)
 
@@ -420,14 +421,18 @@ def test_more_top_n_unique_values():
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=random_seed)
     col_1_counts = col_1_counts.sort_values(
-        ["col_1"], ascending=False, kind="mergesort"
+        ["col_1"],
+        ascending=False,
+        kind="mergesort",
     )
     col_1_samples = col_1_counts.head(encoder.parameters["top_n"]).index.tolist()
 
     col_2_counts = X["col_2"].value_counts(dropna=False).to_frame()
     col_2_counts = col_2_counts.sample(frac=1, random_state=random_seed)
     col_2_counts = col_2_counts.sort_values(
-        ["col_2"], ascending=False, kind="mergesort"
+        ["col_2"],
+        ascending=False,
+        kind="mergesort",
     )
     col_2_samples = col_2_counts.head(encoder.parameters["top_n"]).index.tolist()
 
@@ -448,7 +453,7 @@ def test_more_top_n_unique_values_large():
             "col_2": ["a", "a", "a", "b", "b", "c", "c", "d", "e"],
             "col_3": ["a", "a", "a", "b", "b", "b", "c", "c", "d"],
             "col_4": [2, 0, 1, 3, 0, 1, 2, 4, 1],
-        }
+        },
     )
     X = set_first_three_columns_to_categorical(X)
     random_seed = 2
@@ -462,11 +467,13 @@ def test_more_top_n_unique_values_large():
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=random_seed)
     col_1_counts = col_1_counts.sort_values(
-        ["col_1"], ascending=False, kind="mergesort"
+        ["col_1"],
+        ascending=False,
+        kind="mergesort",
     )
     col_1_samples = col_1_counts.head(encoder.parameters["top_n"]).index.tolist()
     expected_col_names = set(
-        ["col_2_a", "col_2_b", "col_2_c", "col_3_a", "col_3_b", "col_3_c", "col_4"]
+        ["col_2_a", "col_2_b", "col_2_c", "col_3_a", "col_3_b", "col_3_c", "col_4"],
     )
     for val in col_1_samples:
         expected_col_names.add("col_1_" + val)
@@ -483,7 +490,7 @@ def test_categorical_dtype():
             "col_2": ["a", "e", "d", "d", "e"],
             "col_3": ["a", "a", "a", "a", "a"],
             "col_4": [3, 3, 2, 2, 1],
-        }
+        },
     )
     X["col_4"] = X["col_4"].astype("category")
     X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical"})
@@ -506,7 +513,7 @@ def test_categorical_dtype():
             "col_4_1",
             "col_4_2",
             "col_4_3",
-        ]
+        ],
     )
     col_names = set(X_t.columns)
     assert col_names == expected_col_names
@@ -521,7 +528,7 @@ def test_all_numerical_dtype():
             "col_2": [3, 2, 5, 1, 3],
             "col_3": [0, 0, 1, 3, 2],
             "col_4": [2, 4, 1, 4, 0],
-        }
+        },
     )
     X_expected = X.copy()
     encoder = OneHotEncoder(top_n=5)
@@ -600,7 +607,7 @@ def test_ohe_preserves_custom_index(index):
 
 def test_ohe_categories():
     X = pd.DataFrame(
-        {"col_1": ["a"] * 10, "col_2": ["a"] * 3 + ["b"] * 3 + ["c"] * 2 + ["d"] * 2}
+        {"col_1": ["a"] * 10, "col_2": ["a"] * 3 + ["b"] * 3 + ["c"] * 2 + ["d"] * 2},
     )
     X.ww.init(logical_types={"col_2": "categorical"})
     ohe = OneHotEncoder(top_n=2)
@@ -622,7 +629,7 @@ def test_ohe_categories():
 
 def test_ohe_get_feature_names():
     X = pd.DataFrame(
-        {"col_1": ["a"] * 10, "col_2": ["a"] * 3 + ["b"] * 3 + ["c"] * 2 + ["d"] * 2}
+        {"col_1": ["a"] * 10, "col_2": ["a"] * 3 + ["b"] * 3 + ["c"] * 2 + ["d"] * 2},
     )
     X.ww.init(logical_types={"col_2": "categorical"})
     ohe = OneHotEncoder(top_n=2)
@@ -633,14 +640,16 @@ def test_ohe_get_feature_names():
         ohe.get_feature_names()
     ohe.fit(X)
     np.testing.assert_array_equal(
-        ohe.get_feature_names(), np.array(["col_1_a", "col_2_a", "col_2_b"])
+        ohe.get_feature_names(),
+        np.array(["col_1_a", "col_2_a", "col_2_b"]),
     )
 
     X = pd.DataFrame({"col_1": ["a"] * 4 + ["b"] * 6, "col_2": ["b"] * 3 + ["c"] * 7})
     ohe = OneHotEncoder(drop="if_binary")
     ohe.fit(X)
     np.testing.assert_array_equal(
-        ohe.get_feature_names(), np.array(["col_1_a", "col_2_b"])
+        ohe.get_feature_names(),
+        np.array(["col_1_a", "col_2_b"]),
     )
 
 
@@ -661,7 +670,7 @@ def test_ohe_features_to_encode():
     encoder.fit(X)
     X_t = encoder.transform(X)
     expected_col_names = set(
-        ["col_1_0", "col_1_1", "col_1_2", "col_2_a", "col_2_b", "col_2_c", "col_2_d"]
+        ["col_1_0", "col_1_1", "col_1_2", "col_2_a", "col_2_b", "col_2_c", "col_2_d"],
     )
     col_names = set(X_t.columns)
     assert col_names == expected_col_names
@@ -697,7 +706,7 @@ def test_ohe_top_n_categories_always_the_same():
             + ["cat_4"] * 3
             + ["cat_5"] * 3,
             "numbers": range(18),
-        }
+        },
     )
 
     def check_df_equality(random_seed):
@@ -725,10 +734,14 @@ def test_ohe_column_names_unique():
                 "a",
             ],
             "A_x_y": ["1", "y", "y"],
-        }
+        },
     )
     df.ww.init(
-        logical_types={"A": "categorical", "A_x": "categorical", "A_x_y": "categorical"}
+        logical_types={
+            "A": "categorical",
+            "A_x": "categorical",
+            "A_x_y": "categorical",
+        },
     )
     df_transformed = OneHotEncoder().fit_transform(df)
     # category y in A_x gets mapped to A_x_y_1 because A_x_y already exists
@@ -736,10 +749,14 @@ def test_ohe_column_names_unique():
     assert set(df_transformed.columns) == {"A_x_y", "A_x_y_1", "A_x_y_1_1"}
 
     df = pd.DataFrame(
-        {"A": ["x_y", "z", "a"], "A_x": ["y_1", "y", "b"], "A_x_y": ["1", "y", "c"]}
+        {"A": ["x_y", "z", "a"], "A_x": ["y_1", "y", "b"], "A_x_y": ["1", "y", "c"]},
     )
     df.ww.init(
-        logical_types={"A": "categorical", "A_x": "categorical", "A_x_y": "categorical"}
+        logical_types={
+            "A": "categorical",
+            "A_x": "categorical",
+            "A_x_y": "categorical",
+        },
     )
     df_transformed = OneHotEncoder().fit_transform(df)
     # category y in A_x gets mapped to A_x_y_1 because A_x_y already exists
@@ -762,7 +779,7 @@ def test_ohe_column_names_unique():
     "X_df",
     [
         pd.DataFrame(
-            pd.to_datetime(["20190902", "20200519", "20190607"], format="%Y%m%d")
+            pd.to_datetime(["20190902", "20200519", "20190607"], format="%Y%m%d"),
         ),
         pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
         pd.DataFrame(pd.Series([1.0, 2.0, 3.0], dtype="float")),
@@ -772,7 +789,7 @@ def test_ohe_column_names_unique():
             pd.Series(
                 ["this will be a natural language column because length", "yay", "hay"],
                 dtype="string",
-            )
+            ),
         ),
     ],
 )
@@ -795,7 +812,7 @@ def test_ohe_woodwork_custom_overrides_returned_by_components(X_df):
         assert isinstance(transformed, pd.DataFrame)
         if logical_type != Categorical:
             assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-                0: logical_type
+                0: logical_type,
             }
 
 
@@ -805,7 +822,7 @@ def test_ohe_output_bools():
             "bool": [bool(i % 2) for i in range(100)],
             "categorical": ["dog"] * 20 + ["cat"] * 40 + ["fish"] * 40,
             "integers": [i for i in range(100)],
-        }
+        },
     )
     X.ww.init()
     y = pd.Series([i % 2 for i in range(100)])

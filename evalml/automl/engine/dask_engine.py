@@ -58,7 +58,7 @@ class DaskEngine(EngineBase):
     def __init__(self, cluster=None):
         if cluster is not None and not isinstance(cluster, (LocalCluster)):
             raise TypeError(
-                f"Expected dask.distributed.Client, received {type(cluster)}"
+                f"Expected dask.distributed.Client, received {type(cluster)}",
             )
         elif cluster is None:
             cluster = LocalCluster(processes=False)
@@ -93,7 +93,8 @@ class DaskEngine(EngineBase):
             if not (X_future.cancelled() or y_future.cancelled()):
                 return X_future, y_future
         self._data_futures_cache[data_hash] = self.client.scatter(
-            [X, y], broadcast=True
+            [X, y],
+            broadcast=True,
         )
         return self._data_futures_cache[data_hash]
 
@@ -137,12 +138,23 @@ class DaskEngine(EngineBase):
         """
         X, y = self.send_data_to_cluster(X, y)
         dask_future = self.client.submit(
-            train_pipeline, pipeline=pipeline, X=X, y=y, automl_config=automl_config
+            train_pipeline,
+            pipeline=pipeline,
+            X=X,
+            y=y,
+            automl_config=automl_config,
         )
         return DaskComputation(dask_future)
 
     def submit_scoring_job(
-        self, automl_config, pipeline, X, y, objectives, X_train=None, y_train=None
+        self,
+        automl_config,
+        pipeline,
+        X,
+        y,
+        objectives,
+        X_train=None,
+        y_train=None,
     ):
         """Send scoring job to cluster.
 

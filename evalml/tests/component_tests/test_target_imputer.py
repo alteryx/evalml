@@ -92,20 +92,24 @@ def test_target_imputer_col_with_non_numeric_with_numeric_strategy():
     y = pd.Series([np.nan, "a", "b"] * 5)
     imputer = TargetImputer(impute_strategy="mean")
     with pytest.raises(
-        ValueError, match="Cannot use mean strategy with non-numeric data"
+        ValueError,
+        match="Cannot use mean strategy with non-numeric data",
     ):
         imputer.fit_transform(None, y)
     with pytest.raises(
-        ValueError, match="Cannot use mean strategy with non-numeric data"
+        ValueError,
+        match="Cannot use mean strategy with non-numeric data",
     ):
         imputer.fit(None, y)
     imputer = TargetImputer(impute_strategy="median")
     with pytest.raises(
-        ValueError, match="Cannot use median strategy with non-numeric data"
+        ValueError,
+        match="Cannot use median strategy with non-numeric data",
     ):
         imputer.fit_transform(None, y)
     with pytest.raises(
-        ValueError, match="Cannot use median strategy with non-numeric data"
+        ValueError,
+        match="Cannot use median strategy with non-numeric data",
     ):
         imputer.fit(None, y)
 
@@ -163,7 +167,9 @@ def test_target_imputer_does_not_reset_index():
     y.drop(0, inplace=True)
     pd.testing.assert_series_equal(
         pd.Series(
-            [1, 2, 3, 4, np.nan, 6, 7, 8, 9], dtype=float, index=list(range(1, 10))
+            [1, 2, 3, 4, np.nan, 6, 7, 8, 9],
+            dtype=float,
+            index=list(range(1, 10)),
         ),
         y,
     )
@@ -225,7 +231,9 @@ def test_target_imputer_with_none_non_numeric(y, y_expected):
 @pytest.mark.parametrize("has_nan", [True, False])
 @pytest.mark.parametrize("impute_strategy", ["mean", "median", "most_frequent"])
 def test_target_imputer_woodwork_custom_overrides_returned_by_components(
-    y_pd, has_nan, impute_strategy
+    y_pd,
+    has_nan,
+    impute_strategy,
 ):
     y_to_use = y_pd.copy()
     if has_nan:

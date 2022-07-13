@@ -1,6 +1,6 @@
 """Utility methods."""
-from .logger import get_logger, log_subtitle, log_title
-from .gen_utils import (
+from evalml.utils.logger import get_logger, log_subtitle, log_title
+from evalml.utils.gen_utils import (
     classproperty,
     import_or_raise,
     convert_to_seconds,
@@ -18,7 +18,7 @@ from .gen_utils import (
     _rename_column_names_to_numeric,
     deprecate_arg,
 )
-from .cli_utils import (
+from evalml.utils.cli_utils import (
     get_evalml_pip_requirements,
     get_evalml_root,
     get_installed_packages,
@@ -28,7 +28,7 @@ from .cli_utils import (
     print_sys_info,
     standardize_format,
 )
-from .woodwork_utils import (
+from evalml.utils.woodwork_utils import (
     infer_feature_types,
     _convert_numeric_dataset_pandas,
     _schema_is_equal,

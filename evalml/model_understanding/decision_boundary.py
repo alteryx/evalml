@@ -154,7 +154,12 @@ def _find_data_between_ranges(data, ranges, top_k):
 
 
 def find_confusion_matrix_per_thresholds(
-    pipeline, X, y, n_bins=None, top_k=5, to_json=False
+    pipeline,
+    X,
+    y,
+    n_bins=None,
+    top_k=5,
+    to_json=False,
 ):
     """Gets the confusion matrix and histogram bins for each threshold as well as the best threshold per objective. Only works with Binary Classification Pipelines.
 
@@ -176,7 +181,8 @@ def find_confusion_matrix_per_thresholds(
         ValueError: If the pipeline isn't a binary classification pipeline or isn't yet fitted on data.
     """
     if not pipeline._is_fitted or not isinstance(
-        pipeline, BinaryClassificationPipeline
+        pipeline,
+        BinaryClassificationPipeline,
     ):
         raise ValueError("Expected a fitted binary classification pipeline")
     X = infer_feature_types(X)
@@ -209,7 +215,9 @@ def find_confusion_matrix_per_thresholds(
     data_ranges = _find_data_between_ranges(pos_preds, bins, top_k)
 
     conf_matrix_list, objective_dict = _find_confusion_matrix_objective_threshold(
-        pos_skew, neg_skew, bins
+        pos_skew,
+        neg_skew,
+        bins,
     )
     conf_matrix_list = np.array(conf_matrix_list)
     final_obj_dict = {k: v[0] for k, v in objective_dict.items()}

@@ -19,13 +19,15 @@ class DropRowsTransformer(Transformer):
 
     def __init__(self, indices_to_drop=None, random_seed=0):
         if indices_to_drop is not None and len(set(indices_to_drop)) != len(
-            indices_to_drop
+            indices_to_drop,
         ):
             raise ValueError("All input indices must be unique.")
         self.indices_to_drop = indices_to_drop
         parameters = {"indices_to_drop": self.indices_to_drop}
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):
@@ -54,14 +56,14 @@ class DropRowsTransformer(Transformer):
             if len(missing_X_indices):
                 raise ValueError(
                     "Indices [{}] do not exist in input features".format(
-                        list(missing_X_indices)
-                    )
+                        list(missing_X_indices),
+                    ),
                 )
             elif y_t is not None and len(missing_y_indices):
                 raise ValueError(
                     "Indices [{}] do not exist in input target".format(
-                        list(missing_y_indices)
-                    )
+                        list(missing_y_indices),
+                    ),
                 )
         return self
 

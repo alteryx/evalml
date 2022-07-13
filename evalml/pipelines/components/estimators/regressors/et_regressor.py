@@ -81,5 +81,7 @@ class ExtraTreesRegressor(Estimator):
 
         et_regressor = SKExtraTreesRegressor(random_state=random_seed, **parameters)
         super().__init__(
-            parameters=parameters, component_obj=et_regressor, random_seed=random_seed
+            parameters=parameters,
+            component_obj=et_regressor,
+            random_seed=random_seed,
         )

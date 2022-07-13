@@ -18,7 +18,9 @@ from evalml.problem_types import ProblemTypes
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_automl_allowed_component_graphs_no_component_graphs(
-    automl_type, X_y_binary, X_y_multi
+    automl_type,
+    X_y_binary,
+    X_y_multi,
 ):
     is_multiclass = automl_type == ProblemTypes.MULTICLASS
     X, y = X_y_multi if is_multiclass else X_y_binary
@@ -46,7 +48,7 @@ def test_automl_component_graphs_specified_component_graphs_binary(
         y_train=y,
         problem_type="binary",
         allowed_component_graphs={
-            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class],
         },
         optimize_thresholds=False,
         allowed_model_families=None,
@@ -84,8 +86,8 @@ def test_automl_component_graphs_specified_component_graphs_multi(
         problem_type="multiclass",
         allowed_component_graphs={
             "Mock Multiclass Classification Pipeline": [
-                dummy_classifier_estimator_class
-            ]
+                dummy_classifier_estimator_class,
+            ],
         },
         allowed_model_families=None,
         automl_algorithm="iterative",
@@ -111,7 +113,9 @@ def test_automl_component_graphs_specified_component_graphs_multi(
 
 
 def test_automl_component_graphs_specified_allowed_model_families_binary(
-    AutoMLTestEnv, X_y_binary, assert_allowed_pipelines_equal_helper
+    AutoMLTestEnv,
+    X_y_binary,
+    assert_allowed_pipelines_equal_helper,
 ):
     X, y = X_y_binary
     automl = AutoMLSearch(
@@ -126,7 +130,8 @@ def test_automl_component_graphs_specified_allowed_model_families_binary(
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.BINARY)
         for estimator in get_estimators(
-            ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST]
+            ProblemTypes.BINARY,
+            model_families=[ModelFamily.RANDOM_FOREST],
         )
     ]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -151,7 +156,8 @@ def test_automl_component_graphs_specified_allowed_model_families_binary(
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.BINARY)
         for estimator in get_estimators(
-            ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST]
+            ProblemTypes.BINARY,
+            model_families=[ModelFamily.RANDOM_FOREST],
         )
     ]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -164,7 +170,9 @@ def test_automl_component_graphs_specified_allowed_model_families_binary(
 
 
 def test_automl_component_graphs_specified_allowed_model_families_multi(
-    AutoMLTestEnv, X_y_multi, assert_allowed_pipelines_equal_helper
+    AutoMLTestEnv,
+    X_y_multi,
+    assert_allowed_pipelines_equal_helper,
 ):
     X, y = X_y_multi
     automl = AutoMLSearch(
@@ -178,7 +186,8 @@ def test_automl_component_graphs_specified_allowed_model_families_multi(
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.MULTICLASS)
         for estimator in get_estimators(
-            ProblemTypes.MULTICLASS, model_families=[ModelFamily.RANDOM_FOREST]
+            ProblemTypes.MULTICLASS,
+            model_families=[ModelFamily.RANDOM_FOREST],
         )
     ]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -202,7 +211,8 @@ def test_automl_component_graphs_specified_allowed_model_families_multi(
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.MULTICLASS)
         for estimator in get_estimators(
-            ProblemTypes.MULTICLASS, model_families=[ModelFamily.RANDOM_FOREST]
+            ProblemTypes.MULTICLASS,
+            model_families=[ModelFamily.RANDOM_FOREST],
         )
     ]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -215,7 +225,9 @@ def test_automl_component_graphs_specified_allowed_model_families_multi(
 
 
 def test_automl_component_graphs_init_allowed_both_not_specified_binary(
-    AutoMLTestEnv, X_y_binary, assert_allowed_pipelines_equal_helper
+    AutoMLTestEnv,
+    X_y_binary,
+    assert_allowed_pipelines_equal_helper,
 ):
     X, y = X_y_binary
     automl = AutoMLSearch(
@@ -237,14 +249,16 @@ def test_automl_component_graphs_init_allowed_both_not_specified_binary(
         automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set(
-        [p.model_family for p in expected_pipelines]
+        [p.model_family for p in expected_pipelines],
     )
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
 
 
 def test_automl_component_graphs_init_allowed_both_not_specified_multi(
-    AutoMLTestEnv, X_y_multi, assert_allowed_pipelines_equal_helper
+    AutoMLTestEnv,
+    X_y_multi,
+    assert_allowed_pipelines_equal_helper,
 ):
     X, y = X_y_multi
     automl = AutoMLSearch(
@@ -265,7 +279,7 @@ def test_automl_component_graphs_init_allowed_both_not_specified_multi(
         automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set(
-        [p.model_family for p in expected_pipelines]
+        [p.model_family for p in expected_pipelines],
     )
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
@@ -283,7 +297,7 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
         y_train=y,
         problem_type="binary",
         allowed_component_graphs={
-            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class],
         },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
         optimize_thresholds=False,
@@ -301,7 +315,7 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
     with env.test_context(score_return_value={automl.objective.name: 1}):
         automl.search()
     assert set(automl.allowed_model_families) == set(
-        [p.model_family for p in [dummy_binary_pipeline]]
+        [p.model_family for p in [dummy_binary_pipeline]],
     )
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
@@ -320,8 +334,8 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
         problem_type="multiclass",
         allowed_component_graphs={
             "Mock Multiclass Classification Pipeline": [
-                dummy_classifier_estimator_class
-            ]
+                dummy_classifier_estimator_class,
+            ],
         },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
         automl_algorithm="iterative",
@@ -338,7 +352,7 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
     with env.test_context(score_return_value={automl.objective.name: 1}):
         automl.search()
     assert set(automl.allowed_model_families) == set(
-        [p.model_family for p in [dummy_multiclass_pipeline]]
+        [p.model_family for p in [dummy_multiclass_pipeline]],
     )
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
@@ -378,7 +392,8 @@ def test_automl_allowed_component_graphs_search(
         automl.search()
 
     assert isinstance(
-        start_iteration_callback.call_args_list[0][0][0], expected_mock_class
+        start_iteration_callback.call_args_list[0][0][0],
+        expected_mock_class,
     )
     for i in range(1, 5):
         if problem_type == "binary":
@@ -399,7 +414,10 @@ def test_automl_oversampler_selection():
     X.ww.init(logical_types={"a": "Categorical"})
 
     sampler = get_best_sampler_for_data(
-        X, y, sampler_method="Oversampler", sampler_balanced_ratio=0.5
+        X,
+        y,
+        sampler_method="Oversampler",
+        sampler_balanced_ratio=0.5,
     )
 
     allowed_component_graph = {

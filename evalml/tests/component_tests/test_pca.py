@@ -11,7 +11,7 @@ from evalml.pipelines.components import PCA
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_pca_numeric(data_type, make_data_type):
     X = pd.DataFrame(
-        [[3, 0, 1, 6], [1, 2, 1, 6], [10, 2, 1, 6], [10, 2, 2, 5], [6, 2, 2, 5]]
+        [[3, 0, 1, 6], [1, 2, 1, 6], [10, 2, 1, 6], [10, 2, 2, 5], [6, 2, 2, 5]],
     )
     X = make_data_type(data_type, X)
     pca = PCA()
@@ -31,7 +31,7 @@ def test_pca_numeric(data_type, make_data_type):
 
 def test_pca_array():
     X = np.array(
-        [[3, 0, 1, 6], [1, 2, 1, 6], [10, 2, 1, 6], [10, 2, 2, 5], [6, 2, 2, 5]]
+        [[3, 0, 1, 6], [1, 2, 1, 6], [10, 2, 1, 6], [10, 2, 2, 5], [6, 2, 2, 5]],
     )
     pca = PCA()
     expected_X_t = pd.DataFrame(
@@ -57,7 +57,7 @@ def test_pca_invalid():
             [10, 2, 1, 6],
             [10, 2, 2, np.nan],
             [None, 2, 2, 5],
-        ]
+        ],
     )
     pca = PCA()
     with pytest.raises(ValueError, match="must be all numeric"):
@@ -70,14 +70,14 @@ def test_pca_invalid():
             [10, 2, 1, 6],
             [10, 2, 2, 23],
             [0, 2, 2, 5],
-        ]
+        ],
     )
     pca = PCA()
     with pytest.raises(ValueError, match="must be all numeric"):
         pca.fit_transform(X)
 
     X_ok = pd.DataFrame(
-        [[3, 0, 1, 6], [1, 2, 1, 6], [10, 2, 1, 6], [10, 2, 2, 5], [6, 2, 2, 5]]
+        [[3, 0, 1, 6], [1, 2, 1, 6], [10, 2, 1, 6], [10, 2, 2, 5], [6, 2, 2, 5]],
     )
     pca = PCA()
     pca.fit(X_ok)
@@ -93,7 +93,7 @@ def test_variance():
             [10, 2, 1, 12, 5, 6],
             [10, 6, 4, 4, 0, 1],
             [6, 8, 9, 3, 1, 5],
-        ]
+        ],
     )
     pca = PCA(variance=0.97)
     expected_X_t = pd.DataFrame(
@@ -126,7 +126,7 @@ def test_n_components():
             [10, 2, 1, 12, 5, 6],
             [10, 6, 4, 4, 0, 1],
             [6, 8, 9, 3, 1, 5],
-        ]
+        ],
     )
     pca = PCA(n_components=5)
     X_t = pca.fit_transform(X)
@@ -159,5 +159,5 @@ def test_pca_woodwork_custom_overrides_returned_by_components(X_df):
         transformed = pca.transform(X_df, y)
         assert isinstance(transformed, pd.DataFrame)
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            "component_0": ww.logical_types.Double
+            "component_0": ww.logical_types.Double,
         }

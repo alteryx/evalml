@@ -4,10 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.model_understanding import (
-    get_influential_features,
-    readable_explanation,
-)
+from evalml.model_understanding import get_influential_features, readable_explanation
 from evalml.pipelines import BinaryClassificationPipeline
 
 
@@ -31,7 +28,7 @@ def test_get_influential_features():
                 "negative influence",
             ],
             "importance": [0.6, 0.1, 0.0, -0.1],
-        }
+        },
     )
     heavy, somewhat, negative = get_influential_features(importance_df)
     assert heavy == ["heavy influence"]
@@ -44,7 +41,7 @@ def test_get_influential_features_max_features():
         {
             "feature": ["heavy 1", "heavy 2", "heavy 3", "somewhat 1", "somewhat 2"],
             "importance": [0.35, 0.3, 0.23, 0.15, 0.07],
-        }
+        },
     )
     heavy, somewhat, negative = get_influential_features(importance_df, max_features=2)
     assert heavy == ["heavy 1", "heavy 2"]
@@ -62,7 +59,7 @@ def test_get_influential_features_max_features_ignore_negative():
         {
             "feature": ["heavy 1", "heavy 2", "heavy 3", "neg 1", "neg 2", "neg 3"],
             "importance": [0.35, 0.3, 0.23, -0.15, -0.17, -0.43],
-        }
+        },
     )
     heavy, somewhat, negative = get_influential_features(importance_df, max_features=2)
     assert heavy == ["heavy 1", "heavy 2"]
@@ -72,7 +69,7 @@ def test_get_influential_features_max_features_ignore_negative():
 
 def test_get_influential_features_lower_min_importance_threshold():
     importance_df = pd.DataFrame(
-        {"feature": np.arange(100), "importance": [0.1] * 25 + [0.05] * 75}
+        {"feature": np.arange(100), "importance": [0.1] * 25 + [0.05] * 75},
     )
     heavy, somewhat, negative = get_influential_features(importance_df)
     assert heavy == []
@@ -80,7 +77,8 @@ def test_get_influential_features_lower_min_importance_threshold():
     assert negative == []
 
     heavy, somewhat, negative = get_influential_features(
-        importance_df, min_importance_threshold=0.01
+        importance_df,
+        min_importance_threshold=0.01,
     )
     assert heavy == []
     assert somewhat == [0, 1, 2, 3, 4]
@@ -89,7 +87,7 @@ def test_get_influential_features_lower_min_importance_threshold():
 
 def test_get_influential_features_higher_min_importance_threshold():
     importance_df = pd.DataFrame(
-        {"feature": np.arange(5), "importance": [0.55, 0.201, 0.15, 0.075, 0.024]}
+        {"feature": np.arange(5), "importance": [0.55, 0.201, 0.15, 0.075, 0.024]},
     )
     heavy, somewhat, negative = get_influential_features(importance_df)
     assert heavy == [0, 1]
@@ -97,7 +95,8 @@ def test_get_influential_features_higher_min_importance_threshold():
     assert negative == []
 
     heavy, somewhat, negative = get_influential_features(
-        importance_df, min_importance_threshold=0.15
+        importance_df,
+        min_importance_threshold=0.15,
     )
     assert heavy == [0]
     assert somewhat == [1, 2]
@@ -106,7 +105,7 @@ def test_get_influential_features_higher_min_importance_threshold():
 
 def test_get_influential_features_heavy_threshold():
     importance_df = pd.DataFrame(
-        {"feature": np.arange(5), "importance": [0.52, 0.2, 0.15, 0.09, 0.04]}
+        {"feature": np.arange(5), "importance": [0.52, 0.2, 0.15, 0.09, 0.04]},
     )
     heavy, somewhat, _ = get_influential_features(importance_df)
     assert heavy == [0, 1]
@@ -114,21 +113,24 @@ def test_get_influential_features_heavy_threshold():
 
     # Lowering the min threshold doesn't lower the heavy threshold
     heavy, somewhat, _ = get_influential_features(
-        importance_df, min_importance_threshold=0.01
+        importance_df,
+        min_importance_threshold=0.01,
     )
     assert heavy == [0, 1]
     assert somewhat == [2, 3, 4]
 
     # Raising the threshold a little won't change the heavy threshold
     heavy, somewhat, _ = get_influential_features(
-        importance_df, min_importance_threshold=0.1
+        importance_df,
+        min_importance_threshold=0.1,
     )
     assert heavy == [0, 1]
     assert somewhat == [2]
 
     # Raising the threshold when there's a conflict will change the heavy threshold
     heavy, somewhat, _ = get_influential_features(
-        importance_df, min_importance_threshold=0.2
+        importance_df,
+        min_importance_threshold=0.2,
     )
     assert heavy == [0]
     assert somewhat == [1]
@@ -144,10 +146,11 @@ def test_get_influential_features_linear_importance():
                 "zero influence",
             ],
             "importance": [0.6, -0.2, 0.1, 0.0],
-        }
+        },
     )
     heavy, somewhat, negative = get_influential_features(
-        importance_df, linear_importance=True
+        importance_df,
+        linear_importance=True,
     )
     assert heavy == ["heavy influence", "negative influence"]
     assert somewhat == ["somewhat influence"]
@@ -159,7 +162,7 @@ def test_get_influential_features_on_boundaries():
         {
             "feature": ["heavy 1", "heavy 2", "heavy 3", "somewhat 1", "somewhat 2"],
             "importance": [0.5, 0.2, 0.2, 0.05, 0.05],
-        }
+        },
     )
     heavy, somewhat, negative = get_influential_features(importance_df)
     assert heavy == ["heavy 1", "heavy 2", "heavy 3"]
@@ -189,17 +192,20 @@ def test_readable_explanation_missing_X_y(elasticnet_component_graph, fraud_100)
     pipeline._is_fitted = True
 
     with pytest.raises(
-        ValueError, match="required parameters for explaining pipelines"
+        ValueError,
+        match="required parameters for explaining pipelines",
     ):
         readable_explanation(pipeline)
 
     with pytest.raises(
-        ValueError, match="required parameters for explaining pipelines"
+        ValueError,
+        match="required parameters for explaining pipelines",
     ):
         readable_explanation(pipeline, X)
 
     with pytest.raises(
-        ValueError, match="required parameters for explaining pipelines"
+        ValueError,
+        match="required parameters for explaining pipelines",
     ):
         readable_explanation(pipeline, y=y)
 
@@ -217,21 +223,26 @@ def test_readable_explanation_invalid_min_threshold(elasticnet_component_graph):
     pipeline._is_fitted = True
 
     with pytest.raises(
-        ValueError, match="minimum importance threshold must be a percentage"
+        ValueError,
+        match="minimum importance threshold must be a percentage",
     ):
         readable_explanation(pipeline, min_importance_threshold=-1)
 
     with pytest.raises(
-        ValueError, match="minimum importance threshold must be a percentage"
+        ValueError,
+        match="minimum importance threshold must be a percentage",
     ):
         readable_explanation(pipeline, min_importance_threshold=2)
 
 
 @patch(
-    "evalml.model_understanding.feature_explanations.calculate_permutation_importance"
+    "evalml.model_understanding.feature_explanations.calculate_permutation_importance",
 )
 def test_readable_explanation_permutation(
-    mock_permutation_importance, caplog, elasticnet_component_graph, fraud_100
+    mock_permutation_importance,
+    caplog,
+    elasticnet_component_graph,
+    fraud_100,
 ):
     pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     X, y = fraud_100
@@ -241,7 +252,7 @@ def test_readable_explanation_permutation(
         {
             "feature": ["lng", "customer_present", "lat", "card_id"],
             "importance": [0.55, -0.1, -0.2, -0.3],
-        }
+        },
     )
     readable_explanation(pipeline, X, y, importance_method="permutation")
 
@@ -255,17 +266,20 @@ def test_readable_explanation_permutation(
 
 
 @patch(
-    "evalml.model_understanding.feature_explanations.calculate_permutation_importance"
+    "evalml.model_understanding.feature_explanations.calculate_permutation_importance",
 )
 def test_readable_explanation_different_objective(
-    mock_permutation_importance, caplog, elasticnet_component_graph, fraud_100
+    mock_permutation_importance,
+    caplog,
+    elasticnet_component_graph,
+    fraud_100,
 ):
     pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     X, y = fraud_100
     pipeline._is_fitted = True
 
     mock_permutation_importance.return_value = pd.DataFrame(
-        {"feature": [], "importance": []}
+        {"feature": [], "importance": []},
     )
     readable_explanation(pipeline, X, y, objective="precision")
 
@@ -294,7 +308,7 @@ def test_readable_explanation_feature(caplog, elasticnet_component_graph, fraud_
 
 
 @patch(
-    "evalml.model_understanding.feature_explanations.calculate_permutation_importance"
+    "evalml.model_understanding.feature_explanations.calculate_permutation_importance",
 )
 @patch("evalml.pipelines.PipelineBase.feature_importance", new_callable=PropertyMock)
 def test_readable_explanation_sentence_beginning(
@@ -309,10 +323,10 @@ def test_readable_explanation_sentence_beginning(
     pipeline._is_fitted = True
 
     mock_permutation_importance.return_value = pd.DataFrame(
-        {"feature": [], "importance": []}
+        {"feature": [], "importance": []},
     )
     mock_feature_importance.return_value = pd.DataFrame(
-        {"feature": [], "importance": []}
+        {"feature": [], "importance": []},
     )
 
     # Objective is not None, target is not None
@@ -347,7 +361,9 @@ def test_readable_explanation_sentence_beginning(
 
 @patch("evalml.pipelines.PipelineBase.feature_importance", new_callable=PropertyMock)
 def test_readable_explanation_somewhat_important_features(
-    mock_feature_importance, elasticnet_component_graph, caplog
+    mock_feature_importance,
+    elasticnet_component_graph,
+    caplog,
 ):
     pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     pipeline._is_fitted = True
@@ -355,7 +371,7 @@ def test_readable_explanation_somewhat_important_features(
         {
             "feature": ["heavy 1", "somewhat 1", "somewhat 2", "somewhat 3"],
             "importance": [0.55, 0.17, 0.15, 0.13],
-        }
+        },
     )
 
     readable_explanation(pipeline, importance_method="feature")
@@ -370,7 +386,7 @@ def test_readable_explanation_somewhat_important_features(
         {
             "feature": ["heavy 1", "heavy 2", "heavy 3", "somewhat 1"],
             "importance": [0.32, 0.3, 0.23, 0.15],
-        }
+        },
     )
     readable_explanation(pipeline, importance_method="feature")
     expected_somewhat = "is somewhat influenced by somewhat 1."
@@ -380,10 +396,13 @@ def test_readable_explanation_somewhat_important_features(
 
 
 @patch(
-    "evalml.model_understanding.feature_explanations.calculate_permutation_importance"
+    "evalml.model_understanding.feature_explanations.calculate_permutation_importance",
 )
 def test_readable_explanation_detrimental_features(
-    mock_permutation_importance, caplog, elasticnet_component_graph, fraud_100
+    mock_permutation_importance,
+    caplog,
+    elasticnet_component_graph,
+    fraud_100,
 ):
     pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     X, y = fraud_100
@@ -398,7 +417,7 @@ def test_readable_explanation_detrimental_features(
                 "detrimental 1",
             ],
             "importance": [0.55, 0.17, 0.15, 0.13, -0.1],
-        }
+        },
     )
     readable_explanation(pipeline, X, y)
     expected_detrimental = "The feature detrimental 1 detracted from model performance. We suggest removing this feature"
@@ -410,7 +429,7 @@ def test_readable_explanation_detrimental_features(
         {
             "feature": ["heavy 1", "somewhat 1", "detrimental 1", "detrimental 2"],
             "importance": [0.55, 0.13, -0.1, -0.25],
-        }
+        },
     )
     readable_explanation(pipeline, X, y)
     expected_detrimental = "The features detrimental 1 and detrimental 2 detracted from model performance. We suggest removing these features"
@@ -421,12 +440,14 @@ def test_readable_explanation_detrimental_features(
 
 @patch("evalml.pipelines.PipelineBase.feature_importance", new_callable=PropertyMock)
 def test_readable_explanation_neither_heavy_somewhat(
-    mock_feature_importance, elasticnet_component_graph, caplog
+    mock_feature_importance,
+    elasticnet_component_graph,
+    caplog,
 ):
     pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     pipeline._is_fitted = True
     mock_feature_importance.return_value = pd.DataFrame(
-        {"feature": np.arange(100), "importance": [0.1] * 25 + [0.05] * 75}
+        {"feature": np.arange(100), "importance": [0.1] * 25 + [0.05] * 75},
     )
 
     readable_explanation(pipeline, importance_method="feature")

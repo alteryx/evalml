@@ -74,14 +74,15 @@ def test_n_splits_passed_to_ts_splitting_data_check():
 
 
 @pytest.mark.parametrize(
-    "problem_config", [None, "missing_time_index", "missing_other_index"]
+    "problem_config",
+    [None, "missing_time_index", "missing_other_index"],
 )
 def test_search_data_check_error_timeseries(problem_config):
     X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
     problem_configuration = None
 
     dates = pd.date_range("2021-01-01", periods=29).append(
-        pd.date_range("2021-01-31", periods=1)
+        pd.date_range("2021-01-31", periods=1),
     )
     X["dates"] = dates
 

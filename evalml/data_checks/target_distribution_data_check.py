@@ -82,7 +82,7 @@ class TargetDistributionDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_IS_NONE,
                     details={},
-                ).to_dict()
+                ).to_dict(),
             )
             return messages
 
@@ -103,7 +103,7 @@ class TargetDistributionDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
                     details={"unsupported_type": y.ww.logical_type.type_string},
-                ).to_dict()
+                ).to_dict(),
             )
             return messages
 
@@ -132,9 +132,9 @@ class TargetDistributionDataCheck(DataCheck):
                                 "is_target": True,
                                 "transformation_strategy": "lognormal",
                             },
-                        )
+                        ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             )
         return messages
 

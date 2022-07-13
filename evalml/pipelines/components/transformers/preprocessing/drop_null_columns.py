@@ -20,14 +20,16 @@ class DropNullColumns(Transformer):
     def __init__(self, pct_null_threshold=1.0, random_seed=0, **kwargs):
         if pct_null_threshold < 0 or pct_null_threshold > 1:
             raise ValueError(
-                "pct_null_threshold must be a float between 0 and 1, inclusive."
+                "pct_null_threshold must be a float between 0 and 1, inclusive.",
             )
         parameters = {"pct_null_threshold": pct_null_threshold}
         parameters.update(kwargs)
 
         self._cols_to_drop = None
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):

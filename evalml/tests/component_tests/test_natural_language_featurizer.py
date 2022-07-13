@@ -32,13 +32,13 @@ def test_featurizer_only_text(text_df):
             "NUM_WORDS(col_2)",
             "POLARITY_SCORE(col_1)",
             "POLARITY_SCORE(col_2)",
-        ]
+        ],
     )
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 14
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
-        ww.logical_types.Double
+        ww.logical_types.Double,
     }
 
 
@@ -66,13 +66,13 @@ def test_featurizer_with_nontext(text_df):
             "POLARITY_SCORE(col_1)",
             "POLARITY_SCORE(col_2)",
             "col_3",
-        ]
+        ],
     )
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 15
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
-        ww.logical_types.Double
+        ww.logical_types.Double,
     }
 
 
@@ -103,14 +103,14 @@ def test_some_missing_col_names(text_df, caplog):
             "NUM_WORDS(col_2)",
             "POLARITY_SCORE(col_1)",
             "POLARITY_SCORE(col_2)",
-        ]
+        ],
     )
     tf.fit(X)
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 14
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
-        ww.logical_types.Double
+        ww.logical_types.Double,
     }
 
 
@@ -137,8 +137,8 @@ def test_invalid_text_column():
                 np.nan,
                 None,
                 "I'm happy again!!! lalalalalalalalalalala",
-            ]
-        }
+            ],
+        },
     )
     X = infer_feature_types(X, {"col_1": "NaturalLanguage"})
     tf = NaturalLanguageFeaturizer()
@@ -158,7 +158,7 @@ def test_no_null_output():
                 "I dreamed a dream in days gone by, when hope was high and life worth living Red, the blood of angry men - black, the dark of ages past",
                 ":)",
             ],
-        }
+        },
     )
     X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     tf = NaturalLanguageFeaturizer()
@@ -182,7 +182,7 @@ def test_index_col_names():
                 "\t\n\n\n\nWhat a glorious feelinggggggggggg, I'm happy again!!! lalalalalalalalalalala",
                 "\tIt is the music of a people who will NOT be slaves again!!!!!!!!!!!",
             ],
-        ]
+        ],
     )
     X = pd.DataFrame(X)
     X.ww.init(logical_types={0: "NaturalLanguage", 1: "NaturalLanguage"})
@@ -205,13 +205,13 @@ def test_index_col_names():
             "NUM_WORDS(1)",
             "POLARITY_SCORE(0)",
             "POLARITY_SCORE(1)",
-        ]
+        ],
     )
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 14
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
-        ww.logical_types.Double
+        ww.logical_types.Double,
     }
 
 
@@ -228,7 +228,7 @@ def test_float_col_names():
                 "I dreamed a dream in days gone by, when hope was high and life worth living",
                 "Red, the blood of angry men - black, the dark of ages past",
             ],
-        }
+        },
     )
     X.ww.init(logical_types={4.75: "NaturalLanguage", -1: "NaturalLanguage"})
     tf = NaturalLanguageFeaturizer()
@@ -249,13 +249,13 @@ def test_float_col_names():
             "NUM_WORDS(-1.0)",
             "POLARITY_SCORE(4.75)",
             "POLARITY_SCORE(-1.0)",
-        ]
+        ],
     )
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 14
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
-        ww.logical_types.Double
+        ww.logical_types.Double,
     }
 
 
@@ -272,7 +272,7 @@ def test_output_null():
                 "I dreamed a dream in days gone by, when hope was high and life worth living Red, the blood of angry men - black, the dark of ages past",
                 ":)",
             ],
-        }
+        },
     )
     X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     tf = NaturalLanguageFeaturizer()
@@ -288,8 +288,8 @@ def test_diversity_primitive_output():
                 "This is a very diverse string which does not contain any repeated words at all",
                 "Here here each each word word is is repeated repeated exactly exactly twice twice",
                 "A sentence sentence with just a little overlap here and there there there",
-            ]
-        }
+            ],
+        },
     )
     X.ww.init(logical_types={"diverse": "NaturalLanguage"})
     tf = NaturalLanguageFeaturizer()
@@ -308,15 +308,16 @@ def test_lsa_primitive_output():
                 "do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!",
                 "I dreamed a dream in days gone by, when hope was high and life worth living",
                 "Red, the blood of angry men - black, the dark of ages past",
-            ]
-        }
+            ],
+        },
     )
     X.ww.init(logical_types={"lsa": "NaturalLanguage"})
     tf = NaturalLanguageFeaturizer()
     tf.fit(X)
 
     expected_features = pd.DataFrame(
-        [[0.832, 0.0], [0.0, 1.0], [0.832, 0.0]], columns=["LSA(lsa)[0]", "LSA(lsa)[1]"]
+        [[0.832, 0.0], [0.0, 1.0], [0.832, 0.0]],
+        columns=["LSA(lsa)[0]", "LSA(lsa)[1]"],
     )
     X_t = tf.transform(X)
     cols = [col for col in X_t.columns if "LSA" in col]
@@ -329,7 +330,8 @@ def test_featurizer_custom_types(text_df):
     # if the output contains text features for col_2, then the natural language featurizer didn't pass the right
     # ww types to LSA, because LSA still thought col_2 was natural language even though the user said otherwise.
     X = infer_feature_types(
-        pd.DataFrame(text_df), {"col_1": "NaturalLanguage", "col_2": "categorical"}
+        pd.DataFrame(text_df),
+        {"col_1": "NaturalLanguage", "col_2": "categorical"},
     )
     tf = NaturalLanguageFeaturizer()
     tf.fit(X)
@@ -344,7 +346,7 @@ def test_featurizer_custom_types(text_df):
             "NUM_CHARACTERS(col_1)",
             "NUM_WORDS(col_1)",
             "POLARITY_SCORE(col_1)",
-        ]
+        ],
     )
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
@@ -370,8 +372,8 @@ def test_mean_characters_primitive_output():
                 "I'm singing in the rain! Just singing in the rain, what a glorious feeling, I'm happy again!",
                 "In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.",
                 "I'm gonna be the main event, like no king was before! I'm brushing up on looking down, I'm working on my ROAR!",
-            ]
-        }
+            ],
+        },
     )
     X.ww.init(logical_types={"mean_characters": "NaturalLanguage"})
     tf = NaturalLanguageFeaturizer()
@@ -393,8 +395,8 @@ def test_polarity_primitive_output():
                 "This is neutral.",
                 "Everything is bad. Nothing is happy, he hates milk and can't stand gross foods, we are being very negative.",
                 "Everything is awesome! Everything is cool when you're part of a team! He loves milk and cookies!",
-            ]
-        }
+            ],
+        },
     )
     X.ww.init(logical_types={"polarity": "NaturalLanguage"})
     tf = NaturalLanguageFeaturizer()
@@ -434,7 +436,7 @@ def test_natural_language_featurizer_does_not_modify_input_data(text_df):
             pd.Series(
                 ["this will be a natural language column because length", "yay", "hay"],
                 dtype="string",
-            )
+            ),
         ),
     ],
 )
@@ -480,8 +482,8 @@ def test_natural_language_featurizer_sets_max_depth_1(mock_dfs):
                 "This is neutral.",
                 "Everything is bad. Nothing is happy, he hates milk and can't stand gross foods, we are being very negative.",
                 "Everything is awesome! Everything is cool when you're part of a team! He loves milk and cookies!",
-            ]
-        }
+            ],
+        },
     )
     X.ww.init(logical_types={"polarity": "NaturalLanguage"})
     tf = NaturalLanguageFeaturizer()
@@ -508,7 +510,7 @@ def test_nan_allowed(nones):
                 "None",
                 "",
             ],
-        }
+        },
     )
     X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     tf = NaturalLanguageFeaturizer()
@@ -547,7 +549,7 @@ def test_multiple_nan_allowed(nones):
                 nones,
             ],
             "col_3": [1, 2, 3, 1],
-        }
+        },
     )
     X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     tf = NaturalLanguageFeaturizer()

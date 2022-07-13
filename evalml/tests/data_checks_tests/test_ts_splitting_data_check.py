@@ -1,10 +1,7 @@
 import pandas as pd
 import pytest
 
-from evalml.data_checks import (
-    DataCheckMessageCode,
-    TimeSeriesSplittingDataCheck,
-)
+from evalml.data_checks import DataCheckMessageCode, TimeSeriesSplittingDataCheck
 
 
 def test_time_series_splitting_data_check_raises_value_error():
@@ -16,7 +13,8 @@ def test_time_series_splitting_data_check_raises_value_error():
 
 
 @pytest.mark.parametrize(
-    "problem_type", ["time series binary", "time series multiclass"]
+    "problem_type",
+    ["time series binary", "time series multiclass"],
 )
 @pytest.mark.parametrize("is_valid", [True, False])
 def test_time_series_param_data_check(is_valid, problem_type):

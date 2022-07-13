@@ -14,7 +14,8 @@ def get_df(dates):
     reg_X["doubles"] = [i / 0.25 ** (i / 100) for i in range(len(dates))]
     reg_X["bools"] = [bool(min(1, i % 3)) for i in range(len(dates))]
     reg_X["cats"] = np.random.choice(
-        ["here", "there", "somewhere", "everywhere"], len(dates)
+        ["here", "there", "somewhere", "everywhere"],
+        len(dates),
     )
 
     reg_y = pd.Series([i for i in range(len(dates))])
@@ -23,7 +24,12 @@ def get_df(dates):
 
 
 def assert_features_and_length_equal(
-    X, y, X_output, y_output, error_dict, has_target=True
+    X,
+    y,
+    X_output,
+    y_output,
+    error_dict,
+    has_target=True,
 ):
     ww_payload = infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8)
 
@@ -52,10 +58,12 @@ def assert_features_and_length_equal(
     for each_date in rand_date:
         input_feat = X.loc[X["dates"] == each_date, set(X.columns) - {"dates"}].iloc[0]
         outout_feat = non_nan_X.loc[
-            non_nan_X["dates"] == each_date, set(non_nan_X.columns) - {"dates"}
+            non_nan_X["dates"] == each_date,
+            set(non_nan_X.columns) - {"dates"},
         ].iloc[0]
         pd.testing.assert_series_equal(
-            pd.Series(input_feat.values), pd.Series(outout_feat.values)
+            pd.Series(input_feat.values),
+            pd.Series(outout_feat.values),
         )
 
 
@@ -171,12 +179,14 @@ def test_ts_regularizer_X_only_equal_payload(y_passed, combination_of_faulty_dat
     )
 
     ts_regularizer_with_payload = TimeSeriesRegularizer(
-        time_index="dates", frequency_payload=ww_payload
+        time_index="dates",
+        frequency_payload=ww_payload,
     )
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
 
     X_output_payload, y_output_payload = ts_regularizer_with_payload.fit_transform(
-        X, y=y if y_passed else None
+        X,
+        y=y if y_passed else None,
     )
     X_output, y_output = ts_regularizer.fit_transform(X, y=y if y_passed else None)
 
@@ -185,7 +195,12 @@ def test_ts_regularizer_X_only_equal_payload(y_passed, combination_of_faulty_dat
 
     error_dict = ts_regularizer.error_dict
     assert_features_and_length_equal(
-        X, y, X_output, y_output, error_dict, has_target=True if y_passed else False
+        X,
+        y,
+        X_output,
+        y_output,
+        error_dict,
+        has_target=True if y_passed else False,
     )
     pd.testing.assert_frame_equal(X_output, X_output_payload)
     if y_passed:
@@ -193,7 +208,8 @@ def test_ts_regularizer_X_only_equal_payload(y_passed, combination_of_faulty_dat
 
 
 @pytest.mark.parametrize(
-    "duplicate_location", ["beginning", "middle", "end", "scattered", "continuous"]
+    "duplicate_location",
+    ["beginning", "middle", "end", "scattered", "continuous"],
 )
 def test_ts_regularizer_duplicate(
     duplicate_location,
@@ -225,7 +241,8 @@ def test_ts_regularizer_duplicate(
 
 
 @pytest.mark.parametrize(
-    "missing_location", ["beginning", "middle", "end", "scattered", "continuous"]
+    "missing_location",
+    ["beginning", "middle", "end", "scattered", "continuous"],
 )
 def test_ts_regularizer_missing(
     missing_location,
@@ -257,7 +274,8 @@ def test_ts_regularizer_missing(
 
 
 @pytest.mark.parametrize(
-    "uneven_location", ["beginning", "middle", "end", "scattered", "continuous"]
+    "uneven_location",
+    ["beginning", "middle", "end", "scattered", "continuous"],
 )
 def test_ts_regularizer_uneven(
     uneven_location,

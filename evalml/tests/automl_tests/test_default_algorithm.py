@@ -38,12 +38,21 @@ def test_default_algorithm_init(X_y_binary):
     assert algo.default_max_batches == 3
 
     algo = DefaultAlgorithm(
-        X, y, ProblemTypes.TIME_SERIES_BINARY, sampler_name, verbose=True
+        X,
+        y,
+        ProblemTypes.TIME_SERIES_BINARY,
+        sampler_name,
+        verbose=True,
     )
     assert algo.default_max_batches == 3
 
     algo = DefaultAlgorithm(
-        X, y, ProblemTypes.BINARY, sampler_name, verbose=True, ensembling=True
+        X,
+        y,
+        ProblemTypes.BINARY,
+        sampler_name,
+        verbose=True,
+        ensembling=True,
     )
     assert algo.default_max_batches == 4
 
@@ -59,7 +68,8 @@ def test_default_algorithm_search_parameters_error(X_y_binary):
     ]
 
     with pytest.raises(
-        ValueError, match="If search_parameters provided, must be of type dict"
+        ValueError,
+        match="If search_parameters provided, must be of type dict",
     ):
         DefaultAlgorithm(
             X,
@@ -148,7 +158,8 @@ def test_default_algorithm(
     final_batch = algo.next_batch()
     for pipeline in final_batch:
         if not isinstance(
-            pipeline.estimator, (ElasticNetClassifier, ElasticNetRegressor)
+            pipeline.estimator,
+            (ElasticNetClassifier, ElasticNetRegressor),
         ):
             assert pipeline.model_family not in naive_model_families
         if split == "split":
@@ -242,7 +253,9 @@ def test_evalml_algo_search_params(mock_get_names, X_y_binary):
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
 @patch("evalml.pipelines.components.OneHotEncoder._get_feature_provenance")
 def test_evalml_algo_search_hyperparameters(
-    mock_get_feature_provenance, mock_get_names, X_y_categorical_classification
+    mock_get_feature_provenance,
+    mock_get_names,
+    X_y_categorical_classification,
 ):
     X, y = X_y_categorical_classification
     X.ww.init()
@@ -414,7 +427,9 @@ def test_make_split_pipeline_categorical_only(X_y_binary):
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
 @patch("evalml.pipelines.components.OneHotEncoder._get_feature_provenance")
 def test_select_cat_cols(
-    mock_get_feature_provenance, mock_get_names, X_y_categorical_classification
+    mock_get_feature_provenance,
+    mock_get_names,
+    X_y_categorical_classification,
 ):
     X, y = X_y_categorical_classification
     X.ww.init()
@@ -535,7 +550,11 @@ def test_default_algorithm_allow_long_running_models_next_batch(
 )
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
 def test_default_algorithm_time_series(
-    mock_get_names, automl_type, ts_data, ts_data_binary, ts_data_multi
+    mock_get_names,
+    automl_type,
+    ts_data,
+    ts_data_binary,
+    ts_data_multi,
 ):
     if automl_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = ts_data_binary
@@ -554,11 +573,15 @@ def test_default_algorithm_time_series(
             "max_delay": 3,
             "delay_features": False,
             "forecast_horizon": 10,
-        }
+        },
     }
 
     algo = DefaultAlgorithm(
-        X, y, problem_type, sampler_name, search_parameters=search_parameters
+        X,
+        y,
+        problem_type,
+        sampler_name,
+        search_parameters=search_parameters,
     )
     naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
 
@@ -581,7 +604,8 @@ def test_default_algorithm_time_series(
     final_batch = algo.next_batch()
     for pipeline in final_batch:
         if not isinstance(
-            pipeline.estimator, (ElasticNetClassifier, ElasticNetRegressor)
+            pipeline.estimator,
+            (ElasticNetClassifier, ElasticNetRegressor),
         ):
             assert pipeline.model_family not in naive_model_families
         assert algo._tuners[pipeline.name]
@@ -616,7 +640,11 @@ def test_default_algorithm_time_series(
 )
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
 def test_default_algorithm_time_series_known_in_advance(
-    mock_get_names, automl_type, ts_data, ts_data_binary, ts_data_multi
+    mock_get_names,
+    automl_type,
+    ts_data,
+    ts_data_binary,
+    ts_data_multi,
 ):
     if automl_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = ts_data_binary
@@ -642,11 +670,15 @@ def test_default_algorithm_time_series_known_in_advance(
             "delay_features": False,
             "forecast_horizon": 10,
             "known_in_advance": known_in_advance,
-        }
+        },
     }
 
     algo = DefaultAlgorithm(
-        X, y, problem_type, sampler_name, search_parameters=search_parameters
+        X,
+        y,
+        problem_type,
+        sampler_name,
+        search_parameters=search_parameters,
     )
     naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
 
@@ -683,7 +715,8 @@ def test_default_algorithm_time_series_known_in_advance(
     final_batch = algo.next_batch()
     for pipeline in final_batch:
         if not isinstance(
-            pipeline.estimator, (ElasticNetClassifier, ElasticNetRegressor)
+            pipeline.estimator,
+            (ElasticNetClassifier, ElasticNetRegressor),
         ):
             assert pipeline.model_family not in naive_model_families
         assert algo._tuners[pipeline.name]
@@ -756,10 +789,15 @@ def test_default_algorithm_accept_features(mock_get_names, X_y_binary, split):
 
     es = ft.EntitySet()
     es = es.add_dataframe(
-        dataframe_name="X", dataframe=X_transform, index="index", make_index=True
+        dataframe_name="X",
+        dataframe=X_transform,
+        index="index",
+        make_index=True,
     )
     _, features = ft.dfs(
-        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["absolute"],
     )
 
     problem_type = ProblemTypes.BINARY
@@ -827,7 +865,11 @@ def test_default_algorithm_add_result_cache(X_y_binary):
 def test_default_algorithm_ensembling_off(X_y_binary):
     X, y = X_y_binary
     algo = DefaultAlgorithm(
-        X=X, y=y, problem_type="binary", sampler_name=None, ensembling=False
+        X=X,
+        y=y,
+        problem_type="binary",
+        sampler_name=None,
+        ensembling=False,
     )
 
     for i in range(10):
@@ -859,7 +901,7 @@ def test_default_algorithm_accepts_URL_email_features(
     }
     mock_url_get_feature_provenance.return_value = {"url": ["URL_TO_DOMAIN(url)"]}
     mock_email_get_feature_provenance.return_value = {
-        "email": ["EMAIL_ADDRESS_TO_DOMAIN(email)"]
+        "email": ["EMAIL_ADDRESS_TO_DOMAIN(email)"],
     }
 
     mock_get_names.return_value = [

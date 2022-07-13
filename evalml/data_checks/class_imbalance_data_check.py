@@ -38,26 +38,26 @@ class ClassImbalanceDataCheck(DataCheck):
         if threshold <= 0 or threshold > 0.5:
             raise ValueError(
                 "Provided threshold {} is not within the range (0, 0.5]".format(
-                    threshold
-                )
+                    threshold,
+                ),
             )
         self.threshold = threshold
         if min_samples <= 0:
             raise ValueError(
                 "Provided value min_samples {} is not greater than 0".format(
-                    min_samples
-                )
+                    min_samples,
+                ),
             )
         self.min_samples = min_samples
         if num_cv_folds < 0:
             raise ValueError(
-                "Provided number of CV folds {} is less than 0".format(num_cv_folds)
+                "Provided number of CV folds {} is less than 0".format(num_cv_folds),
             )
         self.cv_folds = num_cv_folds * 2
         if test_size is not None:
             if not (isinstance(test_size, (int, float)) and 0 < test_size <= 1):
                 raise ValueError(
-                    "Parameter test_size must be a number between 0 and less than or equal to 1"
+                    "Parameter test_size must be a number between 0 and less than or equal to 1",
                 )
             self.test_size = test_size
         else:
@@ -160,12 +160,13 @@ class ClassImbalanceDataCheck(DataCheck):
             messages.append(
                 DataCheckError(
                     message=error_msg.format(
-                        self.cv_folds, sorted(below_threshold_values)
+                        self.cv_folds,
+                        sorted(below_threshold_values),
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
                     details={"target_values": sorted(below_threshold_values)},
-                ).to_dict()
+                ).to_dict(),
             )
 
         counts = fold_counts / (fold_counts + fold_counts.values[0])
@@ -177,12 +178,13 @@ class ClassImbalanceDataCheck(DataCheck):
             messages.append(
                 DataCheckWarning(
                     message=warning_msg.format(
-                        self.threshold * 100, below_threshold_values
+                        self.threshold * 100,
+                        below_threshold_values,
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
                     details={"target_values": below_threshold_values},
-                ).to_dict()
+                ).to_dict(),
             )
         sample_counts = fold_counts.where(fold_counts < self.min_samples).dropna()
         if len(below_threshold) and len(sample_counts):
@@ -192,11 +194,13 @@ class ClassImbalanceDataCheck(DataCheck):
             messages.append(
                 DataCheckWarning(
                     message=warning_msg.format(
-                        self.threshold * 100, self.min_samples, severe_imbalance
+                        self.threshold * 100,
+                        self.min_samples,
+                        severe_imbalance,
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_SEVERE,
                     details={"target_values": severe_imbalance},
-                ).to_dict()
+                ).to_dict(),
             )
         return messages
