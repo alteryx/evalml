@@ -68,7 +68,7 @@ class ARIMARegressor(Estimator):
         max_d=2,
         max_q=5,
         seasonal=True,
-        sp=1,
+        sp="default",
         n_jobs=-1,
         random_seed=0,
         maxiter=10,
