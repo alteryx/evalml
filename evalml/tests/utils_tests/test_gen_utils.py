@@ -133,8 +133,12 @@ def test_get_random_seed_int():
     assert get_random_seed(SEED_BOUNDS.min_bound + 2) == SEED_BOUNDS.min_bound + 2
 
     # vectorize get_random_seed via a wrapper for easy evaluation
-    default_min_bound = inspect.signature(get_random_seed).parameters["min_bound"].default
-    default_max_bound = inspect.signature(get_random_seed).parameters["max_bound"].default
+    default_min_bound = (
+        inspect.signature(get_random_seed).parameters["min_bound"].default
+    )
+    default_max_bound = (
+        inspect.signature(get_random_seed).parameters["max_bound"].default
+    )
     assert default_min_bound == SEED_BOUNDS.min_bound
     assert default_max_bound == SEED_BOUNDS.max_bound
 
@@ -850,7 +854,9 @@ def test_time_series_pipeline_validates_holdout_data(
         assert result.error_codes[0] == ValidationErrorCode.INVALID_HOLDOUT_LENGTH
     else:
         assert result.error_messages[0] == gap_error
-        assert result.error_codes[0] == ValidationErrorCode.INVALID_HOLDOUT_GAP_SEPARATION
+        assert (
+            result.error_codes[0] == ValidationErrorCode.INVALID_HOLDOUT_GAP_SEPARATION
+        )
 
 
 def test_year_start_separated_by_gap():
