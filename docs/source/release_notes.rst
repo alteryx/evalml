@@ -28,12 +28,15 @@ Release Notes
         * Added the option to set the ``sp`` parameter for ARIMA models :pr:`3597`
         * Updated the CV split size of time series problems to match forecast horizon for improved performance :pr:`3616`
         * Added holdout set evaluation as part of AutoML search and pipeline ranking :pr:`3499`
+        * Added Dockerfile.arm and .dockerignore for python version and M1 testing
+        * Added ``test_gen_utils::in_container_arm64()`` fixture
     * Fixes
         * Fixed iterative graphs not appearing in documentation :pr:`3592`
         * Updated the ``load_diabetes()`` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`
         * Capped woodwork version at < 0.17.0 :pr:`3612`
         * Bump minimum scikit-optimize version to 0.9.0 `:pr:`3614`
         * Invalid target data checks involving regression and unsupported data types now produce a different ``DataCheckMessageCode`` :pr:`3630`
+        * Updated ``test_data_checks.py::test_data_checks_raises_value_errors_on_init`` - more lenient text check
     * Changes
         * Add pre-commit hooks for linting :pr:`3608`
         * Implemented a lower threshold and window size for the ``TimeSeriesRegularizer`` and ``DatetimeFormatDataCheck`` :pr:`3627`
@@ -42,6 +45,11 @@ Release Notes
     * Testing Changes
         * Pinned GraphViz version for Windows CI Test :pr:`3596`
         * Removed ``pytest.mark.skip_if_39`` pytest marker :pr:`3602` :pr:`3607`
+        * pytest==7.1.2
+
+.. warning::
+
+    **Breaking Changes**
         * Refactored test cases that iterate over all components to use ``pytest.mark.parametrise`` and changed the corresponding ``if...continue`` blocks to ``pytest.mark.xfail`` :pr:`3622`
 
 

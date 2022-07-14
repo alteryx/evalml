@@ -14,7 +14,7 @@ FROM --platform=linux/x86_64 python:$VERSION
 ARG DOCKER_ARM=1
 ARG TIMEOUT=1200
 
-RUN apt-get update && apt-get install -y graphviz && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y git graphviz && rm -rf /var/lib/apt/lists/*
 
 # Referenced in test_gen_utils.py to create a fixture, limiting chromium to a
 # single process.  This is needed for kaleido in a container on an M1
