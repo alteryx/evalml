@@ -5047,7 +5047,7 @@ def test_default_algorithm_uses_n_jobs(X_y_binary, AutoMLTestEnv):
     assert n_checked and n_feature_selector_checked
 
 
-def test_init_holdout_set(X_y_binary):
+def test_init_holdout_set(X_y_binary, caplog):
     X, y = X_y_binary
     X_train, X_holdout, y_train, y_holdout = split_data(X, y, "binary")
 
@@ -5080,8 +5080,13 @@ def test_init_holdout_set(X_y_binary):
         X_holdout=X_holdout,
         y_holdout=y_holdout,
         problem_type="binary",
+        verbose=True,
     )
     assert automl.passed_holdout_set is True
+    assert (
+        "AutoMLSearch will use the holdout set to score and rank pipelines."
+        in caplog.text
+    )
     assert_frame_equal(automl.X_holdout, X_holdout)
     assert_series_equal(automl.y_holdout, y_holdout)
 
@@ -5095,8 +5100,9 @@ def test_init_create_holdout_set(caplog):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", verbose=True)
     out = caplog.text
 
-    match_text = f"Dataset size is too small to create holdout set. Mininum dataset size is {AutoMLSearch._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X)} rows. AutoMLSearch will use mean CV score to rank pipelines."
+    match_text = f"Dataset size is too small to create holdout set. Mininum dataset size is {AutoMLSearch._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X)} rows. Holdout set evaluation is disabled."
     assert match_text in out
+    assert "AutoMLSearch will use mean CV score to rank pipelines." in out
     assert len(automl.X_train) == len(X)
     assert len(automl.y_train) == len(y)
     assert automl.X_holdout is None
@@ -5113,8 +5119,9 @@ def test_init_create_holdout_set(caplog):
 
     expected_holdout_size = int(automl._holdout_set_size * len(X))
     expected_train_size = int((1 - automl._holdout_set_size) * len(X))
-    match_text = f"Created a holdout dataset with {expected_holdout_size} rows. Training dataset has {expected_train_size} rows. AutoMLSearch will use the holdout set to score and rank pipelines."
+    match_text = f"Created a holdout dataset with {expected_holdout_size} rows. Training dataset has {expected_train_size} rows."
     assert match_text in out
+    assert "AutoMLSearch will use the holdout set to score and rank pipelines." in out
     assert len(automl.X_train) == expected_train_size
     assert len(automl.y_train) == expected_train_size
     assert len(automl.X_holdout) == expected_holdout_size
@@ -5135,7 +5142,7 @@ def test_init_create_holdout_set(caplog):
     )
     out = caplog.text
 
-    match_text = f"Holdout set evaluation is disabled. AutoMLSearch will use mean CV score to rank pipelines."
+    match_text = f"AutoMLSearch will use mean CV score to rank pipelines."
     assert match_text in out
     assert len(automl.X_train) == len(X)
     assert len(automl.y_train) == len(y)
@@ -5154,3 +5161,44 @@ def test_init_create_holdout_set(caplog):
             problem_type="binary",
             _holdout_set_size=-0.1,
         )
+
+
+# def test_holdout_scoring_error(
+#     X_y_binary,
+#     dummy_classifier_estimator_class,
+#     AutoMLTestEnv,
+#     caplog,
+# ):
+#     X, y = X_y_binary
+#     X_train, X_holdout, y_train, y_holdout = split_data(X, y, "binary")
+
+#     def raise_error_on_holdout(*args, **kwargs):
+#         # Raise a PipelineScoreError on holdout scoring, but not on the CV scoring
+#         score_X_input = args[0]
+#         if len(score_X_input) == len(X_holdout):
+#             return PipelineScoreError(
+#                 exceptions={"Log Loss Binary": (Exception(), [])},
+#                 scored_successfully={},
+#             )
+#         else:
+#             return {"Log Loss Binary": 3.12}
+
+
+#     automl = AutoMLSearch(
+#         X_train=X_train,
+#         y_train=y_train,
+#         X_holdout=X_holdout,
+#         y_holdout=y_holdout,
+#         problem_type="binary",
+#         max_iterations=2,
+#         allowed_component_graphs={
+#             "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class],
+#         },
+#         optimize_thresholds=False,
+#     )
+#     env = AutoMLTestEnv("binary")
+
+#     with env.test_context(mock_score_side_effect=raise_error_on_holdout):
+#         automl.search()
+
+#     automl.rankings
