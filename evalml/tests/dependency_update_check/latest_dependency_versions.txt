@@ -28,6 +28,6 @@ shap==0.41.0
 sktime==0.13.0
 statsmodels==0.13.2
 texttable==1.6.4
-vowpalwabbit==9.1.0
+vowpalwabbit==9.2.0
 woodwork==0.16.4
 xgboost==1.6.1
