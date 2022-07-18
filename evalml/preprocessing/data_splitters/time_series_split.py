@@ -53,11 +53,11 @@ class TimeSeriesSplit(BaseCrossValidator):
     """
 
     def __init__(
-        self, max_delay=0, gap=0, forecast_horizon=1, time_index=None, n_splits=3
+        self, max_delay=0, gap=0, forecast_horizon=None, time_index=None, n_splits=3
     ):
         self.max_delay = max_delay
         self.gap = gap
-        self.forecast_horizon = forecast_horizon
+        self.forecast_horizon = forecast_horizon if forecast_horizon else 1
         self.time_index = time_index
         self.n_splits = n_splits
         self._splitter = SkTimeSeriesSplit(
