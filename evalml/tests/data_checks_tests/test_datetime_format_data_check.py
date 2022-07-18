@@ -37,7 +37,7 @@ def get_uneven_error(col_name, ww_payload):
                     },
                 },
                 metadata={"is_target": True},
-            )
+            ),
         ],
     ).to_dict()
     return error
@@ -45,11 +45,14 @@ def get_uneven_error(col_name, ww_payload):
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize(
-    "issue", ["redundant", "missing", "uneven", "type_errors", None]
+    "issue",
+    ["redundant", "missing", "uneven", "type_errors", None],
 )
 @pytest.mark.parametrize("datetime_loc", [1, "X_index", "y_index"])
 def test_datetime_format_data_check_typeerror_uneven_intervals(
-    issue, input_type, datetime_loc
+    issue,
+    input_type,
+    datetime_loc,
 ):
     X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
 
@@ -61,17 +64,17 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
     if issue == "missing":
         # Skips 2021-01-25 and starts again at 2021-01-27, skipping a date and triggering the error
         dates = pd.date_range("2021-01-01", periods=25).append(
-            pd.date_range("2021-01-27", periods=5)
+            pd.date_range("2021-01-27", periods=5),
         )
     if issue == "uneven":
         dates = pd.DatetimeIndex(
             pd.date_range("2021-01-01", periods=6).append(
-                pd.date_range("2021-01-07", periods=24, freq="H")
-            )
+                pd.date_range("2021-01-07", periods=24, freq="H"),
+            ),
         )
     if issue == "redundant":
         dates = pd.date_range("2021-01-01", periods=29).append(
-            pd.date_range("2021-01-29", periods=1)
+            pd.date_range("2021-01-29", periods=1),
         )
 
     datetime_column = "index"
@@ -95,7 +98,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
                 message=f"Datetime information could not be found in the data, or was not in a supported datetime format.",
                 data_check_name=datetime_format_check_name,
                 message_code=DataCheckMessageCode.DATETIME_INFORMATION_NOT_FOUND,
-            ).to_dict()
+            ).to_dict(),
         ]
     else:
         if datetime_loc == "X_index":
@@ -133,7 +136,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
                     message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
                     data_check_name=datetime_format_check_name,
                     message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_INFERRED,
-                ).to_dict()
+                ).to_dict(),
             ]
 
 
@@ -413,7 +416,7 @@ def test_datetime_format_nan_data_check_error():
                 message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
             ).to_dict(),
             get_uneven_error("date", ww_payload),
-        ]
+        ],
     )
     assert dt_nan_check.validate(X, pd.Series()) == expected
 
@@ -428,7 +431,10 @@ def test_datetime_nan_check_ww():
     ww_input = pd.DataFrame(dates, columns=["dates"])
     ww_input.ww.init()
     ww_payload = infer_frequency(
-        ww_input["dates"], debug=True, window_length=5, threshold=0.8
+        ww_input["dates"],
+        debug=True,
+        window_length=5,
+        threshold=0.8,
     )
 
     expected = [

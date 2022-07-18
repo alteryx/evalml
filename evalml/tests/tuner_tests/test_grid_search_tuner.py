@@ -32,7 +32,8 @@ def test_grid_search_tuner_no_params(dummy_pipeline_hyperparameters_small):
 
 
 def test_grid_search_tuner_basic(
-    dummy_pipeline_hyperparameters, dummy_pipeline_hyperparameters_unicode
+    dummy_pipeline_hyperparameters,
+    dummy_pipeline_hyperparameters_unicode,
 ):
     tuner = GridSearchTuner(dummy_pipeline_hyperparameters)
     proposed_params = tuner.propose()
@@ -42,7 +43,7 @@ def test_grid_search_tuner_basic(
             "param b": 0.0,
             "param c": "option a",
             "param d": "option a",
-        }
+        },
     }
     tuner.add(proposed_params, 0.5)
 
@@ -54,7 +55,7 @@ def test_grid_search_tuner_basic(
             "param b": 0.0,
             "param c": "option a 💩",
             "param d": "option a",
-        }
+        },
     }
     tuner.add(proposed_params, 0.5)
 

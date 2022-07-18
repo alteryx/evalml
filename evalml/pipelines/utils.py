@@ -3,22 +3,15 @@ import copy
 
 from woodwork import logical_types
 
-from ..utils.gen_utils import contains_all_ts_parameters
-from . import (
+from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
+from evalml.model_family import ModelFamily
+from evalml.pipelines import (
+    ComponentGraph,
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline,
 )
-from .binary_classification_pipeline import BinaryClassificationPipeline
-from .multiclass_classification_pipeline import (
-    MulticlassClassificationPipeline,
-)
-from .pipeline_base import PipelineBase
-from .regression_pipeline import RegressionPipeline
-
-from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
-from evalml.model_family import ModelFamily
-from evalml.pipelines import ComponentGraph
+from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
     CatBoostRegressor,
@@ -50,14 +43,17 @@ from evalml.pipelines.components import (  # noqa: F401
     Undersampler,
     URLFeaturizer,
 )
-from evalml.pipelines.components.transformers.encoders.label_encoder import (
-    LabelEncoder,
-)
+from evalml.pipelines.components.transformers.encoders.label_encoder import LabelEncoder
 from evalml.pipelines.components.utils import (
     estimator_unable_to_handle_nans,
     get_estimators,
     handle_component_class,
 )
+from evalml.pipelines.multiclass_classification_pipeline import (
+    MulticlassClassificationPipeline,
+)
+from evalml.pipelines.pipeline_base import PipelineBase
+from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -65,6 +61,7 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.utils import infer_feature_types
+from evalml.utils.gen_utils import contains_all_ts_parameters
 
 
 def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None):
@@ -86,7 +83,8 @@ def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
 def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
     component = []
     all_nullable_cols = X.ww.select(
-        ["IntegerNullable", "AgeNullable", "BooleanNullable"], return_schema=True
+        ["IntegerNullable", "AgeNullable", "BooleanNullable"],
+        return_schema=True,
     ).columns
     nullable_target = isinstance(
         y.ww.logical_type,
@@ -104,7 +102,7 @@ def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
 def _get_drop_index_unknown(X, y, problem_type, estimator_class, sampler_name=None):
     component = []
     index_and_unknown_columns = list(
-        X.ww.select(["index", "unknown"], return_schema=True).columns
+        X.ww.select(["index", "unknown"], return_schema=True).columns,
     )
     if len(index_and_unknown_columns) > 0:
         component.append(DropColumns)
@@ -165,7 +163,7 @@ def _get_imputer(X, y, problem_type, estimator_class, sampler_name=None):
     }
 
     if len(input_logical_types.intersection(types_imputer_handles)) or len(
-        text_columns
+        text_columns,
     ):
         components.append(Imputer)
 
@@ -178,8 +176,9 @@ def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
     # The URL and EmailAddress Featurizers will create categorical columns
     categorical_cols = list(
         X.ww.select(
-            ["category", "URL", "EmailAddress", "BooleanNullable"], return_schema=True
-        ).columns
+            ["category", "URL", "EmailAddress", "BooleanNullable"],
+            return_schema=True,
+        ).columns,
     )
     if len(categorical_cols) > 0 and estimator_class not in {
         CatBoostClassifier,
@@ -216,7 +215,11 @@ def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_nam
 
 
 def _get_drop_nan_rows_transformer(
-    X, y, problem_type, estimator_class, sampler_name=None
+    X,
+    y,
+    problem_type,
+    estimator_class,
+    sampler_name=None,
 ):
     components = []
     if is_time_series(problem_type) and (
@@ -227,7 +230,11 @@ def _get_drop_nan_rows_transformer(
 
 
 def _get_preprocessing_components(
-    X, y, problem_type, estimator_class, sampler_name=None
+    X,
+    y,
+    problem_type,
+    estimator_class,
+    sampler_name=None,
 ):
     """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
@@ -333,7 +340,11 @@ def _make_pipeline_time_series(
         X_known_in_advance = None
 
     preprocessing_components = _get_preprocessing_components(
-        X_not_known_in_advance, y, problem_type, estimator, sampler_name
+        X_not_known_in_advance,
+        y,
+        problem_type,
+        estimator,
+        sampler_name,
     )
 
     if known_in_advance:
@@ -347,7 +358,7 @@ def _make_pipeline_time_series(
         preprocessing_components += [estimator]
 
     component_graph = PipelineBase._make_component_dict_from_component_list(
-        preprocessing_components
+        preprocessing_components,
     )
     base_class = _get_pipeline_base_class(problem_type)
     pipeline = base_class(component_graph, parameters=parameters)
@@ -360,17 +371,23 @@ def _make_pipeline_time_series(
         # the label encoder and time series featurizer will be correctly added to the
         # overall pipeline
         kina_preprocessing = [SelectColumns] + _get_preprocessing_components(
-            X_known_in_advance, y, ProblemTypes.REGRESSION, estimator, sampler_name
+            X_known_in_advance,
+            y,
+            ProblemTypes.REGRESSION,
+            estimator,
+            sampler_name,
         )
         kina_component_graph = PipelineBase._make_component_dict_from_component_list(
-            kina_preprocessing
+            kina_preprocessing,
         )
         need_drop_nan = estimator_unable_to_handle_nans(estimator)
         # Give the known-in-advance pipeline a different name to ensure that it does not have the
         # same name as the other pipeline. Otherwise there could be a clash in the sub_pipeline_names
         # dict below for some estimators that don't have a lot of preprocessing steps, e.g ARIMA
         kina_pipeline = base_class(
-            kina_component_graph, parameters=parameters, custom_name="Pipeline"
+            kina_component_graph,
+            parameters=parameters,
+            custom_name="Pipeline",
         )
         pipeline = _make_pipeline_from_multiple_graphs(
             [pipeline, kina_pipeline],
@@ -437,20 +454,30 @@ def make_pipeline(
         problem_type = handle_problem_types(problem_type)
         if estimator not in get_estimators(problem_type):
             raise ValueError(
-                f"{estimator.name} is not a valid estimator for problem type"
+                f"{estimator.name} is not a valid estimator for problem type",
             )
         if not is_classification(problem_type) and sampler_name is not None:
             raise ValueError(
-                f"Sampling is unsupported for problem_type {str(problem_type)}"
+                f"Sampling is unsupported for problem_type {str(problem_type)}",
             )
 
     if is_time_series(problem_type):
         pipeline = _make_pipeline_time_series(
-            X, y, estimator, problem_type, parameters, sampler_name, known_in_advance
+            X,
+            y,
+            estimator,
+            problem_type,
+            parameters,
+            sampler_name,
+            known_in_advance,
         )
     else:
         preprocessing_components = _get_preprocessing_components(
-            X, y, problem_type, estimator, sampler_name
+            X,
+            y,
+            problem_type,
+            estimator,
+            sampler_name,
         )
         extra_components_before = extra_components_before or []
         extra_components_after = extra_components_after or []
@@ -465,7 +492,7 @@ def make_pipeline(
         )
 
         component_graph = PipelineBase._make_component_dict_from_component_list(
-            complete_component_list
+            complete_component_list,
         )
         base_class = _get_pipeline_base_class(problem_type)
         pipeline = base_class(component_graph, parameters=parameters)
@@ -490,14 +517,15 @@ def generate_pipeline_code(element):
     code_strings = []
     if not isinstance(element, PipelineBase):
         raise ValueError(
-            "Element must be a pipeline instance, received {}".format(type(element))
+            "Element must be a pipeline instance, received {}".format(type(element)),
         )
     if isinstance(element.component_graph, dict):
         raise ValueError("Code generation for nonlinear pipelines is not supported yet")
     code_strings.append(
         "from {} import {}".format(
-            element.__class__.__module__, element.__class__.__name__
-        )
+            element.__class__.__module__,
+            element.__class__.__name__,
+        ),
     )
     code_strings.append(repr(element))
     return "\n".join(code_strings)
@@ -535,7 +563,11 @@ def _make_stacked_ensemble_pipeline(
         return f"{str(model_type)} Pipeline{idx} - {component_name}"
 
     def _set_cache_data(
-        cached_data, model_family, cached_component_instances, new_component_name, name
+        cached_data,
+        model_family,
+        cached_component_instances,
+        new_component_name,
+        name,
     ):
         # sets the new cached component dictionary using the cached data and model family information
         if len(cached_data) and model_family in list(cached_data.keys()):
@@ -560,8 +592,8 @@ def _make_stacked_ensemble_pipeline(
             {
                 "Stacked Ensemble Classifier": {
                     "n_jobs": n_jobs,
-                }
-            }
+                },
+            },
         )
         estimator = StackedEnsembleClassifier
         pipeline_name = "Stacked Ensemble Classification Pipeline"
@@ -569,7 +601,7 @@ def _make_stacked_ensemble_pipeline(
         parameters = {
             "Stacked Ensemble Regressor": {
                 "n_jobs": n_jobs,
-            }
+            },
         }
         estimator = StackedEnsembleRegressor
         pipeline_name = "Stacked Ensemble Regression Pipeline"
@@ -594,7 +626,9 @@ def _make_stacked_ensemble_pipeline(
         for name, component_list in pipeline.component_graph.component_dict.items():
             new_component_list = []
             new_component_name = _make_new_component_name(
-                model_family, name, model_family_idx
+                model_family,
+                name,
+                model_family_idx,
             )
 
             _set_cache_data(
@@ -612,7 +646,7 @@ def _make_stacked_ensemble_pipeline(
                     parameters[new_component_name] = pipeline.parameters.get(name, {})
                 elif isinstance(item, str) and item not in ["X", "y"]:
                     new_component_list.append(
-                        _make_new_component_name(model_family, item, model_family_idx)
+                        _make_new_component_name(model_family, item, model_family_idx),
                     )
                 elif isinstance(item, str) and item == "y":
                     if is_classification(problem_type):
@@ -623,7 +657,9 @@ def _make_stacked_ensemble_pipeline(
                     new_component_list.append(item)
                 if i != 0 and item.endswith(".y"):
                     ensemble_y = _make_new_component_name(
-                        model_family, item, model_family_idx
+                        model_family,
+                        item,
+                        model_family_idx,
                     )
             component_graph[new_component_name] = new_component_list
             final_component = new_component_name
@@ -709,7 +745,7 @@ def _make_pipeline_from_multiple_graphs(
         final_y_candidate = (
             None
             if not handle_component_class(
-                pipeline.component_graph.compute_order[-1]
+                pipeline.component_graph.compute_order[-1],
             ).modifies_target
             else _make_new_component_name(
                 component_pipeline_name,
@@ -722,7 +758,10 @@ def _make_pipeline_from_multiple_graphs(
         for name, component_list in pipeline.component_graph.component_dict.items():
             new_component_list = []
             new_component_name = _make_new_component_name(
-                component_pipeline_name, name, name_idx, sub_pipeline_name
+                component_pipeline_name,
+                name,
+                name_idx,
+                sub_pipeline_name,
             )
             first_x_component = (
                 pipeline.component_graph.compute_order[0]
@@ -737,12 +776,18 @@ def _make_pipeline_from_multiple_graphs(
                 elif isinstance(item, str) and item not in ["X", "y"]:
                     new_component_list.append(
                         _make_new_component_name(
-                            component_pipeline_name, item, name_idx, sub_pipeline_name
-                        )
+                            component_pipeline_name,
+                            item,
+                            name_idx,
+                            sub_pipeline_name,
+                        ),
                     )
                     if i != 0 and item.endswith(".y"):
                         final_y = _make_new_component_name(
-                            component_pipeline_name, item, name_idx, sub_pipeline_name
+                            component_pipeline_name,
+                            item,
+                            name_idx,
+                            sub_pipeline_name,
                         )
                 elif isinstance(item, str) and item == "y":
                     if is_classification(problem_type):
@@ -794,7 +839,7 @@ def make_pipeline_from_actions(problem_type, actions, problem_configuration=None
     for component in component_list:
         parameters[component.name] = component.parameters
     component_dict = PipelineBase._make_component_dict_from_component_list(
-        [component.name for component in component_list]
+        [component.name for component in component_list],
     )
     base_class = _get_pipeline_base_class(problem_type)
     if problem_configuration:
@@ -826,7 +871,7 @@ def _make_component_list_from_actions(actions):
                         frequency_payload=parameters["frequency_payload"],
                     ),
                     TimeSeriesImputer(),
-                ]
+                ],
             )
         elif action.action_code == DataCheckActionCode.DROP_COL:
             cols_to_drop.extend(action.metadata["columns"])
@@ -835,7 +880,7 @@ def _make_component_list_from_actions(actions):
             parameters = metadata.get("parameters", {})
             if metadata["is_target"]:
                 components.append(
-                    TargetImputer(impute_strategy=parameters["impute_strategy"])
+                    TargetImputer(impute_strategy=parameters["impute_strategy"]),
                 )
             else:
                 impute_strategies = parameters["impute_strategies"]
@@ -853,7 +898,9 @@ def _make_component_list_from_actions(actions):
 
 
 def make_pipeline_from_data_check_output(
-    problem_type, data_check_output, problem_configuration=None
+    problem_type,
+    data_check_output,
+    problem_configuration=None,
 ):
     """Creates a pipeline of components to address warnings and errors output from running data checks. Uses all default suggestions.
 
@@ -958,7 +1005,13 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, time_
 
 
 def rows_of_interest(
-    pipeline, X, y=None, threshold=None, epsilon=0.1, sort_values=True, types="all"
+    pipeline,
+    X,
+    y=None,
+    threshold=None,
+    epsilon=0.1,
+    sort_values=True,
+    types="all",
 ):
     """Get the row indices of the data that are closest to the threshold. Works only for binary classification problems and pipelines.
 
@@ -989,7 +1042,7 @@ def rows_of_interest(
     valid_types = ["incorrect", "correct", "true_positive", "true_negative", "all"]
     if types not in valid_types:
         raise ValueError(
-            "Invalid arg for 'types'! Must be one of {}".format(valid_types)
+            "Invalid arg for 'types'! Must be one of {}".format(valid_types),
         )
 
     if types != "all" and y is None:
@@ -1000,12 +1053,12 @@ def rows_of_interest(
         or not pipeline._is_fitted
     ):
         raise ValueError(
-            "Pipeline provided must be a fitted Binary Classification pipeline!"
+            "Pipeline provided must be a fitted Binary Classification pipeline!",
         )
 
     if threshold is not None and (threshold < 0 or threshold > 1):
         raise ValueError(
-            "Provided threshold {} must be between [0, 1]".format(threshold)
+            "Provided threshold {} must be between [0, 1]".format(threshold),
         )
 
     if threshold is None:

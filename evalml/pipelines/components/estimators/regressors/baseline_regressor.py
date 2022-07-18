@@ -33,7 +33,7 @@ class BaselineRegressor(Estimator):
     def __init__(self, strategy="mean", random_seed=0, **kwargs):
         if strategy not in ["mean", "median"]:
             raise ValueError(
-                "'strategy' parameter must equal either 'mean' or 'median'"
+                "'strategy' parameter must equal either 'mean' or 'median'",
             )
         parameters = {"strategy": strategy}
         parameters.update(kwargs)
@@ -41,7 +41,9 @@ class BaselineRegressor(Estimator):
         self._prediction_value = None
         self._num_features = None
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):

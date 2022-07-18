@@ -41,12 +41,14 @@ class SimpleImputer(Transformer):
         )
         self._all_null_cols = None
         super().__init__(
-            parameters=parameters, component_obj=imputer, random_seed=random_seed
+            parameters=parameters,
+            component_obj=imputer,
+            random_seed=random_seed,
         )
 
     def _drop_natural_language_columns(self, X):
         natural_language_columns = list(
-            X.ww.select(["NaturalLanguage"], return_schema=True).columns.keys()
+            X.ww.select(["NaturalLanguage"], return_schema=True).columns.keys(),
         )
         if natural_language_columns:
             X = X.ww.copy()
@@ -55,7 +57,7 @@ class SimpleImputer(Transformer):
 
     def _set_boolean_columns_to_categorical(self, X):
         boolean_columns = list(
-            X.ww.select(["Boolean"], return_schema=True).columns.keys()
+            X.ww.select(["Boolean"], return_schema=True).columns.keys(),
         )
         if boolean_columns:
             X = X.ww.copy()
@@ -85,10 +87,10 @@ class SimpleImputer(Transformer):
             [
                 is_categorical_actually_boolean(X, col)
                 for col in X.ww.select("Categorical")
-            ]
+            ],
         ):
             raise ValueError(
-                "SimpleImputer cannot handle dataframes with both boolean and categorical features.  Use Imputer instead."
+                "SimpleImputer cannot handle dataframes with both boolean and categorical features.  Use Imputer instead.",
             )
 
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]

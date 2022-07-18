@@ -8,7 +8,7 @@ from evalml.pipelines import RegressionPipeline
 
 def test_regression_init():
     clf = RegressionPipeline(
-        component_graph=["Imputer", "One Hot Encoder", "Random Forest Regressor"]
+        component_graph=["Imputer", "One Hot Encoder", "Random Forest Regressor"],
     )
     assert clf.parameters == {
         "Imputer": {
@@ -64,7 +64,10 @@ def test_regression_init():
 
 @pytest.mark.parametrize("target_type", ["category", "string", "bool"])
 def test_invalid_targets_regression_pipeline(
-    breast_cancer_local, wine_local, target_type, dummy_regression_pipeline
+    breast_cancer_local,
+    wine_local,
+    target_type,
+    dummy_regression_pipeline,
 ):
     X, y = wine_local
     if target_type == "category":
@@ -73,7 +76,8 @@ def test_invalid_targets_regression_pipeline(
         X, y = breast_cancer_local
         y = y.map({"malignant": False, "benign": True})
     with pytest.raises(
-        ValueError, match="Regression pipeline can only handle numeric target data"
+        ValueError,
+        match="Regression pipeline can only handle numeric target data",
     ):
         dummy_regression_pipeline.fit(X, y)
 

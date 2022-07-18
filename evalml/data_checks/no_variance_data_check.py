@@ -187,9 +187,9 @@ class NoVarianceDataCheck(DataCheck):
                             DataCheckActionCode.DROP_COL,
                             data_check_name=self.name,
                             metadata={"columns": zero_unique},
-                        )
+                        ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             )
         if one_unique:
             messages.append(
@@ -207,14 +207,14 @@ class NoVarianceDataCheck(DataCheck):
                             metadata={"columns": one_unique},
                         ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             )
         if one_unique_with_null:
             messages.append(
                 DataCheckWarning(
                     message=two_unique_with_null_message.format(
                         (", ").join(
-                            ["'{}'".format(str(col)) for col in one_unique_with_null]
+                            ["'{}'".format(str(col)) for col in one_unique_with_null],
                         ),
                     ),
                     data_check_name=self.name,
@@ -227,7 +227,7 @@ class NoVarianceDataCheck(DataCheck):
                             metadata={"columns": one_unique_with_null},
                         ),
                     ],
-                ).to_dict()
+                ).to_dict(),
             )
 
         if y is None:
@@ -248,7 +248,7 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
                     details={"columns": [y_name]},
-                ).to_dict()
+                ).to_dict(),
             )
 
         elif y_unique_count == 1:
@@ -258,7 +258,7 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
                     details={"columns": [y_name]},
-                ).to_dict()
+                ).to_dict(),
             )
 
         elif y_unique_count == 2 and not self._dropnan and y_any_null:
@@ -268,7 +268,7 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                     details={"columns": [y_name]},
-                ).to_dict()
+                ).to_dict(),
             )
 
         return messages

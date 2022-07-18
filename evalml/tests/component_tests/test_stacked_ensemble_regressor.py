@@ -83,7 +83,7 @@ def test_stacked_fit_predict_classification(
             stacked_input.append(f"{regressor.name}.x")
         stacked_input.append("y")
         component_graph["Stacked Ensembler"] = [
-            StackedEnsembleRegressor
+            StackedEnsembleRegressor,
         ] + stacked_input
         return RegressionPipeline(component_graph)
 
@@ -191,14 +191,14 @@ def test_ensembler_str_and_classes():
             "Imputer": ["Imputer", "X", "y"],
             "Log Transformer": ["Log Transformer", "X", "y"],
             "RF": ["Random Forest Regressor", "Imputer.x", "Log Transformer.y"],
-        }
+        },
     )
     reg_pl_2 = RegressionPipeline(
         {
             "Imputer": ["Imputer", "X", "y"],
             "Log Transformer": ["Log Transformer", "X", "y"],
             "EN": ["Elastic Net Regressor", "Imputer.x", "Log Transformer.y"],
-        }
+        },
     )
 
     ensemble_pipeline = _make_stacked_ensemble_pipeline(
@@ -212,14 +212,14 @@ def test_ensembler_str_and_classes():
             "Imputer": [Imputer, "X", "y"],
             "Log Transformer": [LogTransformer, "X", "y"],
             "RF": [RandomForestRegressor, "Imputer.x", "Log Transformer.y"],
-        }
+        },
     )
     reg_pl_2 = RegressionPipeline(
         {
             "Imputer": [Imputer, "X", "y"],
             "Log Transformer": [LogTransformer, "X", "y"],
             "EN": [ElasticNetRegressor, "Imputer.x", "Log Transformer.y"],
-        }
+        },
     )
 
     ensemble_pipeline = _make_stacked_ensemble_pipeline(
@@ -264,10 +264,10 @@ def test_ensembler_use_component_preds(
 
     assert ensemble_input.shape == (100, 2)
     assert ensemble_input["Linear Pipeline - Elastic Net Regressor.x"].equals(
-        pd.Series(np.zeros(len(y)))
+        pd.Series(np.zeros(len(y))),
     )
     assert ensemble_input["Random Forest Pipeline - Random Forest Regressor.x"].equals(
-        pd.Series(np.ones(len(y)))
+        pd.Series(np.ones(len(y))),
     )
 
 
@@ -284,8 +284,8 @@ def test_stacked_ensemble_cache_train_predict(
     hashes = hash(tuple(X.index))
     cache = {
         ModelFamily.RANDOM_FOREST: {
-            hashes: {"Impute": trained_imputer, "Random Forest Regressor": trained_rf}
-        }
+            hashes: {"Impute": trained_imputer, "Random Forest Regressor": trained_rf},
+        },
     }
 
     input_pipelines = [
@@ -294,7 +294,7 @@ def test_stacked_ensemble_cache_train_predict(
                 "Impute": [Imputer, "X", "y"],
                 "Random Forest Regressor": [RandomForestRegressor, "Impute.x", "y"],
             },
-        )
+        ),
     ]
 
     pl_cache = _make_stacked_ensemble_pipeline(

@@ -1,9 +1,10 @@
 """Cost-benefit matrix objective."""
 import numpy as np
 
-from .binary_classification_objective import BinaryClassificationObjective
-
 import evalml
+from evalml.objectives.binary_classification_objective import (
+    BinaryClassificationObjective,
+)
 
 
 class CostBenefitMatrix(BinaryClassificationObjective):
@@ -26,7 +27,7 @@ class CostBenefitMatrix(BinaryClassificationObjective):
     def __init__(self, true_positive, true_negative, false_positive, false_negative):
         if None in {true_positive, true_negative, false_positive, false_negative}:
             raise ValueError(
-                "Parameters to CostBenefitMatrix must all be numeric values."
+                "Parameters to CostBenefitMatrix must all be numeric values.",
             )
 
         self.true_positive = true_positive
@@ -47,13 +48,15 @@ class CostBenefitMatrix(BinaryClassificationObjective):
             float: Cost-benefit matrix score
         """
         conf_matrix = evalml.model_understanding.metrics.confusion_matrix(
-            y_true, y_predicted, normalize_method="all"
+            y_true,
+            y_predicted,
+            normalize_method="all",
         )
         cost_matrix = np.array(
             [
                 [self.true_negative, self.false_positive],
                 [self.false_negative, self.true_positive],
-            ]
+            ],
         )
 
         total_cost = np.multiply(conf_matrix.values, cost_matrix).sum()

@@ -82,7 +82,7 @@ def get_estimators(problem_type, model_families=None):
         if model_family not in all_model_families:
             raise RuntimeError(
                 "Unrecognized model type for problem type %s: %s"
-                % (problem_type, model_family)
+                % (problem_type, model_family),
             )
 
     estimator_classes = []
@@ -152,12 +152,12 @@ def handle_component_class(component_class):
         raise ValueError(
             (
                 "component_class may only contain str or ComponentBase subclasses, not '{}'"
-            ).format(type(component_class))
+            ).format(type(component_class)),
         )
     component_classes = {component.name: component for component in all_components()}
     if component_class not in component_classes:
         raise MissingComponentError(
-            'Component "{}" was not found'.format(component_class)
+            'Component "{}" was not found'.format(component_class),
         )
     component_class = component_classes[component_class]
     return component_class
@@ -317,19 +317,22 @@ def generate_component_code(element):
 
     if not isinstance(element, ComponentBase):
         raise ValueError(
-            "Element must be a component instance, received {}".format(type(element))
+            "Element must be a component instance, received {}".format(type(element)),
         )
 
     if element.__class__ in all_components():
         code_strings.append(
             "from {} import {}\n".format(
-                element.__class__.__module__, element.__class__.__name__
-            )
+                element.__class__.__module__,
+                element.__class__.__name__,
+            ),
         )
     component_parameters = element.parameters
     name = element.name[0].lower() + element.name[1:].replace(" ", "")
     base_string += "{0} = {1}(**{2})".format(
-        name, element.__class__.__name__, component_parameters
+        name,
+        element.__class__.__name__,
+        component_parameters,
     )
 
     code_strings.append(base_string)
@@ -359,7 +362,9 @@ def make_balancing_dictionary(y, sampling_ratio):
     """
     if sampling_ratio <= 0 or sampling_ratio > 1:
         raise ValueError(
-            "Sampling ratio must be in range (0, 1], received {}".format(sampling_ratio)
+            "Sampling ratio must be in range (0, 1], received {}".format(
+                sampling_ratio
+            ),
         )
     if len(y) == 0:
         raise ValueError("Target data must not be empty")

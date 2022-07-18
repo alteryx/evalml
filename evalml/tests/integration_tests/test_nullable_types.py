@@ -89,14 +89,14 @@ def test_imputer_can_impute_features_generated_from_null_email_url_features():
             "number": [1, None, 3, 4],
             "another number": [7, 8, 9, 10],
             "categorical": ["boo", "bar", "baz", "go"],
-        }
+        },
     )
     X.ww.init(
         logical_types={
             "email": "EmailAddress",
             "url": "URL",
             "categorical": "categorical",
-        }
+        },
     )
     y = pd.Series([1, 2, 1, 3])
 

@@ -6,12 +6,7 @@ import cloudpickle
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
-from evalml.utils import (
-    classproperty,
-    infer_feature_types,
-    log_subtitle,
-    safe_repr,
-)
+from evalml.utils import classproperty, infer_feature_types, log_subtitle, safe_repr
 from evalml.utils.logger import get_logger
 
 
@@ -136,7 +131,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             return self
         except AttributeError:
             raise MethodPropertyNotFoundError(
-                "Component requires a fit method or a component_obj that implements fit"
+                "Component requires a fit method or a component_obj that implements fit",
             )
 
     def describe(self, print_name=False, return_dict=False):
@@ -155,7 +150,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             log_subtitle(logger, title)
         for parameter in self.parameters:
             parameter_str = ("\t * {} : {}").format(
-                parameter, self.parameters[parameter]
+                parameter,
+                self.parameters[parameter],
             )
             logger.info(parameter_str)
         if return_dict:
@@ -206,6 +202,6 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def __repr__(self):
         """String representation of a component."""
         parameters_repr = ", ".join(
-            [f"{key}={safe_repr(value)}" for key, value in self.parameters.items()]
+            [f"{key}={safe_repr(value)}" for key, value in self.parameters.items()],
         )
         return f"{(type(self).__name__)}({parameters_repr})"

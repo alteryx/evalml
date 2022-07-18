@@ -35,7 +35,7 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(ProblemTypes.BINARY):
         raise ValueError(
-            "`binary_objective_vs_threshold` can only be calculated for binary classification objectives"
+            "`binary_objective_vs_threshold` can only be calculated for binary classification objectives",
         )
     if objective.score_needs_proba:
         raise ValueError("Objective `score_needs_proba` must be False")
@@ -66,7 +66,8 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     """
     _go = import_or_raise(
-        "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
+        "plotly.graph_objects",
+        error_msg="Cannot find dependency plotly.graph_objects",
     )
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
@@ -108,7 +109,7 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
     """
     if outlier_threshold and outlier_threshold <= 0:
         raise ValueError(
-            f"Threshold must be positive! Provided threshold is {outlier_threshold}"
+            f"Threshold must be positive! Provided threshold is {outlier_threshold}",
         )
 
     y_true = infer_feature_types(y_true)
@@ -146,14 +147,15 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
         ValueError: If threshold is not positive.
     """
     _go = import_or_raise(
-        "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
+        "plotly.graph_objects",
+        error_msg="Cannot find dependency plotly.graph_objects",
     )
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
 
     if outlier_threshold and outlier_threshold <= 0:
         raise ValueError(
-            f"Threshold must be positive! Provided threshold is {outlier_threshold}"
+            f"Threshold must be positive! Provided threshold is {outlier_threshold}",
         )
 
     df = get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold)
@@ -163,7 +165,7 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
     y_axis = _calculate_axis_range(df["actual"])
     x_y_line = [min(x_axis[0], y_axis[0]), max(x_axis[1], y_axis[1])]
     data.append(
-        _go.Scatter(x=x_y_line, y=x_y_line, name="y = x line", line_color="grey")
+        _go.Scatter(x=x_y_line, y=x_y_line, name="y = x line", line_color="grey"),
     )
 
     title = "Predicted vs Actual Values Scatter Plot"
@@ -187,7 +189,7 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
                 mode="markers",
                 marker=_go.scatter.Marker(color=color),
                 name=name,
-            )
+            ),
         )
     return _go.Figure(layout=layout, data=data)
 
@@ -209,7 +211,7 @@ def _tree_parse(est, feature_names):
                 "Value": values[i],
                 "Left_Child": recurse(children_left[i]),
                 "Right_Child": recurse(children_right[i]),
-            }
+            },
         )
 
     return recurse(0)
@@ -230,12 +232,12 @@ def decision_tree_data_from_estimator(estimator):
     """
     if not estimator.model_family == ModelFamily.DECISION_TREE:
         raise ValueError(
-            "Tree structure reformatting is only supported for decision tree estimators"
+            "Tree structure reformatting is only supported for decision tree estimators",
         )
     if not estimator._is_fitted:
         raise NotFittedError(
             "This DecisionTree estimator is not fitted yet. Call 'fit' with appropriate arguments "
-            "before using this estimator."
+            "before using this estimator.",
         )
     est = estimator._component_obj
     feature_names = estimator.input_feature_names
@@ -257,12 +259,12 @@ def decision_tree_data_from_pipeline(pipeline_):
     """
     if not pipeline_.model_family == ModelFamily.DECISION_TREE:
         raise ValueError(
-            "Tree structure reformatting is only supported for decision tree estimators"
+            "Tree structure reformatting is only supported for decision tree estimators",
         )
     if not pipeline_._is_fitted:
         raise NotFittedError(
             "The DecisionTree estimator associated with this pipeline is not fitted yet. Call 'fit' "
-            "with appropriate arguments before using this estimator."
+            "with appropriate arguments before using this estimator.",
         )
     est = pipeline_.estimator._component_obj
     feature_names = pipeline_.input_feature_names[pipeline_.estimator.name]
@@ -271,7 +273,11 @@ def decision_tree_data_from_pipeline(pipeline_):
 
 
 def visualize_decision_tree(
-    estimator, max_depth=None, rotate=False, filled=False, filepath=None
+    estimator,
+    max_depth=None,
+    rotate=False,
+    filled=False,
+    filepath=None,
 ):
     """Generate an image visualizing the decision tree.
 
@@ -291,23 +297,24 @@ def visualize_decision_tree(
     """
     if not estimator.model_family == ModelFamily.DECISION_TREE:
         raise ValueError(
-            "Tree visualizations are only supported for decision tree estimators"
+            "Tree visualizations are only supported for decision tree estimators",
         )
     if max_depth and (not isinstance(max_depth, int) or not max_depth >= 0):
         raise ValueError(
             "Unknown value: '{}'. The parameter max_depth has to be a non-negative integer".format(
-                max_depth
-            )
+                max_depth,
+            ),
         )
     if not estimator._is_fitted:
         raise NotFittedError(
-            "This DecisionTree estimator is not fitted yet. Call 'fit' with appropriate arguments before using this estimator."
+            "This DecisionTree estimator is not fitted yet. Call 'fit' with appropriate arguments before using this estimator.",
         )
 
     est = estimator._component_obj
 
     graphviz = import_or_raise(
-        "graphviz", error_msg="Please install graphviz to visualize trees."
+        "graphviz",
+        error_msg="Please install graphviz to visualize trees.",
     )
 
     graph_format = None
@@ -319,7 +326,7 @@ def visualize_decision_tree(
             f.close()
         except (IOError, FileNotFoundError):
             raise ValueError(
-                ("Specified filepath is not writeable: {}".format(filepath))
+                ("Specified filepath is not writeable: {}".format(filepath)),
             )
         path_and_name, graph_format = os.path.splitext(filepath)
         if graph_format:
@@ -330,7 +337,7 @@ def visualize_decision_tree(
                     (
                         "Unknown format '{}'. Make sure your format is one of the "
                         + "following: {}"
-                    ).format(graph_format, supported_filetypes)
+                    ).format(graph_format, supported_filetypes),
                 )
         else:
             graph_format = "pdf"  # If the filepath has no extension default to pdf
@@ -371,7 +378,7 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, X_train, y_train, da
             "dates": dates.reset_index(drop=True),
             "target": y.reset_index(drop=True),
             "prediction": prediction.reset_index(drop=True),
-        }
+        },
     )
 
 
@@ -393,17 +400,23 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, X_train, y_train, dates
         ValueError: If the pipeline is not a time-series regression pipeline.
     """
     _go = import_or_raise(
-        "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
+        "plotly.graph_objects",
+        error_msg="Cannot find dependency plotly.graph_objects",
     )
 
     if pipeline.problem_type != ProblemTypes.TIME_SERIES_REGRESSION:
         raise ValueError(
             "graph_prediction_vs_actual_over_time only supports time series regression pipelines! "
-            f"Received {str(pipeline.problem_type)}."
+            f"Received {str(pipeline.problem_type)}.",
         )
 
     data = get_prediction_vs_actual_over_time_data(
-        pipeline, X, y, X_train, y_train, dates
+        pipeline,
+        X,
+        y,
+        X_train,
+        y_train,
+        dates,
     )
 
     data = [
@@ -448,19 +461,19 @@ def get_linear_coefficients(estimator, features=None):
     """
     if not estimator.model_family == ModelFamily.LINEAR_MODEL:
         raise ValueError(
-            "Linear coefficients are only available for linear family models"
+            "Linear coefficients are only available for linear family models",
         )
     if not estimator._is_fitted:
         raise NotFittedError(
             "This linear estimator is not fitted yet. Call 'fit' with appropriate arguments "
-            "before using this estimator."
+            "before using this estimator.",
         )
     coef_ = estimator.feature_importance
     coef_.name = "Coefficients"
     coef_.index = features
     coef_ = coef_.sort_values()
     coef_ = pd.Series(estimator._component_obj.intercept_, index=["Intercept"]).append(
-        coef_
+        coef_,
     )
 
     return coef_
@@ -492,7 +505,7 @@ def t_sne(
     """
     if not isinstance(n_components, int) or not n_components > 0:
         raise ValueError(
-            "The parameter n_components must be of type integer and greater than 0"
+            "The parameter n_components must be of type integer and greater than 0",
         )
     if not perplexity >= 0:
         raise ValueError("The parameter perplexity must be non-negative")
@@ -538,7 +551,8 @@ def graph_t_sne(
         ValueError: If marker_line_width or marker_size are not valid values.
     """
     _go = import_or_raise(
-        "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
+        "plotly.graph_objects",
+        error_msg="Cannot find dependency plotly.graph_objects",
     )
 
     if not marker_line_width >= 0:
@@ -558,7 +572,9 @@ def graph_t_sne(
     fig = _go.Figure()
     fig.add_trace(_go.Scatter(x=X_embedded[:, 0], y=X_embedded[:, 1], mode="markers"))
     fig.update_traces(
-        mode="markers", marker_line_width=marker_line_width, marker_size=marker_size
+        mode="markers",
+        marker_line_width=marker_line_width,
+        marker_size=marker_size,
     )
     fig.update_layout(title="t-SNE", yaxis_zeroline=False, xaxis_zeroline=False)
 

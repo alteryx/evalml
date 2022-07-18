@@ -98,7 +98,14 @@ class EngineBase(ABC):
 
     @abstractmethod
     def submit_scoring_job(
-        self, automl_config, pipeline, X, y, objectives, X_train=None, y_train=None
+        self,
+        automl_config,
+        pipeline,
+        X,
+        y,
+        objectives,
+        X_train=None,
+        y_train=None,
     ):
         """Submit job for pipeline scoring."""
 
@@ -168,7 +175,11 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False)
 
 
 def train_and_score_pipeline(
-    pipeline, automl_config, full_X_train, full_y_train, logger
+    pipeline,
+    automl_config,
+    full_X_train,
+    full_y_train,
+    logger,
 ):
     """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores.
 
@@ -194,7 +205,7 @@ def train_and_score_pipeline(
         y_mapping = {
             original_target: encoded_target
             for (encoded_target, original_target) in enumerate(
-                full_y_train.value_counts().index
+                full_y_train.value_counts().index,
             )
         }
         full_y_train = ww.init_series(full_y_train.map(y_mapping))
@@ -202,7 +213,7 @@ def train_and_score_pipeline(
     pipeline_cache = {}
 
     for i, (train, valid) in enumerate(
-        automl_config.data_splitter.split(full_X_train, full_y_train)
+        automl_config.data_splitter.split(full_X_train, full_y_train),
     ):
         logger.debug(f"\t\tTraining and scoring on fold {i}")
         X_train, X_valid = full_X_train.ww.iloc[train], full_X_train.ww.iloc[valid]
@@ -226,7 +237,7 @@ def train_and_score_pipeline(
             if diff_string:
                 raise Exception(diff_string)
         objectives_to_score = [
-            automl_config.objective
+            automl_config.objective,
         ] + automl_config.additional_objectives
         try:
             logger.debug(f"\t\t\tFold {i}: starting training")
@@ -245,7 +256,7 @@ def train_and_score_pipeline(
                 and cv_pipeline.threshold is not None
             ):
                 logger.debug(
-                    f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})"
+                    f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})",
                 )
             logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
             scores = cv_pipeline.score(
@@ -257,7 +268,7 @@ def train_and_score_pipeline(
             )
 
             logger.debug(
-                f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
+                f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}",
             )
             score = scores[automl_config.objective.name]
             pipeline_cache[hashes] = cv_pipeline.component_graph.component_instances
@@ -278,7 +289,7 @@ def train_and_score_pipeline(
                         o.name: scores[o.name]
                         for o in [automl_config.objective]
                         + automl_config.additional_objectives
-                    }
+                    },
                 )
                 score = scores[automl_config.objective.name]
             else:
@@ -287,7 +298,7 @@ def train_and_score_pipeline(
                     zip(
                         [n.name for n in automl_config.additional_objectives],
                         [np.nan] * len(automl_config.additional_objectives),
-                    )
+                    ),
                 )
 
         ordered_scores = OrderedDict()
@@ -313,7 +324,7 @@ def train_and_score_pipeline(
     cv_scores = pd.Series([fold["mean_cv_score"] for fold in cv_data])
     cv_score_mean = cv_scores.mean()
     logger.info(
-        f"\tFinished cross validation - mean {automl_config.objective.name}: {cv_score_mean:.3f}"
+        f"\tFinished cross validation - mean {automl_config.objective.name}: {cv_score_mean:.3f}",
     )
     return {
         "cached_data": pipeline_cache,
@@ -357,7 +368,14 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
 
 
 def score_pipeline(
-    pipeline, X, y, objectives, X_train=None, y_train=None, X_schema=None, y_schema=None
+    pipeline,
+    X,
+    y,
+    objectives,
+    X_train=None,
+    y_train=None,
+    X_schema=None,
+    y_schema=None,
 ):
     """Wrap around pipeline.score method to make it easy to score pipelines with dask.
 

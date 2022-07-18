@@ -1,6 +1,6 @@
 """EvalML component classes."""
-from .component_base import ComponentBase, ComponentBaseMeta
-from .estimators import (
+from evalml.pipelines.components.component_base import ComponentBase, ComponentBaseMeta
+from evalml.pipelines.components.estimators import (
     Estimator,
     LinearRegressor,
     LightGBMClassifier,
@@ -31,7 +31,7 @@ from .estimators import (
     VowpalWabbitMulticlassClassifier,
     VowpalWabbitRegressor,
 )
-from .transformers import (
+from evalml.pipelines.components.transformers import (
     Transformer,
     OneHotEncoder,
     TargetEncoder,
@@ -67,7 +67,7 @@ from .transformers import (
     DropNaNRowsTransformer,
     TimeSeriesRegularizer,
 )
-from .ensemble import (
+from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )

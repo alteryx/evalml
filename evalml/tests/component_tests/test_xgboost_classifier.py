@@ -29,12 +29,16 @@ def test_xgboost_classifier_random_seed_bounds_seed(X_y_binary):
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
     clf = XGBoostClassifier(
-        n_estimators=1, max_depth=1, random_seed=SEED_BOUNDS.min_bound
+        n_estimators=1,
+        max_depth=1,
+        random_seed=SEED_BOUNDS.min_bound,
     )
     fitted = clf.fit(X, y)
     assert isinstance(fitted, XGBoostClassifier)
     clf = XGBoostClassifier(
-        n_estimators=1, max_depth=1, random_seed=SEED_BOUNDS.max_bound
+        n_estimators=1,
+        max_depth=1,
+        random_seed=SEED_BOUNDS.max_bound,
     )
     clf.fit(X, y)
 

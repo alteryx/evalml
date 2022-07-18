@@ -58,7 +58,10 @@ def test_log_transformer_fit_transform(data_type, input_type, X_y_regression):
 @pytest.mark.parametrize("is_time_series", [True, False])
 @pytest.mark.parametrize("data_type", ["positive", "mixed", "negative"])
 def test_log_transformer_inverse_transform(
-    data_type, is_time_series, X_y_regression, ts_data
+    data_type,
+    is_time_series,
+    X_y_regression,
+    ts_data,
 ):
     if is_time_series:
         X, y = ts_data

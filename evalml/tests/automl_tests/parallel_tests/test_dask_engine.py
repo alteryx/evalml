@@ -34,18 +34,25 @@ def test_submit_training_job_single(X_y_binary_cls):
 
         # Verify that engine fits a pipeline
         pipeline_future = engine.submit_training_job(
-            X=X, y=y, automl_config=automl_data, pipeline=pipeline
+            X=X,
+            y=y,
+            automl_config=automl_data,
+            pipeline=pipeline,
         )
         dask_pipeline_fitted = pipeline_future.get_result()[0]
         assert dask_pipeline_fitted._is_fitted
 
         # Verify parallelization has no effect on output of function
         original_pipeline_fitted = train_pipeline(
-            pipeline, X, y, automl_config=automl_data
+            pipeline,
+            X,
+            y,
+            automl_config=automl_data,
         )[0]
         assert dask_pipeline_fitted == original_pipeline_fitted
         pd.testing.assert_series_equal(
-            dask_pipeline_fitted.predict(X), original_pipeline_fitted.predict(X)
+            dask_pipeline_fitted.predict(X),
+            original_pipeline_fitted.predict(X),
         )
 
 
@@ -67,8 +74,11 @@ def test_submit_training_jobs_multiple(X_y_binary_cls):
         for pipeline in pipelines:
             futures.append(
                 engine.submit_training_job(
-                    X=X, y=y, automl_config=automl_data, pipeline=pipeline
-                )
+                    X=X,
+                    y=y,
+                    automl_config=automl_data,
+                    pipeline=pipeline,
+                ),
             )
         results = [f.get_result()[0] for f in futures]
         return results
@@ -106,14 +116,21 @@ def test_submit_evaluate_job_single(X_y_binary_cls):
 
         # Verify that engine evaluates a pipeline
         pipeline_future = engine.submit_evaluation_job(
-            X=X, y=y, automl_config=automl_data, pipeline=pipeline
+            X=X,
+            y=y,
+            automl_config=automl_data,
+            pipeline=pipeline,
         )
         assert isinstance(pipeline_future, DaskComputation)
 
         par_eval_results = pipeline_future.get_result()
 
         original_eval_results = evaluate_pipeline(
-            pipeline, automl_config=automl_data, X=X, y=y, logger=JobLogger()
+            pipeline,
+            automl_config=automl_data,
+            X=X,
+            y=y,
+            logger=JobLogger(),
         )
 
         # Ensure we get back the same output as the parallelized function.
@@ -160,8 +177,11 @@ def test_submit_evaluate_jobs_multiple(X_y_binary_cls):
         for pipeline in pipelines:
             futures.append(
                 engine.submit_evaluation_job(
-                    X=X, y=y, automl_config=automl_data, pipeline=pipeline
-                )
+                    X=X,
+                    y=y,
+                    automl_config=automl_data,
+                    pipeline=pipeline,
+                ),
             )
         results = [f.get_result() for f in futures]
         return results
@@ -207,7 +227,10 @@ def test_submit_scoring_job_single(X_y_binary_cls):
         objectives = [automl_data.objective]
 
         pipeline_future = engine.submit_training_job(
-            X=X, y=y, automl_config=automl_data, pipeline=pipeline
+            X=X,
+            y=y,
+            automl_config=automl_data,
+            pipeline=pipeline,
         )
         pipeline = pipeline_future.get_result()[0]
         pipeline_score_future = engine.submit_scoring_job(
@@ -247,8 +270,11 @@ def test_submit_scoring_jobs_multiple(X_y_binary_cls):
         for pipeline in pipelines:
             futures.append(
                 engine.submit_training_job(
-                    X=X, y=y, automl_config=automl_data, pipeline=pipeline
-                )
+                    X=X,
+                    y=y,
+                    automl_config=automl_data,
+                    pipeline=pipeline,
+                ),
             )
         pipelines = [f.get_result()[0] for f in futures]
         futures = []
@@ -260,7 +286,7 @@ def test_submit_scoring_jobs_multiple(X_y_binary_cls):
                     automl_config=automl_data,
                     pipeline=pipeline,
                     objectives=[automl_data.objective],
-                )
+                ),
             )
         results = [f.get_result() for f in futures]
         return results
@@ -289,7 +315,10 @@ def test_cancel_job(X_y_binary_cls):
 
         # Verify that engine fits a pipeline
         pipeline_future = engine.submit_training_job(
-            X=X, y=y, automl_config=automl_data, pipeline=pipeline
+            X=X,
+            y=y,
+            automl_config=automl_data,
+            pipeline=pipeline,
         )
         pipeline_future.cancel()
         assert pipeline_future.is_cancelled
@@ -325,7 +354,10 @@ def test_dask_sends_woodwork_schema(X_y_binary_cls):
 
     with DaskEngine() as engine:
         future = engine.submit_training_job(
-            X=X, y=y, automl_config=new_config, pipeline=pipeline
+            X=X,
+            y=y,
+            automl_config=new_config,
+            pipeline=pipeline,
         )
         fitted_pipeline = future.get_result()[0]
 

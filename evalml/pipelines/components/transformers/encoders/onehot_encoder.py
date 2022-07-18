@@ -70,11 +70,11 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         missing_input_options = ["as_category", "error"]
         if handle_unknown not in unknown_input_options:
             raise ValueError(
-                "Invalid input {} for handle_unknown".format(handle_unknown)
+                "Invalid input {} for handle_unknown".format(handle_unknown),
             )
         if handle_missing not in missing_input_options:
             raise ValueError(
-                "Invalid input {} for handle_missing".format(handle_missing)
+                "Invalid input {} for handle_missing".format(handle_missing),
             )
         if top_n is not None and categories is not None:
             raise ValueError("Cannot use categories and top_n arguments simultaneously")
@@ -82,7 +82,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         self.features_to_encode = features_to_encode
         self._encoder = None
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
         self._initial_state = self.random_seed
         self._provenance = {}
@@ -117,8 +119,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         if len(invalid_features) > 0:
             raise ValueError(
                 "Could not find and encode {} in input data.".format(
-                    ", ".join(invalid_features)
-                )
+                    ", ".join(invalid_features),
+                ),
             )
 
         X_t = self._handle_parameter_handle_missing(X_t)
@@ -129,10 +131,11 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         elif self.parameters["categories"] is not None:
             categories = self.parameters["categories"]
             if len(categories) != len(self.features_to_encode) or not isinstance(
-                categories[0], list
+                categories[0],
+                list,
             ):
                 raise ValueError(
-                    "Categories argument must contain a list of categories for each categorical feature"
+                    "Categories argument must contain a list of categories for each categorical feature",
                 )
         else:
             categories = []
@@ -145,10 +148,13 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                     unique_values = value_counts.index.tolist()
                 else:
                     value_counts = value_counts.sample(
-                        frac=1, random_state=self._initial_state
+                        frac=1,
+                        random_state=self._initial_state,
                     )
                     value_counts = value_counts.sort_values(
-                        [col], ascending=False, kind="mergesort"
+                        [col],
+                        ascending=False,
+                        kind="mergesort",
                     )
                     unique_values = value_counts.head(top_n).index.tolist()
                 unique_values = np.sort(unique_values)
@@ -230,7 +236,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             index = self.features_to_encode.index(feature_name)
         except Exception:
             raise ValueError(
-                f'Feature "{feature_name}" was not provided to one-hot encoder as a training feature'
+                f'Feature "{feature_name}" was not provided to one-hot encoder as a training feature',
             )
         return self._encoder.categories_[index]
 

@@ -21,13 +21,13 @@ def test_lsa_only_text(text_df):
     lsa.fit(X)
 
     expected_col_names = set(
-        ["LSA(col_1)[0]", "LSA(col_1)[1]", "LSA(col_2)[0]", "LSA(col_2)[1]"]
+        ["LSA(col_1)[0]", "LSA(col_1)[1]", "LSA(col_2)[0]", "LSA(col_2)[1]"],
     )
     X_t = lsa.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 4
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
-        ww.logical_types.Double
+        ww.logical_types.Double,
     }
 
 
@@ -39,13 +39,13 @@ def test_lsa_with_nontext(text_df):
 
     lsa.fit(X)
     expected_col_names = set(
-        ["LSA(col_1)[0]", "LSA(col_1)[1]", "LSA(col_2)[0]", "LSA(col_2)[1]", "col_3"]
+        ["LSA(col_1)[0]", "LSA(col_1)[1]", "LSA(col_2)[0]", "LSA(col_2)[1]", "col_3"],
     )
     X_t = lsa.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 5
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
-        ww.logical_types.Double
+        ww.logical_types.Double,
     }
 
 
@@ -60,7 +60,7 @@ def test_lsa_no_text():
 def test_some_missing_col_names(text_df):
     X = text_df
     expected_col_names = set(
-        ["LSA(col_1)[0]", "LSA(col_1)[1]", "LSA(col_2)[0]", "LSA(col_2)[1]"]
+        ["LSA(col_1)[0]", "LSA(col_1)[1]", "LSA(col_2)[0]", "LSA(col_2)[1]"],
     )
     lsa = LSA(text_columns=["col_1", "col_2", "col_3"])
     lsa.fit(X)
@@ -68,7 +68,7 @@ def test_some_missing_col_names(text_df):
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 4
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
-        ww.logical_types.Double
+        ww.logical_types.Double,
     }
 
 
@@ -95,8 +95,8 @@ def test_lsa_text_column_with_nonstring_values():
                 np.nan,
                 None,
                 "I'm happy again!!! lalalalalalalalalalala",
-            ]
-        }
+            ],
+        },
     )
     X = infer_feature_types(X, {"col_1": "NaturalLanguage"})
     lsa = LSA()
@@ -118,7 +118,7 @@ def test_index_col_names():
                 "\t\n\n\n\nWhat a glorious feelinggggggggggg, I'm happy again!!! lalalalalalalalalalala",
                 "\tIt is the music of a people who will NOT be slaves again!!!!!!!!!!!",
             ],
-        ]
+        ],
     )
     lsa = LSA()
     X = pd.DataFrame(X)
@@ -129,7 +129,7 @@ def test_index_col_names():
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 4
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
-        ww.logical_types.Double
+        ww.logical_types.Double,
     }
 
 
@@ -146,19 +146,19 @@ def test_float_col_names():
                 "I dreamed a dream in days gone by, when hope was high and life worth living",
                 "Red, the blood of angry men - black, the dark of ages past",
             ],
-        }
+        },
     )
     X.ww.init(logical_types={-1: "NaturalLanguage", 4.75: "NaturalLanguage"})
     lsa = LSA()
     lsa.fit(X)
     expected_col_names = set(
-        ["LSA(4.75)[0]", "LSA(4.75)[1]", "LSA(-1.0)[0]", "LSA(-1.0)[1]"]
+        ["LSA(4.75)[0]", "LSA(4.75)[1]", "LSA(-1.0)[0]", "LSA(-1.0)[1]"],
     )
     X_t = lsa.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 4
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
-        ww.logical_types.Double
+        ww.logical_types.Double,
     }
 
 
@@ -169,14 +169,15 @@ def test_lsa_output():
                 "do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!",
                 "I dreamed a dream in days gone by, when hope was high and life worth living",
                 "Red, the blood of angry men - black, the dark of ages past",
-            ]
-        }
+            ],
+        },
     )
     X.ww.init(logical_types={"lsa": "NaturalLanguage"})
     lsa = LSA()
     lsa.fit(X)
     expected_features = pd.DataFrame(
-        [[0.832, 0.0], [0.0, 1.0], [0.832, 0.0]], columns=["LSA(lsa)[0]", "LSA(lsa)[1]"]
+        [[0.832, 0.0], [0.0, 1.0], [0.832, 0.0]],
+        columns=["LSA(lsa)[0]", "LSA(lsa)[1]"],
     )
     X_t = lsa.transform(X)
     cols = [col for col in X_t.columns if "LSA" in col]
@@ -197,7 +198,7 @@ def test_lsa_with_custom_indices(text_df):
     "X_df",
     [
         pd.DataFrame(
-            pd.to_datetime(["20190902", "20200519", "20190607"], format="%Y%m%d")
+            pd.to_datetime(["20190902", "20200519", "20190607"], format="%Y%m%d"),
         ),
         pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
         pd.DataFrame(pd.Series([1.0, 2.0, 3.0], dtype="float")),
@@ -207,7 +208,7 @@ def test_lsa_with_custom_indices(text_df):
             pd.Series(
                 ["this will be a natural language column because length", "yay", "hay"],
                 dtype="string",
-            )
+            ),
         ),
     ],
 )

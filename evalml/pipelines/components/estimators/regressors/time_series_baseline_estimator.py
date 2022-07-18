@@ -44,13 +44,15 @@ class TimeSeriesBaselineEstimator(Estimator):
 
         if gap < 0:
             raise ValueError(
-                f"gap value must be a positive integer. {gap} was provided."
+                f"gap value must be a positive integer. {gap} was provided.",
             )
 
         parameters = {"gap": gap, "forecast_horizon": forecast_horizon}
         parameters.update(kwargs)
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):
@@ -88,12 +90,12 @@ class TimeSeriesBaselineEstimator(Estimator):
         """
         X = infer_feature_types(X)
         feature_name = TimeSeriesFeaturizer.target_colname_prefix.format(
-            self.start_delay
+            self.start_delay,
         )
         if feature_name not in X.columns:
             raise ValueError(
                 "Time Series Baseline Estimator is meant to be used in a pipeline with "
-                "a Time Series Featurizer"
+                "a Time Series Featurizer",
             )
         self._num_features = X.shape[1]
         self._delay_index = X.columns.tolist().index(feature_name)

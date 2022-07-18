@@ -44,12 +44,14 @@ def test_fraud_objective_function_amount_col(X_y_binary):
     y_predicted = pd.Series([0.1, 0.5, 0.5])
     y_true = [True, False, True]
     with pytest.raises(
-        ValueError, match="`this column does not exist` is not a valid column in X."
+        ValueError,
+        match="`this column does not exist` is not a valid column in X.",
     ):
         objective.objective_function(y_true, y_predicted, X)
 
     with pytest.raises(
-        ValueError, match="`this column does not exist` is not a valid column in X."
+        ValueError,
+        match="`this column does not exist` is not a valid column in X.",
     ):
         objective.objective_function(y_true, y_predicted, X.tolist())
 
@@ -106,7 +108,8 @@ def test_binary_more_than_two_unique_values():
     y_predicted = np.array([0, 1, 2])
     y_true = np.array([1, 0, 1])
     with pytest.raises(
-        ValueError, match="y_predicted contains more than two unique values"
+        ValueError,
+        match="y_predicted contains more than two unique values",
     ):
         fraud_cost.score(y_true, y_predicted)
 

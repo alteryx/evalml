@@ -83,5 +83,7 @@ class DecisionTreeClassifier(Estimator):
         parameters.update(kwargs)
         dt_classifier = SKDecisionTreeClassifier(random_state=random_seed, **parameters)
         super().__init__(
-            parameters=parameters, component_obj=dt_classifier, random_seed=random_seed
+            parameters=parameters,
+            component_obj=dt_classifier,
+            random_seed=random_seed,
         )

@@ -5,9 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
-from sklearn.metrics import (
-    precision_recall_curve as sklearn_precision_recall_curve,
-)
+from sklearn.metrics import precision_recall_curve as sklearn_precision_recall_curve
 from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils.multiclass import unique_labels
@@ -85,19 +83,22 @@ def normalize_confusion_matrix(conf_mat, normalize_method="true"):
         else:
             raise ValueError(
                 'Invalid value provided for "normalize_method": {}'.format(
-                    normalize_method
-                )
+                    normalize_method,
+                ),
             )
         if w and "invalid value encountered in" in str(w[0].message):
             raise ValueError(
-                "Sum of given axis is 0 and normalization is not possible. Please select another option."
+                "Sum of given axis is 0 and normalization is not possible. Please select another option.",
             )
     conf_mat = pd.DataFrame(conf_mat, index=col_names, columns=col_names)
     return conf_mat
 
 
 def graph_confusion_matrix(
-    y_true, y_pred, normalize_method="true", title_addition=None
+    y_true,
+    y_pred,
+    normalize_method="true",
+    title_addition=None,
 ):
     """Generate and display a confusion matrix plot.
 
@@ -113,7 +114,8 @@ def graph_confusion_matrix(
         plotly.Figure representing the confusion matrix plot generated.
     """
     _go = import_or_raise(
-        "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
+        "plotly.graph_objects",
+        error_msg="Cannot find dependency plotly.graph_objects",
     )
     _ff = import_or_raise(
         "plotly.figure_factory",
@@ -124,7 +126,9 @@ def graph_confusion_matrix(
 
     conf_mat = confusion_matrix(y_true, y_pred, normalize_method=None)
     conf_mat_normalized = confusion_matrix(
-        y_true, y_pred, normalize_method=normalize_method or "true"
+        y_true,
+        y_pred,
+        normalize_method=normalize_method or "true",
     )
     labels = conf_mat.columns.tolist()
 
@@ -206,7 +210,7 @@ def precision_recall_curve(y_true, y_pred_proba, pos_label_idx=-1):
             y_pred_proba = y_pred_proba.iloc[:, pos_label_idx]
         except IndexError:
             raise NoPositiveLabelException(
-                f"Predicted probabilities of shape {y_pred_proba_shape} don't contain a column at index {pos_label_idx}"
+                f"Predicted probabilities of shape {y_pred_proba_shape} don't contain a column at index {pos_label_idx}",
             )
 
     precision, recall, thresholds = sklearn_precision_recall_curve(y_true, y_pred_proba)
@@ -231,13 +235,14 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
         plotly.Figure representing the precision-recall plot generated
     """
     _go = import_or_raise(
-        "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
+        "plotly.graph_objects",
+        error_msg="Cannot find dependency plotly.graph_objects",
     )
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
     precision_recall_curve_data = precision_recall_curve(y_true, y_pred_proba)
     title = "Precision-Recall{}".format(
-        "" if title_addition is None else (" " + title_addition)
+        "" if title_addition is None else (" " + title_addition),
     )
     layout = _go.Layout(
         title={"text": title},
@@ -250,10 +255,10 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
             x=precision_recall_curve_data["recall"],
             y=precision_recall_curve_data["precision"],
             name="Precision-Recall (AUC {:06f})".format(
-                precision_recall_curve_data["auc_score"]
+                precision_recall_curve_data["auc_score"],
             ),
             line=dict(width=3),
-        )
+        ),
     )
     return _go.Figure(layout=layout, data=data)
 
@@ -293,7 +298,8 @@ def roc_curve(y_true, y_pred_proba):
     curve_data = []
     for i in range(n_classes):
         fpr_rates, tpr_rates, thresholds = sklearn_roc_curve(
-            y_one_hot_true[:, i], y_pred_proba[:, i]
+            y_one_hot_true[:, i],
+            y_pred_proba[:, i],
         )
         auc_score = sklearn_auc(fpr_rates, tpr_rates)
         curve_data.append(
@@ -302,7 +308,7 @@ def roc_curve(y_true, y_pred_proba):
                 "tpr_rates": tpr_rates,
                 "thresholds": thresholds,
                 "auc_score": auc_score,
-            }
+            },
         )
 
     return curve_data
@@ -324,13 +330,14 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
         ValueError: If the number of custom class names does not match number of classes in the input data.
     """
     _go = import_or_raise(
-        "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
+        "plotly.graph_objects",
+        error_msg="Cannot find dependency plotly.graph_objects",
     )
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
 
     title = "Receiver Operating Characteristic{}".format(
-        "" if title_addition is None else (" " + title_addition)
+        "" if title_addition is None else (" " + title_addition),
     )
     layout = _go.Layout(
         title={"text": title},
@@ -345,7 +352,7 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
 
     if custom_class_names and len(custom_class_names) != n_classes:
         raise ValueError(
-            "Number of custom class names does not match number of classes"
+            "Number of custom class names does not match number of classes",
         )
 
     for i in range(n_classes):
@@ -360,11 +367,14 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
                 name=f"Class {name} (AUC {roc_curve_data['auc_score']:.06f})",
                 text=roc_curve_data["thresholds"],
                 line=dict(width=3),
-            )
+            ),
         )
     graph_data.append(
         _go.Scatter(
-            x=[0, 1], y=[0, 1], name="Trivial Model (AUC 0.5)", line=dict(dash="dash")
-        )
+            x=[0, 1],
+            y=[0, 1],
+            name="Trivial Model (AUC 0.5)",
+            line=dict(dash="dash"),
+        ),
     )
     return _go.Figure(layout=layout, data=graph_data)

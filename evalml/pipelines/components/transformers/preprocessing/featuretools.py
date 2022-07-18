@@ -39,7 +39,10 @@ class DFSTransformer(Transformer):
         del X.ww
         if self.index not in X.columns:
             es = ft_es.add_dataframe(
-                dataframe=X, dataframe_name="X", index=self.index, make_index=True
+                dataframe=X,
+                dataframe_name="X",
+                index=self.index,
+                make_index=True,
             )
         else:
             es = ft_es.add_dataframe(dataframe=X, dataframe_name="X", index=self.index)
@@ -59,7 +62,7 @@ class DFSTransformer(Transformer):
             # If feature's required columns doesn't exist, skip feature
             input_cols = [f.get_name() for f in feature.base_features]
             if not isinstance(feature, IdentityFeature) and not set(
-                input_cols
+                input_cols,
             ).issubset(X_columns_set):
                 continue
 
@@ -88,7 +91,10 @@ class DFSTransformer(Transformer):
             X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
             es = self._make_entity_set(X_ww)
             self.features = dfs(
-                entityset=es, target_dataframe_name="X", features_only=True, max_depth=1
+                entityset=es,
+                target_dataframe_name="X",
+                features_only=True,
+                max_depth=1,
             )
         return self
 
@@ -114,7 +120,8 @@ class DFSTransformer(Transformer):
             return X_ww
         es = self._make_entity_set(X_ww)
         feature_matrix = calculate_feature_matrix(
-            features=features_to_use, entityset=es
+            features=features_to_use,
+            entityset=es,
         )
         typed_columns = set(X_ww.columns).intersection(set(feature_matrix.columns))
         partial_schema = X_ww.ww.schema.get_subset_schema(typed_columns)

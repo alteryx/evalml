@@ -27,11 +27,13 @@ def test_id_cols_data_check_init():
     assert id_cols_check.id_threshold == 1.0
 
     with pytest.raises(
-        ValueError, match="id_threshold must be a float between 0 and 1, inclusive."
+        ValueError,
+        match="id_threshold must be a float between 0 and 1, inclusive.",
     ):
         IDColumnsDataCheck(id_threshold=-0.1)
     with pytest.raises(
-        ValueError, match="id_threshold must be a float between 0 and 1, inclusive."
+        ValueError,
+        match="id_threshold must be a float between 0 and 1, inclusive.",
     ):
         IDColumnsDataCheck(id_threshold=1.1)
 
@@ -58,7 +60,7 @@ def test_id_columns_warning():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     metadata={"columns": ["Id", "col_1_id", "col_2", "col_3_id"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -76,7 +78,7 @@ def test_id_columns_warning():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     metadata={"columns": ["Id", "col_1_id"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -103,7 +105,7 @@ def test_id_columns_strings():
             "col_2": "categorical",
             "Id": "categorical",
             "col_5": "categorical",
-        }
+        },
     )
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
     assert id_cols_check.validate(X) == [
@@ -117,7 +119,7 @@ def test_id_columns_strings():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     metadata={"columns": ["Id", "col_1_id", "col_2", "col_3_id"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -134,7 +136,7 @@ def test_id_columns_strings():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     metadata={"columns": ["Id", "col_1_id"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -160,7 +162,7 @@ def test_id_cols_data_check_input_formats():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     metadata={"columns": [0, 1]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -177,14 +179,14 @@ def test_id_cols_data_check_input_formats():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     metadata={"columns": [0, 1]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
 
     # test np.array
     assert id_cols_check.validate(
-        np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]])
+        np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]),
     ) == [
         DataCheckWarning(
             message="Columns '0', '1' are 80.0% or more likely to be an ID column",
@@ -196,7 +198,7 @@ def test_id_cols_data_check_input_formats():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     metadata={"columns": [0, 1]},
-                )
+                ),
             ],
         ).to_dict(),
     ]

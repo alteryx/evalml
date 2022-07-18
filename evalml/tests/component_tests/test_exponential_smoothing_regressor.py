@@ -22,7 +22,7 @@ def test_model_family():
 
 def test_problem_types():
     assert set(ExponentialSmoothingRegressor.supported_problem_types) == {
-        ProblemTypes.TIME_SERIES_REGRESSION
+        ProblemTypes.TIME_SERIES_REGRESSION,
     }
 
 
@@ -38,7 +38,8 @@ def test_fit_ts_without_y(ts_data):
 
     regressor = ExponentialSmoothingRegressor()
     with pytest.raises(
-        ValueError, match="Exponential Smoothing Regressor requires y as input."
+        ValueError,
+        match="Exponential Smoothing Regressor requires y as input.",
     ):
         regressor.fit(X=X)
 
@@ -118,7 +119,8 @@ def test_feature_importance(ts_data):
     with patch.object(regressor, "_component_obj"):
         regressor.fit(X, y)
         pd.testing.assert_series_equal(
-            regressor.feature_importance, pd.Series(np.zeros(1))
+            regressor.feature_importance,
+            pd.Series(np.zeros(1)),
         )
 
 

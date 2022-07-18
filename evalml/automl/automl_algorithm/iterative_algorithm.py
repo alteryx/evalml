@@ -5,8 +5,10 @@ from operator import itemgetter
 
 import numpy as np
 
-from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
-
+from evalml.automl.automl_algorithm.automl_algorithm import (
+    AutoMLAlgorithm,
+    AutoMLAlgorithmException,
+)
 from evalml.automl.utils import get_pipelines_from_component_graphs
 from evalml.exceptions import ParameterNotUsedWarning
 from evalml.model_family import ModelFamily
@@ -116,7 +118,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         )
         if search_parameters and not isinstance(search_parameters, dict):
             raise ValueError(
-                f"If search_parameters provided, must be of type dict. Received {type(search_parameters)}"
+                f"If search_parameters provided, must be of type dict. Received {type(search_parameters)}",
             )
         self.allowed_pipelines = []
 
@@ -144,7 +146,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self.allowed_component_graphs is None:
             self.logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(
-                self.problem_type, self.allowed_model_families
+                self.problem_type,
+                self.allowed_model_families,
             )
             allowed_estimators = self._filter_estimators(
                 allowed_estimators,
@@ -155,7 +158,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 self.logger,
             )
             self.logger.debug(
-                f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}"
+                f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}",
             )
             with warnings.catch_warnings(record=True) as w:
                 warnings.filterwarnings("always", category=ParameterNotUsedWarning)
@@ -168,7 +171,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         parameters=self._pipeline_parameters,
                         sampler_name=self.sampler_name,
                         known_in_advance=self._pipeline_parameters.get(
-                            "pipeline", {}
+                            "pipeline",
+                            {},
                         ).get("known_in_advance", None),
                         features=self.features,
                     )
@@ -190,7 +194,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         if self.ensembling and len(self.allowed_pipelines) == 1:
             self.logger.warning(
-                "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
+                "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run.",
             )
             self.ensembling = False
 
@@ -205,11 +209,11 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             if self.max_iterations < first_ensembling_iteration:
                 self.ensembling = False
                 self.logger.warning(
-                    f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling."
+                    f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling.",
                 )
             else:
                 self.logger.info(
-                    f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self.pipelines_per_batch} iterations after that."
+                    f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self.pipelines_per_batch} iterations after that.",
                 )
 
         if self.max_batches and self.max_iterations is None:
@@ -220,11 +224,11 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 if num_ensemble_batches == 0:
                     self.ensembling = False
                     self.logger.warning(
-                        f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling."
+                        f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling.",
                     )
                 else:
                     self.logger.info(
-                        f"Ensembling will run every {ensemble_nth_batch} batches."
+                        f"Ensembling will run every {ensemble_nth_batch} batches.",
                     )
 
                 self.max_iterations = (
@@ -244,7 +248,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         for pipeline in self.allowed_pipelines or []:
             if pipeline.model_family in self._estimator_family_order:
                 indices.append(
-                    self._estimator_family_order.index(pipeline.model_family)
+                    self._estimator_family_order.index(pipeline.model_family),
                 )
                 pipelines_to_sort.append(pipeline)
             else:
@@ -258,10 +262,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.allowed_pipelines = pipelines_start + pipelines_end
 
         self.logger.debug(
-            f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}"
+            f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}",
         )
         self.logger.debug(
-            f"allowed_model_families set to {self.allowed_model_families}"
+            f"allowed_model_families set to {self.allowed_model_families}",
         )
         self.logger.info(f"{len(self.allowed_pipelines)} pipelines ready for search.")
 
@@ -277,10 +281,11 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self._batch_number == 1:
             if len(self._first_batch_results) == 0:
                 raise AutoMLAlgorithmException(
-                    "No results were reported from the first batch"
+                    "No results were reported from the first batch",
                 )
             self._first_batch_results = sorted(
-                self._first_batch_results, key=itemgetter(0)
+                self._first_batch_results,
+                key=itemgetter(0),
             )
 
         next_batch = []
@@ -291,7 +296,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 ].get_starting_parameters(self._hyperparameters, self.random_seed)
                 parameters = self._transform_parameters(pipeline, starting_parameters)
                 next_batch.append(
-                    pipeline.new(parameters=parameters, random_seed=self.random_seed)
+                    pipeline.new(parameters=parameters, random_seed=self.random_seed),
                 )
 
         # One after training all pipelines one round
@@ -301,7 +306,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             and (self._batch_number) % (len(self._first_batch_results) + 1) == 0
         ):
             next_batch = self._create_ensemble(
-                self._pipeline_parameters.get("Label Encoder", {})
+                self._pipeline_parameters.get("Label Encoder", {}),
             )
         else:
             num_pipelines = (
@@ -315,14 +320,18 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 proposed_parameters = self._tuners[pipeline.name].propose()
                 parameters = self._transform_parameters(pipeline, proposed_parameters)
                 next_batch.append(
-                    pipeline.new(parameters=parameters, random_seed=self.random_seed)
+                    pipeline.new(parameters=parameters, random_seed=self.random_seed),
                 )
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch
 
     def add_result(
-        self, score_to_minimize, pipeline, trained_pipeline_results, cached_data=None
+        self,
+        score_to_minimize,
+        pipeline,
+        trained_pipeline_results,
+        cached_data=None,
     ):
         """Register results from evaluating a pipeline.
 
@@ -342,25 +351,31 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             if self.batch_number == 1:
                 try:
                     super().add_result(
-                        score_to_minimize, pipeline, trained_pipeline_results
+                        score_to_minimize,
+                        pipeline,
+                        trained_pipeline_results,
                     )
                 except ValueError as e:
                     if "is not within the bounds of the space" in str(e):
                         raise ValueError(
                             "Default parameters for components in pipeline {} not in the hyperparameter ranges: {}".format(
-                                pipeline.name, e
-                            )
+                                pipeline.name,
+                                e,
+                            ),
                         )
                     else:
                         raise (e)
             else:
                 super().add_result(
-                    score_to_minimize, pipeline, trained_pipeline_results
+                    score_to_minimize,
+                    pipeline,
+                    trained_pipeline_results,
                 )
         if self.batch_number == 1:
             self._first_batch_results.append((score_to_minimize, pipeline))
         current_best_score = self._best_pipeline_info.get(
-            pipeline.model_family, {}
+            pipeline.model_family,
+            {},
         ).get("mean_cv_score", np.inf)
         if (
             score_to_minimize is not None
@@ -375,8 +390,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         "parameters": pipeline.parameters,
                         "id": trained_pipeline_results["id"],
                         "cached_data": cached_data,
-                    }
-                }
+                    },
+                },
             )
 
     def _catch_warnings(self, warning_list):
@@ -392,7 +407,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         # Raise PNU warnings, iff the warning was raised in every pipeline
         if len(parameter_not_used_warnings) == len(self.allowed_pipelines) and len(
-            parameter_not_used_warnings
+            parameter_not_used_warnings,
         ):
             final_message = set([])
             for msg in parameter_not_used_warnings:

@@ -3,8 +3,8 @@ import itertools
 
 from skopt.space import Integer, Real
 
-from .tuner import Tuner
-from .tuner_exceptions import NoParamsException
+from evalml.tuners.tuner import Tuner
+from evalml.tuners.tuner_exceptions import NoParamsException
 
 
 class GridSearchTuner(Tuner):
@@ -106,6 +106,6 @@ class GridSearchTuner(Tuner):
             return False
         except StopIteration:
             raise NoParamsException(
-                "Grid search has exhausted all possible parameters."
+                "Grid search has exhausted all possible parameters.",
             )
             return True

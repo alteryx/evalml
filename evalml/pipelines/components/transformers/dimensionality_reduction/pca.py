@@ -30,7 +30,9 @@ class PCA(Transformer):
         else:
             pca = SkPCA(n_components=variance, random_state=random_seed, **kwargs)
         super().__init__(
-            parameters=parameters, component_obj=pca, random_seed=random_seed
+            parameters=parameters,
+            component_obj=pca,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):

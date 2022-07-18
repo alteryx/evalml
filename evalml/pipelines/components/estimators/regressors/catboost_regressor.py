@@ -71,7 +71,7 @@ class CatBoostRegressor(Estimator):
         }
         if kwargs.get("thread_count", None) is not None:
             warnings.warn(
-                "Parameter 'thread_count' will be ignored. To use parallel threads, use the 'n_jobs' parameter instead."
+                "Parameter 'thread_count' will be ignored. To use parallel threads, use the 'n_jobs' parameter instead.",
             )
         parameters.update(kwargs)
 
@@ -89,7 +89,9 @@ class CatBoostRegressor(Estimator):
         )
         parameters["n_jobs"] = n_jobs
         super().__init__(
-            parameters=parameters, component_obj=cb_regressor, random_seed=random_seed
+            parameters=parameters,
+            component_obj=cb_regressor,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):

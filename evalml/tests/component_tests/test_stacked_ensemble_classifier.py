@@ -40,7 +40,8 @@ def test_stacked_ensemble_init_with_final_estimator(X_y_binary):
         "Random Forest B": [RandomForestClassifier, "X", "y"],
         "Stacked Ensemble": [
             StackedEnsembleClassifier(
-                n_jobs=1, final_estimator=RandomForestClassifier()
+                n_jobs=1,
+                final_estimator=RandomForestClassifier(),
             ),
             "Random Forest.x",
             "Random Forest B.x",
@@ -60,7 +61,8 @@ def test_stacked_ensemble_does_not_overwrite_pipeline_random_seed():
         "Random Forest B": [RandomForestClassifier(random_seed=4), "X", "y"],
         "Stacked Ensemble": [
             StackedEnsembleClassifier(
-                n_jobs=1, final_estimator=RandomForestClassifier()
+                n_jobs=1,
+                final_estimator=RandomForestClassifier(),
             ),
             "Random Forest.x",
             "Random Forest B.x",
@@ -86,7 +88,10 @@ def test_stacked_problem_types():
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_stacked_fit_predict_classification(
-    X_y_binary, X_y_multi, stackable_classifiers, problem_type
+    X_y_binary,
+    X_y_multi,
+    stackable_classifiers,
+    problem_type,
 ):
     def make_stacked_pipeline(pipeline_class):
         component_graph = {}
@@ -97,7 +102,7 @@ def test_stacked_fit_predict_classification(
             stacked_input.append(f"{classifier.name}.x")
         stacked_input.append("y")
         component_graph["Stacked Ensembler"] = [
-            StackedEnsembleClassifier
+            StackedEnsembleClassifier,
         ] + stacked_input
         return pipeline_class(component_graph)
 
@@ -179,14 +184,14 @@ def test_ensembler_str_and_classes():
             "Imputer": ["Imputer", "X", "y"],
             "Log Transformer": ["Log Transformer", "X", "y"],
             "RF": ["Random Forest Classifier", "Imputer.x", "Log Transformer.y"],
-        }
+        },
     )
     reg_pl_2 = BinaryClassificationPipeline(
         {
             "Imputer": ["Imputer", "X", "y"],
             "Log Transformer": ["Log Transformer", "X", "y"],
             "EN": ["Elastic Net Classifier", "Imputer.x", "Log Transformer.y"],
-        }
+        },
     )
 
     ensemble_pipeline = _make_stacked_ensemble_pipeline(
@@ -200,14 +205,14 @@ def test_ensembler_str_and_classes():
             "Imputer": [Imputer, "X", "y"],
             "Log Transformer": [LogTransformer, "X", "y"],
             "RF": [RandomForestClassifier, "Imputer.x", "Log Transformer.y"],
-        }
+        },
     )
     reg_pl_2 = BinaryClassificationPipeline(
         {
             "Imputer": [Imputer, "X", "y"],
             "Log Transformer": [LogTransformer, "X", "y"],
             "EN": [ElasticNetClassifier, "Imputer.x", "Log Transformer.y"],
-        }
+        },
     )
 
     ensemble_pipeline = _make_stacked_ensemble_pipeline(
@@ -219,7 +224,10 @@ def test_ensembler_str_and_classes():
 
 def test_stacked_ensemble_nondefault_y():
     X, y = datasets.make_classification(
-        n_samples=100, n_features=20, weights={0: 0.1, 1: 0.9}, random_state=0
+        n_samples=100,
+        n_features=20,
+        weights={0: 0.1, 1: 0.9},
+        random_state=0,
     )
     input_pipelines = [
         BinaryClassificationPipeline(
@@ -279,7 +287,7 @@ def test_stacked_ensemble_keep_estimator_parameters(X_y_binary):
     )
     assert (
         pl.get_component(
-            "Random Forest Pipeline 2 - Random Forest Classifier"
+            "Random Forest Pipeline 2 - Random Forest Classifier",
         ).parameters["n_estimators"]
         == 22
     )
@@ -320,10 +328,10 @@ def test_ensembler_use_component_preds_binary(
 
     assert ensemble_input.shape == (100, 2)
     assert ensemble_input["Linear Pipeline - Elastic Net Classifier.x"].equals(
-        pd.Series(np.zeros(len(y)))
+        pd.Series(np.zeros(len(y))),
     )
     assert ensemble_input["Random Forest Pipeline - Random Forest Classifier.x"].equals(
-        pd.Series(np.ones(len(y)))
+        pd.Series(np.ones(len(y))),
     )
 
 
@@ -383,10 +391,10 @@ def test_stacked_ensemble_cache(X_y_binary):
             "random_hash": {
                 "Impute": trained_imputer,
                 "Random Forest Classifier": trained_rf,
-            }
+            },
         },
         ModelFamily.LINEAR_MODEL: {
-            "random_hash": {"Elastic Net Classifier": trained_en}
+            "random_hash": {"Elastic Net Classifier": trained_en},
         },
     }
     input_pipelines = [
@@ -406,7 +414,7 @@ def test_stacked_ensemble_cache(X_y_binary):
             "Random Forest Pipeline - Impute": trained_imputer,
             "Random Forest Pipeline - Random Forest Classifier": trained_rf,
             "Linear Pipeline - Elastic Net Classifier": trained_en,
-        }
+        },
     }
 
     pl = _make_stacked_ensemble_pipeline(
@@ -418,10 +426,10 @@ def test_stacked_ensemble_cache(X_y_binary):
 
 
 @patch(
-    "evalml.pipelines.component_graph.ComponentGraph._consolidate_inputs_for_component"
+    "evalml.pipelines.component_graph.ComponentGraph._consolidate_inputs_for_component",
 )
 @patch(
-    "evalml.pipelines.components.transformers.encoders.label_encoder.LabelEncoder.transform"
+    "evalml.pipelines.components.transformers.encoders.label_encoder.LabelEncoder.transform",
 )
 @patch("evalml.pipelines.components.transformers.imputers.imputer.Imputer.fit")
 @patch("evalml.pipelines.components.estimators.Estimator.fit")
@@ -453,8 +461,8 @@ def test_stacked_ensemble_cache_training(
     hashes = hash(tuple(X.index))
     cache = {
         ModelFamily.RANDOM_FOREST: {
-            hashes: {"Impute": trained_imputer, "Random Forest Classifier": trained_rf}
-        }
+            hashes: {"Impute": trained_imputer, "Random Forest Classifier": trained_rf},
+        },
     }
 
     input_pipelines = [
@@ -463,7 +471,7 @@ def test_stacked_ensemble_cache_training(
                 "Impute": [Imputer, "X", "y"],
                 "Random Forest Classifier": [RandomForestClassifier, "Impute.x", "y"],
             },
-        )
+        ),
     ]
 
     mock_consolidate.return_value = (X, y)
@@ -493,7 +501,7 @@ def test_stacked_ensemble_cache_training(
         {
             "0": [0.9 if i == 1 else 0.1 for i in y],
             "1": [0.1 if i == 1 else 0.9 for i in y],
-        }
+        },
     )
     predicted.ww.init()
     mock_estimator_predict_proba.return_value = predicted
@@ -521,8 +529,8 @@ def test_stacked_ensemble_cache_train_predict(
         hashes = hash(tuple(X.index))
     cache = {
         ModelFamily.RANDOM_FOREST: {
-            hashes: {"Impute": trained_imputer, "Random Forest Classifier": trained_rf}
-        }
+            hashes: {"Impute": trained_imputer, "Random Forest Classifier": trained_rf},
+        },
     }
 
     input_pipelines = [
@@ -531,7 +539,7 @@ def test_stacked_ensemble_cache_train_predict(
                 "Impute": [Imputer, "X", "y"],
                 "Random Forest Classifier": [RandomForestClassifier, "Impute.x", "y"],
             },
-        )
+        ),
     ]
 
     pl_cache = _make_stacked_ensemble_pipeline(
@@ -545,7 +553,8 @@ def test_stacked_ensemble_cache_train_predict(
 
     try:
         pd.testing.assert_frame_equal(
-            pl_cache.predict_proba(X2), pl_cache_copy.predict_proba(X2)
+            pl_cache.predict_proba(X2),
+            pl_cache_copy.predict_proba(X2),
         )
         assert indices == 0
     except AssertionError:

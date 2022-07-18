@@ -2,7 +2,7 @@
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
-from .problem_types import ProblemTypes
+from evalml.problem_types.problem_types import ProblemTypes
 
 
 def handle_problem_types(problem_type):
@@ -32,7 +32,7 @@ def handle_problem_types(problem_type):
     if isinstance(problem_type, ProblemTypes):
         return problem_type
     raise ValueError(
-        "`handle_problem_types` was not passed a str or ProblemTypes object"
+        "`handle_problem_types` was not passed a str or ProblemTypes object",
     )
 
 

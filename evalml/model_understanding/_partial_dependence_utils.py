@@ -9,10 +9,7 @@ import pandas as pd
 import woodwork as ww
 from scipy.stats.mstats import mquantiles
 
-from evalml.exceptions import (
-    PartialDependenceError,
-    PartialDependenceErrorCode,
-)
+from evalml.exceptions import PartialDependenceError, PartialDependenceErrorCode
 from evalml.problem_types import is_regression
 
 
@@ -131,7 +128,7 @@ def _range_for_dates(X_dt, percentiles, grid_resolution):
         pd.Series: Range of dates between percentiles.
     """
     timestamps = np.array(
-        [X_dt - pd.Timestamp("1970-01-01")] // np.timedelta64(1, "s")
+        [X_dt - pd.Timestamp("1970-01-01")] // np.timedelta64(1, "s"),
     ).reshape(-1, 1)
     timestamps = pd.DataFrame(timestamps)
     grid, values = _grid_from_X(
@@ -170,7 +167,7 @@ def _grid_from_X(X, percentiles, grid_resolution, custom_range):
             if feature_range.ndim != 1:
                 raise ValueError(
                     "Grid for feature {} is not a one-dimensional array. Got {}"
-                    " dimensions".format(feature, feature_range.ndim)
+                    " dimensions".format(feature, feature_range.ndim),
                 )
             axis = feature_range
         else:
@@ -186,7 +183,7 @@ def _grid_from_X(X, percentiles, grid_resolution, custom_range):
                     raise ValueError(
                         "percentiles are too close to each other, "
                         "unable to build the grid. Please choose percentiles "
-                        "that are further apart."
+                        "that are further apart.",
                     )
                 axis = np.linspace(
                     emp_percentiles[0],
@@ -249,10 +246,12 @@ def _partial_dependence_calculation(pipeline, grid, features, X):
     for _, new_values in grid.iterrows():
         for i, variable in enumerate(features):
             part_dep_column = pd.Series(
-                [new_values[i]] * X_eval.shape[0], index=X_eval.index
+                [new_values[i]] * X_eval.shape[0],
+                index=X_eval.index,
             )
             X_eval.ww[variable] = ww.init_series(
-                part_dep_column, logical_type=X_eval.ww.logical_types[variable]
+                part_dep_column,
+                logical_type=X_eval.ww.logical_types[variable],
             )
 
         pred = prediction_method(X_eval)

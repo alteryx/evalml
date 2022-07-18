@@ -21,13 +21,15 @@ class LinearDiscriminantAnalysis(Transformer):
     def __init__(self, n_components=None, random_seed=0, **kwargs):
         if n_components and n_components < 1:
             raise ValueError(
-                "Invalid number of compponents for Linear Discriminant Analysis"
+                "Invalid number of compponents for Linear Discriminant Analysis",
             )
         parameters = {"n_components": n_components}
         parameters.update(kwargs)
         lda = SkLDA(n_components=n_components, **kwargs)
         super().__init__(
-            parameters=parameters, component_obj=lda, random_seed=random_seed
+            parameters=parameters,
+            component_obj=lda,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y):

@@ -1,6 +1,5 @@
 """Base class for all time series regression objectives."""
-from .regression_objective import RegressionObjective
-
+from evalml.objectives.regression_objective import RegressionObjective
 from evalml.problem_types import ProblemTypes
 
 

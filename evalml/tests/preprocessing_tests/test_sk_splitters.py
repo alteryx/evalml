@@ -7,7 +7,8 @@ from evalml.preprocessing.data_splitters import KFold, StratifiedKFold
 
 
 @pytest.mark.parametrize(
-    "sk_splitter,splitter", [[sk_kfold, KFold], [sk_stratified, StratifiedKFold]]
+    "sk_splitter,splitter",
+    [[sk_kfold, KFold], [sk_stratified, StratifiedKFold]],
 )
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
 def test_splitters_equal(problem_type, sk_splitter, splitter, X_y_binary, X_y_multi):

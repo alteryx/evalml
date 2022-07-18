@@ -147,7 +147,11 @@ def test_plot_iterations_max_iterations(X_y_regression, go):
     X, y = X_y_regression
 
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="regression", max_iterations=3, n_jobs=1
+        X_train=X,
+        y_train=y,
+        problem_type="regression",
+        max_iterations=3,
+        n_jobs=1,
     )
     automl.search()
     plot = automl.plot.search_iteration_plot()
@@ -265,12 +269,16 @@ def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, ts_data):
 
 
 @pytest.mark.parametrize(
-    "sampler_method", [None, "auto", "Undersampler", "Oversampler"]
+    "sampler_method",
+    [None, "auto", "Undersampler", "Oversampler"],
 )
 def test_automl_regression_no_sampler(sampler_method, X_y_regression):
     X, y = X_y_regression
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="regression", sampler_method=sampler_method
+        X_train=X,
+        y_train=y,
+        problem_type="regression",
+        sampler_method=sampler_method,
     )
     for pipeline in automl.allowed_pipelines:
         assert not any("sampler" in c.name for c in pipeline.component_graph)

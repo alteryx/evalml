@@ -20,7 +20,7 @@ def highly_null_dataframe():
             "lots_of_null": [None, None, None, None, 5],
             "all_null": [None, None, None, None, None],
             "no_null": [1, 2, 3, 4, 5],
-        }
+        },
     )
 
 
@@ -28,7 +28,10 @@ def highly_null_dataframe():
 def highly_null_dataframe_nullable_types(highly_null_dataframe):
     df = highly_null_dataframe
     df.ww.init(
-        logical_types={"lots_of_null": "IntegerNullable", "all_null": "IntegerNullable"}
+        logical_types={
+            "lots_of_null": "IntegerNullable",
+            "all_null": "IntegerNullable",
+        },
     )
     return df
 
@@ -63,7 +66,8 @@ def test_highly_null_data_check_init():
     assert highly_null_check.pct_null_row_threshold == 0.5
 
     highly_null_check = NullDataCheck(
-        pct_null_col_threshold=1.0, pct_null_row_threshold=1.0
+        pct_null_col_threshold=1.0,
+        pct_null_row_threshold=1.0,
     )
     assert highly_null_check.pct_null_col_threshold == 1.0
     assert highly_null_check.pct_null_row_threshold == 1.0
@@ -93,7 +97,8 @@ def test_highly_null_data_check_init():
         match="`pct_moderately_null_col_threshold` must be a float between 0 and 1, inclusive, and must be less than or equal to `pct_null_col_threshold`.",
     ):
         NullDataCheck(
-            pct_null_col_threshold=0.90, pct_moderately_null_col_threshold=0.95
+            pct_null_col_threshold=0.90,
+            pct_moderately_null_col_threshold=0.95,
         )
     with pytest.raises(
         ValueError,
@@ -109,7 +114,9 @@ def test_highly_null_data_check_init():
 
 @pytest.mark.parametrize("nullable_type", [True, False])
 def test_highly_null_data_check_warnings(
-    nullable_type, highly_null_dataframe_nullable_types, highly_null_dataframe
+    nullable_type,
+    highly_null_dataframe_nullable_types,
+    highly_null_dataframe,
 ):
     # Test the data check with nullable types being used.
     if nullable_type:
@@ -124,7 +131,7 @@ def test_highly_null_data_check_warnings(
     highly_null_rows = SeriesWrap(pd.Series([2 / 4, 2 / 4, 3 / 4, 3 / 4, 1 / 4]))
     validate_messages = no_null_check.validate(df)
     validate_messages[0]["details"]["pct_null_cols"] = SeriesWrap(
-        validate_messages[0]["details"]["pct_null_cols"]
+        validate_messages[0]["details"]["pct_null_cols"],
     )
     assert validate_messages == [
         DataCheckWarning(
@@ -140,7 +147,7 @@ def test_highly_null_data_check_warnings(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
                     metadata={"rows": [0, 1, 2, 3, 4]},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -160,18 +167,19 @@ def test_highly_null_data_check_warnings(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": ["some_null", "lots_of_null", "all_null"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
 
     some_null_check = NullDataCheck(
-        pct_null_col_threshold=0.5, pct_null_row_threshold=0.5
+        pct_null_col_threshold=0.5,
+        pct_null_row_threshold=0.5,
     )
     highly_null_rows = SeriesWrap(pd.Series([2 / 4, 2 / 4, 3 / 4, 3 / 4]))
     validate_messages = some_null_check.validate(df)
     validate_messages[0]["details"]["pct_null_cols"] = SeriesWrap(
-        validate_messages[0]["details"]["pct_null_cols"]
+        validate_messages[0]["details"]["pct_null_cols"],
     )
     assert validate_messages == [
         DataCheckWarning(
@@ -184,7 +192,7 @@ def test_highly_null_data_check_warnings(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
                     metadata={"rows": [0, 1, 2, 3]},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -200,7 +208,7 @@ def test_highly_null_data_check_warnings(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": ["lots_of_null", "all_null"]},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -228,18 +236,19 @@ def test_highly_null_data_check_warnings(
                                         "categories": ["mean", "most_frequent"],
                                         "type": "category",
                                         "default_value": "mean",
-                                    }
-                                }
+                                    },
+                                },
                             },
-                        }
+                        },
                     },
-                )
+                ),
             ],
         ).to_dict(),
     ]
 
     all_null_check = NullDataCheck(
-        pct_null_col_threshold=1.0, pct_null_row_threshold=1.0
+        pct_null_col_threshold=1.0,
+        pct_null_row_threshold=1.0,
     )
     assert all_null_check.validate(df) == [
         DataCheckWarning(
@@ -255,7 +264,7 @@ def test_highly_null_data_check_warnings(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": ["all_null"]},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -282,19 +291,19 @@ def test_highly_null_data_check_warnings(
                                         "categories": ["mean", "most_frequent"],
                                         "type": "category",
                                         "default_value": "mean",
-                                    }
+                                    },
                                 },
                                 "some_null": {
                                     "impute_strategy": {
                                         "categories": ["mean", "most_frequent"],
                                         "type": "category",
                                         "default_value": "mean",
-                                    }
+                                    },
                                 },
                             },
-                        }
+                        },
                     },
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -309,7 +318,7 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
     highly_null_rows = SeriesWrap(pd.Series([2 / 4, 2 / 4, 3 / 4, 3 / 4, 1 / 4]))
     validate_messages = row_null_check.validate(highly_null_dataframe)
     validate_messages[0]["details"]["pct_null_cols"] = SeriesWrap(
-        validate_messages[0]["details"]["pct_null_cols"]
+        validate_messages[0]["details"]["pct_null_cols"],
     )
     assert validate_messages == [
         DataCheckWarning(
@@ -322,7 +331,7 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
                     metadata={"rows": [0, 1, 2, 3, 4]},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -338,7 +347,7 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": ["all_null"]},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -362,12 +371,12 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
                                         "categories": ["mean", "most_frequent"],
                                         "type": "category",
                                         "default_value": "mean",
-                                    }
-                                }
+                                    },
+                                },
                             },
-                        }
+                        },
                     },
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -396,7 +405,7 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": ["some_null", "lots_of_null", "all_null"]},
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -404,7 +413,8 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
 
 def test_highly_null_data_check_input_formats():
     highly_null_check = NullDataCheck(
-        pct_null_col_threshold=0.8, pct_null_row_threshold=0.8
+        pct_null_col_threshold=0.8,
+        pct_null_row_threshold=0.8,
     )
 
     # test empty pd.DataFrame
@@ -422,7 +432,7 @@ def test_highly_null_data_check_input_formats():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
                     metadata={"rows": [0]},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -438,7 +448,7 @@ def test_highly_null_data_check_input_formats():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": [0, 1, 2]},
-                )
+                ),
             ],
         ).to_dict(),
         DataCheckWarning(
@@ -462,12 +472,12 @@ def test_highly_null_data_check_input_formats():
                                         "categories": ["most_frequent"],
                                         "type": "category",
                                         "default_value": "most_frequent",
-                                    }
-                                }
+                                    },
+                                },
                             },
-                        }
+                        },
                     },
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -476,7 +486,7 @@ def test_highly_null_data_check_input_formats():
     ww_input.ww.init(logical_types={1: "categorical", 3: "categorical"})
     validate_messages = highly_null_check.validate(ww_input)
     validate_messages[0]["details"]["pct_null_cols"] = SeriesWrap(
-        validate_messages[0]["details"]["pct_null_cols"]
+        validate_messages[0]["details"]["pct_null_cols"],
     )
     assert validate_messages == expected
 
@@ -486,7 +496,8 @@ def test_get_null_column_information(highly_null_dataframe):
         highly_null_cols,
         highly_null_cols_indices,
     ) = NullDataCheck.get_null_column_information(
-        highly_null_dataframe, pct_null_col_threshold=0.8
+        highly_null_dataframe,
+        pct_null_col_threshold=0.8,
     )
     assert highly_null_cols == {"lots_of_null": 0.8, "all_null": 1.0}
     assert highly_null_cols_indices == {
@@ -498,7 +509,8 @@ def test_get_null_column_information(highly_null_dataframe):
 def test_get_null_row_information(highly_null_dataframe):
     expected_highly_null_rows = SeriesWrap(pd.Series([2 / 4, 2 / 4, 3 / 4, 3 / 4]))
     highly_null_rows = NullDataCheck.get_null_row_information(
-        highly_null_dataframe, pct_null_row_threshold=0.5
+        highly_null_dataframe,
+        pct_null_row_threshold=0.5,
     )
     highly_null_rows = SeriesWrap(highly_null_rows)
     assert highly_null_rows == expected_highly_null_rows
@@ -513,13 +525,13 @@ def test_has_null_but_not_highly_null():
             "few_null_2": [1, None, 3, 0, 5],
             "no_null": [1, 2, 3, 4, 5],
             "no_null_categorical": ["a", "b", "a", "d", "e"],
-        }
+        },
     )
     X.ww.init(
         logical_types={
             "few_null_categorical": "categorical",
             "few_null_categorical_2": "categorical",
-        }
+        },
     )
 
     null_check = NullDataCheck(pct_null_col_threshold=0.5, pct_null_row_threshold=1.0)
@@ -559,33 +571,33 @@ def test_has_null_but_not_highly_null():
                                         "categories": ["most_frequent"],
                                         "type": "category",
                                         "default_value": "most_frequent",
-                                    }
+                                    },
                                 },
                                 "few_null": {
                                     "impute_strategy": {
                                         "categories": ["mean", "most_frequent"],
                                         "type": "category",
                                         "default_value": "mean",
-                                    }
+                                    },
                                 },
                                 "few_null_categorical_2": {
                                     "impute_strategy": {
                                         "categories": ["most_frequent"],
                                         "type": "category",
                                         "default_value": "most_frequent",
-                                    }
+                                    },
                                 },
                                 "few_null_2": {
                                     "impute_strategy": {
                                         "categories": ["mean", "most_frequent"],
                                         "type": "category",
                                         "default_value": "mean",
-                                    }
+                                    },
                                 },
                             },
-                        }
+                        },
                     },
-                )
+                ),
             ],
         ).to_dict(),
     ]
@@ -597,7 +609,7 @@ def test_null_data_check_natural_language_highly_null_dropped():
             "few_null_natural_language": [None, "a", "b", "c", "d"],
             "highly_null_natural_language": [None, None, "b", None, "d"],
             "no_null_natural_language": ["a", "b", "a", "d", "e"],
-        }
+        },
     )
 
     X.ww.init(
@@ -605,7 +617,7 @@ def test_null_data_check_natural_language_highly_null_dropped():
             "highly_null_natural_language": "NaturalLanguage",
             "few_null_natural_language": "NaturalLanguage",
             "no_null_natural_language": "NaturalLanguage",
-        }
+        },
     )
 
     null_check = NullDataCheck(pct_null_col_threshold=0.5, pct_null_row_threshold=1.0)
@@ -625,9 +637,9 @@ def test_null_data_check_natural_language_highly_null_dropped():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": ["highly_null_natural_language"]},
-                )
+                ),
             ],
-        ).to_dict()
+        ).to_dict(),
     ]
 
 
@@ -657,7 +669,7 @@ def test_null_data_check_datetime_highly_null_dropped():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": ["highly_null_datetime"]},
-                )
+                ),
             ],
-        ).to_dict()
+        ).to_dict(),
     ]

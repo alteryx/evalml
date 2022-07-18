@@ -2,8 +2,7 @@
 import numpy as np
 from scipy.optimize import differential_evolution
 
-from .objective_base import ObjectiveBase
-
+from evalml.objectives.objective_base import ObjectiveBase
 from evalml.problem_types import ProblemTypes
 
 
@@ -50,7 +49,9 @@ class BinaryClassificationObjective(ObjectiveBase):
 
         def cost(threshold):
             y_predicted = self.decision_function(
-                ypred_proba=ypred_proba, threshold=threshold[0], X=X
+                ypred_proba=ypred_proba,
+                threshold=threshold[0],
+                X=X,
             )
             cost = self.objective_function(y_true, y_predicted, X=X)
             return -cost if self.greater_is_better else cost

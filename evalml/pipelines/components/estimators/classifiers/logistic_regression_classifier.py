@@ -77,7 +77,9 @@ class LogisticRegressionClassifier(Estimator):
         parameters.update(kwargs)
         lr_classifier = SKLogisticRegression(random_state=random_seed, **parameters)
         super().__init__(
-            parameters=parameters, component_obj=lr_classifier, random_seed=random_seed
+            parameters=parameters,
+            component_obj=lr_classifier,
+            random_seed=random_seed,
         )
 
     @property

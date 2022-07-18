@@ -41,10 +41,10 @@ class TimeSeriesImputer(Transformer):
     }"""
     _valid_categorical_impute_strategies = set(["backwards_fill", "forwards_fill"])
     _valid_numeric_impute_strategies = set(
-        ["backwards_fill", "forwards_fill", "interpolate"]
+        ["backwards_fill", "forwards_fill", "interpolate"],
     )
     _valid_target_impute_strategies = set(
-        ["backwards_fill", "forwards_fill", "interpolate"]
+        ["backwards_fill", "forwards_fill", "interpolate"],
     )
 
     def __init__(
@@ -57,15 +57,15 @@ class TimeSeriesImputer(Transformer):
     ):
         if categorical_impute_strategy not in self._valid_categorical_impute_strategies:
             raise ValueError(
-                f"{categorical_impute_strategy} is an invalid parameter. Valid categorical impute strategies are {', '.join(self._valid_numeric_impute_strategies)}"
+                f"{categorical_impute_strategy} is an invalid parameter. Valid categorical impute strategies are {', '.join(self._valid_numeric_impute_strategies)}",
             )
         elif numeric_impute_strategy not in self._valid_numeric_impute_strategies:
             raise ValueError(
-                f"{numeric_impute_strategy} is an invalid parameter. Valid numeric impute strategies are {', '.join(self._valid_numeric_impute_strategies)}"
+                f"{numeric_impute_strategy} is an invalid parameter. Valid numeric impute strategies are {', '.join(self._valid_numeric_impute_strategies)}",
             )
         elif target_impute_strategy not in self._valid_target_impute_strategies:
             raise ValueError(
-                f"{target_impute_strategy} is an invalid parameter. Valid target column impute strategies are {', '.join(self._valid_target_impute_strategies)}"
+                f"{target_impute_strategy} is an invalid parameter. Valid target column impute strategies are {', '.join(self._valid_target_impute_strategies)}",
             )
 
         parameters = {
@@ -80,7 +80,9 @@ class TimeSeriesImputer(Transformer):
         self._interpolate_cols = None
         self._impute_target = None
         super().__init__(
-            parameters=parameters, component_obj=None, random_seed=random_seed
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y=None):

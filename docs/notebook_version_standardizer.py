@@ -1,6 +1,7 @@
-import click
 import json
 import os
+
+import click
 
 DOCS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "source")
 
@@ -49,7 +50,9 @@ def _check_execution_and_output(notebook):
     with open(notebook, "r") as f:
         source = json.load(f)
     for cells in source["cells"]:
-        if cells["cell_type"] == "code" and (cells["execution_count"] is not None or cells['outputs']!= []):
+        if cells["cell_type"] == "code" and (
+            cells["execution_count"] is not None or cells["outputs"] != []
+        ):
             return False
     return True
 
@@ -118,14 +121,15 @@ def cli():
 def check_versions(desired_version):
     notebooks = _get_ipython_notebooks(DOCS_PATH)
     different_versions = _get_notebooks_with_different_versions(
-        notebooks, desired_version
+        notebooks,
+        desired_version,
     )
     if different_versions:
         different_versions = ["\t" + notebook for notebook in different_versions]
         different_versions = "\n".join(different_versions)
         raise SystemExit(
             f"The following notebooks don't match {desired_version}:\n {different_versions}\n"
-            "Please run make lint-fix to fix this."
+            "Please run make lint-fix to fix this.",
         )
 
 
@@ -138,49 +142,54 @@ def check_versions(desired_version):
 def standardize(desired_version):
     notebooks = _get_ipython_notebooks(DOCS_PATH)
     different_versions = _get_notebooks_with_different_versions(
-        notebooks, desired_version
+        notebooks,
+        desired_version,
     )
-    executed_notebooks, empty_cells = _get_notebooks_with_executions_and_empty(notebooks)
+    executed_notebooks, empty_cells = _get_notebooks_with_executions_and_empty(
+        notebooks
+    )
     if different_versions:
         _standardize_versions(different_versions, desired_version)
         different_versions = ["\t" + notebook for notebook in different_versions]
         different_versions = "\n".join(different_versions)
         click.echo(
-            f"Set the notebook version to {desired_version} for:\n {different_versions}"
+            f"Set the notebook version to {desired_version} for:\n {different_versions}",
         )
     if executed_notebooks:
         _standardize_outputs(executed_notebooks)
         executed_notebooks = ["\t" + notebook for notebook in executed_notebooks]
         executed_notebooks = "\n".join(executed_notebooks)
         click.echo(
-            f"Removed the outputs for:\n {executed_notebooks}"
+            f"Removed the outputs for:\n {executed_notebooks}",
         )
     if empty_cells:
         _remove_notebook_empty_last_cell(empty_cells)
         empty_cells = ["\t" + notebook for notebook in empty_cells]
         empty_cells = "\n".join(empty_cells)
         click.echo(
-            f"Removed the empty cells for:\n {empty_cells}"
+            f"Removed the empty cells for:\n {empty_cells}",
         )
 
 
 @cli.command()
 def check_execution():
     notebooks = _get_ipython_notebooks(DOCS_PATH)
-    executed_notebooks, empty_cells = _get_notebooks_with_executions_and_empty(notebooks)
+    executed_notebooks, empty_cells = _get_notebooks_with_executions_and_empty(
+        notebooks
+    )
     if executed_notebooks:
         executed_notebooks = ["\t" + notebook for notebook in executed_notebooks]
         executed_notebooks = "\n".join(executed_notebooks)
         raise SystemExit(
             f"The following notebooks have executed outputs:\n {executed_notebooks}\n"
-            "Please run make lint-fix to fix this."
+            "Please run make lint-fix to fix this.",
         )
     if empty_cells:
         empty_cells = ["\t" + notebook for notebook in empty_cells]
         empty_cells = "\n".join(empty_cells)
         raise SystemExit(
             f"The following notebooks have empty cells at the end:\n {empty_cells}\n"
-            "Please run make lint-fix to fix this."
+            "Please run make lint-fix to fix this.",
         )
 
 

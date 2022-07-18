@@ -13,11 +13,15 @@ def test_catboost_regressor_random_seed_bounds_seed(X_y_regression):
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
     clf = CatBoostRegressor(
-        n_estimators=1, max_depth=1, random_seed=SEED_BOUNDS.min_bound
+        n_estimators=1,
+        max_depth=1,
+        random_seed=SEED_BOUNDS.min_bound,
     )
     clf.fit(X, y)
     clf = CatBoostRegressor(
-        n_estimators=1, max_depth=1, random_seed=SEED_BOUNDS.max_bound
+        n_estimators=1,
+        max_depth=1,
+        random_seed=SEED_BOUNDS.max_bound,
     )
     fitted = clf.fit(X, y)
     assert isinstance(fitted, CatBoostRegressor)

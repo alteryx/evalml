@@ -1,3 +1,3 @@
 """Sampler components."""
-from .undersampler import Undersampler
-from .oversampler import Oversampler
+from evalml.pipelines.components.transformers.samplers.undersampler import Undersampler
+from evalml.pipelines.components.transformers.samplers.oversampler import Oversampler

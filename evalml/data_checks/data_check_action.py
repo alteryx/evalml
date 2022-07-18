@@ -61,14 +61,14 @@ class DataCheckAction:
         """
         if "code" not in action_dict or "metadata" not in action_dict:
             raise ValueError(
-                "The input dictionary should have the keys `code` and `metadata`."
+                "The input dictionary should have the keys `code` and `metadata`.",
             )
         if (
             "columns" not in action_dict["metadata"]
             or "rows" not in action_dict["metadata"]
         ):
             raise ValueError(
-                "The metadata dictionary should have the keys `columns` or `rows`. Set to None if not using."
+                "The metadata dictionary should have the keys `columns` or `rows`. Set to None if not using.",
             )
 
         return DataCheckAction(

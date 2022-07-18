@@ -44,7 +44,7 @@ def test_baseline_binary_mode(data_type, make_data_type):
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (X.shape[0], 2)
     expected_predictions_proba = pd.DataFrame(
-        {10: [1.0, 1.0, 1.0, 1.0], 11: [0.0, 0.0, 0.0, 0.0]}
+        {10: [1.0, 1.0, 1.0, 1.0], 11: [0.0, 0.0, 0.0, 0.0]},
     )
     assert_frame_equal(expected_predictions_proba, predicted_proba)
 
@@ -59,7 +59,8 @@ def test_baseline_binary_random(X_y_binary):
     assert clf.classes_ == [0, 1]
 
     expected_predictions = pd.Series(
-        get_random_state(0).choice(np.unique(y), len(X)), dtype="int64"
+        get_random_state(0).choice(np.unique(y), len(X)),
+        dtype="int64",
     )
     predictions = clf.predict(X)
     assert_series_equal(expected_predictions, predictions)
@@ -67,7 +68,7 @@ def test_baseline_binary_random(X_y_binary):
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 2)
     expected_predictions_proba = pd.DataFrame(
-        np.array([[0.5 for i in range(len(values))]] * len(X))
+        np.array([[0.5 for i in range(len(values))]] * len(X)),
     )
     assert_frame_equal(expected_predictions_proba, predicted_proba)
 
@@ -85,7 +86,8 @@ def test_baseline_binary_random_weighted(X_y_binary):
 
     assert clf.classes_ == [0, 1]
     expected_predictions = pd.Series(
-        get_random_state(0).choice(np.unique(y), len(X), p=percent_freq), dtype="int64"
+        get_random_state(0).choice(np.unique(y), len(X), p=percent_freq),
+        dtype="int64",
     )
     predictions = clf.predict(X)
     assert_series_equal(expected_predictions, predictions)
@@ -93,7 +95,7 @@ def test_baseline_binary_random_weighted(X_y_binary):
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 2)
     expected_predictions_proba = pd.DataFrame(
-        np.array([[percent_freq[i] for i in range(len(values))]] * len(X))
+        np.array([[percent_freq[i] for i in range(len(values))]] * len(X)),
     )
     assert_frame_equal(expected_predictions_proba, predicted_proba)
 
@@ -114,7 +116,7 @@ def test_baseline_multiclass_mode():
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 3)
     expected_predictions_proba = pd.DataFrame(
-        {10: [0.0, 0.0, 0.0, 0.0], 11: [1.0, 1.0, 1.0, 1.0], 12: [0.0, 0.0, 0.0, 0.0]}
+        {10: [0.0, 0.0, 0.0, 0.0], 11: [1.0, 1.0, 1.0, 1.0], 12: [0.0, 0.0, 0.0, 0.0]},
     )
     assert_frame_equal(expected_predictions_proba, predicted_proba)
 
@@ -129,7 +131,8 @@ def test_baseline_multiclass_random(X_y_multi):
 
     assert clf.classes_ == [0, 1, 2]
     expected_predictions = pd.Series(
-        get_random_state(0).choice(np.unique(y), len(X)), dtype="int64"
+        get_random_state(0).choice(np.unique(y), len(X)),
+        dtype="int64",
     )
     predictions = clf.predict(X)
     assert_series_equal(expected_predictions, predictions)
@@ -153,7 +156,8 @@ def test_baseline_multiclass_random_weighted(X_y_multi):
 
     assert clf.classes_ == [0, 1, 2]
     expected_predictions = pd.Series(
-        get_random_state(0).choice(np.unique(y), len(X), p=percent_freq), dtype="int64"
+        get_random_state(0).choice(np.unique(y), len(X), p=percent_freq),
+        dtype="int64",
     )
     predictions = clf.predict(X)
     assert_series_equal(expected_predictions, predictions)
@@ -162,7 +166,7 @@ def test_baseline_multiclass_random_weighted(X_y_multi):
     assert predicted_proba.shape == (len(X), 3)
     assert_frame_equal(
         pd.DataFrame(
-            np.array([[percent_freq[i] for i in range(len(values))]] * len(X))
+            np.array([[percent_freq[i] for i in range(len(values))]] * len(X)),
         ),
         predicted_proba,
     )

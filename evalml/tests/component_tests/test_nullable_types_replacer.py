@@ -25,7 +25,7 @@ def nullable_data():
             "nullable_age": [20, None, 22, 23, None],
             "non_nullable_boolean": [True, False, True, False, True],
             "nullable_boolean": [None, True, False, True, False],
-        }
+        },
     )
 
 
@@ -41,7 +41,7 @@ def test_replace_nullable_types(nullable_data, input_type, methods_to_test):
             "nullable_integer": "Int64",
             "nullable_age": "Int64",
             "nullable_boolean": "boolean",
-        }
+        },
     )
 
     assert str(X.dtypes.loc["non_nullable_integer"]) == "int64"

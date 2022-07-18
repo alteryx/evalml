@@ -29,7 +29,7 @@ class DataChecks:
         """Creates a DataChecks instance from a list of DataCheck classes and corresponding params."""
         if not isinstance(data_check_classes, list):
             raise ValueError(
-                f"Parameter data_checks must be a list. Received {type(data_check_classes).__name__}."
+                f"Parameter data_checks must be a list. Received {type(data_check_classes).__name__}.",
             )
         if not all(
             inspect.isclass(check) and issubclass(check, DataCheck)
@@ -38,7 +38,7 @@ class DataChecks:
             raise ValueError(
                 "All elements of parameter data_checks must be an instance of DataCheck "
                 "or a DataCheck class with any desired parameters specified in the "
-                "data_check_params dictionary."
+                "data_check_params dictionary.",
             )
         params = params or dict()
         if not isinstance(params, dict):
@@ -52,13 +52,13 @@ class DataChecks:
             raise DataCheckInitError(
                 f"Class {extraneous_class} was provided in params dictionary but it does not match any name "
                 "in the data_check_classes list. Make sure every key of the params dictionary matches the name"
-                "attribute of a corresponding DataCheck class."
+                "attribute of a corresponding DataCheck class.",
             )
         for missing_class_name in missing:
             if not _has_defaults_for_all_args(name_to_class[missing_class_name]):
                 raise DataCheckInitError(
                     f"Class {missing_class_name} was provided in the data_checks_classes list but it does not have "
-                    "an entry in the parameters dictionary."
+                    "an entry in the parameters dictionary.",
                 )
 
     @staticmethod
@@ -68,13 +68,13 @@ class DataChecks:
             class_params = params.get(data_check_class.name, {})
             if not isinstance(class_params, dict):
                 raise DataCheckInitError(
-                    f"Parameters for {data_check_class.name} were not in a dictionary. Received {class_params}."
+                    f"Parameters for {data_check_class.name} were not in a dictionary. Received {class_params}.",
                 )
             try:
                 data_check_instances.append(data_check_class(**class_params))
             except TypeError as e:
                 raise DataCheckInitError(
-                    f"Encountered the following error while initializing {data_check_class.name}: {e}"
+                    f"Encountered the following error while initializing {data_check_class.name}: {e}",
                 )
         return data_check_instances
 

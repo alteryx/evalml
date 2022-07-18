@@ -16,12 +16,16 @@ def test_xgboost_regressor_random_seed_bounds_seed(X_y_regression):
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
     clf = XGBoostRegressor(
-        n_estimators=1, max_depth=1, random_seed=SEED_BOUNDS.min_bound
+        n_estimators=1,
+        max_depth=1,
+        random_seed=SEED_BOUNDS.min_bound,
     )
     fitted = clf.fit(X, y)
     assert isinstance(fitted, XGBoostRegressor)
     clf = XGBoostRegressor(
-        n_estimators=1, max_depth=1, random_seed=SEED_BOUNDS.max_bound
+        n_estimators=1,
+        max_depth=1,
+        random_seed=SEED_BOUNDS.max_bound,
     )
     clf.fit(X, y)
 

@@ -58,12 +58,14 @@ class VowpalWabbitRegressor(Estimator):
         vw_regressor_class = vw.VWRegressor
         vw_regressor = vw_regressor_class(**parameters)
         super().__init__(
-            parameters=parameters, component_obj=vw_regressor, random_seed=random_seed
+            parameters=parameters,
+            component_obj=vw_regressor,
+            random_seed=random_seed,
         )
 
     @property
     def feature_importance(self):
         """Feature importance for Vowpal Wabbit regressor."""
         raise NotImplementedError(
-            "Feature importance is not implemented for the Vowpal Wabbit regressor."
+            "Feature importance is not implemented for the Vowpal Wabbit regressor.",
         )

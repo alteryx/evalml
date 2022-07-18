@@ -29,7 +29,8 @@ def _create_dictionary(explainer_values, feature_names):
     explainer_values = np.atleast_2d(explainer_values)
     mapping = {}
     for feature_name, column_index in zip(
-        feature_names, range(explainer_values.shape[1])
+        feature_names,
+        range(explainer_values.shape[1]),
     ):
         mapping[feature_name] = explainer_values[:, column_index].tolist()
     return mapping
@@ -51,7 +52,7 @@ def _compute_lime_values(pipeline, features, index_to_explain):
     lime = import_or_raise("lime.lime_tabular", error_msg=error_msg)
     if pipeline.estimator.model_family == ModelFamily.BASELINE:
         raise ValueError(
-            "You passed in a baseline pipeline. These are simple enough that LIME values are not needed."
+            "You passed in a baseline pipeline. These are simple enough that LIME values are not needed.",
         )
     mode = "classification"
     if is_regression(pipeline.problem_type):
@@ -122,7 +123,7 @@ def _compute_shap_values(pipeline, features, training_data=None):
     estimator = pipeline.estimator
     if estimator.model_family == ModelFamily.BASELINE:
         raise ValueError(
-            "You passed in a baseline pipeline. These are simple enough that SHAP values are not needed."
+            "You passed in a baseline pipeline. These are simple enough that SHAP values are not needed.",
         )
 
     feature_names = features.columns
@@ -137,7 +138,8 @@ def _compute_shap_values(pipeline, features, training_data=None):
         # Use tree_path_dependent to avoid linear runtime with dataset size
         with warnings.catch_warnings(record=True) as ws:
             explainer = shap.TreeExplainer(
-                estimator._component_obj, feature_perturbation="tree_path_dependent"
+                estimator._component_obj,
+                feature_perturbation="tree_path_dependent",
             )
         if ws:
             logger.debug(f"_compute_shap_values TreeExplainer: {ws[0].message}")
@@ -156,7 +158,7 @@ def _compute_shap_values(pipeline, features, training_data=None):
             raise ValueError(
                 "You must pass in a value for parameter 'training_data' when the pipeline "
                 "does not have a tree-based estimator. "
-                f"Current estimator model family is {estimator.model_family}."
+                f"Current estimator model family is {estimator.model_family}.",
             )
 
         # More than 100 datapoints can negatively impact runtime according to SHAP
@@ -319,5 +321,5 @@ def _normalize_explainer_values(values):
         return [_normalize_values_dict(class_values) for class_values in values]
     else:
         raise ValueError(
-            f"Unsupported data type for _normalize_explainer_values: {str(type(values))}."
+            f"Unsupported data type for _normalize_explainer_values: {str(type(values))}.",
         )

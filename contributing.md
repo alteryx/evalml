@@ -39,6 +39,7 @@ Note that if you're on Mac, there are a few extra steps you'll want to keep trac
   # runs all the unit tests locally
   make test
   ```
+
 * If you made changes to the documentation, build the documentation to view locally.
   ```bash
   # go to docs and build
@@ -47,6 +48,15 @@ Note that if you're on Mac, there are a few extra steps you'll want to keep trac
 
   # view docs locally
   open build/html/index.html
+  ```
+
+* Before you commit, a few lint fixing hooks will run. You can also manually run these.
+  ```bash
+  # run linting hooks only on changed files
+  pre-commit run
+
+  # run linting hooks on all files
+  pre-commit run --all-files
   ```
 
 Note that if you're building docs locally, the warning suppression code at `docs/source/disable-warnings.py` will not run, meaning you'll see python warnings appear in the docs where applicable. To suppress this, add `warnings.filterwarnings('ignore')` to `docs/source/conf.py`.

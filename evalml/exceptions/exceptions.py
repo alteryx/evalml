@@ -62,7 +62,7 @@ class PipelineScoreError(Exception):
         exception_list = []
         for objective, (exception, tb) in exceptions.items():
             exception_list.append(
-                f"{objective} encountered {str(exception.__class__.__name__)} with message ({str(exception)}):\n"
+                f"{objective} encountered {str(exception.__class__.__name__)} with message ({str(exception)}):\n",
             )
             exception_list.extend(tb)
         message = "\n".join(exception_list)

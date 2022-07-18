@@ -63,7 +63,7 @@ def _make_rows(
 
         if convert_numeric_to_string:
             if pd.api.types.is_number(feature_value) and not pd.api.types.is_bool(
-                feature_value
+                feature_value,
             ):
                 feature_value = "{:.2f}".format(feature_value)
             else:
@@ -447,7 +447,9 @@ class _MultiClassExplanationTable(_TableMaker):
     ):
         strings = []
         for class_name, class_values, normalized_class_values in zip(
-            self.class_names, aggregated_explainer_values, aggregated_normalized_values
+            self.class_names,
+            aggregated_explainer_values,
+            aggregated_normalized_values,
         ):
             strings.append(f"Class: {class_name}\n")
             table = _make_text_table(
@@ -547,21 +549,24 @@ def _make_single_prediction_explanation_table(
         )
     elif algorithm == "lime":
         explainer_values = _compute_lime_values(
-            pipeline, pipeline_features, index_to_explain
+            pipeline,
+            pipeline_features,
+            index_to_explain,
         )
         expected_value = None
     else:
         raise ValueError(
-            f"Unknown algorithm {algorithm}, should be one of ['shap', 'lime']"
+            f"Unknown algorithm {algorithm}, should be one of ['shap', 'lime']",
         )
     normalized_values = _normalize_explainer_values(explainer_values)
 
     provenance = pipeline._get_feature_provenance()
     aggregated_explainer_values = _aggregate_explainer_values(
-        explainer_values, provenance
+        explainer_values,
+        provenance,
     )
     aggregated_normalized_explainer_values = _normalize_explainer_values(
-        aggregated_explainer_values
+        aggregated_explainer_values,
     )
 
     class_names = None
@@ -729,7 +734,8 @@ class _ClassificationPredictedValues(_SectionMaker):
         pred_value = [
             f"{col_name}: {pred}"
             for col_name, pred in zip(
-                y_pred.columns, round(y_pred.iloc[index], 3).tolist()
+                y_pred.columns,
+                round(y_pred.iloc[index], 3).tolist(),
             )
         ]
         pred_value = "[" + ", ".join(pred_value) + "]"
@@ -750,7 +756,7 @@ class _ClassificationPredictedValues(_SectionMaker):
         return {
             "probabilities": pred_values,
             "predicted_value": _make_json_serializable(
-                self.predicted_values.iloc[index]
+                self.predicted_values.iloc[index],
             ),
             "target_value": _make_json_serializable(y_true.iloc[index]),
             "error_name": self.error_name,
@@ -916,14 +922,17 @@ class _ReportMaker:
                         data.y_true,
                         data.errors,
                         pd.Series(data.pipeline_features.index),
-                    )
+                    ),
                 )
             else:
                 report.extend([""])
             report.extend(
                 self.table_maker.make_text(
-                    index, data.pipeline, data.pipeline_features, data.input_features
-                )
+                    index,
+                    data.pipeline,
+                    data.pipeline_features,
+                    data.input_features,
+                ),
             )
         return "".join(report)
 
@@ -953,7 +962,10 @@ class _ReportMaker:
                     pd.Series(data.pipeline_features.index),
                 )
             section["explanations"] = self.table_maker.make_dict(
-                index, data.pipeline, data.pipeline_features, data.input_features
+                index,
+                data.pipeline,
+                data.pipeline_features,
+                data.input_features,
             )["explanations"]
             report.append(section)
         return {"explanations": report}
@@ -962,7 +974,10 @@ class _ReportMaker:
         report = []
         for rank, index in enumerate(data.index_list):
             explanation_table = self.table_maker.make_dataframe(
-                index, data.pipeline, data.pipeline_features, data.input_features
+                index,
+                data.pipeline,
+                data.pipeline_features,
+                data.input_features,
             )
             if self.make_predicted_values_maker:
                 heading = self.make_predicted_values_maker.make_dataframe(

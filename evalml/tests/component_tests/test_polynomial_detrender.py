@@ -53,7 +53,7 @@ def test_polynomial_detrender_fit_transform(degree, use_int_index, input_type, t
     # Get the expected answer
     lin_reg = LinearRegression(fit_intercept=True)
     features = PolynomialFeatures(degree=degree).fit_transform(
-        np.arange(X_input.shape[0]).reshape(-1, 1)
+        np.arange(X_input.shape[0]).reshape(-1, 1),
     )
     lin_reg.fit(features, y_input)
     detrended_values = y_input.values - lin_reg.predict(features)

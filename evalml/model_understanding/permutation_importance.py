@@ -10,7 +10,13 @@ from evalml.utils import import_or_raise, infer_feature_types, jupyter_check
 
 
 def calculate_permutation_importance(
-    pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=0
+    pipeline,
+    X,
+    y,
+    objective,
+    n_repeats=5,
+    n_jobs=None,
+    random_seed=0,
 ):
     """Calculates permutation importance for features.
 
@@ -36,7 +42,7 @@ def calculate_permutation_importance(
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(pipeline.problem_type):
         raise ValueError(
-            f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'"
+            f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'",
         )
 
     if pipeline._supports_fast_permutation_importance:
@@ -86,7 +92,8 @@ def graph_permutation_importance(pipeline, X, y, objective, importance_threshold
         ValueError: If importance_threshold is not greater than or equal to 0.
     """
     go = import_or_raise(
-        "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
+        "plotly.graph_objects",
+        error_msg="Cannot find dependency plotly.graph_objects",
     )
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
@@ -96,7 +103,7 @@ def graph_permutation_importance(pipeline, X, y, objective, importance_threshold
 
     if importance_threshold < 0:
         raise ValueError(
-            f"Provided importance threshold of {importance_threshold} must be greater than or equal to 0"
+            f"Provided importance threshold of {importance_threshold} must be greater than or equal to 0",
         )
     # Remove features with close to zero importance
     perm_importance = perm_importance[
@@ -116,7 +123,7 @@ def graph_permutation_importance(pipeline, X, y, objective, importance_threshold
             x=perm_importance["importance"],
             y=perm_importance["feature"],
             orientation="h",
-        )
+        ),
     ]
 
     layout = {
@@ -169,11 +176,11 @@ def calculate_permutation_importance_one_column(
     if fast:
         if not pipeline._supports_fast_permutation_importance:
             raise ValueError(
-                "Pipeline does not support fast permutation importance calculation"
+                "Pipeline does not support fast permutation importance calculation",
             )
         if precomputed_features is None:
             raise ValueError(
-                "Fast method of calculating permutation importance requires precomputed_features"
+                "Fast method of calculating permutation importance requires precomputed_features",
             )
         permutation_importance = _fast_permutation_importance(
             pipeline,
@@ -296,7 +303,14 @@ def _calculate_permutation_scores_fast(
 
 
 def _slow_permutation_importance(
-    pipeline, X, y, objective, col_name=None, n_repeats=5, n_jobs=None, random_seed=None
+    pipeline,
+    X,
+    y,
+    objective,
+    col_name=None,
+    n_repeats=5,
+    n_jobs=None,
+    random_seed=None,
 ):
     """If `col_name` is not None, calculates permutation importance for only the column with that name.
 
@@ -306,14 +320,28 @@ def _slow_permutation_importance(
     if col_name is None:
         scores = Parallel(n_jobs=n_jobs)(
             delayed(_calculate_permutation_scores_slow)(
-                pipeline, X, y, col_idx, objective, _slow_scorer, n_repeats, random_seed
+                pipeline,
+                X,
+                y,
+                col_idx,
+                objective,
+                _slow_scorer,
+                n_repeats,
+                random_seed,
             )
             for col_idx in range(X.shape[1])
         )
     else:
         baseline_score = _slow_scorer(pipeline, X, y, objective)
         scores = _calculate_permutation_scores_slow(
-            pipeline, X, y, col_name, objective, _slow_scorer, n_repeats, random_seed
+            pipeline,
+            X,
+            y,
+            col_name,
+            objective,
+            _slow_scorer,
+            n_repeats,
+            random_seed,
         )
     importances = baseline_score - np.array(scores)
     importances_mean = (
@@ -323,7 +351,14 @@ def _slow_permutation_importance(
 
 
 def _calculate_permutation_scores_slow(
-    estimator, X, y, col_name, objective, scorer, n_repeats, random_seed
+    estimator,
+    X,
+    y,
+    col_name,
+    objective,
+    scorer,
+    n_repeats,
+    random_seed,
 ):
     """Calculate score when `col_idx` is permuted."""
     random_state = np.random.RandomState(random_seed)

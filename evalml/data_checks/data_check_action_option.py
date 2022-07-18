@@ -90,7 +90,7 @@ class DataCheckActionOption:
             parameter_dict[
                 "parameter_type"
             ] = DCAOParameterType.handle_dcao_parameter_type(
-                parameter_dict["parameter_type"]
+                parameter_dict["parameter_type"],
             ).value
 
         action_option_dict.update({"parameters": parameters_dict})
@@ -111,14 +111,14 @@ class DataCheckActionOption:
         """
         if "code" not in action_dict or "metadata" not in action_dict:
             raise ValueError(
-                "The input dictionary should have the keys `code` and `metadata`."
+                "The input dictionary should have the keys `code` and `metadata`.",
             )
         if (
             "columns" not in action_dict["metadata"]
             and "rows" not in action_dict["metadata"]
         ):
             raise ValueError(
-                "The metadata dictionary should have the keys `columns` or `rows`. Set to None if not using."
+                "The metadata dictionary should have the keys `columns` or `rows`. Set to None if not using.",
             )
 
         return DataCheckActionOption(
@@ -140,12 +140,12 @@ class DataCheckActionOption:
 
             try:
                 parameter_type = DCAOParameterType.handle_dcao_parameter_type(
-                    parameter_value["parameter_type"]
+                    parameter_value["parameter_type"],
                 )
             except KeyError as ke:
                 raise ValueError(
                     "Each parameter must have a parameter_type key with a value of `global` or `column`. "
-                    + str(ke)
+                    + str(ke),
                 )
 
             if parameter_type == DCAOParameterType.GLOBAL:
@@ -154,22 +154,22 @@ class DataCheckActionOption:
             elif parameter_type == DCAOParameterType.COLUMN:
                 if "columns" not in parameter_value:
                     raise ValueError(
-                        "Each `column` parameter type must also have a `columns` key indicating which columns the parameter should address."
+                        "Each `column` parameter type must also have a `columns` key indicating which columns the parameter should address.",
                     )
                 columns = parameter_value["columns"]
                 if not isinstance(columns, dict):
                     raise ValueError(
-                        "`columns` must be a dictionary, where each key is the name of a column and the associated value is a dictionary of parameters for that column."
+                        "`columns` must be a dictionary, where each key is the name of a column and the associated value is a dictionary of parameters for that column.",
                     )
                 for column_parameters in columns.values():
                     for column_parameter_values in column_parameters.values():
                         if "type" not in column_parameter_values:
                             raise ValueError(
-                                "Each column parameter must have a type key."
+                                "Each column parameter must have a type key.",
                             )
                         if "default_value" not in column_parameter_values:
                             raise ValueError(
-                                "Each column parameter must have a default_value key."
+                                "Each column parameter must have a default_value key.",
                             )
 
     def get_action_from_defaults(self):
@@ -182,7 +182,7 @@ class DataCheckActionOption:
         actions_parameters = {}
         for parameter, parameter_info in parameters.items():
             parameter_type = DCAOParameterType.handle_dcao_parameter_type(
-                parameter_info["parameter_type"]
+                parameter_info["parameter_type"],
             )
             if parameter_type == DCAOParameterType.GLOBAL:
                 actions_parameters[parameter] = parameter_info["default_value"]
@@ -205,7 +205,9 @@ class DataCheckActionOption:
         metadata = self.metadata
         metadata.update({"parameters": actions_parameters})
         return DataCheckAction(
-            self.action_code, self.data_check_name, metadata=metadata
+            self.action_code,
+            self.data_check_name,
+            metadata=metadata,
         )
 
 
@@ -259,13 +261,13 @@ class DCAOParameterType(Enum):
                 tpe = DCAOParameterType._all_values[dcao_parameter_type.upper()]
             except KeyError:
                 raise KeyError(
-                    "Parameter type '{}' does not exist".format(dcao_parameter_type)
+                    "Parameter type '{}' does not exist".format(dcao_parameter_type),
                 )
             return tpe
         if isinstance(dcao_parameter_type, DCAOParameterType):
             return dcao_parameter_type
         raise ValueError(
-            "`handle_dcao_parameter_type` was not passed a str or DCAOParameterType object"
+            "`handle_dcao_parameter_type` was not passed a str or DCAOParameterType object",
         )
 
 

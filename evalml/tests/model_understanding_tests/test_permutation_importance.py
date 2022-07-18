@@ -107,7 +107,7 @@ class LinearPipelineWithTextFeatures(BinaryClassificationPipeline):
 
 
 class LinearPipelineWithNaturalLanguageFeaturizerNoTextFeatures(
-    LinearPipelineWithTextFeatures
+    LinearPipelineWithTextFeatures,
 ):
     """Testing a pipeline with NaturalLanguageFeaturizer but no text features."""
 
@@ -190,23 +190,23 @@ test_cases = [
                     "expiration_date",
                     "lat",
                     "card_id",
-                ]
-            }
+                ],
+            },
         },
     ),
     (
         LinearPipelineWithImputer,
         {
             "Select Columns Transformer": {
-                "columns": ["provider", "lng", "datetime", "card_id", "country"]
-            }
+                "columns": ["provider", "lng", "datetime", "card_id", "country"],
+            },
         },
     ),
     (
         LinearPipelineSameFeatureUsedByTwoComponents,
         {
             "Select Columns Transformer": {
-                "columns": ["expiration_date", "datetime", "amount"]
+                "columns": ["expiration_date", "datetime", "amount"],
             },
             "DateTime Featurizer": {"encode_as_categories": True},
         },
@@ -221,13 +221,13 @@ test_cases = [
                     "region",
                     "country",
                     "amount",
-                ]
+                ],
             },
             "One Hot Encoder": {
                 "features_to_encode": [
                     "currency",
                     "expiration_date",
-                ]
+                ],
             },
             "One Hot Encoder_2": {"features_to_encode": ["region", "country"]},
         },
@@ -259,7 +259,7 @@ test_cases = [
                     "card_id",
                     "store_id",
                     "datetime",
-                ]
+                ],
             },
             "SelectCategorical1": {"columns": ["currency", "provider"]},
             "SelectCategorical2": {"columns": ["region", "country"]},
@@ -273,7 +273,7 @@ test_cases = [
             "SelectDate": {
                 "columns": [
                     "datetime",
-                ]
+                ],
             },
             "SelectCategorical1": {"columns": ["currency", "provider"]},
             "SelectCategorical2": {"columns": ["region"]},
@@ -286,7 +286,7 @@ test_cases = [
         LinearPipelineWithTargetEncoderAndOHE,
         {
             "Select Columns Transformer": {
-                "columns": ["currency", "provider", "region", "country"]
+                "columns": ["currency", "provider", "region", "country"],
             },
             "One Hot Encoder": {"features_to_encode": ["currency", "provider"]},
             "Target Encoder": {"cols": ["region", "country"]},
@@ -333,11 +333,19 @@ def test_fast_permutation_importance_matches_slow_output(
     pipeline = pipeline_class(pipeline_class.component_graph, parameters=parameters)
     pipeline.fit(X, y)
     fast_scores = calculate_permutation_importance(
-        pipeline, X, y, objective=objective, random_seed=0
+        pipeline,
+        X,
+        y,
+        objective=objective,
+        random_seed=0,
     )
     mock_supports_fast_importance.return_value = False
     slow_scores = calculate_permutation_importance(
-        pipeline, X, y, objective=objective, random_seed=0
+        pipeline,
+        X,
+        y,
+        objective=objective,
+        random_seed=0,
     )
 
     # The row order is not guaranteed to be equal in the case of ties
@@ -376,20 +384,26 @@ def test_fast_permutation_importance_matches_slow_output(
         mock_supports_fast_importance.return_value = False
         permutation_importance_one_col_slow = (
             calculate_permutation_importance_one_column(
-                pipeline, X, y, col, objective=objective, fast=False
+                pipeline,
+                X,
+                y,
+                col,
+                objective=objective,
+                fast=False,
             )
         )
         np.testing.assert_almost_equal(
-            permutation_importance_one_col_fast, permutation_importance_one_col_slow
+            permutation_importance_one_col_fast,
+            permutation_importance_one_col_slow,
         )
 
 
 def pipelines_that_do_not_support_fast_permutation_importance():
     pipeline_with_dfs = BinaryClassificationPipeline(
-        [DFSTransformer, "Logistic Regression Classifier"]
+        [DFSTransformer, "Logistic Regression Classifier"],
     )
     pipeline_with_custom_component = BinaryClassificationPipeline(
-        [DoubleColumns, "Logistic Regression Classifier"]
+        [DoubleColumns, "Logistic Regression Classifier"],
     )
     pipeline_with_ensemble_dag = BinaryClassificationPipeline(
         component_graph={
@@ -407,10 +421,10 @@ def pipelines_that_do_not_support_fast_permutation_importance():
                 "Estimator_2.x",
                 "y",
             ],
-        }
+        },
     )
     pipeline_with_dim_reduction = BinaryClassificationPipeline(
-        [PCA, "Logistic Regression Classifier"]
+        [PCA, "Logistic Regression Classifier"],
     )
 
     return [
@@ -427,7 +441,8 @@ def test_supports_fast_permutation_importance():
 
 
 def test_get_permutation_importance_invalid_objective(
-    X_y_regression, linear_regression_pipeline
+    X_y_regression,
+    linear_regression_pipeline,
 ):
     X, y = X_y_regression
     with pytest.raises(
@@ -435,7 +450,10 @@ def test_get_permutation_importance_invalid_objective(
         match=f"Given objective 'MCC Multiclass' cannot be used with '{linear_regression_pipeline.name}'",
     ):
         calculate_permutation_importance(
-            linear_regression_pipeline, X, y, "mcc multiclass"
+            linear_regression_pipeline,
+            X,
+            y,
+            "mcc multiclass",
         )
 
 
@@ -461,19 +479,28 @@ def test_get_permutation_importance_binary(
     pipeline.fit(X, y)
     for objective in binary_test_objectives:
         permutation_importance = calculate_permutation_importance(
-            pipeline, X, y, objective
+            pipeline,
+            X,
+            y,
+            objective,
         )
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
 
         permutation_importance_sorted = permutation_importance.sort_values(
-            "feature", ascending=True
+            "feature",
+            ascending=True,
         ).reset_index(drop=True)
         X = pd.DataFrame(X)
         for col in X.columns[:3]:
             permutation_importance_one_col = (
                 calculate_permutation_importance_one_column(
-                    pipeline, X, y, col, objective, fast=False
+                    pipeline,
+                    X,
+                    y,
+                    col,
+                    objective,
+                    fast=False,
                 )
             )
             permutation_importance_sorted_row = permutation_importance_sorted[
@@ -486,20 +513,26 @@ def test_get_permutation_importance_binary(
 
 
 def test_get_permutation_importance_multiclass(
-    X_y_multi, logistic_regression_multiclass_pipeline, multiclass_test_objectives
+    X_y_multi,
+    logistic_regression_multiclass_pipeline,
+    multiclass_test_objectives,
 ):
     X, y = X_y_multi
     X = pd.DataFrame(X)
     logistic_regression_multiclass_pipeline.fit(X, y)
     for objective in multiclass_test_objectives:
         permutation_importance = calculate_permutation_importance(
-            logistic_regression_multiclass_pipeline, X, y, objective
+            logistic_regression_multiclass_pipeline,
+            X,
+            y,
+            objective,
         )
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
 
         permutation_importance_sorted = permutation_importance.sort_values(
-            "feature", ascending=True
+            "feature",
+            ascending=True,
         ).reset_index(drop=True)
         for col in X.columns[:3]:
             permutation_importance_one_col = (
@@ -519,7 +552,8 @@ def test_get_permutation_importance_multiclass(
 
 
 def test_get_permutation_importance_regression(
-    linear_regression_pipeline, regression_test_objectives
+    linear_regression_pipeline,
+    regression_test_objectives,
 ):
     X = pd.DataFrame([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     y = pd.Series([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
@@ -527,18 +561,27 @@ def test_get_permutation_importance_regression(
 
     for objective in regression_test_objectives:
         permutation_importance = calculate_permutation_importance(
-            linear_regression_pipeline, X, y, objective
+            linear_regression_pipeline,
+            X,
+            y,
+            objective,
         )
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
 
         permutation_importance_sorted = permutation_importance.sort_values(
-            "feature", ascending=True
+            "feature",
+            ascending=True,
         ).reset_index(drop=True)
         for col in X.columns:
             permutation_importance_one_col = (
                 calculate_permutation_importance_one_column(
-                    linear_regression_pipeline, X, y, col, objective, fast=False
+                    linear_regression_pipeline,
+                    X,
+                    y,
+                    col,
+                    objective,
+                    fast=False,
                 )
             )
             np.testing.assert_almost_equal(
@@ -558,7 +601,11 @@ def test_get_permutation_importance_correlated_features(
     pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
     importance = calculate_permutation_importance(
-        pipeline, X, y, objective="Log Loss Binary", random_seed=0
+        pipeline,
+        X,
+        y,
+        objective="Log Loss Binary",
+        random_seed=0,
     )
     assert list(importance.columns) == ["feature", "importance"]
     assert not importance.isnull().all().all()
@@ -592,18 +639,22 @@ def test_permutation_importance_oversampler(fraud_100):
                 "Oversampler.x",
                 "Oversampler.y",
             ],
-        }
+        },
     )
     pipeline.fit(X=X, y=y)
     pipeline.predict(X)
     importance = calculate_permutation_importance(
-        pipeline, X, y, objective="Log Loss Binary"
+        pipeline,
+        X,
+        y,
+        objective="Log Loss Binary",
     )
     assert not importance.isnull().all().all()
 
 
 def test_get_permutation_importance_one_column_fast_no_precomputed_features(
-    X_y_binary, logistic_regression_binary_pipeline
+    X_y_binary,
+    logistic_regression_binary_pipeline,
 ):
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline
@@ -612,7 +663,12 @@ def test_get_permutation_importance_one_column_fast_no_precomputed_features(
         match="Fast method of calculating permutation importance requires precomputed_features",
     ):
         calculate_permutation_importance_one_column(
-            pipeline, X, y, 0, "log loss binary", fast=True
+            pipeline,
+            X,
+            y,
+            0,
+            "log loss binary",
+            fast=True,
         )
 
 
@@ -626,7 +682,12 @@ def test_get_permutation_importance_one_column_pipeline_does_not_support_fast(
             match="Pipeline does not support fast permutation importance calculation",
         ):
             calculate_permutation_importance_one_column(
-                pipeline, X, y, 0, "log loss binary", fast=True
+                pipeline,
+                X,
+                y,
+                0,
+                "log loss binary",
+                fast=True,
             )
 
 
@@ -651,7 +712,7 @@ def test_permutation_importance_url_email(df_with_url_and_email):
             "Email Featurizer",
             "One Hot Encoder",
             "Random Forest Classifier",
-        ]
+        ],
     )
     pl.fit(X, y)
     data = calculate_permutation_importance(pl, X, y, objective="Log Loss Binary")
@@ -661,7 +722,8 @@ def test_permutation_importance_url_email(df_with_url_and_email):
 
 
 def test_permutation_importance_postalcode_countrycode_subregion(
-    fraud_100, logistic_regression_binary_pipeline
+    fraud_100,
+    logistic_regression_binary_pipeline,
 ):
     X, y = fraud_100
     X.ww.set_types(
@@ -669,7 +731,7 @@ def test_permutation_importance_postalcode_countrycode_subregion(
             "store_id": "PostalCode",
             "country": "CountryCode",
             "region": "SubRegionCode",
-        }
+        },
     )
 
     pipeline = logistic_regression_binary_pipeline
@@ -695,13 +757,18 @@ def test_permutation_importance_standard_scaler(fraud_100):
 
 
 def test_graph_permutation_importance(
-    X_y_binary, logistic_regression_binary_pipeline, go
+    X_y_binary,
+    logistic_regression_binary_pipeline,
+    go,
 ):
 
     X, y = X_y_binary
     logistic_regression_binary_pipeline.fit(X, y)
     fig = graph_permutation_importance(
-        logistic_regression_binary_pipeline, X, y, "Log Loss Binary"
+        logistic_regression_binary_pipeline,
+        X,
+        y,
+        "Log Loss Binary",
     )
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
@@ -714,25 +781,32 @@ def test_graph_permutation_importance(
     assert len(fig_dict["data"]) == 1
 
     perm_importance_data = calculate_permutation_importance(
-        logistic_regression_binary_pipeline, X, y, "Log Loss Binary"
+        logistic_regression_binary_pipeline,
+        X,
+        y,
+        "Log Loss Binary",
     )
     assert np.array_equal(
-        fig_dict["data"][0]["x"][::-1], perm_importance_data["importance"].values
+        fig_dict["data"][0]["x"][::-1],
+        perm_importance_data["importance"].values,
     )
     assert np.array_equal(
-        fig_dict["data"][0]["y"][::-1], perm_importance_data["feature"]
+        fig_dict["data"][0]["y"][::-1],
+        perm_importance_data["feature"],
     )
 
 
 @patch(
-    "evalml.model_understanding.permutation_importance.calculate_permutation_importance"
+    "evalml.model_understanding.permutation_importance.calculate_permutation_importance",
 )
 def test_graph_permutation_importance_show_all_features(
-    mock_perm_importance, logistic_regression_binary_pipeline, go
+    mock_perm_importance,
+    logistic_regression_binary_pipeline,
+    go,
 ):
 
     mock_perm_importance.return_value = pd.DataFrame(
-        {"feature": ["f1", "f2"], "importance": [0.0, 0.6]}
+        {"feature": ["f1", "f2"], "importance": [0.0, 0.6]},
     )
 
     figure = graph_permutation_importance(
@@ -748,14 +822,16 @@ def test_graph_permutation_importance_show_all_features(
 
 
 @patch(
-    "evalml.model_understanding.permutation_importance.calculate_permutation_importance"
+    "evalml.model_understanding.permutation_importance.calculate_permutation_importance",
 )
 def test_graph_permutation_importance_threshold(
-    mock_perm_importance, go, logistic_regression_binary_pipeline
+    mock_perm_importance,
+    go,
+    logistic_regression_binary_pipeline,
 ):
 
     mock_perm_importance.return_value = pd.DataFrame(
-        {"feature": ["f1", "f2"], "importance": [0.0, 0.6]}
+        {"feature": ["f1", "f2"], "importance": [0.0, 0.6]},
     )
 
     with pytest.raises(
@@ -798,14 +874,20 @@ def test_jupyter_graph_check(
     jupyter_check.return_value = False
     with pytest.warns(None) as graph_valid:
         graph_permutation_importance(
-            logistic_regression_binary_pipeline, X, y, "log loss binary"
+            logistic_regression_binary_pipeline,
+            X,
+            y,
+            "log loss binary",
         )
         assert len(graph_valid) == 0
 
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
         graph_permutation_importance(
-            logistic_regression_binary_pipeline, X, y, "log loss binary"
+            logistic_regression_binary_pipeline,
+            X,
+            y,
+            "log loss binary",
         )
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)

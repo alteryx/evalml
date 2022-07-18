@@ -3,7 +3,9 @@ from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from sklearn.feature_selection import SelectFromModel as SkSelect
 from skopt.space import Real
 
-from .feature_selector import FeatureSelector
+from evalml.pipelines.components.transformers.feature_selection.feature_selector import (
+    FeatureSelector,
+)
 
 
 class RFRegressorSelectFromModel(FeatureSelector):
