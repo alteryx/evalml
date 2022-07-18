@@ -5117,8 +5117,8 @@ def test_init_create_holdout_set(caplog):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", verbose=True)
     out = caplog.text
 
-    expected_holdout_size = int(automl._holdout_set_size * len(X))
-    expected_train_size = int((1 - automl._holdout_set_size) * len(X))
+    expected_holdout_size = int(automl.holdout_set_size * len(X))
+    expected_train_size = int((1 - automl.holdout_set_size) * len(X))
     match_text = f"Created a holdout dataset with {expected_holdout_size} rows. Training dataset has {expected_train_size} rows."
     assert match_text in out
     assert "AutoMLSearch will use the holdout set to score and rank pipelines." in out
@@ -5138,7 +5138,7 @@ def test_init_create_holdout_set(caplog):
         y_train=y,
         problem_type="binary",
         verbose=True,
-        _holdout_set_size=0,
+        holdout_set_size=0,
     )
     out = caplog.text
 
@@ -5159,7 +5159,7 @@ def test_init_create_holdout_set(caplog):
             X_train=X,
             y_train=y,
             problem_type="binary",
-            _holdout_set_size=-0.1,
+            holdout_set_size=-0.1,
         )
 
 

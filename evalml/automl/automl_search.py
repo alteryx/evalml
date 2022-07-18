@@ -420,6 +420,8 @@ class AutoMLSearch:
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
 
         timing (boolean): Whether or not to write pipeline search times to the logger. Defaults to False.
+
+        holdout_set_size (float): The size of the holdout set that AutoML search will take for datasets larger than 500 rows. If set to 0, holdout set will not be taken regardless of number of rows. Must be between 0 and 1, exclusive. Defaults to 0.1.
     """
 
     _MAX_NAME_LEN = 40
@@ -465,7 +467,7 @@ class AutoMLSearch:
         engine="sequential",
         verbose=False,
         timing=False,
-        _holdout_set_size=0.1,
+        holdout_set_size=0.1,
     ):
         self.verbose = verbose
         if verbose:
@@ -594,7 +596,7 @@ class AutoMLSearch:
         self.max_iterations = max_iterations
         self.max_batches = max_batches
         self._pipelines_per_batch = _pipelines_per_batch
-        self._holdout_set_size = _holdout_set_size
+        self.holdout_set_size = holdout_set_size
 
         if patience and (not isinstance(patience, int) or patience < 0):
             raise ValueError(
@@ -646,7 +648,7 @@ class AutoMLSearch:
         self._best_pipeline = None
         self._searched = False
 
-        if self._holdout_set_size < 0:
+        if self.holdout_set_size < 0:
             raise ValueError(
                 "Holdout set size must be greater than 0. Set holdout set size to 0 to disable holdout set evaluation.",
             )
@@ -659,7 +661,7 @@ class AutoMLSearch:
                 y_train,
                 problem_type=self.problem_type,
                 problem_configuration=self.problem_configuration,
-                test_size=self._holdout_set_size,
+                test_size=self.holdout_set_size,
                 random_seed=self.random_seed,
             )
         else:
@@ -673,7 +675,7 @@ class AutoMLSearch:
             )
         if self.X_holdout is None and self.y_holdout is None:
             # Holdout set enabled but not enough rows
-            if len(X_train) < self._HOLDOUT_SET_MIN_ROWS and self._holdout_set_size > 0:
+            if len(X_train) < self._HOLDOUT_SET_MIN_ROWS and self.holdout_set_size > 0:
                 self.logger.info(
                     f"Dataset size is too small to create holdout set. Mininum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(self.X_train)} rows. Holdout set evaluation is disabled.",
                 )
