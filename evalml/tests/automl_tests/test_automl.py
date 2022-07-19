@@ -5150,7 +5150,7 @@ def test_init_create_holdout_set(caplog):
     assert automl.y_holdout is None
     assert automl.passed_holdout_set is False
 
-    match_text = "Holdout set size must be greater than 0. Set holdout set size to 0 to disable holdout set evaluation."
+    match_text = "Holdout set size must be greater than 0 and less than 1. Set holdout set size to 0 to disable holdout set evaluation."
     with pytest.raises(
         ValueError,
         match=match_text,
@@ -5161,44 +5161,3 @@ def test_init_create_holdout_set(caplog):
             problem_type="binary",
             holdout_set_size=-0.1,
         )
-
-
-# def test_holdout_scoring_error(
-#     X_y_binary,
-#     dummy_classifier_estimator_class,
-#     AutoMLTestEnv,
-#     caplog,
-# ):
-#     X, y = X_y_binary
-#     X_train, X_holdout, y_train, y_holdout = split_data(X, y, "binary")
-
-#     def raise_error_on_holdout(*args, **kwargs):
-#         # Raise a PipelineScoreError on holdout scoring, but not on the CV scoring
-#         score_X_input = args[0]
-#         if len(score_X_input) == len(X_holdout):
-#             return PipelineScoreError(
-#                 exceptions={"Log Loss Binary": (Exception(), [])},
-#                 scored_successfully={},
-#             )
-#         else:
-#             return {"Log Loss Binary": 3.12}
-
-
-#     automl = AutoMLSearch(
-#         X_train=X_train,
-#         y_train=y_train,
-#         X_holdout=X_holdout,
-#         y_holdout=y_holdout,
-#         problem_type="binary",
-#         max_iterations=2,
-#         allowed_component_graphs={
-#             "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class],
-#         },
-#         optimize_thresholds=False,
-#     )
-#     env = AutoMLTestEnv("binary")
-
-#     with env.test_context(mock_score_side_effect=raise_error_on_holdout):
-#         automl.search()
-
-#     automl.rankings
