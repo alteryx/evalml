@@ -67,9 +67,12 @@ class PolynomialDecomposer(Decomposer):
         )
 
     def _set_time_index(self, X, y):
+        """Ensures that target data has a pandas.DatetimeIndex that matches feature data."""
         X = infer_feature_types(X)
         if X.ww.select("Datetime").shape[1] != 1:
-            raise ValueError()
+            raise ValueError(
+                "There are no Datetime features in the feature data and the target data doesn't have Datetime index."
+            )
         dt_col = X.ww.select("Datetime").squeeze()
         time_index = pd.DatetimeIndex(dt_col, freq=pd.infer_freq(dt_col)).rename(
             y.index.name
@@ -91,6 +94,7 @@ class PolynomialDecomposer(Decomposer):
 
         Raises:
             ValueError: If y is None.
+            ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
         if y is None:
             raise ValueError("y cannot be None for PolynomialDecomposer!")
@@ -137,6 +141,7 @@ class PolynomialDecomposer(Decomposer):
         Raises:
             ValueError: If the frequency attached to the target data's pandas.DatetimeIndex does not match
                 the frequency of the trained data's index.
+            ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
         if y is None:
             return X, y
@@ -160,8 +165,6 @@ class PolynomialDecomposer(Decomposer):
             seasonal = np.tile(
                 self.seasonality.T, len(y_detrended) // self.periodicity + 1
             ).T[: len(y_detrended)]
-        else:
-            seasonal = np.zeros(len(y))
 
         y_t = pd.Series(y_detrended - seasonal).set_axis(y.index)
         y_t.ww.init(logical_type="double")
