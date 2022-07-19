@@ -1276,6 +1276,7 @@ def test_serialization(
         ProphetRegressor,
         TimeSeriesFeaturizer,
         TimeSeriesRegularizer,
+        PolynomialDecomposer,
     ]
 
     print("Testing serialization of component {}".format(component_class.name))

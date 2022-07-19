@@ -75,11 +75,10 @@ def test_polynomial_decomposer_get_trend_df_raises_errors(ts_data):
         pdt.get_trend_dataframe(X, y)
 
 
+@pytest.mark.parametrize("index_type", ["datetime", "integer"])
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("degree", [1, 2, 3])
-def test_polynomial_decomposer_fit_transform(degree,
-    input_type,
-    ts_data,
+def test_polynomial_decomposer_fit_transform(degree, input_type, index_type, ts_data,
 ):
 
     X_input, y_input = ts_data
@@ -100,6 +99,11 @@ def test_polynomial_decomposer_fit_transform(degree,
         X = X_input.copy()
         X.ww.init()
         y = ww.init_series(y_input.copy())
+
+    if index_type == "integer":
+        y = y.reset_index(drop=True)
+        X = X.reset_index(drop=True)
+        X.ww.init()
 
     output_X, output_y = PolynomialDecomposer(degree=degree).fit_transform(X, y)
     pd.testing.assert_series_equal(expected_answer, output_y)

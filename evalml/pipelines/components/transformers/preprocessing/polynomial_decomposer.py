@@ -66,6 +66,16 @@ class PolynomialDecomposer(Decomposer):
             random_seed=random_seed,
         )
 
+    def _set_time_index(self, X, y):
+        X = infer_feature_types(X)
+        if X.ww.select("Datetime").shape[1] != 1:
+            raise ValueError()
+        dt_col = X.ww.select("Datetime").squeeze()
+        time_index = pd.DatetimeIndex(dt_col, freq=pd.infer_freq(dt_col)).rename(
+            y.index.name
+        )
+        return y.set_axis(time_index)
+
     def fit(self, X, y=None):
         """Fits the PolynomialDecomposer and determine the seasonal signal.
 
@@ -73,7 +83,7 @@ class PolynomialDecomposer(Decomposer):
         the trend from the signal and using statsmodels' seasonal_decompose().
 
         Args:
-            X (pd.DataFrame, optional): Ignored.
+            X (pd.DataFrame, optional): Conditionally used to build datetime index.
             y (pd.Series): Target variable to detrend and deseasonalize.
 
         Returns:
@@ -84,21 +94,28 @@ class PolynomialDecomposer(Decomposer):
         """
         if y is None:
             raise ValueError("y cannot be None for PolynomialDecomposer!")
-        y_dt = infer_feature_types(y)
-        self._component_obj.fit(y_dt)
 
-        if isinstance(y_dt.index, pd.DatetimeIndex):
-            # Save the frequency of the fitted series for checking against transform data.
-            self.frequency = y_dt.index.freqstr
+        # Copying y as we might modify it's index
+        y_orig = infer_feature_types(y).copy()
+        self._component_obj.fit(y_orig)
 
-            # statsmodel's seasonal_decompose() repeats the seasonal signal over the length of
-            # the given array.  We'll extract the first iteration and save it for use in .transform()
-            self.periodicity = freq_to_period(self.frequency)
-            self.seasonality = seasonal_decompose(
-                self._component_obj.transform(y_dt)
-            ).seasonal[0 : self.periodicity]
+        y_detrended = self._component_obj.transform(y_orig)
+
+        if not isinstance(y_detrended.index, pd.DatetimeIndex):
+            y_detrended_with_time_index = self._set_time_index(X, y_detrended)
         else:
-            self.seasonality = np.zeros(len(y_dt))
+            y_detrended_with_time_index = y_detrended
+
+        # Save the frequency of the fitted series for checking against transform data.
+        self.frequency = y_detrended_with_time_index.index.freqstr
+
+        # statsmodel's seasonal_decompose() repeats the seasonal signal over the length of
+        # the given array.  We'll extract the first iteration and save it for use in .transform()
+        self.periodicity = freq_to_period(self.frequency)
+
+        self.seasonality = seasonal_decompose(y_detrended_with_time_index).seasonal[
+            0 : self.periodicity
+        ]
 
         return self
 
@@ -110,7 +127,7 @@ class PolynomialDecomposer(Decomposer):
         extrapolate the seasonal signal of the data to be transformed.
 
         Args:
-            X (pd.DataFrame, optional): Ignored.
+            X (pd.DataFrame, optional): Conditionally used to build datetime index.
             y (pd.Series): Target variable to detrend and deseasonalize.
 
         Returns:
@@ -123,16 +140,20 @@ class PolynomialDecomposer(Decomposer):
         """
         if y is None:
             return X, y
-        # TODO: Decide if we want to limit this transformer to data with a pd.DatetimeIndex.
+
+        # Remove polynomial trend then seasonality of detrended signal
+        y_ww = infer_feature_types(y)
+        y_detrended = self._component_obj.transform(y_ww)
+
+        y = y.copy()
+        if not isinstance(y.index, pd.DatetimeIndex):
+            y = self._set_time_index(X, y)
+
         if isinstance(y.index, pd.DatetimeIndex) and y.index.freqstr != self.frequency:
             raise ValueError(
                 f"Cannot transform given data with frequency {y.index.freqstr}. "
                 f"Transformer was trained on data with frequency {self.frequency}"
             )
-
-        # Remove polynomial trend then seasonality of detrended signal
-        y_ww = infer_feature_types(y)
-        y_detrended = self._component_obj.transform(y_ww)
 
         if isinstance(y.index, pd.DatetimeIndex):
             # Repeat the seasonal signal over the target data
@@ -142,7 +163,7 @@ class PolynomialDecomposer(Decomposer):
         else:
             seasonal = np.zeros(len(y))
 
-        y_t = pd.Series(y_detrended - seasonal, index=y_ww.index)
+        y_t = pd.Series(y_detrended - seasonal).set_axis(y.index)
         y_t.ww.init(logical_type="double")
         return X, y_t
 
