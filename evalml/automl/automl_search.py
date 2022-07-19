@@ -313,6 +313,10 @@ class AutoMLSearch:
 
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
 
+        X_holdout (pd.DataFrame): The input holdout data of shape [n_samples, n_features].
+
+        y_holdout (pd.Series): The target holdout data of length [n_samples].
+
         problem_type (str or ProblemTypes): Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
         objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
@@ -648,14 +652,15 @@ class AutoMLSearch:
         self._best_pipeline = None
         self._searched = False
 
-        if self.holdout_set_size < 0:
+        if self.holdout_set_size < 0 or holdout_set_size >= 1:
             raise ValueError(
-                "Holdout set size must be greater than 0. Set holdout set size to 0 to disable holdout set evaluation.",
+                "Holdout set size must be greater than 0 and less than 1. Set holdout set size to 0 to disable holdout set evaluation.",
             )
         if (
             self.passed_holdout_set is False
             and len(X_train) >= self._HOLDOUT_SET_MIN_ROWS
         ):
+            # Create holdout set from X_train and y_train data because X_train above or at row threshold
             self.X_train, self.X_holdout, self.y_train, self.y_holdout = split_data(
                 X_train,
                 y_train,
@@ -665,6 +670,7 @@ class AutoMLSearch:
                 random_seed=self.random_seed,
             )
         else:
+            # Set holdout data in AutoML search if provided as parameter
             self.X_train = infer_feature_types(X_train)
             self.y_train = infer_feature_types(y_train)
             self.X_holdout = (
