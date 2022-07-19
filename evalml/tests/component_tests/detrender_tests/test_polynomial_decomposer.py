@@ -48,7 +48,7 @@ def test_polynomial_decomposer_raises_value_error_transform_fit_data_freq_mismat
 
     with pytest.raises(ValueError, match="Cannot transform given data with frequency"):
         # Change target data frequency to monthly to mismatch daily frequency of fixture
-        y = y.asfreq("m")
+        y.index = pd.date_range("2020-10-01", "2023-5-01", freq="m")
         pdc.transform(X, y)
 
 
