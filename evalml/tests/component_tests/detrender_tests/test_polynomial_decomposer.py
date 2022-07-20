@@ -46,44 +46,35 @@ def test_pd_fit_raises_value_error_target_with_no_time_index_and_no_time_feature
 
     X_no_time_feature_with_time_index = X.drop(columns=["date"])
     X_no_time_feature_no_time_index = X_no_time_feature_with_time_index.reset_index(
-        drop=True
+        drop=True,
     )
     y_no_time_index = y.reset_index(drop=True)
 
     with pytest.raises(
-        ValueError, match="There are no Datetime features in the feature data"
+        ValueError,
+        match="There are no Datetime features in the feature data",
     ):
         PolynomialDecomposer().fit(X_no_time_feature_with_time_index, y_no_time_index)
 
     with pytest.raises(
-        ValueError, match="There are no Datetime features in the feature data"
+        ValueError,
+        match="There are no Datetime features in the feature data",
     ):
         PolynomialDecomposer().fit(X_no_time_feature_no_time_index, y_no_time_index)
 
     pdc = PolynomialDecomposer()
     pdc.fit(X, y_no_time_index)
     with pytest.raises(
-        ValueError, match="There are no Datetime features in the feature data"
+        ValueError,
+        match="There are no Datetime features in the feature data",
     ):
         pdc.transform(X_no_time_feature_with_time_index, y_no_time_index)
 
     with pytest.raises(
-        ValueError, match="There are no Datetime features in the feature data"
+        ValueError,
+        match="There are no Datetime features in the feature data",
     ):
         pdc.transform(X_no_time_feature_no_time_index, y_no_time_index)
-
-
-def test_polynomial_decomposer_raises_value_error_transform_fit_data_freq_mismatch(
-    ts_data,
-):
-    X, y = ts_data
-
-    pdc = PolynomialDecomposer(degree=3).fit(X, y)
-
-    with pytest.raises(ValueError, match="Cannot transform given data with frequency"):
-        # Change target data frequency to monthly to mismatch daily frequency of fixture
-        y.index = pd.date_range("2020-10-01", "2023-5-01", freq="m")
-        pdc.transform(X, y)
 
 
 def test_polynomial_decomposer_get_trend_df_raises_errors(ts_data):
@@ -92,7 +83,8 @@ def test_polynomial_decomposer_get_trend_df_raises_errors(ts_data):
     pdt.fit_transform(X, y)
 
     with pytest.raises(
-        TypeError, match="Provided X should have datetimes in the index."
+        TypeError,
+        match="Provided X should have datetimes in the index.",
     ):
         X_int_index = X.reset_index()
         pdt.get_trend_dataframe(X_int_index, y)
@@ -184,7 +176,7 @@ def test_polynomial_decomposer_get_trend_dataframe(
     # Get the expected answer
     lin_reg = LinearRegression(fit_intercept=True)
     features = PolynomialFeatures(degree=degree).fit_transform(
-        np.arange(X_input.shape[0]).reshape(-1, 1)
+        np.arange(X_input.shape[0]).reshape(-1, 1),
     )
     lin_reg.fit(features, y_input)
     detrended_values = y_input.values - lin_reg.predict(features)
@@ -214,7 +206,8 @@ def test_polynomial_decomposer_get_trend_dataframe(
 
     def get_trend_df_values_correct(df, y):
         np.testing.assert_array_almost_equal(
-            (df["trend"] + df["seasonality"] + df["residual"]).values, y.values
+            (df["trend"] + df["seasonality"] + df["residual"]).values,
+            y.values,
         )
 
     assert isinstance(result_dfs, list)

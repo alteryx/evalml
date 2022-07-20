@@ -71,11 +71,11 @@ class PolynomialDecomposer(Decomposer):
         X = infer_feature_types(X)
         if X.ww.select("Datetime").shape[1] != 1:
             raise ValueError(
-                "There are no Datetime features in the feature data and the target data doesn't have Datetime index."
+                "There are no Datetime features in the feature data and the target data doesn't have Datetime index.",
             )
         dt_col = X.ww.select("Datetime").squeeze()
         time_index = pd.DatetimeIndex(dt_col, freq=pd.infer_freq(dt_col)).rename(
-            y.index.name
+            y.index.name,
         )
         return y.set_axis(time_index)
 
@@ -139,8 +139,6 @@ class PolynomialDecomposer(Decomposer):
                 variable y is detrended and deseasonalized.
 
         Raises:
-            ValueError: If the frequency attached to the target data's pandas.DatetimeIndex does not match
-                the frequency of the trained data's index.
             ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
         if y is None:
@@ -154,16 +152,11 @@ class PolynomialDecomposer(Decomposer):
         if not isinstance(y.index, pd.DatetimeIndex):
             y = self._set_time_index(X, y)
 
-        if isinstance(y.index, pd.DatetimeIndex) and y.index.freqstr != self.frequency:
-            raise ValueError(
-                f"Cannot transform given data with frequency {y.index.freqstr}. "
-                f"Transformer was trained on data with frequency {self.frequency}"
-            )
-
         if isinstance(y.index, pd.DatetimeIndex):
             # Repeat the seasonal signal over the target data
             seasonal = np.tile(
-                self.seasonality.T, len(y_detrended) // self.periodicity + 1
+                self.seasonality.T,
+                len(y_detrended) // self.periodicity + 1,
             ).T[: len(y_detrended)]
 
         y_t = pd.Series(y_detrended - seasonal).set_axis(y.index)
@@ -249,7 +242,7 @@ class PolynomialDecomposer(Decomposer):
             raise TypeError("Provided X should have datetimes in the index.")
         if X.index.freq is None:
             raise ValueError(
-                "Provided DatetimeIndex of X should have an inferred frequency."
+                "Provided DatetimeIndex of X should have an inferred frequency.",
             )
         fh = ForecastingHorizon(X.index, is_relative=False)
 
@@ -267,7 +260,7 @@ class PolynomialDecomposer(Decomposer):
                     "trend": trend,
                     "seasonality": seasonality,
                     "residual": residual,
-                }
+                },
             )
 
         if isinstance(y, pd.Series):
