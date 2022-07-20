@@ -626,22 +626,13 @@ class AutoMLSearch:
 
         self.X_train = infer_feature_types(X_train)
         self.y_train = infer_feature_types(y_train)
-        n_splits = 3
-        # if is_time_series(problem_type):
-        #     n_splits = min(
-        #         (X_train.shape[0] * 0.2)
-        #         // self.problem_configuration["forecast_horizon"],
-        #         10,
-        #     )
-        #     n_splits = int(n_splits)
-        #     n_splits = max(n_splits, 2)
 
         default_data_splitter = make_data_splitter(
             self.X_train,
             self.y_train,
             self.problem_type,
             self.problem_configuration,
-            n_splits=n_splits,
+            n_splits=3,
             shuffle=True,
             random_seed=self.random_seed,
         )
