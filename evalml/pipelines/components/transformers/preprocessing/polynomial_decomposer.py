@@ -79,6 +79,32 @@ class PolynomialDecomposer(Decomposer):
         )
         return y.set_axis(time_index)
 
+    def build_seasonal_signal(self, y_ww, periodic_signal, periodicity, frequency):
+        # Determine where the seasonality starts
+        first_index_diff = y_ww.index[0] - periodic_signal.index[0]
+        # TODO: Write tests to test different time series frequencies.
+        if frequency == "D":
+            delta = timedelta(days=1)
+            period = timedelta(days=periodicity)
+
+        # Determine which index of the sample of seasonal data the transformed data starts at
+        transform_first_ind = int((first_index_diff % period) / delta)
+
+        # Cycle the sample of seasonal data so the transformed data's effective index is first
+        rotated_seasonal_sample = np.roll(
+            periodic_signal.T.values,
+            -transform_first_ind,
+        )
+
+        # Repeat the single, rotated period of seasonal data to cover the entirety of the data
+        # to be transformed.
+        seasonal = np.tile(rotated_seasonal_sample, len(y_ww) // periodicity + 1).T[
+            : len(y_ww)
+        ]  # The extrapolated seasonal data will be too long, so truncate.
+
+        # Add the date times back in.
+        return pd.Series(seasonal, index=y_ww.index)
+
     def fit(self, X, y=None):
         """Fits the PolynomialDecomposer and determine the seasonal signal.
 
@@ -201,31 +227,12 @@ class PolynomialDecomposer(Decomposer):
         # Add polynomial trend back to signal
         y_retrended = self._component_obj.inverse_transform(y_ww)
 
-        # Determine where the seasonality starts
-        first_index_diff = y_ww.index[0] - self.seasonality.index[0]
-        # TODO: Write tests to test different time series frequencies.
-        if self.frequency == "D":
-            delta = timedelta(days=1)
-            period = timedelta(days=self.periodicity)
-
-        # Determine which index of the sample of seasonal data the transformed data starts at
-        transform_first_ind = int((first_index_diff % period) / delta)
-
-        # Cycle the sample of seasonal data so the transformed data's effective index is first
-        rotated_seasonal_sample = np.roll(
-            self.seasonality.T.values,
-            -transform_first_ind,
+        seasonal = self.build_seasonal_signal(
+            y_ww,
+            self.seasonality,
+            self.periodicity,
+            self.frequency,
         )
-
-        # Repeat the single, rotated period of seasonal data to cover the entirety of the data
-        # to be transformed.
-        seasonal = np.tile(
-            rotated_seasonal_sample,
-            len(y_ww) // self.periodicity + 1,
-        ).T[
-            : len(y_ww)
-        ]  # The extrapolated seasonal data will be too long, so truncate.
-
         y_t = infer_feature_types(pd.Series(y_retrended + seasonal, index=y_ww.index))
         return y_t
 

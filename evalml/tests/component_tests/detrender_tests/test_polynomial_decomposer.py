@@ -245,3 +245,55 @@ def test_polynomial_decomposer_needs_monotonic_index(ts_data):
     ):
         y_string_index = pd.Series(np.arange(31), index=[f"row_{i}" for i in range(31)])
         decomposer.fit_transform(X, y_string_index)
+
+
+@pytest.mark.parametrize(
+    "train_length",
+    ["less than period", "period", "less than two periods", "two periods"],
+)
+@pytest.mark.parametrize(
+    "test_first_index",
+    ["on period", "before period", "just after period", "mid period"],
+)
+def test_polynomial_decomposer_build_seasonal_signal(
+    ts_data,
+    train_length,
+    test_first_index,
+):
+    test_first_index = {
+        "on period": 21,
+        "before period": 20,
+        "just after period": 22,
+        "mid period": 25,
+    }[test_first_index]
+    train_length = {
+        "less than period": 6,
+        "period": 7,
+        "less than two periods": 13,
+        "two periods": 14,
+    }[train_length]
+    # Data spanning 2020-10-01 to 2020-10-31
+    X, y = ts_data
+    decomposer = PolynomialDecomposer(degree=2)
+
+    # Synthesize a one-week long cyclic signal
+    single_period_seasonal_signal = np.sin(y[0:7] * 2 * np.pi / len(y[0:7]))
+    full_seasonal_signal = np.sin(y * 2 * np.pi / len(y[0:7]))
+
+    # Split the target data
+    y = y / np.max(y)
+    y_train = y[:train_length]
+    y_test = y[test_first_index:]
+
+    projected_seasonality = decomposer.build_seasonal_signal(
+        y_test,
+        single_period_seasonal_signal,
+        7,
+        "D",
+    )
+
+    # Make sure that the function extracted the correct portion of the repeating, full seasonal signal
+    assert np.allclose(
+        full_seasonal_signal[projected_seasonality.index],
+        projected_seasonality,
+    )
