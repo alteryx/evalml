@@ -21,7 +21,7 @@ def test_polynomial_decomposer_init_raises_error_if_degree_not_int():
     with pytest.raises(TypeError, match="Received float"):
         PolynomialDecomposer(degree=3.4)
 
-    _ = PolynomialDecomposer(degree=3.0)
+    PolynomialDecomposer(degree=3.0)
 
 
 def test_polynomial_decomposer_raises_value_error_target_is_none(ts_data):

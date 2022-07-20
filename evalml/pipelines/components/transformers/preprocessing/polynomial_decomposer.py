@@ -15,10 +15,10 @@ from evalml.utils import import_or_raise, infer_feature_types
 class PolynomialDecomposer(Decomposer):
     """Removes trends and seasonality from time series by fitting a polynomial and moving average to the data.
 
-    Scikit-learn's PolynomialForecaster is used to generate the trend portion of the target data. A polynomial
-        will be fit to the data during fit.  That polynomial trend will be removed during fit so that statsmodel's
-        seasonal_decompose can determine the seasonality of the data by using rolling averages over
-        the series' inferred periodicity.
+    Scikit-learn's PolynomialForecaster is used to generate the additive trend portion of the target data. A polynomial
+        will be fit to the data during fit.  That additive polynomial trend will be removed during fit so that statsmodel's
+        seasonal_decompose can determine the addititve seasonality of the data by using rolling averages over the series'
+        inferred periodicity.
 
         For example, daily time series data will generate rolling averages over the first week of data, normalize
         out the mean and return those 7 averages repeated over the entire length of the given series.  Those seven
@@ -83,7 +83,8 @@ class PolynomialDecomposer(Decomposer):
         """Fits the PolynomialDecomposer and determine the seasonal signal.
 
         Currently only fits the polynomial detrender.  The seasonality is determined by removing
-        the trend from the signal and using statsmodels' seasonal_decompose().
+        the trend from the signal and using statsmodels' seasonal_decompose().  Both the trend
+        and seasonality are currently assumed to be additive.
 
         Args:
             X (pd.DataFrame, optional): Conditionally used to build datetime index.
@@ -126,9 +127,10 @@ class PolynomialDecomposer(Decomposer):
     def transform(self, X, y=None):
         """Transforms the target data by removing the polynomial trend and rolling average seasonality.
 
-        Applies the fit polynomial detrender to the target data, removing the polynomial trend. Then,
-        utilizes the first period's worth of seasonal data determined in the .train() function to
-        extrapolate the seasonal signal of the data to be transformed.
+        Applies the fit polynomial detrender to the target data, removing the additive polynomial trend. Then,
+        utilizes the first period's worth of seasonal data determined in the .train() function to extrapolate
+        the seasonal signal of the data to be transformed.  This seasonal signal is also assumed to be additive
+        and is removed.
 
         Args:
             X (pd.DataFrame, optional): Conditionally used to build datetime index.
@@ -179,15 +181,15 @@ class PolynomialDecomposer(Decomposer):
     def inverse_transform(self, y):
         """Adds back fitted trend and seasonality to target variable.
 
-        The polynomial trend is added in the traditional way, calling the detrender's inverse_transform().
-        Then the seasonality is projected forward to determine and re-add the seasonality.
+        The polynomial trend is added back into the signal, calling the detrender's inverse_transform().
+        Then, the seasonality is projected forward to and added back into the signal.
 
         Args:
             y (pd.Series): Target variable.
 
         Returns:
             tuple of pd.DataFrame, pd.Series: The first element are the input features returned without modification.
-                The second element is the target variable y with the trend and seasonality added back.
+                The second element is the target variable y with the trend and seasonality added back in.
 
         Raises:
             ValueError: If y is None.
@@ -206,12 +208,23 @@ class PolynomialDecomposer(Decomposer):
             delta = timedelta(days=1)
             period = timedelta(days=self.periodicity)
 
-        # Cycle through the saved seasonality to match the first index of the transform data and project forward to the last index
+        # Determine which index of the sample of seasonal data the transformed data starts at
         transform_first_ind = int((first_index_diff % period) / delta)
+
+        # Cycle the sample of seasonal data so the transformed data's effective index is first
+        rotated_seasonal_sample = np.roll(
+            self.seasonality.T.values,
+            -transform_first_ind,
+        )
+
+        # Repeat the single, rotated period of seasonal data to cover the entirety of the data
+        # to be transformed.
         seasonal = np.tile(
-            np.roll(self.seasonality.T.values, -transform_first_ind),
+            rotated_seasonal_sample,
             len(y_ww) // self.periodicity + 1,
-        ).T[: len(y_ww)]
+        ).T[
+            : len(y_ww)
+        ]  # The extrapolated seasonal data will be too long, so truncate.
 
         y_t = infer_feature_types(pd.Series(y_retrended + seasonal, index=y_ww.index))
         return y_t
