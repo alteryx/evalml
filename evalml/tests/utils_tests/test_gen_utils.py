@@ -739,7 +739,7 @@ def test_are_ts_parameters_valid():
         max_delay=8,
         forecast_horizon=3,
         n_obs=20,
-        n_splits=3
+        n_splits=3,
     )
     assert not result.is_valid and result.msg
 
@@ -748,12 +748,16 @@ def test_are_ts_parameters_valid():
         max_delay=6,
         forecast_horizon=3,
         n_obs=20,
-        n_splits=3
+        n_splits=3,
     )
     assert result.is_valid and not result.msg
 
     result = are_ts_parameters_valid_for_split(
-        gap=1, max_delay=8, forecast_horizon=3, n_obs=200, n_splits=3
+        gap=1,
+        max_delay=8,
+        forecast_horizon=3,
+        n_obs=200,
+        n_splits=3,
     )
     assert result.is_valid and not result.msg
 

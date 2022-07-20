@@ -1952,9 +1952,6 @@ def test_percent_better_than_baseline_in_rankings(
         def fit(self, *args, **kwargs):
             """Mocking fit"""
 
-        def predict(self, *args, **kwargs):
-            return [1]
-
     class Pipeline1(DummyPipeline):
         custom_name = "Pipeline1"
 
@@ -2139,10 +2136,6 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
 
         def fit(self, *args, **kwargs):
             """Mocking fit"""
-
-        def predict(self, *args, **kwargs):
-            """Mocking predict"""
-            return [1]
 
     additional_objectives = None
     if custom_additional_objective:
