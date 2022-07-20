@@ -248,16 +248,11 @@ def test_polynomial_decomposer_needs_monotonic_index(ts_data):
 
 
 @pytest.mark.parametrize(
-    "train_length",
-    ["less than period", "period", "less than two periods", "two periods"],
-)
-@pytest.mark.parametrize(
     "test_first_index",
     ["on period", "before period", "just after period", "mid period"],
 )
 def test_polynomial_decomposer_build_seasonal_signal(
     ts_data,
-    train_length,
     test_first_index,
 ):
     test_first_index = {
@@ -266,12 +261,7 @@ def test_polynomial_decomposer_build_seasonal_signal(
         "just after period": 22,
         "mid period": 25,
     }[test_first_index]
-    train_length = {
-        "less than period": 6,
-        "period": 7,
-        "less than two periods": 13,
-        "two periods": 14,
-    }[train_length]
+
     # Data spanning 2020-10-01 to 2020-10-31
     X, y = ts_data
     decomposer = PolynomialDecomposer(degree=2)
@@ -280,9 +270,9 @@ def test_polynomial_decomposer_build_seasonal_signal(
     single_period_seasonal_signal = np.sin(y[0:7] * 2 * np.pi / len(y[0:7]))
     full_seasonal_signal = np.sin(y * 2 * np.pi / len(y[0:7]))
 
-    # Split the target data
-    y = y / np.max(y)
-    y_train = y[:train_length]
+    # Split the target data.  Since the period of this data is 7 days, we'll test
+    # when the cycle begins, an index before it begins, an index after it begins
+    # and in the middle of a cycle
     y_test = y[test_first_index:]
 
     projected_seasonality = decomposer.build_seasonal_signal(
