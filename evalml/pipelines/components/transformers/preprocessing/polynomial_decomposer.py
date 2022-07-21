@@ -1,8 +1,6 @@
 """Component that removes trends from time series by fitting a polynomial to the data."""
 from __future__ import annotations
 
-from datetime import timedelta
-
 import numpy as np
 import pandas as pd
 from skopt.space import Integer
