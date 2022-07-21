@@ -91,6 +91,8 @@ class PolynomialDecomposer(Decomposer):
             frequency (str): String representing the detected frequency of the time series data.
                 Uses the same codes as the freqstr attribute of a pandas Series with DatetimeIndex.
                 e.g. "D", "M", "Y" for day, month and year respectively
+                See: https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases
+                See: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.to_timedelta.html
 
         Returns:
             pandas.Series: the seasonal signal extended to cover the target data to be transformed
@@ -98,9 +100,11 @@ class PolynomialDecomposer(Decomposer):
         # Determine where the seasonality starts
         first_index_diff = y_ww.index[0] - periodic_signal.index[0]
         # TODO: Write tests to test different time series frequencies.
-        if frequency == "D":
-            delta = timedelta(days=1)
-            period = timedelta(days=periodicity)
+        # if frequency == "D":
+        #     delta = timedelta(days=1)
+        #     period = timedelta(days=periodicity)
+        delta = pd.to_timedelta(1, frequency)
+        period = pd.to_timedelta(periodicity, frequency)
 
         # Determine which index of the sample of seasonal data the transformed data starts at
         transform_first_ind = int((first_index_diff % period) / delta)

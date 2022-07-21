@@ -248,27 +248,58 @@ def test_polynomial_decomposer_needs_monotonic_index(ts_data):
 
 
 @pytest.mark.parametrize(
+    "frequency",
+    [
+        "D",
+        "W",
+        "S",
+        "h",
+        "T",
+        pytest.param(
+            "m",
+            marks=pytest.mark.xfail(reason="Frequency considered ambiguous by pandas"),
+        ),
+        pytest.param(
+            "M",
+            marks=pytest.mark.xfail(reason="Frequency considered ambiguous by pandas"),
+        ),
+        pytest.param(
+            "Y",
+            marks=pytest.mark.xfail(reason="Frequency considered ambiguous by pandas"),
+        ),
+    ],
+)
+@pytest.mark.parametrize(
     "test_first_index",
     ["on period", "before period", "just after period", "mid period"],
 )
 def test_polynomial_decomposer_build_seasonal_signal(
     ts_data,
     test_first_index,
+    frequency,
 ):
+    period = 7
     test_first_index = {
-        "on period": 21,
-        "before period": 20,
-        "just after period": 22,
-        "mid period": 25,
+        "on period": 3 * period,
+        "before period": 3 * period - 1,
+        "just after period": 3 * period + 1,
+        "mid period": 3 * period + 4,
     }[test_first_index]
 
     # Data spanning 2020-10-01 to 2020-10-31
     X, y = ts_data
+
+    # Change the date time index
+    y.set_axis(
+        pd.date_range(start="2022-10-01", periods=len(y), freq=frequency),
+        inplace=True,
+    )
+
     decomposer = PolynomialDecomposer(degree=2)
 
     # Synthesize a one-week long cyclic signal
-    single_period_seasonal_signal = np.sin(y[0:7] * 2 * np.pi / len(y[0:7]))
-    full_seasonal_signal = np.sin(y * 2 * np.pi / len(y[0:7]))
+    single_period_seasonal_signal = np.sin(y[0:period] * 2 * np.pi / len(y[0:period]))
+    full_seasonal_signal = np.sin(y * 2 * np.pi / len(y[0:period]))
 
     # Split the target data.  Since the period of this data is 7 days, we'll test
     # when the cycle begins, an index before it begins, an index after it begins
@@ -278,8 +309,8 @@ def test_polynomial_decomposer_build_seasonal_signal(
     projected_seasonality = decomposer._build_seasonal_signal(
         y_test,
         single_period_seasonal_signal,
-        7,
-        "D",
+        period,
+        frequency,
     )
 
     # Make sure that the function extracted the correct portion of the repeating, full seasonal signal
