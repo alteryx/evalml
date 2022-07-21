@@ -1,4 +1,6 @@
 """Component that removes trends from time series by fitting a polynomial to the data."""
+from __future__ import annotations
+
 from datetime import timedelta
 
 import numpy as np
@@ -39,7 +41,7 @@ class PolynomialDecomposer(Decomposer):
     modifies_features = False
     modifies_target = True
 
-    def __init__(self, degree=1, random_seed=0, **kwargs):
+    def __init__(self, degree: int = 1, random_seed: int = 0, **kwargs):
         if not isinstance(degree, int):
             if isinstance(degree, float) and degree.is_integer():
                 degree = int(degree)
@@ -118,7 +120,7 @@ class PolynomialDecomposer(Decomposer):
         # Add the date times back in.
         return pd.Series(seasonal, index=y_ww.index)
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: pd.Series = None) -> PolynomialDecomposer:
         """Fits the PolynomialDecomposer and determine the seasonal signal.
 
         Currently only fits the polynomial detrender.  The seasonality is determined by removing
@@ -163,7 +165,11 @@ class PolynomialDecomposer(Decomposer):
 
         return self
 
-    def transform(self, X, y=None):
+    def transform(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series = None,
+    ) -> tuple[pd.DataFrame, pd.Series]:
         """Transforms the target data by removing the polynomial trend and rolling average seasonality.
 
         Applies the fit polynomial detrender to the target data, removing the additive polynomial trend. Then,
@@ -204,7 +210,11 @@ class PolynomialDecomposer(Decomposer):
         y_t.ww.init(logical_type="double")
         return X, y_t
 
-    def fit_transform(self, X, y=None):
+    def fit_transform(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series = None,
+    ) -> tuple[pd.DataFrame, pd.Series]:
         """Removes fitted trend and seasonality from target variable.
 
         Args:
@@ -217,7 +227,7 @@ class PolynomialDecomposer(Decomposer):
         """
         return self.fit(X, y).transform(X, y)
 
-    def inverse_transform(self, y):
+    def inverse_transform(self, y: pd.Series) -> tuple[pd.DataFrame, pd.Series]:
         """Adds back fitted trend and seasonality to target variable.
 
         The polynomial trend is added back into the signal, calling the detrender's inverse_transform().
@@ -249,7 +259,7 @@ class PolynomialDecomposer(Decomposer):
         y_t = infer_feature_types(pd.Series(y_retrended + seasonal, index=y_ww.index))
         return y_t
 
-    def get_trend_dataframe(self, X, y):
+    def get_trend_dataframe(self, X: pd.DataFrame, y: pd.Series) -> list[pd.DataFrame]:
         """Return a list of dataframes with 3 columns: trend, seasonality, residual.
 
         Scikit-learn's PolynomialForecaster is used to generate the trend portion of the target data. statsmodel's
