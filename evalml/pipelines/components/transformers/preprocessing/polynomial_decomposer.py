@@ -99,10 +99,6 @@ class PolynomialDecomposer(Decomposer):
         """
         # Determine where the seasonality starts
         first_index_diff = y_ww.index[0] - periodic_signal.index[0]
-        # TODO: Write tests to test different time series frequencies.
-        # if frequency == "D":
-        #     delta = timedelta(days=1)
-        #     period = timedelta(days=periodicity)
         delta = pd.to_timedelta(1, frequency)
         period = pd.to_timedelta(periodicity, frequency)
 

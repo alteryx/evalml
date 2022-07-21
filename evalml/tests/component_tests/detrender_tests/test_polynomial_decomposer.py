@@ -289,7 +289,7 @@ def test_polynomial_decomposer_build_seasonal_signal(
     # Data spanning 2020-10-01 to 2020-10-31
     X, y = ts_data
 
-    # Change the date time index
+    # Change the date time index to start at the same time but have different frequency
     y.set_axis(
         pd.date_range(start="2022-10-01", periods=len(y), freq=frequency),
         inplace=True,
