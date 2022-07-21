@@ -79,7 +79,20 @@ class PolynomialDecomposer(Decomposer):
         )
         return y.set_axis(time_index)
 
-    def build_seasonal_signal(self, y_ww, periodic_signal, periodicity, frequency):
+    def _build_seasonal_signal(self, y_ww, periodic_signal, periodicity, frequency):
+        """Projects the cyclical, seasonal signal forward to cover the target data.
+
+        Args:
+            y_ww (pandas.Series): Target data to be transformed
+            periodic_signal (pandas.Series): Single period of the detected seasonal signal
+            periodicity (int): Number of time units in a single cycle of the seasonal signal
+            frequency (str): String representing the detected frequency of the time series data.
+                Uses the same codes as the freqstr attribute of a pandas Series with DatetimeIndex.
+                e.g. "D", "M", "Y" for day, month and year respectively
+
+        Returns:
+            pandas.Series: the seasonal signal extended to cover the target data to be transformed
+        """
         # Determine where the seasonality starts
         first_index_diff = y_ww.index[0] - periodic_signal.index[0]
         # TODO: Write tests to test different time series frequencies.
@@ -227,7 +240,7 @@ class PolynomialDecomposer(Decomposer):
         # Add polynomial trend back to signal
         y_retrended = self._component_obj.inverse_transform(y_ww)
 
-        seasonal = self.build_seasonal_signal(
+        seasonal = self._build_seasonal_signal(
             y_ww,
             self.seasonality,
             self.periodicity,
