@@ -266,7 +266,6 @@ def train_and_score_pipeline(
                 X_train=X_train,
                 y_train=y_train,
             )
-
             logger.debug(
                 f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}",
             )
@@ -319,7 +318,6 @@ def train_and_score_pipeline(
         ):
             evaluation_entry["binary_classification_threshold"] = cv_pipeline.threshold
         cv_data.append(evaluation_entry)
-
     training_time = time.time() - start
     cv_scores = pd.Series([fold["mean_cv_score"] for fold in cv_data])
     cv_score_mean = cv_scores.mean()
@@ -327,13 +325,13 @@ def train_and_score_pipeline(
         f"\tFinished cross validation - mean {automl_config.objective.name}: {cv_score_mean:.3f}",
     )
     return {
-        "cached_data": pipeline_cache,
         "scores": {
             "cv_data": cv_data,
             "training_time": training_time,
             "cv_scores": cv_scores,
             "cv_score_mean": cv_score_mean,
         },
+        "cached_data": pipeline_cache,
         "pipeline": cv_pipeline,
         "logger": logger,
     }
