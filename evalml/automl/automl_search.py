@@ -671,6 +671,8 @@ class AutoMLSearch:
                     f"Created a holdout dataset with {len(self.X_holdout)} rows. Training dataset has {len(self.X_train)} rows.",
                 )
             else:
+                self.X_holdout = None
+                self.y_holdout = None
                 self.logger.info(
                     f"Dataset size is too small to create holdout set. Mininum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X_train)} rows. Holdout set evaluation is disabled.",
                 )
