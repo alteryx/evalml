@@ -93,9 +93,6 @@ def split_data(
     X = infer_feature_types(X)
     y = infer_feature_types(y)
 
-    if test_size == 0:
-        return X, None, y, None
-
     data_splitter = None
     if is_time_series(problem_type):
         data_splitter = TrainingValidationSplit(
