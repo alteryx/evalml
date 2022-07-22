@@ -657,7 +657,7 @@ class AutoMLSearch:
                 "Holdout set size must be greater than 0 and less than 1. Set holdout set size to 0 to disable holdout set evaluation.",
             )
         if self.passed_holdout_set is False:
-            if len(X_train) >= self._HOLDOUT_SET_MIN_ROWS:
+            if len(X_train) >= self._HOLDOUT_SET_MIN_ROWS and self.holdout_set_size > 0:
                 # Create holdout set from X_train and y_train data because X_train above or at row threshold
                 X_train, X_holdout, y_train, y_holdout = split_data(
                     X_train,
