@@ -659,7 +659,7 @@ class AutoMLSearch:
         if self.passed_holdout_set is False:
             if len(X_train) >= self._HOLDOUT_SET_MIN_ROWS:
                 # Create holdout set from X_train and y_train data because X_train above or at row threshold
-                self.X_train, self.X_holdout, self.y_train, self.y_holdout = split_data(
+                X_train, X_holdout, y_train, y_holdout = split_data(
                     X_train,
                     y_train,
                     problem_type=self.problem_type,
@@ -671,22 +671,18 @@ class AutoMLSearch:
                     f"Created a holdout dataset with {len(self.X_holdout)} rows. Training dataset has {len(self.X_train)} rows.",
                 )
             else:
-                self.X_holdout = None
-                self.y_holdout = None
                 self.logger.info(
                     f"Dataset size is too small to create holdout set. Mininum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X_train)} rows. Holdout set evaluation is disabled.",
                 )
-        else:
-            # Set holdout data in AutoML search if provided as parameter
-            self.X_train = infer_feature_types(X_train)
-            self.y_train = infer_feature_types(y_train)
-            self.X_holdout = (
-                infer_feature_types(X_holdout) if X_holdout is not None else None
-            )
-            self.y_holdout = (
-                infer_feature_types(y_holdout) if y_holdout is not None else None
-            )
-
+        # Set holdout data in AutoML search if provided as parameter
+        self.X_train = infer_feature_types(X_train)
+        self.y_train = infer_feature_types(y_train)
+        self.X_holdout = (
+            infer_feature_types(X_holdout) if X_holdout is not None else None
+        )
+        self.y_holdout = (
+            infer_feature_types(y_holdout) if y_holdout is not None else None
+        )
         if self.X_holdout is None and self.y_holdout is None:
             # Holdout set enabled but not enough rows
             self.logger.info(
