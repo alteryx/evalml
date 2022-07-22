@@ -615,7 +615,7 @@ def are_ts_parameters_valid_for_split(
     msg = ""
     if train_size <= window_size:
         msg = (
-            f"Since the data has {n_obs} observations, n_splits={n_splits}, and a forecast horizon of {forecast_horizon},"
+            f"Since the data has {n_obs} observations, n_splits={n_splits}, and a forecast horizon of {forecast_horizon}, "
             f"the smallest split would have {train_size} observations. "
             f"Since {gap + max_delay + forecast_horizon} (gap + max_delay + forecast_horizon) >= {train_size}, "
             "then at least one of the splits would be empty by the time it reaches the pipeline. "

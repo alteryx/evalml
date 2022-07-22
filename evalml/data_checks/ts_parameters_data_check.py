@@ -55,7 +55,7 @@ class TimeSeriesParametersDataCheck(DataCheck):
             >>> ts_parameters_check = TimeSeriesParametersDataCheck(problem_configuration=problem_config, n_splits=7)
             >>> assert ts_parameters_check.validate(X, y) == [
             ...     {
-            ...         "message": "Since the data has 100 observations and n_splits=7, the smallest "
+            ...         "message": "Since the data has 100 observations, n_splits=7, and a forecast horizon of 12, the smallest "
             ...                    "split would have 16 observations. Since 21 (gap + max_delay + forecast_horizon)"
             ...                    " >= 16, then at least one of the splits would be empty by the time it reaches "
             ...                    "the pipeline. Please use a smaller number of splits, reduce one or more these "
