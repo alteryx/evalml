@@ -668,7 +668,7 @@ class AutoMLSearch:
                     random_seed=self.random_seed,
                 )
                 self.logger.info(
-                    f"Created a holdout dataset with {len(self.X_holdout)} rows. Training dataset has {len(self.X_train)} rows.",
+                    f"Created a holdout dataset with {len(X_holdout)} rows. Training dataset has {len(X_train)} rows.",
                 )
             else:
                 self.logger.info(
