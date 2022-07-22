@@ -656,19 +656,24 @@ class AutoMLSearch:
             raise ValueError(
                 "Holdout set size must be greater than 0 and less than 1. Set holdout set size to 0 to disable holdout set evaluation.",
             )
-        if (
-            self.passed_holdout_set is False
-            and len(X_train) >= self._HOLDOUT_SET_MIN_ROWS
-        ):
-            # Create holdout set from X_train and y_train data because X_train above or at row threshold
-            self.X_train, self.X_holdout, self.y_train, self.y_holdout = split_data(
-                X_train,
-                y_train,
-                problem_type=self.problem_type,
-                problem_configuration=self.problem_configuration,
-                test_size=self.holdout_set_size,
-                random_seed=self.random_seed,
-            )
+        if self.passed_holdout_set is False:
+            if len(X_train) >= self._HOLDOUT_SET_MIN_ROWS:
+                # Create holdout set from X_train and y_train data because X_train above or at row threshold
+                self.X_train, self.X_holdout, self.y_train, self.y_holdout = split_data(
+                    X_train,
+                    y_train,
+                    problem_type=self.problem_type,
+                    problem_configuration=self.problem_configuration,
+                    test_size=self.holdout_set_size,
+                    random_seed=self.random_seed,
+                )
+                self.logger.info(
+                    f"Created a holdout dataset with {len(self.X_holdout)} rows. Training dataset has {len(self.X_train)} rows.",
+                )
+            else:
+                self.logger.info(
+                    f"Dataset size is too small to create holdout set. Mininum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(self.X_train)} rows. Holdout set evaluation is disabled.",
+                )
         else:
             # Set holdout data in AutoML search if provided as parameter
             self.X_train = infer_feature_types(X_train)
@@ -679,20 +684,13 @@ class AutoMLSearch:
             self.y_holdout = (
                 infer_feature_types(y_holdout) if y_holdout is not None else None
             )
+
         if self.X_holdout is None and self.y_holdout is None:
             # Holdout set enabled but not enough rows
-            if len(X_train) < self._HOLDOUT_SET_MIN_ROWS and self.holdout_set_size > 0:
-                self.logger.info(
-                    f"Dataset size is too small to create holdout set. Mininum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(self.X_train)} rows. Holdout set evaluation is disabled.",
-                )
             self.logger.info(
                 f"AutoMLSearch will use mean CV score to rank pipelines.",
             )
         else:
-            if self.passed_holdout_set is False:
-                self.logger.info(
-                    f"Created a holdout dataset with {len(self.X_holdout)} rows. Training dataset has {len(self.X_train)} rows.",
-                )
             self.logger.info(
                 "AutoMLSearch will use the holdout set to score and rank pipelines.",
             )
