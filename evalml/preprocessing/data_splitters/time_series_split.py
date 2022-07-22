@@ -18,7 +18,8 @@ class TimeSeriesSplit(BaseCrossValidator):
             of rows of the current split to avoid "throwing out" more data than in necessary. Defaults to 0.
         gap (int): Number of time units separating the data used to generate features and the data to forecast on.
             Defaults to 0.
-        forecast_horizon (int): Number of time units to forecast. Defaults to 1.
+        forecast_horizon (int, None): Number of time units to forecast. Used for parameter validation. If an integer,
+            will set the size of the cv splits. Defaults to None.
         time_index (str): Name of the column containing the datetime information used to order the data. Defaults to None.
         n_splits (int): number of data splits to make. Defaults to 3.
 
@@ -66,7 +67,8 @@ class TimeSeriesSplit(BaseCrossValidator):
         self.time_index = time_index
         self.n_splits = n_splits
         self._splitter = SkTimeSeriesSplit(
-            n_splits=n_splits, test_size=forecast_horizon or None
+            n_splits=n_splits,
+            test_size=forecast_horizon,
         )
 
     def get_n_splits(self, X=None, y=None, groups=None):

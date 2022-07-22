@@ -2087,11 +2087,9 @@ def test_percent_better_than_baseline_in_rankings(
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.RegressionPipeline.fit")
 @patch("evalml.pipelines.TimeSeriesRegressionPipeline.fit")
-@patch("evalml.pipelines.TimeSeriesRegressionPipeline.predict", return_value=[1])
 @patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_percent_better_than_baseline_computed_for_all_objectives(
     mock_tell,
-    mock_time_series_predict,
     mock_time_series_baseline_regression_fit,
     mock_regression_fit,
     mock_multiclass_fit,
@@ -4621,7 +4619,7 @@ def test_cv_validation_scores_time_series(
         y_train=y,
         problem_type="time series binary",
         max_iterations=3,
-        data_splitter=TimeSeriesSplit(n_splits=3, forecast_horizon=2),
+        data_splitter=TimeSeriesSplit(n_splits=3),
         problem_configuration=problem_configuration,
         n_jobs=1,
     )

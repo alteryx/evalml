@@ -132,7 +132,7 @@ def test_data_splitter(X_y_binary):
         X_train=X,
         y_train=y,
         problem_type="binary",
-        data_splitter=TimeSeriesSplit(n_splits=cv_folds, forecast_horizon=5),
+        data_splitter=TimeSeriesSplit(n_splits=cv_folds),
         max_iterations=1,
         n_jobs=1,
     )
@@ -797,7 +797,6 @@ def test_automl_supports_time_series_classification(
         problem_type=problem_type,
         optimize_thresholds=False,
         problem_configuration=configuration,
-        data_splitter=TimeSeriesSplit(forecast_horizon=3, n_splits=3),
         max_batches=2,
     )
     env = AutoMLTestEnv(problem_type)

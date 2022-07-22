@@ -1757,12 +1757,6 @@ class _AutoMLTestEnv:
             return_value=predict_proba_return_value,
             pipeline_class_str=pipeline_to_mock,
         )
-        mock_predict = self._patch_method(
-            "predict",
-            side_effect=None,
-            return_value=[1],
-            pipeline_class_str=None,
-        )
         if handle_problem_types(self.problem_type) in [
             ProblemTypes.TIME_SERIES_BINARY,
             ProblemTypes.TIME_SERIES_MULTICLASS,
@@ -1795,7 +1789,7 @@ class _AutoMLTestEnv:
             new_callable=sleep_time,
         )
         if mock_predict_proba_in_sample is None:
-            with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize, mock_predict as mock_predict:
+            with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
                 # Can think of `yield` as blocking this method until the computation finishes running
                 yield
                 self._mock_fit = fit
@@ -1806,7 +1800,7 @@ class _AutoMLTestEnv:
                 self._mock_predict_proba = proba
                 self._mock_optimize_threshold = optimize
         else:
-            with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_predict_proba_in_sample as proba_in_sample, mock_tell as tell, mock_optimize as optimize, mock_predict as mock_predict:
+            with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_predict_proba_in_sample as proba_in_sample, mock_tell as tell, mock_optimize as optimize:
                 # Can think of `yield` as blocking this method until the computation finishes running
                 yield
                 self._mock_fit = fit
