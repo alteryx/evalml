@@ -13,9 +13,10 @@ from evalml.automl.utils import tune_binary_threshold
 from evalml.exceptions import PipelineScoreError
 from evalml.preprocessing import split_data
 from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
     is_binary,
     is_classification,
-    is_multiclass,
     is_time_series,
 )
 
@@ -210,15 +211,17 @@ def train_and_score_pipeline(
         full_y_train = ww.init_series(full_y_train.map(y_mapping))
     cv_pipeline = pipeline
     pipeline_cache = {}
+
     for i, (train, valid) in enumerate(
         automl_config.data_splitter.split(full_X_train, full_y_train),
     ):
         logger.debug(f"\t\tTraining and scoring on fold {i}")
         X_train, X_valid = full_X_train.ww.iloc[train], full_X_train.ww.iloc[valid]
         y_train, y_valid = full_y_train.ww.iloc[train], full_y_train.ww.iloc[valid]
-        if is_binary(automl_config.problem_type) or is_multiclass(
-            automl_config.problem_type,
-        ):
+        if handle_problem_types(automl_config.problem_type) in [
+            ProblemTypes.BINARY,
+            ProblemTypes.MULTICLASS,
+        ]:
             diff_train = set(np.setdiff1d(full_y_train, y_train))
             diff_valid = set(np.setdiff1d(full_y_train, y_valid))
             diff_string = (

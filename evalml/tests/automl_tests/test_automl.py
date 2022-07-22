@@ -4543,7 +4543,7 @@ def test_automl_passes_known_in_advance_pipeline_parameters_to_all_pipelines(
         problem_configuration={
             "time_index": "date",
             "max_delay": 3,
-            "forecast_horizon": 2,
+            "forecast_horizon": 3,
             "gap": 1,
             "known_in_advance": known_in_advance,
         },
@@ -4612,7 +4612,7 @@ def test_cv_validation_scores_time_series(
         "time_index": "date",
         "gap": 0,
         "max_delay": 0,
-        "forecast_horizon": 1,
+        "forecast_horizon": 2,
     }
     automl = AutoMLSearch(
         X_train=X,
@@ -4671,7 +4671,7 @@ def test_search_parameters_held_automl(
             "time_index": "date",
             "gap": 0,
             "max_delay": 0,
-            "forecast_horizon": 1,
+            "forecast_horizon": 3,
         }
         allowed_component_graphs = {
             "cg": {
