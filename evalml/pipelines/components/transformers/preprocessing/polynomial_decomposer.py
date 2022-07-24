@@ -87,13 +87,15 @@ class PolynomialDecomposer(Decomposer):
             dt_col = dt_df.ww.select("Datetime").squeeze()
         # With more than one datetime column, use the time_index parameter, if provided.
         elif dt_df.ww.select("Datetime").shape[1] > 1:
-            if not "time_index" in self.parameters:
-                return ValueError(
+            if ("time_index" not in self.parameters) or (
+                self.parameters["time_index"] is None
+            ):
+                raise ValueError(
                     "Too many Datetime features provided in data but no time_index column specified during __init__.",
                 )
             elif not self.parameters["time_index"] in X:
                 time_index_col = self.parameters["time_index"]
-                return ValueError(
+                raise ValueError(
                     f"Too many Datetime features provided in data and provided time_index column {time_index_col} not present in data.",
                 )
             dt_col = dt_df.ww[self.parameters["time_index"]]

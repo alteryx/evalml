@@ -293,7 +293,11 @@ def test_polynomial_decomposer_build_seasonal_signal(
 )
 @pytest.mark.parametrize(
     "time_index_specified",
-    ["time_index_is_specified", "time_index_not_specified"],
+    [
+        "time_index_is_specified",
+        "time_index_not_specified",
+        "time_index_is_specified_but_wrong",
+    ],
 )
 def test_polynomial_decomposer_uses_time_index(
     ts_data,
@@ -303,6 +307,7 @@ def test_polynomial_decomposer_uses_time_index(
     time_index_specified,
 ):
     X, y = ts_data
+
     time_index_col_name = "date"
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
@@ -317,9 +322,11 @@ def test_polynomial_decomposer_uses_time_index(
     elif X_num_time_columns > 1:
         for addn_col in range(X_num_time_columns - 1):
             X[time_index_col_name + str(addn_col + 1)] = X[time_index_col_name]
-    time_index = {"time_index_is_specified": "date", "time_index_not_specified": None}[
-        time_index_specified
-    ]
+    time_index = {
+        "time_index_is_specified": "date",
+        "time_index_not_specified": None,
+        "time_index_is_specified_but_wrong": "d4t3s",
+    }[time_index_specified]
     decomposer = PolynomialDecomposer(time_index=time_index)
 
     # The time series data has no time data
@@ -330,8 +337,16 @@ def test_polynomial_decomposer_uses_time_index(
     ):
         try:
             output_X, output_y = decomposer.fit_transform(X, y)
-        except:
-            pytest.xfail("bug in a 3rd party library")
+        except ValueError as e:
+            if (
+                "There are no Datetime features in the feature data and neither the feature or target data doesn't have Datetime index."
+                in str(e)
+            ):
+                pytest.xfail(
+                    "Must provide some sort of date time information to use this time series component.",
+                )
+            else:
+                raise
 
     # The time series data has too much time data
     if (
@@ -341,7 +356,33 @@ def test_polynomial_decomposer_uses_time_index(
     ):
         try:
             output_X, output_y = decomposer.fit_transform(X, y)
-        except:
-            pytest.xfail("bug in a 3rd party library")
+        except ValueError as e:
+            if (
+                "Too many Datetime features provided in data but no time_index column specified during __init__."
+                in str(e)
+            ):
+                pytest.xfail(
+                    "Must pass a time index to component when multiple date time columns present.",
+                )
+            else:
+                raise
+
+    # If the wrong time_index column is specified with multiple datetime columns
+    if (
+        time_index_specified == "time_index_is_specified_but_wrong"
+        and X_num_time_columns > 1
+    ):
+        try:
+            output_X, output_y = decomposer.fit_transform(X, y)
+        except ValueError as e:
+            if (
+                "Too many Datetime features provided in data and provided time_index column d4t3s not present in data."
+                in str(e)
+            ):
+                pytest.xfail(
+                    "Must pass an existing column with datetime data when multiple date time columns present.",
+                )
+            else:
+                raise
 
     output_X, output_y = decomposer.fit_transform(X, y)
