@@ -26,6 +26,7 @@ class PolynomialDecomposer(Decomposer):
         as the seasonal signal of the data.
 
     Args:
+        time_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
         degree (int): Degree for the polynomial. If 1, linear model is fit to the data.
             If 2, quadratic model is fit, etc. Defaults to 1.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -39,7 +40,9 @@ class PolynomialDecomposer(Decomposer):
     modifies_features = False
     modifies_target = True
 
-    def __init__(self, degree: int = 1, random_seed: int = 0, **kwargs):
+    def __init__(
+        self, time_index: str = None, degree: int = 1, random_seed: int = 0, **kwargs
+    ):
         if not isinstance(degree, int):
             if isinstance(degree, float) and degree.is_integer():
                 degree = int(degree)
@@ -60,6 +63,8 @@ class PolynomialDecomposer(Decomposer):
 
         decomposer = detrend.Detrender(trend.PolynomialTrendForecaster(degree=degree))
 
+        params["time_index"] = time_index
+
         super().__init__(
             parameters=params,
             component_obj=decomposer,
@@ -68,12 +73,31 @@ class PolynomialDecomposer(Decomposer):
 
     def _set_time_index(self, X, y):
         """Ensures that target data has a pandas.DatetimeIndex that matches feature data."""
-        X = infer_feature_types(X)
-        if X.ww.select("Datetime").shape[1] != 1:
+        dt_df = infer_feature_types(X)
+
+        # Use the feature data's index, preferentially
+        if isinstance(dt_df.index, pd.DatetimeIndex):
+            dt_col = pd.Series(dt_df.index)
+        elif dt_df.ww.select("Datetime").shape[1] == 0:
             raise ValueError(
-                "There are no Datetime features in the feature data and the target data doesn't have Datetime index.",
+                "There are no Datetime features in the feature data and neither the feature or target data doesn't have Datetime index.",
             )
-        dt_col = X.ww.select("Datetime").squeeze()
+        # Use a datetime column of the features if there's only one
+        elif dt_df.ww.select("Datetime").shape[1] == 1:
+            dt_col = dt_df.ww.select("Datetime").squeeze()
+        # With more than one datetime column, use the time_index parameter, if provided.
+        elif dt_df.ww.select("Datetime").shape[1] > 1:
+            if not "time_index" in self.parameters:
+                return ValueError(
+                    "Too many Datetime features provided in data but no time_index column specified during __init__.",
+                )
+            elif not self.parameters["time_index"] in X:
+                time_index_col = self.parameters["time_index"]
+                return ValueError(
+                    f"Too many Datetime features provided in data and provided time_index column {time_index_col} not present in data.",
+                )
+            dt_col = dt_df.ww[self.parameters["time_index"]]
+
         time_index = pd.DatetimeIndex(dt_col, freq=pd.infer_freq(dt_col)).rename(
             y.index.name,
         )

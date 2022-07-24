@@ -9,8 +9,8 @@ from evalml.pipelines.components import PolynomialDecomposer
 
 
 def test_polynomial_decomposer_init():
-    delayed_features = PolynomialDecomposer(degree=3)
-    assert delayed_features.parameters == {"degree": 3}
+    delayed_features = PolynomialDecomposer(degree=3, time_index="dates")
+    assert delayed_features.parameters == {"degree": 3, "time_index": "dates"}
 
 
 def test_polynomial_decomposer_init_raises_error_if_degree_not_int():
@@ -39,10 +39,19 @@ def test_polynomial_decomposer_raises_value_error_target_is_none(ts_data):
         pdt.inverse_transform(None)
 
 
+@pytest.mark.parametrize("X_num_time_columns", [0, 1, 2, 3])
 def test_pd_fit_raises_value_error_target_with_no_time_index_and_no_time_features(
     ts_data,
+    X_num_time_columns,
 ):
     X, y = ts_data
+    time_index_col_name = "date"
+
+    if X_num_time_columns == 0:
+        X = X.drop(columns=[time_index_col_name])
+    elif X_num_time_columns > 1:
+        for addn_col in range(X_num_time_columns - 1):
+            X[time_index_col_name + str(addn_col + 1)] = X[time_index_col_name]
 
     X_no_time_feature_with_time_index = X.drop(columns=["date"])
     X_no_time_feature_no_time_index = X_no_time_feature_with_time_index.reset_index(
@@ -318,3 +327,68 @@ def test_polynomial_decomposer_build_seasonal_signal(
         full_seasonal_signal[projected_seasonality.index],
         projected_seasonality,
     )
+
+
+@pytest.mark.parametrize("X_num_time_columns", [0, 1, 2, 3])
+@pytest.mark.parametrize(
+    "X_has_time_index",
+    ["X_has_time_index", "X_doesnt_have_time_index"],
+)
+@pytest.mark.parametrize(
+    "y_has_time_index",
+    ["y_has_time_index", "y_doesnt_have_time_index"],
+)
+@pytest.mark.parametrize(
+    "time_index_specified",
+    ["time_index_is_specified", "time_index_not_specified"],
+)
+def test_polynomial_decomposer_uses_time_index(
+    ts_data,
+    X_has_time_index,
+    X_num_time_columns,
+    y_has_time_index,
+    time_index_specified,
+):
+    X, y = ts_data
+    time_index_col_name = "date"
+    assert isinstance(X.index, pd.DatetimeIndex)
+    assert isinstance(y.index, pd.DatetimeIndex)
+
+    # Modify time series data to match testing conditions
+    if X_has_time_index == "X_doesnt_have_time_index":
+        X = X.reset_index(drop=True)
+    if y_has_time_index == "y_doesnt_have_time_index":
+        y = y.reset_index(drop=True)
+    if X_num_time_columns == 0:
+        X = X.drop(columns=[time_index_col_name])
+    elif X_num_time_columns > 1:
+        for addn_col in range(X_num_time_columns - 1):
+            X[time_index_col_name + str(addn_col + 1)] = X[time_index_col_name]
+    time_index = {"time_index_is_specified": "date", "time_index_not_specified": None}[
+        time_index_specified
+    ]
+    decomposer = PolynomialDecomposer(time_index=time_index)
+
+    # The time series data has no time data
+    if (
+        X_num_time_columns == 0
+        and X_has_time_index == "X_doesnt_have_time_index"
+        and y_has_time_index == "y_doesnt_have_time_index"
+    ):
+        try:
+            output_X, output_y = decomposer.fit_transform(X, y)
+        except:
+            pytest.xfail("bug in a 3rd party library")
+
+    # The time series data has too much time data
+    if (
+        X_num_time_columns > 1
+        and time_index_specified == "time_index_not_specified"
+        and y_has_time_index == "y_doesnt_have_time_index"
+    ):
+        try:
+            output_X, output_y = decomposer.fit_transform(X, y)
+        except:
+            pytest.xfail("bug in a 3rd party library")
+
+    output_X, output_y = decomposer.fit_transform(X, y)

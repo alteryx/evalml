@@ -16,6 +16,14 @@ class Decomposer(Transformer):
     modifies_features = False
     modifies_target = True
 
+    def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
+        super().__init__(
+            parameters=parameters,
+            component_obj=component_obj,
+            random_seed=random_seed,
+            **kwargs,
+        )
+
     @abstractmethod
     def get_trend_dataframe(self, y):
         """Return a list of dataframes, each with 3 columns: trend, seasonality, residual."""
