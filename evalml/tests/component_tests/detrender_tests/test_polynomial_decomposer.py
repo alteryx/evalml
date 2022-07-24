@@ -39,53 +39,6 @@ def test_polynomial_decomposer_raises_value_error_target_is_none(ts_data):
         pdt.inverse_transform(None)
 
 
-@pytest.mark.parametrize("X_num_time_columns", [0, 1, 2, 3])
-def test_pd_fit_raises_value_error_target_with_no_time_index_and_no_time_features(
-    ts_data,
-    X_num_time_columns,
-):
-    X, y = ts_data
-    time_index_col_name = "date"
-
-    if X_num_time_columns == 0:
-        X = X.drop(columns=[time_index_col_name])
-    elif X_num_time_columns > 1:
-        for addn_col in range(X_num_time_columns - 1):
-            X[time_index_col_name + str(addn_col + 1)] = X[time_index_col_name]
-
-    X_no_time_feature_with_time_index = X.drop(columns=["date"])
-    X_no_time_feature_no_time_index = X_no_time_feature_with_time_index.reset_index(
-        drop=True,
-    )
-    y_no_time_index = y.reset_index(drop=True)
-
-    with pytest.raises(
-        ValueError,
-        match="There are no Datetime features in the feature data",
-    ):
-        PolynomialDecomposer().fit(X_no_time_feature_with_time_index, y_no_time_index)
-
-    with pytest.raises(
-        ValueError,
-        match="There are no Datetime features in the feature data",
-    ):
-        PolynomialDecomposer().fit(X_no_time_feature_no_time_index, y_no_time_index)
-
-    pdc = PolynomialDecomposer()
-    pdc.fit(X, y_no_time_index)
-    with pytest.raises(
-        ValueError,
-        match="There are no Datetime features in the feature data",
-    ):
-        pdc.transform(X_no_time_feature_with_time_index, y_no_time_index)
-
-    with pytest.raises(
-        ValueError,
-        match="There are no Datetime features in the feature data",
-    ):
-        pdc.transform(X_no_time_feature_no_time_index, y_no_time_index)
-
-
 def test_polynomial_decomposer_get_trend_df_raises_errors(ts_data):
     X, y = ts_data
     pdt = PolynomialDecomposer(degree=3)
