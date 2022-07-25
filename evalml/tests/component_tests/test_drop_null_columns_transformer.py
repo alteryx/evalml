@@ -45,10 +45,10 @@ def test_drop_null_transformer_transform_default_pct_null_threshold():
     X = pd.DataFrame(
         {"lots_of_null": [None, None, None, None, 5], "no_null": [1, 2, 3, 4, 5]},
     )
-    X_expected = X.astype({"lots_of_null": "float64", "no_null": "int64"})
+    X_expected = X.astype({"lots_of_null": "Int64", "no_null": "int64"})
     drop_null_transformer.fit(X)
     X_t = drop_null_transformer.transform(X)
-    assert_frame_equal(X_expected, X_t, check_dtype=False)
+    assert_frame_equal(X_expected, X_t)
 
 
 def test_drop_null_transformer_transform_custom_pct_null_threshold():
