@@ -8,9 +8,11 @@ import woodwork as ww
 from pandas.testing import assert_frame_equal
 from woodwork.logical_types import (
     Boolean,
+    BooleanNullable,
     Categorical,
     Double,
     Integer,
+    IntegerNullable,
     NaturalLanguage,
 )
 
@@ -512,7 +514,7 @@ def test_imputer_all_bool_return_original(data_type, make_data_type):
 def test_imputer_bool_dtype_object(data_type, make_data_type):
     X = pd.DataFrame([True, np.nan, False, np.nan, True] * 4)
     y = pd.Series([1, 0, 0, 1, 0] * 4)
-    X_expected_arr = pd.DataFrame([True, True, False, True, True] * 4, dtype="category")
+    X_expected_arr = pd.DataFrame([True, True, False, True, True] * 4, dtype="boolean")
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
     imputer = Imputer()
@@ -537,7 +539,7 @@ def test_imputer_multitype_with_one_bool(data_type, make_data_type):
         {
             "bool with nan": pd.Series(
                 [True, False, False, False, False] * 4,
-                dtype="category",
+                dtype="boolean",
             ),
             "bool no nan": pd.Series(
                 [False, False, False, False, True] * 4,
@@ -563,7 +565,9 @@ def test_imputer_int_preserved():
         transformed,
         pd.DataFrame(pd.Series([1, 2, 11, 14 / 3])),
     )
-    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Double}
+    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+        0: IntegerNullable,
+    }
 
     X = pd.DataFrame(pd.Series([1, 2, 3, np.nan]))
     imputer = Imputer(numeric_impute_strategy="mean")
@@ -573,7 +577,9 @@ def test_imputer_int_preserved():
         pd.DataFrame(pd.Series([1, 2, 3, 2])),
         check_dtype=False,
     )
-    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Double}
+    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+        0: IntegerNullable,
+    }
 
     X = pd.DataFrame(pd.Series([1, 2, 3, 4], dtype="int"))
     imputer = Imputer(numeric_impute_strategy="mean")
@@ -595,9 +601,9 @@ def test_imputer_bool_preserved(test_case, null_type):
         ]
         X = pd.DataFrame(pd.Series([True, False, True, null_type] * 4))
         expected = pd.DataFrame(
-            pd.Series([True, False, True, True] * 4, dtype="category"),
+            pd.Series([True, False, True, True] * 4, dtype="boolean"),
         )
-        expected_ww_dtype = Categorical
+        expected_ww_dtype = BooleanNullable
         check_dtype = True
     elif test_case == "boolean_without_null":
         X = pd.DataFrame(pd.Series([True, False, True, False] * 4))
