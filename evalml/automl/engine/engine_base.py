@@ -314,9 +314,10 @@ def train_and_score_pipeline(
         logger.debug(f"\t\tTraining and scoring on fold {i}")
         X_train, X_valid = full_X_train.ww.iloc[train], full_X_train.ww.iloc[valid]
         y_train, y_valid = full_y_train.ww.iloc[train], full_y_train.ww.iloc[valid]
-        if is_binary(automl_config.problem_type) or is_multiclass(
-            automl_config.problem_type,
-        ):
+        if handle_problem_types(automl_config.problem_type) in [
+            ProblemTypes.BINARY,
+            ProblemTypes.MULTICLASS,
+        ]:
             diff_train = set(np.setdiff1d(full_y_train, y_train))
             diff_valid = set(np.setdiff1d(full_y_train, y_valid))
             diff_string = (
