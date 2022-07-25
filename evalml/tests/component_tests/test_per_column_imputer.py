@@ -219,15 +219,18 @@ def test_fit_transform_drop_all_nan_columns():
         "another_col": {"impute_strategy": "most_frequent"},
     }
     transformer = PerColumnImputer(impute_strategies=strategies)
-    X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
+    X_expected_arr = pd.DataFrame(
+        {"some_nan": [0, 1, 0], "another_col": [0, 1, 2]},
+    ).astype({"some_nan": "Int64"})
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
+    # Check that original dataframe remains unchanged
     assert_frame_equal(
         X,
         pd.DataFrame(
             {
                 "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [0.0, 1.0, 0.0],
+                "some_nan": [0, 1, 0],
                 "another_col": [0, 1, 2],
             },
         ),
