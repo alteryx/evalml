@@ -48,7 +48,7 @@ def test_drop_null_transformer_transform_default_pct_null_threshold():
     X_expected = X.astype({"lots_of_null": "float64", "no_null": "int64"})
     drop_null_transformer.fit(X)
     X_t = drop_null_transformer.transform(X)
-    assert_frame_equal(X_expected, X_t)
+    assert_frame_equal(X_expected, X_t, check_dtype=False)
 
 
 def test_drop_null_transformer_transform_custom_pct_null_threshold():
@@ -94,7 +94,12 @@ def test_drop_null_transformer_transform_boundary_pct_null_threshold():
     drop_null_transformer = DropNullColumns(pct_null_threshold=1.0)
     drop_null_transformer.fit(X)
     X_t = drop_null_transformer.transform(X)
-    assert_frame_equal(X_t, X.drop(["all_null"], axis=1))
+    assert_frame_equal(
+        X_t,
+        X.drop(columns=["all_null"]).astype(
+            {"some_null": "Int64", "lots_of_null": "Int64"},
+        ),
+    )
     # check that X is untouched
     assert X.equals(
         pd.DataFrame(
