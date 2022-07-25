@@ -67,10 +67,19 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
             pd.date_range("2021-01-27", periods=5),
         )
     if issue == "uneven":
-        dates = pd.DatetimeIndex(
-            pd.date_range("2021-01-01", periods=6).append(
-                pd.date_range("2021-01-07", periods=24, freq="H"),
-            ),
+        dates_1 = pd.date_range("2015-01-01", periods=5, freq="D")
+        dates_2 = pd.date_range("2015-01-08", periods=3, freq="D")
+        dates_3 = pd.DatetimeIndex(["2015-01-12"])
+        dates_4 = pd.date_range("2015-01-15", periods=5, freq="D")
+        dates_5 = pd.date_range("2015-01-22", periods=5, freq="D")
+        dates_6 = pd.date_range("2015-01-29", periods=11, freq="M")
+
+        dates = (
+            dates_1.append(dates_2)
+            .append(dates_3)
+            .append(dates_4)
+            .append(dates_5)
+            .append(dates_6)
         )
     if issue == "redundant":
         dates = pd.date_range("2021-01-01", periods=29).append(
