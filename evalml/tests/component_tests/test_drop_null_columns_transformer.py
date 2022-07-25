@@ -112,7 +112,7 @@ def test_drop_null_transformer_fit_transform():
     X = pd.DataFrame(
         {"lots_of_null": [None, None, None, None, 5], "no_null": [1, 2, 3, 4, 5]},
     )
-    X_expected = X.astype({"lots_of_null": "float64", "no_null": "int64"})
+    X_expected = X.astype({"lots_of_null": "Int64", "no_null": "int64"})
     X_t = drop_null_transformer.fit_transform(X)
     assert_frame_equal(X_expected, X_t)
 
@@ -151,6 +151,11 @@ def test_drop_null_transformer_fit_transform():
             "all_null": [None, None, None, None, None],
             "lots_of_null": [None, None, None, None, 5],
             "some_null": [None, 0, 3, 4, 5],
+        },
+    ).astype(
+        {
+            "lots_of_null": "Int64",
+            "some_null": "Int64",
         },
     )
     drop_null_transformer = DropNullColumns(pct_null_threshold=1.0)
