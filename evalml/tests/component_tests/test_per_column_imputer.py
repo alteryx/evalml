@@ -350,8 +350,9 @@ def test_per_column_imputer_column_subset():
     )
     X_expected.ww.init(
         logical_types={
-            "all_nan_not_included": "double",
-            "column_with_nan_included": "double",
+            "all_nan_not_included": "Double",
+            "column_with_nan_not_included": "IntegerNullable",
+            "column_with_nan_included": "IntegerNullable",
         },
     )
     X.ww.init(
@@ -365,11 +366,10 @@ def test_per_column_imputer_column_subset():
             {
                 "all_nan_not_included": [np.nan, np.nan, np.nan],
                 "all_nan_included": [np.nan, np.nan, np.nan],
-                "column_with_nan_not_included": [np.nan, 1, 0],
-                # Because of https://github.com/alteryx/evalml/issues/2055
-                "column_with_nan_included": [0.0, 1.0, 0.0],
+                "column_with_nan_not_included": [pd.NA, 1, 0],
+                "column_with_nan_included": [0, 1, 0],
             },
-        ),
+        ).astype({"column_with_nan_not_included": "Int64"}),
     )
 
 
