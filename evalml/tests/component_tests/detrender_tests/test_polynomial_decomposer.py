@@ -345,8 +345,6 @@ def test_polynomial_decomposer_uses_time_index(
                 pytest.xfail(
                     "Must provide some sort of date time information to use this time series component.",
                 )
-            else:
-                raise
 
     # The time series data has too much time data
     if (
@@ -364,8 +362,6 @@ def test_polynomial_decomposer_uses_time_index(
                 pytest.xfail(
                     "Must pass a time index to component when multiple date time columns present.",
                 )
-            else:
-                raise
 
     # If the wrong time_index column is specified with multiple datetime columns
     if (
@@ -382,7 +378,6 @@ def test_polynomial_decomposer_uses_time_index(
                 pytest.xfail(
                     "Must pass an existing column with datetime data when multiple date time columns present.",
                 )
-            else:
-                raise
 
-    output_X, output_y = decomposer.fit_transform(X, y)
+    # Smoke test the fit_transform() method
+    decomposer.fit_transform(X, y)
