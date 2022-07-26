@@ -14,6 +14,9 @@ from evalml.data_checks import (
 
 datetime_format_check_name = DateTimeFormatDataCheck.name
 
+WINDOW_LENGTH = 4
+THRESHOLD = 0.4
+
 
 def get_uneven_error(col_name, ww_payload):
     error = DataCheckError(
@@ -116,7 +119,12 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
             dates = pd.Series(y.index)
         else:
             dates = X[datetime_column]
-        ww_payload = infer_frequency(dates, debug=True, window_length=4, threshold=0.4)
+        ww_payload = infer_frequency(
+            dates,
+            debug=True,
+            window_length=WINDOW_LENGTH,
+            threshold=THRESHOLD,
+        )
 
         col_name = datetime_loc if datetime_loc == 1 else "either index"
         if issue is None:
@@ -213,7 +221,12 @@ def test_datetime_format_data_check_multiple_missing(n_missing):
     X["dates"] = dates
     datetime_format_check = DateTimeFormatDataCheck(datetime_column="dates")
 
-    ww_payload = infer_frequency(X["dates"], debug=True, window_length=4, threshold=0.4)
+    ww_payload = infer_frequency(
+        X["dates"],
+        debug=True,
+        window_length=WINDOW_LENGTH,
+        threshold=THRESHOLD,
+    )
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
@@ -235,7 +248,12 @@ def test_datetime_format_data_check_multiple_errors():
     y = pd.Series(range(21))
     datetime_format_check = DateTimeFormatDataCheck(datetime_column="dates")
 
-    ww_payload = infer_frequency(X["dates"], debug=True, window_length=4, threshold=0.4)
+    ww_payload = infer_frequency(
+        X["dates"],
+        debug=True,
+        window_length=WINDOW_LENGTH,
+        threshold=THRESHOLD,
+    )
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
@@ -253,7 +271,12 @@ def test_datetime_format_data_check_multiple_errors():
     )
     X = pd.DataFrame({"dates": dates})
 
-    ww_payload = infer_frequency(X["dates"], debug=True, window_length=4, threshold=0.4)
+    ww_payload = infer_frequency(
+        X["dates"],
+        debug=True,
+        window_length=WINDOW_LENGTH,
+        threshold=THRESHOLD,
+    )
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
@@ -276,7 +299,12 @@ def test_datetime_format_data_check_multiple_errors():
     )
     X = pd.DataFrame({"dates": dates})
 
-    ww_payload = infer_frequency(X["dates"], debug=True, window_length=4, threshold=0.4)
+    ww_payload = infer_frequency(
+        X["dates"],
+        debug=True,
+        window_length=WINDOW_LENGTH,
+        threshold=THRESHOLD,
+    )
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
@@ -300,7 +328,12 @@ def test_datetime_format_data_check_multiple_errors():
     )
     X = pd.DataFrame({"dates": dates})
 
-    ww_payload = infer_frequency(X["dates"], debug=True, window_length=4, threshold=0.4)
+    ww_payload = infer_frequency(
+        X["dates"],
+        debug=True,
+        window_length=WINDOW_LENGTH,
+        threshold=THRESHOLD,
+    )
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
@@ -324,7 +357,12 @@ def test_datetime_format_data_check_multiple_errors():
     )
     X = pd.DataFrame({"dates": dates})
 
-    ww_payload = infer_frequency(X["dates"], debug=True, window_length=4, threshold=0.4)
+    ww_payload = infer_frequency(
+        X["dates"],
+        debug=True,
+        window_length=WINDOW_LENGTH,
+        threshold=THRESHOLD,
+    )
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
@@ -351,7 +389,12 @@ def test_datetime_format_unusual_interval():
 
     dates = dates.drop("2021-01-21")
     X = pd.DataFrame({"dates": dates})
-    ww_payload = infer_frequency(X["dates"], debug=True, window_length=4, threshold=0.4)
+    ww_payload = infer_frequency(
+        X["dates"],
+        debug=True,
+        window_length=WINDOW_LENGTH,
+        threshold=THRESHOLD,
+    )
 
     expected = [
         DataCheckError(
@@ -366,7 +409,12 @@ def test_datetime_format_unusual_interval():
 
     dates = dates.append(pd.date_range(dates[-1], periods=2, freq="4D"))
     X = pd.DataFrame({"dates": dates})
-    ww_payload = infer_frequency(X["dates"], debug=True, window_length=4, threshold=0.4)
+    ww_payload = infer_frequency(
+        X["dates"],
+        debug=True,
+        window_length=WINDOW_LENGTH,
+        threshold=THRESHOLD,
+    )
 
     expected = [
         DataCheckError(
@@ -389,7 +437,12 @@ def test_datetime_format_nan_data_check_error():
     dates[0] = np.NaN
     X = pd.DataFrame(dates, columns=["date"])
 
-    ww_payload = infer_frequency(X["date"], debug=True, window_length=4, threshold=0.4)
+    ww_payload = infer_frequency(
+        X["date"],
+        debug=True,
+        window_length=WINDOW_LENGTH,
+        threshold=THRESHOLD,
+    )
 
     expected = [
         DataCheckError(
@@ -410,7 +463,12 @@ def test_datetime_format_nan_data_check_error():
 
     del expected[-1]
 
-    ww_payload = infer_frequency(X["date"], debug=True, window_length=4, threshold=0.4)
+    ww_payload = infer_frequency(
+        X["date"],
+        debug=True,
+        window_length=WINDOW_LENGTH,
+        threshold=THRESHOLD,
+    )
 
     expected.extend(
         [

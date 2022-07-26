@@ -39,11 +39,11 @@ class DateTimeFormatDataCheck(DataCheck):
         Examples:
             >>> import pandas as pd
 
-            The column "dates" has a set of dates with hourly frequency appended to the end of a series of days, which is inconsistent
-            with the frequency of the previous 9 dates (1 day).
+            The column "dates" has a set of two dates with monthly frequency appended to the end of a set of two dates with hourly frequency that is also appended to the end
+            of a set of two dates with daily frequency.
 
-            >>> X = pd.DataFrame(pd.date_range("2015-01-01", periods=2).append(pd.date_range("2015-01-08", periods=2, freq="H").append(pd.date_range("2016-03-02", periods=2, freq="M").append(pd.date_range("2017-05-21", periods=2, freq="5D")))), columns=["dates"])
-            >>> y = pd.Series([0, 1, 0, 1, 1, 0, 0, 1])
+            >>> X = pd.DataFrame(pd.date_range("2015-01-01", periods=2).append(pd.date_range("2015-01-08", periods=2, freq="H").append(pd.date_range("2016-03-02", periods=2, freq="M"))), columns=["dates"])
+            >>> y = pd.Series([0, 1, 0, 1, 1, 0])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
