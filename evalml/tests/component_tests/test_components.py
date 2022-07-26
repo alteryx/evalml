@@ -1088,7 +1088,7 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
     transformer_subclass.transform(X)
 
 
-@pytest.mark.parametrize("component_class", _all_transformers()+_all_estimators())
+@pytest.mark.parametrize("component_class", _all_transformers() + _all_estimators())
 def test_all_transformers_needs_fitting(component_class):
     if component_class.__name__ in [
         "DropColumns",
