@@ -500,8 +500,8 @@ def test_datetime_nan_check_ww():
     ww_payload = infer_frequency(
         ww_input["dates"],
         debug=True,
-        window_length=4,
-        threshold=0.4,
+        window_length=WINDOW_LENGTH,
+        threshold=THRESHOLD,
     )
 
     expected = [
