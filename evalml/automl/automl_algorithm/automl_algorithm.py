@@ -65,6 +65,14 @@ class AutoMLAlgorithm(ABC):
             list[PipelineBase]: A list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
 
+    @abstractmethod
+    def num_pipelines_per_batch(self, batch_number):
+        """Return the number of pipelines in the nth batch
+
+        Returns:
+            int: number of pipelines in the given batch
+        """
+
     def _set_allowed_pipelines(self, allowed_pipelines):
         """Sets the allowed parameters and creates the tuners for the input pipelines."""
         self.allowed_pipelines = allowed_pipelines

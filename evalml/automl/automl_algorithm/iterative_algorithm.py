@@ -326,6 +326,11 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._batch_number += 1
         return next_batch
 
+    def num_pipelines_per_batch(self, batch_number):
+        if batch_number == 0:
+            return len(self.allowed_pipelines)
+        return self.pipelines_per_batch
+
     def add_result(
         self,
         score_to_minimize,

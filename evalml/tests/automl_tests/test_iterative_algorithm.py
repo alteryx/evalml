@@ -1048,3 +1048,18 @@ def test_iterative_algorithm_add_result_cache(
 
     for values in algo._best_pipeline_info.values():
         assert values["cached_data"] == cache
+
+
+def test_iterative_algorithm_num_pipelines_per_batch(X_y_binary):
+    X, y = X_y_binary
+    algo = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type="binary",
+    )
+
+    for i in range(4):
+        if i == 0:
+            assert algo.num_pipelines_per_batch(i) == len(algo.allowed_pipelines)
+        else:
+            assert algo.num_pipelines_per_batch(i) == algo.pipelines_per_batch
