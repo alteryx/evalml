@@ -787,8 +787,8 @@ def test_clone_fitted(X_y_binary):
 
 
 @pytest.mark.parametrize("component_class", all_components())
-@pytest.mark.xfail
 def test_components_init_kwargs(component_class):
+
     component = component_class()
     if component._component_obj is None:
         pytest.xfail()
@@ -1101,9 +1101,9 @@ def test_all_transformers_needs_fitting(component_class):
 
 
 @pytest.mark.parametrize("component_class", _all_transformers())
-@pytest.mark.xfail
 def test_all_transformers_check_fit(component_class, X_y_binary, ts_data_binary):
     X, y = X_y_binary
+
     if not component_class.needs_fitting:
         pytest.xfail()
 
@@ -1218,7 +1218,6 @@ def test_all_estimators_check_fit(
 
 @pytest.mark.parametrize("data_type", ["li", "np", "pd", "ww"])
 @pytest.mark.parametrize("component_class", _all_transformers())
-@pytest.mark.xfail
 def test_all_transformers_check_fit_input_type(
     component_class,
     data_type,
