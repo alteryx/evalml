@@ -88,7 +88,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...         "data_check_name": "InvalidTargetDataCheck",
             ...         "level": "error",
             ...         "details": {"columns": None, "rows": None},
-            ...         "code": "TARGET_UNSUPPORTED_TYPE",
+            ...         "code": "TARGET_REGRESSION_NON_NUMERIC",
             ...         "action_options": []
             ...     }
             ... ]
