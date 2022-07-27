@@ -13,6 +13,7 @@ Release Notes
         * Bump minimum scikit-optimize version to 0.9.0 `:pr:`3614`
     * Changes
         * Add pre-commit hooks for linting :pr:`3608`
+        * Implemented a lower threshold and window size for the ``TimeSeriesRegularizer`` and ``DatetimeFormatDataCheck`` :pr:`3627`
     * Documentation Changes
     * Testing Changes
         * Pinned GraphViz version for Windows CI Test :pr:`3596`

@@ -31,7 +31,7 @@ def assert_features_and_length_equal(
     error_dict,
     has_target=True,
 ):
-    ww_payload = infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8)
+    ww_payload = infer_frequency(X["dates"], debug=True, window_length=4, threshold=0.4)
 
     assert isinstance(X_output, pd.DataFrame)
     assert isinstance(y_output, pd.Series) if has_target else True
@@ -74,8 +74,8 @@ def test_ts_regularizer_init():
     assert ts_regularizer.name == "Time Series Regularizer"
     assert ts_regularizer.parameters == {
         "time_index": "dates",
-        "window_length": 5,
-        "threshold": 0.8,
+        "window_length": 4,
+        "threshold": 0.4,
     }
     assert ts_regularizer.hyperparameter_ranges == {}
     assert ts_regularizer.modifies_target is True
@@ -141,9 +141,20 @@ def test_ts_regularizer_mismatch_target_length(duplicate_beginning):
 
 
 def test_ts_regularizer_no_freq():
-    dates_1 = pd.date_range("1/1/21", periods=10)
-    dates_2 = pd.date_range("1/13/21", periods=10, freq="2D")
-    dates = dates_1.append(dates_2)
+    dates_1 = pd.date_range("2015-01-01", periods=5, freq="D")
+    dates_2 = pd.date_range("2015-01-08", periods=3, freq="D")
+    dates_3 = pd.DatetimeIndex(["2015-01-12"])
+    dates_4 = pd.date_range("2015-01-15", periods=5, freq="D")
+    dates_5 = pd.date_range("2015-01-22", periods=5, freq="D")
+    dates_6 = pd.date_range("2015-01-29", periods=11, freq="M")
+
+    dates = (
+        dates_1.append(dates_2)
+        .append(dates_3)
+        .append(dates_4)
+        .append(dates_5)
+        .append(dates_6)
+    )
 
     X, y = get_df(dates)
 
@@ -274,40 +285,42 @@ def test_ts_regularizer_missing(
 
 
 @pytest.mark.parametrize(
-    "uneven_location",
-    ["beginning", "middle", "end", "scattered", "continuous"],
+    "uneven_type",
+    ["beginning", "middle", "end", "scattered", "continuous", "work week"],
 )
 def test_ts_regularizer_uneven(
-    uneven_location,
+    uneven_type,
     uneven_beginning,
     uneven_middle,
     uneven_end,
     uneven_scattered,
     uneven_continuous,
+    uneven_work_week,
 ):
 
-    if uneven_location == "beginning":
+    if uneven_type == "beginning":
         dates = uneven_beginning
-    elif uneven_location == "middle":
+    elif uneven_type == "middle":
         dates = uneven_middle
-    elif uneven_location == "end":
+    elif uneven_type == "end":
         dates = uneven_end
-    elif uneven_location == "scattered":
+    elif uneven_type == "scattered":
         dates = uneven_scattered
-    else:
+    elif uneven_type == "continuous":
         dates = uneven_continuous
+    else:
+        dates = uneven_work_week
 
     X, y = get_df(dates)
-    print(infer_frequency(X["dates"], debug=True, window_length=5, threshold=0.8))
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
     X_output, y_output = ts_regularizer.fit_transform(X, y)
 
-    if uneven_location == "beginning":
+    if uneven_type == "beginning":
         assert X.iloc[0]["dates"] not in X_output["dates"]
         assert X.iloc[1]["dates"] not in X_output["dates"]
         assert y.iloc[0] not in y_output.values
         assert y.iloc[1] not in y_output.values
-    elif uneven_location == "end":
+    elif uneven_type == "end":
         assert X.iloc[-1]["dates"] not in X_output["dates"]
         assert y.iloc[-1] not in y_output.values
 
