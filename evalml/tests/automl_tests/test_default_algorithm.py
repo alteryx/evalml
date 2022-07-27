@@ -922,3 +922,43 @@ def test_default_algorithm_accepts_URL_email_features(
         assert pipeline.parameters["Categorical Pipeline - Select Columns Transformer"][
             "columns"
         ] == ["url", "email"]
+
+
+@pytest.mark.parametrize(
+    "automl_type",
+    [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
+)
+@pytest.mark.parametrize(
+    "ensembling",
+    [True, False],
+)
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_default_algorithm_num_pipelines_per_batch(
+    mock_get_names,
+    automl_type,
+    ensembling,
+    X_y_categorical_classification,
+    X_y_multi,
+    X_y_regression,
+):
+    mock_get_names.return_value = None
+    if automl_type == ProblemTypes.BINARY:
+        X, y = X_y_categorical_classification
+    elif automl_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+    elif automl_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+    algo = DefaultAlgorithm(
+        X=X,
+        y=y,
+        problem_type=automl_type,
+        sampler_name=None,
+        ensembling=ensembling,
+        top_n=2,
+        num_long_explore_pipelines=10,
+        num_long_pipelines_per_batch=5,
+    )
+    for i in range(6):
+        batch = algo.next_batch()
+        add_result(algo, batch)
+        assert len(batch) == algo.num_pipelines_per_batch(i)

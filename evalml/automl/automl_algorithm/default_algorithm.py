@@ -138,6 +138,42 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         """Returns the number of max batches AutoMLSearch should run by default."""
         return 4 if self.ensembling else 3
 
+    def num_pipelines_per_batch(self, batch_number):
+        if self.ensembling:
+            if batch_number == 0 or batch_number == 1:
+                return len(self._naive_estimators())
+            elif batch_number == 2:
+                return len(
+                    [
+                        estimator
+                        for estimator in get_estimators(self.problem_type)
+                        if estimator not in self._naive_estimators()
+                    ],
+                )
+            elif batch_number == 3:
+                return 1
+            elif batch_number == 4:
+                return self.num_long_explore_pipelines * self.top_n
+            elif batch_number % 2 != 0:
+                return 1
+            else:
+                return self.num_long_pipelines_per_batch * self.top_n
+        else:
+            if batch_number == 0 or batch_number == 1:
+                return len(self._naive_estimators())
+            elif batch_number == 2:
+                return len(
+                    [
+                        estimator
+                        for estimator in get_estimators(self.problem_type)
+                        if estimator not in self._naive_estimators()
+                    ],
+                )
+            elif batch_number == 3:
+                return self.num_long_explore_pipelines * self.top_n
+            else:
+                return self.num_long_pipelines_per_batch * self.top_n
+
     def _naive_estimators(self):
         if is_regression(self.problem_type):
             naive_estimators = [
