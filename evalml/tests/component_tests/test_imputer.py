@@ -90,7 +90,7 @@ def test_numeric_only_input(imputer_test_data):
     expected = pd.DataFrame(
         {
             "int col": [0, 1, 2, 0, 3] * 4,
-            "float col": [0.0, 1.0, 0.0, -2.0, 5.0] * 4,
+            "float col": [0.1, 1.0, 0.0, -2.0, 5.0] * 4,
             "int with nan": [0.5, 1.0, 0.0, 0.0, 1.0] * 4,
             "float with nan": [0.0, 1.0, 0, -1.0, 0.0] * 4,
         },
