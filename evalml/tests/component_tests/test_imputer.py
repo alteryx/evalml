@@ -160,7 +160,7 @@ def test_categorical_and_numeric_input(imputer_test_data):
             ),
             "int col": [0, 1, 2, 0, 3] * 4,
             "object col": pd.Series(["b", "b", "a", "c", "d"] * 4, dtype="category"),
-            "float col": [0.0, 1.0, 0.0, -2.0, 5.0] * 4,
+            "float col": [0.1, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
             "categorical with nan": pd.Series(
                 ["0", "1", "0", "0", "3"] * 4,
