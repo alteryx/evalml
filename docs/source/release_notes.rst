@@ -18,6 +18,7 @@ Release Notes
     * Testing Changes
         * Pinned GraphViz version for Windows CI Test :pr:`3596`
         * Removed ``pytest.mark.skip_if_39`` pytest marker :pr:`3602` :pr:`3607`
+        * Refactored test cases that iterate over all components to use ``pytest.mark.parametrise`` and changed the corresponding ``if...continue`` blocks to ``pytest.mark.xfail`` :pr:`3622`
 
 .. warning::
 
