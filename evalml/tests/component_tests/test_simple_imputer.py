@@ -182,10 +182,10 @@ def test_simple_imputer_fit_transform_drop_all_nan_columns():
         pd.DataFrame(
             {
                 "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [np.nan, 1, 0],
+                "some_nan": [pd.NA, 1, 0],
                 "another_col": [0, 1, 2],
             },
-        ),
+        ).astype({"some_nan": "Int64"}),
     )
 
 
@@ -207,10 +207,10 @@ def test_simple_imputer_transform_drop_all_nan_columns():
         pd.DataFrame(
             {
                 "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [np.nan, 1, 0],
+                "some_nan": [pd.NA, 1, 0],
                 "another_col": [0, 1, 2],
             },
-        ),
+        ).astype({"some_nan": "Int64"}),
     )
 
 
@@ -531,7 +531,8 @@ def test_simple_imputer_ignores_natural_language(
 
     if has_nan == "has_nan":
         X_df.iloc[-1, :] = None
-        X_df.astype({"int col": "Int64"})
+        if "int col" in X_df:
+            X_df = X_df.astype({"int col": "Int64"})
         X_df.ww.init()
     y = pd.Series([x for x in range(X_df.shape[1])])
 
