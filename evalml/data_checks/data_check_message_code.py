@@ -32,6 +32,9 @@ class DataCheckMessageCode(Enum):
     TARGET_UNSUPPORTED_TYPE = "target_unsupported_type"
     """Message code for target data that is of an unsupported type."""
 
+    TARGET_REGRESSION_NON_NUMERIC = "target_regression_non_numeric"
+    """Message code for target data that is incompatible for regression"""
+
     TARGET_UNSUPPORTED_PROBLEM_TYPE = "target_unsupported_problem_type"
     """Message code for target data that is being checked against an unsupported problem type."""
 

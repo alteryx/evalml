@@ -357,7 +357,7 @@ class InvalidTargetDataCheck(DataCheck):
                 DataCheckError(
                     message="Target data type should be numeric for regression type problems.",
                     data_check_name=self.name,
-                    message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
+                    message_code=DataCheckMessageCode.TARGET_REGRESSION_NON_NUMERIC,
                     details={},
                 ).to_dict(),
             )

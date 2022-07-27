@@ -448,7 +448,7 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data(problem_ty
     data_check_error = DataCheckError(
         message=f"Target data type should be numeric for regression type problems.",
         data_check_name=invalid_targets_data_check_name,
-        message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
+        message_code=DataCheckMessageCode.TARGET_REGRESSION_NON_NUMERIC,
         details={},
     ).to_dict()
 
