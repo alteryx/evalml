@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Updated to run with Woodwork >= 0.17.0 :pr:`3626`
     * Fixes
     * Changes
     * Documentation Changes
