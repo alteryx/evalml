@@ -262,7 +262,7 @@ def test_transform_drop_all_nan_columns():
         pd.DataFrame(
             {
                 "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [0.0, 1.0, 0.0],
+                "some_nan": [0, 1, 0],
                 "another_col": [0, 1, 2],
             },
         ),

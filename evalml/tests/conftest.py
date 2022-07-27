@@ -1982,7 +1982,7 @@ def imputer_test_data():
             ),
             "int col": [0, 1, 2, 0, 3] * 4,
             "object col": ["b", "b", "a", "c", "d"] * 4,
-            "float col": [0.0, 1.0, 0.0, -2.0, 5.0] * 4,
+            "float col": [0.1, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
             "categorical with nan": pd.Series(
                 [np.nan, "1", "0", "0", "3"] * 4,

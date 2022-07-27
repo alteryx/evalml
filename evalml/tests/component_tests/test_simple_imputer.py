@@ -531,6 +531,7 @@ def test_simple_imputer_ignores_natural_language(
 
     if has_nan == "has_nan":
         X_df.iloc[-1, :] = None
+        X_df.astype({"int col": "Int64"})
         X_df.ww.init()
     y = pd.Series([x for x in range(X_df.shape[1])])
 
@@ -551,10 +552,16 @@ def test_simple_imputer_ignores_natural_language(
         if numeric_impute_strategy == "mean" and has_nan == "has_nan":
             ans = X_df.mean()
             ans["natural language col"] = pd.NA
+            X_df = X_df.astype(
+                {"int col": float},
+            )  # Convert to float as the imputer will do this as we're requesting the mean
             X_df.iloc[-1, :] = ans
         elif numeric_impute_strategy == "median" and has_nan == "has_nan":
             ans = X_df.median()
             ans["natural language col"] = pd.NA
+            X_df = X_df.astype(
+                {"int col": float},
+            )  # Convert to float as the imputer will do this as we're requesting the mean
             X_df.iloc[-1, :] = ans
         elif numeric_impute_strategy == "constant" and has_nan == "has_nan":
             X_df.iloc[-1, 0:2] = fill_value
