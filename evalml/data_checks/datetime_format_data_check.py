@@ -39,8 +39,8 @@ class DateTimeFormatDataCheck(DataCheck):
         Examples:
             >>> import pandas as pd
 
-            The column "dates" has a set of two dates with monthly frequency appended to the end of a set of two dates with hourly frequency that is also appended to the end
-            of a set of two dates with daily frequency.
+            The column 'dates' has a set of two dates with daily frequency, two dates with hourly frequency,
+            and two dates with monthly frequency.
 
             >>> X = pd.DataFrame(pd.date_range("2015-01-01", periods=2).append(pd.date_range("2015-01-08", periods=2, freq="H").append(pd.date_range("2016-03-02", periods=2, freq="M"))), columns=["dates"])
             >>> y = pd.Series([0, 1, 0, 1, 1, 0])
