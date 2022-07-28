@@ -744,6 +744,7 @@ class AutoMLSearch:
                 allow_long_running_models=allow_long_running_models,
                 features=features,
                 verbose=self.verbose,
+                exclude_featurizers=self.exclude_featurizers,
             )
         elif automl_algorithm == "default":
             self.automl_algorithm = DefaultAlgorithm(

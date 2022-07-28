@@ -5022,7 +5022,7 @@ def test_default_algorithm_uses_n_jobs(X_y_binary, AutoMLTestEnv):
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("automl_algorithm", ["default"])
+@pytest.mark.parametrize("automl_algorithm", ["default", "iterative"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_exclude_featurizers(
     automl_algorithm,
