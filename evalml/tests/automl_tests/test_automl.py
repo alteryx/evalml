@@ -5061,9 +5061,9 @@ def test_exclude_featurizers(
     if automl_algorithm == "iterative":
         pipelines = [pl.name for pl in automl.allowed_pipelines]
     elif automl_algorithm == "default":
-        # TODO: Upon resolution of GH Issue #3186, increase the num of batches.
-        for _ in range(2):
-            pipelines = [pl.name for pl in automl.automl_algorithm.next_batch()]
+        pipelines = []
+        for _ in range(5):
+            pipelines.extend([pl.name for pl in automl.automl_algorithm.next_batch()])
 
     # A check to make sure we actually retrieve constructed pipelines from the algo.
     assert len(pipelines) > 0

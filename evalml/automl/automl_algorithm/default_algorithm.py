@@ -533,6 +533,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 parameters=categorical_pipeline_parameters,
                 extra_components_before=[SelectColumns],
                 use_estimator=False,
+                exclude_featurizers=self.exclude_featurizers,
             )
 
             numeric_pipeline = make_pipeline(
@@ -545,6 +546,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 extra_components_before=[SelectByType],
                 extra_components_after=[SelectColumns],
                 use_estimator=False,
+                exclude_featurizers=self.exclude_featurizers,
             )
             prior_components = (
                 {"DFS Transformer": ["DFS Transformer", "X", "y"]}
@@ -578,6 +580,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 parameters=categorical_pipeline_parameters,
                 extra_components_before=[SelectColumns],
                 features=self.features,
+                exclude_featurizers=self.exclude_featurizers,
             )
             return categorical_pipeline
         else:
@@ -593,5 +596,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 parameters=numeric_pipeline_parameters,
                 extra_components_after=[SelectColumns],
                 features=self.features,
+                exclude_featurizers=self.exclude_featurizers,
             )
             return numeric_pipeline
