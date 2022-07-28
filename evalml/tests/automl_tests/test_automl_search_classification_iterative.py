@@ -429,7 +429,7 @@ def test_automl_oversampler_selection():
     automl = AutoMLSearch(
         X,
         y,
-        "binary",
+        problem_type="binary",
         allowed_component_graphs={"pipeline": allowed_component_graph},
         search_parameters={"DropCols": {"columns": ["a"]}},
         error_callback=raise_error_callback,

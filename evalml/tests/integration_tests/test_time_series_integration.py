@@ -134,7 +134,6 @@ def test_can_run_automl_for_time_series_known_in_advance(
         ),
     )
     automl.search()
-    automl.best_pipeline.fit(X, y)
     X_valid = pd.DataFrame(
         {
             "date": pd.date_range(
