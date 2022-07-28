@@ -329,7 +329,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return self._create_n_pipelines(pipelines, self.num_long_explore_pipelines)
 
     def _make_pipelines_helper(self, estimators):
-        raise ValueError
         pipelines = []
         if is_time_series(self.problem_type):
             pipelines = [
