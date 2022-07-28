@@ -14,6 +14,7 @@ Release Notes
         * Invalid target data checks involving regression and unsupported data types now produce a different ``DataCheckMessageCode`` :pr:`3630`
     * Changes
         * Add pre-commit hooks for linting :pr:`3608`
+        * Implemented a lower threshold and window size for the ``TimeSeriesRegularizer`` and ``DatetimeFormatDataCheck`` :pr:`3627`
     * Documentation Changes
     * Testing Changes
         * Pinned GraphViz version for Windows CI Test :pr:`3596`

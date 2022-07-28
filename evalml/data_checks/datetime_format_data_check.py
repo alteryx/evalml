@@ -39,11 +39,11 @@ class DateTimeFormatDataCheck(DataCheck):
         Examples:
             >>> import pandas as pd
 
-            The column "dates" has a set of dates with hourly frequency appended to the end of a series of days, which is inconsistent
-            with the frequency of the previous 9 dates (1 day).
+            The column 'dates' has a set of two dates with daily frequency, two dates with hourly frequency,
+            and two dates with monthly frequency.
 
-            >>> X = pd.DataFrame(pd.date_range("2021-01-01", periods=6).append(pd.date_range("2021-01-07", periods=3, freq="H")), columns=["dates"])
-            >>> y = pd.Series([0, 1, 0, 1, 1, 0, 0, 0, 1, 0])
+            >>> X = pd.DataFrame(pd.date_range("2015-01-01", periods=2).append(pd.date_range("2015-01-08", periods=2, freq="H").append(pd.date_range("2016-03-02", periods=2, freq="M"))), columns=["dates"])
+            >>> y = pd.Series([0, 1, 0, 1, 1, 0])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
@@ -393,8 +393,8 @@ class DateTimeFormatDataCheck(DataCheck):
         ww_payload = infer_frequency(
             pd.Series(datetime_values),
             debug=True,
-            window_length=5,
-            threshold=0.8,
+            window_length=4,
+            threshold=0.4,
         )
         inferred_freq = ww_payload[0]
         debug_object = ww_payload[1]
