@@ -58,7 +58,14 @@ from evalml.pipelines import (
     RegressionPipeline,
     StackedEnsembleClassifier,
 )
-from evalml.pipelines.components import DecisionTreeClassifier
+from evalml.pipelines.components import (
+    DateTimeFeaturizer,
+    DecisionTreeClassifier,
+    EmailFeaturizer,
+    NaturalLanguageFeaturizer,
+    TimeSeriesFeaturizer,
+    URLFeaturizer,
+)
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_stacked_ensemble_pipeline,
@@ -5012,3 +5019,57 @@ def test_default_algorithm_uses_n_jobs(X_y_binary, AutoMLTestEnv):
             )
 
     assert n_checked and n_feature_selector_checked
+
+
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
+@pytest.mark.parametrize("automl_algorithm", ["default"])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+def test_exclude_featurizers(
+    automl_algorithm,
+    problem_type,
+    input_type,
+    get_test_data_from_configuration,
+):
+    parameters = {}
+    if is_time_series(problem_type):
+        parameters = {
+            "time_index": "dates",
+            "gap": 1,
+            "max_delay": 1,
+            "forecast_horizon": 3,
+        }
+
+    X, y = get_test_data_from_configuration(
+        input_type, problem_type, column_names=["dates", "text", "email", "url"]
+    )
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type=problem_type,
+        problem_configuration=parameters,
+        automl_algorithm=automl_algorithm,
+        exclude_featurizers=[
+            "DatetimeFeaturizer",
+            "EmailFeaturizer",
+            "URLFeaturizer",
+            "NaturalLanguageFeaturizer",
+            "TimeSeriesFeaturizer",
+        ],
+    )
+
+    if automl_algorithm == "iterative":
+        pipelines = [pl.name for pl in automl.allowed_pipelines]
+    elif automl_algorithm == "default":
+        # TODO: Upon resolution of GH Issue #3186, increase the num of batches.
+        for _ in range(2):
+            pipelines = [pl.name for pl in automl.automl_algorithm.next_batch()]
+
+    # A check to make sure we actually retrieve constructed pipelines from the algo.
+    assert len(pipelines) > 0
+
+    assert not any([DateTimeFeaturizer.name in pl for pl in pipelines])
+    assert not any([EmailFeaturizer.name in pl for pl in pipelines])
+    assert not any([URLFeaturizer.name in pl for pl in pipelines])
+    assert not any([NaturalLanguageFeaturizer.name in pl for pl in pipelines])
+    assert not any([TimeSeriesFeaturizer.name in pl for pl in pipelines])

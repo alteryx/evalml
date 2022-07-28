@@ -419,6 +419,8 @@ class AutoMLSearch:
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
 
         timing (boolean): Whether or not to write pipeline search times to the logger. Defaults to False.
+        exclude_featurizers (list -> str): A list of featurizer components to exclude from the components.
+            Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
     """
 
     _MAX_NAME_LEN = 40
@@ -460,6 +462,7 @@ class AutoMLSearch:
         engine="sequential",
         verbose=False,
         timing=False,
+        exclude_featurizers=None,
     ):
         self.verbose = verbose
         if verbose:
@@ -670,6 +673,7 @@ class AutoMLSearch:
         self.sampler_method = sampler_method
         self.sampler_balanced_ratio = sampler_balanced_ratio
         self._sampler_name = None
+        self.exclude_featurizers = exclude_featurizers
 
         if is_classification(self.problem_type):
             self._sampler_name = self.sampler_method
@@ -756,6 +760,7 @@ class AutoMLSearch:
                 ensembling=self.ensembling,
                 verbose=self.verbose,
                 n_jobs=self.n_jobs,
+                exclude_featurizers=self.exclude_featurizers,
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")
@@ -1180,11 +1185,15 @@ class AutoMLSearch:
             gap = self.problem_configuration["gap"]
             forecast_horizon = self.problem_configuration["forecast_horizon"]
             time_index = self.problem_configuration["time_index"]
+            exclude_timeseries_featurizer = (
+                "TimeSeriesFeaturizer" in self.exclude_featurizers
+            )
             baseline = make_timeseries_baseline_pipeline(
                 self.problem_type,
                 gap,
                 forecast_horizon,
                 time_index,
+                exclude_timeseries_featurizer,
             )
         return baseline
 

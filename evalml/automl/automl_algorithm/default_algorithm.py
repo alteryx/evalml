@@ -66,6 +66,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass targets and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
         features (list)[FeatureBase]: List of features to run DFS on in AutoML pipelines. Defaults to None. Features will only be computed if the columns used by the feature exist in the input and if the feature has not been computed yet.
         verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
+        exclude_featurizers (list -> str): A list of featurizer components to exclude from the components.
+            Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
     """
 
     def __init__(
@@ -86,6 +88,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         allow_long_running_models=False,
         features=None,
         verbose=False,
+        exclude_featurizers=None,
     ):
         super().__init__(
             allowed_pipelines=[],
@@ -114,6 +117,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self._X_without_cat_cols = None
         self.features = features
         self.ensembling = ensembling
+        self.exclude_featurizers = exclude_featurizers
 
         # TODO remove on resolution of 3186
         if is_time_series(self.problem_type) and self.ensembling:
@@ -197,6 +201,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     None,
                 ),
                 features=self.features,
+                exclude_featurizers=self.exclude_featurizers,
             )
             for estimator in estimators
         ]
@@ -324,6 +329,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return self._create_n_pipelines(pipelines, self.num_long_explore_pipelines)
 
     def _make_pipelines_helper(self, estimators):
+        raise ValueError
         pipelines = []
         if is_time_series(self.problem_type):
             pipelines = [
@@ -339,6 +345,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                         None,
                     ),
                     features=self.features,
+                    exclude_featurizers=self.exclude_featurizers,
                 )
                 for estimator in estimators
             ]
@@ -382,6 +389,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             elif self._batch_number == 1:
                 next_batch = self._create_naive_pipelines(use_features=True)
             elif self._batch_number == 2:
+                raise KeyError
                 next_batch = self._create_fast_final()
             elif self.batch_number == 3:
                 next_batch = self._create_long_exploration(n=self.top_n)
