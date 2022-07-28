@@ -2000,7 +2000,7 @@ def imputer_test_data():
                 dtype="category",
             ),
             "int with nan": [np.nan, 1, 0, 0, 1] * 4,
-            "float with nan": [0.0, 1.0, np.nan, -1.0, 0.0] * 4,
+            "float with nan": [0.3, 1.0, np.nan, -1.0, 0.0] * 4,
             "object with nan": ["b", "b", np.nan, "c", np.nan] * 4,
             "bool col with nan": pd.Series(
                 [True, np.nan, False, np.nan, True] * 4,

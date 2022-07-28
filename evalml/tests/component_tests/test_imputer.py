@@ -92,12 +92,12 @@ def test_numeric_only_input(imputer_test_data):
             "int col": [0, 1, 2, 0, 3] * 4,
             "float col": [0.1, 1.0, 0.0, -2.0, 5.0] * 4,
             "int with nan": [0.5, 1.0, 0.0, 0.0, 1.0] * 4,
-            "float with nan": [0.0, 1.0, 0, -1.0, 0.0] * 4,
+            "float with nan": [0.3, 1.0, 0.15, -1.0, 0.0] * 4,
         },
     )
     assert_frame_equal(transformed, expected, check_dtype=False)
 
-    imputer = Imputer()
+    imputer = Imputer(numeric_impute_strategy="median")
     transformed = imputer.fit_transform(X, y)
     assert_frame_equal(transformed, expected, check_dtype=False)
 
@@ -167,7 +167,7 @@ def test_categorical_and_numeric_input(imputer_test_data):
                 dtype="category",
             ),
             "int with nan": [0.5, 1.0, 0.0, 0.0, 1.0] * 4,
-            "float with nan": [0.0, 1.0, 0, -1.0, 0.0] * 4,
+            "float with nan": [0.3, 1.0, 0.075, -1.0, 0.0] * 4,
             "object with nan": pd.Series(
                 ["b", "b", "b", "c", "b"] * 4,
                 dtype="category",
@@ -315,7 +315,7 @@ def test_imputer_fill_value(imputer_test_data):
                 ["fill", "1", "0", "0", "3"] * 4,
                 dtype="category",
             ),
-            "float with nan": [0.0, 1.0, -1, -1.0, 0.0] * 4,
+            "float with nan": [0.3, 1.0, -1, -1.0, 0.0] * 4,
             "object with nan": pd.Series(
                 ["b", "b", "fill", "c", "fill"] * 4,
                 dtype="category",
