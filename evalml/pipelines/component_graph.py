@@ -144,7 +144,7 @@ class ComponentGraph:
             if (
                 len(
                     list(
-                        filter(check_all_inputs_have_correct_syntax, component_inputs)
+                        filter(check_all_inputs_have_correct_syntax, component_inputs),
                     ),
                 )
                 != 0
