@@ -18,6 +18,7 @@ Release Notes
         * Added ability to log how long each batch and pipeline take in ``automl.search()`` :pr:`3577`
         * Added the option to set the ``sp`` parameter for ARIMA models :pr:`3597`
         * Updated the CV split size of time series problems to match forecast horizon for improved performance :pr:`3616`
+        * Added holdout set evaluation as part of AutoML search and pipeline ranking :pr:`3499`
     * Fixes
         * Fixed iterative graphs not appearing in documentation :pr:`3592`
         * Updated the ``load_diabetes()`` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`

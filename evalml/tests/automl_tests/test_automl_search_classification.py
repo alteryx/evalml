@@ -991,10 +991,10 @@ def test_automl_search_ratio_overrides_sampler_ratio(
 @pytest.mark.parametrize(
     "problem_type,sampling_ratio_dict,length",
     [
-        ("binary", {0: 0.5, 1: 1}, 600),
-        ("binary", {0: 0.2, 1: 1}, 800),
-        ("multiclass", {0: 0.5, 1: 1, 2: 1}, 400),
-        ("multiclass", {0: 0.75, 1: 1, 2: 1}, 333),
+        ("binary", {0: 0.5, 1: 1}, 810),
+        ("binary", {0: 0.2, 1: 1}, 1080),
+        ("multiclass", {0: 0.5, 1: 1, 2: 1}, 540),
+        ("multiclass", {0: 0.75, 1: 1, 2: 1}, 450),
     ],
 )
 @patch("evalml.pipelines.components.estimators.Estimator.fit")
@@ -1044,10 +1044,10 @@ def test_automl_search_dictionary_undersampler(
 @pytest.mark.parametrize(
     "problem_type,sampling_ratio_dict,length",
     [
-        ("binary", {0: 1, 1: 0.5}, 900),
-        ("binary", {0: 1, 1: 0.8}, 1080),
-        ("multiclass", {0: 1, 1: 0.5, 2: 0.5}, 1200),
-        ("multiclass", {0: 1, 1: 0.8, 2: 0.8}, 1560),
+        ("binary", {0: 1, 1: 0.5}, 1215),
+        ("binary", {0: 1, 1: 0.8}, 1458),
+        ("multiclass", {0: 1, 1: 0.5, 2: 0.5}, 1620),
+        ("multiclass", {0: 1, 1: 0.8, 2: 0.8}, 2106),
     ],
 )
 @patch("evalml.pipelines.components.estimators.Estimator.fit")
@@ -1261,8 +1261,8 @@ def test_automl_passes_allow_long_running_models(
     allow_long_running_models,
     caplog,
 ):
-    X = pd.DataFrame([i for i in range(unique)] * 5)
-    y = pd.Series([i for i in range(unique)] * 5)
+    X = pd.DataFrame([i for i in range(unique)] * 10)
+    y = pd.Series([i for i in range(unique)] * 10)
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -1292,7 +1292,7 @@ def test_automl_threshold_score(fraud_100):
     automl = AutoMLSearch(
         X_train,
         y_train,
-        "binary",
+        problem_type="binary",
         max_batches=4,
         ensembling=True,
         verbose=False,
