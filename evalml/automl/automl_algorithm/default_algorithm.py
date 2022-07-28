@@ -66,7 +66,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass targets and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
         features (list)[FeatureBase]: List of features to run DFS on in AutoML pipelines. Defaults to None. Features will only be computed if the columns used by the feature exist in the input and if the feature has not been computed yet.
         verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
-        exclude_featurizers (list -> str): A list of featurizer components to exclude from the components.
+        exclude_featurizers (list[str]): A list of featurizer components to exclude from the components.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
     """
 

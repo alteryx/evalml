@@ -251,7 +251,7 @@ def _get_preprocessing_components(
         problem_type (ProblemTypes or str): Problem type.
         estimator_class (class): A class which subclasses Estimator estimator for pipeline.
         sampler_name (str): The name of the sampler component to add to the pipeline. Defaults to None.
-        exclude_featurizers (list -> str): A list of featurizer components to exclude from the components.
+        exclude_featurizers (list[str]): A list of featurizer components to exclude from the components.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
 
     Returns:
@@ -355,7 +355,7 @@ def _make_pipeline_time_series(
         sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
             Defaults to None
         known_in_advance (list[str], None): List of features that are known in advance.
-        exclude_featurizers (list -> str): A list of featurizer components to exclude from the components.
+        exclude_featurizers (list[str]): A list of featurizer components to exclude from the components.
            Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
 
     Returns:
@@ -472,7 +472,7 @@ def make_pipeline(
         use_estimator (bool): Whether to add the provided estimator to the pipeline or not. Defaults to True.
         known_in_advance (list[str], None): List of features that are known in advance.
         features (bool): Whether to add a DFSTransformer component to this pipeline.
-        exclude_featurizers (list -> str): A list of featurizer components to exclude from the components.
+        exclude_featurizers (list[str]): A list of featurizer components to exclude from the components.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
 
 
