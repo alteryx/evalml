@@ -673,7 +673,7 @@ class AutoMLSearch:
         self.sampler_method = sampler_method
         self.sampler_balanced_ratio = sampler_balanced_ratio
         self._sampler_name = None
-        self.exclude_featurizers = exclude_featurizers
+        self.exclude_featurizers = exclude_featurizers or []
 
         if is_classification(self.problem_type):
             self._sampler_name = self.sampler_method
