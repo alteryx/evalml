@@ -389,7 +389,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             elif self._batch_number == 1:
                 next_batch = self._create_naive_pipelines(use_features=True)
             elif self._batch_number == 2:
-                raise KeyError
                 next_batch = self._create_fast_final()
             elif self.batch_number == 3:
                 next_batch = self._create_long_exploration(n=self.top_n)
