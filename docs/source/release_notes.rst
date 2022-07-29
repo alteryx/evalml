@@ -24,6 +24,7 @@ Release Notes
         * Updated the ``load_diabetes()`` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`
         * Capped woodwork version at < 0.17.0 :pr:`3612`
         * Bump minimum scikit-optimize version to 0.9.0 `:pr:`3614`
+        * Invalid target data checks involving regression and unsupported data types now produce a different ``DataCheckMessageCode`` :pr:`3630`
     * Changes
         * Add pre-commit hooks for linting :pr:`3608`
         * Implemented a lower threshold and window size for the ``TimeSeriesRegularizer`` and ``DatetimeFormatDataCheck`` :pr:`3627`
