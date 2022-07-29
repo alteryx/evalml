@@ -5062,6 +5062,7 @@ def test_exclude_featurizers(
     problem_type,
     input_type,
     get_test_data_from_configuration,
+    AutoMLTestEnv,
 ):
     parameters = {}
     if is_time_series(problem_type):
@@ -5069,7 +5070,7 @@ def test_exclude_featurizers(
             "time_index": "dates",
             "gap": 1,
             "max_delay": 1,
-            "forecast_horizon": 3,
+            "forecast_horizon": 1,
         }
 
     X, y = get_test_data_from_configuration(
@@ -5091,15 +5092,13 @@ def test_exclude_featurizers(
         ],
     )
 
-    if automl_algorithm == "iterative":
-        pipelines = [pl.name for pl in automl.allowed_pipelines]
-    elif automl_algorithm == "default":
-        pipelines = []
-        for _ in range(5):
-            pipelines.extend([pl.name for pl in automl.automl_algorithm.next_batch()])
+    env = AutoMLTestEnv(problem_type)
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
 
-    # A check to make sure we actually retrieve constructed pipelines from the algo.
-    assert len(pipelines) > 0
+    pipelines = [
+        automl.get_pipeline(i) for i in range(len(automl.results["pipeline_results"]))
+    ]
 
     assert not any([DateTimeFeaturizer.name in pl for pl in pipelines])
     assert not any([EmailFeaturizer.name in pl for pl in pipelines])
