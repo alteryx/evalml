@@ -12,10 +12,11 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 import cloudpickle
 import numpy as np
 import pandas as pd
-from dask import distributed as dd
 from plotly import io as pio
 from sklearn.model_selection import BaseCrossValidator
 from skopt.space import Categorical
+
+from dask import distributed as dd
 
 from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
@@ -23,6 +24,7 @@ from evalml.automl.engine import SequentialEngine
 from evalml.automl.engine.cf_engine import CFClient, CFEngine
 from evalml.automl.engine.dask_engine import DaskEngine
 from evalml.automl.pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
+from evalml.automl.progress import Progress
 from evalml.automl.utils import (
     AutoMLConfig,
     check_all_pipeline_names_unique,
@@ -760,6 +762,14 @@ class AutoMLSearch:
         else:
             raise ValueError("Please specify a valid automl algorithm.")
 
+        self.progress = Progress(
+            max_time=self.max_time,
+            max_batches=self.max_batches,
+            max_iterations=self.max_iterations,
+            patience=self.patience,
+            tolerance=self.tolerance,
+            automl_algorithm=self.automl_algorithm,
+        )
         self.allowed_pipelines = self.automl_algorithm.allowed_pipelines
         self.allowed_model_families = [p.model_family for p in self.allowed_pipelines]
         if automl_algorithm == "iterative":
@@ -867,7 +877,7 @@ class AutoMLSearch:
             elif choice == "n":
                 # So that the time in this loop does not count towards the time budget (if set)
                 time_in_loop = time.time() - start_of_loop
-                self._start += time_in_loop
+                self.progress._start_time += time_in_loop
                 return False
             else:
                 leading_char = ""
@@ -933,7 +943,7 @@ class AutoMLSearch:
                 interactive_plot=interactive_plot,
             )
 
-        self._start = time.time()
+        self.progress._start_time = time.time()
 
         try:
             self._add_baseline_pipelines()
@@ -946,7 +956,7 @@ class AutoMLSearch:
         new_pipeline_ids = []
         loop_interrupted = False
 
-        while self._should_continue():
+        while self.progress.should_continue(self._results):
             pipeline_times = {}
             start_batch_time = time.time()
             computations = []
@@ -957,7 +967,7 @@ class AutoMLSearch:
                 self.logger.info("AutoML Algorithm out of recommendations, ending")
                 break
             try:
-                if self._should_continue():
+                if self.progress.should_continue(self._results):
                     new_pipeline_ids = []
                     log_title(
                         self.logger,
@@ -974,7 +984,10 @@ class AutoMLSearch:
                         computations.append((computation, False))
                     current_computation_index = 0
                     computations_left_to_process = len(computations)
-                while self._should_continue() and computations_left_to_process > 0:
+                while (
+                    self.progress.should_continue(self._results)
+                    and computations_left_to_process > 0
+                ):
                     computation, has_been_processed = computations[
                         current_computation_index
                     ]
@@ -1030,8 +1043,8 @@ class AutoMLSearch:
                 pipeline_times["Total time of batch"] = time_elapsed(start_batch_time)
                 batch_times[self._get_batch_number()] = pipeline_times
 
-        self.search_duration = time.time() - self._start
-        elapsed_time = time_elapsed(self._start)
+        self.search_duration = time.time() - self.progress._start_time
+        elapsed_time = time_elapsed(self.progress._start_time)
         desc = f"\nSearch finished after {elapsed_time}"
         desc = desc.ljust(self._MAX_NAME_LEN)
         self.logger.info(desc)
