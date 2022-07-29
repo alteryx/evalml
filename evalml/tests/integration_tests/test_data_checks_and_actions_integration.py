@@ -216,13 +216,19 @@ def test_data_checks_impute_cols(problem_type):
         y = ww.init_series(pd.Series([0, 1, 1, None, None]))
         objective = "Log Loss Binary"
         expected_pipeline_class = BinaryClassificationPipeline
-        y_expected = ww.init_series(pd.Series([0, 1, 1, 1, 1]), logical_type="double")
+        y_expected = ww.init_series(
+            pd.Series([0, 1, 1, 1, 1]),
+            logical_type="IntegerNullable",
+        )
 
     elif problem_type == "multiclass":
         y = ww.init_series(pd.Series([0, 1, 2, 2, None]))
         objective = "Log Loss Multiclass"
         expected_pipeline_class = MulticlassClassificationPipeline
-        y_expected = ww.init_series(pd.Series([0, 1, 2, 2, 2]), logical_type="double")
+        y_expected = ww.init_series(
+            pd.Series([0, 1, 2, 2, 2]),
+            logical_type="IntegerNullable",
+        )
 
     else:
         y = ww.init_series(pd.Series([0, 0.1, 0.2, None, None]))

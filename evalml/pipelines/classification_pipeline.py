@@ -66,7 +66,16 @@ class ClassificationPipeline(PipelineBase):
             )
 
         self._fit(X, y)
-        self._classes_ = list(ww.init_series(np.unique(y)))
+
+        # TODO: Added this in because numpy's unique() does not support pandas.NA
+        try:
+            self._classes_ = list(ww.init_series(np.unique(y)))
+        except TypeError as e:
+            if "boolean value of NA is ambiguous" in str(e):
+                self._classes_ = y.unique()
+        except Exception as e:
+            raise e
+
         return self
 
     def _encode_targets(self, y):
