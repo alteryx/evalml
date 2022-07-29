@@ -191,6 +191,9 @@ cases = [
     ),
 ]
 
+from woodwork.exceptions import WoodworkNotInitError
+from woodwork.logical_types import IntegerNullable
+
 
 @pytest.mark.parametrize("X, y, count_nan_as_value, expected_validation_result", cases)
 def test_no_variance_data_check_warnings(
@@ -199,5 +202,15 @@ def test_no_variance_data_check_warnings(
     count_nan_as_value,
     expected_validation_result,
 ):
+    # TODO: Remove this when Woodwork fixes it.
+    try:
+        if isinstance(y.ww.logical_type, IntegerNullable) and y.dtype.name == "float64":
+            pytest.xfail(
+                "Woodwork inference of the series [1.0, 1.0, np.nan, np.nan] results in a physical dtype of float64 and logical type of Integer Nullable, which is incompatible.",
+            )
+    except WoodworkNotInitError:
+        pass
+    except AttributeError:
+        pass
     check = NoVarianceDataCheck(count_nan_as_value)
     assert check.validate(X, y) == expected_validation_result
