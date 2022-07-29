@@ -2,25 +2,37 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.55.0 July. 24, 2022**
+    * Enhancements
         * Increased the amount of logical type information passed to Woodwork when calling ``ww.init()`` in transformers :pr:`3604`
         * Added ability to log how long each batch and pipeline take in ``automl.search()`` :pr:`3577`
         * Added the option to set the ``sp`` parameter for ARIMA models :pr:`3597`
         * Updated the CV split size of time series problems to match forecast horizon for improved performance :pr:`3616`
+        * Added holdout set evaluation as part of AutoML search and pipeline ranking :pr:`3499`
     * Fixes
         * Fixed iterative graphs not appearing in documentation :pr:`3592`
         * Updated the ``load_diabetes()`` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`
         * Capped woodwork version at < 0.17.0 :pr:`3612`
         * Bump minimum scikit-optimize version to 0.9.0 `:pr:`3614`
+        * Invalid target data checks involving regression and unsupported data types now produce a different ``DataCheckMessageCode`` :pr:`3630`
     * Changes
         * Add pre-commit hooks for linting :pr:`3608`
+        * Implemented a lower threshold and window size for the ``TimeSeriesRegularizer`` and ``DatetimeFormatDataCheck`` :pr:`3627`
     * Documentation Changes
     * Testing Changes
         * Pinned GraphViz version for Windows CI Test :pr:`3596`
         * Removed ``pytest.mark.skip_if_39`` pytest marker :pr:`3602` :pr:`3607`
-
-.. warning::
-
-    **Breaking Changes**
+        * Refactored test cases that iterate over all components to use ``pytest.mark.parametrise`` and changed the corresponding ``if...continue`` blocks to ``pytest.mark.xfail`` :pr:`3622`
 
 
 **v0.54.0 June. 23, 2022**

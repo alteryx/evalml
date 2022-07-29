@@ -747,16 +747,16 @@ def test_component_parameters_getter(test_classes):
     assert component.parameters == {"test": "parameter"}
 
 
-def test_component_parameters_init():
-    for component_class in all_components():
-        print("Testing component {}".format(component_class.name))
-        component = component_class()
-        parameters = component.parameters
+@pytest.mark.parametrize("component_class", all_components())
+def test_component_parameters_init(component_class):
+    print("Testing component {}".format(component_class.name))
+    component = component_class()
+    parameters = component.parameters
 
-        component2 = component_class(**parameters)
-        parameters2 = component2.parameters
+    component2 = component_class(**parameters)
+    parameters2 = component2.parameters
 
-        assert parameters == parameters2
+    assert parameters == parameters2
 
 
 def test_clone_init():
@@ -786,38 +786,38 @@ def test_clone_fitted(X_y_binary):
     np.testing.assert_almost_equal(predicted, predicted_clone)
 
 
-def test_components_init_kwargs():
-    for component_class in all_components():
-        component = component_class()
-        if component._component_obj is None:
-            continue
-        if isinstance(component, StackedEnsembleBase):
-            continue
+@pytest.mark.parametrize("component_class", all_components())
+def test_components_init_kwargs(component_class):
+    component = component_class()
+    if component._component_obj is None:
+        pytest.xfail()
+    if isinstance(component, StackedEnsembleBase):
+        pytest.xfail()
 
-        obj_class = component._component_obj.__class__.__name__
-        module = component._component_obj.__module__
-        importlib.import_module(module, obj_class)
-        patched = module + "." + obj_class + ".__init__"
+    obj_class = component._component_obj.__class__.__name__
+    module = component._component_obj.__module__
+    importlib.import_module(module, obj_class)
+    patched = module + "." + obj_class + ".__init__"
 
-        def all_init(self, *args, **kwargs):
-            for k, v in kwargs.items():
-                setattr(self, k, v)
+    def all_init(self, *args, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
-        with patch(patched, new=all_init) as _:
-            component = component_class(test_arg="test")
-            component_with_different_kwargs = component_class(diff_test_arg="test")
-            assert component.parameters["test_arg"] == "test"
-            if not isinstance(component, (PolynomialDetrender, LabelEncoder)):
-                assert component._component_obj.test_arg == "test"
-            # Test equality of different components with same or different kwargs
-            assert component == component_class(test_arg="test")
-            assert component != component_with_different_kwargs
+    with patch(patched, new=all_init) as _:
+        component = component_class(test_arg="test")
+        component_with_different_kwargs = component_class(diff_test_arg="test")
+        assert component.parameters["test_arg"] == "test"
+        if not isinstance(component, (PolynomialDetrender, LabelEncoder)):
+            assert component._component_obj.test_arg == "test"
+        # Test equality of different components with same or different kwargs
+        assert component == component_class(test_arg="test")
+        assert component != component_with_different_kwargs
 
 
-def test_component_has_random_seed():
-    for component_class in all_components():
-        params = inspect.signature(component_class.__init__).parameters
-        assert "random_seed" in params
+@pytest.mark.parametrize("component_class", all_components())
+def test_component_has_random_seed(component_class):
+    params = inspect.signature(component_class.__init__).parameters
+    assert "random_seed" in params
 
 
 @pytest.mark.parametrize("component_class", _all_transformers())
@@ -1087,48 +1087,48 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
     transformer_subclass.transform(X)
 
 
-def test_all_transformers_needs_fitting():
-    for component_class in _all_transformers() + _all_estimators():
-        if component_class.__name__ in [
-            "DropColumns",
-            "SelectColumns",
-            "SelectByType",
-        ]:
-            assert not component_class.needs_fitting
-        else:
-            assert component_class.needs_fitting
+@pytest.mark.parametrize("component_class", _all_transformers() + _all_estimators())
+def test_all_transformers_needs_fitting(component_class):
+    if component_class.__name__ in [
+        "DropColumns",
+        "SelectColumns",
+        "SelectByType",
+    ]:
+        assert not component_class.needs_fitting
+    else:
+        assert component_class.needs_fitting
 
 
-def test_all_transformers_check_fit(X_y_binary, ts_data_binary):
-    for component_class in _all_transformers():
-        X, y = X_y_binary
-        if not component_class.needs_fitting:
-            continue
+@pytest.mark.parametrize("component_class", _all_transformers())
+def test_all_transformers_check_fit(component_class, X_y_binary, ts_data_binary):
+    X, y = X_y_binary
+    if not component_class.needs_fitting:
+        pytest.xfail()
 
-        component = component_class()
-        # SMOTE will throw errors if we call it but cannot oversample
-        if "Oversampler" == component_class.name:
-            component = component_class(sampling_ratio=1)
-        elif component_class in [TimeSeriesFeaturizer, TimeSeriesRegularizer]:
-            X, y = ts_data_binary
-            component = component_class(time_index="date")
+    component = component_class()
+    # SMOTE will throw errors if we call it but cannot oversample
+    if "Oversampler" == component_class.name:
+        component = component_class(sampling_ratio=1)
+    elif component_class in [TimeSeriesFeaturizer, TimeSeriesRegularizer]:
+        X, y = ts_data_binary
+        component = component_class(time_index="date")
 
-        with pytest.raises(
-            ComponentNotYetFittedError,
-            match=f"You must fit {component_class.__name__}",
-        ):
-            component.transform(X, y)
-
-        component.fit(X, y)
+    with pytest.raises(
+        ComponentNotYetFittedError,
+        match=f"You must fit {component_class.__name__}",
+    ):
         component.transform(X, y)
 
-        component = component_class()
-        if "Oversampler" == component_class.name:
-            component = component_class(sampling_ratio=1)
-        elif component_class in [TimeSeriesFeaturizer, TimeSeriesRegularizer]:
-            component = component_class(time_index="date")
-        component.fit_transform(X, y)
-        component.transform(X, y)
+    component.fit(X, y)
+    component.transform(X, y)
+
+    component = component_class()
+    if "Oversampler" == component_class.name:
+        component = component_class(sampling_ratio=1)
+    elif component_class in [TimeSeriesFeaturizer, TimeSeriesRegularizer]:
+        component = component_class(time_index="date")
+    component.fit_transform(X, y)
+    component.transform(X, y)
 
 
 def test_all_estimators_check_fit(
@@ -1215,27 +1215,28 @@ def test_all_estimators_check_fit(
 
 
 @pytest.mark.parametrize("data_type", ["li", "np", "pd", "ww"])
+@pytest.mark.parametrize("component_class", _all_transformers())
 def test_all_transformers_check_fit_input_type(
+    component_class,
     data_type,
     X_y_binary,
     make_data_type,
     ts_data_binary,
 ):
 
-    for component_class in _all_transformers():
-        X, y = X_y_binary
-        X = make_data_type(data_type, X)
-        y = make_data_type(data_type, y)
-        kwargs = {}
-        if not component_class.needs_fitting or "Oversampler" in component_class.name:
-            # since SMOTE determines categorical columns through the logical type, it can only accept ww data
-            continue
-        if component_class in [TimeSeriesFeaturizer, TimeSeriesRegularizer]:
-            X, y = ts_data_binary
-            kwargs = {"time_index": "date"}
+    X, y = X_y_binary
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+    kwargs = {}
+    if not component_class.needs_fitting or "Oversampler" in component_class.name:
+        # since SMOTE determines categorical columns through the logical type, it can only accept ww data
+        pytest.xfail()
+    if component_class in [TimeSeriesFeaturizer, TimeSeriesRegularizer]:
+        X, y = ts_data_binary
+        kwargs = {"time_index": "date"}
 
-        component = component_class(**kwargs)
-        component.fit(X, y)
+    component = component_class(**kwargs)
+    component.fit(X, y)
 
 
 def test_no_fitting_required_components(
@@ -1255,7 +1256,8 @@ def test_no_fitting_required_components(
                 component.transform(X, y)
 
 
-def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
+@pytest.mark.parametrize("component_class", all_components())
+def test_serialization(component_class, X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), "component.pkl")
     requires_time_index = [
         ARIMARegressor,
@@ -1263,40 +1265,40 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
         TimeSeriesFeaturizer,
         TimeSeriesRegularizer,
     ]
-    for component_class in all_components():
-        print("Testing serialization of component {}".format(component_class.name))
-        component = helper_functions.safe_init_component_with_njobs_1(component_class)
-        if component_class in requires_time_index:
-            component = component_class(time_index="date")
-            X, y = ts_data
-        else:
-            X, y = X_y_binary
 
-        component.fit(X, y)
+    print("Testing serialization of component {}".format(component_class.name))
+    component = helper_functions.safe_init_component_with_njobs_1(component_class)
+    if component_class in requires_time_index:
+        component = component_class(time_index="date")
+        X, y = ts_data
+    else:
+        X, y = X_y_binary
 
-        for pickle_protocol in range(cloudpickle.DEFAULT_PROTOCOL + 1):
-            component.save(path, pickle_protocol=pickle_protocol)
-            loaded_component = ComponentBase.load(path)
-            assert component.parameters == loaded_component.parameters
-            assert component.describe(return_dict=True) == loaded_component.describe(
-                return_dict=True,
+    component.fit(X, y)
+
+    for pickle_protocol in range(cloudpickle.DEFAULT_PROTOCOL + 1):
+        component.save(path, pickle_protocol=pickle_protocol)
+        loaded_component = ComponentBase.load(path)
+        assert component.parameters == loaded_component.parameters
+        assert component.describe(return_dict=True) == loaded_component.describe(
+            return_dict=True,
+        )
+        if issubclass(component_class, Estimator) and not (
+            isinstance(
+                component,
+                (
+                    StackedEnsembleClassifier,
+                    StackedEnsembleRegressor,
+                    VowpalWabbitBinaryClassifier,
+                    VowpalWabbitMulticlassClassifier,
+                    VowpalWabbitRegressor,
+                    TimeSeriesBaselineEstimator,
+                ),
             )
-            if issubclass(component_class, Estimator) and not (
-                isinstance(
-                    component,
-                    (
-                        StackedEnsembleClassifier,
-                        StackedEnsembleRegressor,
-                        VowpalWabbitBinaryClassifier,
-                        VowpalWabbitMulticlassClassifier,
-                        VowpalWabbitRegressor,
-                        TimeSeriesBaselineEstimator,
-                    ),
-                )
-            ):
-                assert (
-                    component.feature_importance == loaded_component.feature_importance
-                ).all()
+        ):
+            assert (
+                component.feature_importance == loaded_component.feature_importance
+            ).all()
 
 
 @patch("cloudpickle.dump")
@@ -1668,47 +1670,47 @@ def test_estimator_fit_respects_custom_indices(
     pd.testing.assert_index_equal(y.index, y_original_index)
 
 
-def test_component_modifies_feature_or_target():
-    for component_class in all_components():
-        if (
-            issubclass(component_class, BaseSampler)
-            or hasattr(component_class, "inverse_transform")
-            or component_class
-            in [
-                TargetImputer,
-                DropRowsTransformer,
-                DropNaNRowsTransformer,
-                ReplaceNullableTypes,
-                TimeSeriesImputer,
-                TimeSeriesRegularizer,
-            ]
-        ):
-            assert component_class.modifies_target
-        else:
-            assert not component_class.modifies_target
-        if hasattr(component_class, "inverse_transform") or component_class in [
+@pytest.mark.parametrize("component_class", all_components())
+def test_component_modifies_feature_or_target(component_class):
+    if (
+        issubclass(component_class, BaseSampler)
+        or hasattr(component_class, "inverse_transform")
+        or component_class
+        in [
             TargetImputer,
-        ]:
-            assert not component_class.modifies_features
-        else:
-            assert component_class.modifies_features
+            DropRowsTransformer,
+            DropNaNRowsTransformer,
+            ReplaceNullableTypes,
+            TimeSeriesImputer,
+            TimeSeriesRegularizer,
+        ]
+    ):
+        assert component_class.modifies_target
+    else:
+        assert not component_class.modifies_target
+    if hasattr(component_class, "inverse_transform") or component_class in [
+        TargetImputer,
+    ]:
+        assert not component_class.modifies_features
+    else:
+        assert component_class.modifies_features
 
 
-def test_component_parameters_supported_by_list_API():
-    for component_class in all_components():
-        if (
-            issubclass(component_class, BaseSampler)
-            or hasattr(component_class, "inverse_transform")
-            or component_class
-            in [
-                TargetImputer,
-                DropRowsTransformer,
-                DropNaNRowsTransformer,
-                ReplaceNullableTypes,
-                TimeSeriesImputer,
-                TimeSeriesRegularizer,
-            ]
-        ):
-            assert not component_class._supported_by_list_API
-        else:
-            assert component_class._supported_by_list_API
+@pytest.mark.parametrize("component_class", all_components())
+def test_component_parameters_supported_by_list_API(component_class):
+    if (
+        issubclass(component_class, BaseSampler)
+        or hasattr(component_class, "inverse_transform")
+        or component_class
+        in [
+            TargetImputer,
+            DropRowsTransformer,
+            DropNaNRowsTransformer,
+            ReplaceNullableTypes,
+            TimeSeriesImputer,
+            TimeSeriesRegularizer,
+        ]
+    ):
+        assert not component_class._supported_by_list_API
+    else:
+        assert component_class._supported_by_list_API

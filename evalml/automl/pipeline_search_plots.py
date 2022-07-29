@@ -39,7 +39,7 @@ class SearchIterationPlot:
         layout = {
             "title": title,
             "xaxis": {"title": "Iteration", "rangemode": "tozero"},
-            "yaxis": {"title": "Score"},
+            "yaxis": {"title": "Validation Score"},
         }
         self.best_score_by_iter_fig = self._go.FigureWidget(data, layout)
         self.best_score_by_iter_fig.update_layout(showlegend=False)
@@ -51,7 +51,7 @@ class SearchIterationPlot:
         if len(results["search_order"]) > 0 and len(results["pipeline_results"]) > 0:
             iter_idx = results["search_order"]
             pipeline_res = results["pipeline_results"]
-            iter_scores = [pipeline_res[i]["mean_cv_score"] for i in iter_idx]
+            iter_scores = [pipeline_res[i]["validation_score"] for i in iter_idx]
 
             iter_score_pairs = zip(iter_idx, iter_scores)
             iter_score_pairs = sorted(iter_score_pairs, key=lambda value: value[0])

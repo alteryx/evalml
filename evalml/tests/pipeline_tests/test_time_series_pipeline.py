@@ -370,7 +370,7 @@ def test_transform_all_but_final_for_time_series(
     drop_nan_rows_transformer = DropNaNRowsTransformer()
     expected_features = drop_nan_rows_transformer.fit_transform(
         date_featurizer.fit_transform(
-            delayer.fit_transform(X_validation, y_validation)
+            delayer.fit_transform(X_validation, y_validation),
         ),
     )[0]
     assert_frame_equal(features, expected_features)

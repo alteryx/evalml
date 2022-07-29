@@ -89,11 +89,27 @@ class EngineBase(ABC):
         return JobLogger()
 
     @abstractmethod
-    def submit_evaluation_job(self, automl_config, pipeline, X, y):
+    def submit_evaluation_job(
+        self,
+        automl_config,
+        pipeline,
+        X,
+        y,
+        X_holdout=None,
+        y_holdout=None,
+    ):
         """Submit job for pipeline evaluation during AutoMLSearch."""
 
     @abstractmethod
-    def submit_training_job(self, automl_config, pipeline, X, y):
+    def submit_training_job(
+        self,
+        automl_config,
+        pipeline,
+        X,
+        y,
+        X_holdout=None,
+        y_holdout=None,
+    ):
         """Submit job for pipeline training."""
 
     @abstractmethod
@@ -180,6 +196,8 @@ def train_and_score_pipeline(
     full_X_train,
     full_y_train,
     logger,
+    X_holdout=None,
+    y_holdout=None,
 ):
     """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores.
 
@@ -189,6 +207,8 @@ def train_and_score_pipeline(
         full_X_train (pd.DataFrame): Training features.
         full_y_train (pd.Series): Training target.
         logger: Logger object to write to.
+        X_holdout (pd.DataFrame): Holdout set features.
+        y_holdout (pd.DataFrame): Holdout set target.
 
     Raises:
         Exception: If there are missing target values in the training set after data split.
@@ -197,51 +217,25 @@ def train_and_score_pipeline(
         tuple of three items: First - A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
             Second - The pipeline class we trained and scored. Third - the job logger instance with all the recorded messages.
     """
-    start = time.time()
-    cv_data = []
-    logger.info("\tStarting cross validation")
-    # Encode target for classification problems so that we can support float targets. This is okay because we only use split to get the indices to split on
-    if is_classification(automl_config.problem_type):
+
+    def _encode_classification_target(y):
         y_mapping = {
             original_target: encoded_target
             for (encoded_target, original_target) in enumerate(
-                full_y_train.value_counts().index,
+                y.value_counts().index,
             )
         }
-        full_y_train = ww.init_series(full_y_train.map(y_mapping))
-    cv_pipeline = pipeline
-    pipeline_cache = {}
+        return ww.init_series(y.map(y_mapping))
 
-    for i, (train, valid) in enumerate(
-        automl_config.data_splitter.split(full_X_train, full_y_train),
-    ):
-        logger.debug(f"\t\tTraining and scoring on fold {i}")
-        X_train, X_valid = full_X_train.ww.iloc[train], full_X_train.ww.iloc[valid]
-        y_train, y_valid = full_y_train.ww.iloc[train], full_y_train.ww.iloc[valid]
-        if handle_problem_types(automl_config.problem_type) in [
-            ProblemTypes.BINARY,
-            ProblemTypes.MULTICLASS,
-        ]:
-            diff_train = set(np.setdiff1d(full_y_train, y_train))
-            diff_valid = set(np.setdiff1d(full_y_train, y_valid))
-            diff_string = (
-                f"Missing target values in the training set after data split: {diff_train}. "
-                if diff_train
-                else ""
-            )
-            diff_string += (
-                f"Missing target values in the validation set after data split: {diff_valid}."
-                if diff_valid
-                else ""
-            )
-            if diff_string:
-                raise Exception(diff_string)
+    def _train_and_score(X_train, X_score, y_train, y_score, fold_num=None):
+        fitted_pipeline = pipeline
+        prefix = f"Fold {i}" if i is not None else "Full training data pipeline"
         objectives_to_score = [
             automl_config.objective,
         ] + automl_config.additional_objectives
         try:
-            logger.debug(f"\t\t\tFold {i}: starting training")
-            cv_pipeline, hashes = train_pipeline(
+            logger.debug(f"\t\t\t{prefix}: starting training")
+            fitted_pipeline, hashes = train_pipeline(
                 pipeline,
                 X_train,
                 y_train,
@@ -249,28 +243,28 @@ def train_and_score_pipeline(
                 schema=False,
                 get_hashes=True,
             )
-            logger.debug(f"\t\t\tFold {i}: finished training")
+            logger.debug(f"\t\t\t{prefix}: finished training")
             if (
                 automl_config.optimize_thresholds
                 and is_binary(automl_config.problem_type)
-                and cv_pipeline.threshold is not None
+                and fitted_pipeline.threshold is not None
             ):
                 logger.debug(
-                    f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})",
+                    f"\t\t\t{prefix}: Optimal threshold found ({fitted_pipeline.threshold:.3f})",
                 )
-            logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
-            scores = cv_pipeline.score(
-                X_valid,
-                y_valid,
+            logger.debug(f"\t\t\t{prefix}: Scoring trained pipeline")
+            scores = fitted_pipeline.score(
+                X_score,
+                y_score,
                 objectives=objectives_to_score,
                 X_train=X_train,
                 y_train=y_train,
             )
             logger.debug(
-                f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}",
+                f"\t\t\t{prefix}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}",
             )
             score = scores[automl_config.objective.name]
-            pipeline_cache[hashes] = cv_pipeline.component_graph.component_instances
+            pipeline_cache[hashes] = fitted_pipeline.component_graph.component_instances
         except Exception as e:
             if automl_config.error_callback is not None:
                 automl_config.error_callback(
@@ -299,6 +293,53 @@ def train_and_score_pipeline(
                         [np.nan] * len(automl_config.additional_objectives),
                     ),
                 )
+        return score, scores, fitted_pipeline
+
+    start = time.time()
+    cv_data = []
+    use_holdout = X_holdout is not None and y_holdout is not None
+    logger.info("\tStarting cross validation")
+    # Encode target for classification problems so that we can support float targets. This is okay because we only use split to get the indices to split on
+    if is_classification(automl_config.problem_type):
+        full_y_train = _encode_classification_target(full_y_train)
+        if use_holdout:
+            y_holdout = _encode_classification_target(y_holdout)
+
+    pipeline_cache = {}
+    stored_pipeline = pipeline
+
+    for i, (train, valid) in enumerate(
+        automl_config.data_splitter.split(full_X_train, full_y_train),
+    ):
+        logger.debug(f"\t\tTraining and scoring on fold {i}")
+        X_train, X_valid = full_X_train.ww.iloc[train], full_X_train.ww.iloc[valid]
+        y_train, y_valid = full_y_train.ww.iloc[train], full_y_train.ww.iloc[valid]
+        if handle_problem_types(automl_config.problem_type) in [
+            ProblemTypes.BINARY,
+            ProblemTypes.MULTICLASS,
+        ]:
+            diff_train = set(np.setdiff1d(full_y_train, y_train))
+            diff_valid = set(np.setdiff1d(full_y_train, y_valid))
+            diff_string = (
+                f"Missing target values in the training set after data split: {diff_train}. "
+                if diff_train
+                else ""
+            )
+            diff_string += (
+                f"Missing target values in the validation set after data split: {diff_valid}."
+                if diff_valid
+                else ""
+            )
+            if diff_string:
+                raise Exception(diff_string)
+
+        score, scores, stored_pipeline = _train_and_score(
+            X_train=X_train,
+            X_score=X_valid,
+            y_train=y_train,
+            y_score=y_valid,
+            fold_num=i,
+        )
 
         ordered_scores = OrderedDict()
         ordered_scores.update({automl_config.objective.name: score})
@@ -313,31 +354,59 @@ def train_and_score_pipeline(
         }
         if (
             is_binary(automl_config.problem_type)
-            and cv_pipeline is not None
-            and cv_pipeline.threshold is not None
+            and stored_pipeline is not None
+            and stored_pipeline.threshold is not None
         ):
-            evaluation_entry["binary_classification_threshold"] = cv_pipeline.threshold
+            evaluation_entry[
+                "binary_classification_threshold"
+            ] = stored_pipeline.threshold
         cv_data.append(evaluation_entry)
-    training_time = time.time() - start
     cv_scores = pd.Series([fold["mean_cv_score"] for fold in cv_data])
     cv_score_mean = cv_scores.mean()
     logger.info(
         f"\tFinished cross validation - mean {automl_config.objective.name}: {cv_score_mean:.3f}",
     )
+
+    holdout_score = np.NaN
+    holdout_scores = np.NaN
+    if use_holdout:
+        logger.info("\tStarting holdout set scoring")
+        logger.debug(f"\t\tTraining and scoring entire dataset")
+        holdout_score, holdout_scores, stored_pipeline = _train_and_score(
+            X_train=full_X_train,
+            X_score=X_holdout,
+            y_train=full_y_train,
+            y_score=y_holdout,
+        )
+        logger.info(
+            f"\tFinished holdout set scoring - {automl_config.objective.name}: {holdout_score:.3f}",
+        )
+
+    training_time = time.time() - start
     return {
         "scores": {
             "cv_data": cv_data,
             "training_time": training_time,
             "cv_scores": cv_scores,
             "cv_score_mean": cv_score_mean,
+            "holdout_score": None if not use_holdout else holdout_score,
+            "holdout_scores": None if not use_holdout else holdout_scores,
         },
         "cached_data": pipeline_cache,
-        "pipeline": cv_pipeline,
+        "pipeline": stored_pipeline,
         "logger": logger,
     }
 
 
-def evaluate_pipeline(pipeline, automl_config, X, y, logger):
+def evaluate_pipeline(
+    pipeline,
+    automl_config,
+    X,
+    y,
+    logger,
+    X_holdout=None,
+    y_holdout=None,
+):
     """Function submitted to the submit_evaluation_job engine method.
 
     Args:
@@ -346,6 +415,8 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
         X (pd.DataFrame): Training features.
         y (pd.Series): Training target.
         logger: Logger object to write to.
+        X_holdout (pd.DataFrame): Holdout set features.
+        y_holdout (pd.DataFrame): Holdout set target.
 
     Returns:
         tuple of three items: First - A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
@@ -362,6 +433,8 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
         full_X_train=X,
         full_y_train=y,
         logger=logger,
+        X_holdout=X_holdout,
+        y_holdout=y_holdout,
     )
 
 

@@ -88,7 +88,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...         "data_check_name": "InvalidTargetDataCheck",
             ...         "level": "error",
             ...         "details": {"columns": None, "rows": None},
-            ...         "code": "TARGET_UNSUPPORTED_TYPE",
+            ...         "code": "TARGET_UNSUPPORTED_TYPE_REGRESSION",
             ...         "action_options": []
             ...     }
             ... ]
@@ -357,7 +357,7 @@ class InvalidTargetDataCheck(DataCheck):
                 DataCheckError(
                     message="Target data type should be numeric for regression type problems.",
                     data_check_name=self.name,
-                    message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
+                    message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE_REGRESSION,
                     details={},
                 ).to_dict(),
             )
