@@ -200,7 +200,7 @@ def test_data_checks_suggests_drop_and_impute_cols():
     )
     X_expected.ww.init(
         logical_types={
-            "lots_of_null": "double",
+            "lots_of_null": "IntegerNullable",
             "null_with_categorical": "categorical",
         },
     )
