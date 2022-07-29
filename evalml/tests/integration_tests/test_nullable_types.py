@@ -73,10 +73,7 @@ def test_nullable_types_builds_pipelines(
         "nullable types",
         "just nullable target",
     ]:
-        if input_type == "pd":
-            assert not any([ReplaceNullableTypes.name in pl for pl in pipelines])
-        elif input_type == "ww":
-            assert all([ReplaceNullableTypes.name in pl for pl in pipelines])
+        assert all([ReplaceNullableTypes.name in pl for pl in pipelines])
     else:
         assert not any([ReplaceNullableTypes.name in pl for pl in pipelines])
 
