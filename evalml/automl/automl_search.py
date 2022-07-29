@@ -424,7 +424,7 @@ class AutoMLSearch:
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
 
         timing (boolean): Whether or not to write pipeline search times to the logger. Defaults to False.
-        exclude_featurizers (list[str]): A list of featurizer components to exclude from the components.
+        exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipelines built by search.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
 
         holdout_set_size (float): The size of the holdout set that AutoML search will take for datasets larger than 500 rows. If set to 0, holdout set will not be taken regardless of number of rows. Must be between 0 and 1, exclusive. Defaults to 0.1.
