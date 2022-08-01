@@ -5129,6 +5129,26 @@ def test_exclude_featurizers(
     )
 
 
+def test_exclude_featurizers_error(X_y_binary):
+    X, y = X_y_binary
+    match_text = (
+        "Invalid value provided for exclude_featurizers. Must be one of: "
+        "DatetimeFeaturizer, EmailFeaturizer, URLFeaturizer, NaturalLanguageFeaturizer, TimeSeriesFeaturizer"
+    )
+    with pytest.raises(
+        ValueError,
+        match=match_text,
+    ):
+        automl = AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            exclude_featurizers=[
+                "InvalidNameFeaturizer",
+            ],
+        )
+
+
 def test_init_holdout_set(X_y_binary, caplog):
     X, y = X_y_binary
     X_train, X_holdout, y_train, y_holdout = split_data(X, y, "binary")

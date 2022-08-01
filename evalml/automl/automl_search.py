@@ -739,6 +739,18 @@ class AutoMLSearch:
         self.sampler_method = sampler_method
         self.sampler_balanced_ratio = sampler_balanced_ratio
         self._sampler_name = None
+
+        featurizer_names = [
+            "DatetimeFeaturizer",
+            "EmailFeaturizer",
+            "URLFeaturizer",
+            "NaturalLanguageFeaturizer",
+            "TimeSeriesFeaturizer",
+        ]
+        if exclude_featurizers and (set(exclude_featurizers) - set(featurizer_names)):
+            raise ValueError(
+                f"Invalid value provided for exclude_featurizers. Must be one of: {', '.join(featurizer_names)}"
+            )
         self.exclude_featurizers = exclude_featurizers or []
 
         if is_classification(self.problem_type):
