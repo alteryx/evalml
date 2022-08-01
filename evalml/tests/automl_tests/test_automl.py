@@ -5103,11 +5103,30 @@ def test_exclude_featurizers(
     # A check to make sure we actually retrieve constructed pipelines from the algo.
     assert len(pipelines) > 0
 
-    assert not any([DateTimeFeaturizer.name in pl for pl in pipelines])
-    assert not any([EmailFeaturizer.name in pl for pl in pipelines])
-    assert not any([URLFeaturizer.name in pl for pl in pipelines])
-    assert not any([NaturalLanguageFeaturizer.name in pl for pl in pipelines])
-    assert not any([TimeSeriesFeaturizer.name in pl for pl in pipelines])
+    assert not any(
+        [
+            DateTimeFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )
+    assert not any(
+        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+    )
+    assert not any(
+        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+    )
+    assert not any(
+        [
+            NaturalLanguageFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )
+    assert not any(
+        [
+            TimeSeriesFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )
 
 
 def test_init_holdout_set(X_y_binary, caplog):
