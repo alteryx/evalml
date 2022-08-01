@@ -5139,7 +5139,7 @@ def test_exclude_featurizers_error(X_y_binary):
         ValueError,
         match=match_text,
     ):
-        automl = AutoMLSearch(
+        AutoMLSearch(
             X_train=X,
             y_train=y,
             problem_type="binary",
