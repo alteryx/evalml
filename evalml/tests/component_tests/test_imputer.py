@@ -566,7 +566,7 @@ def test_imputer_int_preserved():
         pd.DataFrame(pd.Series([1, 2, 11, 14 / 3])),
     )
     assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-        0: IntegerNullable,
+        0: Double,
     }
 
     X = pd.DataFrame(pd.Series([1, 2, 3, np.nan]))
@@ -578,7 +578,7 @@ def test_imputer_int_preserved():
         check_dtype=False,
     )
     assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-        0: IntegerNullable,
+        0: Double,
     }
 
     X = pd.DataFrame(pd.Series([1, 2, 3, 4], dtype="int"))
