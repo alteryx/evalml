@@ -1240,22 +1240,11 @@ def test_time_series_pipeline_parameter_warnings(
         assert w[1].message.components == set_values
 
 
-@patch(
-    "evalml.automl.automl_algorithm.default_algorithm.DefaultAlgorithm._create_ensemble",
-    return_value=[],
-)
-@patch("evalml.pipelines.components.estimators.Estimator.fit")
-@patch(
-    "evalml.pipelines.MulticlassClassificationPipeline.score",
-    return_value={"Log Loss Multiclass": 0.5},
-)
 @pytest.mark.parametrize("allow_long_running_models", [True, False])
 @pytest.mark.parametrize("unique", [10, 200])
 @pytest.mark.parametrize("algo", ["iterative", "default"])
 def test_automl_passes_allow_long_running_models(
-    mock_s_fit,
-    mock_fit,
-    mock_score,
+    AutoMLTestEnv,
     algo,
     unique,
     allow_long_running_models,
@@ -1267,16 +1256,19 @@ def test_automl_passes_allow_long_running_models(
         X_train=X,
         y_train=y,
         problem_type="multiclass",
+        objective="Log Loss Multiclass",
         allow_long_running_models=allow_long_running_models,
         automl_algorithm=algo,
-        max_batches=2,
+        max_batches=3,
         verbose=True,
     )
     assert (
         automl.automl_algorithm.allow_long_running_models == allow_long_running_models
     )
     if algo == "default":
-        automl.search()
+        env = AutoMLTestEnv("multiclass")
+        with env.test_context(score_return_value={"Log Loss Multiclass": 1.0}):
+            automl.search()
     if allow_long_running_models or unique == 10:
         assert "Dropping estimators" not in caplog.text
         return
