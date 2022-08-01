@@ -5,6 +5,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Updated broken link checker to exclude stackoverflow domain :pr:`3633`
     * Testing Changes
 
 .. warning::
