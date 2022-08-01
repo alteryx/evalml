@@ -16,7 +16,6 @@ class Progress:
         objective=None,
         verbose=False,
     ):
-        # store all stopping criteria as well as store current state
         self.max_time = max_time
         self.current_time = None
         self._start_time = None
@@ -100,17 +99,11 @@ class Progress:
         return progress_dict
 
     def return_progress(self):
-        # returns list of dictionaries housing all held criteria and their current state
-        # in order of importance .. time > iterations >= batches
-        # does not return early stopping information
-        # if max_batches but not max_iterations return conversion as well by
-        # using automl_algorithm.num_pipelines_per_batch
-        #   returns [{
-        #     "stopping_criteria": "max_time",
-        #     "current_state": 2mins,
-        #     "end_state": 15mins,
-        #     "unit": time
-        #   }]
+        """Return information about current and end state of each stopping criteria in order of priority.
+
+        Returns:
+            List[Dict[str, unit]]: list of dictionaries containing information of each stopping criteria.
+        """
         progress = []
         if self.max_time:
             progress.append(

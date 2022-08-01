@@ -1178,57 +1178,6 @@ class AutoMLSearch:
         """
         return len(self._results["pipeline_results"])
 
-    def _should_continue(self):
-        """Given the original stopping criterion and current state, return whether or not the search should continue.
-
-        Returns:
-            bool: True if search should continue, False otherwise.
-        """
-        if self._interrupted:
-            return False
-
-        num_pipelines = self._num_pipelines()
-
-        # check max_time, max_iterations, and max_batches
-        elapsed = time.time() - self._start
-        if self.max_time and elapsed >= self.max_time:
-            return False
-        elif self.max_iterations and num_pipelines >= self.max_iterations:
-            return False
-        elif self.max_batches and self._get_batch_number() > self.max_batches:
-            return False
-
-        # check for early stopping
-        if self.patience is None or self.tolerance is None:
-            return True
-
-        first_id = self._results["search_order"][0]
-        best_score = self._results["pipeline_results"][first_id]["mean_cv_score"]
-        num_without_improvement = 0
-        for id in self._results["search_order"][1:]:
-            curr_score = self._results["pipeline_results"][id]["mean_cv_score"]
-            significant_change = (
-                abs((curr_score - best_score) / best_score) > self.tolerance
-            )
-            score_improved = (
-                curr_score > best_score
-                if self.objective.greater_is_better
-                else curr_score < best_score
-            )
-            if score_improved and significant_change:
-                best_score = curr_score
-                num_without_improvement = 0
-            else:
-                num_without_improvement += 1
-            if num_without_improvement >= self.patience:
-                self.logger.info(
-                    "\n\n{} iterations without improvement. Stopping search early...".format(
-                        self.patience,
-                    ),
-                )
-                return False
-        return True
-
     def _validate_problem_type(self):
         for obj in self.additional_objectives:
             if not obj.is_defined_for_problem_type(self.problem_type):
