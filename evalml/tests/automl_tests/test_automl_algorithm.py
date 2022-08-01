@@ -15,6 +15,9 @@ class DummyAlgorithm(AutoMLAlgorithm):
         super().__init__()
         self._dummy_pipelines = dummy_pipelines or []
 
+    def num_pipelines_per_batch(self, batch_number):
+        pass
+
     def next_batch(self):
         self._pipeline_number += 1
         self._batch_number += 1
@@ -29,6 +32,9 @@ class DummyAlgorithm(AutoMLAlgorithm):
 class AllowedPipelinesAlgorithm(AutoMLAlgorithm):
     def __init__(self, allowed_pipelines=None, random_seed=0):
         super().__init__(allowed_pipelines=allowed_pipelines, random_seed=random_seed)
+
+    def num_pipelines_per_batch(self, batch_number):
+        pass
 
     def next_batch(self):
         pass

@@ -2432,7 +2432,7 @@ def test_max_batches_works(
     env = AutoMLTestEnv(problem_type)
     with env.test_context(score_return_value={automl.objective.name: 0.3}):
         automl.search()
-    assert automl._get_batch_number() == max_batches + 1
+    assert automl._get_batch_number() == max_batches
 
 
 def test_early_stopping_negative(X_y_binary):

@@ -846,6 +846,7 @@ class AutoMLSearch:
             patience=self.patience,
             tolerance=self.tolerance,
             automl_algorithm=self.automl_algorithm,
+            objective=self.objective,
         )
 
     def close_engine(self):
@@ -853,7 +854,7 @@ class AutoMLSearch:
         self._engine.close()
 
     def _get_batch_number(self):
-        batch_number = 1
+        batch_number = 0
         if self.automl_algorithm is not None and self.automl_algorithm.batch_number > 0:
             batch_number = self.automl_algorithm.batch_number
         return batch_number
@@ -1023,7 +1024,7 @@ class AutoMLSearch:
         new_pipeline_ids = []
         loop_interrupted = False
 
-        while self.progress.should_continue(self._results):
+        while self.progress.should_continue(self._results, self._interrupted):
             pipeline_times = {}
             start_batch_time = time.time()
             computations = []
@@ -1034,7 +1035,7 @@ class AutoMLSearch:
                 self.logger.info("AutoML Algorithm out of recommendations, ending")
                 break
             try:
-                if self.progress.should_continue(self._results):
+                if self.progress.should_continue(self._results, self._interrupted):
                     new_pipeline_ids = []
                     log_title(
                         self.logger,
@@ -1054,7 +1055,7 @@ class AutoMLSearch:
                     current_computation_index = 0
                     computations_left_to_process = len(computations)
                 while (
-                    self.progress.should_continue(self._results)
+                    self.progress.should_continue(self._results, self._interrupted)
                     and computations_left_to_process > 0
                 ):
                     computation, has_been_processed = computations[

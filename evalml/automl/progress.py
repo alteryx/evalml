@@ -1,6 +1,7 @@
+import logging
 import time
 
-from evalml.automl import automl_algorithm
+from evalml.utils.logger import get_logger
 
 
 class Progress:
@@ -12,6 +13,8 @@ class Progress:
         patience=None,
         tolerance=None,
         automl_algorithm=None,
+        objective=None,
+        verbose=False,
     ):
         # store all stopping criteria as well as store current state
         self.max_time = max_time
@@ -24,6 +27,12 @@ class Progress:
         self.patience = patience
         self.tolerance = tolerance
         self.automl_algorithm = automl_algorithm
+        self.objective = objective
+
+        if verbose:
+            self.logger = get_logger(f"{__name__}.verbose")
+        else:
+            self.logger = logging.getLogger(__name__)
 
     def should_continue(self, results, interrupted=False):
         """Given AutoML Results, return whether or not the search should continue.
@@ -44,7 +53,7 @@ class Progress:
             return False
         elif self.max_iterations and self.current_iterations >= self.max_iterations:
             return False
-        elif self.max_batches and self.current_batches > self.max_batches:
+        elif self.max_batches and self.current_batches >= self.max_batches:
             return False
 
         # check for early stopping
