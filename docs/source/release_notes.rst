@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``Progress`` abstraction to handle stopping criteria logic and return search progress information :pr:`3632`
     * Fixes
     * Changes
     * Documentation Changes
