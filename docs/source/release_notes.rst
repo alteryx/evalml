@@ -28,6 +28,7 @@ Release Notes
     * Changes
         * Add pre-commit hooks for linting :pr:`3608`
         * Implemented a lower threshold and window size for the ``TimeSeriesRegularizer`` and ``DatetimeFormatDataCheck`` :pr:`3627`
+        * Datasets where the first column is identified as an id column now produce a recommended action to set the column as the primary key :pr:`3634`
     * Documentation Changes
     * Testing Changes
         * Pinned GraphViz version for Windows CI Test :pr:`3596`
