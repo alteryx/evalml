@@ -966,13 +966,32 @@ def test_exclude_featurizers_default_algorithm(
 
     pipelines = []
     for _ in range(4):
-        pipelines.extend([pl.name for pl in algo.next_batch()])
+        pipelines.extend([pl for pl in algo.next_batch()])
 
     # A check to make sure we actually retrieve constructed pipelines from the algo.
     assert len(pipelines) > 0
 
-    assert not any([DateTimeFeaturizer.name in pl for pl in pipelines])
-    assert not any([EmailFeaturizer.name in pl for pl in pipelines])
-    assert not any([URLFeaturizer.name in pl for pl in pipelines])
-    assert not any([NaturalLanguageFeaturizer.name in pl for pl in pipelines])
-    assert not any([TimeSeriesFeaturizer.name in pl for pl in pipelines])
+    assert not any(
+        [
+            DateTimeFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )
+    assert not any(
+        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+    )
+    assert not any(
+        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+    )
+    assert not any(
+        [
+            NaturalLanguageFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )
+    assert not any(
+        [
+            TimeSeriesFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )
