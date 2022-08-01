@@ -54,6 +54,8 @@ def test_progress_return_progress(X_y_binary, logistic_regression_binary_pipelin
 
     assert p.should_continue(mock_results)
 
+    time.sleep(1)
+
     progress_dict = p.return_progress()
     for progress in progress_dict:
         if progress["stopping_criteria"] == "max_time":
