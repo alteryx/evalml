@@ -96,15 +96,15 @@ def test_id_columns_warning():
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
     assert id_cols_check.validate(X) == [
         DataCheckWarning(
-            message="The first column 'col_1_id' is 95.0% or more likely to be an ID column",
+            message="The first column 'col_1_id' is most likely to be the ID column. Columns 'Id', 'col_2', 'col_3_id' are also 95.0% or more likely to be an ID column",
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
-            details={"column": "col_1_id"},
+            details={"columns": ["col_1_id", "Id", "col_2", "col_3_id"]},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={"column": "col_1_id"},
+                    metadata={"columns": ["col_1_id", "Id", "col_2", "col_3_id"]},
                 ),
             ],
         ).to_dict(),
@@ -194,15 +194,15 @@ def test_id_columns_strings():
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
     assert id_cols_check.validate(X) == [
         DataCheckWarning(
-            message="The first column 'col_1_id' is 95.0% or more likely to be an ID column",
+            message="The first column 'col_1_id' is most likely to be the ID column. Columns 'Id', 'col_2', 'col_3_id' are also 95.0% or more likely to be an ID column",
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
-            details={"column": "col_1_id"},
+            details={"columns": ["col_1_id", "Id", "col_2", "col_3_id"]},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={"column": "col_1_id"},
+                    metadata={"columns": ["col_1_id", "Id", "col_2", "col_3_id"]},
                 ),
             ],
         ).to_dict(),
@@ -216,36 +216,36 @@ def test_id_cols_data_check_input_formats():
     assert id_cols_check.validate(pd.DataFrame()) == []
 
     #  test Woodwork
-    ww_input = pd.DataFrame(np.array([[0, 1], [0, 2], [2, 3], [3, 4], [4, 5]]))
+    ww_input = pd.DataFrame(np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]))
     ww_input.ww.init()
     assert id_cols_check.validate(ww_input) == [
         DataCheckWarning(
-            message="Columns '1' are 80.0% or more likely to be an ID column",
+            message="The first column '0' is most likely to be the ID column. Columns '1' are also 80.0% or more likely to be an ID column",
             data_check_name=id_data_check_name,
-            message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-            details={"columns": [1]},
+            message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
+            details={"columns": [0, 1]},
             action_options=[
                 DataCheckActionOption(
-                    DataCheckActionCode.DROP_COL,
+                    DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={"columns": [1]},
+                    metadata={"columns": [0, 1]},
                 ),
             ],
         ).to_dict(),
     ]
 
     #  test 2D list
-    assert id_cols_check.validate([[0, 1], [0, 2], [2, 3], [3, 4], [4, 5]]) == [
+    assert id_cols_check.validate([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]) == [
         DataCheckWarning(
-            message="Columns '1' are 80.0% or more likely to be an ID column",
+            message="The first column '0' is most likely to be the ID column. Columns '1' are also 80.0% or more likely to be an ID column",
             data_check_name=id_data_check_name,
-            message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-            details={"columns": [1]},
+            message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
+            details={"columns": [0, 1]},
             action_options=[
                 DataCheckActionOption(
-                    DataCheckActionCode.DROP_COL,
+                    DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={"columns": [1]},
+                    metadata={"columns": [0, 1]},
                 ),
             ],
         ).to_dict(),
@@ -253,18 +253,18 @@ def test_id_cols_data_check_input_formats():
 
     # test np.array
     assert id_cols_check.validate(
-        np.array([[0, 1], [0, 2], [2, 3], [3, 4], [4, 5]]),
+        np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]),
     ) == [
         DataCheckWarning(
-            message="Columns '1' are 80.0% or more likely to be an ID column",
+            message="The first column '0' is most likely to be the ID column. Columns '1' are also 80.0% or more likely to be an ID column",
             data_check_name=id_data_check_name,
-            message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-            details={"columns": [1]},
+            message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
+            details={"columns": [0, 1]},
             action_options=[
                 DataCheckActionOption(
-                    DataCheckActionCode.DROP_COL,
+                    DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={"columns": [1]},
+                    metadata={"columns": [0, 1]},
                 ),
             ],
         ).to_dict(),
