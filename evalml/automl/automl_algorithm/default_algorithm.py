@@ -429,7 +429,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             )
         if (
             list(self.X.ww.select("URL", return_schema=True).columns)
-            and not "URLFeaturizer" in self.exclude_featurizers
+            and "URLFeaturizer" not in self.exclude_featurizers
         ):
             self._get_feature_provenance_and_remove_engineered_features(
                 pipeline,
@@ -439,7 +439,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             )
         if (
             list(self.X.ww.select("EmailAddress", return_schema=True).columns)
-            and not "EmailFeaturizer" in self.exclude_featurizers
+            and "EmailFeaturizer" not in self.exclude_featurizers
         ):
             self._get_feature_provenance_and_remove_engineered_features(
                 pipeline,
