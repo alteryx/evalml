@@ -117,7 +117,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self._X_without_cat_cols = None
         self.features = features
         self.ensembling = ensembling
-        self.exclude_featurizers = exclude_featurizers
+        self.exclude_featurizers = exclude_featurizers or []
 
         # TODO remove on resolution of 3186
         if is_time_series(self.problem_type) and self.ensembling:
