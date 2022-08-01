@@ -1035,7 +1035,11 @@ class AutoMLSearch:
                 self.logger.info("AutoML Algorithm out of recommendations, ending")
                 break
             try:
-                if self.progress.should_continue(self._results, self._interrupted):
+                if self.progress.should_continue(
+                    self._results,
+                    self._interrupted,
+                    True,
+                ):
                     new_pipeline_ids = []
                     log_title(
                         self.logger,
@@ -1055,7 +1059,11 @@ class AutoMLSearch:
                     current_computation_index = 0
                     computations_left_to_process = len(computations)
                 while (
-                    self.progress.should_continue(self._results, self._interrupted)
+                    self.progress.should_continue(
+                        self._results,
+                        self._interrupted,
+                        True,
+                    )
                     and computations_left_to_process > 0
                 ):
                     computation, has_been_processed = computations[

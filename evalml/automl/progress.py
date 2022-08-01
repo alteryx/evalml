@@ -34,7 +34,7 @@ class Progress:
         else:
             self.logger = logging.getLogger(__name__)
 
-    def should_continue(self, results, interrupted=False):
+    def should_continue(self, results, interrupted=False, mid_batch=False):
         """Given AutoML Results, return whether or not the search should continue.
 
         Returns:
@@ -51,9 +51,17 @@ class Progress:
 
         if self.max_time and elapsed >= self.max_time:
             return False
-        elif self.max_iterations and self.current_iterations >= self.max_iterations:
+        elif (
+            self.max_iterations
+            and self.current_iterations >= self.max_iterations
+            and not mid_batch
+        ):
             return False
-        elif self.max_batches and self.current_batches >= self.max_batches:
+        elif (
+            self.max_batches
+            and self.current_batches >= self.max_batches
+            and not mid_batch
+        ):
             return False
 
         # check for early stopping
