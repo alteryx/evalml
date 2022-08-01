@@ -51,11 +51,7 @@ class Progress:
 
         if self.max_time and elapsed >= self.max_time:
             return False
-        elif (
-            self.max_iterations
-            and self.current_iterations >= self.max_iterations
-            and not mid_batch
-        ):
+        elif self.max_iterations and self.current_iterations >= self.max_iterations:
             return False
         elif (
             self.max_batches
