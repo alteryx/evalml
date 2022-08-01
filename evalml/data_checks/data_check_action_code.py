@@ -23,7 +23,7 @@ class DataCheckActionCode(Enum):
     """Action code for regularizing and imputing all features and target time series data."""
 
     SET_FIRST_COL_ID = "set_first_col_id"
-    """Action code for setting the first column as an id column"""
+    """Action code for setting the first column as an id column."""
 
     @classproperty
     def _all_values(cls):

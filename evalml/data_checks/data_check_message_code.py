@@ -18,7 +18,7 @@ class DataCheckMessageCode(Enum):
     """Message code for data that has ID columns."""
 
     HAS_ID_FIRST_COLUMN = "has_id_first_column"
-    """Message code for data that has an ID column as the first column"""
+    """Message code for data that has an ID column as the first column."""
 
     TARGET_INCOMPATIBLE_OBJECTIVE = "target_incompatible_objective"
     """Message code for target data that has incompatible values for the specified objective"""
