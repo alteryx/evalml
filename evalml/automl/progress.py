@@ -33,7 +33,6 @@ class Progress:
         """
         if interrupted:
             return False
-
         # update and check max_time, max_iterations, and max_batches
         self.current_time = time.time()
         self.current_iterations = len(results["pipeline_results"])

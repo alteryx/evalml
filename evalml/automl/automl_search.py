@@ -828,14 +828,6 @@ class AutoMLSearch:
         else:
             raise ValueError("Please specify a valid automl algorithm.")
 
-        self.progress = Progress(
-            max_time=self.max_time,
-            max_batches=self.max_batches,
-            max_iterations=self.max_iterations,
-            patience=self.patience,
-            tolerance=self.tolerance,
-            automl_algorithm=self.automl_algorithm,
-        )
         self.allowed_pipelines = self.automl_algorithm.allowed_pipelines
         self.allowed_model_families = [p.model_family for p in self.allowed_pipelines]
         if automl_algorithm == "iterative":
@@ -846,6 +838,15 @@ class AutoMLSearch:
             self.logger.info(
                 f"Using default limit of max_batches={self.max_batches}.\n",
             )
+
+        self.progress = Progress(
+            max_time=self.max_time,
+            max_batches=self.max_batches,
+            max_iterations=self.max_iterations,
+            patience=self.patience,
+            tolerance=self.tolerance,
+            automl_algorithm=self.automl_algorithm,
+        )
 
     def close_engine(self):
         """Function to explicitly close the engine, client, parallel resources."""
