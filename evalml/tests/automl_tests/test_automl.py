@@ -5100,6 +5100,9 @@ def test_exclude_featurizers(
         automl.get_pipeline(i) for i in range(len(automl.results["pipeline_results"]))
     ]
 
+    # A check to make sure we actually retrieve constructed pipelines from the algo.
+    assert len(pipelines) > 0
+
     assert not any([DateTimeFeaturizer.name in pl for pl in pipelines])
     assert not any([EmailFeaturizer.name in pl for pl in pipelines])
     assert not any([URLFeaturizer.name in pl for pl in pipelines])

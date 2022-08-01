@@ -427,14 +427,20 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 self._selected_cols,
                 self._selected_cat_cols,
             )
-        if list(self.X.ww.select("URL", return_schema=True).columns):
+        if (
+            list(self.X.ww.select("URL", return_schema=True).columns)
+            and not "URLFeaturizer" in self.exclude_featurizers
+        ):
             self._get_feature_provenance_and_remove_engineered_features(
                 pipeline,
                 URLFeaturizer.name,
                 self._selected_cat_cols,
                 self._selected_cat_cols,
             )
-        if list(self.X.ww.select("EmailAddress", return_schema=True).columns):
+        if (
+            list(self.X.ww.select("EmailAddress", return_schema=True).columns)
+            and not "EmailFeaturizer" in self.exclude_featurizers
+        ):
             self._get_feature_provenance_and_remove_engineered_features(
                 pipeline,
                 EmailFeaturizer.name,
