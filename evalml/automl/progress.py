@@ -1,3 +1,4 @@
+"""Progress abstraction holding stopping criteria and progress information."""
 import logging
 import time
 
@@ -5,6 +6,27 @@ from evalml.utils.logger import get_logger
 
 
 class Progress:
+    """Progress object holding stopping criteria and progress information.
+
+    Args:
+        max_time (int): Maximum time to search for pipelines.
+
+        max_iterations (int): Maximum number of iterations to search.
+
+        max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
+            max_iterations have precedence over stopping the search.
+
+        patience (int): Number of iterations without improvement to stop search early.
+
+        tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
+
+        automl_algorithm (str): The automl algorithm to use. Used to calculate iterations if max_batches is selected as stopping criteria.
+
+        objective (str, ObjectiveBase): The objective used in search.
+
+        verbose (boolean): Whether or not to log out stopping information.
+    """
+
     def __init__(
         self,
         max_time=None,

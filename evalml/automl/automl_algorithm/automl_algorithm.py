@@ -67,10 +67,13 @@ class AutoMLAlgorithm(ABC):
 
     @abstractmethod
     def num_pipelines_per_batch(self, batch_number):
-        """Return the number of pipelines in the nth batch
+        """Return the number of pipelines in the nth batch.
+
+        Args:
+            batch_number (int): which batch to calculate the number of pipelines for.
 
         Returns:
-            int: number of pipelines in the given batch
+            int: number of pipelines in the given batch.
         """
 
     def _set_allowed_pipelines(self, allowed_pipelines):

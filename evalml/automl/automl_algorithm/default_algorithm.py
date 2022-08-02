@@ -139,6 +139,14 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return 4 if self.ensembling else 3
 
     def num_pipelines_per_batch(self, batch_number):
+        """Return the number of pipelines in the nth batch.
+
+        Args:
+            batch_number (int): which batch to calculate the number of pipelines for.
+
+        Returns:
+            int: number of pipelines in the given batch.
+        """
         if self.ensembling:
             if batch_number == 0 or batch_number == 1:
                 return len(self._naive_estimators())

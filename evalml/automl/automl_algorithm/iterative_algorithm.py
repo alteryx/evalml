@@ -327,6 +327,14 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         return next_batch
 
     def num_pipelines_per_batch(self, batch_number):
+        """Return the number of pipelines in the nth batch.
+
+        Args:
+            batch_number (int): which batch to calculate the number of pipelines for.
+
+        Returns:
+            int: number of pipelines in the given batch.
+        """
         if batch_number == 0:
             return len(self.allowed_pipelines)
         return self.pipelines_per_batch
