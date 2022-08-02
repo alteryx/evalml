@@ -218,7 +218,7 @@ def test_data_checks_impute_cols(problem_type):
         expected_pipeline_class = BinaryClassificationPipeline
         y_expected = ww.init_series(
             pd.Series([0, 1, 1, 1, 1]),
-            logical_type="IntegerNullable",
+            logical_type="Integer",
         )
 
     elif problem_type == "multiclass":
@@ -227,7 +227,7 @@ def test_data_checks_impute_cols(problem_type):
         expected_pipeline_class = MulticlassClassificationPipeline
         y_expected = ww.init_series(
             pd.Series([0, 1, 2, 2, 2]),
-            logical_type="IntegerNullable",
+            logical_type="Integer",
         )
 
     else:
