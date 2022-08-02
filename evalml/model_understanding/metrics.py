@@ -28,7 +28,10 @@ def _convert_ww_series_to_np_array(ww_series):
     if isinstance(ww_series.ww.logical_type, BooleanNullable):
         np_series = np_series.astype("bool")
     if isinstance(ww_series.ww.logical_type, IntegerNullable):
-        np_series = np_series.astype("int64")
+        try:
+            np_series = np_series.astype("int64")
+        except TypeError:
+            np_series = ww_series.astype(float).to_numpy()
 
     return np_series
 
