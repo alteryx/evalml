@@ -2498,7 +2498,8 @@ def test_early_stopping(
             "pipeline_class"
         ] = logistic_regression_binary_pipeline.__class__
     automl._results = mock_results
-    assert not automl._should_continue()
+    automl.progress._start_time = 0
+    assert not automl.progress.should_continue(automl._results)
     out = caplog.text
     assert (
         "2 iterations without improvement. Stopping search early." in out
