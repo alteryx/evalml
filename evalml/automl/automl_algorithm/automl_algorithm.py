@@ -253,7 +253,7 @@ class AutoMLAlgorithm(ABC):
             estimators_to_drop.extend(["Elastic Net Classifier", "XGBoost Classifier"])
         if y_unique > 150:
             estimators_to_drop.append("CatBoost Classifier")
-        print(estimators_to_drop)
+
         dropped_estimators = [e for e in estimators if e.name in estimators_to_drop]
         if len(dropped_estimators):
             logger.info(

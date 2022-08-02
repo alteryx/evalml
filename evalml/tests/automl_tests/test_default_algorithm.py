@@ -958,7 +958,7 @@ def test_default_algorithm_num_pipelines_per_batch(
         num_long_explore_pipelines=10,
         num_long_pipelines_per_batch=5,
     )
-    for i in range(6):
+    for i in range(7):
         batch = algo.next_batch()
         add_result(algo, batch)
         assert len(batch) == algo.num_pipelines_per_batch(i)

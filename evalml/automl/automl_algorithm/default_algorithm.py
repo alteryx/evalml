@@ -165,6 +165,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             elif batch_number % 2 != 0:
                 return 1
             else:
+                print("hello")
                 return self.num_long_pipelines_per_batch * self.top_n
         else:
             if batch_number == 0 or batch_number == 1:
