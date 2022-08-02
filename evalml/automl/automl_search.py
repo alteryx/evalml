@@ -12,11 +12,11 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 import cloudpickle
 import numpy as np
 import pandas as pd
-from dask import distributed as dd
 from plotly import io as pio
 from sklearn.model_selection import BaseCrossValidator
 from skopt.space import Categorical
 
+from dask import distributed as dd
 
 from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
