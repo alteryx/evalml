@@ -61,7 +61,14 @@ from evalml.pipelines import (
     RegressionPipeline,
     StackedEnsembleClassifier,
 )
-from evalml.pipelines.components import DecisionTreeClassifier
+from evalml.pipelines.components import (
+    DateTimeFeaturizer,
+    DecisionTreeClassifier,
+    EmailFeaturizer,
+    NaturalLanguageFeaturizer,
+    TimeSeriesFeaturizer,
+    URLFeaturizer,
+)
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_stacked_ensemble_pipeline,
@@ -5046,6 +5053,101 @@ def test_default_algorithm_uses_n_jobs(X_y_binary, AutoMLTestEnv):
             )
 
     assert n_checked and n_feature_selector_checked
+
+
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
+@pytest.mark.parametrize("automl_algorithm", ["default", "iterative"])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+def test_exclude_featurizers(
+    automl_algorithm,
+    problem_type,
+    input_type,
+    get_test_data_from_configuration,
+    AutoMLTestEnv,
+):
+    parameters = {}
+    if is_time_series(problem_type):
+        parameters = {
+            "time_index": "dates",
+            "gap": 1,
+            "max_delay": 1,
+            "forecast_horizon": 1,
+        }
+
+    X, y = get_test_data_from_configuration(
+        input_type, problem_type, column_names=["dates", "text", "email", "url"]
+    )
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type=problem_type,
+        problem_configuration=parameters,
+        automl_algorithm=automl_algorithm,
+        exclude_featurizers=[
+            "DatetimeFeaturizer",
+            "EmailFeaturizer",
+            "URLFeaturizer",
+            "NaturalLanguageFeaturizer",
+            "TimeSeriesFeaturizer",
+        ],
+    )
+
+    env = AutoMLTestEnv(problem_type)
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+
+    pipelines = [
+        automl.get_pipeline(i) for i in range(len(automl.results["pipeline_results"]))
+    ]
+
+    # A check to make sure we actually retrieve constructed pipelines from the algo.
+    assert len(pipelines) > 0
+
+    assert not any(
+        [
+            DateTimeFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )
+    assert not any(
+        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+    )
+    assert not any(
+        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+    )
+    assert not any(
+        [
+            NaturalLanguageFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )
+    assert not any(
+        [
+            TimeSeriesFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )
+
+
+def test_exclude_featurizers_error(X_y_binary):
+    X, y = X_y_binary
+    match_text = (
+        "Invalid value provided for exclude_featurizers. Must be one of: "
+        "DatetimeFeaturizer, EmailFeaturizer, URLFeaturizer, NaturalLanguageFeaturizer, TimeSeriesFeaturizer"
+    )
+    with pytest.raises(
+        ValueError,
+        match=match_text,
+    ):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            exclude_featurizers=[
+                "InvalidNameFeaturizer",
+            ],
+        )
 
 
 def test_init_holdout_set(X_y_binary, caplog):

@@ -10,15 +10,20 @@ from evalml.automl.automl_algorithm import DefaultAlgorithm
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     ARIMARegressor,
+    DateTimeFeaturizer,
     ElasticNetClassifier,
     ElasticNetRegressor,
+    EmailFeaturizer,
     LogisticRegressionClassifier,
+    NaturalLanguageFeaturizer,
     ProphetRegressor,
     RandomForestClassifier,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
+    TimeSeriesFeaturizer,
+    URLFeaturizer,
 )
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, is_time_series
 
 
 def test_default_algorithm_init(X_y_binary):
@@ -962,3 +967,71 @@ def test_default_algorithm_num_pipelines_per_batch(
         batch = algo.next_batch()
         add_result(algo, batch)
         assert len(batch) == algo.num_pipelines_per_batch(i)
+
+        
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+def test_exclude_featurizers_default_algorithm(
+    problem_type,
+    input_type,
+    get_test_data_from_configuration,
+):
+    parameters = {}
+    if is_time_series(problem_type):
+        parameters = {
+            "time_index": "dates",
+            "gap": 1,
+            "max_delay": 1,
+            "forecast_horizon": 3,
+        }
+
+    X, y = get_test_data_from_configuration(
+        input_type, problem_type, column_names=["dates", "text", "email", "url"]
+    )
+
+    algo = DefaultAlgorithm(
+        X,
+        y,
+        problem_type,
+        sampler_name=None,
+        search_parameters={"pipeline": parameters},
+        exclude_featurizers=[
+            "DatetimeFeaturizer",
+            "EmailFeaturizer",
+            "URLFeaturizer",
+            "NaturalLanguageFeaturizer",
+            "TimeSeriesFeaturizer",
+        ],
+    )
+
+    pipelines = []
+    for _ in range(4):
+        pipelines.extend([pl for pl in algo.next_batch()])
+
+    # A check to make sure we actually retrieve constructed pipelines from the algo.
+    assert len(pipelines) > 0
+
+    assert not any(
+        [
+            DateTimeFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )
+    assert not any(
+        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+    )
+    assert not any(
+        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+    )
+    assert not any(
+        [
+            NaturalLanguageFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )
+    assert not any(
+        [
+            TimeSeriesFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )

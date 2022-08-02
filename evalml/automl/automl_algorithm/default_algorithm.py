@@ -66,6 +66,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass targets and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
         features (list)[FeatureBase]: List of features to run DFS on in AutoML pipelines. Defaults to None. Features will only be computed if the columns used by the feature exist in the input and if the feature has not been computed yet.
         verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
+        exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipelines built by DefaultAlgorithm.
+            Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
     """
 
     def __init__(
@@ -86,6 +88,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         allow_long_running_models=False,
         features=None,
         verbose=False,
+        exclude_featurizers=None,
     ):
         super().__init__(
             allowed_pipelines=[],
@@ -114,6 +117,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self._X_without_cat_cols = None
         self.features = features
         self.ensembling = ensembling
+        self.exclude_featurizers = exclude_featurizers or []
 
         # TODO remove on resolution of 3186
         if is_time_series(self.problem_type) and self.ensembling:
@@ -242,6 +246,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     None,
                 ),
                 features=self.features,
+                exclude_featurizers=self.exclude_featurizers,
             )
             for estimator in estimators
         ]
@@ -384,6 +389,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                         None,
                     ),
                     features=self.features,
+                    exclude_featurizers=self.exclude_featurizers,
                 )
                 for estimator in estimators
             ]
@@ -466,14 +472,20 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 self._selected_cols,
                 self._selected_cat_cols,
             )
-        if list(self.X.ww.select("URL", return_schema=True).columns):
+        if (
+            list(self.X.ww.select("URL", return_schema=True).columns)
+            and "URLFeaturizer" not in self.exclude_featurizers
+        ):
             self._get_feature_provenance_and_remove_engineered_features(
                 pipeline,
                 URLFeaturizer.name,
                 self._selected_cat_cols,
                 self._selected_cat_cols,
             )
-        if list(self.X.ww.select("EmailAddress", return_schema=True).columns):
+        if (
+            list(self.X.ww.select("EmailAddress", return_schema=True).columns)
+            and "EmailFeaturizer" not in self.exclude_featurizers
+        ):
             self._get_feature_provenance_and_remove_engineered_features(
                 pipeline,
                 EmailFeaturizer.name,
@@ -572,6 +584,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 parameters=categorical_pipeline_parameters,
                 extra_components_before=[SelectColumns],
                 use_estimator=False,
+                exclude_featurizers=self.exclude_featurizers,
             )
 
             numeric_pipeline = make_pipeline(
@@ -584,6 +597,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 extra_components_before=[SelectByType],
                 extra_components_after=[SelectColumns],
                 use_estimator=False,
+                exclude_featurizers=self.exclude_featurizers,
             )
             prior_components = (
                 {"DFS Transformer": ["DFS Transformer", "X", "y"]}
@@ -617,6 +631,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 parameters=categorical_pipeline_parameters,
                 extra_components_before=[SelectColumns],
                 features=self.features,
+                exclude_featurizers=self.exclude_featurizers,
             )
             return categorical_pipeline
         else:
@@ -632,5 +647,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 parameters=numeric_pipeline_parameters,
                 extra_components_after=[SelectColumns],
                 features=self.features,
+                exclude_featurizers=self.exclude_featurizers,
             )
             return numeric_pipeline

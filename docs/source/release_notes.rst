@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Add ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631``
         * Added ``Progress`` abstraction to handle stopping criteria logic and return search progress information :pr:`3632`
     * Fixes
     * Changes

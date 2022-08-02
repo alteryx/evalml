@@ -425,6 +425,8 @@ class AutoMLSearch:
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
 
         timing (boolean): Whether or not to write pipeline search times to the logger. Defaults to False.
+        exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipelines built by search.
+            Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
 
         holdout_set_size (float): The size of the holdout set that AutoML search will take for datasets larger than 500 rows. If set to 0, holdout set will not be taken regardless of number of rows. Must be between 0 and 1, exclusive. Defaults to 0.1.
     """
@@ -472,6 +474,7 @@ class AutoMLSearch:
         engine="sequential",
         verbose=False,
         timing=False,
+        exclude_featurizers=None,
         holdout_set_size=0.1,
     ):
         self.verbose = verbose
@@ -738,6 +741,19 @@ class AutoMLSearch:
         self.sampler_balanced_ratio = sampler_balanced_ratio
         self._sampler_name = None
 
+        featurizer_names = [
+            "DatetimeFeaturizer",
+            "EmailFeaturizer",
+            "URLFeaturizer",
+            "NaturalLanguageFeaturizer",
+            "TimeSeriesFeaturizer",
+        ]
+        if exclude_featurizers and (set(exclude_featurizers) - set(featurizer_names)):
+            raise ValueError(
+                f"Invalid value provided for exclude_featurizers. Must be one of: {', '.join(featurizer_names)}"
+            )
+        self.exclude_featurizers = exclude_featurizers or []
+
         if is_classification(self.problem_type):
             self._sampler_name = self.sampler_method
             if self.sampler_method == "auto":
@@ -807,6 +823,7 @@ class AutoMLSearch:
                 allow_long_running_models=allow_long_running_models,
                 features=features,
                 verbose=self.verbose,
+                exclude_featurizers=self.exclude_featurizers,
             )
         elif automl_algorithm == "default":
             self.automl_algorithm = DefaultAlgorithm(
@@ -823,6 +840,7 @@ class AutoMLSearch:
                 ensembling=self.ensembling,
                 verbose=self.verbose,
                 n_jobs=self.n_jobs,
+                exclude_featurizers=self.exclude_featurizers,
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")
@@ -1220,11 +1238,15 @@ class AutoMLSearch:
             gap = self.problem_configuration["gap"]
             forecast_horizon = self.problem_configuration["forecast_horizon"]
             time_index = self.problem_configuration["time_index"]
+            exclude_timeseries_featurizer = (
+                "TimeSeriesFeaturizer" in self.exclude_featurizers
+            )
             baseline = make_timeseries_baseline_pipeline(
                 self.problem_type,
                 gap,
                 forecast_horizon,
                 time_index,
+                exclude_timeseries_featurizer,
             )
         return baseline
 

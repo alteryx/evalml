@@ -14,9 +14,16 @@ from evalml.pipelines import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )
+from evalml.pipelines.components import (
+    DateTimeFeaturizer,
+    EmailFeaturizer,
+    NaturalLanguageFeaturizer,
+    TimeSeriesFeaturizer,
+    URLFeaturizer,
+)
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, is_time_series
 
 
 @pytest.fixture
@@ -1063,3 +1070,69 @@ def test_iterative_algorithm_num_pipelines_per_batch(X_y_binary):
             assert algo.num_pipelines_per_batch(i) == len(algo.allowed_pipelines)
         else:
             assert algo.num_pipelines_per_batch(i) == algo.pipelines_per_batch
+
+            
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+def test_exclude_featurizers_iterative_algorithm(
+    problem_type,
+    input_type,
+    get_test_data_from_configuration,
+):
+    parameters = {}
+    if is_time_series(problem_type):
+        parameters = {
+            "time_index": "dates",
+            "gap": 1,
+            "max_delay": 1,
+            "forecast_horizon": 3,
+        }
+
+    X, y = get_test_data_from_configuration(
+        input_type, problem_type, column_names=["dates", "text", "email", "url"]
+    )
+
+    algo = IterativeAlgorithm(
+        X,
+        y,
+        problem_type,
+        sampler_name=None,
+        search_parameters={"pipeline": parameters},
+        exclude_featurizers=[
+            "DatetimeFeaturizer",
+            "EmailFeaturizer",
+            "URLFeaturizer",
+            "NaturalLanguageFeaturizer",
+            "TimeSeriesFeaturizer",
+        ],
+    )
+
+    pipelines = [pl for pl in algo.allowed_pipelines]
+
+    # A check to make sure we actually retrieve constructed pipelines from the algo.
+    assert len(pipelines) > 0
+
+    assert not any(
+        [
+            DateTimeFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )
+    assert not any(
+        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+    )
+    assert not any(
+        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+    )
+    assert not any(
+        [
+            NaturalLanguageFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )
+    assert not any(
+        [
+            TimeSeriesFeaturizer.name in pl.component_graph.compute_order
+            for pl in pipelines
+        ]
+    )
