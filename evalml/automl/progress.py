@@ -57,7 +57,10 @@ class Progress:
 
     def should_continue(self, results, interrupted=False, mid_batch=False):
         """Given AutoML Results, return whether or not the search should continue.
-
+        Args:
+            results (dict): AutoMLSearch results.
+            interrupted (bool): whether AutoMLSearch was given an keyboard interrupt.
+            mid_batch (bool): whether this method was called while in the middle of a batch or not.
         Returns:
             bool: True if search should continue, False otherwise.
         """
