@@ -118,11 +118,6 @@ python -c "import evalml; print(evalml.__version__)"
 
 Per the instructions [here](https://conda-forge.org/docs/maintainer/updating_pkgs.html#updating-the-maintainer-list):
 1. Ask an existing maintainer to create an issue on the [repo](https://github.com/conda-forge/evalml-core-feedstock).
-  a. Select *Bot commands* and put the following title (change `username`):
-
-  ```text
-  @conda-forge-admin, please add user @username
-  ```
-
+    - Select *Bot commands* and put the following title (change `username`): `@conda-forge-admin, please add user @username`
 2. A PR will be auto-created on the repo, and will need to be merged by an existing maintainer.
 3. The new user will need to **check their email for an invite link to click**, which should be https://github.com/conda-forge
