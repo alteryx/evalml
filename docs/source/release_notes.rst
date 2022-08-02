@@ -6,6 +6,8 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Add instructions to add new users to evalml-core-feedstock :pr:`3636`
+
     * Testing Changes
 
 .. warning::
