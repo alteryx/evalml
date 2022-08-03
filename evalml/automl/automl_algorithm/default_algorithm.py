@@ -155,33 +155,18 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             if batch_number == 0 or batch_number == 1:
                 return len(self._naive_estimators())
             elif batch_number == 2:
-                return len(
-                    [
-                        estimator
-                        for estimator in get_estimators(self.problem_type)
-                        if estimator not in self._naive_estimators()
-                    ],
-                )
-            elif batch_number == 3:
-                return 1
+                return len(self._non_naive_estimators())
             elif batch_number == 4:
                 return self.num_long_explore_pipelines * self.top_n
             elif batch_number % 2 != 0:
                 return 1
             else:
-                print("hello")
                 return self.num_long_pipelines_per_batch * self.top_n
         else:
             if batch_number == 0 or batch_number == 1:
                 return len(self._naive_estimators())
             elif batch_number == 2:
-                return len(
-                    [
-                        estimator
-                        for estimator in get_estimators(self.problem_type)
-                        if estimator not in self._naive_estimators()
-                    ],
-                )
+                return len(self._non_naive_estimators())
             elif batch_number == 3:
                 return self.num_long_explore_pipelines * self.top_n
             else:
@@ -202,6 +187,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             handle_component_class(estimator) for estimator in naive_estimators
         ]
         return estimators
+
+    def _non_naive_estimators(self):
+        return list(
+            set(get_estimators(self.problem_type)) - set(self._naive_estimators()),
+        )
 
     def _init_pipelines_with_starter_params(self, pipelines):
         next_batch = []
@@ -313,11 +303,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self._separate_hyperparameters_from_parameters()
 
     def _create_fast_final(self):
-        estimators = [
-            estimator
-            for estimator in get_estimators(self.problem_type)
-            if estimator not in self._naive_estimators()
-        ]
+        estimators = self._non_naive_estimators()
         estimators = self._filter_estimators(
             estimators,
             self.problem_type,

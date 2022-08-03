@@ -750,7 +750,7 @@ class AutoMLSearch:
         ]
         if exclude_featurizers and (set(exclude_featurizers) - set(featurizer_names)):
             raise ValueError(
-                f"Invalid value provided for exclude_featurizers. Must be one of: {', '.join(featurizer_names)}"
+                f"Invalid value provided for exclude_featurizers. Must be one of: {', '.join(featurizer_names)}",
             )
         self.exclude_featurizers = exclude_featurizers or []
 
@@ -1042,7 +1042,10 @@ class AutoMLSearch:
         new_pipeline_ids = []
         loop_interrupted = False
 
-        while self.progress.should_continue(self._results, self._interrupted):
+        while self.progress.should_continue(
+            results=self._results,
+            interrupted=self._interrupted,
+        ):
             pipeline_times = {}
             start_batch_time = time.time()
             computations = []
@@ -1054,9 +1057,9 @@ class AutoMLSearch:
                 break
             try:
                 if self.progress.should_continue(
-                    self._results,
-                    self._interrupted,
-                    True,
+                    results=self._results,
+                    interrupted=self._interrupted,
+                    mid_batch=True,
                 ):
                     new_pipeline_ids = []
                     log_title(
@@ -1078,9 +1081,9 @@ class AutoMLSearch:
                     computations_left_to_process = len(computations)
                 while (
                     self.progress.should_continue(
-                        self._results,
-                        self._interrupted,
-                        True,
+                        results=self._results,
+                        interrupted=self._interrupted,
+                        mid_batch=True,
                     )
                     and computations_left_to_process > 0
                 ):

@@ -10,20 +10,13 @@ class Progress:
 
     Args:
         max_time (int): Maximum time to search for pipelines.
-
         max_iterations (int): Maximum number of iterations to search.
-
         max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
             max_iterations have precedence over stopping the search.
-
         patience (int): Number of iterations without improvement to stop search early.
-
         tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
-
         automl_algorithm (str): The automl algorithm to use. Used to calculate iterations if max_batches is selected as stopping criteria.
-
         objective (str, ObjectiveBase): The objective used in search.
-
         verbose (boolean): Whether or not to log out stopping information.
     """
 
@@ -60,8 +53,8 @@ class Progress:
 
         Args:
             results (dict): AutoMLSearch results.
-            interrupted (bool): whether AutoMLSearch was given an keyboard interrupt.
-            mid_batch (bool): whether this method was called while in the middle of a batch or not.
+            interrupted (bool): whether AutoMLSearch was given an keyboard interrupt. Defaults to False.
+            mid_batch (bool): whether this method was called while in the middle of a batch or not. Defaults to False.
 
         Returns:
             bool: True if search should continue, False otherwise.
@@ -117,14 +110,6 @@ class Progress:
                 return False
         return True
 
-    def _build_progress_dict(self, stopping_criteria, current_state, end_state, unit):
-        progress_dict = {}
-        progress_dict["stopping_criteria"] = stopping_criteria
-        progress_dict["current_state"] = current_state
-        progress_dict["end_state"] = end_state
-        progress_dict["unit"] = unit
-        return progress_dict
-
     def return_progress(self):
         """Return information about current and end state of each stopping criteria in order of priority.
 
@@ -134,12 +119,12 @@ class Progress:
         progress = []
         if self.max_time:
             progress.append(
-                self._build_progress_dict(
-                    "max_time",
-                    self.current_time - self._start_time,
-                    self.max_time,
-                    "seconds",
-                ),
+                {
+                    "stopping_criteria": "max_time",
+                    "current_state": self.current_time - self._start_time,
+                    "end_state": self.max_time,
+                    "unit": "seconds",
+                },
             )
         if self.max_iterations or self.max_batches:
             max_iterations = (
@@ -153,20 +138,20 @@ class Progress:
                 )
             )
             progress.append(
-                self._build_progress_dict(
-                    "max_iterations",
-                    self.current_iterations,
-                    max_iterations,
-                    "iterations",
-                ),
+                {
+                    "stopping_criteria": "max_iteratiobs",
+                    "current_state": self.current_iterations,
+                    "end_state": max_iterations,
+                    "unit": "iterations",
+                },
             )
         if self.max_batches:
             progress.append(
-                self._build_progress_dict(
-                    "max_batches",
-                    self.current_batches,
-                    self.max_batches,
-                    "batches",
-                ),
+                {
+                    "stopping_criteria": "max_batches",
+                    "current_state": self.current_batches,
+                    "end_state": self.max_batches,
+                    "unit": "batches",
+                },
             )
         return progress
