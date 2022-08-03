@@ -396,7 +396,7 @@ def test_imputer_bool_dtype_object(data_type, make_data_type):
     y = pd.Series([1, 0, 0, 1, 0] * 4)
     X_expected_arr = pd.DataFrame(
         [True, True, False, False, True] * 4,
-        dtype="boolean",
+        dtype="bool",
     )
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
@@ -487,7 +487,7 @@ def test_imputer_multitype_with_one_bool(data_type, make_data_type):
         {
             "bool with nan": pd.Series(
                 [True, True, False, False, False] * 4,
-                dtype="boolean",
+                dtype="bool",
             ),
             "bool no nan": pd.Series(
                 [False, False, False, False, True] * 4,

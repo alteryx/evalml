@@ -763,12 +763,15 @@ def text_df():
 
 @pytest.fixture
 def ts_data():
-    X, y = pd.DataFrame(
-        {
-            "features": range(101, 132),
-            "date": pd.date_range("2020-10-01", "2020-10-31"),
-        },
-    ), pd.Series(range(1, 32))
+    X, y = (
+        pd.DataFrame(
+            {
+                "features": range(101, 132),
+                "date": pd.date_range("2020-10-01", "2020-10-31"),
+            },
+        ),
+        pd.Series(range(1, 32)),
+    )
     y.index = pd.date_range("2020-10-01", "2020-10-31")
     X.index = pd.date_range("2020-10-01", "2020-10-31")
     return X, y
