@@ -151,6 +151,11 @@ class TimeSeriesImputer(Transformer):
 
         X_not_all_null = X.ww.drop(self._all_null_cols)
         X_schema = X_not_all_null.ww.schema
+        X_schema = X_schema.get_subset_schema(
+            subset_cols=X_schema._filter_cols(
+                exclude=["IntegerNullable", "BooleanNullable"]
+            )
+        )
 
         if self._forwards_cols is not None:
             X_forward = X.ww[self._forwards_cols]
@@ -172,6 +177,7 @@ class TimeSeriesImputer(Transformer):
             ).interpolate()  # Cast to float because Int64 not handled
             imputed.bfill(inplace=True)  # Fill in the first value, if missing
             X_not_all_null[X_interpolate.columns] = imputed
+        X_not_all_null.ww.init(schema=X_schema)
 
         y_imputed = pd.Series(y)
         if y is not None and len(y) > 0:
