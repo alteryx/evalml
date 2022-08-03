@@ -1,7 +1,13 @@
 """A transformer that standardizes input features by removing the mean and scaling to unit variance."""
 import pandas as pd
 from sklearn.preprocessing import StandardScaler as SkScaler
-from woodwork.logical_types import Boolean, Categorical, Integer
+from woodwork.logical_types import (
+    Boolean,
+    BooleanNullable,
+    Categorical,
+    Integer,
+    IntegerNullable,
+)
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
@@ -45,7 +51,7 @@ class StandardScaler(Transformer):
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
 
         schema = X.ww.select(
-            exclude=[Integer, Categorical, Boolean],
+            exclude=[Integer, IntegerNullable, Boolean, BooleanNullable, Categorical],
             return_schema=True,
         )
         X_t_df.ww.init(schema=schema)
