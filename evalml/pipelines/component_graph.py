@@ -363,6 +363,27 @@ class ComponentGraph:
             return output_x, output_y
         return output_x
 
+    def fit_transform(self, X, y):
+        """Fit and transform all components in the component graph, if all components are Transformers.
+
+        Args:
+            X (pd.DataFrame): Input features of shape [n_samples, n_features].
+            y (pd.Series): The target data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed output.
+
+        Raises:
+            ValueError: If final component is an Estimator.
+        """
+        final_component_instance = self.get_last_component()
+        if isinstance(final_component_instance, Estimator):
+            raise ValueError(
+                "Cannot call fit_transform() on a component graph because the final component is an Estimator. Use fit_and_transform_all_but_final instead.",
+            )
+        self.fit(X, y)
+        return self.transform(X, y)
+    
     def predict(self, X):
         """Make predictions using selected features.
 
