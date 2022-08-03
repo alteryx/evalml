@@ -51,7 +51,7 @@ class StandardScaler(Transformer):
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
 
         schema = X.ww.select(
-            exclude=[Integer, IntegerNullable, Categorical, Boolean, BooleanNullable],
+            exclude=[Integer, IntegerNullable, Boolean, BooleanNullable, Categorical],
             return_schema=True,
         )
         X_t_df.ww.init(schema=schema)
