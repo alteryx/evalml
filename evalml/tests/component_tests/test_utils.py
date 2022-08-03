@@ -95,7 +95,7 @@ all_requirements_set = set(
 not_supported_in_conda = set(
     [
         "Prophet Regressor",
-    ]
+    ],
 )
 
 # Keeping here in case we need to add to it when a new component is added

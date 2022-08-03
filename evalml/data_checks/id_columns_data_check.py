@@ -43,6 +43,7 @@ class IDColumnsDataCheck(DataCheck):
             Columns that end in "_id" and are completely unique are likely to be ID columns.
 
             >>> df = pd.DataFrame({
+            ...     "profits": [25, 15, 15, 31, 19],
             ...     "customer_id": [123, 124, 125, 126, 127],
             ...     "Sales": [10, 42, 31, 51, 61]
             ... })
@@ -88,10 +89,38 @@ class IDColumnsDataCheck(DataCheck):
             ...     }
             ... ]
 
+            If the first column of the dataframe is identified as an ID column it is most likely the primary key.
+
+            >>> df = pd.DataFrame({
+            ...     "sales_id": [0, 1, 2, 3, 4],
+            ...     "customer_id": [123, 124, 125, 126, 127],
+            ...     "Sales": [10, 42, 31, 51, 61]
+            ... })
+            ...
+            >>> id_col_check = IDColumnsDataCheck()
+            >>> assert id_col_check.validate(df) == [
+            ...     {
+            ...         "message": "The first column 'sales_id' is most likely to be the ID column. Columns 'customer_id' are also 100.0% or more likely to be an ID column",
+            ...         "data_check_name": "IDColumnsDataCheck",
+            ...         "level": "warning",
+            ...         "code": "HAS_ID_FIRST_COLUMN",
+            ...         "details": {'columns': ["sales_id", "customer_id"], 'rows': None},
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "SET_FIRST_COL_ID",
+            ...                 "data_check_name": "IDColumnsDataCheck",
+            ...                 "parameters": {},
+            ...                 "metadata": {'columns': ["sales_id", "customer_id"], 'rows': None}
+            ...             }
+            ...         ]
+            ...    }
+            ... ]
+
             Despite being all unique, "Country_Rank" will not be identified as an ID column as id_threshold is set to 1.0
             by default and its name doesn't indicate that it's an ID.
 
             >>> df = pd.DataFrame({
+            ...    "humidity": ["high", "very high", "low", "low", "high"],
             ...    "Country_Rank": [1, 2, 3, 4, 5],
             ...    "Sales": ["very high", "high", "high", "medium", "very low"]
             ... })
@@ -157,27 +186,52 @@ class IDColumnsDataCheck(DataCheck):
         id_cols_above_threshold = {
             key: value for key, value in id_cols.items() if value >= self.id_threshold
         }
+
+        first_col_id = False
+
+        if col_names and col_names[0] in id_cols_above_threshold:
+            first_col_id = True
+            del id_cols_above_threshold[col_names[0]]
+
         if id_cols_above_threshold:
-            warning_msg = "Columns {} are {}% or more likely to be an ID column"
+            warning_msg = ""
+            message_code = None
+            action_code = None
+            if first_col_id:
+                warning_msg = "The first column '{}' is most likely to be the ID column. Columns {} are also {}% or more likely to be an ID column"
+                warning_msg = warning_msg.format(
+                    col_names[0],
+                    (", ").join(
+                        ["'{}'".format(str(col)) for col in id_cols_above_threshold],
+                    ),
+                    self.id_threshold * 100,
+                )
+                message_code = DataCheckMessageCode.HAS_ID_FIRST_COLUMN
+                action_code = DataCheckActionCode.SET_FIRST_COL_ID
+                details = {"columns": [col_names[0]] + (list(id_cols_above_threshold))}
+            else:
+                warning_msg = "Columns {} are {}% or more likely to be an ID column"
+                warning_msg = warning_msg.format(
+                    (", ").join(
+                        ["'{}'".format(str(col)) for col in id_cols_above_threshold],
+                    ),
+                    self.id_threshold * 100,
+                )
+                message_code = DataCheckMessageCode.HAS_ID_COLUMN
+                action_code = DataCheckActionCode.DROP_COL
+                details = {"columns": list(id_cols_above_threshold)}
+
             messages.append(
                 DataCheckWarning(
-                    message=warning_msg.format(
-                        (", ").join(
-                            [
-                                "'{}'".format(str(col))
-                                for col in id_cols_above_threshold
-                            ],
-                        ),
-                        self.id_threshold * 100,
-                    ),
+                    message=warning_msg,
                     data_check_name=self.name,
-                    message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                    details={"columns": list(id_cols_above_threshold)},
+                    message_code=message_code,
+                    details=details,
                     action_options=[
                         DataCheckActionOption(
-                            DataCheckActionCode.DROP_COL,
+                            action_code,
                             data_check_name=self.name,
-                            metadata={"columns": list(id_cols_above_threshold)},
+                            metadata=details,
                         ),
                     ],
                 ).to_dict(),

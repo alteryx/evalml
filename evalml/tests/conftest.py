@@ -527,6 +527,17 @@ def uneven_scattered():
 
 
 @pytest.fixture
+def uneven_work_week():
+    dates_1 = pd.date_range("2015-01-12", periods=30, freq="B")
+    dates_2 = pd.date_range("2015-02-23", periods=3, freq="D")
+    dates_3 = pd.DatetimeIndex(["2015-02-27"])
+    dates_4 = pd.date_range("2015-03-02", periods=40, freq="B")
+
+    dates = dates_1.append(dates_2).append(dates_3).append(dates_4)
+    return dates
+
+
+@pytest.fixture
 def uneven_continuous():
     dates_1 = pd.date_range("2014-01-01", periods=5, freq="2D")
     dates_2 = pd.DatetimeIndex(["2014-01-10", "2014-01-12", "2014-01-14"])

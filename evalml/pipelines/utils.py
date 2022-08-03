@@ -109,11 +109,17 @@ def _get_drop_index_unknown(X, y, problem_type, estimator_class, sampler_name=No
     return component
 
 
-def _get_url_email(X, y, problem_type, estimator_class, sampler_name=None):
+def _get_email(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
     email_columns = list(X.ww.select("EmailAddress", return_schema=True).columns)
     if len(email_columns) > 0:
         components.append(EmailFeaturizer)
+
+    return components
+
+
+def _get_url(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
 
     url_columns = list(X.ww.select("URL", return_schema=True).columns)
     if len(url_columns) > 0:
@@ -235,6 +241,7 @@ def _get_preprocessing_components(
     problem_type,
     estimator_class,
     sampler_name=None,
+    exclude_featurizers=None,
 ):
     """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
@@ -244,6 +251,8 @@ def _get_preprocessing_components(
         problem_type (ProblemTypes or str): Problem type.
         estimator_class (class): A class which subclasses Estimator estimator for pipeline.
         sampler_name (str): The name of the sampler component to add to the pipeline. Defaults to None.
+        exclude_featurizers (list[str]): A list of featurizer components to exclude from the returned components.
+            Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
 
     Returns:
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
@@ -254,7 +263,8 @@ def _get_preprocessing_components(
             _get_drop_all_null,
             _get_replace_null,
             _get_drop_index_unknown,
-            _get_url_email,
+            _get_url,
+            _get_email,
             _get_natural_language,
             _get_imputer,
             _get_time_series_featurizer,
@@ -270,7 +280,8 @@ def _get_preprocessing_components(
             _get_drop_all_null,
             _get_replace_null,
             _get_drop_index_unknown,
-            _get_url_email,
+            _get_url,
+            _get_email,
             _get_datetime,
             _get_natural_language,
             _get_imputer,
@@ -278,9 +289,25 @@ def _get_preprocessing_components(
             _get_sampler,
             _get_standard_scaler,
         ]
+
+    functions_to_exclude = []
+    if exclude_featurizers and "DatetimeFeaturizer" in exclude_featurizers:
+        functions_to_exclude.append(_get_datetime)
+    if exclude_featurizers and "EmailFeaturizer" in exclude_featurizers:
+        functions_to_exclude.append(_get_email)
+    if exclude_featurizers and "URLFeaturizer" in exclude_featurizers:
+        functions_to_exclude.append(_get_url)
+    if exclude_featurizers and "NaturalLanguageFeaturizer" in exclude_featurizers:
+        functions_to_exclude.append(_get_natural_language)
+    if exclude_featurizers and "TimeSeriesFeaturizer" in exclude_featurizers:
+        functions_to_exclude.append(_get_time_series_featurizer)
+
     components = []
     for function in components_functions:
-        components.extend(function(X, y, problem_type, estimator_class, sampler_name))
+        if function not in functions_to_exclude:
+            components.extend(
+                function(X, y, problem_type, estimator_class, sampler_name)
+            )
 
     return components
 
@@ -310,6 +337,7 @@ def _make_pipeline_time_series(
     parameters=None,
     sampler_name=None,
     known_in_advance=None,
+    exclude_featurizers=None,
 ):
     """Make a pipeline for time series problems.
 
@@ -318,15 +346,17 @@ def _make_pipeline_time_series(
     The known_in_advance features are treated like a non-time-series features since they don't change with time.
 
     Args:
-         X (pd.DataFrame): The input data of shape [n_samples, n_features].
-         y (pd.Series): The target data of length [n_samples].
-         estimator (Estimator): Estimator for pipeline.
-         problem_type (ProblemTypes or str): Problem type for pipeline to generate.
-         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-             An empty dictionary or None implies using all default values for component parameters.
-         sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
-             Defaults to None
-         known_in_advance (list[str], None): List of features that are known in advance.
+        X (pd.DataFrame): The input data of shape [n_samples, n_features].
+        y (pd.Series): The target data of length [n_samples].
+        estimator (Estimator): Estimator for pipeline.
+        problem_type (ProblemTypes or str): Problem type for pipeline to generate.
+        parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+            An empty dictionary or None implies using all default values for component parameters.
+        sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
+            Defaults to None
+        known_in_advance (list[str], None): List of features that are known in advance.
+        exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipeline.
+           Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
 
     Returns:
         PipelineBase: TimeSeriesPipeline''
@@ -345,6 +375,7 @@ def _make_pipeline_time_series(
         problem_type,
         estimator,
         sampler_name,
+        exclude_featurizers,
     )
 
     if known_in_advance:
@@ -376,6 +407,7 @@ def _make_pipeline_time_series(
             ProblemTypes.REGRESSION,
             estimator,
             sampler_name,
+            exclude_featurizers,
         )
         kina_component_graph = PipelineBase._make_component_dict_from_component_list(
             kina_preprocessing,
@@ -422,23 +454,26 @@ def make_pipeline(
     use_estimator=True,
     known_in_advance=None,
     features=False,
+    exclude_featurizers=None,
 ):
     """Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
     Args:
-         X (pd.DataFrame): The input data of shape [n_samples, n_features].
-         y (pd.Series): The target data of length [n_samples].
-         estimator (Estimator): Estimator for pipeline.
-         problem_type (ProblemTypes or str): Problem type for pipeline to generate.
-         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-             An empty dictionary or None implies using all default values for component parameters.
-         sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
-             Defaults to None
-         extra_components_before (list[ComponentBase]): List of extra components to be added before preprocessing components. Defaults to None.
-         extra_components_after (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
-         use_estimator (bool): Whether to add the provided estimator to the pipeline or not. Defaults to True.
-         known_in_advance (list[str], None): List of features that are known in advance.
-         features (bool): Whether to add a DFSTransformer component to this pipeline.
+        X (pd.DataFrame): The input data of shape [n_samples, n_features].
+        y (pd.Series): The target data of length [n_samples].
+        estimator (Estimator): Estimator for pipeline.
+        problem_type (ProblemTypes or str): Problem type for pipeline to generate.
+        parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+            An empty dictionary or None implies using all default values for component parameters.
+        sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
+            Defaults to None
+        extra_components_before (list[ComponentBase]): List of extra components to be added before preprocessing components. Defaults to None.
+        extra_components_after (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
+        use_estimator (bool): Whether to add the provided estimator to the pipeline or not. Defaults to True.
+        known_in_advance (list[str], None): List of features that are known in advance.
+        features (bool): Whether to add a DFSTransformer component to this pipeline.
+        exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipeline.
+            Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
 
 
     Returns:
@@ -470,6 +505,7 @@ def make_pipeline(
             parameters,
             sampler_name,
             known_in_advance,
+            exclude_featurizers,
         )
     else:
         preprocessing_components = _get_preprocessing_components(
@@ -478,6 +514,7 @@ def make_pipeline(
             problem_type,
             estimator,
             sampler_name,
+            exclude_featurizers,
         )
         extra_components_before = extra_components_before or []
         extra_components_after = extra_components_after or []
@@ -947,7 +984,9 @@ def get_actions_from_option_defaults(action_options):
     return actions
 
 
-def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, time_index):
+def make_timeseries_baseline_pipeline(
+    problem_type, gap, forecast_horizon, time_index, exclude_featurizer=False
+):
     """Make a baseline pipeline for time series regression problems.
 
     Args:
@@ -955,6 +994,8 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, time_
         gap (int): Non-negative gap parameter.
         forecast_horizon (int): Positive forecast_horizon parameter.
         time_index (str): Column name of time_index parameter.
+        exclude_featurizer (bool): Whether or not to exclude the TimeSeriesFeaturizer from
+            the baseline graph. Defaults to False.
 
     Returns:
         TimeSeriesPipelineBase, a time series pipeline corresponding to the problem type.
@@ -974,32 +1015,33 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, time_
             "Time Series Baseline Binary Pipeline",
         ),
     }[problem_type]
-    baseline = pipeline_class(
-        component_graph=[
-            "Time Series Featurizer",
-            "Time Series Baseline Estimator",
-        ],
-        custom_name=pipeline_name,
-        parameters={
-            "pipeline": {
-                "time_index": time_index,
-                "gap": gap,
-                "max_delay": 0,
-                "forecast_horizon": forecast_horizon,
-            },
-            "Time Series Featurizer": {
-                "max_delay": 0,
-                "gap": gap,
-                "forecast_horizon": forecast_horizon,
-                "delay_target": True,
-                "delay_features": False,
-                "time_index": time_index,
-            },
-            "Time Series Baseline Estimator": {
-                "gap": gap,
-                "forecast_horizon": forecast_horizon,
-            },
+    component_graph = ["Time Series Baseline Estimator"]
+    parameters = {
+        "pipeline": {
+            "time_index": time_index,
+            "gap": gap,
+            "max_delay": 0,
+            "forecast_horizon": forecast_horizon,
         },
+        "Time Series Baseline Estimator": {
+            "gap": gap,
+            "forecast_horizon": forecast_horizon,
+        },
+    }
+    if not exclude_featurizer:
+        component_graph = ["Time Series Featurizer"] + component_graph
+        parameters["Time Series Featurizer"] = {
+            "max_delay": 0,
+            "gap": gap,
+            "forecast_horizon": forecast_horizon,
+            "delay_target": True,
+            "delay_features": False,
+            "time_index": time_index,
+        }
+    baseline = pipeline_class(
+        component_graph=component_graph,
+        custom_name=pipeline_name,
+        parameters=parameters,
     )
     return baseline
 

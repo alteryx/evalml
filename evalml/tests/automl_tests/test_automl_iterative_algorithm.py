@@ -1045,7 +1045,7 @@ def test_automl_respects_pipeline_order(X_y_binary, AutoMLTestEnv):
     automl = AutoMLSearch(
         X,
         y,
-        "binary",
+        problem_type="binary",
         engine="sequential",
         max_iterations=5,
         automl_algorithm="iterative",

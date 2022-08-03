@@ -363,7 +363,7 @@ def make_balancing_dictionary(y, sampling_ratio):
     if sampling_ratio <= 0 or sampling_ratio > 1:
         raise ValueError(
             "Sampling ratio must be in range (0, 1], received {}".format(
-                sampling_ratio
+                sampling_ratio,
             ),
         )
     if len(y) == 0:

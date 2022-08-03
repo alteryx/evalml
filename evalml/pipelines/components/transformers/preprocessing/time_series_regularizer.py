@@ -49,8 +49,8 @@ class TimeSeriesRegularizer(Transformer):
         self,
         time_index=None,
         frequency_payload=None,
-        window_length=5,
-        threshold=0.8,
+        window_length=4,
+        threshold=0.4,
         random_seed=0,
         **kwargs,
     ):
