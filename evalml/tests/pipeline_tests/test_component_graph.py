@@ -523,6 +523,7 @@ def test_component_graph_fit_transform(
     mock_transform,
     mock_fit,
     example_graph,
+    example_graph_with_transformer_last_component,
     X_y_binary,
 ):
     X, y = X_y_binary
@@ -530,23 +531,20 @@ def test_component_graph_fit_transform(
     component_graph.instantiate()
     with pytest.raises(
         ValueError,
-        match="Cannot call fit_transform() on a component graph because the final component is an Estimator. Use fit_and_transform_all_but_final instead.",
+        match="Cannot call fit_transform\(\) on a component graph because the final component is an Estimator. Use fit_and_transform_all_but_final instead.",
     ):
         component_graph.fit_transform(X, y)
 
-    # mock_X_t = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
-    # mock_transform.return_value = mock_X_t
-    # mock_fit.return_value = Estimator
+    component_graph = ComponentGraph(example_graph_with_transformer_last_component)
+    component_graph.instantiate()
+    mock_X_t = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
+    mock_transform.return_value = mock_X_t
+    mock_fit.return_value = Transformer
 
-    # mock_predict_proba.return_value = pd.DataFrame(y)
-    # mock_predict_proba.return_value.ww.init()
+    component_graph.fit_transform(X, y)
 
-    # component_graph.fit_and_transform_all_but_final(X, y)
-
-    # assert mock_fit_transform.call_count == 3
-    # assert mock_fit.call_count == 2
-    # assert mock_predict_proba.call_count == 2
-
+    assert mock_transform.call_count == 3
+    assert mock_fit.call_count == 3
 
 @patch("evalml.pipelines.components.Estimator.fit")
 @patch("evalml.pipelines.components.Estimator.predict_proba")
