@@ -517,11 +517,13 @@ def test_component_graph_fit_and_transform_all_but_final(
     assert mock_fit.call_count == 2
     assert mock_predict_proba.call_count == 2
 
+@patch("evalml.pipelines.components.Transformer.fit_transform")
 @patch("evalml.pipelines.components.Transformer.fit")
 @patch("evalml.pipelines.components.Transformer.transform")
 def test_component_graph_fit_transform(
     mock_transform,
     mock_fit,
+    mock_fit_transform,
     example_graph,
     example_graph_with_transformer_last_component,
     X_y_binary,
@@ -539,7 +541,7 @@ def test_component_graph_fit_transform(
     component_graph.instantiate()
     mock_X_t = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
     mock_transform.return_value = mock_X_t
-    mock_fit.return_value = Transformer
+    mock_fit_transform.return_value = Transformer
 
     component_graph.fit_transform(X, y)
 
