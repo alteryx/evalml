@@ -537,16 +537,16 @@ def test_component_graph_fit_transform(
     ):
         component_graph.fit_transform(X, y)
 
-    component_graph = ComponentGraph(example_graph_with_transformer_last_component)
-    component_graph.instantiate()
-    mock_X_t = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
-    mock_transform.return_value = mock_X_t
-    mock_fit_transform.return_value = Transformer
+    # component_graph = ComponentGraph(example_graph_with_transformer_last_component)
+    # component_graph.instantiate()
+    # mock_X_t = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
+    # mock_transform.return_value = mock_X_t
+    # mock_fit_transform.return_value = Transformer
 
-    component_graph.fit_transform(X, y)
+    # component_graph.fit_transform(X, y)
 
-    assert mock_transform.call_count == 3
-    assert mock_fit.call_count == 3
+    # assert mock_transform.call_count == 3
+    # assert mock_fit.call_count == 3
 
 @patch("evalml.pipelines.components.Estimator.fit")
 @patch("evalml.pipelines.components.Estimator.predict_proba")
