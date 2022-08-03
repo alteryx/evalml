@@ -2,10 +2,12 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Add ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631`
     * Fixes
     * Changes
     * Documentation Changes
         * Updated broken link checker to exclude stackoverflow domain :pr:`3633`
+        * Add instructions to add new users to evalml-core-feedstock :pr:`3636`
     * Testing Changes
 
 .. warning::
