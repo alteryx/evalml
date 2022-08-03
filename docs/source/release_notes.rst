@@ -6,6 +6,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Updated broken link checker to exclude stackoverflow domain :pr:`3633`
         * Add instructions to add new users to evalml-core-feedstock :pr:`3636`
     * Testing Changes
 
