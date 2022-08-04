@@ -88,7 +88,7 @@ def test_imputer_can_impute_features_generated_from_null_email_url_features():
                 None,
                 3,
                 4,
-            ],  # TODO: Re-enable this when support for Int64 in Imputer is enabled.
+            ],
             "another number": [7, 8, 9, 10],
             "categorical": ["boo", "bar", "baz", "go"],
         },
