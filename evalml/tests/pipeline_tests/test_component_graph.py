@@ -490,6 +490,47 @@ def test_fit_correct_inputs(
     assert_frame_equal(expected_x, mock_ohe_fit_transform.call_args[0][0])
     assert_series_equal(expected_y, mock_ohe_fit_transform.call_args[0][1])
 
+@patch("evalml.pipelines.components.Transformer.fit_transform", autospec=True)
+@patch("evalml.pipelines.components.OneHotEncoder.transform", autospec=True)
+@patch("evalml.pipelines.components.Imputer.transform", autospec=True)
+@patch("evalml.pipelines.components.LabelEncoder.transform", autospec=True)
+def test_component_graph_fit_transform(
+    mock_label_encoder_transform,
+    mock_inputer_transform,
+    mock_ohe_transform,
+    mock_fit_transform,
+    example_graph,
+    example_graph_with_transformer_last_component,
+    X_y_binary,
+):
+    X, y = X_y_binary
+    component_graph = ComponentGraph(example_graph)
+    component_graph.instantiate()
+    with pytest.raises(
+        ValueError,
+        match=re.escape("Cannot call fit_transform() on a component graph because the final component is an Estimator. Use fit_and_transform_all_but_final instead."),
+    ):
+        component_graph.fit_transform(X, y)
+
+    component_graph = ComponentGraph(example_graph_with_transformer_last_component)
+    component_graph.instantiate()
+
+    def fit_transform_side_effect(self, X, y):
+        self._is_fitted = True
+        # self._all_null_cols = []
+        return pd.DataFrame(np.ones(pd.DataFrame(X).shape))
+
+    mock_fit_transform.side_effect = fit_transform_side_effect
+    mock_label_encoder_transform.return_value = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
+    mock_inputer_transform.return_value = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
+    mock_ohe_transform.return_value = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
+
+    component_graph.fit_transform(X, y)
+
+    assert mock_label_encoder_transform.call_count == 2
+    assert mock_inputer_transform.call_count == 1
+    assert mock_ohe_transform.call_count == 1
+    assert mock_fit_transform.call_count == 2
 
 @patch("evalml.pipelines.components.Transformer.fit_transform")
 @patch("evalml.pipelines.components.Estimator.fit")
