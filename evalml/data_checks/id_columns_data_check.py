@@ -211,7 +211,10 @@ class IDColumnsDataCheck(DataCheck):
                 )
                 message_code = DataCheckMessageCode.HAS_ID_FIRST_COLUMN
                 action_code = DataCheckActionCode.SET_FIRST_COL_ID
-                details = {"primary_key": col_names[0], "drop": (list(id_cols_above_threshold))}
+                details = {
+                    "primary_key": col_names[0],
+                    "drop": (list(id_cols_above_threshold)),
+                }
             else:
                 warning_msg = "Columns {} are {}% or more likely to be an ID column"
                 warning_msg = warning_msg.format(
