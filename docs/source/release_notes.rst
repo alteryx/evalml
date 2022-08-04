@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Add ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631`
     * Fixes
+        * ``IDColumnsDataCheck`` now only returns an action code to set the first column as the primary key if it contains unique values :pr:`3639`
     * Changes
     * Documentation Changes
         * Updated broken link checker to exclude stackoverflow domain :pr:`3633`
