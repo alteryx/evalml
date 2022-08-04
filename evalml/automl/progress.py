@@ -42,6 +42,8 @@ class Progress:
         self.tolerance = tolerance
         self.automl_algorithm = automl_algorithm
         self.objective = objective
+        self._best_score = None
+        self._without_improvement = 0
 
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
@@ -83,25 +85,26 @@ class Progress:
         if self.patience is None or self.tolerance is None:
             return True
 
-        first_id = results["search_order"][0]
-        best_score = results["pipeline_results"][first_id]["mean_cv_score"]
-        num_without_improvement = 0
-        for id in results["search_order"][1:]:
-            curr_score = results["pipeline_results"][id]["mean_cv_score"]
-            significant_change = (
-                abs((curr_score - best_score) / best_score) > self.tolerance
-            )
+        last_id = results["search_order"][-1]
+        curr_score = results["pipeline_results"][last_id]["mean_cv_score"]
+        if self._best_score is None:
+            self._best_score = curr_score
+            return True
+        else:
             score_improved = (
-                curr_score > best_score
+                curr_score > self._best_score
                 if self.objective.greater_is_better
-                else curr_score < best_score
+                else curr_score < self._best_score
+            )
+            significant_change = (
+                abs((curr_score - self._best_score) / self._best_score) > self.tolerance
             )
             if score_improved and significant_change:
-                best_score = curr_score
-                num_without_improvement = 0
+                self._best_score = curr_score
+                self._without_improvement = 0
             else:
-                num_without_improvement += 1
-            if num_without_improvement >= self.patience:
+                self._without_improvement += 1
+            if self._without_improvement >= self.patience:
                 self.logger.info(
                     "\n\n{} iterations without improvement. Stopping search early...".format(
                         self.patience,
