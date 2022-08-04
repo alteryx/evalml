@@ -61,12 +61,9 @@ class DFSTransformer(Transformer):
 
             # If feature's required columns doesn't exist, skip feature
             input_cols = [f.get_name() for f in feature.base_features]
-            if (
-                not isinstance(feature, IdentityFeature)
-                and not set(
-                    input_cols,
-                ).issubset(X_columns_set)
-            ):
+            if not isinstance(feature, IdentityFeature) and not set(
+                input_cols,
+            ).issubset(X_columns_set):
                 continue
 
             # If feature's transformed columns already exist, skip feature
