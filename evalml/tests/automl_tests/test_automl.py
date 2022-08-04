@@ -2492,7 +2492,7 @@ def test_early_stopping(
         verbose=verbose,
     )
     env = AutoMLTestEnv("binary")
-    with env.test_context(score_return_value=0.5):
+    with env.test_context(score_return_value={"AUC": 0.5}):
         automl.search()
     assert not automl.progress.should_continue(automl._results)
     out = caplog.text

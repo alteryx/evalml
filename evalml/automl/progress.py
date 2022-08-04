@@ -1,6 +1,7 @@
 """Progress abstraction holding stopping criteria and progress information."""
 import logging
 import time
+from unittest import result
 
 from evalml.utils.logger import get_logger
 
