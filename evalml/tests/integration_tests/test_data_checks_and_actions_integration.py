@@ -40,10 +40,15 @@ def test_data_checks_with_healthy_data(X_y_binary):
     )
     data_checks_output = data_check.validate(X, y)
 
-    assert make_pipeline_from_data_check_output(
-        "binary",
-        data_checks_output,
-    ) == BinaryClassificationPipeline(component_graph={}, parameters={}, random_seed=0)
+    assert (
+        make_pipeline_from_data_check_output(
+            "binary",
+            data_checks_output,
+        )
+        == BinaryClassificationPipeline(
+            component_graph={}, parameters={}, random_seed=0
+        )
+    )
 
 
 @patch("evalml.pipelines.utils.make_pipeline_from_actions")
@@ -106,8 +111,8 @@ def test_data_checks_ts_regularizer_imputer(uneven_continuous):
             "Time Series Regularizer": {
                 "time_index": "Dates",
                 "frequency_payload": ww_payload,
-                "window_length": 5,
-                "threshold": 0.8,
+                "window_length": 4,
+                "threshold": 0.4,
             },
             "Time Series Imputer": {
                 "categorical_impute_strategy": "forwards_fill",

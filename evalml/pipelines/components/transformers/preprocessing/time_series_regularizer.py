@@ -1,5 +1,6 @@
 """Transformer that regularizes a dataset with an uninferrable offset frequency for time series problems."""
 import pandas as pd
+import woodwork as ww
 from woodwork.logical_types import Datetime
 from woodwork.statistics_utils import infer_frequency
 
@@ -49,8 +50,8 @@ class TimeSeriesRegularizer(Transformer):
         self,
         time_index=None,
         frequency_payload=None,
-        window_length=5,
-        threshold=0.8,
+        window_length=4,
+        threshold=0.4,
         random_seed=0,
         **kwargs,
     ):
@@ -311,5 +312,8 @@ class TimeSeriesRegularizer(Transformer):
 
         if cleaned_y is not None:
             cleaned_y = cleaned_y["target"]
+            cleaned_y = ww.init_series(cleaned_y)
+
+        cleaned_x.ww.init()
 
         return cleaned_x, cleaned_y

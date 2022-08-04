@@ -17,6 +17,9 @@ class DataCheckMessageCode(Enum):
     HAS_ID_COLUMN = "has_id_column"
     """Message code for data that has ID columns."""
 
+    HAS_ID_FIRST_COLUMN = "has_id_first_column"
+    """Message code for data that has an ID column as the first column."""
+
     TARGET_INCOMPATIBLE_OBJECTIVE = "target_incompatible_objective"
     """Message code for target data that has incompatible values for the specified objective"""
 
@@ -31,6 +34,9 @@ class DataCheckMessageCode(Enum):
 
     TARGET_UNSUPPORTED_TYPE = "target_unsupported_type"
     """Message code for target data that is of an unsupported type."""
+
+    TARGET_UNSUPPORTED_TYPE_REGRESSION = "target_unsupported_type_regression"
+    """Message code for target data that is incompatible with regression"""
 
     TARGET_UNSUPPORTED_PROBLEM_TYPE = "target_unsupported_problem_type"
     """Message code for target data that is being checked against an unsupported problem type."""

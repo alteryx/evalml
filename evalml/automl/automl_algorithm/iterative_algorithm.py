@@ -66,6 +66,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass targets and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
         features (list)[FeatureBase]: List of features to run DFS on in AutoML pipelines. Defaults to None. Features will only be computed if the columns used by the feature exist in the input and if the feature itself is not in input.
         verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
+        exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipelines built by IterativeAlgorithm.
+            Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
     """
 
     def __init__(
@@ -90,6 +92,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         allow_long_running_models=False,
         features=None,
         verbose=False,
+        exclude_featurizers=None,
     ):
         self.X = infer_feature_types(X)
         self.y = infer_feature_types(y)
@@ -125,6 +128,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.features = features
         self.allowed_component_graphs = allowed_component_graphs
         self._set_additional_pipeline_params()
+        self.exclude_featurizers = exclude_featurizers
 
         super().__init__(
             allowed_pipelines=self.allowed_pipelines,
@@ -175,6 +179,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                             {},
                         ).get("known_in_advance", None),
                         features=self.features,
+                        exclude_featurizers=self.exclude_featurizers,
                     )
                     for estimator in allowed_estimators
                 ]

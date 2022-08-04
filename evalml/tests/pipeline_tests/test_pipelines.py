@@ -189,11 +189,14 @@ def test_load_pickled_pipeline_with_custom_objective(
     objective = Precision()
     pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
-    assert PipelineBase.load(pickled_pipeline_path).score(
-        X,
-        y,
-        [objective],
-    ) == pipeline.score(X, y, [objective])
+    assert (
+        PipelineBase.load(pickled_pipeline_path).score(
+            X,
+            y,
+            [objective],
+        )
+        == pipeline.score(X, y, [objective])
+    )
 
 
 def test_pickled_pipeline_preserves_threshold(X_y_binary, tmpdir):
@@ -2490,9 +2493,12 @@ def test_pipeline_init_from_component_list_with_duplicate_components(pipeline_cl
 
 
 def test_make_component_dict_from_component_list():
-    assert PipelineBase._make_component_dict_from_component_list(
-        [RandomForestClassifier],
-    ) == {"Random Forest Classifier": [RandomForestClassifier, "X", "y"]}
+    assert (
+        PipelineBase._make_component_dict_from_component_list(
+            [RandomForestClassifier],
+        )
+        == {"Random Forest Classifier": [RandomForestClassifier, "X", "y"]}
+    )
     assert PipelineBase._make_component_dict_from_component_list([Imputer]) == {
         "Imputer": [Imputer, "X", "y"],
     }

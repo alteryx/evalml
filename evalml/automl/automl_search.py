@@ -50,6 +50,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components import ARIMARegressor
 from evalml.pipelines.utils import make_timeseries_baseline_pipeline
+from evalml.preprocessing import split_data
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -312,6 +313,10 @@ class AutoMLSearch:
 
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
 
+        X_holdout (pd.DataFrame): The input holdout data of shape [n_samples, n_features].
+
+        y_holdout (pd.Series): The target holdout data of length [n_samples].
+
         problem_type (str or ProblemTypes): Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
         objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
@@ -419,14 +424,23 @@ class AutoMLSearch:
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
 
         timing (boolean): Whether or not to write pipeline search times to the logger. Defaults to False.
+        exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipelines built by search.
+            Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
+
+        holdout_set_size (float): The size of the holdout set that AutoML search will take for datasets larger than 500 rows. If set to 0, holdout set will not be taken regardless of number of rows. Must be between 0 and 1, exclusive. Defaults to 0.1.
     """
 
     _MAX_NAME_LEN = 40
+
+    # Minimum number of rows dataset must have before a holdout set is used to rank pipelines.
+    _HOLDOUT_SET_MIN_ROWS = 500
 
     def __init__(
         self,
         X_train=None,
         y_train=None,
+        X_holdout=None,
+        y_holdout=None,
         problem_type=None,
         objective="auto",
         max_iterations=None,
@@ -454,12 +468,13 @@ class AutoMLSearch:
         sampler_method="auto",
         sampler_balanced_ratio=0.25,
         allow_long_running_models=False,
-        _ensembling_split_size=0.2,
         _pipelines_per_batch=5,
         automl_algorithm="default",
         engine="sequential",
         verbose=False,
         timing=False,
+        exclude_featurizers=None,
+        holdout_set_size=0.1,
     ):
         self.verbose = verbose
         if verbose:
@@ -467,6 +482,7 @@ class AutoMLSearch:
         else:
             self.logger = logging.getLogger(__name__)
         self.timing = timing
+
         if X_train is None:
             raise ValueError(
                 "Must specify training data as a 2d array using the X_train argument",
@@ -475,6 +491,20 @@ class AutoMLSearch:
             raise ValueError(
                 "Must specify training data target values as a 1d vector using the y_train argument",
             )
+
+        if X_holdout is not None and y_holdout is not None:
+            self.passed_holdout_set = True
+        elif X_holdout is None and y_holdout is None:
+            self.passed_holdout_set = False
+        elif X_holdout is None and y_holdout is not None:
+            raise ValueError(
+                "Must specify holdout data as a 2d array using the X_holdout argument",
+            )
+        elif X_holdout is not None and y_holdout is None:
+            raise ValueError(
+                "Must specify training data target values as a 1d vector using the y_holdout argument",
+            )
+
         try:
             self.problem_type = handle_problem_types(problem_type)
         except ValueError:
@@ -573,6 +603,7 @@ class AutoMLSearch:
         self.max_iterations = max_iterations
         self.max_batches = max_batches
         self._pipelines_per_batch = _pipelines_per_batch
+        self.holdout_set_size = holdout_set_size
 
         if patience and (not isinstance(patience, int) or patience < 0):
             raise ValueError(
@@ -624,8 +655,46 @@ class AutoMLSearch:
         self._best_pipeline = None
         self._searched = False
 
+        if self.holdout_set_size < 0 or holdout_set_size >= 1:
+            raise ValueError(
+                "Holdout set size must be greater than 0 and less than 1. Set holdout set size to 0 to disable holdout set evaluation.",
+            )
+        if self.passed_holdout_set is False:
+            if len(X_train) >= self._HOLDOUT_SET_MIN_ROWS and self.holdout_set_size > 0:
+                # Create holdout set from X_train and y_train data because X_train above or at row threshold
+                X_train, X_holdout, y_train, y_holdout = split_data(
+                    X_train,
+                    y_train,
+                    problem_type=self.problem_type,
+                    problem_configuration=self.problem_configuration,
+                    test_size=self.holdout_set_size,
+                    random_seed=self.random_seed,
+                )
+                self.logger.info(
+                    f"Created a holdout dataset with {len(X_holdout)} rows. Training dataset has {len(X_train)} rows.",
+                )
+            else:
+                self.logger.info(
+                    f"Dataset size is too small to create holdout set. Mininum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X_train)} rows. Holdout set evaluation is disabled.",
+                )
+        # Set holdout data in AutoML search if provided as parameter
         self.X_train = infer_feature_types(X_train)
         self.y_train = infer_feature_types(y_train)
+        self.X_holdout = (
+            infer_feature_types(X_holdout) if X_holdout is not None else None
+        )
+        self.y_holdout = (
+            infer_feature_types(y_holdout) if y_holdout is not None else None
+        )
+        if self.X_holdout is None and self.y_holdout is None:
+            # Holdout set enabled but not enough rows
+            self.logger.info(
+                f"AutoMLSearch will use mean CV score to rank pipelines.",
+            )
+        else:
+            self.logger.info(
+                "AutoMLSearch will use the holdout set to score and rank pipelines.",
+            )
 
         default_data_splitter = make_data_splitter(
             self.X_train,
@@ -670,6 +739,19 @@ class AutoMLSearch:
         self.sampler_method = sampler_method
         self.sampler_balanced_ratio = sampler_balanced_ratio
         self._sampler_name = None
+
+        featurizer_names = [
+            "DatetimeFeaturizer",
+            "EmailFeaturizer",
+            "URLFeaturizer",
+            "NaturalLanguageFeaturizer",
+            "TimeSeriesFeaturizer",
+        ]
+        if exclude_featurizers and (set(exclude_featurizers) - set(featurizer_names)):
+            raise ValueError(
+                f"Invalid value provided for exclude_featurizers. Must be one of: {', '.join(featurizer_names)}"
+            )
+        self.exclude_featurizers = exclude_featurizers or []
 
         if is_classification(self.problem_type):
             self._sampler_name = self.sampler_method
@@ -740,6 +822,7 @@ class AutoMLSearch:
                 allow_long_running_models=allow_long_running_models,
                 features=features,
                 verbose=self.verbose,
+                exclude_featurizers=self.exclude_featurizers,
             )
         elif automl_algorithm == "default":
             self.automl_algorithm = DefaultAlgorithm(
@@ -756,6 +839,7 @@ class AutoMLSearch:
                 ensembling=self.ensembling,
                 verbose=self.verbose,
                 n_jobs=self.n_jobs,
+                exclude_featurizers=self.exclude_featurizers,
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")
@@ -970,6 +1054,8 @@ class AutoMLSearch:
                             pipeline,
                             self.X_train,
                             self.y_train,
+                            self.X_holdout,
+                            self.y_holdout,
                         )
                         computations.append((computation, False))
                     current_computation_index = 0
@@ -1180,11 +1266,15 @@ class AutoMLSearch:
             gap = self.problem_configuration["gap"]
             forecast_horizon = self.problem_configuration["forecast_horizon"]
             time_index = self.problem_configuration["time_index"]
+            exclude_timeseries_featurizer = (
+                "TimeSeriesFeaturizer" in self.exclude_featurizers
+            )
             baseline = make_timeseries_baseline_pipeline(
                 self.problem_type,
                 gap,
                 forecast_horizon,
                 time_index,
+                exclude_timeseries_featurizer,
             )
         return baseline
 
@@ -1201,6 +1291,8 @@ class AutoMLSearch:
             baseline,
             self.X_train,
             self.y_train,
+            self.X_holdout,
+            self.y_holdout,
         )
         evaluation = computation.get_result()
         data, cached_data, pipeline, job_log = (
@@ -1238,11 +1330,13 @@ class AutoMLSearch:
         cv_data = evaluation_results["cv_data"]
         cv_scores = evaluation_results["cv_scores"]
         is_baseline = pipeline.model_family == ModelFamily.BASELINE
-        if len(cv_scores) == 1:
+        mean_cv_score = np.nan if len(cv_scores) == 1 else cv_scores.mean()
+        if len(cv_scores) == 1 and evaluation_results["holdout_score"] is None:
             validation_score = cv_scores[0]
-            mean_cv_score = np.nan
-        elif len(cv_scores) > 1:
-            validation_score = mean_cv_score = cv_scores.mean()
+        elif evaluation_results["holdout_score"] is None:
+            validation_score = mean_cv_score
+        else:
+            validation_score = evaluation_results["holdout_score"]
         cv_sd = cv_scores.std()
 
         percent_better_than_baseline = {}
@@ -1469,6 +1563,8 @@ class AutoMLSearch:
             pipeline,
             self.X_train,
             self.y_train,
+            self.X_holdout,
+            self.y_holdout,
         )
         evaluation = computation.get_result()
         data, cached_data, pipeline, job_log = (
@@ -1504,9 +1600,9 @@ class AutoMLSearch:
         pipeline_results_cols = [
             "id",
             "pipeline_name",
+            "validation_score",
             "mean_cv_score",
             "standard_deviation_cv_score",
-            "validation_score",
             "percent_better_than_baseline",
             "high_variance_cv",
             "parameters",

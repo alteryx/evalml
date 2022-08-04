@@ -448,7 +448,7 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data(problem_ty
     data_check_error = DataCheckError(
         message=f"Target data type should be numeric for regression type problems.",
         data_check_name=invalid_targets_data_check_name,
-        message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
+        message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE_REGRESSION,
         details={},
     ).to_dict()
 
@@ -456,14 +456,20 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data(problem_ty
         problem_type,
         get_default_primary_search_objective(problem_type),
     )
-    assert invalid_targets_check.validate(
-        X=pd.DataFrame({"col": range(len(y_categorical))}),
-        y=y_categorical,
-    ) == [data_check_error]
-    assert invalid_targets_check.validate(
-        X=pd.DataFrame({"col": range(len(y_mixed_cat_numeric))}),
-        y=y_mixed_cat_numeric,
-    ) == [data_check_error]
+    assert (
+        invalid_targets_check.validate(
+            X=pd.DataFrame({"col": range(len(y_categorical))}),
+            y=y_categorical,
+        )
+        == [data_check_error]
+    )
+    assert (
+        invalid_targets_check.validate(
+            X=pd.DataFrame({"col": range(len(y_mixed_cat_numeric))}),
+            y=y_mixed_cat_numeric,
+        )
+        == [data_check_error]
+    )
     assert (
         invalid_targets_check.validate(
             X=pd.DataFrame({"col": range(len(y_integer))}),
@@ -513,10 +519,13 @@ def test_invalid_target_data_check_multiclass_problem_binary_data(problem_type):
         )
         == []
     )
-    assert invalid_targets_check.validate(
-        X=pd.DataFrame({"col": range(len(y_binary))}),
-        y=y_binary,
-    ) == [data_check_error]
+    assert (
+        invalid_targets_check.validate(
+            X=pd.DataFrame({"col": range(len(y_binary))}),
+            y=y_binary,
+        )
+        == [data_check_error]
+    )
 
 
 @pytest.mark.parametrize(
