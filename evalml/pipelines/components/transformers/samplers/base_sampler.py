@@ -59,6 +59,7 @@ class BaseSampler(Transformer):
         Returns:
             pd.DataFrame, pd.Series: Prepared X and y data as pandas types
         """
+
         X = infer_feature_types(X)
         try:
             X = X.astype(
