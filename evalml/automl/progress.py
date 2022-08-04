@@ -44,6 +44,7 @@ class Progress:
         self.objective = objective
         self._best_score = None
         self._without_improvement = 0
+        self._last_id = 0
 
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
@@ -90,7 +91,8 @@ class Progress:
         if self._best_score is None:
             self._best_score = curr_score
             return True
-        else:
+        elif last_id > self._last_id:
+            self._last_id = last_id
             score_improved = (
                 curr_score > self._best_score
                 if self.objective.greater_is_better

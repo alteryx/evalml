@@ -2,6 +2,7 @@ import time
 
 from evalml.automl import Progress
 from evalml.automl.automl_algorithm import DefaultAlgorithm
+from evalml.objectives import Gini
 
 
 def test_progress_init():
@@ -29,7 +30,7 @@ def test_progress_init():
     assert p.current_time is None
 
 
-def test_progress_return_progress(X_y_binary, logistic_regression_binary_pipeline):
+def test_progress_should_continue(X_y_binary, logistic_regression_binary_pipeline):
     X, y = X_y_binary
     algo = DefaultAlgorithm(X, y, problem_type="binary", sampler_name=None)
     p = Progress(
@@ -53,6 +54,69 @@ def test_progress_return_progress(X_y_binary, logistic_regression_binary_pipelin
         ] = logistic_regression_binary_pipeline.__class__
 
     assert p.should_continue(mock_results)
+
+    p = Progress(
+        automl_algorithm=algo,
+        max_batches=3,
+        max_time=10000,
+        patience=3,
+        tolerance=0.05,
+        objective=Gini,
+    )
+    p._start_time = time.time()
+    search_order = [0, 1, 2, 3]
+    mock_results = {"search_order": [], "pipeline_results": {}}
+    scores = [
+        0.84,
+        0.95,
+        0.84,
+        0.96,
+    ]  # 0.96 is only 1% greater so it doesn't trigger patience due to tolerance
+    for id in search_order:
+        mock_results["search_order"].append(id)
+        mock_results["pipeline_results"][id] = {}
+        mock_results["pipeline_results"][id]["mean_cv_score"] = scores[id]
+        mock_results["pipeline_results"][id][
+            "pipeline_class"
+        ] = logistic_regression_binary_pipeline.__class__
+        assert p.should_continue(mock_results)
+
+    assert p.should_continue(
+        mock_results,
+    )  # test that we don't trigger tolerance when results don't change
+
+    mock_results["search_order"].append(4)
+    mock_results["pipeline_results"][4] = {}
+    mock_results["pipeline_results"][4]["mean_cv_score"] = 0.97
+    mock_results["pipeline_results"][4][
+        "pipeline_class"
+    ] = logistic_regression_binary_pipeline.__class__
+
+    assert not p.should_continue(mock_results)
+
+
+def test_progress_return_progress(X_y_binary, logistic_regression_binary_pipeline):
+    X, y = X_y_binary
+    algo = DefaultAlgorithm(X, y, problem_type="binary", sampler_name=None)
+    p = Progress(
+        automl_algorithm=algo,
+        max_batches=3,
+        max_time=10000,
+    )
+    p._start_time = time.time()
+    mock_results = {"search_order": [0, 1, 2, 3], "pipeline_results": {}}
+    scores = [
+        0.84,
+        0.95,
+        0.84,
+        0.96,
+    ]  # 0.96 is only 1% greater so it doesn't trigger patience due to tolerance
+    for id in mock_results["search_order"]:
+        mock_results["pipeline_results"][id] = {}
+        mock_results["pipeline_results"][id]["mean_cv_score"] = scores[id]
+        mock_results["pipeline_results"][id][
+            "pipeline_class"
+        ] = logistic_regression_binary_pipeline.__class__
 
     progress_dict = p.return_progress()
     for progress in progress_dict:
