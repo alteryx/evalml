@@ -12,7 +12,6 @@ from woodwork.logical_types import (
     Categorical,
     Double,
     Integer,
-    IntegerNullable,
     NaturalLanguage,
 )
 
