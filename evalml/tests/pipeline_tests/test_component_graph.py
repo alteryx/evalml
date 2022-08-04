@@ -307,12 +307,9 @@ def test_instantiate_without_parameters(parameters, example_graph):
         component_graph.get_component("OneHot_RandomForest").parameters["top_n"] == 10
     )
     assert component_graph.get_component("OneHot_ElasticNet").parameters["top_n"] == 10
-    assert (
-        component_graph.get_component(
-            "OneHot_RandomForest",
-        )
-        is not component_graph.get_component("OneHot_ElasticNet")
-    )
+    assert component_graph.get_component(
+        "OneHot_RandomForest",
+    ) is not component_graph.get_component("OneHot_ElasticNet")
 
     expected_order = [
         "Imputer",
