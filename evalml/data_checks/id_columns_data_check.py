@@ -89,33 +89,6 @@ class IDColumnsDataCheck(DataCheck):
             ...     }
             ... ]
 
-            If the first column of the dataframe is identified as an ID column it is most likely the primary key.
-
-            >>> df = pd.DataFrame({
-            ...     "sales_id": [0, 1, 2, 3, 4],
-            ...     "customer_id": [123, 124, 125, 126, 127],
-            ...     "Sales": [10, 42, 31, 51, 61]
-            ... })
-            ...
-            >>> id_col_check = IDColumnsDataCheck()
-            >>> assert id_col_check.validate(df) == [
-            ...     {
-            ...         "message": "The first column 'sales_id' is most likely to be the ID column. Columns 'customer_id' are also 100.0% or more likely to be an ID column",
-            ...         "data_check_name": "IDColumnsDataCheck",
-            ...         "level": "warning",
-            ...         "code": "HAS_ID_FIRST_COLUMN",
-            ...         "details": {'columns': ["sales_id", "customer_id"], 'rows': None},
-            ...         "action_options": [
-            ...             {
-            ...                 "code": "SET_FIRST_COL_ID",
-            ...                 "data_check_name": "IDColumnsDataCheck",
-            ...                 "parameters": {},
-            ...                 "metadata": {'columns': ["sales_id", "customer_id"], 'rows': None}
-            ...             }
-            ...         ]
-            ...    }
-            ... ]
-
             Despite being all unique, "Country_Rank" will not be identified as an ID column as id_threshold is set to 1.0
             by default and its name doesn't indicate that it's an ID.
 
@@ -127,7 +100,6 @@ class IDColumnsDataCheck(DataCheck):
             ...
             >>> id_col_check = IDColumnsDataCheck()
             >>> assert id_col_check.validate(df) == []
-
 
             However lowering the threshold will cause this column to be identified as an ID.
 
@@ -149,6 +121,33 @@ class IDColumnsDataCheck(DataCheck):
             ...             }
             ...         ]
             ...     }
+            ... ]
+
+            If the first column of the dataframe is 100% likely to be an ID column, it is probably the primary key.
+
+            >>> df = pd.DataFrame({
+            ...     "sales_id": [0, 1, 2, 3, 4],
+            ...     "customer_id": [123, 124, 125, 126, 127],
+            ...     "Sales": [10, 42, 31, 51, 61]
+            ... })
+            ...
+            >>> id_col_check = IDColumnsDataCheck()
+            >>> assert id_col_check.validate(df) == [
+            ...     {
+            ...         "message": "The first column 'sales_id' has a high likelihood of being the primary key. Columns 'customer_id' are 100.0% or more likely to be an ID column",
+            ...         "data_check_name": "IDColumnsDataCheck",
+            ...         "level": "warning",
+            ...         "code": "HAS_ID_FIRST_COLUMN",
+            ...         "details": {'columns': ["sales_id", "customer_id"], 'rows': None},
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "SET_FIRST_COL_ID",
+            ...                 "data_check_name": "IDColumnsDataCheck",
+            ...                 "parameters": {},
+            ...                 "metadata": {'columns': ["sales_id", "customer_id"], 'rows': None}
+            ...             }
+            ...         ]
+            ...    }
             ... ]
         """
         messages = []
@@ -189,7 +188,11 @@ class IDColumnsDataCheck(DataCheck):
 
         first_col_id = False
 
-        if col_names and col_names[0] in id_cols_above_threshold:
+        if (
+            col_names
+            and col_names[0] in id_cols_above_threshold
+            and id_cols_above_threshold[col_names[0]] == 1.0
+        ):
             first_col_id = True
             del id_cols_above_threshold[col_names[0]]
 
@@ -198,7 +201,7 @@ class IDColumnsDataCheck(DataCheck):
             message_code = None
             action_code = None
             if first_col_id:
-                warning_msg = "The first column '{}' is most likely to be the ID column. Columns {} are also {}% or more likely to be an ID column"
+                warning_msg = "The first column '{}' has a high likelihood of being the primary key. Columns {} are {}% or more likely to be an ID column"
                 warning_msg = warning_msg.format(
                     col_names[0],
                     (", ").join(

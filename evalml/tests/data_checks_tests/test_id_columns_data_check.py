@@ -83,33 +83,6 @@ def test_id_columns_warning():
         ).to_dict(),
     ]
 
-    X_dict = {
-        "col_1_id": [0, 1, 2, 3],
-        "col_2": [2, 3, 4, 5],
-        "col_3_id": [1, 1, 2, 3],
-        "Id": [3, 1, 2, 0],
-        "col_5": [0, 0, 1, 2],
-        "col_6": [0.1, 0.2, 0.3, 0.4],
-    }
-
-    X = pd.DataFrame.from_dict(X_dict)
-    id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
-    assert id_cols_check.validate(X) == [
-        DataCheckWarning(
-            message="The first column 'col_1_id' is most likely to be the ID column. Columns 'Id', 'col_2', 'col_3_id' are also 95.0% or more likely to be an ID column",
-            data_check_name=id_data_check_name,
-            message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
-            details={"columns": ["col_1_id", "Id", "col_2", "col_3_id"]},
-            action_options=[
-                DataCheckActionOption(
-                    DataCheckActionCode.SET_FIRST_COL_ID,
-                    data_check_name=id_data_check_name,
-                    metadata={"columns": ["col_1_id", "Id", "col_2", "col_3_id"]},
-                ),
-            ],
-        ).to_dict(),
-    ]
-
 
 def test_id_columns_strings():
     X_dict = {
@@ -265,6 +238,238 @@ def test_id_cols_data_check_input_formats():
                     DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
                     metadata={"columns": [0, 1]},
+                ),
+            ],
+        ).to_dict(),
+    ]
+
+
+def test_identified_first_col_primary_key():
+    X_dict = {
+        "col_1_id": [0, 1, 2, 3],
+        "col_2": [2, 3, 4, 5],
+        "col_3_id": [1, 1, 2, 3],
+        "col_5": [0, 0, 1, 2],
+        "col_6": [0.1, 0.2, 0.3, 0.4],
+    }
+
+    X = pd.DataFrame.from_dict(X_dict)
+    id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
+    assert id_cols_check.validate(X) == [
+        DataCheckWarning(
+            message="The first column 'col_1_id' has a high likelihood of being the primary key. Columns 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
+            data_check_name=id_data_check_name,
+            message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
+            details={"columns": ["col_1_id", "col_2", "col_3_id"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.SET_FIRST_COL_ID,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["col_1_id", "col_2", "col_3_id"]},
+                ),
+            ],
+        ).to_dict(),
+    ]
+
+    X = X.rename(columns={"col_1_id": "ID"})
+    assert id_cols_check.validate(X) == [
+        DataCheckWarning(
+            message="The first column 'ID' has a high likelihood of being the primary key. Columns 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
+            data_check_name=id_data_check_name,
+            message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
+            details={"columns": ["ID", "col_2", "col_3_id"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.SET_FIRST_COL_ID,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["ID", "col_2", "col_3_id"]},
+                ),
+            ],
+        ).to_dict(),
+    ]
+
+
+def test_unidentified_first_col_primary_key():
+    X_dict = {
+        "col_1_id": [1, 1, 2, 3],  # Values are not unique
+        "col_2": [2, 3, 4, 5],
+        "col_3_id": [1, 1, 2, 3],
+        "col_5": [0, 0, 1, 2],
+        "col_6": [0.1, 0.2, 0.3, 0.4],
+    }
+
+    X = pd.DataFrame.from_dict(X_dict)
+    id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
+    assert id_cols_check.validate(X) == [
+        DataCheckWarning(
+            message="Columns 'col_2', 'col_1_id', 'col_3_id' are 95.0% or more likely to be an ID column",
+            data_check_name=id_data_check_name,
+            message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+            details={"columns": ["col_2", "col_1_id", "col_3_id"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["col_2", "col_1_id", "col_3_id"]},
+                ),
+            ],
+        ).to_dict(),
+    ]
+
+    X_dict = {
+        "col_1": [0, 1, 2, 3],  # Column name does not contain id in it
+        "col_2": [2, 3, 4, 5],
+        "col_3_id": [1, 1, 2, 3],
+        "col_5": [0, 0, 1, 2],
+        "col_6": [0.1, 0.2, 0.3, 0.4],
+    }
+
+    X = pd.DataFrame.from_dict(X_dict)
+    assert id_cols_check.validate(X) == [
+        DataCheckWarning(
+            message="Columns 'col_1', 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
+            data_check_name=id_data_check_name,
+            message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+            details={"columns": ["col_1", "col_2", "col_3_id"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["col_1", "col_2", "col_3_id"]},
+                ),
+            ],
+        ).to_dict(),
+    ]
+
+
+def test_identified_first_col_primary_key_string():
+    X_dict = {
+        "col_1_id": ["a", "b", "c", "d"],
+        "col_2": ["w", "x", "y", "z"],
+        "col_3_id": [
+            "123456789012345",
+            "234567890123456",
+            "3456789012345678",
+            "45678901234567",
+        ],
+        "col_5": ["0", "0", "1", "2"],
+        "col_6": [0.1, 0.2, 0.3, 0.4],
+    }
+    X = pd.DataFrame.from_dict(X_dict)
+    X.ww.init(
+        logical_types={
+            "col_1_id": "categorical",
+            "col_2": "categorical",
+            "col_5": "categorical",
+        },
+    )
+
+    id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
+    assert id_cols_check.validate(X) == [
+        DataCheckWarning(
+            message="The first column 'col_1_id' has a high likelihood of being the primary key. Columns 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
+            data_check_name=id_data_check_name,
+            message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
+            details={"columns": ["col_1_id", "col_2", "col_3_id"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.SET_FIRST_COL_ID,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["col_1_id", "col_2", "col_3_id"]},
+                ),
+            ],
+        ).to_dict(),
+    ]
+
+    X = X.rename(columns={"col_1_id": "ID"})
+    assert id_cols_check.validate(X) == [
+        DataCheckWarning(
+            message="The first column 'ID' has a high likelihood of being the primary key. Columns 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
+            data_check_name=id_data_check_name,
+            message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
+            details={"columns": ["ID", "col_2", "col_3_id"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.SET_FIRST_COL_ID,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["ID", "col_2", "col_3_id"]},
+                ),
+            ],
+        ).to_dict(),
+    ]
+
+
+def test_unidentified_first_col_primary_key_string():
+    X_dict = {
+        "col_1_id": ["b", "b", "c", "d"],  # Values are not unique
+        "col_2": ["w", "x", "y", "z"],
+        "col_3_id": [
+            "123456789012345",
+            "234567890123456",
+            "3456789012345678",
+            "45678901234567",
+        ],
+        "col_5": ["0", "0", "1", "2"],
+        "col_6": [0.1, 0.2, 0.3, 0.4],
+    }
+    X = pd.DataFrame.from_dict(X_dict)
+    X.ww.init(
+        logical_types={
+            "col_1_id": "categorical",
+            "col_2": "categorical",
+            "col_5": "categorical",
+        },
+    )
+
+    id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
+    assert id_cols_check.validate(X) == [
+        DataCheckWarning(
+            message="Columns 'col_2', 'col_1_id', 'col_3_id' are 95.0% or more likely to be an ID column",
+            data_check_name=id_data_check_name,
+            message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+            details={"columns": ["col_2", "col_1_id", "col_3_id"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["col_2", "col_1_id", "col_3_id"]},
+                ),
+            ],
+        ).to_dict(),
+    ]
+
+    X_dict = {
+        "col_1": ["a", "b", "c", "d"],  # Column name does not contain id in it
+        "col_2": ["w", "x", "y", "z"],
+        "col_3_id": [
+            "123456789012345",
+            "234567890123456",
+            "3456789012345678",
+            "45678901234567",
+        ],
+        "col_5": ["0", "0", "1", "2"],
+        "col_6": [0.1, 0.2, 0.3, 0.4],
+    }
+    X = pd.DataFrame.from_dict(X_dict)
+    X.ww.init(
+        logical_types={
+            "col_1": "categorical",
+            "col_2": "categorical",
+            "col_5": "categorical",
+        },
+    )
+
+    assert id_cols_check.validate(X) == [
+        DataCheckWarning(
+            message="Columns 'col_1', 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
+            data_check_name=id_data_check_name,
+            message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+            details={"columns": ["col_1", "col_2", "col_3_id"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["col_1", "col_2", "col_3_id"]},
                 ),
             ],
         ).to_dict(),
