@@ -496,7 +496,7 @@ def test_fit_correct_inputs(
 @patch("evalml.pipelines.components.LabelEncoder.transform", autospec=True)
 def test_component_graph_fit_transform(
     mock_label_encoder_transform,
-    mock_inputer_transform,
+    mock_imputer_transform,
     mock_ohe_transform,
     mock_fit_transform,
     example_graph,
@@ -514,21 +514,21 @@ def test_component_graph_fit_transform(
 
     component_graph = ComponentGraph(example_graph_with_transformer_last_component)
     component_graph.instantiate()
+    ones_df = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
 
     def fit_transform_side_effect(self, X, y):
         self._is_fitted = True
-        # self._all_null_cols = []
-        return pd.DataFrame(np.ones(pd.DataFrame(X).shape))
+        return ones_df
 
     mock_fit_transform.side_effect = fit_transform_side_effect
-    mock_label_encoder_transform.return_value = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
-    mock_inputer_transform.return_value = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
-    mock_ohe_transform.return_value = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
+    mock_label_encoder_transform.return_value = ones_df
+    mock_imputer_transform.return_value = ones_df
+    mock_ohe_transform.return_value = ones_df
 
     component_graph.fit_transform(X, y)
 
     assert mock_label_encoder_transform.call_count == 2
-    assert mock_inputer_transform.call_count == 1
+    assert mock_imputer_transform.call_count == 1
     assert mock_ohe_transform.call_count == 1
     assert mock_fit_transform.call_count == 2
 
