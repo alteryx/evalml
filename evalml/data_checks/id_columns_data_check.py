@@ -138,13 +138,13 @@ class IDColumnsDataCheck(DataCheck):
             ...         "data_check_name": "IDColumnsDataCheck",
             ...         "level": "warning",
             ...         "code": "HAS_ID_FIRST_COLUMN",
-            ...         "details": {"primary_key": "sales_id", "drop": ["customer_id"], "columns": None, "rows": None},
+            ...         "details": {"primary_key": "sales_id", "columns": ["customer_id"], "rows": None},
             ...         "action_options": [
             ...             {
             ...                 "code": "SET_FIRST_COL_ID",
             ...                 "data_check_name": "IDColumnsDataCheck",
             ...                 "parameters": {},
-            ...                 "metadata": {"primary_key": "sales_id", "drop": ["customer_id"], "columns": None, "rows": None}
+            ...                 "metadata": {"primary_key": "sales_id", "columns": ["customer_id"], "rows": None}
             ...             }
             ...         ]
             ...    }
@@ -213,7 +213,7 @@ class IDColumnsDataCheck(DataCheck):
                 action_code = DataCheckActionCode.SET_FIRST_COL_ID
                 details = {
                     "primary_key": col_names[0],
-                    "drop": (list(id_cols_above_threshold)),
+                    "columns": (list(id_cols_above_threshold)),
                 }
             else:
                 warning_msg = "Columns {} are {}% or more likely to be an ID column"
