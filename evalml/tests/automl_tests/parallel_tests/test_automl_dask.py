@@ -17,7 +17,7 @@ from evalml.tuners import SKOptTuner
 
 # The engines to parametrize the AutoML tests over.  The process-level parallel tests
 # are flaky.
-engine_strs = ["cf_threaded", "dask_threaded"]
+engine_strs = ["dask_threaded"]
 
 
 @pytest.mark.xfail
