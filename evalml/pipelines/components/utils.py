@@ -1,6 +1,7 @@
 """Utility methods for EvalML components."""
 import inspect
 
+import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
@@ -392,11 +393,15 @@ def downcast_int_nullable_to_double(X):
         X: DataFrame initialized with logical type information where IntegerNullables are cast as Double.
 
     """
+    if not isinstance(X, pd.DataFrame):
+        return X
     if X.ww.schema is None:
         X.ww.init()
-
     X_schema = X.ww.schema
+    original_X_schema = X_schema.get_subset_schema(
+        subset_cols=X_schema._filter_cols(exclude=["IntegerNullable"]),
+    )
     X_int_nullable_cols = X_schema._filter_cols(include=["IntegerNullable"])
     new_ltypes_for_int_nullable_cols = {col: "Double" for col in X_int_nullable_cols}
-    X.ww.init(logical_types=new_ltypes_for_int_nullable_cols)
+    X.ww.init(schema=original_X_schema, logical_types=new_ltypes_for_int_nullable_cols)
     return X

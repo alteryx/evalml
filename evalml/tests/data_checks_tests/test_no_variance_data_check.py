@@ -2,8 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from woodwork.exceptions import WoodworkNotInitError
-from woodwork.logical_types import IntegerNullable
 
 from evalml.data_checks import (
     DataCheckActionCode,
