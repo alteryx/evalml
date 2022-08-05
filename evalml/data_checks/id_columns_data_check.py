@@ -163,7 +163,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                 "metadata": {"columns": ["customer_id"], "rows": None}
             ...             }
             ...         ]
-            ...    }        
+            ...    }
             ... ]
         """
         messages = []
@@ -218,7 +218,7 @@ class IDColumnsDataCheck(DataCheck):
                 (", ").join(
                     ["'{}'".format(str(col)) for col in id_cols_above_threshold],
                 ),
-                    self.id_threshold * 100,
+                self.id_threshold * 100,
             )
             if first_col_id:
                 drop_warning_msg = "The first column '{}' has a high likelihood of being the primary key"
