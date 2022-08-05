@@ -124,6 +124,7 @@ class IDColumnsDataCheck(DataCheck):
             ... ]
 
             If the first column of the dataframe is 100% likely to be an ID column, it is probably the primary key.
+            The other ID columns should be dropped.
 
             >>> df = pd.DataFrame({
             ...     "sales_id": [0, 1, 2, 3, 4],
@@ -134,20 +135,35 @@ class IDColumnsDataCheck(DataCheck):
             >>> id_col_check = IDColumnsDataCheck()
             >>> assert id_col_check.validate(df) == [
             ...     {
-            ...         "message": "The first column 'sales_id' has a high likelihood of being the primary key. Columns 'customer_id' are 100.0% or more likely to be an ID column",
+            ...         "message": "The first column 'sales_id' has a high likelihood of being the primary key",
             ...         "data_check_name": "IDColumnsDataCheck",
             ...         "level": "warning",
             ...         "code": "HAS_ID_FIRST_COLUMN",
-            ...         "details": {"primary_key": "sales_id", "columns": ["customer_id"], "rows": None},
+            ...         "details": {"columns": "sales_id", "rows": None},
             ...         "action_options": [
             ...             {
             ...                 "code": "SET_FIRST_COL_ID",
             ...                 "data_check_name": "IDColumnsDataCheck",
             ...                 "parameters": {},
-            ...                 "metadata": {"primary_key": "sales_id", "columns": ["customer_id"], "rows": None}
+            ...                 "metadata": {"columns": "sales_id", "rows": None}
             ...             }
             ...         ]
-            ...    }
+            ...    },
+            ...    {
+            ...        "message": "Columns 'customer_id' are 100.0% or more likely to be an ID column",
+            ...         "data_check_name": "IDColumnsDataCheck",
+            ...         "level": "warning",
+            ...         "code": "HAS_ID_COLUMN",
+            ...         "details": {"columns": ["customer_id"], "rows": None},
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "DROP_COL",
+            ...                 "data_check_name": "IDColumnsDataCheck",
+            ...                 "parameters": {},
+            ...                 "metadata": {"columns": ["customer_id"], "rows": None}
+            ...             }
+            ...         ]
+            ...    }        
             ... ]
         """
         messages = []
@@ -197,47 +213,44 @@ class IDColumnsDataCheck(DataCheck):
             del id_cols_above_threshold[col_names[0]]
 
         if id_cols_above_threshold:
-            warning_msg = ""
-            message_code = None
-            action_code = None
+            warning_msg = "Columns {} are {}% or more likely to be an ID column"
+            warning_msg = warning_msg.format(
+                (", ").join(
+                    ["'{}'".format(str(col)) for col in id_cols_above_threshold],
+                ),
+                    self.id_threshold * 100,
+            )
             if first_col_id:
-                warning_msg = "The first column '{}' has a high likelihood of being the primary key. Columns {} are {}% or more likely to be an ID column"
-                warning_msg = warning_msg.format(
+                drop_warning_msg = "The first column '{}' has a high likelihood of being the primary key"
+                drop_warning_msg = drop_warning_msg.format(
                     col_names[0],
-                    (", ").join(
-                        ["'{}'".format(str(col)) for col in id_cols_above_threshold],
-                    ),
-                    self.id_threshold * 100,
                 )
-                message_code = DataCheckMessageCode.HAS_ID_FIRST_COLUMN
-                action_code = DataCheckActionCode.SET_FIRST_COL_ID
-                details = {
-                    "primary_key": col_names[0],
-                    "columns": (list(id_cols_above_threshold)),
-                }
-            else:
-                warning_msg = "Columns {} are {}% or more likely to be an ID column"
-                warning_msg = warning_msg.format(
-                    (", ").join(
-                        ["'{}'".format(str(col)) for col in id_cols_above_threshold],
-                    ),
-                    self.id_threshold * 100,
+                messages.append(
+                    DataCheckWarning(
+                        message=drop_warning_msg,
+                        data_check_name=self.name,
+                        message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
+                        details={"columns": col_names[0]},
+                        action_options=[
+                            DataCheckActionOption(
+                                DataCheckActionCode.SET_FIRST_COL_ID,
+                                data_check_name=self.name,
+                                metadata={"columns": col_names[0]},
+                            ),
+                        ],
+                    ).to_dict(),
                 )
-                message_code = DataCheckMessageCode.HAS_ID_COLUMN
-                action_code = DataCheckActionCode.DROP_COL
-                details = {"columns": list(id_cols_above_threshold)}
-
             messages.append(
                 DataCheckWarning(
                     message=warning_msg,
                     data_check_name=self.name,
-                    message_code=message_code,
-                    details=details,
+                    message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                    details={"columns": list(id_cols_above_threshold)},
                     action_options=[
                         DataCheckActionOption(
-                            action_code,
+                            DataCheckActionCode.DROP_COL,
                             data_check_name=self.name,
-                            metadata=details,
+                            metadata={"columns": list(id_cols_above_threshold)},
                         ),
                     ],
                 ).to_dict(),

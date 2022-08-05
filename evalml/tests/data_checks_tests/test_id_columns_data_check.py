@@ -217,18 +217,28 @@ def test_identified_first_col_primary_key():
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
     assert id_cols_check.validate(X) == [
         DataCheckWarning(
-            message="The first column 'col_1_id' has a high likelihood of being the primary key. Columns 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
+            message="The first column 'col_1_id' has a high likelihood of being the primary key",
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
-            details={"primary_key": "col_1_id", "columns": ["col_2", "col_3_id"]},
+            details={"columns": "col_1_id"},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={
-                        "primary_key": "col_1_id",
-                        "columns": ["col_2", "col_3_id"],
-                    },
+                    metadata={"columns": "col_1_id"},
+                ),
+            ],
+        ).to_dict(),
+        DataCheckWarning(
+            message="Columns 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
+            data_check_name=id_data_check_name,
+            message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+            details={"columns": ["col_2", "col_3_id"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["col_2", "col_3_id"]},
                 ),
             ],
         ).to_dict(),
@@ -237,15 +247,28 @@ def test_identified_first_col_primary_key():
     X = X.rename(columns={"col_1_id": "ID"})
     assert id_cols_check.validate(X) == [
         DataCheckWarning(
-            message="The first column 'ID' has a high likelihood of being the primary key. Columns 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
+            message="The first column 'ID' has a high likelihood of being the primary key",
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
-            details={"primary_key": "ID", "columns": ["col_2", "col_3_id"]},
+            details={"columns": "ID"},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={"primary_key": "ID", "columns": ["col_2", "col_3_id"]},
+                    metadata={"columns": "ID"},
+                ),
+            ],
+        ).to_dict(),
+        DataCheckWarning(
+            message="Columns 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
+            data_check_name=id_data_check_name,
+            message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+            details={"columns": ["col_2", "col_3_id"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["col_2", "col_3_id"]},
                 ),
             ],
         ).to_dict(),
@@ -330,18 +353,28 @@ def test_identified_first_col_primary_key_string():
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
     assert id_cols_check.validate(X) == [
         DataCheckWarning(
-            message="The first column 'col_1_id' has a high likelihood of being the primary key. Columns 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
+            message="The first column 'col_1_id' has a high likelihood of being the primary key",
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
-            details={"primary_key": "col_1_id", "columns": ["col_2", "col_3_id"]},
+            details={"columns": "col_1_id"},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={
-                        "primary_key": "col_1_id",
-                        "columns": ["col_2", "col_3_id"],
-                    },
+                    metadata={"columns": "col_1_id"},
+                ),
+            ],
+        ).to_dict(),
+        DataCheckWarning(
+            message="Columns 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
+            data_check_name=id_data_check_name,
+            message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+            details={"columns": ["col_2", "col_3_id"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["col_2", "col_3_id"]},
                 ),
             ],
         ).to_dict(),
@@ -350,15 +383,28 @@ def test_identified_first_col_primary_key_string():
     X = X.rename(columns={"col_1_id": "ID"})
     assert id_cols_check.validate(X) == [
         DataCheckWarning(
-            message="The first column 'ID' has a high likelihood of being the primary key. Columns 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
+            message="The first column 'ID' has a high likelihood of being the primary key",
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
-            details={"primary_key": "ID", "columns": ["col_2", "col_3_id"]},
+            details={"columns": "ID"},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={"primary_key": "ID", "columns": ["col_2", "col_3_id"]},
+                    metadata={"columns": "ID"},
+                ),
+            ],
+        ).to_dict(),
+        DataCheckWarning(
+            message="Columns 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
+            data_check_name=id_data_check_name,
+            message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+            details={"columns": ["col_2", "col_3_id"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["col_2", "col_3_id"]},
                 ),
             ],
         ).to_dict(),
