@@ -75,8 +75,6 @@ class ClassificationPipeline(PipelineBase):
         except TypeError as e:
             if "boolean value of NA is ambiguous" in str(e):
                 self._classes_ = y.unique()
-        except Exception as e:
-            raise e
 
         return self
 
