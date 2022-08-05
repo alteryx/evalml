@@ -284,6 +284,7 @@ def test_automl_closes_engines(engine_str, X_y_binary_cls):
     assert automl._engine.is_closed
 
 
+@pytest.xfail
 @pytest.mark.parametrize(
     "engine_str",
     engine_strs + ["sequential"],
