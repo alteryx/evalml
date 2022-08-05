@@ -249,7 +249,7 @@ def test_submit_scoring_job_single(X_y_binary_cls):
         assert pipeline_score == original_pipeline_score
 
 
-@pytest.xfail
+@pytest.mark.xfail
 def test_submit_scoring_jobs_multiple(X_y_binary_cls):
     """Test that scoring multiple pipelines using the parallel engine produces the
     same results as the sequential engine."""
