@@ -380,3 +380,23 @@ def make_balancing_dictionary(y, sampling_ratio):
             # this class is already larger than the ratio, don't change
             class_dic[index] = value_counts[index]
     return class_dic
+
+
+def downcast_int_nullable_to_double(X):
+    """Downcasts IntegerNullable types to Double in order to support certain estimators like ARIMA, CatBoost, and LightGBM.
+
+    Args:
+        X (pd.DataFrame): Feature data.
+
+    Returns:
+        X: DataFrame initialized with logical type information where IntegerNullables are cast as Double.
+
+    """
+    if X.ww.schema is None:
+        X.ww.init()
+
+    X_schema = X.ww.schema
+    X_int_nullable_cols = X_schema._filter_cols(include=["IntegerNullable"])
+    new_ltypes_for_int_nullable_cols = {col: "Double" for col in X_int_nullable_cols}
+    X.ww.init(logical_types=new_ltypes_for_int_nullable_cols)
+    return X
