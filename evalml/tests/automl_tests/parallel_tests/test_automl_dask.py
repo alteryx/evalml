@@ -20,7 +20,6 @@ from evalml.tuners import SKOptTuner
 engine_strs = ["dask_threaded"]
 
 
-@pytest.mark.xfail
 @pytest.fixture(scope="module")
 def sequential_results(X_y_binary_cls):
     X, y = X_y_binary_cls
@@ -38,7 +37,6 @@ def sequential_results(X_y_binary_cls):
 
 
 @pytest.mark.xfail
-@pytest.skip
 @pytest.mark.parametrize(
     "engine_str",
     engine_strs,
