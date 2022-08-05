@@ -31,7 +31,7 @@ all_distinct_y = pd.Series([1, 2, 3, 4])
 all_null_y = pd.Series([None] * 4)
 two_distinct_with_nulls_y = pd.Series(([1] * 2) + ([None] * 2))
 two_distinct_with_nulls_y_ww = two_distinct_with_nulls_y.copy()
-two_distinct_with_nulls_y_ww.ww.init()
+two_distinct_with_nulls_y_ww = ww.init_series(two_distinct_with_nulls_y_ww)
 two_distinct_with_nulls_y_ww_nullable_types = ww.init_series(
     two_distinct_with_nulls_y.copy(),
     logical_type="IntegerNullable",
@@ -201,15 +201,5 @@ def test_no_variance_data_check_warnings(
     count_nan_as_value,
     expected_validation_result,
 ):
-    # TODO: Remove this when Woodwork fixes it.
-    try:
-        if isinstance(y.ww.logical_type, IntegerNullable) and y.dtype.name == "float64":
-            pytest.xfail(
-                "Woodwork inference of the series [1.0, 1.0, np.nan, np.nan] results in a physical dtype of float64 and logical type of Integer Nullable, which is incompatible.",
-            )
-    except WoodworkNotInitError:
-        pass
-    except AttributeError:
-        pass
     check = NoVarianceDataCheck(count_nan_as_value)
     assert check.validate(X, y) == expected_validation_result
