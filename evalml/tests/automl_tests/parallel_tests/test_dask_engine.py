@@ -156,6 +156,7 @@ def test_submit_evaluate_job_single(X_y_binary_cls):
         )
 
 
+@pytest.mark.xfail
 def test_submit_evaluate_jobs_multiple(X_y_binary_cls):
     """Test that evaluating multiple pipelines using the parallel engine produces the
     same results as the sequential engine."""
