@@ -710,7 +710,7 @@ def test_t_sne(data_type):
         X = pd.DataFrame(np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]))
         X.ww.init()
 
-    output_ = t_sne(X, n_components=2, perplexity=3, learning_rate=200.0)
+    output_ = t_sne(X, n_components=2, perplexity=2, learning_rate=200.0)
     assert isinstance(output_, np.ndarray)
 
 
