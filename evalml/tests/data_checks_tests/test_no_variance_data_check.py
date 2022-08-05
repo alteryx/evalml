@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from woodwork.exceptions import WoodworkNotInitError
+from woodwork.logical_types import IntegerNullable
 
 from evalml.data_checks import (
     DataCheckActionCode,
@@ -190,9 +192,6 @@ cases = [
         [feature_1_unique],
     ),
 ]
-
-from woodwork.exceptions import WoodworkNotInitError
-from woodwork.logical_types import IntegerNullable
 
 
 @pytest.mark.parametrize("X, y, count_nan_as_value, expected_validation_result", cases)

@@ -2,7 +2,7 @@
 import copy
 from abc import abstractmethod
 
-from woodwork.logical_types import BooleanNullable, IntegerNullable
+from woodwork.logical_types import IntegerNullable
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils.woodwork_utils import infer_feature_types
