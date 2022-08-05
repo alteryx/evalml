@@ -225,7 +225,10 @@ def test_identified_first_col_primary_key():
                 DataCheckActionOption(
                     DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={"primary_key": "col_1_id", "columns": ["col_2", "col_3_id"]},
+                    metadata={
+                        "primary_key": "col_1_id",
+                        "columns": ["col_2", "col_3_id"],
+                    },
                 ),
             ],
         ).to_dict(),
@@ -335,7 +338,10 @@ def test_identified_first_col_primary_key_string():
                 DataCheckActionOption(
                     DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={"primary_key": "col_1_id", "columns": ["col_2", "col_3_id"]},
+                    metadata={
+                        "primary_key": "col_1_id",
+                        "columns": ["col_2", "col_3_id"],
+                    },
                 ),
             ],
         ).to_dict(),
