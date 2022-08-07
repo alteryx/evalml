@@ -135,7 +135,7 @@ def test_categorical_only_input(imputer_test_data):
     )
     imputer = TimeSeriesImputer()
     transformed, _ = imputer.fit_transform(X, y)
-    assert_frame_equal(transformed, expected, check_dtype=False)
+    assert_frame_equal(transformed, expected, check_dtype=True)
     assert "all nan cat" not in transformed.columns
 
     expected["categorical with nan"] = pd.Series(
@@ -153,7 +153,7 @@ def test_categorical_only_input(imputer_test_data):
 
     imputer = TimeSeriesImputer(categorical_impute_strategy="backwards_fill")
     transformed, _ = imputer.fit_transform(X, y)
-    assert_frame_equal(transformed, expected, check_dtype=False)
+    assert_frame_equal(transformed, expected, check_dtype=True)
 
 
 def test_categorical_and_numeric_input(imputer_test_data):
