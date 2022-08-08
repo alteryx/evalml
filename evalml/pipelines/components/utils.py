@@ -12,7 +12,7 @@ from evalml.pipelines.components.component_base import ComponentBase
 from evalml.pipelines.components.estimators.estimator import Estimator
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.problem_types import ProblemTypes, handle_problem_types
-from evalml.utils import get_importable_subclasses
+from evalml.utils import get_importable_subclasses, infer_feature_types
 
 
 def _all_estimators():
@@ -395,8 +395,7 @@ def downcast_int_nullable_to_double(X):
     """
     if not isinstance(X, pd.DataFrame):
         return X
-    if X.ww.schema is None:
-        X.ww.init()
+    X = infer_feature_types(X)
     X_schema = X.ww.schema
     original_X_schema = X_schema.get_subset_schema(
         subset_cols=X_schema._filter_cols(exclude=["IntegerNullable"]),
