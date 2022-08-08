@@ -303,14 +303,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     def fit_transform(self, X, y):
         """Fit and transform all components in the component graph, if all components are Transformers.
-        
+
         Args:
             X (pd.DataFrame): Input features of shape [n_samples, n_features].
             y (pd.Series): The target data of length [n_samples].
-        
+
         Returns:
             pd.DataFrame: Transformed output.
-        
+
         Raises:
             ValueError: If final component is an Estimator.
         """
