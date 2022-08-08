@@ -68,7 +68,7 @@ class BaseSampler(Transformer):
             X = X.astype(
                 {null_col: float for null_col in X.ww.select(IntegerNullable).columns},
             )
-        X.ww.init()
+        X.ww.init(schema=X.ww.schema)
         if y is None:
             raise ValueError("y cannot be None")
         y = infer_feature_types(y)
