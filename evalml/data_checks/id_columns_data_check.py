@@ -202,32 +202,19 @@ class IDColumnsDataCheck(DataCheck):
             key: value for key, value in id_cols.items() if value >= self.id_threshold
         }
 
-        first_col_id = False
-
-        if (
-            col_names
-            and col_names[0] in id_cols_above_threshold
-            and id_cols_above_threshold[col_names[0]] == 1.0
-        ):
-            first_col_id = True
-            del id_cols_above_threshold[col_names[0]]
-
         if id_cols_above_threshold:
-            warning_msg = "Columns {} are {}% or more likely to be an ID column"
-            warning_msg = warning_msg.format(
-                (", ").join(
-                    ["'{}'".format(str(col)) for col in id_cols_above_threshold],
-                ),
-                self.id_threshold * 100,
-            )
-            if first_col_id:
-                drop_warning_msg = "The first column '{}' has a high likelihood of being the primary key"
-                drop_warning_msg = drop_warning_msg.format(
+            if (
+                col_names[0] in id_cols_above_threshold
+                and id_cols_above_threshold[col_names[0]] == 1.0
+            ):
+                del id_cols_above_threshold[col_names[0]]
+                warning_msg = "The first column '{}' has a high likelihood of being the primary key"
+                warning_msg = warning_msg.format(
                     col_names[0],
                 )
                 messages.append(
                     DataCheckWarning(
-                        message=drop_warning_msg,
+                        message=warning_msg,
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
                         details={"columns": col_names[0]},
@@ -240,6 +227,13 @@ class IDColumnsDataCheck(DataCheck):
                         ],
                     ).to_dict(),
                 )
+            warning_msg = "Columns {} are {}% or more likely to be an ID column"
+            warning_msg = warning_msg.format(
+                (", ").join(
+                    ["'{}'".format(str(col)) for col in id_cols_above_threshold],
+                ),
+                self.id_threshold * 100,
+            )
             messages.append(
                 DataCheckWarning(
                     message=warning_msg,
