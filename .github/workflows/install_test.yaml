@@ -9,7 +9,7 @@ on:
 
 name: Install Test
 jobs:
-  install_ft_complete:
+  install:
     name: ${{ matrix.os }} - ${{ matrix.python_version }} install evalml
     strategy:
       fail-fast: false
