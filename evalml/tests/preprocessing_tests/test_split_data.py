@@ -59,3 +59,97 @@ def test_split_data(
             y = pd.Series(y)
         pd.testing.assert_frame_equal(X_test, X[int(train_size) :], check_dtype=False)
         pd.testing.assert_series_equal(y_test, y[int(train_size) :], check_dtype=False)
+
+
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+@pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
+def test_split_data_defaults(
+    problem_type,
+    data_type,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
+    make_data_type,
+):
+    if is_binary(problem_type):
+        X, y = X_y_binary
+    if is_multiclass(problem_type):
+        X, y = X_y_multi
+    if is_regression(problem_type):
+        X, y = X_y_regression
+    problem_configuration = None
+    if is_time_series(problem_type):
+        problem_configuration = {"gap": 1, "max_delay": 7, "time_index": "ts_data"}
+
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
+    if is_time_series(problem_type):
+        test_pct = 0.1
+    else:
+        test_pct = 0.2
+    X_train, X_test, y_train, y_test = split_data(
+        X,
+        y,
+        problem_type=problem_type,
+        problem_configuration=problem_configuration,
+    )
+    test_size = len(X) * test_pct
+    train_size = len(X) - test_size
+    assert len(X_train) == train_size
+    assert len(X_test) == test_size
+    assert len(y_train) == train_size
+    assert len(y_test) == test_size
+
+    if is_time_series(problem_type):
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+            y = pd.Series(y)
+        pd.testing.assert_frame_equal(X_test, X[int(train_size) :], check_dtype=False)
+        pd.testing.assert_series_equal(y_test, y[int(train_size) :], check_dtype=False)
+
+
+def test_split_data_ts(X_y_regression):
+    X, y = X_y_regression
+
+    # Test with no forecast horizon limitation
+    test_pct = 0.1
+    problem_configuration = {
+        "gap": 1,
+        "max_delay": 7,
+        "forecast_horizon": 5,
+        "time_index": "ts_data",
+    }
+    X_train, X_test, y_train, y_test = split_data(
+        X,
+        y,
+        problem_type="time series regression",
+        problem_configuration=problem_configuration,
+    )
+    test_size = len(X) * test_pct
+    train_size = len(X) - test_size
+    assert len(X_train) == train_size
+    assert len(X_test) == test_size
+    assert len(y_train) == train_size
+    assert len(y_test) == test_size
+
+    # Test with a forecast horizon limitation
+    fh = 25
+    problem_configuration = {
+        "gap": 1,
+        "max_delay": 7,
+        "forecast_horizon": fh,
+        "time_index": "ts_data",
+    }
+    X_train, X_test, y_train, y_test = split_data(
+        X,
+        y,
+        problem_type="time series regression",
+        problem_configuration=problem_configuration,
+    )
+    test_size = fh
+    train_size = len(X) - fh
+    assert len(X_train) == train_size
+    assert len(X_test) == test_size
+    assert len(y_train) == train_size
+    assert len(y_test) == test_size
