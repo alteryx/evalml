@@ -288,6 +288,7 @@ class TimeSeriesFeaturizer(Transformer):
         delayed_features = self._compute_delays(X_ww, y)
         rolling_means = self._compute_rolling_transforms(X_ww, y, original_features)
         features = ww.concat_columns([delayed_features, rolling_means])
+        features.ww.init()
         return features.ww.drop(original_features)
 
     def fit_transform(self, X, y=None):
