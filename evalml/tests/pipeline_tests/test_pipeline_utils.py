@@ -55,26 +55,26 @@ from evalml.problem_types import ProblemTypes, is_time_series
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 @pytest.mark.parametrize(
-    "test_description, column_names",
+    "test_description, column_names, has_null",
     [
-        ("all nan is not categorical", ["all_null", "numerical"]),
-        ("mixed types", ["all_null", "categorical", "dates", "numerical"]),
-        ("no all_null columns", ["numerical", "categorical", "dates"]),
-        ("date, numerical", ["dates", "numerical"]),
-        ("only text", ["text"]),
-        ("only dates", ["dates"]),
-        ("only numerical", ["numerical"]),
-        ("only ip", ["ip"]),
-        ("only all_null", ["all_null"]),
-        ("only categorical", ["categorical"]),
-        ("text with other features", ["text", "numerical", "categorical"]),
-        ("url with other features", ["url", "numerical", "categorical"]),
-        ("ip with other features", ["ip", "numerical", "categorical"]),
-        ("email with other features", ["email", "numerical", "categorical"]),
-        ("only null int", ["int_null"]),
-        ("only null bool", ["bool_null"]),
-        ("only null age", ["age_null"]),
-        ("nullable_types", ["numerical", "int_null", "bool_null", "age_null"]),
+        ("all nan is not categorical", ["all_null", "numerical"], True),
+        ("mixed types", ["all_null", "categorical", "dates", "numerical"], True),
+        ("no all_null columns", ["numerical", "categorical", "dates"], False),
+        ("date, numerical", ["dates", "numerical"], False),
+        ("only text", ["text"], False),
+        ("only dates", ["dates"], False),
+        ("only numerical", ["numerical"], False),
+        ("only ip", ["ip"], False),
+        ("only all_null", ["all_null"], True),
+        ("only categorical", ["categorical"], False),
+        ("text with other features", ["text", "numerical", "categorical"], False),
+        ("url with other features", ["url", "numerical", "categorical"], False),
+        ("ip with other features", ["ip", "numerical", "categorical"], False),
+        ("email with other features", ["email", "numerical", "categorical"], False),
+        ("only null int", ["int_null"], True),
+        ("only null bool", ["bool_null"], True),
+        ("only null age", ["age_null"], True),
+        ("nullable_types", ["numerical", "int_null", "bool_null", "age_null"], True),
     ],
 )
 def test_make_pipeline(
@@ -82,6 +82,7 @@ def test_make_pipeline(
     input_type,
     test_description,
     column_names,
+    has_null,
     get_test_data_from_configuration,
 ):
 
@@ -148,7 +149,11 @@ def test_make_pipeline(
             )
             email_featurizer = [EmailFeaturizer] if "email" in column_names else []
             url_featurizer = [URLFeaturizer] if "url" in column_names else []
-            imputer = [] if (column_names in [["ip"], ["all_null"]]) else [Imputer]
+            imputer = (
+                []
+                if ((column_names in [["ip"], ["all_null"]]) or not has_null)
+                else [Imputer]
+            )
             drop_nan_rows_transformer = (
                 [DropNaNRowsTransformer]
                 if is_time_series(problem_type)
@@ -1018,7 +1023,7 @@ def test_make_pipeline_from_multiple_graphs_with_sampler(X_y_binary):
         problem_type=ProblemTypes.BINARY,
     )
     second_pipeline_sampler = (
-        "Pipeline w/ Label Encoder + Imputer + Undersampler Pipeline 2 - Undersampler.y"
+        "Pipeline w/ Label Encoder + Undersampler Pipeline 2 - Undersampler.y"
     )
     assert (
         combined_pipeline.component_graph.get_inputs("Random Forest Classifier")[2]
@@ -1061,13 +1066,14 @@ def test_make_pipeline_from_multiple_graphs_prior_components(X_y_binary):
         prior_components=prior_components,
         sub_pipeline_names=sub_pipeline_names,
     )
-
     assert (
-        combined_pipeline.component_graph.get_inputs("First Pipeline - Imputer")[0]
+        combined_pipeline.component_graph.get_inputs("First Pipeline - Undersampler")[0]
         == "DFS Transformer.x"
     )
     assert (
-        combined_pipeline.component_graph.get_inputs("Second Pipeline - Imputer")[0]
+        combined_pipeline.component_graph.get_inputs("Second Pipeline - Undersampler")[
+            0
+        ]
         == "DFS Transformer.x"
     )
 
