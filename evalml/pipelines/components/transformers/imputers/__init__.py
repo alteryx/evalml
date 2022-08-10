@@ -5,6 +5,9 @@ from evalml.pipelines.components.transformers.imputers.per_column_imputer import
 from evalml.pipelines.components.transformers.imputers.simple_imputer import (
     SimpleImputer,
 )
+from evalml.pipelines.components.transformers.imputers.knn_imputer import (
+    KNNImputer,
+)
 from evalml.pipelines.components.transformers.imputers.imputer import Imputer
 from evalml.pipelines.components.transformers.imputers.target_imputer import (
     TargetImputer,

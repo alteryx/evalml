@@ -2,7 +2,7 @@
 import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.pipelines.components.transformers.imputers import SimpleImputer
+from evalml.pipelines.components.transformers.imputers import KNNImputer, SimpleImputer
 from evalml.utils import infer_feature_types
 from evalml.utils.gen_utils import is_categorical_actually_boolean
 
@@ -23,19 +23,22 @@ class Imputer(Transformer):
     name = "Imputer"
     hyperparameter_ranges = {
         "categorical_impute_strategy": ["most_frequent"],
-        "numeric_impute_strategy": ["mean", "median", "most_frequent"],
-        "boolean_impute_strategy": ["most_frequent"],
+        "numeric_impute_strategy": ["mean", "median", "most_frequent", "knn"],
+        "boolean_impute_strategy": ["most_frequent", "knn"],
     }
     """{
         "categorical_impute_strategy": ["most_frequent"],
-        "numeric_impute_strategy": ["mean", "median", "most_frequent"],
-        "boolean_impute_strategy": ["most_frequent"]
+        "numeric_impute_strategy": ["mean", "median", "most_frequent", "knn"],
+        "boolean_impute_strategy": ["most_frequent", "knn"]
     }"""
     _valid_categorical_impute_strategies = set(["most_frequent", "constant"])
     _valid_numeric_impute_strategies = set(
-        ["mean", "median", "most_frequent", "constant"],
+        ["mean", "median", "most_frequent", "constant", "knn"],
     )
-    _valid_boolean_impute_strategies = set(["most_frequent", "constant"])
+    _valid_boolean_impute_strategies = set(["most_frequent", "constant", "knn"])
+    default_imputer_choice = dict(
+        {"categorical": "simple", "boolean": "simple", "numerical": "simple"},
+    )
 
     def __init__(
         self,
@@ -46,6 +49,7 @@ class Imputer(Transformer):
         boolean_impute_strategy="most_frequent",
         boolean_fill_value=None,
         random_seed=0,
+        heuristic_choice=default_imputer_choice,
         **kwargs,
     ):
         if categorical_impute_strategy not in self._valid_categorical_impute_strategies:
@@ -68,6 +72,7 @@ class Imputer(Transformer):
             "categorical_fill_value": categorical_fill_value,
             "numeric_fill_value": numeric_fill_value,
             "boolean_fill_value": boolean_fill_value,
+            "heuristic_choice": heuristic_choice,
         }
         parameters.update(kwargs)
         self._categorical_imputer = SimpleImputer(
@@ -75,16 +80,26 @@ class Imputer(Transformer):
             fill_value=categorical_fill_value,
             **kwargs,
         )
-        self._boolean_imputer = SimpleImputer(
-            impute_strategy=boolean_impute_strategy,
-            fill_value=boolean_fill_value,
-            **kwargs,
-        )
-        self._numeric_imputer = SimpleImputer(
-            impute_strategy=numeric_impute_strategy,
-            fill_value=numeric_fill_value,
-            **kwargs,
-        )
+        if heuristic_choice["boolean"] == "knn":
+            self._boolean_imputer = KNNImputer()
+        else:
+            self._boolean_imputer = SimpleImputer(
+                impute_strategy=boolean_impute_strategy,
+                fill_value=boolean_fill_value,
+                **kwargs,
+            )
+        if heuristic_choice["boolean"] == "knn":
+            self._numeric_imputer = SimpleImputer(
+                impute_strategy=numeric_impute_strategy,
+                fill_value=numeric_fill_value,
+                **kwargs,
+            )
+        else:
+            self._numeric_imputer = SimpleImputer(
+                impute_strategy=numeric_impute_strategy,
+                fill_value=numeric_fill_value,
+                **kwargs,
+            )
         self._all_null_cols = None
         self._numeric_cols = None
         self._categorical_cols = None
@@ -174,3 +189,17 @@ class Imputer(Transformer):
             X_no_all_null[X_boolean.columns] = imputed
 
         return X_no_all_null
+
+    def imputer_choice(self, X, y=None):
+        X = infer_feature_types(X)
+        cat_cols = list(X.ww.select(["category"], return_schema=True).columns)
+        bool_cols = list(
+            X.ww.select(["BooleanNullable", "Boolean"], return_schema=True).columns,
+        )
+        numeric_cols = list(X.ww.select(["numeric"], return_schema=True).columns)
+        for col in cat_cols:
+            if is_categorical_actually_boolean(X, col):
+                cat_cols.remove(col)
+                bool_cols.append(col)
+
+        # TODO: look through the different columns and determine what imputer to use for each
