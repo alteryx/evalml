@@ -6,6 +6,7 @@ Release Notes
         * Add ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631`
     * Fixes
     * Changes
+        * Pinned ``sktime`` at >=0.7.0,<0.13.1 due to slowdowns with time series modeling :pr:`3658`
     * Documentation Changes
         * Updated broken link checker to exclude stackoverflow domain :pr:`3633`
         * Add instructions to add new users to evalml-core-feedstock :pr:`3636`
