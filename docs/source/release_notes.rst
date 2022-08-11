@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
         * Disable holdout set in AutoML search by default :pr:`3659`
+        * Pinned ``sktime`` at >=0.7.0,<0.13.1 due to slowdowns with time series modeling :pr:`3658`
     * Documentation Changes
         * Updated broken link checker to exclude stackoverflow domain :pr:`3633`
         * Add instructions to add new users to evalml-core-feedstock :pr:`3636`
