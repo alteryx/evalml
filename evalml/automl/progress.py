@@ -144,7 +144,7 @@ class Progress:
             )
             progress.append(
                 {
-                    "stopping_criteria": "max_iteratiobs",
+                    "stopping_criteria": "max_iterations",
                     "current_state": self.current_iterations,
                     "end_state": max_iterations,
                     "unit": "iterations",
