@@ -894,10 +894,10 @@ def test_large_dataset_split_size(X_y_binary):
     )
     assert isinstance(automl.data_splitter, StratifiedKFold)
 
-    under_max_rows = (
-        _LARGE_DATA_ROW_THRESHOLD + int(ceil(_LARGE_DATA_ROW_THRESHOLD * 0.1 / 0.9)) - 1
-    )  # Should be under threshold even after taking out holdout set
-    X, y = generate_fake_dataset(under_max_rows)
+    # under_max_rows = (
+    #     _LARGE_DATA_ROW_THRESHOLD + int(ceil(_LARGE_DATA_ROW_THRESHOLD * 0.1 / 0.9)) - 1
+    # )  # Should be under threshold even after taking out holdout set
+    X, y = generate_fake_dataset(_LARGE_DATA_ROW_THRESHOLD)
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
