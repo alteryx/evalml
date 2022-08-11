@@ -1724,7 +1724,6 @@ class AutoMLSearch:
             if computation.done():
                 try:
                     fitted_pipeline = computation.get_result()[0]
-                    self.logger.info(fitted_pipeline.name)
                     fitted_pipelines[fitted_pipeline.name] = fitted_pipeline
                 except Exception as e:
                     self.logger.error(f"Train error for {pipeline.name}: {str(e)}")
