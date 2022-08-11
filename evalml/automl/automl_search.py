@@ -474,7 +474,7 @@ class AutoMLSearch:
         verbose=False,
         timing=False,
         exclude_featurizers=None,
-        holdout_set_size=0.1,
+        holdout_set_size=0,
     ):
         self.verbose = verbose
         if verbose:
@@ -749,7 +749,7 @@ class AutoMLSearch:
         ]
         if exclude_featurizers and (set(exclude_featurizers) - set(featurizer_names)):
             raise ValueError(
-                f"Invalid value provided for exclude_featurizers. Must be one of: {', '.join(featurizer_names)}"
+                f"Invalid value provided for exclude_featurizers. Must be one of: {', '.join(featurizer_names)}",
             )
         self.exclude_featurizers = exclude_featurizers or []
 
@@ -1724,6 +1724,7 @@ class AutoMLSearch:
             if computation.done():
                 try:
                     fitted_pipeline = computation.get_result()[0]
+                    self.logger.info(fitted_pipeline.name)
                     fitted_pipelines[fitted_pipeline.name] = fitted_pipeline
                 except Exception as e:
                     self.logger.error(f"Train error for {pipeline.name}: {str(e)}")

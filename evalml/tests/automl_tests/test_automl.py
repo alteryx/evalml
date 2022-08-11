@@ -5074,7 +5074,9 @@ def test_exclude_featurizers(
         }
 
     X, y = get_test_data_from_configuration(
-        input_type, problem_type, column_names=["dates", "text", "email", "url"]
+        input_type,
+        problem_type,
+        column_names=["dates", "text", "email", "url"],
     )
 
     automl = AutoMLSearch(
@@ -5107,25 +5109,25 @@ def test_exclude_featurizers(
         [
             DateTimeFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )
     assert not any(
-        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines],
     )
     assert not any(
-        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines],
     )
     assert not any(
         [
             NaturalLanguageFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )
     assert not any(
         [
             TimeSeriesFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )
 
 
@@ -5199,7 +5201,13 @@ def test_init_create_holdout_set(caplog):
         n_samples=AutoMLSearch._HOLDOUT_SET_MIN_ROWS - 1,
         random_state=0,
     )
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", verbose=True)
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        verbose=True,
+        holdout_set_size=0.1,
+    )
     out = caplog.text
 
     match_text = f"Dataset size is too small to create holdout set. Mininum dataset size is {AutoMLSearch._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X)} rows. Holdout set evaluation is disabled."
@@ -5216,7 +5224,13 @@ def test_init_create_holdout_set(caplog):
         n_samples=AutoMLSearch._HOLDOUT_SET_MIN_ROWS,
         random_state=0,
     )
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", verbose=True)
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        verbose=True,
+        holdout_set_size=0.1,
+    )
     out = caplog.text
 
     expected_holdout_size = int(automl.holdout_set_size * len(X))
