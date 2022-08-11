@@ -3,12 +3,13 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Updated to run with Woodwork >= 0.17.2 :pr:`3626`
-        * Add ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631`
+        * Added ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631`
+        * Updated ``make_pipeline`` to only include the Imputer in pipelines if NaNs exist in the data :pr:`3657`
     * Fixes
     * Changes
     * Documentation Changes
         * Updated broken link checker to exclude stackoverflow domain :pr:`3633`
-        * Add instructions to add new users to evalml-core-feedstock :pr:`3636`
+        * Added instructions to add new users to evalml-core-feedstock :pr:`3636`
     * Testing Changes
 
 .. warning::
