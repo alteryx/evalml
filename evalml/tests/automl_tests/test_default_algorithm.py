@@ -368,7 +368,6 @@ def test_make_split_pipeline(X_y_binary):
     X["A"] = "a"
     X["B"] = "b"
     X["C"] = "c"
-    X["1"][0] = None
 
     algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)
     algo._selected_cols = ["1", "2", "3"]
@@ -381,7 +380,6 @@ def test_make_split_pipeline(X_y_binary):
         "Categorical Pipeline - One Hot Encoder",
         "Numeric Pipeline - Select Columns By Type Transformer",
         "Numeric Pipeline - Label Encoder",
-        "Numeric Pipeline - Imputer",
         "Numeric Pipeline - Select Columns Transformer",
         "Random Forest Classifier",
     ]
