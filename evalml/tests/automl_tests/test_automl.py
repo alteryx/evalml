@@ -4763,13 +4763,16 @@ def test_search_parameters_held_automl(
             break
     assert found_dtc
     for tuners in aml.automl_algorithm._tuners.values():
-        assert (
-            tuners._pipeline_hyperparameter_ranges["Imputer"]["numeric_impute_strategy"]
-            == expected
-        )
-        assert tuners._pipeline_hyperparameter_ranges["Imputer"][
-            "categorical_impute_strategy"
-        ] == ["most_frequent"]
+        if "Imputer" in tuners._pipeline_hyperparameter_ranges:
+            assert (
+                tuners._pipeline_hyperparameter_ranges["Imputer"][
+                    "numeric_impute_strategy"
+                ]
+                == expected
+            )
+            assert tuners._pipeline_hyperparameter_ranges["Imputer"][
+                "categorical_impute_strategy"
+            ] == ["most_frequent"]
         # make sure that there are no set hyperparameters when we don't have defaults
         assert tuners._pipeline_hyperparameter_ranges["Label Encoder"] == {}
         assert tuners.propose()["Label Encoder"] == {}
@@ -5074,7 +5077,9 @@ def test_exclude_featurizers(
         }
 
     X, y = get_test_data_from_configuration(
-        input_type, problem_type, column_names=["dates", "text", "email", "url"]
+        input_type,
+        problem_type,
+        column_names=["dates", "text", "email", "url"],
     )
 
     automl = AutoMLSearch(
@@ -5107,25 +5112,25 @@ def test_exclude_featurizers(
         [
             DateTimeFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )
     assert not any(
-        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines],
     )
     assert not any(
-        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines],
     )
     assert not any(
         [
             NaturalLanguageFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )
     assert not any(
         [
             TimeSeriesFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )
 
 

@@ -368,6 +368,7 @@ def test_make_split_pipeline(X_y_binary):
     X["A"] = "a"
     X["B"] = "b"
     X["C"] = "c"
+    X["1"][0] = None
 
     algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)
     algo._selected_cols = ["1", "2", "3"]
@@ -377,7 +378,6 @@ def test_make_split_pipeline(X_y_binary):
         "Label Encoder",
         "Categorical Pipeline - Select Columns Transformer",
         "Categorical Pipeline - Label Encoder",
-        "Categorical Pipeline - Imputer",
         "Categorical Pipeline - One Hot Encoder",
         "Numeric Pipeline - Select Columns By Type Transformer",
         "Numeric Pipeline - Label Encoder",
@@ -416,7 +416,6 @@ def test_make_split_pipeline_categorical_only(X_y_binary):
     compute_order = [
         "Select Columns Transformer",
         "Label Encoder",
-        "Imputer",
         "One Hot Encoder",
         "Random Forest Classifier",
     ]
@@ -946,7 +945,9 @@ def test_exclude_featurizers_default_algorithm(
         }
 
     X, y = get_test_data_from_configuration(
-        input_type, problem_type, column_names=["dates", "text", "email", "url"]
+        input_type,
+        problem_type,
+        column_names=["dates", "text", "email", "url"],
     )
 
     algo = DefaultAlgorithm(
@@ -975,23 +976,23 @@ def test_exclude_featurizers_default_algorithm(
         [
             DateTimeFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )
     assert not any(
-        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines],
     )
     assert not any(
-        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines],
     )
     assert not any(
         [
             NaturalLanguageFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )
     assert not any(
         [
             TimeSeriesFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )

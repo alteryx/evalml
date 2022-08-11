@@ -317,7 +317,7 @@ class ComponentGraph:
             if parent_input == "y":
                 y_input = y
             elif parent_input == "X":
-                x_inputs.append(X)
+                x_inputs.append(infer_feature_types(X))
             elif parent_input.endswith(".y"):
                 y_input = component_outputs[parent_input]
             elif parent_input.endswith(".x"):
@@ -341,6 +341,9 @@ class ComponentGraph:
         Raises:
             ValueError: If final component is not a Transformer.
         """
+        X = infer_feature_types(X)
+        if y is not None:
+            y = infer_feature_types(y)
         if len(self.compute_order) == 0:
             return infer_feature_types(X)
         final_component_name = self.compute_order[-1]
@@ -375,6 +378,7 @@ class ComponentGraph:
         Raises:
             ValueError: If final component is not an Estimator.
         """
+        X = infer_feature_types(X)
         if len(self.compute_order) == 0:
             return infer_feature_types(X)
         final_component = self.compute_order[-1]
