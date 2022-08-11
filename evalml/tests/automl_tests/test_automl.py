@@ -4040,7 +4040,7 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
         expected_predictions = pd.Series(expected_predictions, name="target_delay_1")
 
     preds = baseline.predict(X_validation, None, X_train, y_train)
-    pd.testing.assert_series_equal(expected_predictions, preds)
+    pd.testing.assert_series_equal(expected_predictions, preds, check_dtype=False)
     if is_classification(problem_type):
         pd.testing.assert_frame_equal(
             expected_predictions_proba,

@@ -710,7 +710,7 @@ def test_t_sne(data_type):
         X = pd.DataFrame(np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]))
         X.ww.init()
 
-    output_ = t_sne(X, n_components=2, perplexity=50, learning_rate=200.0)
+    output_ = t_sne(X, n_components=2, perplexity=2, learning_rate=200.0)
     assert isinstance(output_, np.ndarray)
 
 
@@ -737,7 +737,7 @@ def test_t_sne_errors_marker_size(marker_size):
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-@pytest.mark.parametrize("perplexity", [0, 4.6, 100])
+@pytest.mark.parametrize("perplexity", [0, 2.6, 3])
 @pytest.mark.parametrize("learning_rate", [100.0, 0.1])
 def test_graph_t_sne(data_type, perplexity, learning_rate, go):
 

@@ -1,6 +1,7 @@
 """Utility methods for EvalML components."""
 import inspect
 
+import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
@@ -11,7 +12,7 @@ from evalml.pipelines.components.component_base import ComponentBase
 from evalml.pipelines.components.estimators.estimator import Estimator
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.problem_types import ProblemTypes, handle_problem_types
-from evalml.utils import get_importable_subclasses
+from evalml.utils import get_importable_subclasses, infer_feature_types
 
 
 def _all_estimators():
@@ -380,3 +381,26 @@ def make_balancing_dictionary(y, sampling_ratio):
             # this class is already larger than the ratio, don't change
             class_dic[index] = value_counts[index]
     return class_dic
+
+
+def downcast_int_nullable_to_double(X):
+    """Downcasts IntegerNullable types to Double in order to support certain estimators like ARIMA, CatBoost, and LightGBM.
+
+    Args:
+        X (pd.DataFrame): Feature data.
+
+    Returns:
+        X: DataFrame initialized with logical type information where IntegerNullables are cast as Double.
+
+    """
+    if not isinstance(X, pd.DataFrame):
+        return X
+    X = infer_feature_types(X)
+    X_schema = X.ww.schema
+    original_X_schema = X_schema.get_subset_schema(
+        subset_cols=X_schema._filter_cols(exclude=["IntegerNullable"]),
+    )
+    X_int_nullable_cols = X_schema._filter_cols(include=["IntegerNullable"])
+    new_ltypes_for_int_nullable_cols = {col: "Double" for col in X_int_nullable_cols}
+    X.ww.init(schema=original_X_schema, logical_types=new_ltypes_for_int_nullable_cols)
+    return X
