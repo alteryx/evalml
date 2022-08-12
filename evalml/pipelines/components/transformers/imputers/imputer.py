@@ -191,35 +191,3 @@ class Imputer(Transformer):
             X_no_all_null[X_boolean.columns] = imputed
 
         return X_no_all_null
-
-    def imputer_choice(self, heuristic_choice, X, y=None):
-        if X.shape[0] * X.shape[1] >= 100000:
-            return heuristic_choice
-        if X.isnull().sum().sum() == 0:
-            return heuristic_choice
-        if X.isnull().sum().sum() / (X.shape[0] * X.shape[1]) >= 0.5:
-            return heuristic_choice
-
-        heuristic_choice.update({"numerical": "knn", "boolean": "knn"})
-        print("Chose KNN")
-        return heuristic_choice
-        # X = infer_feature_types(X)
-        # cat_cols = list(X.ww.select(["category"], return_schema=True).columns)
-        # bool_cols = list(
-        #     X.ww.select(["BooleanNullable", "Boolean"], return_schema=True).columns,
-        # )
-        # numeric_cols = list(X.ww.select(["numeric"], return_schema=True).columns)
-        # for col in cat_cols:
-        #     if is_categorical_actually_boolean(X, col):
-        #         cat_cols.remove(col)
-        #         bool_cols.append(col)
-
-    def updateImputer(self, heuristic_choice):
-        if heuristic_choice["numerical"] == "knn":
-            self._numeric_imputer = KNNImputer(
-                number_neighbors=3,
-            )
-        if heuristic_choice["boolean"] == "knn":
-            self._boolean_imputer = KNNImputer(
-                number_neighbors=3,
-            )

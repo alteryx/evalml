@@ -68,7 +68,7 @@ class KNNImputer(Transformer):
             self
 
         Raises:
-            ValueError: if the SimpleImputer receives a dataframe with both Boolean and Categorical data.
+            ValueError: if the KNNImputer receives a dataframe with both Boolean and Categorical data.
 
         """
         X = infer_feature_types(X)

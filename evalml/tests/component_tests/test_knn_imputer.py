@@ -16,7 +16,7 @@ from woodwork.logical_types import (
 from evalml.pipelines.components.transformers.imputers import KNNImputer
 
 
-def test_knn_imputer():
+def test_knn_imputer_1_neighbor():
     X = pd.DataFrame(
         [
             [np.nan, 0, 1, np.nan],
@@ -44,97 +44,31 @@ def test_knn_imputer():
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
 
 
-'''
-def test_simple_imputer_mean():
-    X = pd.DataFrame([[np.nan, 0, 1, np.nan], [1, 2, 3, 2], [1, 2, 3, 0]])
+def test_knn_imputer_2_neighbors():
+    X = pd.DataFrame([[np.nan, 0, 3, np.nan], [1, 2, 3, 2], [1, 2, 3, 0]])
     # test impute_strategy
-    transformer = SimpleImputer(impute_strategy="mean")
-    X_expected_arr = pd.DataFrame([[1, 0, 1, 1], [1, 2, 3, 2], [1, 2, 3, 0]])
-    X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
-
-
-def test_simple_imputer_constant():
-    # test impute strategy is constant and fill value is not specified
-    X = pd.DataFrame([[np.nan, 0, 1, np.nan], ["a", 2, np.nan, 3], ["b", 2, 3, 0]])
-    X.ww.init(logical_types={0: "categorical", 1: "Double", 2: "Double", 3: "Double"})
-    transformer = SimpleImputer(impute_strategy="constant", fill_value=3)
-    X_expected_arr = pd.DataFrame([[3, 0, 1, 3], ["a", 2, 3, 3], ["b", 2, 3, 0]])
-    X_expected_arr = X_expected_arr.astype({0: "category"})
-    X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
-
-
-def test_simple_imputer_most_frequent():
-    X = pd.DataFrame([[np.nan, 0, 1, np.nan], ["a", 2, np.nan, 3], ["b", 2, 1, 0]])
-    X.ww.init(logical_types={0: "categorical", 1: "Double", 2: "Double", 3: "Double"})
-    transformer = SimpleImputer(impute_strategy="most_frequent")
-    X_expected_arr = pd.DataFrame([["a", 0, 1, 0], ["a", 2, 1, 3], ["b", 2, 1, 0]])
-    X_expected_arr = X_expected_arr.astype({0: "category"})
-    X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
-
-
-def test_simple_imputer_col_with_non_numeric():
-    # test col with all strings
-    X = pd.DataFrame(
-        [["a", 0, 1, np.nan], ["b", 2, 3, 3], ["a", 2, 3, 1], [np.nan, 2, 3, 0]],
-    )
-    X.ww.init(logical_types={0: "categorical", 1: "Double", 2: "Double", 3: "Double"})
-    transformer = SimpleImputer(impute_strategy="mean")
-    with pytest.raises(
-        ValueError,
-        match="Cannot use mean strategy with non-numeric data",
-    ):
-        transformer.fit_transform(X)
-    with pytest.raises(
-        ValueError,
-        match="Cannot use mean strategy with non-numeric data",
-    ):
-        transformer.fit(X)
-
-    transformer = SimpleImputer(impute_strategy="median")
-    with pytest.raises(
-        ValueError,
-        match="Cannot use median strategy with non-numeric data",
-    ):
-        transformer.fit_transform(X)
-    with pytest.raises(
-        ValueError,
-        match="Cannot use median strategy with non-numeric data",
-    ):
-        transformer.fit(X)
-
-    transformer = SimpleImputer(impute_strategy="most_frequent")
+    transformer = KNNImputer(number_neighbors=2)
     X_expected_arr = pd.DataFrame(
-        [["a", 0, 1, 0], ["b", 2, 3, 3], ["a", 2, 3, 1], ["a", 2, 3, 0]],
+        [[1, 0, 3, 1], [1, 2, 3, 2], [1, 2, 3, 0]],
     )
-    X_expected_arr = X_expected_arr.astype({0: "category"})
-    X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
-
-    transformer = SimpleImputer(impute_strategy="constant", fill_value=2)
-    X_expected_arr = pd.DataFrame(
-        [["a", 0, 1, 2], ["b", 2, 3, 3], ["a", 2, 3, 1], [2, 2, 3, 0]],
-    )
-    X_expected_arr = X_expected_arr.astype({0: "category"})
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
 
 
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
-def test_simple_imputer_all_bool_return_original(data_type, make_data_type):
+def test_knn_imputer_all_bool_return_original(data_type, make_data_type):
     X = pd.DataFrame([True, True, False, True, True], dtype=bool)
     y = pd.Series([1, 0, 0, 1, 0])
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
     X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype=bool)
-    imputer = SimpleImputer()
+    imputer = KNNImputer()
     imputer.fit(X, y)
     X_t = imputer.transform(X)
     assert_frame_equal(X_expected_arr, X_t)
 
 
+'''
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_simple_imputer_boolean_dtype(data_type, make_data_type):
     X = pd.DataFrame([True, np.nan, False, np.nan, True])
@@ -142,11 +76,10 @@ def test_simple_imputer_boolean_dtype(data_type, make_data_type):
     y = pd.Series([1, 0, 0, 1, 0])
     X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype="boolean")
     X = make_data_type(data_type, X)
-    imputer = SimpleImputer()
+    imputer = KNNImputer()
     imputer.fit(X, y)
     X_t = imputer.transform(X)
     assert_frame_equal(X_expected_arr, X_t)
-
 
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_simple_imputer_multitype_with_one_bool(data_type, make_data_type):
@@ -577,6 +510,8 @@ def test_simple_imputer_ignores_natural_language(
     elif df_composition == "single_column":
         assert_frame_equal(result, X_df)
 
+'''
+
 
 @pytest.mark.parametrize(
     "data",
@@ -585,10 +520,9 @@ def test_simple_imputer_ignores_natural_language(
         ["float col"],
         ["categorical col", "bool col"],
         ["bool col", "float col"],
-        ["categorical col", "float col"],
     ],
 )
-def test_simple_imputer_errors_with_bool_and_categorical_columns(
+def test_knn_imputer_errors_with_bool_and_categorical_columns(
     data,
     imputer_test_data,
 ):
@@ -596,11 +530,10 @@ def test_simple_imputer_errors_with_bool_and_categorical_columns(
     if "categorical col" in data and "bool col" in data:
         with pytest.raises(
             ValueError,
-            match="SimpleImputer cannot handle dataframes with both boolean and categorical features.",
+            match="KNNImputer cannot handle dataframes with both boolean and categorical features.",
         ):
-            si = SimpleImputer()
+            si = KNNImputer()
             si.fit(X_df)
     else:
-        si = SimpleImputer()
+        si = KNNImputer()
         si.fit(X_df)
-'''
