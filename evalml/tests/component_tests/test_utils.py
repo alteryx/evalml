@@ -48,6 +48,7 @@ all_requirements_set = set(
         "Extra Trees Regressor",
         "Imputer",
         "KNN Classifier",
+        "KNN Imputer",
         "LSA Transformer",
         "Label Encoder",
         "Linear Discriminant Analysis Transformer",
