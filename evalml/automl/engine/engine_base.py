@@ -390,7 +390,7 @@ def train_and_score_pipeline(
             "cv_scores": cv_scores,
             "cv_score_mean": cv_score_mean,
             "holdout_score": None if not use_holdout else holdout_score,
-            "holdout_scores": None if not use_holdout else holdout_scores,
+            "all_holdout_scores": None if not use_holdout else holdout_scores,
         },
         "cached_data": pipeline_cache,
         "pipeline": stored_pipeline,
