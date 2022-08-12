@@ -124,6 +124,7 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             pd.Series: Estimated labels.
         """
+        X = infer_feature_types(X)
         _predictions = self._predict(X, objective=objective)
         predictions = self.inverse_transform(_predictions.astype(int))
         predictions = pd.Series(
