@@ -368,11 +368,11 @@ def train_and_score_pipeline(
     )
 
     holdout_score = np.NaN
-    holdout_scores = np.NaN
+    all_holdout_scores = np.NaN
     if use_holdout:
         logger.info("\tStarting holdout set scoring")
         logger.debug(f"\t\tTraining and scoring entire dataset")
-        holdout_score, holdout_scores, stored_pipeline = _train_and_score(
+        holdout_score, all_holdout_scores, stored_pipeline = _train_and_score(
             X_train=full_X_train,
             X_score=X_holdout,
             y_train=full_y_train,
@@ -390,7 +390,7 @@ def train_and_score_pipeline(
             "cv_scores": cv_scores,
             "cv_score_mean": cv_score_mean,
             "holdout_score": None if not use_holdout else holdout_score,
-            "all_holdout_scores": None if not use_holdout else holdout_scores,
+            "all_holdout_scores": None if not use_holdout else all_holdout_scores,
         },
         "cached_data": pipeline_cache,
         "pipeline": stored_pipeline,
