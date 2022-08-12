@@ -109,7 +109,6 @@ class KNNImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X = infer_feature_types(X)
-        original_schema = X.ww.schema
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X.dtypes == bool).all():
