@@ -70,8 +70,8 @@ def test_imputer_init(
     }
     expected_hyperparameters = {
         "categorical_impute_strategy": ["most_frequent"],
-        "numeric_impute_strategy": ["mean", "median", "most_frequent"],
-        "boolean_impute_strategy": ["most_frequent"],
+        "numeric_impute_strategy": ["mean", "median", "most_frequent", "knn"],
+        "boolean_impute_strategy": ["most_frequent", "knn"],
     }
     assert imputer.name == "Imputer"
     assert imputer.parameters == expected_parameters
