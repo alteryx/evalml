@@ -991,10 +991,10 @@ def test_automl_search_ratio_overrides_sampler_ratio(
 @pytest.mark.parametrize(
     "problem_type,sampling_ratio_dict,length",
     [
-        ("binary", {0: 0.5, 1: 1}, 810),
-        ("binary", {0: 0.2, 1: 1}, 1080),
-        ("multiclass", {0: 0.5, 1: 1, 2: 1}, 540),
-        ("multiclass", {0: 0.75, 1: 1, 2: 1}, 450),
+        ("binary", {0: 0.5, 1: 1}, 600),
+        ("binary", {0: 0.2, 1: 1}, 800),
+        ("multiclass", {0: 0.5, 1: 1, 2: 1}, 400),
+        ("multiclass", {0: 0.75, 1: 1, 2: 1}, 333),
     ],
 )
 @patch("evalml.pipelines.components.estimators.Estimator.fit")
@@ -1044,10 +1044,10 @@ def test_automl_search_dictionary_undersampler(
 @pytest.mark.parametrize(
     "problem_type,sampling_ratio_dict,length",
     [
-        ("binary", {0: 1, 1: 0.5}, 1215),
-        ("binary", {0: 1, 1: 0.8}, 1458),
-        ("multiclass", {0: 1, 1: 0.5, 2: 0.5}, 1620),
-        ("multiclass", {0: 1, 1: 0.8, 2: 0.8}, 2106),
+        ("binary", {0: 1, 1: 0.5}, 900),
+        ("binary", {0: 1, 1: 0.8}, 1080),
+        ("multiclass", {0: 1, 1: 0.5, 2: 0.5}, 1200),
+        ("multiclass", {0: 1, 1: 0.8, 2: 0.8}, 1560),
     ],
 )
 @patch("evalml.pipelines.components.estimators.Estimator.fit")

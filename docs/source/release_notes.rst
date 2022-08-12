@@ -4,9 +4,12 @@ Release Notes
     * Enhancements
         * Updated to run with Woodwork >= 0.17.2 :pr:`3626`
         * Added ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631`
+        * Added ``fit_transform`` method to pipelines and component graphs :pr:`3640` 
     * Fixes
     * Changes
-        * Reduced the default test size in ``split_data`` to 0.1 for timeseries problems :pr:`3650`
+        * Disabled holdout set in AutoML search by default :pr:`3659`
+        * Pinned ``sktime`` at >=0.7.0,<0.13.1 due to slowdowns with time series modeling :pr:`3658`
+        * Reduced the default test size in ``split_data`` to 0.1 for time series problems :pr:`3650`
     * Documentation Changes
         * Updated broken link checker to exclude stackoverflow domain :pr:`3633`
         * Added instructions to add new users to evalml-core-feedstock :pr:`3636`
