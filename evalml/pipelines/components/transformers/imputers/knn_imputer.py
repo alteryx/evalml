@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import woodwork
 from sklearn.impute import KNNImputer as Sk_KNNImputer
-from woodwork.logical_types import Double
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
@@ -129,8 +128,6 @@ class KNNImputer(Transformer):
 
         X_t = self._component_obj.transform(X_t)
         X_t = pd.DataFrame(X_t, columns=not_all_null_or_natural_language_cols)
-
-        new_schema = original_schema.get_subset_schema(X_t.columns)
 
         # TODO: Fix this after WW adds inference of object type booleans to BooleanNullable
         # Iterate through categorical columns that might have been boolean and convert them back to boolean
