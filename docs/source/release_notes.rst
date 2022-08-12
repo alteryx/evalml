@@ -5,9 +5,10 @@ Release Notes
         * Updated to run with Woodwork >= 0.17.2 :pr:`3626`
         * Added ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631`
         * Updated ``make_pipeline`` to only include the Imputer in pipelines if NaNs exist in the data :pr:`3657`
+        * Added ``fit_transform`` method to pipelines and component graphs :pr:`3640`
     * Fixes
     * Changes
-        * Disable holdout set in AutoML search by default :pr:`3659`
+        * Disabled holdout set in AutoML search by default :pr:`3659`
         * Pinned ``sktime`` at >=0.7.0,<0.13.1 due to slowdowns with time series modeling :pr:`3658`
     * Documentation Changes
         * Updated broken link checker to exclude stackoverflow domain :pr:`3633`
