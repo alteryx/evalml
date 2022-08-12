@@ -73,7 +73,7 @@ outputs:
         - lime >=0.2.0.1
         - python >=3.8.*
         - imbalanced-learn >=0.9.1
-        - sktime >=0.7.0
+        - sktime >=0.7.0,<0.13.1
         - pmdarima >=1.8.5
         - vowpalwabbit >=8.11.0
     test:

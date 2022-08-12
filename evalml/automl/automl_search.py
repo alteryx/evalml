@@ -475,7 +475,7 @@ class AutoMLSearch:
         verbose=False,
         timing=False,
         exclude_featurizers=None,
-        holdout_set_size=0.1,
+        holdout_set_size=0,
     ):
         self.verbose = verbose
         if verbose:
