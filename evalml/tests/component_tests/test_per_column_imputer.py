@@ -219,15 +219,18 @@ def test_fit_transform_drop_all_nan_columns():
         "another_col": {"impute_strategy": "most_frequent"},
     }
     transformer = PerColumnImputer(impute_strategies=strategies)
-    X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
+    X_expected_arr = pd.DataFrame(
+        {"some_nan": [0, 1, 0], "another_col": [0, 1, 2]},
+    ).astype({"some_nan": "Int64"})
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
+    # Check that original dataframe remains unchanged
     assert_frame_equal(
         X,
         pd.DataFrame(
             {
                 "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [0.0, 1.0, 0.0],
+                "some_nan": [0, 1, 0],
                 "another_col": [0, 1, 2],
             },
         ),
@@ -259,7 +262,7 @@ def test_transform_drop_all_nan_columns():
         pd.DataFrame(
             {
                 "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [0.0, 1.0, 0.0],
+                "some_nan": [0, 1, 0],
                 "another_col": [0, 1, 2],
             },
         ),
@@ -347,8 +350,9 @@ def test_per_column_imputer_column_subset():
     )
     X_expected.ww.init(
         logical_types={
-            "all_nan_not_included": "double",
-            "column_with_nan_included": "double",
+            "all_nan_not_included": "Double",
+            "column_with_nan_not_included": "IntegerNullable",
+            "column_with_nan_included": "IntegerNullable",
         },
     )
     X.ww.init(
@@ -362,11 +366,10 @@ def test_per_column_imputer_column_subset():
             {
                 "all_nan_not_included": [np.nan, np.nan, np.nan],
                 "all_nan_included": [np.nan, np.nan, np.nan],
-                "column_with_nan_not_included": [np.nan, 1, 0],
-                # Because of https://github.com/alteryx/evalml/issues/2055
-                "column_with_nan_included": [0.0, 1.0, 0.0],
+                "column_with_nan_not_included": [pd.NA, 1, 0],
+                "column_with_nan_included": [0, 1, 0],
             },
-        ),
+        ).astype({"column_with_nan_not_included": "Int64"}),
     )
 
 

@@ -139,7 +139,6 @@ def test_make_pipeline(
                     any(
                         x in column_names for x in ["bool_null", "int_null", "age_null"]
                     )
-                    and input_type == "ww"
                 )
                 else []
             )

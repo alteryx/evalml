@@ -161,7 +161,8 @@ class Imputer(Transformer):
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
             X_numeric = X.ww[self._numeric_cols.tolist()]
             imputed = self._numeric_imputer.transform(X_numeric)
-            X_no_all_null[X_numeric.columns] = imputed
+            for numeric_col in X_numeric.columns:
+                X_no_all_null.ww[numeric_col] = imputed[numeric_col]
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
             X_categorical = X.ww[self._categorical_cols.tolist()]
