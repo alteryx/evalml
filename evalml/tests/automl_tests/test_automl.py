@@ -894,10 +894,10 @@ def test_large_dataset_split_size(X_y_binary):
     )
     assert isinstance(automl.data_splitter, StratifiedKFold)
 
-    under_max_rows = (
-        _LARGE_DATA_ROW_THRESHOLD + int(ceil(_LARGE_DATA_ROW_THRESHOLD * 0.1 / 0.9)) - 1
-    )  # Should be under threshold even after taking out holdout set
-    X, y = generate_fake_dataset(under_max_rows)
+    # under_max_rows = (
+    #     _LARGE_DATA_ROW_THRESHOLD + int(ceil(_LARGE_DATA_ROW_THRESHOLD * 0.1 / 0.9)) - 1
+    # )  # Should be under threshold even after taking out holdout set
+    X, y = generate_fake_dataset(_LARGE_DATA_ROW_THRESHOLD)
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -5204,7 +5204,13 @@ def test_init_create_holdout_set(caplog):
         n_samples=AutoMLSearch._HOLDOUT_SET_MIN_ROWS - 1,
         random_state=0,
     )
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", verbose=True)
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        verbose=True,
+        holdout_set_size=0.1,
+    )
     out = caplog.text
 
     match_text = f"Dataset size is too small to create holdout set. Mininum dataset size is {AutoMLSearch._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X)} rows. Holdout set evaluation is disabled."
@@ -5221,7 +5227,13 @@ def test_init_create_holdout_set(caplog):
         n_samples=AutoMLSearch._HOLDOUT_SET_MIN_ROWS,
         random_state=0,
     )
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", verbose=True)
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        verbose=True,
+        holdout_set_size=0.1,
+    )
     out = caplog.text
 
     expected_holdout_size = int(automl.holdout_set_size * len(X))
