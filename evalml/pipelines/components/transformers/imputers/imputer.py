@@ -36,9 +36,6 @@ class Imputer(Transformer):
         ["mean", "median", "most_frequent", "constant", "knn"],
     )
     _valid_boolean_impute_strategies = set(["most_frequent", "constant", "knn"])
-    default_imputer_choice = dict(
-        {"categorical": "simple", "boolean": "simple", "numerical": "simple"},
-    )
 
     def __init__(
         self,
@@ -49,7 +46,6 @@ class Imputer(Transformer):
         boolean_impute_strategy="most_frequent",
         boolean_fill_value=None,
         random_seed=0,
-        heuristic_choice=default_imputer_choice,
         **kwargs,
     ):
         if categorical_impute_strategy not in self._valid_categorical_impute_strategies:
@@ -72,7 +68,6 @@ class Imputer(Transformer):
             "categorical_fill_value": categorical_fill_value,
             "numeric_fill_value": numeric_fill_value,
             "boolean_fill_value": boolean_fill_value,
-            "heuristic_choice": heuristic_choice,
         }
         parameters.update(kwargs)
         self._categorical_imputer = SimpleImputer(
@@ -80,18 +75,20 @@ class Imputer(Transformer):
             fill_value=categorical_fill_value,
             **kwargs,
         )
-        if heuristic_choice["boolean"] == "knn":
-            self._boolean_imputer = KNNImputer()
+        if boolean_impute_strategy == "knn":
+            self._numeric_impute_strategy = KNNImputer(
+                number_neighbors=1,
+                **kwargs,
+            )
         else:
             self._boolean_imputer = SimpleImputer(
                 impute_strategy=boolean_impute_strategy,
                 fill_value=boolean_fill_value,
                 **kwargs,
             )
-        if heuristic_choice["boolean"] == "knn":
-            self._numeric_imputer = SimpleImputer(
-                impute_strategy=numeric_impute_strategy,
-                fill_value=numeric_fill_value,
+        if numeric_impute_strategy == "knn":
+            self._numeric_imputer = KNNImputer(
+                number_neighbors=3,
                 **kwargs,
             )
         else:
@@ -120,6 +117,11 @@ class Imputer(Transformer):
         Returns:
             self
         """
+        # default_imputer_choice = dict(
+        #     {"categorical": "simple", "boolean": "simple", "numerical": "simple"},
+        # )
+        # imputer_choice = self.imputer_choice(default_imputer_choice, X, y)
+        # self.updateImputer(imputer_choice)
         X = infer_feature_types(X)
         cat_cols = list(X.ww.select(["category"], return_schema=True).columns)
         bool_cols = list(
@@ -190,16 +192,34 @@ class Imputer(Transformer):
 
         return X_no_all_null
 
-    def imputer_choice(self, X, y=None):
-        X = infer_feature_types(X)
-        cat_cols = list(X.ww.select(["category"], return_schema=True).columns)
-        bool_cols = list(
-            X.ww.select(["BooleanNullable", "Boolean"], return_schema=True).columns,
-        )
-        numeric_cols = list(X.ww.select(["numeric"], return_schema=True).columns)
-        for col in cat_cols:
-            if is_categorical_actually_boolean(X, col):
-                cat_cols.remove(col)
-                bool_cols.append(col)
+    def imputer_choice(self, heuristic_choice, X, y=None):
+        if X.shape[0] * X.shape[1] >= 100000:
+            return heuristic_choice
+        if X.isnull().sum().sum() == 0:
+            return heuristic_choice
+        if X.isnull().sum().sum() / (X.shape[0] * X.shape[1]) >= 0.5:
+            return heuristic_choice
 
-        # TODO: look through the different columns and determine what imputer to use for each
+        heuristic_choice.update({"numerical": "knn", "boolean": "knn"})
+        print("Chose KNN")
+        return heuristic_choice
+        # X = infer_feature_types(X)
+        # cat_cols = list(X.ww.select(["category"], return_schema=True).columns)
+        # bool_cols = list(
+        #     X.ww.select(["BooleanNullable", "Boolean"], return_schema=True).columns,
+        # )
+        # numeric_cols = list(X.ww.select(["numeric"], return_schema=True).columns)
+        # for col in cat_cols:
+        #     if is_categorical_actually_boolean(X, col):
+        #         cat_cols.remove(col)
+        #         bool_cols.append(col)
+
+    def updateImputer(self, heuristic_choice):
+        if heuristic_choice["numerical"] == "knn":
+            self._numeric_imputer = KNNImputer(
+                number_neighbors=3,
+            )
+        if heuristic_choice["boolean"] == "knn":
+            self._boolean_imputer = KNNImputer(
+                number_neighbors=3,
+            )

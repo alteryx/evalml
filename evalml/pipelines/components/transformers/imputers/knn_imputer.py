@@ -1,4 +1,5 @@
 """Component that imputes missing data according to a specified imputation strategy."""
+import numpy as np
 import pandas as pd
 import woodwork
 from sklearn.impute import KNNImputer as Sk_KNNImputer
@@ -28,7 +29,7 @@ class KNNImputer(Transformer):
         parameters.update(kwargs)
         imputer = Sk_KNNImputer(
             n_neighbors=number_neighbors,
-            missing_values=pd.NA,
+            missing_values=np.nan,
             **kwargs,
         )
         self._all_null_cols = None
