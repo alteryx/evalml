@@ -76,7 +76,7 @@ class Imputer(Transformer):
             **kwargs,
         )
         if boolean_impute_strategy == "knn":
-            self._numeric_impute_strategy = KNNImputer(
+            self._boolean_imputer = KNNImputer(
                 number_neighbors=1,
                 **kwargs,
             )
