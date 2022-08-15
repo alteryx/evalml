@@ -2,10 +2,11 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Updated to run with Woodwork >= 0.17.2 :pr:`3626`
         * Add ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631`
         * Added ``Progress`` abstraction to handle stopping criteria logic and return search progress information :pr:`3632`
+        * Add ``fit_transform`` method to pipelines and component graphs :pr:`3640`
     * Fixes
+        * Reverted the Woodwork 0.17.x compatibility work due to performance regression :pr:`3664`
     * Changes
         * Disable holdout set in AutoML search by default :pr:`3659`
         * Pinned ``sktime`` at >=0.7.0,<0.13.1 due to slowdowns with time series modeling :pr:`3658`
