@@ -377,11 +377,9 @@ def test_make_split_pipeline(X_y_binary):
         "Label Encoder",
         "Categorical Pipeline - Select Columns Transformer",
         "Categorical Pipeline - Label Encoder",
-        "Categorical Pipeline - Imputer",
         "Categorical Pipeline - One Hot Encoder",
         "Numeric Pipeline - Select Columns By Type Transformer",
         "Numeric Pipeline - Label Encoder",
-        "Numeric Pipeline - Imputer",
         "Numeric Pipeline - Select Columns Transformer",
         "Random Forest Classifier",
     ]
@@ -416,7 +414,6 @@ def test_make_split_pipeline_categorical_only(X_y_binary):
     compute_order = [
         "Select Columns Transformer",
         "Label Encoder",
-        "Imputer",
         "One Hot Encoder",
         "Random Forest Classifier",
     ]
