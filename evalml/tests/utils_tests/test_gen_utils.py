@@ -562,7 +562,9 @@ def test_save_graphviz_different_format(
     assert os.path.basename(output_) == "test_plot.png"
 
 
-@pytest.mark.parametrize("file_name,format,interactive", [("Output/in_folder_plot", "jpeg", True)],
+@pytest.mark.parametrize(
+    "file_name,format,interactive",
+    [("Output/in_folder_plot", "jpeg", True)],
 )
 def test_save_graphviz_invalid_filepath(
     file_name,
@@ -861,8 +863,11 @@ def test_time_series_pipeline_validates_holdout_data(
 
 def test_year_start_separated_by_gap():
     X = pd.DataFrame(
-        {"time_index": pd.Series(pd.date_range("1960-01-01", freq="AS-JAN", periods=35),
-            ),},
+        {
+            "time_index": pd.Series(
+                pd.date_range("1960-01-01", freq="AS-JAN", periods=35),
+            ),
+        },
     )
     train = X.iloc[:30]
     test = X.iloc[32:36]
