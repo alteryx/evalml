@@ -572,7 +572,7 @@ def test_pipeline_custom_hyperparameters_make_pipeline(
                         "mean",
                         "median",
                         "most_frequent",
-                        "knn"
+                        "knn",
                     ]
                 assert (
                     1
