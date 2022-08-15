@@ -2,11 +2,11 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Updated to run with Woodwork >= 0.17.2 :pr:`3626`
         * Add ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631`
-        * Add ``fit_transform`` method to pipelines and component graphs :pr:`3640` 
+        * Add ``fit_transform`` method to pipelines and component graphs :pr:`3640`
     * Fixes
         * ``IDColumnsDataCheck`` now only returns an action code to set the first column as the primary key if it contains unique values :pr:`3639`
+        * Reverted the Woodwork 0.17.x compatibility work due to performance regression :pr:`3664`
     * Changes
         * Disable holdout set in AutoML search by default :pr:`3659`
         * Pinned ``sktime`` at >=0.7.0,<0.13.1 due to slowdowns with time series modeling :pr:`3658`
