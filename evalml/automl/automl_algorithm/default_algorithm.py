@@ -151,26 +151,19 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         Returns:
             int: number of pipelines in the given batch.
         """
+        if batch_number == 0 or batch_number == 1:
+            return len(self._naive_estimators())
+        elif batch_number == 2:
+            return len(self._non_naive_estimators())
         if self.ensembling:
-            if batch_number == 0 or batch_number == 1:
-                return len(self._naive_estimators())
-            elif batch_number == 2:
-                return len(self._non_naive_estimators())
+            if batch_number % 2 != 0:
+                return 1
             elif batch_number == 4:
                 return self.num_long_explore_pipelines * self.top_n
-            elif batch_number % 2 != 0:
-                return 1
-            else:
-                return self.num_long_pipelines_per_batch * self.top_n
         else:
-            if batch_number == 0 or batch_number == 1:
-                return len(self._naive_estimators())
-            elif batch_number == 2:
-                return len(self._non_naive_estimators())
-            elif batch_number == 3:
+            if batch_number == 3:
                 return self.num_long_explore_pipelines * self.top_n
-            else:
-                return self.num_long_pipelines_per_batch * self.top_n
+        return self.num_long_pipelines_per_batch * self.top_n
 
     def _naive_estimators(self):
         if is_regression(self.problem_type):
