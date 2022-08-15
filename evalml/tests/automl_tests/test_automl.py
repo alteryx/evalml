@@ -3188,7 +3188,6 @@ def test_automl_validate_objective(non_core_objective, X_y_regression):
 def test_automl_pipeline_params_simple(AutoMLTestEnv, X_y_binary):
     X, y = X_y_binary
     params = {
-        "Imputer": {"numeric_impute_strategy": "most_frequent"},
         "Logistic Regression Classifier": {"C": 10, "penalty": "l2"},
         "Elastic Net Classifier": {"l1_ratio": 0.2},
     }
@@ -3204,11 +3203,6 @@ def test_automl_pipeline_params_simple(AutoMLTestEnv, X_y_binary):
     with env.test_context(score_return_value={automl.objective.name: 1.23}):
         automl.search()
     for i, row in automl.rankings.iterrows():
-        if "Imputer" in row["parameters"]:
-            assert (
-                row["parameters"]["Imputer"]["numeric_impute_strategy"]
-                == "most_frequent"
-            )
         if "Logistic Regression Classifier" in row["parameters"]:
             assert row["parameters"]["Logistic Regression Classifier"]["C"] == 10
             assert (
@@ -3220,6 +3214,7 @@ def test_automl_pipeline_params_simple(AutoMLTestEnv, X_y_binary):
 
 def test_automl_pipeline_params_multiple(AutoMLTestEnv, X_y_regression):
     X, y = X_y_regression
+    X[0][2] = None  # introduce a null value to include the imputer
     hyperparams = {
         "Imputer": {
             "numeric_impute_strategy": Categorical(["median", "most_frequent"]),
@@ -3268,7 +3263,6 @@ def test_automl_pipeline_params_multiple(AutoMLTestEnv, X_y_regression):
 def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
     X, y = X_y_multi
     hyperparams = {
-        "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent"])},
         "Decision Tree Classifier": {
             "max_depth": Integer(1, 2),
             "ccp_alpha": Real(0.1, 0.5),
@@ -3286,11 +3280,6 @@ def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
     with env.test_context(score_return_value={automl.objective.name: 1.0}):
         automl.search()
     for i, row in automl.rankings.iterrows():
-        if "Imputer" in row["parameters"]:
-            assert (
-                row["parameters"]["Imputer"]["numeric_impute_strategy"]
-                == "most_frequent"
-            )
         if "Decision Tree Classifier" in row["parameters"]:
             assert (
                 0.1 < row["parameters"]["Decision Tree Classifier"]["ccp_alpha"] < 0.5
@@ -4763,13 +4752,16 @@ def test_search_parameters_held_automl(
             break
     assert found_dtc
     for tuners in aml.automl_algorithm._tuners.values():
-        assert (
-            tuners._pipeline_hyperparameter_ranges["Imputer"]["numeric_impute_strategy"]
-            == expected
-        )
-        assert tuners._pipeline_hyperparameter_ranges["Imputer"][
-            "categorical_impute_strategy"
-        ] == ["most_frequent"]
+        if "Imputer" in tuners._pipeline_hyperparameter_ranges:
+            assert (
+                tuners._pipeline_hyperparameter_ranges["Imputer"][
+                    "numeric_impute_strategy"
+                ]
+                == expected
+            )
+            assert tuners._pipeline_hyperparameter_ranges["Imputer"][
+                "categorical_impute_strategy"
+            ] == ["most_frequent"]
         # make sure that there are no set hyperparameters when we don't have defaults
         assert tuners._pipeline_hyperparameter_ranges["Label Encoder"] == {}
         assert tuners.propose()["Label Encoder"] == {}
