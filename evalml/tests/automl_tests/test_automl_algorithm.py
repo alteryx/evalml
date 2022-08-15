@@ -15,6 +15,9 @@ class DummyAlgorithm(AutoMLAlgorithm):
         super().__init__()
         self._dummy_pipelines = dummy_pipelines or []
 
+    def num_pipelines_per_batch(self, batch_number):
+        return None
+
     def next_batch(self):
         self._pipeline_number += 1
         self._batch_number += 1
@@ -29,6 +32,9 @@ class DummyAlgorithm(AutoMLAlgorithm):
 class AllowedPipelinesAlgorithm(AutoMLAlgorithm):
     def __init__(self, allowed_pipelines=None, random_seed=0):
         super().__init__(allowed_pipelines=allowed_pipelines, random_seed=random_seed)
+
+    def num_pipelines_per_batch(self, batch_number):
+        return None
 
     def next_batch(self):
         pass
@@ -54,6 +60,7 @@ def test_automl_algorithm_dummy():
     assert algo.next_batch() == "pipeline 3"
     assert algo.pipeline_number == 3
     assert algo.batch_number == 3
+    assert algo.num_pipelines_per_batch(3) is None
     with pytest.raises(StopIteration, match="No more pipelines!"):
         algo.next_batch()
 
@@ -109,6 +116,7 @@ def test_automl_algorithm_add_pipelines(dummy_binary_pipeline):
     aml_add_pipelines._set_allowed_pipelines(allowed_pipelines)
 
     assert aml.allowed_pipelines == aml_add_pipelines.allowed_pipelines
+    assert aml.num_pipelines_per_batch(0) is None
     # the tuner objects themselves are different so we cannot check for dictionary equality
     assert aml._tuners.keys() == aml_add_pipelines._tuners.keys()
     assert aml._tuner_class == aml_add_pipelines._tuner_class
