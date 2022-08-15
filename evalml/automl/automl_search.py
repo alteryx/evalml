@@ -963,7 +963,7 @@ class AutoMLSearch:
             elif choice == "n":
                 # So that the time in this loop does not count towards the time budget (if set)
                 time_in_loop = time.time() - start_of_loop
-                self.progress._start_time += time_in_loop
+                self.progress.start_time += time_in_loop
                 return False
             else:
                 leading_char = ""
@@ -1029,7 +1029,7 @@ class AutoMLSearch:
                 interactive_plot=interactive_plot,
             )
 
-        self.progress._start_time = time.time()
+        self.progress.start_timing()
 
         try:
             self._add_baseline_pipelines()
@@ -1142,8 +1142,8 @@ class AutoMLSearch:
                 pipeline_times["Total time of batch"] = time_elapsed(start_batch_time)
                 batch_times[self._get_batch_number()] = pipeline_times
 
-        self.search_duration = time.time() - self.progress._start_time
-        elapsed_time = time_elapsed(self.progress._start_time)
+        self.search_duration = time.time() - self.progress.start_time
+        elapsed_time = time_elapsed(self.progress.start_time)
         desc = f"\nSearch finished after {elapsed_time}"
         desc = desc.ljust(self._MAX_NAME_LEN)
         self.logger.info(desc)

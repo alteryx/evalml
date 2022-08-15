@@ -33,7 +33,7 @@ class Progress:
     ):
         self.max_time = max_time
         self.current_time = None
-        self._start_time = None
+        self.start_time = None
         self.max_batches = max_batches
         self.current_batches = 0
         self.max_iterations = max_iterations
@@ -50,6 +50,10 @@ class Progress:
             self.logger = get_logger(f"{__name__}.verbose")
         else:
             self.logger = logging.getLogger(__name__)
+
+    def start_timing(self):
+        """Sets start time to current time"""
+        self.start_time = time.time()
 
     def should_continue(self, results, interrupted=False, mid_batch=False):
         """Given AutoML Results, return whether or not the search should continue.
@@ -69,7 +73,7 @@ class Progress:
         self.current_iterations = len(results["pipeline_results"])
         self.current_batches = self.automl_algorithm.batch_number
 
-        elapsed = self.current_time - self._start_time
+        elapsed = self.current_time - self.start_time
 
         if self.max_time and elapsed >= self.max_time:
             return False
@@ -126,7 +130,7 @@ class Progress:
             progress.append(
                 {
                     "stopping_criteria": "max_time",
-                    "current_state": self.current_time - self._start_time,
+                    "current_state": self.current_time - self.start_time,
                     "end_state": self.max_time,
                     "unit": "seconds",
                 },

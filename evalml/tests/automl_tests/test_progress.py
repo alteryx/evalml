@@ -38,7 +38,7 @@ def test_progress_should_continue(X_y_binary, logistic_regression_binary_pipelin
         max_batches=3,
         max_time=10000,
     )
-    p._start_time = time.time()
+    p.start_time = time.time()
     mock_results = {"search_order": [0, 1, 2, 3], "pipeline_results": {}}
     scores = [
         0.84,
@@ -63,7 +63,7 @@ def test_progress_should_continue(X_y_binary, logistic_regression_binary_pipelin
         tolerance=0.05,
         objective=Gini,
     )
-    p._start_time = time.time()
+    p.start_time = time.time()
     search_order = [0, 1, 2, 3]
     mock_results = {"search_order": [], "pipeline_results": {}}
     scores = [
@@ -103,7 +103,7 @@ def test_progress_return_progress(X_y_binary, logistic_regression_binary_pipelin
         max_batches=3,
         max_time=10000,
     )
-    p._start_time = time.time()
+    p.start_time = time.time()
     mock_results = {"search_order": [0, 1, 2, 3], "pipeline_results": {}}
     scores = [
         0.84,
