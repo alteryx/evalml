@@ -29,7 +29,7 @@ all_distinct_y = pd.Series([1, 2, 3, 4])
 all_null_y = pd.Series([None] * 4)
 two_distinct_with_nulls_y = pd.Series(([1] * 2) + ([None] * 2))
 two_distinct_with_nulls_y_ww = two_distinct_with_nulls_y.copy()
-two_distinct_with_nulls_y_ww = ww.init_series(two_distinct_with_nulls_y_ww)
+two_distinct_with_nulls_y_ww.ww.init()
 two_distinct_with_nulls_y_ww_nullable_types = ww.init_series(
     two_distinct_with_nulls_y.copy(),
     logical_type="IntegerNullable",

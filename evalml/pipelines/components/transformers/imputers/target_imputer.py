@@ -4,7 +4,7 @@ from functools import wraps
 import pandas as pd
 import woodwork as ww
 from sklearn.impute import SimpleImputer as SkImputer
-from woodwork.logical_types import Categorical, Integer, IntegerNullable
+from woodwork.logical_types import Categorical
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import ComponentBaseMeta
@@ -132,15 +132,9 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         ):
             y_t = y_t.astype(bool)
 
-        new_logical_type = (
-            Integer
-            if isinstance(y_ww.ww.logical_type, IntegerNullable)
-            else y_ww.ww.logical_type
-        )
-
         y_t = ww.init_series(
             y_t,
-            logical_type=new_logical_type,
+            logical_type=y_ww.ww.logical_type,
             semantic_tags=y_ww.ww.semantic_tags,
         )
         return X, y_t

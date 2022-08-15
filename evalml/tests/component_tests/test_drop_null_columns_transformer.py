@@ -45,7 +45,7 @@ def test_drop_null_transformer_transform_default_pct_null_threshold():
     X = pd.DataFrame(
         {"lots_of_null": [None, None, None, None, 5], "no_null": [1, 2, 3, 4, 5]},
     )
-    X_expected = X.astype({"lots_of_null": "Int64", "no_null": "int64"})
+    X_expected = X.astype({"lots_of_null": "float64", "no_null": "int64"})
     drop_null_transformer.fit(X)
     X_t = drop_null_transformer.transform(X)
     assert_frame_equal(X_expected, X_t)
@@ -94,12 +94,7 @@ def test_drop_null_transformer_transform_boundary_pct_null_threshold():
     drop_null_transformer = DropNullColumns(pct_null_threshold=1.0)
     drop_null_transformer.fit(X)
     X_t = drop_null_transformer.transform(X)
-    assert_frame_equal(
-        X_t,
-        X.drop(columns=["all_null"]).astype(
-            {"some_null": "Int64", "lots_of_null": "Int64"},
-        ),
-    )
+    assert_frame_equal(X_t, X.drop(["all_null"], axis=1))
     # check that X is untouched
     assert X.equals(
         pd.DataFrame(
@@ -117,7 +112,7 @@ def test_drop_null_transformer_fit_transform():
     X = pd.DataFrame(
         {"lots_of_null": [None, None, None, None, 5], "no_null": [1, 2, 3, 4, 5]},
     )
-    X_expected = X.astype({"lots_of_null": "Int64", "no_null": "int64"})
+    X_expected = X.astype({"lots_of_null": "float64", "no_null": "int64"})
     X_t = drop_null_transformer.fit_transform(X)
     assert_frame_equal(X_expected, X_t)
 
@@ -156,11 +151,6 @@ def test_drop_null_transformer_fit_transform():
             "all_null": [None, None, None, None, None],
             "lots_of_null": [None, None, None, None, 5],
             "some_null": [None, 0, 3, 4, 5],
-        },
-    ).astype(
-        {
-            "lots_of_null": "Int64",
-            "some_null": "Int64",
         },
     )
     drop_null_transformer = DropNullColumns(pct_null_threshold=1.0)

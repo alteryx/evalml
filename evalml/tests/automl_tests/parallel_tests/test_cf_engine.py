@@ -213,18 +213,7 @@ def test_submit_evaluate_job_single(
         )
 
 
-@pytest.mark.parametrize(
-    "pool_type",
-    [
-        pytest.param(
-            "threads",
-            marks=pytest.mark.xfail(
-                reason="Incompatibility between Woodwork 0.17.x and Concurrent Futures.",
-            ),
-        ),
-        "processes",
-    ],
-)
+@pytest.mark.parametrize("pool_type", ["threads", "processes"])
 def test_submit_evaluate_jobs_multiple(
     X_y_binary_cls,
     pool_type,

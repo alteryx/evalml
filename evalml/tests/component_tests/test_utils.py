@@ -3,7 +3,6 @@ import inspect
 import numpy as np
 import pandas as pd
 import pytest
-from woodwork.logical_types import Boolean, BooleanNullable, Double, Integer
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family import ModelFamily
@@ -16,7 +15,6 @@ from evalml.pipelines.components import ComponentBase, RandomForestClassifier
 from evalml.pipelines.components.utils import (
     _all_estimators,
     all_components,
-    downcast_int_nullable_to_double,
     estimator_unable_to_handle_nans,
     handle_component_class,
     make_balancing_dictionary,
@@ -232,32 +230,3 @@ def test_estimator_unable_to_handle_nans():
         match="`estimator_class` must have a `model_family` attribute.",
     ):
         estimator_unable_to_handle_nans("error")
-
-
-@pytest.mark.parametrize("data_type", ["ww", "pd", "np"])
-def test_downcast_int_nullable_to_double(data_type):
-    df = pd.DataFrame()
-    df["ints"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
-    df["ints_null"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, pd.NA] * 5
-    df["bools"] = [True, False, True, False, True] * 10
-    df["bools_null"] = [True, False, True, False, pd.NA] * 10
-
-    if data_type == "ww":
-        df.ww.init()
-    elif data_type == "np":
-        df = df.to_numpy()
-
-    df = downcast_int_nullable_to_double(df)
-
-    expected_ltypes = {
-        "ints": Integer,
-        "ints_null": Double,
-        "bools": Boolean,
-        "bools_null": BooleanNullable,
-    }
-
-    if data_type in ["ww", "pd"]:
-        for col, ltype in df.ww.logical_types.items():
-            assert str(ltype) == str(expected_ltypes[col])
-    else:
-        assert isinstance(df, np.ndarray)
