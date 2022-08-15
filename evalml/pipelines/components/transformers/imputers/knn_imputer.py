@@ -26,6 +26,7 @@ class KNNImputer(Transformer):
     def __init__(self, number_neighbors=3, random_seed=0, **kwargs):
         parameters = {"number_neighbors": number_neighbors}
         parameters.update(kwargs)
+
         imputer = Sk_KNNImputer(
             n_neighbors=number_neighbors,
             missing_values=np.nan,
@@ -109,7 +110,6 @@ class KNNImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X = infer_feature_types(X)
-
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X.dtypes == bool).all():
             return X
@@ -124,7 +124,6 @@ class KNNImputer(Transformer):
         not_all_null_or_natural_language_cols = [
             col for col in not_all_null_cols if col not in natural_language_cols
         ]
-
         X_t = self._component_obj.transform(X_t)
         X_t = pd.DataFrame(X_t, columns=not_all_null_or_natural_language_cols)
 
@@ -138,9 +137,20 @@ class KNNImputer(Transformer):
         if len(natural_language_cols) > 0:
             X_t = woodwork.concat_columns([X_t, X[natural_language_cols]])
 
+        booleanNullable_columns = list(
+            X.ww.select(["BooleanNullable"], return_schema=True).columns.keys(),
+        )
+        for col in booleanNullable_columns:
+            X_t[col] = X_t[col].astype(bool).astype("boolean")
+
+        boolean_columns = list(
+            X.ww.select(["boolean"], return_schema=True).columns.keys(),
+        )
+        for col in boolean_columns:
+            X_t[col] = X_t[col].astype(bool)
+
         if not_all_null_or_natural_language_cols:
             X_t.index = original_index
-
         return X_t
 
     def fit_transform(self, X, y=None):

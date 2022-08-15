@@ -59,22 +59,21 @@ def test_knn_imputer_all_bool_return_original(data_type, make_data_type):
     assert_frame_equal(X_expected_arr, X_t)
 
 
-'''
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
-def test_simple_imputer_boolean_dtype(data_type, make_data_type):
+def test_knn_imputer_boolean_dtype(data_type, make_data_type):
     X = pd.DataFrame([True, np.nan, False, np.nan, True])
     X.ww.init(logical_types={0: "BooleanNullable"})
     y = pd.Series([1, 0, 0, 1, 0])
     X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype="boolean")
     X = make_data_type(data_type, X)
-    imputer = KNNImputer()
-    imputer.fit(X, y)
-    X_t = imputer.transform(X)
+    print(X)
+    imputer = KNNImputer(number_neighbors=1)
+    X_t = imputer.fit_transform(X, y)
     assert_frame_equal(X_expected_arr, X_t)
 
 
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
-def test_simple_imputer_multitype_with_one_bool(data_type, make_data_type):
+def test_knn_imputer_multitype_with_one_bool(data_type, make_data_type):
     X_multi = pd.DataFrame(
         {
             "bool with nan": pd.Series([True, np.nan, False, np.nan, False]),
@@ -86,7 +85,7 @@ def test_simple_imputer_multitype_with_one_bool(data_type, make_data_type):
     X_multi_expected_arr = pd.DataFrame(
         {
             "bool with nan": pd.Series(
-                [True, False, False, False, False],
+                [True, True, False, True, False],
                 dtype="boolean",
             ),
             "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
@@ -94,60 +93,36 @@ def test_simple_imputer_multitype_with_one_bool(data_type, make_data_type):
     )
     X_multi = make_data_type(data_type, X_multi)
 
-    imputer = SimpleImputer()
+    imputer = KNNImputer(number_neighbors=1)
     imputer.fit(X_multi, y)
     X_multi_t = imputer.transform(X_multi)
     assert_frame_equal(X_multi_expected_arr, X_multi_t)
 
 
-def test_simple_imputer_fit_transform_drop_all_nan_columns():
+def test_knn_imputer_revert_categorical_to_boolean():
     X = pd.DataFrame(
         {
-            "all_nan": [np.nan, np.nan, np.nan],
-            "some_nan": [np.nan, 1, 0],
-            "another_col": [0, 1, 2],
+            "Booleans": pd.Series(
+                [True, True, True, False, False],
+                dtype="boolean",
+            ),
         },
     )
-    X.ww.init(logical_types={"all_nan": "Double"})
-    transformer = SimpleImputer(impute_strategy="most_frequent")
-    X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
-    X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
-    assert_frame_equal(
-        X,
-        pd.DataFrame(
-            {
-                "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [np.nan, 1, 0],
-                "another_col": [0, 1, 2],
-            },
-        ),
-    )
-
-
-def test_simple_imputer_transform_drop_all_nan_columns():
-    X = pd.DataFrame(
+    y = pd.Series([1, 1, 1, 0, 0])
+    imputer = KNNImputer(number_neighbors=1)
+    X_t = imputer.fit_transform(X, y)
+    X_expected = pd.DataFrame(
         {
-            "all_nan": [np.nan, np.nan, np.nan],
-            "some_nan": [np.nan, 1, 0],
-            "another_col": [0, 1, 2],
+            "Booleans": pd.Series(
+                [True, True, True, False, False],
+                dtype="bool",
+            ),
         },
     )
-    X.ww.init(logical_types={"all_nan": "Double"})
-    transformer = SimpleImputer(impute_strategy="most_frequent")
-    transformer.fit(X)
-    X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
-    assert_frame_equal(X_expected_arr, transformer.transform(X), check_dtype=False)
-    assert_frame_equal(
-        X,
-        pd.DataFrame(
-            {
-                "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [np.nan, 1, 0],
-                "another_col": [0, 1, 2],
-            },
-        ),
-    )
+    assert_frame_equal(X_expected, X_t)
+
+
+'''
 
 
 def test_simple_imputer_transform_drop_all_nan_columns_empty():
