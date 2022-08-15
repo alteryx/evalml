@@ -2,6 +2,8 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Add CI testing environment in Mac for install workflow :pr:`3646`
+        * Updated to run with Woodwork >= 0.17.2 :pr:`3626`
         * Add ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631`
         * Add ``fit_transform`` method to pipelines and component graphs :pr:`3640`
     * Fixes
