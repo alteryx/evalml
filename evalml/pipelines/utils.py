@@ -168,9 +168,10 @@ def _get_imputer(X, y, problem_type, estimator_class, sampler_name=None):
         logical_types.Datetime,
     }
 
-    if len(input_logical_types.intersection(types_imputer_handles)) or len(
-        text_columns,
-    ):
+    if (
+        len(input_logical_types.intersection(types_imputer_handles))
+        or len(text_columns)
+    ) and X.isna().any().any():
         components.append(Imputer)
 
     return components
@@ -306,7 +307,7 @@ def _get_preprocessing_components(
     for function in components_functions:
         if function not in functions_to_exclude:
             components.extend(
-                function(X, y, problem_type, estimator_class, sampler_name)
+                function(X, y, problem_type, estimator_class, sampler_name),
             )
 
     return components
@@ -985,7 +986,11 @@ def get_actions_from_option_defaults(action_options):
 
 
 def make_timeseries_baseline_pipeline(
-    problem_type, gap, forecast_horizon, time_index, exclude_featurizer=False
+    problem_type,
+    gap,
+    forecast_horizon,
+    time_index,
+    exclude_featurizer=False,
 ):
     """Make a baseline pipeline for time series regression problems.
 
