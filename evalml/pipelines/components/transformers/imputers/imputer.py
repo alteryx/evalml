@@ -117,11 +117,6 @@ class Imputer(Transformer):
         Returns:
             self
         """
-        # default_imputer_choice = dict(
-        #     {"categorical": "simple", "boolean": "simple", "numerical": "simple"},
-        # )
-        # imputer_choice = self.imputer_choice(default_imputer_choice, X, y)
-        # self.updateImputer(imputer_choice)
         X = infer_feature_types(X)
         cat_cols = list(X.ww.select(["category"], return_schema=True).columns)
         bool_cols = list(
