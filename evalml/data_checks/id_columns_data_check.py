@@ -123,7 +123,7 @@ class IDColumnsDataCheck(DataCheck):
             ...     }
             ... ]
 
-            If the first column of the dataframe is 100% likely to be an ID column, it is probably the primary key.
+            If the first column of the dataframe has all unique values and is named either 'ID' or a name that ends with '_id', it is probably the primary key.
             The other ID columns should be dropped.
 
             >>> df = pd.DataFrame({
@@ -135,7 +135,7 @@ class IDColumnsDataCheck(DataCheck):
             >>> id_col_check = IDColumnsDataCheck()
             >>> assert id_col_check.validate(df) == [
             ...     {
-            ...         "message": "The first column 'sales_id' has a high likelihood of being the primary key",
+            ...         "message": "The first column 'sales_id' is likely to be the primary key",
             ...         "data_check_name": "IDColumnsDataCheck",
             ...         "level": "warning",
             ...         "code": "HAS_ID_FIRST_COLUMN",
@@ -208,7 +208,7 @@ class IDColumnsDataCheck(DataCheck):
                 and id_cols_above_threshold[col_names[0]] == 1.0
             ):
                 del id_cols_above_threshold[col_names[0]]
-                warning_msg = "The first column '{}' has a high likelihood of being the primary key"
+                warning_msg = "The first column '{}' is likely to be the primary key"
                 warning_msg = warning_msg.format(
                     col_names[0],
                 )
