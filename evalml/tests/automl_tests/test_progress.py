@@ -1,5 +1,7 @@
 import time
 
+import pytest
+
 from evalml.automl import Progress
 from evalml.automl.automl_algorithm import DefaultAlgorithm
 from evalml.objectives import Gini
@@ -30,39 +32,38 @@ def test_progress_init():
     assert p.current_time is None
 
 
-def test_progress_should_continue(X_y_binary, logistic_regression_binary_pipeline):
+@pytest.mark.parametrize(
+    "max_time, max_batches, max_iterations, early_stopping",
+    [
+        (10000, 5, None, False),
+        (10000, 5, None, True),
+    ],
+)
+def test_progress_should_continue(
+    max_time,
+    max_batches,
+    max_iterations,
+    early_stopping,
+    X_y_binary,
+    logistic_regression_binary_pipeline,
+):
     X, y = X_y_binary
     algo = DefaultAlgorithm(X, y, problem_type="binary", sampler_name=None)
-    p = Progress(
-        automl_algorithm=algo,
-        max_batches=3,
-        max_time=10000,
-    )
-    p.start_time = time.time()
-    mock_results = {"search_order": [0, 1, 2, 3], "pipeline_results": {}}
-    scores = [
-        0.84,
-        0.95,
-        0.84,
-        0.96,
-    ]  # 0.96 is only 1% greater so it doesn't trigger patience due to tolerance
-    for id in mock_results["search_order"]:
-        mock_results["pipeline_results"][id] = {}
-        mock_results["pipeline_results"][id]["mean_cv_score"] = scores[id]
-        mock_results["pipeline_results"][id][
-            "pipeline_class"
-        ] = logistic_regression_binary_pipeline.__class__
 
-    assert p.should_continue(mock_results)
+    tolerance = 0.05 if early_stopping else None
+    patience = 3 if early_stopping else None
+    objective = Gini if early_stopping else None
 
     p = Progress(
         automl_algorithm=algo,
-        max_batches=3,
-        max_time=10000,
-        patience=3,
-        tolerance=0.05,
-        objective=Gini,
+        max_batches=max_batches,
+        max_time=max_time,
+        max_iterations=max_iterations,
+        tolerance=tolerance,
+        patience=patience,
+        objective=objective,
     )
+
     p.start_time = time.time()
     search_order = [0, 1, 2, 3]
     mock_results = {"search_order": [], "pipeline_results": {}}
@@ -92,7 +93,10 @@ def test_progress_should_continue(X_y_binary, logistic_regression_binary_pipelin
         "pipeline_class"
     ] = logistic_regression_binary_pipeline.__class__
 
-    assert not p.should_continue(mock_results)
+    if early_stopping:
+        assert not p.should_continue(mock_results)
+    else:
+        assert p.should_continue(mock_results)
 
 
 def test_progress_return_progress(X_y_binary, logistic_regression_binary_pipeline):
