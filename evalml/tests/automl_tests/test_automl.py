@@ -2439,7 +2439,7 @@ def test_max_batches_works(
     env = AutoMLTestEnv(problem_type)
     with env.test_context(score_return_value={automl.objective.name: 0.3}):
         automl.search()
-    assert automl._get_batch_number() == max_batches + 1
+    assert automl._get_batch_number() == max_batches
 
 
 def test_early_stopping_negative(X_y_binary):
@@ -2473,6 +2473,7 @@ def test_early_stopping_negative(X_y_binary):
 def test_early_stopping(
     verbose,
     caplog,
+    AutoMLTestEnv,
     logistic_regression_binary_pipeline,
     X_y_binary,
 ):
@@ -2490,22 +2491,10 @@ def test_early_stopping(
         n_jobs=1,
         verbose=verbose,
     )
-    mock_results = {"search_order": [0, 1, 2, 3], "pipeline_results": {}}
-
-    scores = [
-        0.84,
-        0.95,
-        0.84,
-        0.96,
-    ]  # 0.96 is only 1% greater so it doesn't trigger patience due to tolerance
-    for id in mock_results["search_order"]:
-        mock_results["pipeline_results"][id] = {}
-        mock_results["pipeline_results"][id]["mean_cv_score"] = scores[id]
-        mock_results["pipeline_results"][id][
-            "pipeline_class"
-        ] = logistic_regression_binary_pipeline.__class__
-    automl._results = mock_results
-    assert not automl._should_continue()
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={"AUC": 0.5}):
+        automl.search()
+    assert not automl.progress.should_continue(automl._results)
     out = caplog.text
     assert (
         "2 iterations without improvement. Stopping search early." in out

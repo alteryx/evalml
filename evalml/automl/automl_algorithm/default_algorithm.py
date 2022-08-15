@@ -142,6 +142,29 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         """Returns the number of max batches AutoMLSearch should run by default."""
         return 4 if self.ensembling else 3
 
+    def num_pipelines_per_batch(self, batch_number):
+        """Return the number of pipelines in the nth batch.
+
+        Args:
+            batch_number (int): which batch to calculate the number of pipelines for.
+
+        Returns:
+            int: number of pipelines in the given batch.
+        """
+        if batch_number == 0 or batch_number == 1:
+            return len(self._naive_estimators())
+        elif batch_number == 2:
+            return len(self._non_naive_estimators())
+        if self.ensembling:
+            if batch_number % 2 != 0:
+                return 1
+            elif batch_number == 4:
+                return self.num_long_explore_pipelines * self.top_n
+        else:
+            if batch_number == 3:
+                return self.num_long_explore_pipelines * self.top_n
+        return self.num_long_pipelines_per_batch * self.top_n
+
     def _naive_estimators(self):
         if is_regression(self.problem_type):
             naive_estimators = [
@@ -157,6 +180,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             handle_component_class(estimator) for estimator in naive_estimators
         ]
         return estimators
+
+    def _non_naive_estimators(self):
+        return list(
+            set(get_estimators(self.problem_type)) - set(self._naive_estimators()),
+        )
 
     def _init_pipelines_with_starter_params(self, pipelines):
         next_batch = []
@@ -268,11 +296,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self._separate_hyperparameters_from_parameters()
 
     def _create_fast_final(self):
-        estimators = [
-            estimator
-            for estimator in get_estimators(self.problem_type)
-            if estimator not in self._naive_estimators()
-        ]
+        estimators = self._non_naive_estimators()
         estimators = self._filter_estimators(
             estimators,
             self.problem_type,
