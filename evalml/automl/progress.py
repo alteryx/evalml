@@ -35,7 +35,7 @@ class Progress:
         self.current_time = None
         self.start_time = None
         self.max_batches = max_batches
-        self.current_batches = 0
+        self.current_batch = 0
         self.max_iterations = max_iterations
         self.current_iterations = 0
         self.patience = patience
@@ -55,6 +55,10 @@ class Progress:
         """Sets start time to current time."""
         self.start_time = time.time()
 
+    def elapsed(self):
+        """Return time elapsed using the start time and current time."""
+        return self.current_time - self.start_time
+
     def should_continue(self, results, interrupted=False, mid_batch=False):
         """Given AutoML Results, return whether or not the search should continue.
 
@@ -71,52 +75,49 @@ class Progress:
         # update and check max_time, max_iterations, and max_batches
         self.current_time = time.time()
         self.current_iterations = len(results["pipeline_results"])
-        self.current_batches = self.automl_algorithm.batch_number
+        self.current_batch = self.automl_algorithm.batch_number
 
-        elapsed = self.current_time - self.start_time
-
-        if self.max_time and elapsed >= self.max_time:
+        if self.max_time and self.elapsed() >= self.max_time:
             return False
         elif self.max_iterations and self.current_iterations >= self.max_iterations:
             return False
         elif (
             self.max_batches
-            and self.current_batches >= self.max_batches
+            and self.current_batch >= self.max_batches
             and not mid_batch
         ):
             return False
 
         # check for early stopping
-        if self.patience is None or self.tolerance is None:
-            return True
-
-        last_id = results["search_order"][-1]
-        curr_score = results["pipeline_results"][last_id]["mean_cv_score"]
-        if self._best_score is None:
-            self._best_score = curr_score
-            return True
-        elif last_id > self._last_id:
-            self._last_id = last_id
-            score_improved = (
-                curr_score > self._best_score
-                if self.objective.greater_is_better
-                else curr_score < self._best_score
-            )
-            significant_change = (
-                abs((curr_score - self._best_score) / self._best_score) > self.tolerance
-            )
-            if score_improved and significant_change:
+        if self.patience is not None and self.tolerance is not None:
+            last_id = results["search_order"][-1]
+            curr_score = results["pipeline_results"][last_id]["mean_cv_score"]
+            if self._best_score is None:
                 self._best_score = curr_score
-                self._without_improvement = 0
-            else:
-                self._without_improvement += 1
-            if self._without_improvement >= self.patience:
-                self.logger.info(
-                    "\n\n{} iterations without improvement. Stopping search early...".format(
-                        self.patience,
-                    ),
+                return True
+            elif last_id > self._last_id:
+                self._last_id = last_id
+                score_improved = (
+                    curr_score > self._best_score
+                    if self.objective.greater_is_better
+                    else curr_score < self._best_score
                 )
-                return False
+                significant_change = (
+                    abs((curr_score - self._best_score) / self._best_score)
+                    > self.tolerance
+                )
+                if score_improved and significant_change:
+                    self._best_score = curr_score
+                    self._without_improvement = 0
+                else:
+                    self._without_improvement += 1
+                if self._without_improvement >= self.patience:
+                    self.logger.info(
+                        "\n\n{} iterations without improvement. Stopping search early...".format(
+                            self.patience,
+                        ),
+                    )
+                    return False
         return True
 
     def return_progress(self):
@@ -130,7 +131,7 @@ class Progress:
             progress.append(
                 {
                     "stopping_criteria": "max_time",
-                    "current_state": self.current_time - self.start_time,
+                    "current_state": self.elapsed(),
                     "end_state": self.max_time,
                     "unit": "seconds",
                 },
@@ -158,7 +159,7 @@ class Progress:
             progress.append(
                 {
                     "stopping_criteria": "max_batches",
-                    "current_state": self.current_batches,
+                    "current_state": self.current_batch,
                     "end_state": self.max_batches,
                     "unit": "batches",
                 },

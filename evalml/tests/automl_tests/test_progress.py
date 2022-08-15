@@ -25,7 +25,7 @@ def test_progress_init():
 
     assert p.automl_algorithm == DefaultAlgorithm
     assert p.max_batches == 3
-    assert p.current_batches == 0
+    assert p.current_batch == 0
     assert p.max_iterations == 2
     assert p.current_iterations == 0
     assert p.max_time == 1000
