@@ -30,6 +30,19 @@ from evalml.utils.gen_utils import (
 )
 
 
+@pytest.fixture(scope="module")
+def in_container_arm64():
+    """Helper fixture to run chromium as a single process for kaleido.
+
+    The env var is set in the Dockerfile.arm for the purposes of local
+    testing in a container on a mac M1, otherwise it's a noop.
+    """
+    if os.getenv("DOCKER_ARM", None):
+        import plotly.io as pio
+
+        pio.kaleido.scope.chromium_args += ("--single-process",)
+
+
 @patch("importlib.import_module")
 def test_import_or_raise_errors(dummy_importlib):
     def _mock_import_function(library_str):
@@ -345,6 +358,7 @@ def test_rename_column_names_to_numeric():
     ],
 )
 def test_save_plotly_static_default_format(
+    in_container_arm64,
     file_name,
     format,
     interactive,
