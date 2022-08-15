@@ -52,7 +52,7 @@ class Progress:
             self.logger = logging.getLogger(__name__)
 
     def start_timing(self):
-        """Sets start time to current time"""
+        """Sets start time to current time."""
         self.start_time = time.time()
 
     def should_continue(self, results, interrupted=False, mid_batch=False):
