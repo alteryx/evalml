@@ -59,3 +59,72 @@ def test_split_data(
             y = pd.Series(y)
         pd.testing.assert_frame_equal(X_test, X[int(train_size) :], check_dtype=False)
         pd.testing.assert_series_equal(y_test, y[int(train_size) :], check_dtype=False)
+
+
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+@pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
+def test_split_data_defaults(problem_type, data_type, get_test_data_from_configuration):
+    X, y = get_test_data_from_configuration(
+        data_type,
+        problem_type,
+        column_names=["numerical"],
+        scale=10,
+    )
+
+    problem_configuration = None
+    if is_time_series(problem_type):
+        problem_configuration = {"gap": 1, "max_delay": 7, "time_index": "ts_data"}
+        test_pct = 0.1
+    else:
+        test_pct = 0.2
+    X_train, X_test, y_train, y_test = split_data(
+        X,
+        y,
+        problem_type=problem_type,
+        problem_configuration=problem_configuration,
+    )
+    test_size = len(X) * test_pct
+    train_size = len(X) - test_size
+    assert len(X_train) == train_size
+    assert len(X_test) == test_size
+    assert len(y_train) == train_size
+    assert len(y_test) == test_size
+
+    if is_time_series(problem_type):
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+            y = pd.Series(y)
+        pd.testing.assert_frame_equal(X_test, X[int(train_size) :], check_dtype=False)
+        pd.testing.assert_series_equal(y_test, y[int(train_size) :], check_dtype=False)
+
+
+@pytest.mark.parametrize("test", ["fh_limitation", "no_fh_limitation"])
+def test_split_data_ts(test, X_y_regression):
+    X, y = X_y_regression
+
+    if test == "no_fh_limitation":
+        test_pct = 0.1
+        fh = 5
+        test_size = len(X) * test_pct
+        train_size = len(X) - test_size
+    elif test == "fh_limitation":
+        fh = 25
+        test_size = fh
+        train_size = len(X) - fh
+
+    problem_configuration = {
+        "gap": 1,
+        "max_delay": 7,
+        "forecast_horizon": fh,
+        "time_index": "ts_data",
+    }
+    X_train, X_test, y_train, y_test = split_data(
+        X,
+        y,
+        problem_type="time series regression",
+        problem_configuration=problem_configuration,
+    )
+    assert len(X_train) == train_size
+    assert len(X_test) == test_size
+    assert len(y_train) == train_size
+    assert len(y_test) == test_size

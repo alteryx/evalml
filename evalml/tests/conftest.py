@@ -96,17 +96,42 @@ def get_test_data_from_configuration():
         problem_type,
         column_names=None,
         nullable_target=False,
+        scale=2,
     ):
         X_all = pd.DataFrame(
             {
-                "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                * 2,
-                "int_null": [0, 1, 2, np.nan, 4, np.nan, 6] * 2,
-                "age_null": [0, 1, 2, np.nan, 4, np.nan, 6] * 2,
-                "bool_null": [True, None, False, True, False, None, True] * 2,
-                "numerical": range(14),
-                "categorical": ["a", "b", "a", "b", "b", "a", "b"] * 2,
-                "dates": pd.date_range("2000-02-03", periods=14, freq="W"),
+                "all_null": [
+                    np.nan,
+                    np.nan,
+                    np.nan,
+                    np.nan,
+                    np.nan,
+                    np.nan,
+                    np.nan,
+                    np.nan,
+                    np.nan,
+                    np.nan,
+                ]
+                * scale,
+                "int_null": [0, 1, 2, np.nan, 4, np.nan, 6, 7, 8, 9] * scale,
+                "age_null": [0, 1, 2, np.nan, 4, np.nan, 6, 7, 8, 9] * scale,
+                "bool_null": [
+                    True,
+                    None,
+                    False,
+                    True,
+                    False,
+                    None,
+                    True,
+                    True,
+                    False,
+                    True,
+                ]
+                * scale,
+                "numerical": range(10 * scale),
+                "categorical": ["a", "b", "a", "b", "b", "a", "b", "a", "a", "b"]
+                * scale,
+                "dates": pd.date_range("2000-02-03", periods=10 * scale, freq="W"),
                 "text": [
                     "this is a string",
                     "this is another string",
@@ -115,8 +140,11 @@ def get_test_data_from_configuration():
                     "cats are gr8",
                     "hello world",
                     "evalml is gr8",
+                    "more strings",
+                    "here we go",
+                    "wheeeee!!!",
                 ]
-                * 2,
+                * scale,
                 "email": [
                     "abalone_0@gmail.com",
                     "AbaloneRings@yahoo.com",
@@ -125,8 +153,11 @@ def get_test_data_from_configuration():
                     "fooEMAIL@email.org",
                     "evalml@evalml.org",
                     "evalml@alteryx.org",
+                    "woodwork@alteryx.org",
+                    "featuretools@alteryx.org",
+                    "compose@alteryx.org",
                 ]
-                * 2,
+                * scale,
                 "url": [
                     "https://evalml.alteryx.com/en/stable/",
                     "https://woodwork.alteryx.com/en/stable/guides/statistical_insights.html",
@@ -135,8 +166,11 @@ def get_test_data_from_configuration():
                     "https://www.evalml.alteryx.com/en/stable/demos/text_input.html",
                     "https://github.com/alteryx/evalml",
                     "https://github.com/alteryx/featuretools",
+                    "https://github.com/alteryx/woodwork",
+                    "https://github.com/alteryx/compose",
+                    "https://woodwork.alteryx.com/en/stable/",
                 ]
-                * 2,
+                * scale,
                 "ip": [
                     "0.0.0.0",
                     "1.1.1.101",
@@ -145,20 +179,27 @@ def get_test_data_from_configuration():
                     "101.1.1.1",
                     "192.168.1.1",
                     "255.255.255.255",
+                    "2.1.1.101",
+                    "2.1.101.1",
+                    "2.101.1.1",
                 ]
-                * 2,
+                * scale,
             },
         )
-        y = pd.Series([0, 0, 1, 0, 0, 1, 1] * 2)
+        y = pd.Series([0, 0, 1, 0, 0, 1, 1, 0, 1, 0] * scale)
         if problem_type == ProblemTypes.MULTICLASS:
-            y = pd.Series([0, 2, 1, 2, 0, 2, 1] * 2)
+            y = pd.Series([0, 2, 1, 2, 0, 2, 1, 2, 1, 0] * scale)
         elif is_regression(problem_type):
-            y = pd.Series([1, 2, 3, 3, 3, 4, 5] * 2)
+            y = pd.Series([1, 2, 3, 3, 3, 4, 5, 5, 6, 6] * scale)
         if nullable_target:
             y.iloc[2] = None
             if input_type == "ww":
                 y = ww.init_series(y, logical_type="integer_nullable")
         X = X_all[column_names]
+
+        if input_type == "np":
+            X = X.to_numpy()
+            y = y.to_numpy()
 
         if input_type == "ww":
             logical_types = {}
