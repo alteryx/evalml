@@ -288,17 +288,10 @@ def test_datetime_featurizer_with_inconsistent_date_format():
     answer = pd.DataFrame(
         {
             "numerical": [0] * len(dates),
-            "date col_year": [2021] * 18 + [pd.NA] * 2,
-            "date col_month": [9] * 18 + [pd.NA] * 2,
+            "date col_year": [2021.0] * 18 + [np.nan] * 2,
+            "date col_month": [9.0] * 18 + [np.nan] * 2,
             "date col_day_of_week": expected_dow,
-            "date col_hour": [0] * 18 + [pd.NA] * 2,
-        },
-    ).astype(
-        dtype={
-            "date col_year": "Int64",
-            "date col_month": "Int64",
-            "date col_day_of_week": "Int64",
-            "date col_hour": "Int64",
+            "date col_hour": [0.0] * 18 + [np.nan] * 2,
         },
     )
     pd.testing.assert_frame_equal(answer, expected)

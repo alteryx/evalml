@@ -2,8 +2,6 @@
 import copy
 from abc import abstractmethod
 
-from woodwork.logical_types import IntegerNullable
-
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils.woodwork_utils import infer_feature_types
 
@@ -60,15 +58,6 @@ class BaseSampler(Transformer):
             pd.DataFrame, pd.Series: Prepared X and y data as pandas types
         """
         X = infer_feature_types(X)
-        try:
-            X = X.astype(
-                {null_col: int for null_col in X.ww.select(IntegerNullable).columns},
-            )
-        except ValueError:
-            X = X.astype(
-                {null_col: float for null_col in X.ww.select(IntegerNullable).columns},
-            )
-        X.ww.init(schema=X.ww.schema)
         if y is None:
             raise ValueError("y cannot be None")
         y = infer_feature_types(y)

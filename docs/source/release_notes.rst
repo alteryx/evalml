@@ -7,6 +7,7 @@ Release Notes
         * Updated ``make_pipeline`` to only include the Imputer in pipelines if NaNs exist in the data :pr:`3657`
         * Added ``fit_transform`` method to pipelines and component graphs :pr:`3640`
     * Fixes
+        * Reverted the Woodwork 0.17.x compatibility work due to performance regression :pr:`3664`
     * Changes
         * Disabled holdout set in AutoML search by default :pr:`3659`
         * Pinned ``sktime`` at >=0.7.0,<0.13.1 due to slowdowns with time series modeling :pr:`3658`
