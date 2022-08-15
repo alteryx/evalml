@@ -197,6 +197,10 @@ def get_test_data_from_configuration():
                 y = ww.init_series(y, logical_type="integer_nullable")
         X = X_all[column_names]
 
+        if input_type == "np":
+            X = X.to_numpy()
+            y = y.to_numpy()
+
         if input_type == "ww":
             logical_types = {}
             if "text" in column_names:
