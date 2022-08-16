@@ -1,27 +1,34 @@
 Release Notes
 -------------
-**Future Releases**
+**Latest Release**
     * Enhancements
-        * Added ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631`
-        * Added ``Progress`` abstraction to handle stopping criteria logic and return search progress information :pr:`3632`
-        * Added ``fit_transform`` method to pipelines and component graphs :pr:`3640`
-        * Added CI testing environment in Mac for install workflow :pr:`3646`
-        * Updated ``make_pipeline`` to only include the Imputer in pipelines if NaNs exist in the data :pr:`3657`
     * Fixes
         * ``IDColumnsDataCheck`` now only returns an action code to set the first column as the primary key if it contains unique values :pr:`3639`
-        * Reverted the Woodwork 0.17.x compatibility work due to performance regression :pr:`3664`
     * Changes
-        * Disabled holdout set in AutoML search by default :pr:`3659`
-        * Pinned ``sktime`` at >=0.7.0,<0.13.1 due to slowdowns with time series modeling :pr:`3658`
-        * Reduced the default test size in ``split_data`` to 0.1 for time series problems :pr:`3650`
     * Documentation Changes
-        * Updated broken link checker to exclude stackoverflow domain :pr:`3633`
-        * Added instructions to add new users to evalml-core-feedstock :pr:`3636`
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+
+**v0.56.0 Aug. 15, 2022**
+    * Enhancements
+        * Add CI testing environment in Mac for install workflow :pr:`3646`
+        * Updated ``make_pipeline`` to only include the Imputer in pipelines if NaNs exist in the data :pr:`3657`
+        * Updated to run with Woodwork >= 0.17.2 :pr:`3626`
+        * Add ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631`
+        * Add ``fit_transform`` method to pipelines and component graphs :pr:`3640`
+        * Changed default value of data splitting for time series problem holdout set evaluation :pr:`3650`
+    * Fixes
+        * Reverted the Woodwork 0.17.x compatibility work due to performance regression :pr:`3664`
+    * Changes
+        * Disable holdout set in AutoML search by default :pr:`3659`
+        * Pinned ``sktime`` at >=0.7.0,<0.13.1 due to slowdowns with time series modeling :pr:`3658`
+        * Added additional testing support for Python 3.10 :pr:`3609`
+    * Documentation Changes
+        * Updated broken link checker to exclude stackoverflow domain :pr:`3633`
+        * Add instructions to add new users to evalml-core-feedstock :pr:`3636`
 
 
 **v0.55.0 July. 24, 2022**
