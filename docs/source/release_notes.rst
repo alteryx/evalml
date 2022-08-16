@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Latest Release**
     * Enhancements
+        * Added KNN Imputer into pipelines :pr:`3662``
     * Fixes
     * Changes
     * Documentation Changes
