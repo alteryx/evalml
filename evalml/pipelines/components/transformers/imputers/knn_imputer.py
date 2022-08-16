@@ -110,6 +110,7 @@ class KNNImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X = infer_feature_types(X)
+
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X.dtypes == bool).all():
             return X
@@ -126,12 +127,6 @@ class KNNImputer(Transformer):
         ]
         X_t = self._component_obj.transform(X_t)
         X_t = pd.DataFrame(X_t, columns=not_all_null_or_natural_language_cols)
-
-        # TODO: Fix this after WW adds inference of object type booleans to BooleanNullable
-        # Iterate through categorical columns that might have been boolean and convert them back to boolean
-        for col in X.ww.select(["Categorical"], return_schema=True).columns:
-            if is_categorical_actually_boolean(X, col):
-                X_t[col] = X_t[col].astype(bool)
 
         # Add back in natural language columns, unchanged
         if len(natural_language_cols) > 0:
