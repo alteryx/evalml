@@ -193,48 +193,48 @@ class IDColumnsDataCheck(DataCheck):
             first_col_id = True
             del id_cols_above_threshold[col_names[0]]
 
-        if id_cols_above_threshold:
-            warning_msg = ""
-            message_code = None
-            action_code = None
-            if first_col_id:
-                warning_msg = "The first column '{}' is most likely to be the ID column. Columns {} are also {}% or more likely to be an ID column"
-                warning_msg = warning_msg.format(
-                    col_names[0],
-                    (", ").join(
-                        ["'{}'".format(str(col)) for col in id_cols_above_threshold],
-                    ),
-                    self.id_threshold * 100,
-                )
-                message_code = DataCheckMessageCode.HAS_ID_FIRST_COLUMN
-                action_code = DataCheckActionCode.SET_FIRST_COL_ID
-                details = {"columns": [col_names[0]] + (list(id_cols_above_threshold))}
-            else:
-                warning_msg = "Columns {} are {}% or more likely to be an ID column"
-                warning_msg = warning_msg.format(
-                    (", ").join(
-                        ["'{}'".format(str(col)) for col in id_cols_above_threshold],
-                    ),
-                    self.id_threshold * 100,
-                )
-                message_code = DataCheckMessageCode.HAS_ID_COLUMN
-                action_code = DataCheckActionCode.DROP_COL
-                details = {"columns": list(id_cols_above_threshold)}
+        # if id_cols_above_threshold:
+        #     warning_msg = ""
+        #     message_code = None
+        #     action_code = None
+        #     if first_col_id:
+        #         warning_msg = "The first column '{}' is most likely to be the ID column. Columns {} are also {}% or more likely to be an ID column"
+        #         warning_msg = warning_msg.format(
+        #             col_names[0],
+        #             (", ").join(
+        #                 ["'{}'".format(str(col)) for col in id_cols_above_threshold],
+        #             ),
+        #             self.id_threshold * 100,
+        #         )
+        #         message_code = DataCheckMessageCode.HAS_ID_FIRST_COLUMN
+        #         action_code = DataCheckActionCode.SET_FIRST_COL_ID
+        #         details = {"columns": [col_names[0]] + (list(id_cols_above_threshold))}
+        #     else:
+        #         warning_msg = "Columns {} are {}% or more likely to be an ID column"
+        #         warning_msg = warning_msg.format(
+        #             (", ").join(
+        #                 ["'{}'".format(str(col)) for col in id_cols_above_threshold],
+        #             ),
+        #             self.id_threshold * 100,
+        #         )
+        #         message_code = DataCheckMessageCode.HAS_ID_COLUMN
+        #         action_code = DataCheckActionCode.DROP_COL
+        #         details = {"columns": list(id_cols_above_threshold)}
 
-            messages.append(
-                DataCheckWarning(
-                    message=warning_msg,
-                    data_check_name=self.name,
-                    message_code=message_code,
-                    details=details,
-                    action_options=[
-                        DataCheckActionOption(
-                            action_code,
-                            data_check_name=self.name,
-                            metadata=details,
-                        ),
-                    ],
-                ).to_dict(),
-            )
+        #     messages.append(
+        #         DataCheckWarning(
+        #             message=warning_msg,
+        #             data_check_name=self.name,
+        #             message_code=message_code,
+        #             details=details,
+        #             action_options=[
+        #                 DataCheckActionOption(
+        #                     action_code,
+        #                     data_check_name=self.name,
+        #                     metadata=details,
+        #                 ),
+        #             ],
+        #         ).to_dict(),
+        #     )
 
         return messages
