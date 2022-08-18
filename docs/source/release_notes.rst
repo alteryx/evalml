@@ -3,6 +3,7 @@ Release Notes
 **Latest Release**
     * Enhancements
     * Fixes
+        * ``IDColumnsDataCheck`` now only returns an action code to set the first column as the primary key if it contains unique values :pr:`3639`
     * Changes
     * Documentation Changes
     * Testing Changes
