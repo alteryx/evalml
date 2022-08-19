@@ -553,11 +553,10 @@ def test_pipeline_custom_hyperparameters_make_pipeline(
                     "Column_2",
                 ]
             if custom_hyperparameters:
-                if component_graphs:
-                    assert (
-                        row["parameters"]["Imputer"]["numeric_impute_strategy"]
-                        in search_parameters_["Imputer"]["numeric_impute_strategy"]
-                    )
+                assert (
+                    row["parameters"]["Imputer"]["numeric_impute_strategy"]
+                    in search_parameters_["Imputer"]["numeric_impute_strategy"]
+                )
                 assert (
                     4 <= row["parameters"]["Random Forest Classifier"]["max_depth"] <= 7
                 )
@@ -567,13 +566,6 @@ def test_pipeline_custom_hyperparameters_make_pipeline(
                     <= 210
                 )
             else:
-                if component_graphs:
-                    assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in [
-                        "mean",
-                        "median",
-                        "most_frequent",
-                        "knn",
-                    ]
                 assert (
                     1
                     <= row["parameters"]["Random Forest Classifier"]["max_depth"]
@@ -995,12 +987,9 @@ def test_pipeline_parameter_warnings_component_graphs(
         env = AutoMLTestEnv("binary")
         with env.test_context(score_return_value={automl.objective.name: 1.0}):
             automl.search()
-    if len(w) == 1 and not len(set_values):
-        assert "components {'Imputer'} will not be used" in str(w[0].message)
-    else:
-        assert len(w) == (1 if len(set_values) else 0)
-        if len(w):
-            assert w[0].message.components == set_values
+    assert len(w) == (1 if len(set_values) else 0)
+    if len(w):
+        assert w[0].message.components == set_values
 
 
 def test_graph_automl(X_y_multi):
