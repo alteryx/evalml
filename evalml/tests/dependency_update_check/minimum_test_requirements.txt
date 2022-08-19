@@ -26,7 +26,7 @@ pmdarima==1.8.1
 pytest-cov==2.10.1
 pytest-timeout==1.4.2
 pytest-xdist==2.1.0
-pytest==6.0.1
+pytest==7.1.2
 pyzmq==20.0.0
 requirements-parser==0.2.0
 scikit-learn==1.1.2
@@ -38,5 +38,5 @@ sktime==0.7.0
 statsmodels==0.12.2
 texttable==1.6.2
 vowpalwabbit==8.11.0
-woodwork==0.17.2
+woodwork==0.16.2
 xgboost==1.5.1

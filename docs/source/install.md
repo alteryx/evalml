@@ -93,7 +93,7 @@ $ conda install -c conda-forge alteryx-open-src-update-checker
 ```
 ````
 
-## Time Series support with Facebook's Prophet 
+## Time Series support with Facebook's Prophet
 
 To support the `Prophet` time series estimator, be sure to install it as an extra requirement. Please note that this may take a few minutes.
 Prophet is currently only supported via pip installation in EvalML for Mac with CmdStan as a backend.
@@ -152,8 +152,10 @@ brew install graphviz
 
 Not all of EvalML's dependencies support Apple's new M1 chip. For this reason, `pip` or `conda` installing EvalML will
 fail. The core set of EvalML dependencies can be installed in the M1 chip, so we recommend you install EvalML with core
-dependencies. 
+dependencies.
 
 Alternatively, there is experimental support for M1 chips with the Rosetta terminal. After setting up a Rosetta terminal, you should be able to `pip` or `conda` install EvalML.
+
+For Docker fans, an included `Dockerfile.arm` can be built and run to provide an environment for testing.  Details are included within.
 
 +++

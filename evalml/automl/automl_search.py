@@ -23,6 +23,7 @@ from evalml.automl.engine import SequentialEngine
 from evalml.automl.engine.cf_engine import CFClient, CFEngine
 from evalml.automl.engine.dask_engine import DaskEngine
 from evalml.automl.pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
+from evalml.automl.progress import Progress
 from evalml.automl.utils import (
     AutoMLConfig,
     check_all_pipeline_names_unique,
@@ -474,7 +475,7 @@ class AutoMLSearch:
         verbose=False,
         timing=False,
         exclude_featurizers=None,
-        holdout_set_size=0.1,
+        holdout_set_size=0,
     ):
         self.verbose = verbose
         if verbose:
@@ -749,7 +750,7 @@ class AutoMLSearch:
         ]
         if exclude_featurizers and (set(exclude_featurizers) - set(featurizer_names)):
             raise ValueError(
-                f"Invalid value provided for exclude_featurizers. Must be one of: {', '.join(featurizer_names)}"
+                f"Invalid value provided for exclude_featurizers. Must be one of: {', '.join(featurizer_names)}",
             )
         self.exclude_featurizers = exclude_featurizers or []
 
@@ -855,12 +856,23 @@ class AutoMLSearch:
                 f"Using default limit of max_batches={self.max_batches}.\n",
             )
 
+        self.progress = Progress(
+            max_time=self.max_time,
+            max_batches=self.max_batches,
+            max_iterations=self.max_iterations,
+            patience=self.patience,
+            tolerance=self.tolerance,
+            automl_algorithm=self.automl_algorithm,
+            objective=self.objective,
+            verbose=verbose,
+        )
+
     def close_engine(self):
         """Function to explicitly close the engine, client, parallel resources."""
         self._engine.close()
 
     def _get_batch_number(self):
-        batch_number = 1
+        batch_number = 0
         if self.automl_algorithm is not None and self.automl_algorithm.batch_number > 0:
             batch_number = self.automl_algorithm.batch_number
         return batch_number
@@ -951,7 +963,7 @@ class AutoMLSearch:
             elif choice == "n":
                 # So that the time in this loop does not count towards the time budget (if set)
                 time_in_loop = time.time() - start_of_loop
-                self._start += time_in_loop
+                self.progress.start_time += time_in_loop
                 return False
             else:
                 leading_char = ""
@@ -1017,7 +1029,7 @@ class AutoMLSearch:
                 interactive_plot=interactive_plot,
             )
 
-        self._start = time.time()
+        self.progress.start_timing()
 
         try:
             self._add_baseline_pipelines()
@@ -1030,7 +1042,10 @@ class AutoMLSearch:
         new_pipeline_ids = []
         loop_interrupted = False
 
-        while self._should_continue():
+        while self.progress.should_continue(
+            results=self._results,
+            interrupted=self._interrupted,
+        ):
             pipeline_times = {}
             start_batch_time = time.time()
             computations = []
@@ -1041,7 +1056,11 @@ class AutoMLSearch:
                 self.logger.info("AutoML Algorithm out of recommendations, ending")
                 break
             try:
-                if self._should_continue():
+                if self.progress.should_continue(
+                    results=self._results,
+                    interrupted=self._interrupted,
+                    mid_batch=True,
+                ):
                     new_pipeline_ids = []
                     log_title(
                         self.logger,
@@ -1060,7 +1079,14 @@ class AutoMLSearch:
                         computations.append((computation, False))
                     current_computation_index = 0
                     computations_left_to_process = len(computations)
-                while self._should_continue() and computations_left_to_process > 0:
+                while (
+                    self.progress.should_continue(
+                        results=self._results,
+                        interrupted=self._interrupted,
+                        mid_batch=True,
+                    )
+                    and computations_left_to_process > 0
+                ):
                     computation, has_been_processed = computations[
                         current_computation_index
                     ]
@@ -1116,8 +1142,8 @@ class AutoMLSearch:
                 pipeline_times["Total time of batch"] = time_elapsed(start_batch_time)
                 batch_times[self._get_batch_number()] = pipeline_times
 
-        self.search_duration = time.time() - self._start
-        elapsed_time = time_elapsed(self._start)
+        self.search_duration = time.time() - self.progress.start_time
+        elapsed_time = time_elapsed(self.progress.start_time)
         desc = f"\nSearch finished after {elapsed_time}"
         desc = desc.ljust(self._MAX_NAME_LEN)
         self.logger.info(desc)
@@ -1172,57 +1198,6 @@ class AutoMLSearch:
             int: The number of pipeline evaluations made in the search.
         """
         return len(self._results["pipeline_results"])
-
-    def _should_continue(self):
-        """Given the original stopping criterion and current state, return whether or not the search should continue.
-
-        Returns:
-            bool: True if search should continue, False otherwise.
-        """
-        if self._interrupted:
-            return False
-
-        num_pipelines = self._num_pipelines()
-
-        # check max_time, max_iterations, and max_batches
-        elapsed = time.time() - self._start
-        if self.max_time and elapsed >= self.max_time:
-            return False
-        elif self.max_iterations and num_pipelines >= self.max_iterations:
-            return False
-        elif self.max_batches and self._get_batch_number() > self.max_batches:
-            return False
-
-        # check for early stopping
-        if self.patience is None or self.tolerance is None:
-            return True
-
-        first_id = self._results["search_order"][0]
-        best_score = self._results["pipeline_results"][first_id]["mean_cv_score"]
-        num_without_improvement = 0
-        for id in self._results["search_order"][1:]:
-            curr_score = self._results["pipeline_results"][id]["mean_cv_score"]
-            significant_change = (
-                abs((curr_score - best_score) / best_score) > self.tolerance
-            )
-            score_improved = (
-                curr_score > best_score
-                if self.objective.greater_is_better
-                else curr_score < best_score
-            )
-            if score_improved and significant_change:
-                best_score = curr_score
-                num_without_improvement = 0
-            else:
-                num_without_improvement += 1
-            if num_without_improvement >= self.patience:
-                self.logger.info(
-                    "\n\n{} iterations without improvement. Stopping search early...".format(
-                        self.patience,
-                    ),
-                )
-                return False
-        return True
 
     def _validate_problem_type(self):
         for obj in self.additional_objectives:
