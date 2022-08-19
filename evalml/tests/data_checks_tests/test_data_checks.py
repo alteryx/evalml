@@ -295,7 +295,7 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
     )
     imbalance = [
         DataCheckError(
-            message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0, 1]",
+            message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 1.0]",
             data_check_name="ClassImbalanceDataCheck",
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": [0.0, 1.0]},
@@ -319,7 +319,7 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
     # multiclass
     imbalance = [
         DataCheckError(
-            message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0, 1, 2]",
+            message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 1.0, 2.0]",
             data_check_name="ClassImbalanceDataCheck",
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": [0.0, 1.0, 2.0]},
@@ -511,14 +511,6 @@ def test_default_data_checks_null_rows():
                 ),
             ],
         ).to_dict(),
-        DataCheckError(
-            message="Target is unsupported integer_nullable type. Valid Woodwork "
-            "logical types include: integer, double",
-            data_check_name="TargetDistributionDataCheck",
-            message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
-            details={"unsupported_type": "integer_nullable"},
-            action_options=[],
-        ).to_dict(),
     ]
     validation_messages = data_checks.validate(X, y)
     validation_messages[0]["details"]["pct_null_cols"] = SeriesWrap(
@@ -646,19 +638,19 @@ class MockCheck2(DataCheck):
             [MockCheck],
             {"mock_check": {"foo": 1}},
             DataCheckInitError,
-            r"Encountered the following error while initializing mock_check: __init__\(\) missing 1 required positional argument: 'bar'",
+            r"Encountered the following error while initializing mock_check: .*__init__\(\) missing 1 required positional argument: 'bar'",
         ),
         (
             [MockCheck],
             {"mock_check": {"Bar": 2}},
             DataCheckInitError,
-            r"Encountered the following error while initializing mock_check: __init__\(\) got an unexpected keyword argument 'Bar'",
+            r"Encountered the following error while initializing mock_check: .*__init__\(\) got an unexpected keyword argument 'Bar'",
         ),
         (
             [MockCheck],
             {"mock_check": {"fo": 3, "ba": 4}},
             DataCheckInitError,
-            r"Encountered the following error while initializing mock_check: __init__\(\) got an unexpected keyword argument 'fo'",
+            r"Encountered the following error while initializing mock_check: .*__init__\(\) got an unexpected keyword argument 'fo'",
         ),
         (
             [MockCheck],

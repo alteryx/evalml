@@ -226,76 +226,65 @@ def test_class_imbalance_empty_and_nan(test_size, input_type):
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=0, test_size=test_size)
 
     assert class_imbalance_check.validate(X, y_empty) == []
-    res = ClassImbalanceDataCheck(
+    assert ClassImbalanceDataCheck(
         threshold=0.5,
         min_samples=1,
         num_cv_folds=0,
         test_size=test_size,
-    ).validate(X, y_has_nan)
-
-    expected = [
+    ).validate(X, y_has_nan) == [
         DataCheckWarning(
-            message="The following labels fall below 50% of the target: [2]",
+            message="The following labels fall below 50% of the target: [2.0]",
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
-            details={"target_values": [2]},
+            details={"target_values": [2.0]},
         ).to_dict(),
     ]
-    assert res == expected
 
-    res = ClassImbalanceDataCheck(
+    assert ClassImbalanceDataCheck(
         threshold=0.5,
         num_cv_folds=0,
         test_size=test_size,
-    ).validate(X, y_has_nan)
-
-    expected = [
+    ).validate(X, y_has_nan) == [
         DataCheckWarning(
-            message="The following labels fall below 50% of the target: [2]",
+            message="The following labels fall below 50% of the target: [2.0]",
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
-            details={"target_values": [2]},
+            details={"target_values": [2.0]},
         ).to_dict(),
         DataCheckWarning(
-            message="The following labels in the target have severe class imbalance because they fall under 50% of the target and have less than 100 samples: [2]",
+            message="The following labels in the target have severe class imbalance because they fall under 50% of the target and have less than 100 samples: [2.0]",
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_SEVERE,
-            details={"target_values": [2]},
+            details={"target_values": [2.0]},
         ).to_dict(),
     ]
-
-    assert res == expected
 
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=1, test_size=test_size)
     assert class_imbalance_check.validate(X, y_empty) == []
-
-    res = ClassImbalanceDataCheck(
+    assert ClassImbalanceDataCheck(
         threshold=0.5,
         num_cv_folds=1,
         test_size=test_size,
-    ).validate(X, y_has_nan)
-
-    expected = [
+    ).validate(X, y_has_nan) == [
         DataCheckError(
-            message="The number of instances of these targets is less than 2 * the number of cross folds = 2 instances: [2]",
+            message="The number of instances of these targets is less than 2 * the number of cross folds = 2 instances: [2.0]",
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
-            details={"target_values": [2]},
+            details={"target_values": [2.0]},
         ).to_dict(),
         DataCheckWarning(
-            message="The following labels fall below 50% of the target: [2]",
+            message="The following labels fall below 50% of the target: [2.0]",
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
-            details={"target_values": [2]},
+            details={"target_values": [2.0]},
         ).to_dict(),
         DataCheckWarning(
-            message="The following labels in the target have severe class imbalance because they fall under 50% of the target and have less than 100 samples: [2]",
+            message="The following labels in the target have severe class imbalance because they fall under 50% of the target and have less than 100 samples: [2.0]",
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_SEVERE,
-            details={"target_values": [2]},
+            details={"target_values": [2.0]},
         ).to_dict(),
     ]
-    assert res == expected
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])

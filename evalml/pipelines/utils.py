@@ -306,7 +306,7 @@ def _get_preprocessing_components(
     for function in components_functions:
         if function not in functions_to_exclude:
             components.extend(
-                function(X, y, problem_type, estimator_class, sampler_name)
+                function(X, y, problem_type, estimator_class, sampler_name),
             )
 
     return components
@@ -985,7 +985,11 @@ def get_actions_from_option_defaults(action_options):
 
 
 def make_timeseries_baseline_pipeline(
-    problem_type, gap, forecast_horizon, time_index, exclude_featurizer=False
+    problem_type,
+    gap,
+    forecast_horizon,
+    time_index,
+    exclude_featurizer=False,
 ):
     """Make a baseline pipeline for time series regression problems.
 

@@ -16,7 +16,8 @@ def test_drop_rows_transformer():
     X_expected = pd.DataFrame(
         {"a column": [3], "another col": [6]},
         index=[2],
-    ).astype("Int64")
+        dtype=np.float64,
+    )
     drop_rows_transformer = DropNaNRowsTransformer()
     drop_rows_transformer.fit(X)
     transformed_X, _ = drop_rows_transformer.transform(X)

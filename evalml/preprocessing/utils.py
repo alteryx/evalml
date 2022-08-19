@@ -47,7 +47,7 @@ def split_data(
     y,
     problem_type,
     problem_configuration=None,
-    test_size=0.2,
+    test_size=None,
     random_seed=0,
 ):
     """Split data into train and test sets.
@@ -58,7 +58,8 @@ def split_data(
         problem_type (str or ProblemTypes): type of supervised learning problem. see evalml.problem_types.problemtype.all_problem_types for a full list.
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the time_index, gap, and max_delay variables.
-        test_size (float): What percentage of data points should be included in the test set. Defaults to 0.2 (20%).
+        test_size (float): What percentage of data points should be included in the test set. Defaults to 0.2 (20%) for non-timeseries problems and 0.1
+            (10%) for timeseries problems.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Returns:
@@ -95,24 +96,35 @@ def split_data(
 
     data_splitter = None
     if is_time_series(problem_type):
+        if test_size is None:
+            test_size = 0.1
+            if (
+                problem_configuration is not None
+                and "forecast_horizon" in problem_configuration
+            ):
+                fh_pct = problem_configuration["forecast_horizon"] / len(X)
+                test_size = max(test_size, fh_pct)
         data_splitter = TrainingValidationSplit(
             test_size=test_size,
             shuffle=False,
             stratify=None,
             random_seed=random_seed,
         )
-    elif is_regression(problem_type):
-        data_splitter = ShuffleSplit(
-            n_splits=1,
-            test_size=test_size,
-            random_state=random_seed,
-        )
-    elif is_classification(problem_type):
-        data_splitter = StratifiedShuffleSplit(
-            n_splits=1,
-            test_size=test_size,
-            random_state=random_seed,
-        )
+    else:
+        if test_size is None:
+            test_size = 0.2
+        if is_regression(problem_type):
+            data_splitter = ShuffleSplit(
+                n_splits=1,
+                test_size=test_size,
+                random_state=random_seed,
+            )
+        elif is_classification(problem_type):
+            data_splitter = StratifiedShuffleSplit(
+                n_splits=1,
+                test_size=test_size,
+                random_state=random_seed,
+            )
 
     train, test = next(data_splitter.split(X, y))
 

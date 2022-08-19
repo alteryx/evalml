@@ -894,10 +894,10 @@ def test_large_dataset_split_size(X_y_binary):
     )
     assert isinstance(automl.data_splitter, StratifiedKFold)
 
-    under_max_rows = (
-        _LARGE_DATA_ROW_THRESHOLD + int(ceil(_LARGE_DATA_ROW_THRESHOLD * 0.1 / 0.9)) - 1
-    )  # Should be under threshold even after taking out holdout set
-    X, y = generate_fake_dataset(under_max_rows)
+    # under_max_rows = (
+    #     _LARGE_DATA_ROW_THRESHOLD + int(ceil(_LARGE_DATA_ROW_THRESHOLD * 0.1 / 0.9)) - 1
+    # )  # Should be under threshold even after taking out holdout set
+    X, y = generate_fake_dataset(_LARGE_DATA_ROW_THRESHOLD)
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -2439,7 +2439,7 @@ def test_max_batches_works(
     env = AutoMLTestEnv(problem_type)
     with env.test_context(score_return_value={automl.objective.name: 0.3}):
         automl.search()
-    assert automl._get_batch_number() == max_batches + 1
+    assert automl._get_batch_number() == max_batches
 
 
 def test_early_stopping_negative(X_y_binary):
@@ -2473,6 +2473,7 @@ def test_early_stopping_negative(X_y_binary):
 def test_early_stopping(
     verbose,
     caplog,
+    AutoMLTestEnv,
     logistic_regression_binary_pipeline,
     X_y_binary,
 ):
@@ -2490,22 +2491,10 @@ def test_early_stopping(
         n_jobs=1,
         verbose=verbose,
     )
-    mock_results = {"search_order": [0, 1, 2, 3], "pipeline_results": {}}
-
-    scores = [
-        0.84,
-        0.95,
-        0.84,
-        0.96,
-    ]  # 0.96 is only 1% greater so it doesn't trigger patience due to tolerance
-    for id in mock_results["search_order"]:
-        mock_results["pipeline_results"][id] = {}
-        mock_results["pipeline_results"][id]["mean_cv_score"] = scores[id]
-        mock_results["pipeline_results"][id][
-            "pipeline_class"
-        ] = logistic_regression_binary_pipeline.__class__
-    automl._results = mock_results
-    assert not automl._should_continue()
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={"AUC": 0.5}):
+        automl.search()
+    assert not automl.progress.should_continue(automl._results)
     out = caplog.text
     assert (
         "2 iterations without improvement. Stopping search early." in out
@@ -4051,7 +4040,7 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
         expected_predictions = pd.Series(expected_predictions, name="target_delay_1")
 
     preds = baseline.predict(X_validation, None, X_train, y_train)
-    pd.testing.assert_series_equal(expected_predictions, preds, check_dtype=False)
+    pd.testing.assert_series_equal(expected_predictions, preds)
     if is_classification(problem_type):
         pd.testing.assert_frame_equal(
             expected_predictions_proba,
@@ -5074,7 +5063,9 @@ def test_exclude_featurizers(
         }
 
     X, y = get_test_data_from_configuration(
-        input_type, problem_type, column_names=["dates", "text", "email", "url"]
+        input_type,
+        problem_type,
+        column_names=["dates", "text", "email", "url"],
     )
 
     automl = AutoMLSearch(
@@ -5107,25 +5098,25 @@ def test_exclude_featurizers(
         [
             DateTimeFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )
     assert not any(
-        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines],
     )
     assert not any(
-        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines],
     )
     assert not any(
         [
             NaturalLanguageFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )
     assert not any(
         [
             TimeSeriesFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )
 
 
@@ -5199,7 +5190,13 @@ def test_init_create_holdout_set(caplog):
         n_samples=AutoMLSearch._HOLDOUT_SET_MIN_ROWS - 1,
         random_state=0,
     )
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", verbose=True)
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        verbose=True,
+        holdout_set_size=0.1,
+    )
     out = caplog.text
 
     match_text = f"Dataset size is too small to create holdout set. Mininum dataset size is {AutoMLSearch._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X)} rows. Holdout set evaluation is disabled."
@@ -5216,7 +5213,13 @@ def test_init_create_holdout_set(caplog):
         n_samples=AutoMLSearch._HOLDOUT_SET_MIN_ROWS,
         random_state=0,
     )
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", verbose=True)
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        verbose=True,
+        holdout_set_size=0.1,
+    )
     out = caplog.text
 
     expected_holdout_size = int(automl.holdout_set_size * len(X))

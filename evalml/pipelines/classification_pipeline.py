@@ -54,8 +54,6 @@ class ClassificationPipeline(PipelineBase):
 
         Raises:
             ValueError: If the number of unique classes in y are not appropriate for the type of pipeline.
-            TypeError: If the dtype is boolean but pd.NA exists in the series.
-            Exception: For all other exceptions.
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
@@ -68,14 +66,7 @@ class ClassificationPipeline(PipelineBase):
             )
 
         self._fit(X, y)
-
-        # TODO: Added this in because numpy's unique() does not support pandas.NA
-        try:
-            self._classes_ = list(ww.init_series(np.unique(y)))
-        except TypeError as e:
-            if "boolean value of NA is ambiguous" in str(e):
-                self._classes_ = y.unique()
-
+        self._classes_ = list(ww.init_series(np.unique(y)))
         return self
 
     def _encode_targets(self, y):

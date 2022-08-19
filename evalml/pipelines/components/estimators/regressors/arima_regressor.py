@@ -5,7 +5,6 @@ from skopt.space import Integer
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
-from evalml.pipelines.components.utils import downcast_int_nullable_to_double
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise, infer_feature_types
 
@@ -171,7 +170,6 @@ class ARIMARegressor(Estimator):
             ValueError: If y was not passed in.
         """
         if X is not None:
-            X = downcast_int_nullable_to_double(X)
             X = X.fillna(X.mean())
         X, y = self._manage_woodwork(X, y)
         if y is None:

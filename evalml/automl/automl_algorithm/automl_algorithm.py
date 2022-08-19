@@ -65,6 +65,17 @@ class AutoMLAlgorithm(ABC):
             list[PipelineBase]: A list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
 
+    @abstractmethod
+    def num_pipelines_per_batch(self, batch_number):
+        """Return the number of pipelines in the nth batch.
+
+        Args:
+            batch_number (int): which batch to calculate the number of pipelines for.
+
+        Returns:
+            int: number of pipelines in the given batch.
+        """
+
     def _set_allowed_pipelines(self, allowed_pipelines):
         """Sets the allowed parameters and creates the tuners for the input pipelines."""
         self.allowed_pipelines = allowed_pipelines
@@ -242,6 +253,7 @@ class AutoMLAlgorithm(ABC):
             estimators_to_drop.extend(["Elastic Net Classifier", "XGBoost Classifier"])
         if y_unique > 150:
             estimators_to_drop.append("CatBoost Classifier")
+
         dropped_estimators = [e for e in estimators if e.name in estimators_to_drop]
         if len(dropped_estimators):
             logger.info(
