@@ -13,10 +13,7 @@ class KNNImputer(Transformer):
     """Imputes missing data according to a specified imputation strategy.  Natural language columns are ignored.
 
     Args:
-        impute_strategy (string): Impute strategy to use. Valid values include "mean", "median", "most_frequent", "constant" for
-           numerical data, and "most_frequent", "constant" for object data types.
-        fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
-           Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
+        number_neighbors (int): Number of nearest neighbors for KNN to search for. Defaults to 0.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     """
