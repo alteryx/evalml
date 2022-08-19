@@ -1,10 +1,8 @@
 Release Notes
 -------------
-**Latest Release**
+**Future Releases**
     * Enhancements
     * Fixes
-        * ``IDColumnsDataCheck`` now only returns an action code to set the first column as the primary key if it contains unique values :pr:`3639`
-        * Reverted the ``make_pipeline`` changes that conditionally included the imputers :pr:`3672`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -12,6 +10,11 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+
+**v0.56.1 Aug. 19, 2022**
+    * Fixes
+        * ``IDColumnsDataCheck`` now only returns an action code to set the first column as the primary key if it contains unique values :pr:`3639`
+        * Reverted the ``make_pipeline`` changes that conditionally included the imputers :pr:`3672`
 
 **v0.56.0 Aug. 15, 2022**
     * Enhancements
