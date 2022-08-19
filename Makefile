@@ -67,7 +67,7 @@ git-test-integration:
 .PHONY: installdeps
 installdeps:
 	pip install --upgrade pip -q
-	pip install -e . -q
+	pip install -e . 
 
 .PHONY: installdeps-min
 installdeps-min:
