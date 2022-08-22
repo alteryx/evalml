@@ -1,6 +1,5 @@
 """Component that imputes missing data according to a specified imputation strategy."""
 import pandas as pd
-from woodwork.logical_types import Boolean
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
