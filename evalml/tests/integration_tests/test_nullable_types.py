@@ -68,7 +68,6 @@ def test_nullable_types_builds_pipelines(
 
     if test_description in [
         "only null int",
-        "only null bool",
         "only null age",
         "nullable types",
         "just nullable target",
