@@ -179,8 +179,10 @@ class Imputer(Transformer):
 
 def downcast_boolean_nullable_to_double(X):
     """Downcasts IntegerNullable types to Double in order to support certain estimators like ARIMA, CatBoost, and LightGBM.
+
     Args:
         X (pd.DataFrame): Feature data.
+
     Returns:
         X: DataFrame initialized with logical type information where BooleanNullable are cast as Double.
     """
