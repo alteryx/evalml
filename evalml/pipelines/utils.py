@@ -83,7 +83,7 @@ def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
 def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
     component = []
     all_nullable_cols = X.ww.select(
-        ["IntegerNullable", "AgeNullable", "BooleanNullable"],
+        ["IntegerNullable", "AgeNullable"],
         return_schema=True,
     ).columns
     nullable_target = isinstance(

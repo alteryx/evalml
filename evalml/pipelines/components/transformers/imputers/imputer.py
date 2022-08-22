@@ -173,4 +173,5 @@ class Imputer(Transformer):
             imputed = self._boolean_imputer.transform(X_boolean)
             X_no_all_null[X_boolean.columns] = imputed
 
+        X_no_all_null.ww.init()
         return X_no_all_null
