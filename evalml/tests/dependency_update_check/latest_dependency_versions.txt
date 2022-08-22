@@ -17,7 +17,7 @@ nlp-primitives==2.7.1
 numpy==1.22.4
 pandas==1.4.1
 plotly==5.10.0
-pmdarima==1.8.5
+pmdarima==2.0.0
 pyzmq==23.2.1
 requirements-parser==0.5.0
 scikit-learn==1.1.2
@@ -30,4 +30,4 @@ statsmodels==0.13.2
 texttable==1.6.4
 vowpalwabbit==9.3.0
 woodwork==0.16.4
-xgboost==1.6.1
+xgboost==1.6.2
