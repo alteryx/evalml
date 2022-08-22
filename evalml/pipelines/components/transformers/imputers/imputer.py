@@ -41,7 +41,7 @@ class Imputer(Transformer):
         self,
         categorical_impute_strategy="most_frequent",
         categorical_fill_value=None,
-        numeric_impute_strategy="knn",
+        numeric_impute_strategy="mean",
         numeric_fill_value=None,
         boolean_impute_strategy="most_frequent",
         boolean_fill_value=None,
@@ -88,7 +88,7 @@ class Imputer(Transformer):
             )
         if numeric_impute_strategy == "knn":
             self._numeric_imputer = KNNImputer(
-                number_neighbors=10,
+                number_neighbors=3,
                 **kwargs,
             )
         else:
