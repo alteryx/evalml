@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Pinned ``pmdarima`` < 2.0.0 :pr:`3679`
     * Documentation Changes
     * Testing Changes
 
