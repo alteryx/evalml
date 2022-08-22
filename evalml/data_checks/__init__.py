@@ -32,3 +32,4 @@ from evalml.data_checks.target_distribution_data_check import (
 from evalml.data_checks.datetime_format_data_check import DateTimeFormatDataCheck
 from evalml.data_checks.ts_parameters_data_check import TimeSeriesParametersDataCheck
 from evalml.data_checks.ts_splitting_data_check import TimeSeriesSplittingDataCheck
+from .unknown_type_data_check import UnknownTypeDataCheck
