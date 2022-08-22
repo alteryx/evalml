@@ -1,5 +1,6 @@
 """Component that imputes missing data according to a specified imputation strategy."""
 import pandas as pd
+from woodwork.logical_types import Boolean
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
@@ -172,6 +173,25 @@ class Imputer(Transformer):
             X_boolean = X.ww[self._boolean_cols.tolist()]
             imputed = self._boolean_imputer.transform(X_boolean)
             X_no_all_null[X_boolean.columns] = imputed
-
-        X_no_all_null.ww.init()
+            X_no_all_null = downcast_boolean_nullable_to_double(X_no_all_null)
         return X_no_all_null
+
+
+def downcast_boolean_nullable_to_double(X):
+    """Downcasts IntegerNullable types to Double in order to support certain estimators like ARIMA, CatBoost, and LightGBM.
+    Args:
+        X (pd.DataFrame): Feature data.
+    Returns:
+        X: DataFrame initialized with logical type information where BooleanNullable are cast as Double.
+    """
+    if not isinstance(X, pd.DataFrame):
+        return X
+    X = infer_feature_types(X)
+    X_schema = X.ww.schema
+    original_X_schema = X_schema.get_subset_schema(
+        subset_cols=X_schema._filter_cols(exclude=["BooleanNullable"]),
+    )
+    X_bool_nullable_cols = X_schema._filter_cols(include=["BooleanNullable"])
+    new_ltypes_for_bool_nullable_cols = {col: "Boolean" for col in X_bool_nullable_cols}
+    X.ww.init(schema=original_X_schema, logical_types=new_ltypes_for_bool_nullable_cols)
+    return X
