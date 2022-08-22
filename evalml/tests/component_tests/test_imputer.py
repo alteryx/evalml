@@ -465,7 +465,6 @@ def test_imputer_with_none_separated(
         boolean_impute_strategy=boolean_impute_strategy,
         boolean_fill_value=boolean_fill_value,
     )
-    print(X_test)
     imputer.fit(X_test, y)
     transformed = imputer.transform(X_test, y)
 
@@ -491,8 +490,6 @@ def test_imputer_with_none_separated(
     if boolean_impute_strategy == "constant":
         for col in set(columns_dict["booleans_only"]).intersection(set(X_test.columns)):
             expected_df[col].iloc[-1:] = boolean_fill_value
-    print(expected_df)
-    print(transformed)
     assert_frame_equal(expected_df, transformed, check_dtype=False)
 
 
