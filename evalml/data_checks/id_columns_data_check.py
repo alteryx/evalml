@@ -175,9 +175,25 @@ class IDColumnsDataCheck(DataCheck):
         ]  # columns whose name is "id"
         id_cols = {col: 0.95 for col in cols_named_id}
 
-        X = X.ww.select(include=["Integer", "Categorical"])
+        X_double = X.ww.select(include=["Double"])
 
-        check_all_unique = X.nunique() == len(X)
+        check_all_unique = X_double.nunique() == len(X_double)
+        cols_with_all_unique = check_all_unique[
+            check_all_unique
+        ].index.tolist()  # columns whose values are all unique and doubles
+        cols_with_all_unique_integers = [
+            col for col in cols_with_all_unique if all(X_double[col].mod(1).eq(0))
+        ]  # Parse out columns that contain all `integer` values
+        id_cols.update(
+            [
+                (col, 1.0) if col in id_cols else (col, 0.95)
+                for col in cols_with_all_unique_integers
+            ],
+        )
+
+        X_discrete = X.ww.select(include=["Integer", "Categorical"])
+
+        check_all_unique = X_discrete.nunique() == len(X_discrete)
         cols_with_all_unique = check_all_unique[
             check_all_unique
         ].index.tolist()  # columns whose values are all unique
