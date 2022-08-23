@@ -1108,10 +1108,10 @@ def test_all_transformers_check_fit(component_class, X_y_binary, ts_data):
     if "Oversampler" == component_class.name:
         component = component_class(sampling_ratio=1)
     elif component_class in [
-            TimeSeriesFeaturizer,
-            TimeSeriesRegularizer,
-            PolynomialDecomposer,
-        ]:
+        TimeSeriesFeaturizer,
+        TimeSeriesRegularizer,
+        PolynomialDecomposer,
+    ]:
         X, _, y = ts_data(problem_type="time series binary")
         component = component_class(time_index="date")
 
@@ -1234,10 +1234,10 @@ def test_all_transformers_check_fit_input_type(
         # since SMOTE determines categorical columns through the logical type, it can only accept ww data
         pytest.xfail()
     if component_class in [
-            TimeSeriesFeaturizer,
-            TimeSeriesRegularizer,
-            PolynomialDecomposer,
-        ]:
+        TimeSeriesFeaturizer,
+        TimeSeriesRegularizer,
+        PolynomialDecomposer,
+    ]:
         X, _, y = ts_data(problem_type="time series binary")
         kwargs = {"time_index": "date"}
 
