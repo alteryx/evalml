@@ -65,7 +65,6 @@ def test_knn_imputer_boolean_dtype(data_type, make_data_type):
     y = pd.Series([1, 0, 0, 1, 0])
     X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype="boolean")
     X = make_data_type(data_type, X)
-    print(X)
     imputer = KNNImputer(number_neighbors=1)
     X_t = imputer.fit_transform(X, y)
     assert_frame_equal(X_expected_arr, X_t)
@@ -150,7 +149,6 @@ def test_knn_imputer_revert_categorical_to_boolean():
             ),
         },
     )
-    print(X_t)
     assert_frame_equal(X_expected, X_t)
 
 
@@ -215,8 +213,8 @@ def test_knn_imputer_errors_with_bool_and_categorical_columns(
             ValueError,
             match="KNNImputer cannot handle dataframes with both boolean and categorical features.",
         ):
-            si = KNNImputer()
-            si.fit(X_df)
+            ki = KNNImputer()
+            ki.fit(X_df)
     else:
-        si = KNNImputer()
-        si.fit(X_df)
+        ki = KNNImputer()
+        ki.fit(X_df)
