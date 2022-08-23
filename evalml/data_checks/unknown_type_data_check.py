@@ -49,7 +49,7 @@ class UnknownTypeDataCheck(DataCheck):
             len(row_unknowns.columns) / len(X.columns)
             >= self.unknown_percentage_threshold
         ):
-            warning_msg = f"{len(row_unknowns.columns)} out of {len(X.columns)} rows are unknown type, meaning the number of rows that are unknown is more than {self.unknown_percentage_threshold*100}%."
+            warning_msg = f"{len(row_unknowns.columns)} out of {len(X.columns)} rows are unknown type, meaning the number of rows that are unknown is more or equal to {self.unknown_percentage_threshold*100}%."
 
             messages.append(
                 DataCheckWarning(
