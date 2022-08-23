@@ -687,17 +687,17 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     assert isinstance(transformed, pd.DataFrame)
-    if numeric_impute_strategy == "most_frequent":
+    if logical_type == BooleanNullable:
+        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+            data: Boolean,
+        }
+    elif numeric_impute_strategy == "most_frequent":
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             data: logical_type,
         }
     elif logical_type in [Categorical, NaturalLanguage] or has_nan == "no_nans":
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             data: logical_type,
-        }
-    elif logical_type == BooleanNullable:
-        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            data: Boolean,
         }
     else:
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {

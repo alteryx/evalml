@@ -186,8 +186,6 @@ def downcast_integer_nullable_to_double(X):
     Returns:
         X: DataFrame initialized with logical type information where IntegerNullable are cast as Double.
     """
-    if not isinstance(X, pd.DataFrame):
-        return X
     X_schema = X.ww.schema
     original_X_schema = X_schema.get_subset_schema(
         subset_cols=X_schema._filter_cols(exclude=["IntegerNullable"]),
@@ -207,8 +205,6 @@ def downcast_boolean_nullable_to_double(X):
     Returns:
         X: DataFrame initialized with logical type information where BooleanNullable are cast as Double.
     """
-    if not isinstance(X, pd.DataFrame):
-        return X
     X_schema = X.ww.schema
     original_X_schema = X_schema.get_subset_schema(
         subset_cols=X_schema._filter_cols(exclude=["BooleanNullable"]),
