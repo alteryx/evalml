@@ -5,6 +5,7 @@ Release Notes
     * Fixes
         * Added support for BooleanNullable columns in EvalML pipelines and imputer :pr:`3678`
     * Changes
+        * Pinned ``pmdarima`` < 2.0.0 :pr:`3679`
     * Documentation Changes
     * Testing Changes
 
