@@ -194,8 +194,8 @@ def test_polynomial_decomposer_get_trend_dataframe_error_not_fit(
 
     pdt = PolynomialDecomposer(degree=3)
     if fit_before_decompose:
-        output_X, output_y = pdt.fit_transform(X, y)
-        result_dfs = pdt.get_trend_dataframe(X, y)
+        pdt.fit_transform(X, y)
+        pdt.get_trend_dataframe(X, y)
     else:
         with pytest.raises(ValueError):
             pdt.get_trend_dataframe(X, y)
