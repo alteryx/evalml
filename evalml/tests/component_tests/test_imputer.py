@@ -1,3 +1,4 @@
+from cmath import log
 from copy import deepcopy
 from unittest.mock import patch
 
@@ -8,6 +9,7 @@ import woodwork as ww
 from pandas.testing import assert_frame_equal
 from woodwork.logical_types import (
     Boolean,
+    BooleanNullable,
     Categorical,
     Double,
     Integer,
@@ -668,14 +670,14 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
         "NaturalLanguage": NaturalLanguage,
         "Boolean": Boolean,
     }[logical_type]
-    y = pd.Series([1, 2, 1])
-
-    # Column with Nans to boolean used to fail. Now it doesn't but it should.
     if has_nan == "has_nan" and logical_type == Boolean:
-        return
+        logical_type = BooleanNullable
+    y = pd.Series([1, 2, 1])
     try:
         X = X_df.copy()
-        if has_nan == "has_nan":
+        if has_nan == "has_nan" and logical_type == BooleanNullable:
+            X.iloc[len(X_df) - 1, 0] = None
+        elif has_nan == "has_nan":
             X.iloc[len(X_df) - 1, 0] = np.nan
         X.ww.init(logical_types={data: logical_type})
     except ww.exceptions.TypeConversionError:
@@ -692,6 +694,10 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
     elif logical_type in [Categorical, NaturalLanguage] or has_nan == "no_nans":
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             data: logical_type,
+        }
+    elif logical_type == BooleanNullable:
+        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+            data: Boolean,
         }
     else:
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
