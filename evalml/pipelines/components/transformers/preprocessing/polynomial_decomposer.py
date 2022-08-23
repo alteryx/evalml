@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import sklearn.exceptions
 from skopt.space import Integer
 from sktime.forecasting.base._fh import ForecastingHorizon
 from statsmodels.tsa.seasonal import seasonal_decompose
@@ -301,6 +302,7 @@ class PolynomialDecomposer(Decomposer):
         Raises:
             TypeError: If X does not have time-series data in the index.
             ValueError: If time series index of X does not have an inferred frequency.
+            ValueError: If the forecaster associated with the detrender has not been fit yet.
             TypeError: If y is not provided as a pandas Series or DataFrame.
 
         """
@@ -317,9 +319,15 @@ class PolynomialDecomposer(Decomposer):
 
         def _decompose_target(X, y, fh):
             """Function to generate a single DataFrame with trend, seasonality and residual components."""
-            forecaster = self._component_obj.forecaster.clone()
-            forecaster.fit(y=y, X=X)
-            trend = forecaster.predict(fh=fh, X=y)
+            forecaster = (
+                self._component_obj.forecaster_
+            )  # the .forecaster attribute is an unfitted version
+            try:
+                trend = forecaster.predict(fh=fh, X=y)
+            except (sklearn.exceptions.NotFittedError, AttributeError):
+                raise ValueError(
+                    "PolynomialDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
+                )
             seasonality = seasonal_decompose(y - trend).seasonal
             residual = y - trend - seasonality
             return pd.DataFrame(
