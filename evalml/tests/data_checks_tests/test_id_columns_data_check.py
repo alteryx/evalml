@@ -217,12 +217,12 @@ def test_identified_first_col_primary_key(
             message="The first column 'col_1_id' is likely to be the primary key",
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
-            details={"columns": "col_1_id"},
+            details={"columns": ["col_1_id"]},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={"columns": "col_1_id"},
+                    metadata={"columns": ["col_1_id"]},
                 ),
             ],
         ).to_dict(),
@@ -247,12 +247,12 @@ def test_identified_first_col_primary_key(
             message="The first column 'ID' is likely to be the primary key",
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
-            details={"columns": "ID"},
+            details={"columns": ["ID"]},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={"columns": "ID"},
+                    metadata={"columns": ["ID"]},
                 ),
             ],
         ).to_dict(),

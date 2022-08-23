@@ -139,13 +139,13 @@ class IDColumnsDataCheck(DataCheck):
             ...         "data_check_name": "IDColumnsDataCheck",
             ...         "level": "warning",
             ...         "code": "HAS_ID_FIRST_COLUMN",
-            ...         "details": {"columns": "sales_id", "rows": None},
+            ...         "details": {"columns": ["sales_id"], "rows": None},
             ...         "action_options": [
             ...             {
             ...                 "code": "SET_FIRST_COL_ID",
             ...                 "data_check_name": "IDColumnsDataCheck",
             ...                 "parameters": {},
-            ...                 "metadata": {"columns": "sales_id", "rows": None}
+            ...                 "metadata": {"columns": ["sales_id"], "rows": None}
             ...             }
             ...         ]
             ...    },
@@ -233,12 +233,12 @@ class IDColumnsDataCheck(DataCheck):
                         message=warning_msg,
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
-                        details={"columns": col_names[0]},
+                        details={"columns": [col_names[0]]},
                         action_options=[
                             DataCheckActionOption(
                                 DataCheckActionCode.SET_FIRST_COL_ID,
                                 data_check_name=self.name,
-                                metadata={"columns": col_names[0]},
+                                metadata={"columns": [col_names[0]]},
                             ),
                         ],
                     ).to_dict(),
