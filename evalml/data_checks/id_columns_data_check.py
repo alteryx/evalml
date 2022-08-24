@@ -177,6 +177,8 @@ class IDColumnsDataCheck(DataCheck):
 
         X_double = X.ww.select(include=["Double"])
 
+        # Temporary solution for baton logical types mapping integers to doubles in woodwork logical types.
+        # Will be removed when resolved.
         check_all_unique = X_double.nunique() == len(X_double)
         cols_with_all_unique = check_all_unique[
             check_all_unique
