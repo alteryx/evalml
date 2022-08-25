@@ -10,7 +10,7 @@ from evalml.utils.gen_utils import is_categorical_actually_boolean
 
 
 class KNNImputer(Transformer):
-    """Imputes missing data according to a specified imputation strategy.  Natural language columns are ignored.
+    """Imputes missing data using KNN according to a specified number of neighbors.  Natural language columns are ignored.
 
     Args:
         number_neighbors (int): Number of nearest neighbors for KNN to search for. Defaults to 0.
