@@ -566,6 +566,12 @@ def test_pipeline_custom_hyperparameters_make_pipeline(
                     <= 210
                 )
             else:
+                assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in [
+                    "mean",
+                    "median",
+                    "most_frequent",
+                    "knn",
+                ]
                 assert (
                     1
                     <= row["parameters"]["Random Forest Classifier"]["max_depth"]
