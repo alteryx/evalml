@@ -90,7 +90,6 @@ def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
         y.ww.logical_type,
         (
             logical_types.AgeNullable,
-            logical_types.BooleanNullable,
             logical_types.IntegerNullable,
         ),
     )
