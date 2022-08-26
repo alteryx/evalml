@@ -39,7 +39,7 @@ def test_polynomial_decomposer_raises_value_error_target_is_none(ts_data):
         pdt.inverse_transform(None)
 
 
-def test_polynomial_decomposer_get_trend_df_raises_errors(ts_data):
+def test_polynomial_decomposer_get_trend_dataframe_raises_errors(ts_data):
     X, y = ts_data
     pdt = PolynomialDecomposer(degree=3)
     pdt.fit_transform(X, y)
@@ -161,10 +161,10 @@ def test_polynomial_decomposer_get_trend_dataframe(
         y = pd.concat([y, y], axis=1)
     result_dfs = pdt.get_trend_dataframe(X, y)
 
-    def get_trend_df_format_correct(df):
+    def get_trend_dataframe_format_correct(df):
         return set(df.columns) == {"trend", "seasonality", "residual"}
 
-    def get_trend_df_values_correct(df, y):
+    def get_trend_dataframe_values_correct(df, y):
         np.testing.assert_array_almost_equal(
             (df["trend"] + df["seasonality"] + df["residual"]).values,
             y.values,
@@ -172,13 +172,16 @@ def test_polynomial_decomposer_get_trend_dataframe(
 
     assert isinstance(result_dfs, list)
     assert all(isinstance(x, pd.DataFrame) for x in result_dfs)
-    assert all(get_trend_df_format_correct(x) for x in result_dfs)
+    assert all(get_trend_dataframe_format_correct(x) for x in result_dfs)
     if variateness == "univariate":
         assert len(result_dfs) == 1
-        [get_trend_df_values_correct(x, y) for x in result_dfs]
+        [get_trend_dataframe_values_correct(x, y) for x in result_dfs]
     elif variateness == "multivariate":
         assert len(result_dfs) == 2
-        [get_trend_df_values_correct(x, y[idx]) for idx, x in enumerate(result_dfs)]
+        [
+            get_trend_dataframe_values_correct(x, y[idx])
+            for idx, x in enumerate(result_dfs)
+        ]
 
 
 @pytest.mark.parametrize("fit_before_decompose", [True, False])
