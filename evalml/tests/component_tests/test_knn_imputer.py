@@ -104,30 +104,6 @@ def test_knn_imputer_multitype_with_one_bool(data_type, make_data_type):
     assert_frame_equal(X_multi_expected_arr, X_multi_t)
 
 
-def test_knn_imputer_all_bool():
-    X = pd.DataFrame(
-        {
-            "Booleans": pd.Series(
-                [True, True, True, False, False],
-                dtype="boolean",
-            ),
-        },
-    )
-    y = pd.Series([1, 1, 1, 0, 0])
-    imputer = KNNImputer(number_neighbors=1)
-    imputer.fit(X, y)
-    X_t = imputer.transform(X)
-    X_expected = pd.DataFrame(
-        {
-            "Booleans": pd.Series(
-                [True, True, True, False, False],
-                dtype="bool",
-            ),
-        },
-    )
-    assert_frame_equal(X_expected, X_t)
-
-
 def test_knn_imputer_revert_categorical_to_boolean():
     X = pd.DataFrame(
         {
