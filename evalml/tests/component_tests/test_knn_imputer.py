@@ -61,15 +61,16 @@ def test_knn_imputer_all_bool_return_original(data_type, make_data_type):
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_knn_imputer_boolean_dtype(data_type, make_data_type):
     X = pd.DataFrame(
-        [True, np.nan, False, np.nan, True],
-        [True, True, False, True, True],
+        {
+            "some_nan": [True, np.nan, False, np.nan, True],
+        },
     )
-    X.ww.init(logical_types={0: "BooleanNullable"})
+    X.ww.init(logical_types={"some_nan": "BooleanNullable"})
     y = pd.Series([1, 0, 0, 1, 0])
     X_expected_arr = pd.DataFrame(
-        [True, True, False, True, True],
-        [True, True, False, True, True],
-        dtype="boolean",
+        {
+            "some_nan": [True, True, False, True, True],
+        },
     )
     X = make_data_type(data_type, X)
     imputer = KNNImputer(number_neighbors=1)
