@@ -2,7 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        *  Added KNNImputer class and created new knn parameter for Imputer? :pr:`3662``
+        *  Added ``KNNImputer`` class and created new knn parameter for Imputer :pr:`3662`
     * Fixes
     * Changes
         * Pinned ``pmdarima`` < 2.0.0 :pr:`3679`
