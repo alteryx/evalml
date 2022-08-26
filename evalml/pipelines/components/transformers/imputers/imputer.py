@@ -3,7 +3,7 @@ import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
-from evalml.utils import infer_feature_types
+from evalml.utils import downcast_nullable_types, infer_feature_types
 from evalml.utils.gen_utils import is_categorical_actually_boolean
 
 
@@ -162,7 +162,6 @@ class Imputer(Transformer):
             X_numeric = X.ww[self._numeric_cols.tolist()]
             imputed = self._numeric_imputer.transform(X_numeric)
             X_no_all_null[X_numeric.columns] = imputed
-            X_no_all_null = downcast_integer_nullable_to_double(X_no_all_null)
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
             X_categorical = X.ww[self._categorical_cols.tolist()]
@@ -173,43 +172,6 @@ class Imputer(Transformer):
             X_boolean = X.ww[self._boolean_cols.tolist()]
             imputed = self._boolean_imputer.transform(X_boolean)
             X_no_all_null[X_boolean.columns] = imputed
-            X_no_all_null = downcast_boolean_nullable_to_double(X_no_all_null)
+
+        X_no_all_null = downcast_nullable_types(X_no_all_null, ignore_null_cols=False)
         return X_no_all_null
-
-
-def downcast_integer_nullable_to_double(X):
-    """Downcasts IntegerNullable types to Double in order to support certain estimators like ARIMA, CatBoost, and LightGBM.
-
-    Args:
-        X (pd.DataFrame): Feature data.
-
-    Returns:
-        X: DataFrame initialized with logical type information where IntegerNullable are cast as Double.
-    """
-    X_schema = X.ww.schema
-    original_X_schema = X_schema.get_subset_schema(
-        subset_cols=X_schema._filter_cols(exclude=["IntegerNullable"]),
-    )
-    X_int_nullable_cols = X_schema._filter_cols(include=["IntegerNullable"])
-    new_ltypes_for_int_nullable_cols = {col: "Double" for col in X_int_nullable_cols}
-    X.ww.init(schema=original_X_schema, logical_types=new_ltypes_for_int_nullable_cols)
-    return X
-
-
-def downcast_boolean_nullable_to_double(X):
-    """Downcasts BooleanNullable types to Double in order to support certain estimators like ARIMA, CatBoost, and LightGBM.
-
-    Args:
-        X (pd.DataFrame): Feature data.
-
-    Returns:
-        X: DataFrame initialized with logical type information where BooleanNullable are cast as Double.
-    """
-    X_schema = X.ww.schema
-    original_X_schema = X_schema.get_subset_schema(
-        subset_cols=X_schema._filter_cols(exclude=["BooleanNullable"]),
-    )
-    X_bool_nullable_cols = X_schema._filter_cols(include=["BooleanNullable"])
-    new_ltypes_for_bool_nullable_cols = {col: "Boolean" for col in X_bool_nullable_cols}
-    X.ww.init(schema=original_X_schema, logical_types=new_ltypes_for_bool_nullable_cols)
-    return X

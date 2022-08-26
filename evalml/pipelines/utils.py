@@ -82,18 +82,22 @@ def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
 
 def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
     component = []
-    all_nullable_cols = X.ww.select(
-        ["IntegerNullable", "AgeNullable"],
-        return_schema=True,
-    ).columns
-    nullable_target = isinstance(
-        y.ww.logical_type,
-        (
-            logical_types.AgeNullable,
-            logical_types.IntegerNullable,
-        ),
-    )
-    if len(all_nullable_cols) > 0 or nullable_target:
+    input_logical_types = {type(lt) for lt in X.ww.logical_types.values()}
+    types_replace_null_handles = [
+        logical_types.AgeNullable,
+        logical_types.Boolean,
+        logical_types.BooleanNullable,
+        logical_types.Double,
+        logical_types.Integer,
+        logical_types.IntegerNullable,
+    ]
+
+    nullable_target = isinstance(y.ww.logical_type, tuple(types_replace_null_handles))
+
+    if (
+        len(input_logical_types.intersection(set(types_replace_null_handles)))
+        or nullable_target
+    ):
         component.append(ReplaceNullableTypes)
     return component
 
