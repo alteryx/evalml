@@ -62,10 +62,7 @@ def infer_feature_types(data, feature_types=None):
             else:
                 ww_error = f"{ww_error}. Please initialize ww with df.ww.init() to get rid of this message."
             raise ValueError(ww_error)
-        if isinstance(data, pd.DataFrame):
-            data.ww.init(schema=data.ww.schema)
-        else:
-            data.ww.init(schema=data.ww.schema)
+        data.ww.init(schema=data.ww.schema)
         return data
 
     if isinstance(data, pd.Series):

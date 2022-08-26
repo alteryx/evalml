@@ -62,13 +62,10 @@ class BaseSampler(Transformer):
         X = infer_feature_types(X)
         if len(X.ww.select(IntegerNullable).columns) > 0:
             try:
-                print(X)
-                print(f"Integer Nullable cols: {len(X.ww.select(IntegerNullable).columns)}")
                 X = X.astype(
                     {null_col: int for null_col in X.ww.select(IntegerNullable).columns},
                 )
             except ValueError:
-                print("FAILED AND RETRYING AS FLOAT")
                 X = X.astype(
                     {null_col: float for null_col in X.ww.select(IntegerNullable).columns},
                 )
