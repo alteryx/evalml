@@ -8,6 +8,8 @@ class Decomposer(Transformer):
     """Component that removes trends and seasonality from time series and returns the decomposed components.
 
     Args:
+        parameters (dict): Dictionary of parameters to pass to component object.
+        component_obj (class) : Instance of a detrender/deseasonalizer class.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 

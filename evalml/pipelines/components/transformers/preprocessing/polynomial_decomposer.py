@@ -49,7 +49,7 @@ class PolynomialDecomposer(Decomposer):
                 degree = int(degree)
             else:
                 raise TypeError(
-                    f"Parameter Degree must be an integer!: Received {type(degree).__name__}",
+                    f"Parameter 'degree' must be an integer!: Received {type(degree).__name__}",
                 )
 
         params = {"degree": degree}

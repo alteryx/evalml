@@ -79,24 +79,22 @@ def test_polynomial_decomposer_transform_returns_same_when_y_none(
 def test_polynomial_decomposer_fit_transform(degree, input_type, index_type, ts_data,
 ):
 
-    X_input, y_input = ts_data
+    X, y = ts_data
 
     # Get the expected answer
     lin_reg = LinearRegression(fit_intercept=True)
     features = PolynomialFeatures(degree=degree).fit_transform(
-        np.arange(X_input.shape[0]).reshape(-1, 1),
+        np.arange(X.shape[0]).reshape(-1, 1),
     )
-    lin_reg.fit(features, y_input)
-    detrended_values = y_input.values - lin_reg.predict(features)
-    expected_index = y_input.index if input_type != "np" else range(y_input.shape[0])
+    lin_reg.fit(features, y)
+    detrended_values = y.values - lin_reg.predict(features)
+    expected_index = y.index if input_type != "np" else range(y.shape[0])
     expected_answer = pd.Series(detrended_values, index=expected_index)
 
-    X, y = X_input, y_input
-
     if input_type == "ww":
-        X = X_input.copy()
+        X = X.copy()
         X.ww.init()
-        y = ww.init_series(y_input.copy())
+        y = ww.init_series(y.copy())
 
     if index_type == "integer":
         y = y.reset_index(drop=True)
