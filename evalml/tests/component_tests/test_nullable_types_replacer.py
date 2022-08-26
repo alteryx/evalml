@@ -229,7 +229,7 @@ def test_replace_nullable_types_boolean_target(nullable_data, input_type, with_n
     if with_null or input_type == "ww":
         assert nullable_types_replacer._nullable_target == "nullable_bool"
     else:
-        assert nullable_types_replacer._nullable_target == None
+        assert nullable_types_replacer._nullable_target is None
 
     X_t, y_t = nullable_types_replacer.transform(X, y)
 
@@ -271,7 +271,7 @@ def test_replace_nullable_types_integer_target(nullable_data, input_type, with_n
     if with_null or input_type == "ww":
         assert nullable_types_replacer._nullable_target == "nullable_int"
     else:
-        assert nullable_types_replacer._nullable_target == None
+        assert nullable_types_replacer._nullable_target is None
 
     X_t, y_t = nullable_types_replacer.transform(X, y)
 

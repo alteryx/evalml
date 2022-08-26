@@ -147,6 +147,5 @@ def downcast_nullable_types(X, ignore_null_cols=True):
     new_ltypes.update(
         {col: "Double" for col in X_int_nullable_cols if col in non_null_columns},
     )
-    print(new_ltypes)
     X.ww.init(schema=original_X_schema, logical_types=new_ltypes)
     return X
