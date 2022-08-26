@@ -46,12 +46,13 @@ class KNNImputer(Transformer):
         return X, natural_language_columns
 
     def _set_boolean_columns_to_categorical(self, X):
-        boolean_columns = list(
-            X.ww.select(["Boolean"], return_schema=True).columns.keys(),
+        X_schema = X.ww.schema
+        original_X_schema = X_schema.get_subset_schema(
+            subset_cols=X_schema._filter_cols(exclude=["Boolean"]),
         )
-        if boolean_columns:
-            X = X.ww.copy()
-            X.ww.set_types({col: "Categorical" for col in boolean_columns})
+        X_boolean_cols = X_schema._filter_cols(include=["Boolean"])
+        new_ltypes_for_boolean_cols = {col: "Categorical" for col in X_boolean_cols}
+        X.ww.init(schema=original_X_schema, logical_types=new_ltypes_for_boolean_cols)
         return X
 
     def fit(self, X, y=None):
@@ -69,7 +70,6 @@ class KNNImputer(Transformer):
 
         """
         X = infer_feature_types(X)
-
         if set([lt.type_string for lt in X.ww.logical_types.values()]) == {
             "boolean",
             "categorical",
@@ -108,10 +108,6 @@ class KNNImputer(Transformer):
         """
         X = infer_feature_types(X)
 
-        # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
-        if (X.dtypes == bool).all():
-            return X
-
         not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
         original_index = X.index
 
@@ -122,8 +118,12 @@ class KNNImputer(Transformer):
         not_all_null_or_natural_language_cols = [
             col for col in not_all_null_cols if col not in natural_language_cols
         ]
+
         X_t = self._component_obj.transform(X_t)
         X_t = pd.DataFrame(X_t, columns=not_all_null_or_natural_language_cols)
+        for col in X.ww.select(["Categorical"], return_schema=True).columns:
+            if is_categorical_actually_boolean(X, col):
+                X_t[col] = X_t[col].astype(bool)
 
         # Add back in natural language columns, unchanged
         if len(natural_language_cols) > 0:
