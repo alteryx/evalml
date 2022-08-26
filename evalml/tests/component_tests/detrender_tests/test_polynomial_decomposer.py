@@ -157,9 +157,7 @@ def test_polynomial_decomposer_get_trend_dataframe(
     pd.testing.assert_series_equal(expected_answer, output_y)
 
     # get_trend_dataframe() is only expected to work with datetime indices
-    if variateness == "univariate":
-        y = y
-    elif variateness == "multivariate":
+    if variateness == "multivariate":
         y = pd.concat([y, y], axis=1)
     result_dfs = pdt.get_trend_dataframe(X, y)
 
@@ -351,49 +349,38 @@ def test_polynomial_decomposer_uses_time_index(
         and X_has_time_index == "X_doesnt_have_time_index"
         and y_has_time_index == "y_doesnt_have_time_index"
     ):
-        try:
+        with pytest.raises(
+            ValueError,
+            match="There are no Datetime features in the feature data and neither the feature or target data doesn't have Datetime index.",
+        ):
             output_X, output_y = decomposer.fit_transform(X, y)
-        except ValueError as e:
-            if (
-                "There are no Datetime features in the feature data and neither the feature or target data doesn't have Datetime index."
-                in str(e)
-            ):
-                pytest.xfail(
-                    "Must provide some sort of date time information to use this time series component.",
-                )
 
     # The time series data has too much time data
-    if (
+    elif (
         X_num_time_columns > 1
         and time_index_specified == "time_index_not_specified"
         and y_has_time_index == "y_doesnt_have_time_index"
+        and X_has_time_index != "X_has_time_index"
     ):
-        try:
+        with pytest.raises(
+            ValueError,
+            match="Too many Datetime features provided in data but no time_index column specified during __init__.",
+        ):
             output_X, output_y = decomposer.fit_transform(X, y)
-        except ValueError as e:
-            if (
-                "Too many Datetime features provided in data but no time_index column specified during __init__."
-                in str(e)
-            ):
-                pytest.xfail(
-                    "Must pass a time index to component when multiple date time columns present.",
-                )
 
     # If the wrong time_index column is specified with multiple datetime columns
-    if (
+    elif (
         time_index_specified == "time_index_is_specified_but_wrong"
         and X_num_time_columns > 1
+        and X_has_time_index != "X_has_time_index"
+        and y_has_time_index != "y_has_time_index"
     ):
-        try:
+        with pytest.raises(
+            ValueError,
+            match="Too many Datetime features provided in data and provided time_index column d4t3s not present in data.",
+        ):
             output_X, output_y = decomposer.fit_transform(X, y)
-        except ValueError as e:
-            if (
-                "Too many Datetime features provided in data and provided time_index column d4t3s not present in data."
-                in str(e)
-            ):
-                pytest.xfail(
-                    "Must pass an existing column with datetime data when multiple date time columns present.",
-                )
 
-    # Smoke test the fit_transform() method
-    decomposer.fit_transform(X, y)
+    else:
+        # Smoke test the fit_transform() method
+        decomposer.fit_transform(X, y)
