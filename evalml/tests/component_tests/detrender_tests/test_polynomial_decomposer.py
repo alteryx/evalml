@@ -343,17 +343,15 @@ def test_polynomial_decomposer_uses_time_index(
     }[time_index_specified]
     decomposer = PolynomialDecomposer(time_index=time_index)
 
+    err_msg = None
+
     # The time series data has no time data
     if (
         X_num_time_columns == 0
         and X_has_time_index == "X_doesnt_have_time_index"
         and y_has_time_index == "y_doesnt_have_time_index"
     ):
-        with pytest.raises(
-            ValueError,
-            match="There are no Datetime features in the feature data and neither the feature or target data doesn't have Datetime index.",
-        ):
-            output_X, output_y = decomposer.fit_transform(X, y)
+        err_msg = "There are no Datetime features in the feature data and neither the feature or target data doesn't have Datetime index."
 
     # The time series data has too much time data
     elif (
@@ -362,11 +360,7 @@ def test_polynomial_decomposer_uses_time_index(
         and y_has_time_index == "y_doesnt_have_time_index"
         and X_has_time_index != "X_has_time_index"
     ):
-        with pytest.raises(
-            ValueError,
-            match="Too many Datetime features provided in data but no time_index column specified during __init__.",
-        ):
-            output_X, output_y = decomposer.fit_transform(X, y)
+        err_msg = "Too many Datetime features provided in data but no time_index column specified during __init__."
 
     # If the wrong time_index column is specified with multiple datetime columns
     elif (
@@ -375,12 +369,14 @@ def test_polynomial_decomposer_uses_time_index(
         and X_has_time_index != "X_has_time_index"
         and y_has_time_index != "y_has_time_index"
     ):
+        err_msg = "Too many Datetime features provided in data and provided time_index column d4t3s not present in data."
+
+    if err_msg is not None:
         with pytest.raises(
             ValueError,
-            match="Too many Datetime features provided in data and provided time_index column d4t3s not present in data.",
+            match=err_msg,
         ):
-            output_X, output_y = decomposer.fit_transform(X, y)
-
+            decomposer.fit_transform(X, y)
     else:
         # Smoke test the fit_transform() method
         decomposer.fit_transform(X, y)
