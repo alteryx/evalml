@@ -134,12 +134,7 @@ def test_make_pipeline(
             )
             drop_null = [DropColumns] if "all_null" in column_names else []
             replace_null = (
-                [ReplaceNullableTypes]
-                if (
-                    any(x in column_names for x in ["int_null", "age_null"])
-                    and input_type == "ww"
-                )
-                else []
+                [] if (column_names in [["email"], ["url"]]) else [ReplaceNullableTypes]
             )
             natural_language_featurizer = (
                 [NaturalLanguageFeaturizer] if "text" in column_names else []
@@ -157,9 +152,9 @@ def test_make_pipeline(
             if is_time_series(problem_type):
                 expected_components = (
                     label_encoder
+                    + replace_null
                     + email_featurizer
                     + url_featurizer
-                    + replace_null
                     + drop_null
                     + natural_language_featurizer
                     + imputer
@@ -173,9 +168,9 @@ def test_make_pipeline(
             else:
                 expected_components = (
                     label_encoder
+                    + replace_null
                     + email_featurizer
                     + url_featurizer
-                    + replace_null
                     + drop_null
                     + delayed_features
                     + natural_language_featurizer
@@ -1015,9 +1010,7 @@ def test_make_pipeline_from_multiple_graphs_with_sampler(X_y_binary):
         estimator=estimator,
         problem_type=ProblemTypes.BINARY,
     )
-    second_pipeline_sampler = (
-        "Pipeline w/ Label Encoder + Imputer + Undersampler Pipeline 2 - Undersampler.y"
-    )
+    second_pipeline_sampler = "Pipeline w/ Label Encoder + Replace Nullable Types Transformer + Imputer + Undersampler Pipeline 2 - Undersampler.y"
     assert (
         combined_pipeline.component_graph.get_inputs("Random Forest Classifier")[2]
         == second_pipeline_sampler
@@ -1062,11 +1055,11 @@ def test_make_pipeline_from_multiple_graphs_prior_components(X_y_binary):
 
     assert (
         combined_pipeline.component_graph.get_inputs("First Pipeline - Imputer")[0]
-        == "DFS Transformer.x"
+        == "First Pipeline - Replace Nullable Types Transformer.x"
     )
     assert (
         combined_pipeline.component_graph.get_inputs("Second Pipeline - Imputer")[0]
-        == "DFS Transformer.x"
+        == "Second Pipeline - Replace Nullable Types Transformer.x"
     )
 
 
