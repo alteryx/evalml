@@ -1,5 +1,6 @@
 """Component that imputes missing data according to a specified imputation strategy."""
 import pandas as pd
+from woodwork import init_series
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
@@ -162,7 +163,7 @@ class Imputer(Transformer):
             X_numeric = X.ww[self._numeric_cols.tolist()]
             imputed = self._numeric_imputer.transform(X_numeric)
             for numeric_col in X_numeric.columns:
-                X_no_all_null.ww[numeric_col] = imputed[numeric_col]
+                X_no_all_null.ww[numeric_col] = init_series(imputed[numeric_col], logical_type="Double")
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
             X_categorical = X.ww[self._categorical_cols.tolist()]
