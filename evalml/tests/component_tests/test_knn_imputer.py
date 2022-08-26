@@ -60,10 +60,17 @@ def test_knn_imputer_all_bool_return_original(data_type, make_data_type):
 
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_knn_imputer_boolean_dtype(data_type, make_data_type):
-    X = pd.DataFrame([True, np.nan, False, np.nan, True])
+    X = pd.DataFrame(
+        [True, np.nan, False, np.nan, True],
+        [True, True, False, True, True],
+    )
     X.ww.init(logical_types={0: "BooleanNullable"})
     y = pd.Series([1, 0, 0, 1, 0])
-    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype="boolean")
+    X_expected_arr = pd.DataFrame(
+        [True, True, False, True, True],
+        [True, True, False, True, True],
+        dtype="boolean",
+    )
     X = make_data_type(data_type, X)
     imputer = KNNImputer(number_neighbors=1)
     X_t = imputer.fit_transform(X, y)
@@ -192,29 +199,3 @@ def test_knn_imputer_ignores_natural_language(
         assert_frame_equal(result, X_df)
     elif df_composition == "single_column":
         assert_frame_equal(result, X_df)
-
-
-@pytest.mark.parametrize(
-    "data",
-    [
-        ["int col"],
-        ["float col"],
-        ["categorical col", "bool col"],
-        ["bool col", "float col"],
-    ],
-)
-def test_knn_imputer_errors_with_bool_and_categorical_columns(
-    data,
-    imputer_test_data,
-):
-    X_df = imputer_test_data[data]
-    if "categorical col" in data and "bool col" in data:
-        with pytest.raises(
-            ValueError,
-            match="KNNImputer cannot handle dataframes with both boolean and categorical features.",
-        ):
-            ki = KNNImputer()
-            ki.fit(X_df)
-    else:
-        ki = KNNImputer()
-        ki.fit(X_df)
