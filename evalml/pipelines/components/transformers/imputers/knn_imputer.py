@@ -117,17 +117,18 @@ class KNNImputer(Transformer):
         if len(natural_language_cols) > 0:
             X_t = woodwork.concat_columns([X_t, X[natural_language_cols]])
 
-        booleanNullable_columns = list(
-            X.ww.select(["BooleanNullable"], return_schema=True).columns.keys(),
+        X_schema = X.ww.schema
+        original_X_schema = X_schema.get_subset_schema(
+            subset_cols=X_schema._filter_cols(exclude=["BooleanNullable"]),
         )
-        for col in booleanNullable_columns:
-            X_t[col] = X_t[col].astype(bool).astype("boolean")
-
-        boolean_columns = list(
-            X.ww.select(["boolean"], return_schema=True).columns.keys(),
+        X_bool_nullable_cols = X_schema._filter_cols(include=["BooleanNullable"])
+        new_ltypes_for_bool_nullable_cols = {
+            col: "Boolean" for col in X_bool_nullable_cols
+        }
+        X_t.ww.init(
+            schema=original_X_schema,
+            logical_types=new_ltypes_for_bool_nullable_cols,
         )
-        for col in boolean_columns:
-            X_t[col] = X_t[col].astype(bool)
 
         if not_all_null_or_natural_language_cols:
             X_t.index = original_index
