@@ -70,18 +70,6 @@ class KNNImputer(Transformer):
 
         """
         X = infer_feature_types(X)
-        if set([lt.type_string for lt in X.ww.logical_types.values()]) == {
-            "boolean",
-            "categorical",
-        } and not all(
-            [
-                is_categorical_actually_boolean(X, col)
-                for col in X.ww.select("Categorical")
-            ],
-        ):
-            raise ValueError(
-                "KNNImputer cannot handle dataframes with both boolean and categorical features.  Use Imputer instead.",
-            )
 
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
