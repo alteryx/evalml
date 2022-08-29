@@ -1,4 +1,6 @@
 """Data check that checks if any of the features are likely to be ID columns."""
+from xml.etree.ElementInclude import include
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckActionCode,
@@ -175,36 +177,30 @@ class IDColumnsDataCheck(DataCheck):
         ]  # columns whose name is "id"
         id_cols = {col: 0.95 for col in cols_named_id}
 
-        X_double = X.ww.select(include=["Double"])
+        for dtypes in [["Double"], ["Integer", "Categorical"]]:
+            X_temp = X.ww.select(include=dtypes)
+            check_all_unique = X_temp.nunique() == len(X_temp)
+            cols_with_all_unique = check_all_unique[
+                check_all_unique
+            ].index.tolist()  # columns whose values are all unique
 
-        # Temporary solution for baton logical types mapping integers to doubles in woodwork logical types.
-        # Will be removed when resolved.
-        check_all_unique = X_double.nunique() == len(X_double)
-        cols_with_all_unique = check_all_unique[
-            check_all_unique
-        ].index.tolist()  # columns whose values are all unique and doubles
-        cols_with_all_unique_integers = [
-            col for col in cols_with_all_unique if all(X_double[col].mod(1).eq(0))
-        ]  # Parse out columns that contain all `integer` values
-        id_cols.update(
-            [
-                (col, 1.0) if col in id_cols else (col, 0.95)
-                for col in cols_with_all_unique_integers
-            ],
-        )
+            # Temporary solution for baton logical types mapping integers to doubles in woodwork logical types.
+            # Will be removed when resolved.
+            if dtypes == ["Double"]:
+                cols_with_all_unique = [
+                    col
+                    for col in cols_with_all_unique
+                    if all(
+                        X_temp[col].mod(1).eq(0)
+                    )  # Parse out columns that contain all `integer` values
+                ]
 
-        X_discrete = X.ww.select(include=["Integer", "Categorical"])
-
-        check_all_unique = X_discrete.nunique() == len(X_discrete)
-        cols_with_all_unique = check_all_unique[
-            check_all_unique
-        ].index.tolist()  # columns whose values are all unique
-        id_cols.update(
-            [
-                (col, 1.0) if col in id_cols else (col, 0.95)
-                for col in cols_with_all_unique
-            ],
-        )
+            id_cols.update(
+                [
+                    (col, 1.0) if col in id_cols else (col, 0.95)
+                    for col in cols_with_all_unique
+                ],
+            )
 
         col_ends_with_id = [
             col for col in col_names if str(col).lower().endswith("_id")
