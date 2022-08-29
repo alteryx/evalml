@@ -65,20 +65,7 @@ def test_nullable_types_builds_pipelines(
 
     # A check to make sure we actually retrieve constructed pipelines from the algo.
     assert len(pipelines) > 0
-
-    if test_description in [
-        "only null int",
-        "only null bool",
-        "only null age",
-        "nullable types",
-        "just nullable target",
-    ]:
-        if input_type == "pd":
-            assert not any([ReplaceNullableTypes.name in pl for pl in pipelines])
-        elif input_type == "ww":
-            assert all([ReplaceNullableTypes.name in pl for pl in pipelines])
-    else:
-        assert not any([ReplaceNullableTypes.name in pl for pl in pipelines])
+    assert all([ReplaceNullableTypes.name in pl for pl in pipelines])
 
 
 def test_imputer_can_impute_features_generated_from_null_email_url_features():

@@ -3,7 +3,7 @@ from woodwork import init_series
 from woodwork.logical_types import BooleanNullable, IntegerNullable
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import infer_feature_types
+from evalml.utils import downcast_nullable_types, infer_feature_types
 
 
 class ReplaceNullableTypes(Transformer):
@@ -72,18 +72,17 @@ class ReplaceNullableTypes(Transformer):
             pd.Series: Transformed y
         """
         X_t = infer_feature_types(X)
-        for col in self._nullable_int_cols:
-            X_t.ww[col] = init_series(X_t[col], logical_type="double")
-        for col in self._nullable_bool_cols:
-            X_t.ww[col] = init_series(X_t[col], logical_type="categorical")
+        X_t = downcast_nullable_types(X_t, ignore_null_cols=True)
 
         if y is not None:
             y_t = infer_feature_types(y)
-            if self._nullable_target is not None:
-                if self._nullable_target == "nullable_int":
-                    y_t = init_series(y_t, logical_type="double")
-                elif self._nullable_target == "nullable_bool":
-                    y_t = init_series(y_t, logical_type="categorical")
+            if isinstance(y_t.ww.logical_type, IntegerNullable):
+                y_t = init_series(y_t, logical_type="Double")
+            if isinstance(y_t.ww.logical_type, BooleanNullable):
+                if not y_t.isnull().any():
+                    y_t = init_series(y_t, logical_type="Boolean")
+                else:
+                    y_t = init_series(y_t, logical_type="Categorical")
         elif y is None:
             y_t = None
 
