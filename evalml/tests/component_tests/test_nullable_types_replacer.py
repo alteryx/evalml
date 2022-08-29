@@ -131,15 +131,9 @@ def test_replace_nullable_types(nullable_data, input_type, methods_to_test):
                 "nullable_integer_with_null",
                 "nullable_age_with_null",
             }
-            if input_type == "ww":
-                assert nullable_types_replacer._nullable_bool_cols == [
-                    "nullable_boolean_with_null",
-                    "nullable_boolean_without_null",
-                ]
-            else:
-                assert nullable_types_replacer._nullable_bool_cols == [
-                    "nullable_boolean_with_null",
-                ]
+            assert nullable_types_replacer._nullable_bool_cols == [
+                "nullable_boolean_with_null",
+            ]
         assert set(X_t.columns) == set(X.columns)
         assert X_t.shape == X.shape
 
@@ -264,7 +258,6 @@ def test_replace_nullable_types_integer_target(nullable_data, input_type, with_n
 
     if input_type == "ww":
         y = init_series(y, logical_type=IntegerNullable)
-        assert isinstance(y.ww.logical_type, IntegerNullable)
 
     nullable_types_replacer.fit(X, y)
 

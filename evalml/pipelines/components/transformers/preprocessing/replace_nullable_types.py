@@ -78,15 +78,11 @@ class ReplaceNullableTypes(Transformer):
             y_t = infer_feature_types(y)
             if isinstance(y_t.ww.logical_type, IntegerNullable):
                 y_t = init_series(y_t, logical_type="Double")
-            elif (
-                isinstance(y_t.ww.logical_type, BooleanNullable)
-                and not y_t.isnull().any()
-            ):
-                y_t = init_series(y_t, logical_type="Boolean")
-            elif (
-                isinstance(y_t.ww.logical_type, BooleanNullable) and y_t.isnull().any()
-            ):
-                y_t = init_series(y_t, logical_type="Categorical")
+            if isinstance(y_t.ww.logical_type, BooleanNullable):
+                if not y_t.isnull().any():
+                    y_t = init_series(y_t, logical_type="Boolean")
+                else:
+                    y_t = init_series(y_t, logical_type="Categorical")
         elif y is None:
             y_t = None
 
