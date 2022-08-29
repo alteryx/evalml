@@ -5,6 +5,7 @@ Release Notes
     * Fixes
         * ``IDColumnsDataCheck`` now only returns an action code to set the first column as the primary key if it contains unique values :pr:`3639`
         * ``IDColumnsDataCheck`` now can handle primary key columns containing "integer" values that are of the double type :pr:`3683` 
+        * Added support for BooleanNullable columns in EvalML pipelines and imputer :pr:`3678`
     * Changes
         * Pinned ``pmdarima`` < 2.0.0 :pr:`3679`
     * Documentation Changes
