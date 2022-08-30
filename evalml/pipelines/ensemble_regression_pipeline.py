@@ -1,21 +1,22 @@
 """Pipeline subclass for all binary classification pipelines."""
 from multiprocessing.sharedctypes import Value
 
-from matplotlib.cbook import Stack
-from evalml.problem_types.utils import is_binary, is_multiclass
-from .binary_classification_pipeline_mixin import (
-    BinaryClassificationPipelineMixin,
-)
-
-from evalml.objectives import get_objective
-from evalml.pipelines.regression_pipeline import RegressionPipeline
-from evalml.utils import infer_feature_types
-from evalml.pipelines.components import LabelEncoder, StackedEnsembleRegressor
-from evalml.automl.utils import make_data_splitter
-from evalml.problem_types import ProblemTypes
-import woodwork as ww
 import numpy as np
 import pandas as pd
+import woodwork as ww
+from matplotlib.cbook import Stack
+
+from evalml.automl.utils import make_data_splitter
+from evalml.objectives import get_objective
+from evalml.pipelines.binary_classification_pipeline_mixin import (
+    BinaryClassificationPipelineMixin,
+)
+from evalml.pipelines.components import LabelEncoder, StackedEnsembleRegressor
+from evalml.pipelines.regression_pipeline import RegressionPipeline
+from evalml.problem_types import ProblemTypes
+from evalml.problem_types.utils import is_binary, is_multiclass
+from evalml.utils import infer_feature_types
+
 
 class EnsembleRegressionPipeline(RegressionPipeline):
     """Pipeline subclass for all binary classification pipelines.
@@ -52,7 +53,9 @@ class EnsembleRegressionPipeline(RegressionPipeline):
         ...                                        'multi_class': 'auto',
         ...                                        'solver': 'liblinear'}}
     """
+
     name = "V3 Stacked Ensemble Regressor"
+
     def __init__(
         self,
         input_pipelines,
@@ -65,7 +68,7 @@ class EnsembleRegressionPipeline(RegressionPipeline):
 
         if component_graph is None:
             component_graph = {
-                "Stacked Ensembler": ["Stacked Ensemble Regressor", "X", "y"]
+                "Stacked Ensembler": ["Stacked Ensemble Regressor", "X", "y"],
             }
         super().__init__(
             component_graph,
@@ -111,7 +114,7 @@ class EnsembleRegressionPipeline(RegressionPipeline):
                     new_pl = pipeline
                 fitted_pipelines.append(new_pl.fit(X, y))
         self.input_pipelines = fitted_pipelines
-        
+
     def fit(self, X, y, data_splitter=None, force_retrain=False):
         """Build a classification model. For string and categorical targets, classes are sorted by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
 
@@ -136,7 +139,11 @@ class EnsembleRegressionPipeline(RegressionPipeline):
             self._fit_input_pipelines(X, y, force_retrain=True)
 
         if data_splitter is None:
-            data_splitter = make_data_splitter(X, y, problem_type=ProblemTypes.REGRESSION)
+            data_splitter = make_data_splitter(
+                X,
+                y,
+                problem_type=ProblemTypes.REGRESSION,
+            )
 
         splits = data_splitter.split(X, y)
 
@@ -157,14 +164,14 @@ class EnsembleRegressionPipeline(RegressionPipeline):
                 pipeline.fit(X_train, y_train)
                 pl_preds = pipeline.predict(X_valid)
                 fold_X[pipeline.name] = pl_preds
-            
+
             metalearner_X.append(pd.DataFrame(fold_X))
             metalearner_y.append(y_valid)
 
         metalearner_X = pd.concat(metalearner_X)
         metalearner_y = pd.concat(metalearner_y)
 
-        self.component_graph.fit(metalearner_X, metalearner_y)        
+        self.component_graph.fit(metalearner_X, metalearner_y)
         return self
 
     def transform(self, X, y=None):
@@ -174,7 +181,7 @@ class EnsembleRegressionPipeline(RegressionPipeline):
         for pipeline in self.input_pipelines:
             pl_preds = pipeline.predict(X)
             input_pipeline_preds[pipeline.name] = pl_preds
-        
+
         return pd.DataFrame(input_pipeline_preds)
 
     def clone(self):

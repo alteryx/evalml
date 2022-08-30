@@ -1,21 +1,18 @@
 """Pipeline subclass for all binary classification pipelines."""
 from multiprocessing.sharedctypes import Value
 
-from matplotlib.cbook import Stack
-from evalml.problem_types.utils import is_binary, is_multiclass
-from .binary_classification_pipeline_mixin import (
-    BinaryClassificationPipelineMixin,
-)
-
-from evalml.objectives import get_objective
-from evalml.pipelines.multiclass_classification_pipeline import MulticlassClassificationPipeline
-from evalml.utils import infer_feature_types
-from evalml.pipelines.components import LabelEncoder, StackedEnsembleClassifier
-from evalml.automl.utils import make_data_splitter
-from evalml.problem_types import ProblemTypes
-import woodwork as ww
 import numpy as np
 import pandas as pd
+import woodwork as ww
+
+from evalml.automl.utils import make_data_splitter
+from evalml.pipelines.multiclass_classification_pipeline import (
+    MulticlassClassificationPipeline,
+)
+from evalml.problem_types import ProblemTypes
+from evalml.problem_types.utils import is_binary, is_multiclass
+from evalml.utils import infer_feature_types
+
 
 class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline):
     """Pipeline subclass for all binary classification pipelines.
@@ -52,7 +49,9 @@ class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline)
         ...                                        'multi_class': 'auto',
         ...                                        'solver': 'liblinear'}}
     """
+
     name = "V3 Stacked Ensemble Classifier"
+
     def __init__(
         self,
         input_pipelines,
@@ -65,7 +64,11 @@ class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline)
         if component_graph is None:
             component_graph = {
                 "Label Encoder": ["Label Encoder", "X", "y"],
-                "Stacked Ensembler": ["Stacked Ensemble Classifier", "X", "Label Encoder.y"]
+                "Stacked Ensembler": [
+                    "Stacked Ensemble Classifier",
+                    "X",
+                    "Label Encoder.y",
+                ],
             }
         super().__init__(
             component_graph,
@@ -121,7 +124,7 @@ class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline)
                     new_pl = pipeline
                 fitted_pipelines.append(new_pl.fit(X, y))
         self.input_pipelines = fitted_pipelines
-        
+
     def fit(self, X, y, data_splitter=None, force_retrain=False):
         """Build a classification model. For string and categorical targets, classes are sorted by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
 
@@ -143,7 +146,7 @@ class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline)
             raise ValueError("Binary pipelines require y to have 2 unique classes!")
         elif is_multiclass(self.problem_type) and y.nunique() in [1, 2]:
             raise ValueError(
-                "Multiclass pipelines require y to have 3 or more unique classes!"
+                "Multiclass pipelines require y to have 3 or more unique classes!",
             )
 
         if not self._all_input_pipelines_fitted or force_retrain is True:
@@ -156,12 +159,12 @@ class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline)
 
         metalearner_X = []
         metalearner_y = []
-        
+
         pred_pls = []
         for pipeline in self.input_pipelines:
             pred_pls.append(pipeline.clone())
 
-        # Split off pipelines for CV 
+        # Split off pipelines for CV
         for i, (train, valid) in enumerate(splits):
             fold_X = []
             X_train, X_valid = X.ww.iloc[train], X.ww.iloc[valid]
@@ -182,17 +185,17 @@ class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline)
                         {
                             col: f"Col {str(col)} {pipeline.name}.x"
                             for col in pl_preds.columns
-                        }
+                        },
                     )
                 fold_X.append(pl_preds)
-            
+
             metalearner_X.append(ww.concat_columns(fold_X))
             metalearner_y.append(y_valid)
 
         metalearner_X = pd.concat(metalearner_X)
         metalearner_y = pd.concat(metalearner_y)
 
-        self.component_graph.fit(metalearner_X, metalearner_y)        
+        self.component_graph.fit(metalearner_X, metalearner_y)
 
         self._classes_ = list(ww.init_series(np.unique(metalearner_y)))
         return self
@@ -215,10 +218,10 @@ class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline)
                     {
                         col: f"Col {str(col)} {pipeline.name}.x"
                         for col in pl_preds.columns
-                    }
+                    },
                 )
             input_pipeline_preds.append(pl_preds)
-        
+
         return ww.concat_columns(input_pipeline_preds)
 
     def clone(self):

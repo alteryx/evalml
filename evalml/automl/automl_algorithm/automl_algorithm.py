@@ -5,12 +5,8 @@ from abc import ABC, abstractmethod
 from skopt.space import Categorical, Integer, Real
 
 from evalml.exceptions import PipelineNotFoundError
-from evalml.pipelines.ensemble_binary_classification_pipeline import EnsembleBinaryClassificationPipeline
-from evalml.pipelines.ensemble_multiclass_classification_pipeline import EnsembleMulticlassClassificationPipeline
-from evalml.pipelines.ensemble_regression_pipeline import EnsembleRegressionPipeline
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import is_multiclass
-from evalml.problem_types.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 
 
