@@ -44,19 +44,21 @@ def test_knn_imputer_all_bool_return_original(data_type, make_data_type):
 def test_knn_imputer_boolean_dtype(data_type, make_data_type):
     X = pd.DataFrame(
         {
-            "some_nan": [True, np.nan, False, np.nan, True],
+            "some_nan": pd.Series([True, np.nan, False, np.nan, True], dtype="boolean"),
         },
     )
     X.ww.init(logical_types={"some_nan": "BooleanNullable"})
     y = pd.Series([1, 0, 0, 1, 0])
     X_expected_arr = pd.DataFrame(
         {
-            "some_nan": [True, True, False, True, True],
+            "some_nan": pd.Series([True, True, False, True, True]),
         },
     )
     X = make_data_type(data_type, X)
     imputer = KNNImputer(number_neighbors=1)
     X_t = imputer.fit_transform(X, y)
+    X_ww_expected = "<Series: some_nan (Physical Type = bool) (Logical Type = Boolean) (Semantic Tags = set())>"
+    assert str(X_t.ww["some_nan"].ww) == X_ww_expected
     assert_frame_equal(X_expected_arr, X_t)
 
 

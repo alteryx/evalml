@@ -5,10 +5,7 @@ import woodwork
 from sklearn.impute import KNNImputer as Sk_KNNImputer
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.pipelines.components.utils import (
-    drop_natural_language_columns,
-    set_boolean_columns_to_categorical,
-)
+from evalml.pipelines.components.utils import drop_natural_language_columns
 from evalml.utils import infer_feature_types
 from evalml.utils.gen_utils import is_categorical_actually_boolean
 
@@ -60,7 +57,6 @@ class KNNImputer(Transformer):
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
         X, _ = drop_natural_language_columns(X)
-        X = set_boolean_columns_to_categorical(X)
 
         # If the Dataframe only had natural language columns, do nothing.
         if X.shape[1] == 0:
@@ -93,12 +89,8 @@ class KNNImputer(Transformer):
 
         X_t = self._component_obj.transform(X_t)
         X_t = pd.DataFrame(X_t, columns=not_all_null_or_natural_language_cols)
-        list_of_categorical = []
-        for col in X.ww.select(["Categorical"], return_schema=True).columns:
-            if is_categorical_actually_boolean(X, col):
-                list_of_categorical.append(col)
-
         X_schema = X.ww.schema
+
         original_X_schema = X_schema.get_subset_schema(
             subset_cols=X_schema._filter_cols(exclude=["BooleanNullable"]),
         )
@@ -111,8 +103,9 @@ class KNNImputer(Transformer):
             X_t = woodwork.concat_columns([X_t, X[natural_language_cols]])
 
         X_bool_nullable_cols = X_schema._filter_cols(include=["BooleanNullable"])
+
         for col in X_bool_nullable_cols:
-            new_ltypes_for_bool_nullable_cols[col] = "Boolean"
+            new_ltypes_for_bool_nullable_cols[col] = "boolean"
         X_t.ww.init(
             schema=original_X_schema,
             logical_types=new_ltypes_for_bool_nullable_cols,
@@ -120,6 +113,7 @@ class KNNImputer(Transformer):
 
         if not_all_null_or_natural_language_cols:
             X_t.index = original_index
+
         return X_t
 
     def fit_transform(self, X, y=None):
