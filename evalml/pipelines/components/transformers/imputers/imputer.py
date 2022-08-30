@@ -3,7 +3,7 @@ import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import KNNImputer, SimpleImputer
-from evalml.utils import infer_feature_types
+from evalml.utils import downcast_nullable_types, infer_feature_types
 from evalml.utils.gen_utils import is_categorical_actually_boolean
 
 
@@ -185,4 +185,5 @@ class Imputer(Transformer):
             imputed = self._boolean_imputer.transform(X_boolean)
             X_no_all_null[X_boolean.columns] = imputed
 
+        X_no_all_null = downcast_nullable_types(X_no_all_null, ignore_null_cols=False)
         return X_no_all_null

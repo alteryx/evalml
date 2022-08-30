@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         *  Added ``KNNImputer`` class and created new knn parameter for Imputer :pr:`3662`
     * Fixes
+        * Added support for BooleanNullable columns in EvalML pipelines and imputer :pr:`3678`
     * Changes
         * Pinned ``pmdarima`` < 2.0.0 :pr:`3679`
     * Documentation Changes
