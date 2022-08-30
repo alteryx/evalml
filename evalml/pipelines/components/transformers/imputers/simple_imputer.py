@@ -83,7 +83,7 @@ class SimpleImputer(Transformer):
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
         X, _ = drop_natural_language_columns(X)
-        # X = set_boolean_columns_to_categorical(X)
+        X = set_boolean_columns_to_categorical(X)
 
         # If the Dataframe only had natural language columns, do nothing.
         if X.shape[1] == 0:
