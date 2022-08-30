@@ -7,6 +7,7 @@ Release Notes
         * ``IDColumnsDataCheck`` now can handle primary key columns containing "integer" values that are of the double type :pr:`3683` 
         * Added support for BooleanNullable columns in EvalML pipelines and imputer :pr:`3678`
     * Changes
+        * Unpinned sktime to allow for version 0.13.2 :pr:`3685`
         * Pinned ``pmdarima`` < 2.0.0 :pr:`3679`
     * Documentation Changes
     * Testing Changes
