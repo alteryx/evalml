@@ -15,6 +15,7 @@ from woodwork.logical_types import (
 )
 
 from evalml.pipelines.components import Imputer
+from evalml.pipelines.components.transformers.imputers import KNNImputer, SimpleImputer
 
 
 def test_invalid_strategy_parameters():
@@ -75,6 +76,28 @@ def test_imputer_init(
     assert imputer.name == "Imputer"
     assert imputer.parameters == expected_parameters
     assert imputer.hyperparameter_ranges == expected_hyperparameters
+
+
+@pytest.mark.parametrize("categorical_impute_strategy", ["most_frequent", "constant"])
+def test_knn_as_input(categorical_impute_strategy):
+    imputer = Imputer(
+        categorical_impute_strategy=categorical_impute_strategy,
+        numeric_impute_strategy="knn",
+        boolean_impute_strategy="knn",
+    )
+    assert isinstance(imputer._categorical_imputer, SimpleImputer)
+    assert isinstance(imputer._numeric_imputer, KNNImputer)
+    assert isinstance(imputer._boolean_imputer, KNNImputer)
+
+    expected_numeric_parameters = {
+        "number_neighbors": 3,
+    }
+    expected_boolean_parameters = {
+        "number_neighbors": 1,
+    }
+
+    assert imputer._numeric_imputer.parameters == expected_numeric_parameters
+    assert imputer._boolean_imputer.parameters == expected_boolean_parameters
 
 
 def test_numeric_only_input(imputer_test_data):
