@@ -21,13 +21,30 @@ class StandardScaler(Transformer):
     def __init__(self, random_seed=0, **kwargs):
         parameters = {}
         parameters.update(kwargs)
-
+        self._supported_types = [
+            "Age",
+            "AgeNullable",
+            "Double",
+            "Integer",
+            "IntegerNullable",
+        ]
         scaler = SkScaler(**parameters)
         super().__init__(
             parameters=parameters,
             component_obj=scaler,
             random_seed=random_seed,
         )
+
+    def fit(self, X, y=None):
+        X = infer_feature_types(X)
+        X_can_scale_columns = X.ww.select(self._supported_types)
+        self.scaled_columns = X_can_scale_columns.columns.tolist()
+        if not self.scaled_columns:
+            return self
+
+        X_scaled_columns = X.ww[self.scaled_columns]
+        self._component_obj.fit(X_scaled_columns)
+        return self
 
     def transform(self, X, y=None):
         """Transform data using the fitted standard scaler.
@@ -40,16 +57,20 @@ class StandardScaler(Transformer):
             pd.DataFrame: Transformed data.
         """
         X = infer_feature_types(X)
-        X = X.ww.select(exclude=["datetime"])
-        X_t = self._component_obj.transform(X)
-        X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
+        if not self.scaled_columns:
+            return X
+        X_scaled_columns = X.ww[self.scaled_columns]
+        scaled = self._component_obj.transform(X_scaled_columns)
 
-        schema = X.ww.select(
-            exclude=[Integer, Categorical, Boolean],
-            return_schema=True,
+        X_schema = X.ww.schema
+        original_X_schema = X_schema.get_subset_schema(
+            subset_cols=X_schema._filter_cols(
+                exclude=self._supported_types,
+            ),
         )
-        X_t_df.ww.init(schema=schema)
-        return X_t_df
+
+        X[self.scaled_columns] = scaled
+        return X
 
     def fit_transform(self, X, y=None):
         """Fit and transform data using the standard scaler component.
@@ -62,5 +83,4 @@ class StandardScaler(Transformer):
             pd.DataFrame: Transformed data.
         """
         X = infer_feature_types(X)
-        X = X.select_dtypes(exclude=["datetime"])
         return self.fit(X, y).transform(X, y)
