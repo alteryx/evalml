@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Added support for BooleanNullable columns in EvalML pipelines and imputer :pr:`3678`
+        * Only apply ``StandardScaler`` to numeric columns :pr:`3686`
     * Changes
         * Pinned ``pmdarima`` < 2.0.0 :pr:`3679`
     * Documentation Changes
