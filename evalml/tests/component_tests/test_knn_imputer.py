@@ -2,47 +2,29 @@ import numpy as np
 import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
+from sklearn.impute import KNNImputer as Sk_KNNImputer
 
 from evalml.pipelines.components.transformers.imputers import KNNImputer
 
 
-def test_knn_imputer_1_neighbor():
+@pytest.mark.parametrize("n_neighbors", [1, 2, 5])
+def test_knn_output(n_neighbors):
     X = pd.DataFrame(
-        [
-            [np.nan, 0, 1, np.nan],
-            [1, 2, 3, 2],
-            [10, 2, np.nan, 2],
-            [10, 2, 5, np.nan],
-            [6, 2, 7, 0],
-            [1, 2, 3, 4],
-            [1, np.nan, 3, 2],
-        ],
+        np.array(
+            [
+                [1, 1, 2],
+                [1, 1, np.nan],
+                [1, 1, 2],
+                [1, 1, 2],
+                [1, 2, 1],
+                [1, 1, 2],
+                [1, 1, 2],
+            ],
+        ),
     )
-    transformer = KNNImputer(number_neighbors=1)
-    X_expected_arr = pd.DataFrame(
-        [
-            [1, 0, 1, 2],
-            [1, 2, 3, 2],
-            [10, 2, 5, 2],
-            [10, 2, 5, 2],
-            [6, 2, 7, 0],
-            [1, 2, 3, 4],
-            [1, 2, 3, 2],
-        ],
-    )
-    X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
-
-
-def test_knn_imputer_2_neighbors():
-    X = pd.DataFrame([[np.nan, 0, 3, np.nan], [1, 2, 3, 2], [1, 2, 3, 0]])
-    # test impute_strategy
-    transformer = KNNImputer(number_neighbors=2)
-    X_expected_arr = pd.DataFrame(
-        [[1, 0, 3, 1], [1, 2, 3, 2], [1, 2, 3, 0]],
-    )
-    X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
+    sk_knn = Sk_KNNImputer(n_neighbors=n_neighbors)
+    knn = KNNImputer(n_neighbors)
+    assert_frame_equal(pd.DataFrame(sk_knn.fit_transform(X)), knn.fit_transform(X))
 
 
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
@@ -92,7 +74,7 @@ def test_knn_imputer_multitype_with_one_bool(data_type, make_data_type):
         {
             "bool with nan": pd.Series(
                 [True, True, False, True, False],
-                dtype="boolean",
+                dtype=bool,
             ),
             "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
         },
@@ -103,30 +85,6 @@ def test_knn_imputer_multitype_with_one_bool(data_type, make_data_type):
     imputer.fit(X_multi, y)
     X_multi_t = imputer.transform(X_multi)
     assert_frame_equal(X_multi_expected_arr, X_multi_t)
-
-
-def test_knn_imputer_all_bool():
-    X = pd.DataFrame(
-        {
-            "Booleans": pd.Series(
-                [True, True, True, False, False],
-                dtype="boolean",
-            ),
-        },
-    )
-    y = pd.Series([1, 1, 1, 0, 0])
-    imputer = KNNImputer(number_neighbors=1)
-    imputer.fit(X, y)
-    X_t = imputer.transform(X)
-    X_expected = pd.DataFrame(
-        {
-            "Booleans": pd.Series(
-                [True, True, True, False, False],
-                dtype="bool",
-            ),
-        },
-    )
-    assert_frame_equal(X_expected, X_t)
 
 
 def test_knn_imputer_revert_categorical_to_boolean():
