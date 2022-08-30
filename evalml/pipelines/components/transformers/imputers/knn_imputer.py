@@ -5,6 +5,10 @@ import woodwork
 from sklearn.impute import KNNImputer as Sk_KNNImputer
 
 from evalml.pipelines.components.transformers import Transformer
+from evalml.pipelines.components.utils import (
+    drop_natural_language_columns,
+    set_boolean_columns_to_categorical,
+)
 from evalml.utils import infer_feature_types
 from evalml.utils.gen_utils import is_categorical_actually_boolean
 
@@ -13,7 +17,7 @@ class KNNImputer(Transformer):
     """Imputes missing data using KNN according to a specified number of neighbors.  Natural language columns are ignored.
 
     Args:
-        number_neighbors (int): Number of nearest neighbors for KNN to search for. Defaults to 0.
+        number_neighbors (int): Number of nearest neighbors for KNN to search for. Defaults to 3.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     """
@@ -36,25 +40,6 @@ class KNNImputer(Transformer):
             random_seed=random_seed,
         )
 
-    def _drop_natural_language_columns(self, X):
-        natural_language_columns = list(
-            X.ww.select(["NaturalLanguage"], return_schema=True).columns.keys(),
-        )
-        if natural_language_columns:
-            X = X.ww.copy()
-            X = X.ww.drop(columns=natural_language_columns)
-        return X, natural_language_columns
-
-    def _set_boolean_columns_to_categorical(self, X):
-        X_schema = X.ww.schema
-        original_X_schema = X_schema.get_subset_schema(
-            subset_cols=X_schema._filter_cols(exclude=["Boolean"]),
-        )
-        X_boolean_cols = X_schema._filter_cols(include=["Boolean"])
-        new_ltypes_for_boolean_cols = {col: "Categorical" for col in X_boolean_cols}
-        X.ww.init(schema=original_X_schema, logical_types=new_ltypes_for_boolean_cols)
-        return X
-
     def fit(self, X, y=None):
         """Fits imputer to data. 'None' values are converted to np.nan before imputation and are treated as the same.
 
@@ -74,8 +59,8 @@ class KNNImputer(Transformer):
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
-        X, _ = self._drop_natural_language_columns(X)
-        X = self._set_boolean_columns_to_categorical(X)
+        X, _ = drop_natural_language_columns(X)
+        X = set_boolean_columns_to_categorical(X)
 
         # If the Dataframe only had natural language columns, do nothing.
         if X.shape[1] == 0:
@@ -95,13 +80,12 @@ class KNNImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X = infer_feature_types(X)
-
         not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
         original_index = X.index
 
         # Drop natural language columns and transform the other columns
-        X_t, natural_language_cols = self._drop_natural_language_columns(X)
-        if X_t.shape[-1] == 0:
+        X_t, natural_language_cols = drop_natural_language_columns(X)
+        if X_t.shape[1] == 0:
             return X
         not_all_null_or_natural_language_cols = [
             col for col in not_all_null_cols if col not in natural_language_cols
@@ -109,22 +93,26 @@ class KNNImputer(Transformer):
 
         X_t = self._component_obj.transform(X_t)
         X_t = pd.DataFrame(X_t, columns=not_all_null_or_natural_language_cols)
+        l = []
         for col in X.ww.select(["Categorical"], return_schema=True).columns:
             if is_categorical_actually_boolean(X, col):
-                X_t[col] = X_t[col].astype(bool)
-
-        # Add back in natural language columns, unchanged
-        if len(natural_language_cols) > 0:
-            X_t = woodwork.concat_columns([X_t, X[natural_language_cols]])
+                l.append(col)
 
         X_schema = X.ww.schema
         original_X_schema = X_schema.get_subset_schema(
             subset_cols=X_schema._filter_cols(exclude=["BooleanNullable"]),
         )
-        X_bool_nullable_cols = X_schema._filter_cols(include=["BooleanNullable"])
+        X_bool_nullable_cols = X_schema._filter_cols(include=["Categorical"])
         new_ltypes_for_bool_nullable_cols = {
             col: "Boolean" for col in X_bool_nullable_cols
         }
+        # Add back in natural language columns, unchanged
+        if len(natural_language_cols) > 0:
+            X_t = woodwork.concat_columns([X_t, X[natural_language_cols]])
+
+        X_bool_nullable_cols = X_schema._filter_cols(include=["BooleanNullable"])
+        for col in X_bool_nullable_cols:
+            new_ltypes_for_bool_nullable_cols[col] = "Boolean"
         X_t.ww.init(
             schema=original_X_schema,
             logical_types=new_ltypes_for_bool_nullable_cols,
