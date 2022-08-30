@@ -2,6 +2,7 @@ import cProfile, pstats
 import time
 import pandas as pd
 from evalml import AutoMLSearch
+from evalml.utils import infer_feature_types
 
 
 def kdd():
@@ -12,8 +13,10 @@ def kdd():
     beginning_0 = time.time()
     aml.search()
     end = time.time()
-    print(f"Total: {beginning_0-beginning}")
-    print(f"Total: {end-beginning_0}")
+    from pprint import pprint
+    pprint(aml.results)
+    print(f"Total fit time: {beginning_0-beginning}")
+    print(f"Total search time: {end-beginning_0}")
 
 
 if __name__ == '__main__':

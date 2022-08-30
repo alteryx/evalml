@@ -28,7 +28,7 @@ class SimpleImputer(Transformer):
     }"""
 
     def __init__(
-        self, impute_strategy="most_frequent", fill_value=None, random_seed=0, **kwargs
+            self, impute_strategy="most_frequent", fill_value=None, random_seed=0, **kwargs
     ):
         parameters = {"impute_strategy": impute_strategy, "fill_value": fill_value}
         parameters.update(kwargs)
@@ -92,8 +92,8 @@ class SimpleImputer(Transformer):
             raise ValueError(
                 "SimpleImputer cannot handle dataframes with both boolean and categorical features.  Use Imputer instead.",
             )
-
-        nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
+        nan_ratio = X.isna().sum() / X.shape[0]
+        # nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
         X, _ = self._drop_natural_language_columns(X)
