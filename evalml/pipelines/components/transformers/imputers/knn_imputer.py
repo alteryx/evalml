@@ -7,7 +7,6 @@ from sklearn.impute import KNNImputer as Sk_KNNImputer
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.utils import drop_natural_language_columns
 from evalml.utils import infer_feature_types
-from evalml.utils.gen_utils import is_categorical_actually_boolean
 
 
 class KNNImputer(Transformer):
