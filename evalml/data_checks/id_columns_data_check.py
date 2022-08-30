@@ -1,6 +1,4 @@
 """Data check that checks if any of the features are likely to be ID columns."""
-from xml.etree.ElementInclude import include
-
 from evalml.data_checks import (
     DataCheck,
     DataCheckActionCode,
