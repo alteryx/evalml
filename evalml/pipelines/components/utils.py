@@ -380,3 +380,27 @@ def make_balancing_dictionary(y, sampling_ratio):
             # this class is already larger than the ratio, don't change
             class_dic[index] = value_counts[index]
     return class_dic
+
+
+def drop_natural_language_columns(X):
+    natural_language_columns = list(
+        X.ww.select(["NaturalLanguage"], return_schema=True).columns.keys(),
+    )
+    if natural_language_columns:
+        X = X.ww.copy()
+        X = X.ww.drop(columns=natural_language_columns)
+    return X, natural_language_columns
+
+
+def set_boolean_columns_to_categorical(X):
+    X = X.ww.copy()
+    X_schema = X.ww.schema
+    print(f"Inside utils.py::set_boolean_cols\n{X.ww}")
+    original_X_schema = X_schema.get_subset_schema(
+        subset_cols=X_schema._filter_cols(exclude=["Boolean"]),
+    )
+    X_boolean_cols = X_schema._filter_cols(include=["Boolean"])
+    new_ltypes_for_boolean_cols = {col: "Categorical" for col in X_boolean_cols}
+    X.ww.init(schema=original_X_schema, logical_types=new_ltypes_for_boolean_cols)
+    print(f"Inside utils.py::set_boolean_cols after transform\n{X.ww}")
+    return X
