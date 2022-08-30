@@ -93,10 +93,10 @@ class KNNImputer(Transformer):
 
         X_t = self._component_obj.transform(X_t)
         X_t = pd.DataFrame(X_t, columns=not_all_null_or_natural_language_cols)
-        l = []
+        list_of_categorical = []
         for col in X.ww.select(["Categorical"], return_schema=True).columns:
             if is_categorical_actually_boolean(X, col):
-                l.append(col)
+                list_of_categorical.append(col)
 
         X_schema = X.ww.schema
         original_X_schema = X_schema.get_subset_schema(

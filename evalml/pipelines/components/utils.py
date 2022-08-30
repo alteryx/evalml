@@ -164,14 +164,14 @@ def handle_component_class(component_class):
 
 
 def drop_natural_language_columns(X):
-    """Drops natural language columns from dataframes for the imputers
+    """Drops natural language columns from dataframes for the imputers.
 
     Args:
-        X (pd.Dataframe) The dataframe that we want to impute on
+        X (pd.Dataframe): The dataframe that we want to impute on.
 
     Returns:
-        pd.Dataframe: the dataframe with any natural language columns dropped
-        list: list of all the columns that are considered natural language
+        pd.Dataframe: the dataframe with any natural language columns dropped.
+        list: list of all the columns that are considered natural language.
     """
     natural_language_columns = list(
         X.ww.select(["NaturalLanguage"], return_schema=True).columns.keys(),
@@ -183,13 +183,13 @@ def drop_natural_language_columns(X):
 
 
 def set_boolean_columns_to_categorical(X):
-    """Sets boolean columns to categorical for the imputer
+    """Sets boolean columns to categorical for the imputer.
 
     Args:
-        X (pd.Dataframe) The dataframe that we want to impute on
+        X (pd.Dataframe): The dataframe that we want to impute on.
 
     Returns:
-        pd.Dataframe: the dataframe with any of its ww columns that are boolean set to categorical
+        pd.Dataframe: the dataframe with any of its ww columns that are boolean set to categorical.
     """
     X = X.ww.copy()
     X_schema = X.ww.schema
