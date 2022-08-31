@@ -65,12 +65,17 @@ class StandardScaler(Transformer):
             pd.DataFrame: Transformed data.
         """
         X = infer_feature_types(X)
+
         X = X.ww.select(exclude=["datetime"])
         if not self.scaled_columns:
             return X
         X_scaled_columns = X.ww[self.scaled_columns]
         scaled = self._component_obj.transform(X_scaled_columns)
         X[self.scaled_columns] = scaled
+        X.ww.init(
+            schema=X.ww.schema,
+            logical_types={col: "Double" for col in self.scaled_columns},
+        )
         return X
 
     def fit_transform(self, X, y=None):
