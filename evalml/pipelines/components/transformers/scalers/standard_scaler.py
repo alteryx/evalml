@@ -36,8 +36,18 @@ class StandardScaler(Transformer):
         )
 
     def fit(self, X, y=None):
+        """Fits the standard scalar on the given data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         X = infer_feature_types(X)
         X_can_scale_columns = X.ww.select(self._supported_types)
+        X_can_scale_columns = X_can_scale_columns.ww.select(exclude=["datetime"])
         self.scaled_columns = X_can_scale_columns.columns.tolist()
         if not self.scaled_columns:
             return self
@@ -57,6 +67,7 @@ class StandardScaler(Transformer):
             pd.DataFrame: Transformed data.
         """
         X = infer_feature_types(X)
+        X = X.ww.select(exclude=["datetime"])
         if not self.scaled_columns:
             return X
         X_scaled_columns = X.ww[self.scaled_columns]
