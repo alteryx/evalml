@@ -24,8 +24,8 @@ def test_polynomial_detrender_init_raises_error_if_degree_not_int():
     _ = PolynomialDetrender(degree=3.0)
 
 
-def test_polynomial_detrender_raises_value_error_target_is_none(ts_data):
-    X, y = ts_data
+def test_polynomial_detrender_raises_value_error_target_is_none(get_ts_X_y):
+    X, _, y = get_ts_X_y()
 
     with pytest.raises(ValueError, match="y cannot be None for PolynomialDetrender!"):
         PolynomialDetrender(degree=3).fit_transform(X, None)
@@ -42,9 +42,14 @@ def test_polynomial_detrender_raises_value_error_target_is_none(ts_data):
 @pytest.mark.parametrize("input_type", ["np", "pd", "ww"])
 @pytest.mark.parametrize("use_int_index", [True, False])
 @pytest.mark.parametrize("degree", [1, 2, 3])
-def test_polynomial_detrender_fit_transform(degree, use_int_index, input_type, ts_data):
+def test_polynomial_detrender_fit_transform(
+    degree,
+    use_int_index,
+    input_type,
+    get_ts_X_y,
+):
 
-    X_input, y_input = ts_data
+    X_input, _, y_input = get_ts_X_y()
 
     if use_int_index:
         X_input.index = np.arange(X_input.shape[0])
@@ -82,8 +87,8 @@ def test_polynomial_detrender_fit_transform(degree, use_int_index, input_type, t
 
 @pytest.mark.parametrize("use_int_index", [True, False])
 @pytest.mark.parametrize("degree", [1, 2, 3])
-def test_polynomial_detrender_inverse_transform(degree, use_int_index, ts_data):
-    X, y = ts_data
+def test_polynomial_detrender_inverse_transform(degree, use_int_index, get_ts_X_y):
+    X, _, y = get_ts_X_y()
     if use_int_index:
         X.index = np.arange(X.shape[0])
         y.index = np.arange(y.shape[0])
@@ -94,8 +99,8 @@ def test_polynomial_detrender_inverse_transform(degree, use_int_index, ts_data):
     pd.testing.assert_series_equal(y, output_inverse_y, check_dtype=False)
 
 
-def test_polynomial_detrender_needs_monotonic_index(ts_data):
-    X, y = ts_data
+def test_polynomial_detrender_needs_monotonic_index(get_ts_X_y):
+    X, _, y = get_ts_X_y()
     detrender = PolynomialDetrender(degree=2)
 
     with pytest.raises(Exception) as exec_info:

@@ -25,10 +25,7 @@ from evalml.utils import get_random_state
 
 
 def test_estimators_feature_name_with_random_ascii(
-    X_y_binary,
-    X_y_multi,
-    X_y_regression,
-    ts_data,
+    X_y_based_on_pipeline_or_problem_type,
     helper_functions,
 ):
     for estimator_class in _all_estimators_used_in_search():
@@ -43,12 +40,7 @@ def test_estimators_feature_name_with_random_ascii(
         ]
         for problem_type in supported_problem_types:
             clf = helper_functions.safe_init_component_with_njobs_1(estimator_class)
-            if is_binary(problem_type):
-                X, y = X_y_binary
-            elif is_multiclass(problem_type):
-                X, y = X_y_multi
-            elif is_regression(problem_type):
-                X, y = X_y_regression
+            X, y = X_y_based_on_pipeline_or_problem_type(problem_type)
 
             X = get_random_state(clf.random_seed).random(
                 (X.shape[0], len(string.printable)),

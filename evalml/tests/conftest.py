@@ -37,6 +37,8 @@ from evalml.preprocessing import load_data
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
+    is_binary,
+    is_multiclass,
     is_regression,
     is_time_series,
 )
@@ -272,19 +274,21 @@ def get_test_data_from_configuration():
 @pytest.fixture
 def get_ts_X_y():
     def _get_X_y(
-        train_features_index_dt,
-        train_target_index_dt,
-        train_none,
-        datetime_feature,
-        no_features,
-        test_features_index_dt,
+        train_features_index_dt=True,
+        train_target_index_dt=True,
+        train_none=False,
+        datetime_feature=True,
+        no_features=False,
+        test_features_index_dt=True,
+        freq="D",
+        problem_type="time series regression",
     ):
         X = pd.DataFrame(index=[i + 1 for i in range(50)])
-        dates = pd.date_range("1/1/21", periods=50)
+        dates = pd.date_range("1/1/21", periods=50, freq=freq)
         feature = pd.Series([1, 5, 2] * 10 + [3, 1] * 10, index=X.index)
         y = pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5)
         X.ww.init()
-        y = ww.init_series(y)
+        y.ww.init(logical_type="integer")
 
         X_train = X.ww.iloc[:40]
         X_test = X.ww.iloc[40:]
@@ -299,11 +303,17 @@ def get_ts_X_y():
         if not no_features:
             X_train.ww["Feature"] = pd.Series(feature[:40].values, index=X_train.index)
             X_test.ww["Feature"] = pd.Series(feature[40:].values, index=X_test.index)
-            if datetime_feature:
-                X_train.ww["Dates"] = pd.Series(dates[:40].values, index=X_train.index)
-                X_test.ww["Dates"] = pd.Series(dates[40:].values, index=X_test.index)
+        if datetime_feature:
+            X_train.ww["Dates"] = pd.Series(dates[:40].values, index=X_train.index)
+            X_test.ww["Dates"] = pd.Series(dates[40:].values, index=X_test.index)
         if train_none:
             X_train = None
+        if is_binary(problem_type):
+            y_train = y_train % 2
+            y_train.ww.init()
+        if is_multiclass(problem_type):
+            y_train = y_train % 3
+            y_train.ww.init()
 
         return X_train, X_test, y_train
 
@@ -801,6 +811,9 @@ def X_y_based_on_pipeline_or_problem_type(X_y_binary, X_y_multi, X_y_regression)
             ProblemTypes.BINARY: "binary",
             ProblemTypes.MULTICLASS: "multiclass",
             ProblemTypes.REGRESSION: "regression",
+            ProblemTypes.TIME_SERIES_BINARY: "binary",
+            ProblemTypes.TIME_SERIES_MULTICLASS: "multiclass",
+            ProblemTypes.TIME_SERIES_REGRESSION: "regression",
         }
         pipeline_classes = {
             BinaryClassificationPipeline: "binary",
@@ -842,33 +855,6 @@ def text_df():
     )
     df.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     yield df
-
-
-@pytest.fixture
-def ts_data():
-    X, y = pd.DataFrame(
-        {
-            "features": range(101, 132),
-            "date": pd.date_range("2020-10-01", "2020-10-31"),
-        },
-    ), pd.Series(range(1, 32))
-    y.index = pd.date_range("2020-10-01", "2020-10-31")
-    X.index = pd.date_range("2020-10-01", "2020-10-31")
-    return X, y
-
-
-@pytest.fixture
-def ts_data_binary(ts_data):
-    X, y = ts_data
-    y = y % 2
-    return X, y
-
-
-@pytest.fixture
-def ts_data_multi(ts_data):
-    X, y = ts_data
-    y = y % 3
-    return X, y
 
 
 @pytest.fixture

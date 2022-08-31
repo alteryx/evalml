@@ -1944,15 +1944,13 @@ def test_percent_better_than_baseline_in_rankings(
     dummy_classifier_estimator_class,
     dummy_regressor_estimator_class,
     dummy_time_series_regressor_estimator_class,
-    ts_data_binary,
+    get_ts_X_y,
     X_y_multi,
 ):
     if not objective.is_defined_for_problem_type(problem_type_value):
         pytest.skip("Skipping because objective is not defined for problem type")
 
-    X, y = ts_data_binary
-    if problem_type_value == ProblemTypes.MULTICLASS:
-        X, y = X_y_multi
+    X, _, y = get_ts_X_y(problem_type=problem_type_value)
 
     estimator = {
         ProblemTypes.BINARY: dummy_classifier_estimator_class,
@@ -2001,7 +1999,7 @@ def test_percent_better_than_baseline_in_rankings(
     pipeline_parameters = (
         {
             "pipeline": {
-                "time_index": "date",
+                "time_index": "Dates",
                 "gap": 0,
                 "max_delay": 0,
                 "forecast_horizon": 2,
@@ -2031,12 +2029,7 @@ def test_percent_better_than_baseline_in_rankings(
             max_iterations=3,
             objective=objective,
             additional_objectives=[],
-            problem_configuration={
-                "time_index": "date",
-                "gap": 0,
-                "max_delay": 0,
-                "forecast_horizon": 2,
-            },
+            problem_configuration=pipeline_parameters["pipeline"],
             train_best_pipeline=False,
             n_jobs=1,
         )
@@ -2134,9 +2127,9 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     dummy_classifier_estimator_class,
     dummy_regressor_estimator_class,
     dummy_time_series_regressor_estimator_class,
-    ts_data_binary,
+    get_ts_X_y,
 ):
-    X, y = ts_data_binary
+    X, _, y = get_ts_X_y(problem_type=problem_type)
 
     problem_type_enum = handle_problem_types(problem_type)
 
@@ -2205,7 +2198,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     if problem_type_enum == ProblemTypes.TIME_SERIES_REGRESSION:
         parameters = {
             "pipeline": {
-                "time_index": "date",
+                "time_index": "Dates",
                 "gap": 6,
                 "max_delay": 3,
                 "forecast_horizon": 3,
@@ -2219,7 +2212,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         max_iterations=2,
         objective="auto",
         problem_configuration={
-            "time_index": "date",
+            "time_index": "Dates",
             "gap": 1,
             "max_delay": 1,
             "forecast_horizon": 3,
@@ -2240,7 +2233,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         text_in_ensembling=False,
         search_parameters={
             "pipeline": {
-                "time_index": "date",
+                "time_index": "Dates",
                 "gap": 1,
                 "max_delay": 1,
                 "forecast_horizon": 2,
@@ -2269,8 +2262,8 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         )
 
 
-def test_time_series_regression_with_parameters(ts_data):
-    X, y = ts_data
+def test_time_series_regression_with_parameters(get_ts_X_y):
+    X, _, y = get_ts_X_y()
     X.index.name = "date"
     problem_configuration = {
         "time_index": "date",
@@ -2878,9 +2871,8 @@ def test_automl_woodwork_user_types_preserved(
             )
 
 
-def test_automl_validates_problem_configuration(ts_data):
-    _, y = ts_data
-    X = pd.DataFrame(pd.date_range("2020-10-01", "2020-10-31"), columns=["Date"])
+def test_automl_validates_problem_configuration(get_ts_X_y):
+    X, _, y = get_ts_X_y()
     assert (
         AutoMLSearch(X_train=X, y_train=y, problem_type="binary").problem_configuration
         == {}
@@ -2937,14 +2929,14 @@ def test_automl_validates_problem_configuration(ts_data):
         y_train=y,
         problem_type="time series regression",
         problem_configuration={
-            "time_index": "Date",
+            "time_index": "Dates",
             "max_delay": 2,
             "gap": 3,
             "forecast_horizon": 2,
         },
     ).problem_configuration
     assert problem_config == {
-        "time_index": "Date",
+        "time_index": "Dates",
         "max_delay": 2,
         "gap": 3,
         "forecast_horizon": 2,
@@ -3074,9 +3066,9 @@ def test_automl_rerun(AutoMLTestEnv, X_y_binary, caplog):
     assert msg in caplog.text
 
 
-def test_timeseries_baseline_init_with_correct_gap_max_delay(AutoMLTestEnv, ts_data):
+def test_timeseries_baseline_init_with_correct_gap_max_delay(AutoMLTestEnv, get_ts_X_y):
 
-    X, y = ts_data
+    X, _, y = get_ts_X_y()
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -4534,26 +4526,18 @@ def test_baseline_pipeline_properly_initalized(
 @pytest.mark.parametrize(
     "problem_type",
     [
-        ProblemTypes.TIME_SERIES_REGRESSION,
-        ProblemTypes.TIME_SERIES_MULTICLASS,
-        ProblemTypes.TIME_SERIES_BINARY,
+        "time series regression",
+        "time series multiclass",
+        "time series binary",
     ],
 )
 def test_automl_passes_known_in_advance_pipeline_parameters_to_all_pipelines(
     problem_type,
-    ts_data_binary,
-    ts_data_multi,
-    ts_data,
+    get_ts_X_y,
     AutoMLTestEnv,
 ):
-    if problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = ts_data_multi
-    elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = ts_data_binary
-    else:
-        X, y = ts_data
+    X, _, y = get_ts_X_y(problem_type=problem_type)
 
-    X.ww.init()
     X.ww["email"] = pd.Series(["foo@foo.com"] * X.shape[0], index=X.index)
     X.ww["category"] = pd.Series(["a"] * X.shape[0], index=X.index)
     X.ww.set_types({"email": "EmailAddress", "category": "Categorical"})
@@ -4565,7 +4549,7 @@ def test_automl_passes_known_in_advance_pipeline_parameters_to_all_pipelines(
         problem_type=problem_type,
         max_batches=3,
         problem_configuration={
-            "time_index": "date",
+            "time_index": "Dates",
             "max_delay": 3,
             "forecast_horizon": 3,
             "gap": 1,
@@ -4588,7 +4572,7 @@ def test_automl_passes_known_in_advance_pipeline_parameters_to_all_pipelines(
         lambda d: d["Not Known In Advance Pipeline - Select Columns Transformer"][
             "columns"
         ]
-        == ["features", "date"],
+        == ["Feature", "Dates"],
     ).all()
 
 
@@ -4633,12 +4617,12 @@ def test_cv_validation_scores(
 
 
 def test_cv_validation_scores_time_series(
-    ts_data_binary,
+    get_ts_X_y,
     AutoMLTestEnv,
 ):
-    X, y = ts_data_binary
+    X, _, y = get_ts_X_y(problem_type="time series binary")
     problem_configuration = {
-        "time_index": "date",
+        "time_index": "Dates",
         "gap": 0,
         "max_delay": 0,
         "forecast_horizon": 2,
@@ -4678,7 +4662,7 @@ def test_search_parameters_held_automl(
     algorithm,
     batches,
     X_y_binary,
-    ts_data_binary,
+    get_ts_X_y,
 ):
     if problem_type == "binary":
         X, y = X_y_binary
@@ -4695,9 +4679,9 @@ def test_search_parameters_held_automl(
             },
         }
     else:
-        X, y = ts_data_binary
+        X, _, y = get_ts_X_y(problem_type="time series binary")
         problem_configuration = {
-            "time_index": "date",
+            "time_index": "Dates",
             "gap": 0,
             "max_delay": 0,
             "forecast_horizon": 3,
@@ -4834,12 +4818,12 @@ def test_automl_accepts_features(
 
 @pytest.mark.skip_during_conda
 def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
-    ts_data,
+    get_ts_X_y,
     AutoMLTestEnv,
     is_using_windows,
 ):
 
-    X, y = ts_data
+    X, _, y = get_ts_X_y()
 
     env = AutoMLTestEnv("time series regression")
     automl = AutoMLSearch(

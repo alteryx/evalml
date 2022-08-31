@@ -563,7 +563,7 @@ def test_default_data_checks_across_problem_types(problem_type):
     assert data_check_classes == default_data_check_list
 
 
-def test_default_data_checks_missing_problem_configuration_for_time_series(ts_data):
+def test_default_data_checks_missing_problem_configuration_for_time_series():
     with pytest.raises(
         ValueError,
         match="problem_configuration cannot be None for time series problems!",
@@ -695,8 +695,8 @@ def test_data_checks_raises_value_errors_on_init(
         "Mean Absolute Percentage Error",
     ],
 )
-def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
-    X, y = ts_data
+def test_errors_warnings_in_invalid_target_data_check(objective, get_ts_X_y):
+    X, _, y = get_ts_X_y()
     y[0] = -1
     y = pd.Series(y)
     details = {"Count of offending values": sum(val <= 0 for val in y.values.flatten())}

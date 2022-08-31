@@ -1978,9 +1978,7 @@ def test_predict_has_input_target_name(
     X_y_binary,
     X_y_multi,
     X_y_regression,
-    ts_data,
-    ts_data_binary,
-    ts_data_multi,
+    get_ts_X_y,
     logistic_regression_binary_pipeline,
     logistic_regression_multiclass_pipeline,
     linear_regression_pipeline,
@@ -2001,29 +1999,25 @@ def test_predict_has_input_target_name(
         clf = linear_regression_pipeline
 
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
-        X, y = ts_data
-        X_validation = X[29:31]
-        X, y = X[:29], y[:29]
+        X, X_validation, y = get_ts_X_y()
         clf = time_series_regression_pipeline_class(
             parameters={
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "time_index": "date",
+                    "time_index": "Dates",
                     "forecast_horizon": 2,
                 },
                 "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
-                    "time_index": "date",
+                    "time_index": "Dates",
                 },
             },
         )
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = ts_data_binary
-        X_validation = X[29:31]
-        X, y = X[:29], y[:29]
+        X, X_validation, y = get_ts_X_y(problem_type="time series binary")
         clf = time_series_binary_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
@@ -2031,20 +2025,18 @@ def test_predict_has_input_target_name(
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
-                    "time_index": "date",
+                    "time_index": "Dates",
                 },
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "time_index": "date",
+                    "time_index": "Dates",
                     "forecast_horizon": 2,
                 },
             },
         )
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = ts_data_multi
-        X_validation = X[29:31]
-        X, y = X[:29], y[:29]
+        X, X_validation, y = get_ts_X_y(problem_type="time series multiclass")
         clf = time_series_multiclass_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
@@ -2052,12 +2044,12 @@ def test_predict_has_input_target_name(
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
-                    "time_index": "date",
+                    "time_index": "Dates",
                 },
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "time_index": "date",
+                    "time_index": "Dates",
                     "forecast_horizon": 2,
                 },
             },

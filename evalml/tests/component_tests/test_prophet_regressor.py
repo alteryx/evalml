@@ -55,10 +55,10 @@ def test_init_with_other_params():
     }
 
 
-def test_feature_importance(ts_data):
-    X, y = ts_data
+def test_feature_importance(get_ts_X_y):
+    X, _, y = get_ts_X_y()
     clf = ProphetRegressor(
-        time_index="date",
+        time_index="Dates",
         uncertainty_samples=False,
         changepoint_prior_scale=2.0,
     )
@@ -66,7 +66,7 @@ def test_feature_importance(ts_data):
     assert clf.feature_importance == np.zeros(1)
 
 
-def test_get_params(ts_data):
+def test_get_params():
     clf = ProphetRegressor()
     assert clf.get_params() == {
         "changepoint_prior_scale": 0.05,
@@ -79,8 +79,8 @@ def test_get_params(ts_data):
 
 
 @pytest.mark.parametrize("index_status", [None, "wrong_column"])
-def test_build_prophet_df_time_index_errors(index_status, ts_data):
-    X, y = ts_data
+def test_build_prophet_df_time_index_errors(index_status, get_ts_X_y):
+    X, _, y = get_ts_X_y()
 
     if index_status is None:
         with pytest.raises(ValueError, match="time_index cannot be None!"):
@@ -94,8 +94,8 @@ def test_build_prophet_df_time_index_errors(index_status, ts_data):
 
 
 @pytest.mark.parametrize("drop_index", [None, "X", "y", "both"])
-def test_fit_predict_ts(ts_data, drop_index, prophet):
-    X, y = ts_data
+def test_fit_predict_ts(get_ts_X_y, drop_index, prophet):
+    X, _, y = get_ts_X_y()
     if drop_index is None:
         assert isinstance(X.index, pd.DatetimeIndex)
         assert isinstance(y.index, pd.DatetimeIndex)
@@ -113,13 +113,13 @@ def test_fit_predict_ts(ts_data, drop_index, prophet):
         assert not isinstance(X.index, pd.DatetimeIndex)
         assert not isinstance(y.index, pd.DatetimeIndex)
 
-    prophet_df = ProphetRegressor.build_prophet_df(X=X, y=y, time_index="date")
+    prophet_df = ProphetRegressor.build_prophet_df(X=X, y=y, time_index="Dates")
     p_clf = prophet.Prophet(uncertainty_samples=False, changepoint_prior_scale=2.0)
     p_clf.fit(prophet_df)
     y_pred_p = p_clf.predict(prophet_df)["yhat"]
 
     clf = ProphetRegressor(
-        time_index="date",
+        time_index="Dates",
         uncertainty_samples=False,
         changepoint_prior_scale=2.0,
     )

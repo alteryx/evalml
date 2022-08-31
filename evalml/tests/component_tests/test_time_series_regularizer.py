@@ -166,10 +166,10 @@ def test_ts_regularizer_no_freq():
         ts_regularizer.fit(X, y)
 
 
-def test_ts_regularizer_no_issues(ts_data):
-    X, y = ts_data
+def test_ts_regularizer_no_issues(get_ts_X_y):
+    X, _, y = get_ts_X_y()
 
-    ts_regularizer = TimeSeriesRegularizer(time_index="date")
+    ts_regularizer = TimeSeriesRegularizer(time_index="Dates")
     X_output, y_output = ts_regularizer.fit_transform(X, y)
 
     assert ts_regularizer.inferred_freq is not None

@@ -26,15 +26,15 @@ def test_problem_types():
     }
 
 
-def test_model_instance(ts_data):
-    X, y = ts_data
+def test_model_instance(get_ts_X_y):
+    X, _, y = get_ts_X_y()
     regressor = ExponentialSmoothingRegressor()
     fitted = regressor.fit(X, y)
     assert isinstance(fitted, ExponentialSmoothingRegressor)
 
 
-def test_fit_ts_without_y(ts_data):
-    X, y = ts_data
+def test_fit_ts_without_y(get_ts_X_y):
+    X, _, _ = get_ts_X_y()
 
     regressor = ExponentialSmoothingRegressor()
     with pytest.raises(
@@ -113,8 +113,8 @@ def test_set_forecast(get_ts_X_y):
     assert fh_.is_relative
 
 
-def test_feature_importance(ts_data):
-    X, y = ts_data
+def test_feature_importance(get_ts_X_y):
+    X, _, y = get_ts_X_y()
     regressor = ExponentialSmoothingRegressor()
     with patch.object(regressor, "_component_obj"):
         regressor.fit(X, y)

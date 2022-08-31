@@ -818,12 +818,11 @@ def test_time_series_pipeline_validates_holdout_data(
     length_or_freq,
     forecast_horizon,
     gap,
-    ts_data,
-    ts_data_binary,
+    get_ts_X_y,
 ):
-    X, y = ts_data
+    X, _, y = get_ts_X_y()
     problem_config = {
-        "time_index": "date",
+        "time_index": "Dates",
         "gap": gap,
         "max_delay": 2,
         "forecast_horizon": forecast_horizon,
@@ -836,16 +835,16 @@ def test_time_series_pipeline_validates_holdout_data(
     elif length_or_freq == "freq":
         dates = pd.date_range("2020-10-16", periods=16)
         X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon]
-        X["date"] = dates[gap + 1 : gap + 1 + len(X)]
+        X["Dates"] = dates[gap + 1 : gap + 1 + len(X)]
 
     length_error = (
         f"Holdout data X must have {forecast_horizon} rows (value of forecast horizon) "
         f"Data received - Length X: {len(X)}"
     )
     gap_error = (
-        f"The first value indicated by the column date needs to start {gap + 1} "
+        f"The first value indicated by the column Dates needs to start {gap + 1} "
         f"units ahead of the training data. "
-        f"X value start: {X['date'].iloc[0]}, X_train value end {X_train['date'].iloc[-1]}."
+        f"X value start: {X['Dates'].iloc[0]}, X_train value end {X_train['Dates'].iloc[-1]}."
     )
 
     result = validate_holdout_datasets(X, X_train, problem_config)

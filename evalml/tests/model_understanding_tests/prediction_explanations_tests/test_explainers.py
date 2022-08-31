@@ -985,8 +985,8 @@ def test_explain_predictions_best_worst_custom_metric(
         assert best_worst_report == answer
 
 
-def test_explain_predictions_time_series(ts_data):
-    X, y = ts_data
+def test_explain_predictions_time_series(get_ts_X_y):
+    X, _, y = get_ts_X_y()
 
     ts_pipeline = TimeSeriesRegressionPipeline(
         component_graph={
@@ -1009,13 +1009,13 @@ def test_explain_predictions_time_series(ts_data):
         },
         parameters={
             "pipeline": {
-                "time_index": "date",
+                "time_index": "Dates",
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
             },
             "Time Series Featurizer": {
-                "time_index": "date",
+                "time_index": "Dates",
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
@@ -1023,8 +1023,8 @@ def test_explain_predictions_time_series(ts_data):
             "Random Forest Regressor": {"n_jobs": 1},
         },
     )
-    X_train, y_train = X[:15], y[:15]
-    X_validation, y_validation = X[15:], y[15:]
+    X_train, y_train = X[:25], y[:25]
+    X_validation, y_validation = X[25:], y[25:]
     ts_pipeline.fit(X_train, y_train)
 
     exp = explain_predictions(
@@ -1056,13 +1056,9 @@ def test_explain_predictions_best_worst_time_series(
     output_format,
     pipeline_class,
     estimator,
-    ts_data,
-    ts_data_binary,
+    get_ts_X_y,
 ):
-    X, y = ts_data
-
-    if is_binary(pipeline_class.problem_type):
-        X, y = ts_data_binary
+    X, _, y = get_ts_X_y(problem_type=pipeline_class.problem_type)
 
     ts_pipeline = pipeline_class(
         component_graph={
@@ -1085,7 +1081,7 @@ def test_explain_predictions_best_worst_time_series(
         },
         parameters={
             "pipeline": {
-                "time_index": "date",
+                "time_index": "Dates",
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
@@ -1094,12 +1090,12 @@ def test_explain_predictions_best_worst_time_series(
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-                "time_index": "date",
+                "time_index": "Dates",
             },
         },
     )
-    X_train, y_train = X[:15], y[:15]
-    X_validation, y_validation = X[15:], y[15:]
+    X_train, y_train = X[:25], y[:25]
+    X_validation, y_validation = X[25:], y[25:]
     ts_pipeline.fit(X_train, y_train)
 
     exp = explain_predictions_best_worst(

@@ -61,10 +61,10 @@ def test_log_transformer_inverse_transform(
     data_type,
     is_time_series,
     X_y_regression,
-    ts_data,
+    get_ts_X_y,
 ):
     if is_time_series:
-        X, y = ts_data
+        X, _, y = get_ts_X_y()
     else:
         X, y = X_y_regression
 

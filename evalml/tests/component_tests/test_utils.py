@@ -149,7 +149,7 @@ def test_scikit_learn_wrapper_invalid_problem_type():
         scikit_learn_wrapped_estimator(evalml_pipeline)
 
 
-def test_scikit_learn_wrapper(X_y_binary, X_y_multi, X_y_regression, ts_data):
+def test_scikit_learn_wrapper(X_y_binary, X_y_multi, X_y_regression):
     for estimator in [
         estimator
         for estimator in _all_estimators()

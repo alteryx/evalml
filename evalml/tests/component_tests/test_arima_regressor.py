@@ -38,15 +38,15 @@ def test_problem_types():
     }
 
 
-def test_model_instance(ts_data):
-    X, y = ts_data
+def test_model_instance(get_ts_X_y):
+    X, _, y = get_ts_X_y()
     clf = ARIMARegressor()
     fitted = clf.fit(X, y)
     assert isinstance(fitted, ARIMARegressor)
 
 
-def test_fit_ts_without_y(ts_data):
-    X, y = ts_data
+def test_fit_ts_without_y(get_ts_X_y):
+    X, _, _ = get_ts_X_y()
 
     clf = ARIMARegressor()
     with pytest.raises(ValueError, match="ARIMA Regressor requires y as input."):
@@ -184,8 +184,8 @@ def test_get_sp():
     assert sp_ == 2
 
 
-def test_feature_importance(ts_data):
-    X, y = ts_data
+def test_feature_importance(get_ts_X_y):
+    X, _, y = get_ts_X_y()
     clf = ARIMARegressor()
     with patch.object(clf, "_component_obj"):
         clf.fit(X, y)
@@ -386,10 +386,8 @@ def test_arima_boolean_features_no_error():
 
 @patch("sktime.forecasting.arima.AutoARIMA.fit")
 @patch("sktime.forecasting.arima.AutoARIMA.predict")
-def test_arima_regressor_respects_use_covariates(mock_predict, mock_fit, ts_data):
-    X, y = ts_data
-    X_train, y_train = X.iloc[:25], y.iloc[:25]
-    X_test, _ = X.iloc[25:], y.iloc[25:]
+def test_arima_regressor_respects_use_covariates(mock_predict, mock_fit, get_ts_X_y):
+    X_train, X_test, y_train = get_ts_X_y()
     clf = ARIMARegressor(use_covariates=False)
 
     clf.fit(X_train, y_train)
