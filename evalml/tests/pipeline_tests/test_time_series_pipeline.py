@@ -428,7 +428,7 @@ def test_predict_and_predict_in_sample(
     get_ts_X_y,
 ):
 
-    X, _, target = get_ts_X_y()
+    X, _, target = get_ts_X_y(problem_type=pipeline_class.problem_type)
     if include_feature_not_known_in_advance:
         X.ww["not_known_in_advance_1"] = (
             pd.Series(range(X.shape[0]), index=X.index) + 200
@@ -437,13 +437,9 @@ def test_predict_and_predict_in_sample(
             pd.Series(range(X.shape[0]), index=X.index) + 100
         )
 
-    mock_to_check = mock_classifier_predict
-    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
-        target = target % 2
-    elif pipeline_class == TimeSeriesMulticlassClassificationPipeline:
-        target = target % 3
-    else:
-        mock_to_check = mock_regressor_predict
+    mock_to_check = mock_regressor_predict
+    if is_classification(pipeline_class.problem_type):
+        mock_to_check = mock_classifier_predict
     mock_to_check.side_effect = lambda x: x.iloc[: x.shape[0], 0]
 
     component_graph = {
@@ -461,8 +457,7 @@ def test_predict_and_predict_in_sample(
     }
 
     def predict_proba(X):
-        X2 = X.iloc[: X.shape[0]]
-        X2.ww.init()
+        X2 = X.ww.iloc[: X.shape[0]]
         return X2
 
     mock_classifier_predict_proba.side_effect = predict_proba
@@ -480,8 +475,9 @@ def test_predict_and_predict_in_sample(
     expected_features_in_sample = expected_features.ww.iloc[20:]
     expected_features_pred = expected_features[20 + gap : 20 + gap + n_to_pred]
 
-    X_predict_in_sample, target_predict_in_sample = X.iloc[20:], target.iloc[20:]
-    X_predict = X.iloc[20 + gap : 20 + gap + n_to_pred]
+    X_train, target_train = X.ww.iloc[:20], target.ww.iloc[:20]
+    X_predict_in_sample, target_predict_in_sample = X.ww.iloc[20:], target.ww.iloc[20:]
+    X_predict = X.ww.iloc[20 + gap : 20 + gap + n_to_pred]
 
     if include_feature_not_known_in_advance:
         X_predict.drop(columns=["not_known_in_advance_1", "not_known_in_advance_2"])
@@ -528,42 +524,49 @@ def test_predict_and_predict_in_sample(
             target,
         )
         expected_features_in_sample = expected_features.ww.iloc[20:]
-        expected_features_pred = expected_features[20 + gap : 20 + gap + n_to_pred]
+        expected_features_pred = expected_features.ww.iloc[
+            20 + gap : 20 + gap + n_to_pred
+        ]
 
     pl = pipeline_class(component_graph=component_graph, parameters=parameters)
-    pl.fit(X.iloc[:20], target.iloc[:20])
+    pl.fit(X_train, target_train)
 
     preds_in_sample = pl.predict_in_sample(
         X_predict_in_sample,
         target_predict_in_sample,
-        X.iloc[:20],
-        target.iloc[:20],
+        X_train,
+        target_train,
     )
     assert_frame_equal(mock_to_check.call_args[0][0], expected_features_in_sample)
     mock_to_check.reset_mock()
     preds = pl.predict(
         X_predict,
         None,
-        X_train=X.iloc[:20],
-        y_train=target.iloc[:20],
+        X_train=X_train,
+        y_train=target_train,
     )
-    assert_frame_equal(mock_to_check.call_args[0][0], expected_features_pred)
+    assert_frame_equal(
+        mock_to_check.call_args[0][0],
+        expected_features_pred,
+        check_dtype=False,
+    )
     if is_classification(pl.problem_type):
         pred_proba = pl.predict_proba(
             X_predict,
-            X_train=X.iloc[:20],
-            y_train=target.iloc[:20],
+            X_train=X_train,
+            y_train=target_train,
         )
         assert_frame_equal(
             mock_classifier_predict_proba.call_args[0][0],
             expected_features_pred,
+            check_dtype=False,
         )
         assert len(pred_proba) == n_to_pred
 
     assert len(preds) == n_to_pred
     assert (preds.index == target.iloc[20 + gap : 20 + n_to_pred + gap].index).all()
-    assert len(preds_in_sample) == len(target.iloc[20:])
-    assert (preds_in_sample.index == target.iloc[20:].index).all()
+    assert len(preds_in_sample) == len(target.ww.iloc[20:])
+    assert (preds_in_sample.index == target.ww.iloc[20:].index).all()
 
 
 @pytest.mark.parametrize(

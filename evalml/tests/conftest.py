@@ -287,12 +287,11 @@ def get_ts_X_y():
         dates = pd.date_range("1/1/21", periods=50, freq=freq)
         feature = pd.Series([1, 5, 2] * 10 + [3, 1] * 10, index=X.index)
         y = pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5)
-        X.ww.init()
-        y.ww.init(logical_type="integer")
 
-        X_train = X.ww.iloc[:40]
-        X_test = X.ww.iloc[40:]
-        y_train = y.ww.iloc[:40]
+        X_train = X.iloc[:40]
+        X_test = X.iloc[40:]
+        y_train = y.iloc[:40]
+        logical_types = {}
 
         if train_features_index_dt:
             X_train.index = dates[:40]
@@ -301,19 +300,24 @@ def get_ts_X_y():
         if test_features_index_dt:
             X_test.index = dates[40:]
         if not no_features:
-            X_train.ww["Feature"] = pd.Series(feature[:40].values, index=X_train.index)
-            X_test.ww["Feature"] = pd.Series(feature[40:].values, index=X_test.index)
+            X_train["Feature"] = pd.Series(feature[:40].values, index=X_train.index)
+            X_test["Feature"] = pd.Series(feature[40:].values, index=X_test.index)
+            logical_types["Feature"] = "integer"
         if datetime_feature:
-            X_train.ww["Dates"] = pd.Series(dates[:40].values, index=X_train.index)
-            X_test.ww["Dates"] = pd.Series(dates[40:].values, index=X_test.index)
+            X_train["Dates"] = pd.Series(dates[:40].values, index=X_train.index)
+            X_test["Dates"] = pd.Series(dates[40:].values, index=X_test.index)
+            logical_types["Dates"] = "datetime"
         if train_none:
             X_train = None
         if is_binary(problem_type):
             y_train = y_train % 2
-            y_train.ww.init()
         if is_multiclass(problem_type):
             y_train = y_train % 3
-            y_train.ww.init()
+
+        if X_train is not None:
+            X_train.ww.init(logical_types=logical_types)
+        X_test.ww.init(logical_types=logical_types)
+        y_train.ww.init(logical_type="integer")
 
         return X_train, X_test, y_train
 
