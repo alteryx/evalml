@@ -71,11 +71,13 @@ class ReplaceNullableTypes(Transformer):
             pd.DataFrame: Transformed X
             pd.Series: Transformed y
         """
-        X_t = infer_feature_types(X)
+        if X.ww.schema is None:
+            X = infer_feature_types(X)
+
         for col in self._nullable_int_cols:
-            X_t.ww[col] = init_series(X_t[col], logical_type="double")
+            X.ww[col] = init_series(X[col], logical_type="double")
         for col in self._nullable_bool_cols:
-            X_t.ww[col] = init_series(X_t[col], logical_type="categorical")
+            X.ww[col] = init_series(X[col], logical_type="categorical")
 
         if y is not None:
             y_t = infer_feature_types(y)
@@ -87,7 +89,7 @@ class ReplaceNullableTypes(Transformer):
         elif y is None:
             y_t = None
 
-        return X_t, y_t
+        return X, y_t
 
     def fit_transform(self, X, y=None):
         """Substitutes non-nullable types for the new pandas nullable types in the data and target data.
@@ -99,9 +101,4 @@ class ReplaceNullableTypes(Transformer):
         Returns:
             tuple of pd.DataFrame, pd.Series: The input features and target data with the non-nullable types set.
         """
-        X_ww = infer_feature_types(X)
-        if y is not None:
-            y_ww = infer_feature_types(y)
-        else:
-            y_ww = y
-        return self.fit(X_ww, y_ww).transform(X_ww, y_ww)
+        return self.fit(X, y).transform(X, y)
