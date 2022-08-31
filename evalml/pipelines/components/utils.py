@@ -395,7 +395,8 @@ def downcast_int_nullable_to_double(X):
     """
     if not isinstance(X, pd.DataFrame):
         return X
-    X = infer_feature_types(X)
+    if X.ww.schema is None:
+        X = infer_feature_types(X)
     X_schema = X.ww.schema
     original_X_schema = X_schema.get_subset_schema(
         subset_cols=X_schema._filter_cols(exclude=["IntegerNullable"]),

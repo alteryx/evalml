@@ -122,7 +122,8 @@ class Imputer(Transformer):
                 cat_cols.remove(col)
                 bool_cols.append(col)
 
-        nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
+        nan_ratio = X.isna().sum() / X.shape[0]
+        # nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
         X_numerics = X[[col for col in numeric_cols if col not in self._all_null_cols]]
