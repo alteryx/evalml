@@ -1,7 +1,5 @@
 """A transformer that standardizes input features by removing the mean and scaling to unit variance."""
-import pandas as pd
 from sklearn.preprocessing import StandardScaler as SkScaler
-from woodwork.logical_types import Boolean, Categorical, Integer
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
@@ -72,14 +70,6 @@ class StandardScaler(Transformer):
             return X
         X_scaled_columns = X.ww[self.scaled_columns]
         scaled = self._component_obj.transform(X_scaled_columns)
-
-        X_schema = X.ww.schema
-        original_X_schema = X_schema.get_subset_schema(
-            subset_cols=X_schema._filter_cols(
-                exclude=self._supported_types,
-            ),
-        )
-
         X[self.scaled_columns] = scaled
         return X
 
