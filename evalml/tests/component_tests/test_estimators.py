@@ -217,6 +217,8 @@ def test_estimator_predict_output_type(X_y_binary, helper_functions):
             assert len(predict_output) == len(y)
             if isinstance(y, pd.Series) and y.name is None:
                 assert predict_output.name is None
+            else:
+                assert predict_output.name == y.name
 
             if not (
                 (ProblemTypes.BINARY in component_class.supported_problem_types)
