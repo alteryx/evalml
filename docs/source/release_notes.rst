@@ -2,7 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Updated to run with Woodwork >= 0.17.2 :pr:`3626`
+        * Updated to run with Woodwork >= 0.17.2 :pr:`3677`
     * Fixes
         * Added support for BooleanNullable columns in EvalML pipelines and imputer :pr:`3678`
     * Changes

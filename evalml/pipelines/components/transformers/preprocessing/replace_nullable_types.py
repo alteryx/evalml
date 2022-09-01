@@ -86,7 +86,7 @@ class ReplaceNullableTypes(Transformer):
         elif y is None:
             y_t = None
 
-        return X, y_t
+        return X_t, y_t
 
     def fit_transform(self, X, y=None):
         """Substitutes non-nullable types for the new pandas nullable types in the data and target data.
