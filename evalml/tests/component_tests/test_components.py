@@ -1100,7 +1100,7 @@ def test_all_transformers_needs_fitting(component_class):
 
 
 @pytest.mark.parametrize("component_class", _all_transformers())
-def test_all_transformers_check_fit(component_class, X_y_binary, get_ts_X_y):
+def test_all_transformers_check_fit(component_class, X_y_binary, ts_data):
     X, y = X_y_binary
     if not component_class.needs_fitting:
         pytest.xfail()
@@ -1110,8 +1110,8 @@ def test_all_transformers_check_fit(component_class, X_y_binary, get_ts_X_y):
     if "Oversampler" == component_class.name:
         component = component_class(sampling_ratio=1)
     elif component_class in [TimeSeriesFeaturizer, TimeSeriesRegularizer]:
-        X, _, y = get_ts_X_y(problem_type="time series binary")
-        component = component_class(time_index="Dates")
+        X, _, y = ts_data(problem_type="time series binary")
+        component = component_class(time_index="date")
 
     with pytest.raises(
         ComponentNotYetFittedError,
@@ -1126,14 +1126,14 @@ def test_all_transformers_check_fit(component_class, X_y_binary, get_ts_X_y):
     if "Oversampler" == component_class.name:
         component = component_class(sampling_ratio=1)
     elif component_class in [TimeSeriesFeaturizer, TimeSeriesRegularizer]:
-        component = component_class(time_index="Dates")
+        component = component_class(time_index="date")
     component.fit_transform(X, y)
     component.transform(X, y)
 
 
 def test_all_estimators_check_fit(
     X_y_binary,
-    get_ts_X_y,
+    ts_data,
     test_estimator_needs_fitting_false,
     helper_functions,
 ):
@@ -1158,12 +1158,12 @@ def test_all_estimators_check_fit(
             ProblemTypes.TIME_SERIES_REGRESSION
             in component_class.supported_problem_types
         ):
-            X, _, y = get_ts_X_y()
+            X, _, y = ts_data()
         else:
             X, y = X_y_binary
 
         if component_class.__name__ == "ProphetRegressor":
-            component = component_class(time_index="Dates")
+            component = component_class(time_index="date")
         else:
             component = helper_functions.safe_init_component_with_njobs_1(
                 component_class,
@@ -1221,7 +1221,7 @@ def test_all_transformers_check_fit_input_type(
     data_type,
     X_y_binary,
     make_data_type,
-    get_ts_X_y,
+    ts_data,
 ):
 
     X, y = X_y_binary
@@ -1232,8 +1232,8 @@ def test_all_transformers_check_fit_input_type(
         # since SMOTE determines categorical columns through the logical type, it can only accept ww data
         pytest.xfail()
     if component_class in [TimeSeriesFeaturizer, TimeSeriesRegularizer]:
-        X, _, y = get_ts_X_y(problem_type="time series binary")
-        kwargs = {"time_index": "Dates"}
+        X, _, y = ts_data(problem_type="time series binary")
+        kwargs = {"time_index": "date"}
 
     component = component_class(**kwargs)
     component.fit(X, y)
@@ -1260,7 +1260,7 @@ def test_no_fitting_required_components(
 def test_serialization(
     component_class,
     X_y_binary,
-    get_ts_X_y,
+    ts_data,
     tmpdir,
     helper_functions,
 ):
@@ -1275,8 +1275,8 @@ def test_serialization(
     print("Testing serialization of component {}".format(component_class.name))
     component = helper_functions.safe_init_component_with_njobs_1(component_class)
     if component_class in requires_time_index:
-        component = component_class(time_index="Dates")
-        X, _, y = get_ts_X_y()
+        component = component_class(time_index="date")
+        X, _, y = ts_data()
     else:
         X, y = X_y_binary
 
@@ -1563,7 +1563,7 @@ def test_transformer_fit_and_transform_respect_custom_indices(
     use_custom_index,
     transformer_class,
     X_y_binary,
-    get_ts_X_y,
+    ts_data,
 ):
     check_names = True
     if transformer_class == DFSTransformer:
@@ -1582,8 +1582,8 @@ def test_transformer_fit_and_transform_respect_custom_indices(
 
     kwargs = {}
     if transformer_class in [TimeSeriesFeaturizer, TimeSeriesRegularizer]:
-        kwargs.update({"time_index": "Dates"})
-        X, _, y = get_ts_X_y(problem_type="time series binary")
+        kwargs.update({"time_index": "date"})
+        X, _, y = ts_data(problem_type="time series binary")
 
     if use_custom_index:
         custom_index = range(100, 100 + X.shape[0])
@@ -1633,7 +1633,7 @@ def test_estimator_fit_respects_custom_indices(
     estimator_class,
     X_y_binary,
     X_y_regression,
-    get_ts_X_y,
+    ts_data,
     helper_functions,
 ):
 
@@ -1643,7 +1643,7 @@ def test_estimator_fit_respects_custom_indices(
     if ProblemTypes.REGRESSION in supported_problem_types:
         X, y = X_y_regression
     elif ProblemTypes.TIME_SERIES_REGRESSION in supported_problem_types:
-        X, _, y = get_ts_X_y(
+        X, _, y = ts_data(
             train_features_index_dt=False,
             train_target_index_dt=False,
         )
@@ -1667,7 +1667,7 @@ def test_estimator_fit_respects_custom_indices(
 
     try:
         if estimator_class.__name__ == "ProphetRegressor":
-            estimator = estimator_class(time_index="Dates")
+            estimator = estimator_class(time_index="date")
         else:
             estimator = estimator_class(n_jobs=1)
     except TypeError:

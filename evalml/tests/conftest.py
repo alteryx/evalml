@@ -272,7 +272,7 @@ def get_test_data_from_configuration():
 
 
 @pytest.fixture
-def get_ts_X_y():
+def ts_data():
     def _get_X_y(
         train_features_index_dt=True,
         train_target_index_dt=True,
@@ -300,13 +300,13 @@ def get_ts_X_y():
         if test_features_index_dt:
             X_test.index = dates[40:]
         if not no_features:
-            X_train["Feature"] = pd.Series(feature[:40].values, index=X_train.index)
-            X_test["Feature"] = pd.Series(feature[40:].values, index=X_test.index)
-            logical_types["Feature"] = "integer"
+            X_train["feature"] = pd.Series(feature[:40].values, index=X_train.index)
+            X_test["feature"] = pd.Series(feature[40:].values, index=X_test.index)
+            logical_types["feature"] = "integer"
         if datetime_feature:
-            X_train["Dates"] = pd.Series(dates[:40].values, index=X_train.index)
-            X_test["Dates"] = pd.Series(dates[40:].values, index=X_test.index)
-            logical_types["Dates"] = "datetime"
+            X_train["date"] = pd.Series(dates[:40].values, index=X_train.index)
+            X_test["date"] = pd.Series(dates[40:].values, index=X_test.index)
+            logical_types["date"] = "datetime"
         if train_none:
             X_train = None
         if is_binary(problem_type):

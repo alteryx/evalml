@@ -985,8 +985,8 @@ def test_explain_predictions_best_worst_custom_metric(
         assert best_worst_report == answer
 
 
-def test_explain_predictions_time_series(get_ts_X_y):
-    X, _, y = get_ts_X_y()
+def test_explain_predictions_time_series(ts_data):
+    X, _, y = ts_data()
 
     ts_pipeline = TimeSeriesRegressionPipeline(
         component_graph={
@@ -1009,13 +1009,13 @@ def test_explain_predictions_time_series(get_ts_X_y):
         },
         parameters={
             "pipeline": {
-                "time_index": "Dates",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
             },
             "Time Series Featurizer": {
-                "time_index": "Dates",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
@@ -1056,9 +1056,9 @@ def test_explain_predictions_best_worst_time_series(
     output_format,
     pipeline_class,
     estimator,
-    get_ts_X_y,
+    ts_data,
 ):
-    X, _, y = get_ts_X_y(problem_type=pipeline_class.problem_type)
+    X, _, y = ts_data(problem_type=pipeline_class.problem_type)
 
     ts_pipeline = pipeline_class(
         component_graph={
@@ -1081,7 +1081,7 @@ def test_explain_predictions_best_worst_time_series(
         },
         parameters={
             "pipeline": {
-                "time_index": "Dates",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
@@ -1090,7 +1090,7 @@ def test_explain_predictions_best_worst_time_series(
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-                "time_index": "Dates",
+                "time_index": "date",
             },
         },
     )

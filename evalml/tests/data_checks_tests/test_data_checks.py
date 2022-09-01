@@ -695,8 +695,8 @@ def test_data_checks_raises_value_errors_on_init(
         "Mean Absolute Percentage Error",
     ],
 )
-def test_errors_warnings_in_invalid_target_data_check(objective, get_ts_X_y):
-    X, _, y = get_ts_X_y()
+def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
+    X, _, y = ts_data()
     y[0] = -1
     y = pd.Series(y)
     details = {"Count of offending values": sum(val <= 0 for val in y.values.flatten())}

@@ -26,15 +26,15 @@ def test_problem_types():
     }
 
 
-def test_model_instance(get_ts_X_y):
-    X, _, y = get_ts_X_y()
+def test_model_instance(ts_data):
+    X, _, y = ts_data()
     regressor = ExponentialSmoothingRegressor()
     fitted = regressor.fit(X, y)
     assert isinstance(fitted, ExponentialSmoothingRegressor)
 
 
-def test_fit_ts_without_y(get_ts_X_y):
-    X, _, _ = get_ts_X_y()
+def test_fit_ts_without_y(ts_data):
+    X, _, _ = ts_data()
 
     regressor = ExponentialSmoothingRegressor()
     with pytest.raises(
@@ -63,9 +63,9 @@ def test_remove_datetime(
     train_none,
     datetime_feature,
     no_features,
-    get_ts_X_y,
+    ts_data,
 ):
-    X_train, _, y_train = get_ts_X_y(
+    X_train, _, y_train = ts_data(
         train_features_index_dt,
         train_target_index_dt,
         train_none,
@@ -94,10 +94,10 @@ def test_remove_datetime(
         assert not isinstance(y_train_removed.index, pd.DatetimeIndex)
 
 
-def test_set_forecast(get_ts_X_y):
+def test_set_forecast(ts_data):
     from sktime.forecasting.base import ForecastingHorizon
 
-    _, X_test, _ = get_ts_X_y(
+    _, X_test, _ = ts_data(
         train_features_index_dt=False,
         train_target_index_dt=False,
         train_none=False,
@@ -113,8 +113,8 @@ def test_set_forecast(get_ts_X_y):
     assert fh_.is_relative
 
 
-def test_feature_importance(get_ts_X_y):
-    X, _, y = get_ts_X_y()
+def test_feature_importance(ts_data):
+    X, _, y = ts_data()
     regressor = ExponentialSmoothingRegressor()
     with patch.object(regressor, "_component_obj"):
         regressor.fit(X, y)
@@ -142,12 +142,12 @@ def test_fit_predict(
     no_features,
     datetime_feature,
     test_features_index_dt,
-    get_ts_X_y,
+    ts_data,
 ):
     from sktime.forecasting.base import ForecastingHorizon
     from sktime.forecasting.exp_smoothing import ExponentialSmoothing
 
-    X_train, X_test, y_train = get_ts_X_y(
+    X_train, X_test, y_train = ts_data(
         train_features_index_dt,
         train_target_index_dt,
         train_none,
@@ -171,12 +171,12 @@ def test_fit_predict(
 
 
 def test_predict_no_X_in_fit(
-    get_ts_X_y,
+    ts_data,
 ):
     from sktime.forecasting.base import ForecastingHorizon
     from sktime.forecasting.exp_smoothing import ExponentialSmoothing
 
-    X_train, X_test, y_train = get_ts_X_y(
+    X_train, X_test, y_train = ts_data(
         train_features_index_dt=False,
         train_target_index_dt=True,
         train_none=True,

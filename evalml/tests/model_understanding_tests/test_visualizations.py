@@ -319,8 +319,8 @@ def test_graph_prediction_vs_actual(data_type, go):
     assert fig_dict["data"][2]["name"] == ">= outlier_threshold"
 
 
-def test_get_prediction_vs_actual_over_time_data(get_ts_X_y):
-    X, _, y = get_ts_X_y()
+def test_get_prediction_vs_actual_over_time_data(ts_data):
+    X, _, y = ts_data()
     X_train, y_train = X.iloc[:30], y.iloc[:30]
     X_test, y_test = X.iloc[30:], y.iloc[30:]
 
@@ -331,7 +331,7 @@ def test_get_prediction_vs_actual_over_time_data(get_ts_X_y):
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-                "time_index": "Dates",
+                "time_index": "date",
             },
         },
     )
@@ -349,8 +349,8 @@ def test_get_prediction_vs_actual_over_time_data(get_ts_X_y):
     assert list(results.columns) == ["dates", "target", "prediction"]
 
 
-def test_graph_prediction_vs_actual_over_time(get_ts_X_y, go):
-    X, _, y = get_ts_X_y()
+def test_graph_prediction_vs_actual_over_time(ts_data, go):
+    X, _, y = ts_data()
     X_train, y_train = X.iloc[:30], y.iloc[:30]
     X_test, y_test = X.iloc[30:], y.iloc[30:]
 
@@ -361,7 +361,7 @@ def test_graph_prediction_vs_actual_over_time(get_ts_X_y, go):
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-                "time_index": "Dates",
+                "time_index": "date",
             },
         },
     )

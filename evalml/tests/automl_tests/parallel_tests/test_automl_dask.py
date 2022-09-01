@@ -286,11 +286,11 @@ def test_score_pipelines_passes_X_train_y_train(
     problem_type,
     engine_str,
     X_y_based_on_pipeline_or_problem_type,
-    get_ts_X_y,
+    ts_data,
     AutoMLTestEnv,
 ):
     if is_time_series(problem_type):
-        X, _, y = get_ts_X_y(problem_type=problem_type)
+        X, _, y = ts_data(problem_type=problem_type)
     else:
         X, y = X_y_based_on_pipeline_or_problem_type(problem_type)
 
@@ -309,7 +309,7 @@ def test_score_pipelines_passes_X_train_y_train(
         max_iterations=5,
         optimize_thresholds=False,
         problem_configuration={
-            "time_index": "Dates",
+            "time_index": "date",
             "gap": 0,
             "forecast_horizon": 1,
             "max_delay": 1,
