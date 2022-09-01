@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
+from woodwork import is_schema_valid
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family.utils import ModelFamily, handle_model_family
@@ -395,7 +396,7 @@ def downcast_int_nullable_to_double(X):
     """
     if not isinstance(X, pd.DataFrame):
         return X
-    if X.ww.schema is None:
+    if X.ww.schema is None or not is_schema_valid(X, X.ww.schema):
         X = infer_feature_types(X)
     X_schema = X.ww.schema
     original_X_schema = X_schema.get_subset_schema(

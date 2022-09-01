@@ -63,11 +63,17 @@ class BaseSampler(Transformer):
         if len(X.ww.select(IntegerNullable).columns) > 0:
             try:
                 X = X.astype(
-                    {null_col: int for null_col in X.ww.select(IntegerNullable).columns},
+                    {
+                        null_col: int
+                        for null_col in X.ww.select(IntegerNullable).columns
+                    },
                 )
             except ValueError:
                 X = X.astype(
-                    {null_col: float for null_col in X.ww.select(IntegerNullable).columns},
+                    {
+                        null_col: float
+                        for null_col in X.ww.select(IntegerNullable).columns
+                    },
                 )
             X.ww.init(schema=X.ww.schema)
 
