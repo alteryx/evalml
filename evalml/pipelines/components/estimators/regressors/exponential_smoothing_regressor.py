@@ -130,7 +130,7 @@ class ExponentialSmoothingRegressor(Estimator):
 
         y_pred = self._component_obj.predict(fh=fh_)
         y_pred.index = X.index
-
+        y_pred.name = None
         return infer_feature_types(y_pred)
 
     @property
