@@ -82,19 +82,22 @@ def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
 
 def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
     component = []
-    all_nullable_cols = X.ww.select(
-        ["IntegerNullable", "AgeNullable", "BooleanNullable"],
-        return_schema=True,
-    ).columns
-    nullable_target = isinstance(
-        y.ww.logical_type,
-        (
-            logical_types.AgeNullable,
-            logical_types.BooleanNullable,
-            logical_types.IntegerNullable,
-        ),
-    )
-    if len(all_nullable_cols) > 0 or nullable_target:
+    input_logical_types = {type(lt) for lt in X.ww.logical_types.values()}
+    types_replace_null_handles = [
+        logical_types.AgeNullable,
+        logical_types.Boolean,
+        logical_types.BooleanNullable,
+        logical_types.Double,
+        logical_types.Integer,
+        logical_types.IntegerNullable,
+    ]
+
+    nullable_target = isinstance(y.ww.logical_type, tuple(types_replace_null_handles))
+
+    if (
+        len(input_logical_types.intersection(set(types_replace_null_handles)))
+        or nullable_target
+    ):
         component.append(ReplaceNullableTypes)
     return component
 
@@ -306,7 +309,7 @@ def _get_preprocessing_components(
     for function in components_functions:
         if function not in functions_to_exclude:
             components.extend(
-                function(X, y, problem_type, estimator_class, sampler_name)
+                function(X, y, problem_type, estimator_class, sampler_name),
             )
 
     return components
@@ -985,7 +988,11 @@ def get_actions_from_option_defaults(action_options):
 
 
 def make_timeseries_baseline_pipeline(
-    problem_type, gap, forecast_horizon, time_index, exclude_featurizer=False
+    problem_type,
+    gap,
+    forecast_horizon,
+    time_index,
+    exclude_featurizer=False,
 ):
     """Make a baseline pipeline for time series regression problems.
 

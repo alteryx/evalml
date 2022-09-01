@@ -3,17 +3,39 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Updated to run with Woodwork >= 0.17.2 :pr:`3626`
-        * Add ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631`
     * Fixes
+        * Added support for BooleanNullable columns in EvalML pipelines and imputer :pr:`3678`
     * Changes
+        * Pinned ``pmdarima`` < 2.0.0 :pr:`3679`
     * Documentation Changes
-        * Updated broken link checker to exclude stackoverflow domain :pr:`3633`
-        * Add instructions to add new users to evalml-core-feedstock :pr:`3636`
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+
+**v0.56.1 Aug. 19, 2022**
+    * Fixes
+        * ``IDColumnsDataCheck`` now only returns an action code to set the first column as the primary key if it contains unique values :pr:`3639`
+        * Reverted the ``make_pipeline`` changes that conditionally included the imputers :pr:`3672`
+
+**v0.56.0 Aug. 15, 2022**
+    * Enhancements
+        * Add CI testing environment in Mac for install workflow :pr:`3646`
+        * Updated ``make_pipeline`` to only include the Imputer in pipelines if NaNs exist in the data :pr:`3657`
+        * Updated to run with Woodwork >= 0.17.2 :pr:`3626`
+        * Add ``exclude_featurizers`` parameter to ``AutoMLSearch`` to specify featurizers that should be excluded from all pipelines :pr:`3631`
+        * Add ``fit_transform`` method to pipelines and component graphs :pr:`3640`
+        * Changed default value of data splitting for time series problem holdout set evaluation :pr:`3650`
+    * Fixes
+        * Reverted the Woodwork 0.17.x compatibility work due to performance regression :pr:`3664`
+    * Changes
+        * Disable holdout set in AutoML search by default :pr:`3659`
+        * Pinned ``sktime`` at >=0.7.0,<0.13.1 due to slowdowns with time series modeling :pr:`3658`
+        * Added additional testing support for Python 3.10 :pr:`3609`
+    * Documentation Changes
+        * Updated broken link checker to exclude stackoverflow domain :pr:`3633`
+        * Add instructions to add new users to evalml-core-feedstock :pr:`3636`
 
 
 **v0.55.0 July. 24, 2022**
@@ -23,12 +45,15 @@ Release Notes
         * Added the option to set the ``sp`` parameter for ARIMA models :pr:`3597`
         * Updated the CV split size of time series problems to match forecast horizon for improved performance :pr:`3616`
         * Added holdout set evaluation as part of AutoML search and pipeline ranking :pr:`3499`
+        * Added Dockerfile.arm and .dockerignore for python version and M1 testing :pr:`3609`
+        * Added ``test_gen_utils::in_container_arm64()`` fixture :pr:`3609`
     * Fixes
         * Fixed iterative graphs not appearing in documentation :pr:`3592`
         * Updated the ``load_diabetes()`` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`
         * Capped woodwork version at < 0.17.0 :pr:`3612`
         * Bump minimum scikit-optimize version to 0.9.0 `:pr:`3614`
         * Invalid target data checks involving regression and unsupported data types now produce a different ``DataCheckMessageCode`` :pr:`3630`
+        * Updated ``test_data_checks.py::test_data_checks_raises_value_errors_on_init`` - more lenient text check :pr:`3609`
     * Changes
         * Add pre-commit hooks for linting :pr:`3608`
         * Implemented a lower threshold and window size for the ``TimeSeriesRegularizer`` and ``DatetimeFormatDataCheck`` :pr:`3627`
@@ -37,6 +62,13 @@ Release Notes
     * Testing Changes
         * Pinned GraphViz version for Windows CI Test :pr:`3596`
         * Removed ``pytest.mark.skip_if_39`` pytest marker :pr:`3602` :pr:`3607`
+        * Updated pytest==7.1.2 :pr:`3609`
+        * Added Dockerfile.arm and .dockerignore for python version and M1 testing :pr:`3609`
+        * Added ``test_gen_utils::in_container_arm64()`` fixture :pr:`3609`
+
+.. warning::
+
+    **Breaking Changes**
         * Refactored test cases that iterate over all components to use ``pytest.mark.parametrise`` and changed the corresponding ``if...continue`` blocks to ``pytest.mark.xfail`` :pr:`3622`
 
 

@@ -2720,6 +2720,23 @@ def test_pipeline_transform(
     assert_frame_equal(X, transformed_X)
 
 
+@patch("evalml.pipelines.ComponentGraph.fit_transform")
+def test_pipeline_fit_transform(
+    mock_component_graph_fit_transform,
+    example_graph_with_transformer_last_component,
+    X_y_binary,
+):
+    X, y = X_y_binary
+    ones_df = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
+    mock_component_graph_fit_transform.return_value = ones_df
+    component_graph = ComponentGraph(example_graph_with_transformer_last_component)
+    pipeline = BinaryClassificationPipeline(component_graph)
+
+    pipeline.fit_transform(X, y)
+
+    assert mock_component_graph_fit_transform.call_count == 1
+
+
 @pytest.mark.parametrize(
     "problem_type",
     [

@@ -415,9 +415,7 @@ def test_max_batches_num_pipelines(
         # automl_algorithm will include all allowed_pipelines in the first batch even
         # if they are not searched over. That is why n_automl_pipelines does not equal
         # n_results when max_iterations and max_batches are None
-        n_automl_pipelines = (
-            1 + len(automl.allowed_pipelines) + automl._pipelines_per_batch
-        )
+        n_automl_pipelines = 1 + len(automl.allowed_pipelines)
         num_ensemble_batches = 0
     else:
         # automl algorithm does not know about the additional stacked ensemble pipelines
@@ -434,7 +432,7 @@ def test_max_batches_num_pipelines(
         n_automl_pipelines = n_results
     if max_batches is None:
         max_batches = automl.automl_algorithm.default_max_batches
-        assert automl.automl_algorithm.batch_number == max_batches + 1
+        assert automl.automl_algorithm.batch_number == max_batches
         assert automl.automl_algorithm.pipeline_number + 1 == n_automl_pipelines
     else:
         assert automl.automl_algorithm.batch_number == max_batches

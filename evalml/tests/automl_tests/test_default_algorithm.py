@@ -377,10 +377,12 @@ def test_make_split_pipeline(X_y_binary):
         "Label Encoder",
         "Categorical Pipeline - Select Columns Transformer",
         "Categorical Pipeline - Label Encoder",
+        "Categorical Pipeline - Replace Nullable Types Transformer",
         "Categorical Pipeline - Imputer",
         "Categorical Pipeline - One Hot Encoder",
         "Numeric Pipeline - Select Columns By Type Transformer",
         "Numeric Pipeline - Label Encoder",
+        "Numeric Pipeline - Replace Nullable Types Transformer",
         "Numeric Pipeline - Imputer",
         "Numeric Pipeline - Select Columns Transformer",
         "Random Forest Classifier",
@@ -416,6 +418,7 @@ def test_make_split_pipeline_categorical_only(X_y_binary):
     compute_order = [
         "Select Columns Transformer",
         "Label Encoder",
+        "Replace Nullable Types Transformer",
         "Imputer",
         "One Hot Encoder",
         "Random Forest Classifier",
@@ -929,6 +932,46 @@ def test_default_algorithm_accepts_URL_email_features(
         ] == ["url", "email"]
 
 
+@pytest.mark.parametrize(
+    "automl_type",
+    [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
+)
+@pytest.mark.parametrize(
+    "ensembling",
+    [True, False],
+)
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_default_algorithm_num_pipelines_per_batch(
+    mock_get_names,
+    automl_type,
+    ensembling,
+    X_y_categorical_classification,
+    X_y_multi,
+    X_y_regression,
+):
+    mock_get_names.return_value = None
+    if automl_type == ProblemTypes.BINARY:
+        X, y = X_y_categorical_classification
+    elif automl_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+    elif automl_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+    algo = DefaultAlgorithm(
+        X=X,
+        y=y,
+        problem_type=automl_type,
+        sampler_name=None,
+        ensembling=ensembling,
+        top_n=2,
+        num_long_explore_pipelines=10,
+        num_long_pipelines_per_batch=5,
+    )
+    for i in range(7):
+        batch = algo.next_batch()
+        add_result(algo, batch)
+        assert len(batch) == algo.num_pipelines_per_batch(i)
+
+
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_exclude_featurizers_default_algorithm(
@@ -946,7 +989,9 @@ def test_exclude_featurizers_default_algorithm(
         }
 
     X, y = get_test_data_from_configuration(
-        input_type, problem_type, column_names=["dates", "text", "email", "url"]
+        input_type,
+        problem_type,
+        column_names=["dates", "text", "email", "url"],
     )
 
     algo = DefaultAlgorithm(
@@ -975,23 +1020,23 @@ def test_exclude_featurizers_default_algorithm(
         [
             DateTimeFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )
     assert not any(
-        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+        [EmailFeaturizer.name in pl.component_graph.compute_order for pl in pipelines],
     )
     assert not any(
-        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines]
+        [URLFeaturizer.name in pl.component_graph.compute_order for pl in pipelines],
     )
     assert not any(
         [
             NaturalLanguageFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )
     assert not any(
         [
             TimeSeriesFeaturizer.name in pl.component_graph.compute_order
             for pl in pipelines
-        ]
+        ],
     )
