@@ -204,7 +204,7 @@ def test_id_cols_data_check_input_formats():
     ]
 
 
-@pytest.mark.parametrize("input_type", ["integer", "string"])
+@pytest.mark.parametrize("input_type", ["integer", "string", "double"])
 def test_identified_first_col_primary_key(
     input_type, get_test_data_with_or_without_primary_key
 ):
@@ -217,12 +217,12 @@ def test_identified_first_col_primary_key(
             message="The first column 'col_1_id' is likely to be the primary key",
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
-            details={"columns": "col_1_id"},
+            details={"columns": ["col_1_id"]},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={"columns": "col_1_id"},
+                    metadata={"columns": ["col_1_id"]},
                 ),
             ],
         ).to_dict(),
@@ -247,12 +247,12 @@ def test_identified_first_col_primary_key(
             message="The first column 'ID' is likely to be the primary key",
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
-            details={"columns": "ID"},
+            details={"columns": ["ID"]},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.SET_FIRST_COL_ID,
                     data_check_name=id_data_check_name,
-                    metadata={"columns": "ID"},
+                    metadata={"columns": ["ID"]},
                 ),
             ],
         ).to_dict(),
@@ -272,7 +272,7 @@ def test_identified_first_col_primary_key(
     ]
 
 
-@pytest.mark.parametrize("input_type", ["integer", "string"])
+@pytest.mark.parametrize("input_type", ["integer", "string", "double"])
 def test_unidentified_first_col_primary_key(
     input_type, get_test_data_with_or_without_primary_key
 ):
@@ -300,6 +300,8 @@ def test_unidentified_first_col_primary_key(
     X = X.rename(columns={"col_1_id": "col_1"})
     if input_type == "integer":
         X.at[0, "col_1"] = 0
+    elif input_type == "double":
+        X.at[0, "col_1"] = 0.0
     elif input_type == "string":
         X["col_1"] = X["col_1"].cat.add_categories("a")
         X.at[0, "col_1"] = "a"
