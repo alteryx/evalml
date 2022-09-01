@@ -117,34 +117,41 @@ def _schema_is_equal(first, other):
     return logical and semantic
 
 
-def downcast_nullable_types(X, ignore_null_cols=True):
+def downcast_nullable_types(data, ignore_null_cols=True):
     """Downcasts IntegerNullable, BooleanNullable types to Double, Boolean in order to support certain estimators like ARIMA, CatBoost, and LightGBM.
 
     Args:
-        X (pd.DataFrame): Feature data.
+        data (pd.DataFrame, pd.Series): Feature data.
         ignore_null_cols (bool): Whether to ignore downcasting columns with null values or not. Defaults to True.
 
     Returns:
-        X: DataFrame initialized with logical type information where BooleanNullable are cast as Double.
+        data: DataFrame or Series initialized with logical type information where BooleanNullable are cast as Double.
     """
-    X_schema = X.ww.schema
-    original_X_schema = X_schema.get_subset_schema(
-        subset_cols=X_schema._filter_cols(
+    if isinstance(data, pd.Series):
+        if data.ww.logical_type.type_string == "BooleanNullable":
+            data.ww.set_type("Boolean")
+        if data.ww.logical_type.type_string in ["IntegerNullable", "AgeNullable"]:
+            data.ww.set_type("Double")
+        return data
+
+    data_schema = data.ww.schema
+    original_schema = data_schema.get_subset_schema(
+        subset_cols=data_schema._filter_cols(
             exclude=["BooleanNullable", "IntegerNullable"],
         ),
     )
-    X_bool_nullable_cols = X_schema._filter_cols(include=["BooleanNullable"])
-    X_int_nullable_cols = X_schema._filter_cols(
+    bool_nullable_cols = data_schema._filter_cols(include=["BooleanNullable"])
+    int_nullable_cols = data_schema._filter_cols(
         include=["IntegerNullable", "AgeNullable"],
     )
     non_null_columns = (
-        set(X.dropna(axis=1).columns) if ignore_null_cols else set(X.columns)
+        set(data.dropna(axis=1).columns) if ignore_null_cols else set(data.columns)
     )
     new_ltypes = {
-        col: "Boolean" for col in X_bool_nullable_cols if col in non_null_columns
+        col: "Boolean" for col in bool_nullable_cols if col in non_null_columns
     }
     new_ltypes.update(
-        {col: "Double" for col in X_int_nullable_cols if col in non_null_columns},
+        {col: "Double" for col in int_nullable_cols if col in non_null_columns},
     )
-    X.ww.init(schema=original_X_schema, logical_types=new_ltypes)
-    return X
+    data.ww.init(schema=original_schema, logical_types=new_ltypes)
+    return data
