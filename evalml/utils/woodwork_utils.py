@@ -145,6 +145,13 @@ def downcast_nullable_types(X, ignore_null_cols=True):
         col: "Boolean" for col in X_bool_nullable_cols if col in non_null_columns
     }
     new_ltypes.update(
+        {
+            col: "BooleanNullable"
+            for col in X_bool_nullable_cols
+            if col not in new_ltypes
+        },
+    )
+    new_ltypes.update(
         {col: "Double" for col in X_int_nullable_cols if col in non_null_columns},
     )
     if new_ltypes:
