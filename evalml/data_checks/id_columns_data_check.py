@@ -139,13 +139,13 @@ class IDColumnsDataCheck(DataCheck):
             ...         "data_check_name": "IDColumnsDataCheck",
             ...         "level": "warning",
             ...         "code": "HAS_ID_FIRST_COLUMN",
-            ...         "details": {"columns": "sales_id", "rows": None},
+            ...         "details": {"columns": ["sales_id"], "rows": None},
             ...         "action_options": [
             ...             {
             ...                 "code": "SET_FIRST_COL_ID",
             ...                 "data_check_name": "IDColumnsDataCheck",
             ...                 "parameters": {},
-            ...                 "metadata": {"columns": "sales_id", "rows": None}
+            ...                 "metadata": {"columns": ["sales_id"], "rows": None}
             ...             }
             ...         ]
             ...    },
@@ -175,18 +175,30 @@ class IDColumnsDataCheck(DataCheck):
         ]  # columns whose name is "id"
         id_cols = {col: 0.95 for col in cols_named_id}
 
-        X = X.ww.select(include=["Integer", "Categorical"])
+        for dtypes in [["Double"], ["Integer", "Categorical"]]:
+            X_temp = X.ww.select(include=dtypes)
+            check_all_unique = X_temp.nunique() == len(X_temp)
+            cols_with_all_unique = check_all_unique[
+                check_all_unique
+            ].index.tolist()  # columns whose values are all unique
 
-        check_all_unique = X.nunique() == len(X)
-        cols_with_all_unique = check_all_unique[
-            check_all_unique
-        ].index.tolist()  # columns whose values are all unique
-        id_cols.update(
-            [
-                (col, 1.0) if col in id_cols else (col, 0.95)
-                for col in cols_with_all_unique
-            ],
-        )
+            # Temporary solution for downstream instances of integers being mapped to doubles.
+            # Will be removed when resolved.
+            if dtypes == ["Double"]:
+                cols_with_all_unique = [
+                    col
+                    for col in cols_with_all_unique
+                    if all(
+                        X_temp[col].mod(1).eq(0)
+                    )  # Parse out columns that contain all `integer` values
+                ]
+
+            id_cols.update(
+                [
+                    (col, 1.0) if col in id_cols else (col, 0.95)
+                    for col in cols_with_all_unique
+                ],
+            )
 
         col_ends_with_id = [
             col for col in col_names if str(col).lower().endswith("_id")
@@ -217,12 +229,12 @@ class IDColumnsDataCheck(DataCheck):
                         message=warning_msg,
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
-                        details={"columns": col_names[0]},
+                        details={"columns": [col_names[0]]},
                         action_options=[
                             DataCheckActionOption(
                                 DataCheckActionCode.SET_FIRST_COL_ID,
                                 data_check_name=self.name,
-                                metadata={"columns": col_names[0]},
+                                metadata={"columns": [col_names[0]]},
                             ),
                         ],
                     ).to_dict(),
