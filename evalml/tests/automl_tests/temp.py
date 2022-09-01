@@ -5,15 +5,16 @@ from evalml import AutoMLSearch
 
 
 def kdd():
-    X = pd.read_csv("/Users/parthiv.naresh/Documents/Datasets/Classification/Binary/KDDCup09_churn.csv")
-    y = X.pop("CHURN")
+    X = pd.read_csv("/Users/parthiv.naresh/Documents/Datasets/Regression/regress.csv")
+    y = X.pop("y")
     beginning = time.time()
-    aml = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=2)
+    aml = AutoMLSearch(X_train=X, y_train=y, problem_type="regression", max_iterations=2)
     beginning_0 = time.time()
     aml.search()
     end = time.time()
     print(f"Total: {beginning_0-beginning}")
     print(f"Total: {end-beginning_0}")
+    print(aml.results)
 
 
 if __name__ == '__main__':
