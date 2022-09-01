@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
+from woodwork.logical_types import Boolean, BooleanNullable, IntegerNullable
 
 from evalml.pipelines.components import TimeSeriesImputer
 
@@ -75,9 +76,9 @@ def test_numeric_only_input(imputer_test_data):
         {
             "dates": pd.date_range("01-01-2022", periods=20),
             "int col": [0, 1, 2, 0, 3] * 4,
-            "float col": [0.0, 1.0, 0.0, -2.0, 5.0] * 4,
+            "float col": [0.5, 1.0, 0.0, -2.0, 5.0] * 4,
             "int with nan": [1, 1, 0, 0, 1] * 4,
-            "float with nan": [0.0, 1.0, -1.0, -1.0, 0.0] * 4,
+            "float with nan": [0.5, 1.0, -1.0, -1.0, 0.0] * 4,
         },
     )
     assert_frame_equal(transformed, expected, check_dtype=False)
@@ -85,13 +86,13 @@ def test_numeric_only_input(imputer_test_data):
     imputer = TimeSeriesImputer(numeric_impute_strategy="forwards_fill")
     imputer.fit(X, y)
     transformed, _ = imputer.transform(X, y)
-    expected["float with nan"] = [0.0, 1.0, 1.0, -1.0, 0.0] * 4
+    expected["float with nan"] = [0.5, 1.0, 1.0, -1.0, 0.0] * 4
     assert_frame_equal(transformed, expected, check_dtype=False)
 
     imputer = TimeSeriesImputer(numeric_impute_strategy="interpolate")
     imputer.fit(X, y)
     transformed, _ = imputer.fit_transform(X, y)
-    expected["float with nan"] = [0.0, 1.0, 0.0, -1.0, 0.0] * 4
+    expected["float with nan"] = [0.5, 1.0, 0.0, -1.0, 0.0] * 4
     assert_frame_equal(transformed, expected, check_dtype=False)
 
 
@@ -129,7 +130,6 @@ def test_categorical_only_input(imputer_test_data):
             ),
             "bool col with nan": pd.Series(
                 [True, True, False, False, True] * 4,
-                dtype="category",
             ),
         },
     )
@@ -148,7 +148,6 @@ def test_categorical_only_input(imputer_test_data):
     )
     expected["bool col with nan"] = pd.Series(
         [True, False, False, True, True] * 4,
-        dtype="category",
     )
 
     imputer = TimeSeriesImputer(categorical_impute_strategy="backwards_fill")
@@ -171,21 +170,20 @@ def test_categorical_and_numeric_input(imputer_test_data):
             ),
             "int col": [0, 1, 2, 0, 3] * 4,
             "object col": pd.Series(["b", "b", "a", "c", "d"] * 4, dtype="category"),
-            "float col": [0.0, 1.0, 0.0, -2.0, 5.0] * 4,
+            "float col": [0.5, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
             "categorical with nan": pd.Series(
                 ["1", "1", "0", "0", "3"] + ["3", "1", "0", "0", "3"] * 3,
                 dtype="category",
             ),
             "int with nan": [1, 1, 0, 0, 1] * 4,
-            "float with nan": [0.0, 1.0, 0, -1.0, 0.0] * 4,
+            "float with nan": [0.5, 1.0, 0, -1.0, 0.0] * 4,
             "object with nan": pd.Series(
                 ["b", "b", "b", "c", "c"] * 4,
                 dtype="category",
             ),
             "bool col with nan": pd.Series(
                 [True, True, False, False, True] * 4,
-                dtype="category",
             ),
             "natural language col": pd.Series(
                 ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
@@ -200,13 +198,14 @@ def test_categorical_and_numeric_input(imputer_test_data):
         categorical_impute_strategy="forwards_fill",
     )
     transformed, _ = imputer.fit_transform(X, y)
-    expected["float with nan"] = [0.0, 1.0, 1.0, -1.0, 0.0] * 4
+    expected["float with nan"] = [0.5, 1.0, 1.0, -1.0, 0.0] * 4
     assert_frame_equal(transformed, expected, check_dtype=False)
 
 
 def test_impute_target():
     X = pd.DataFrame({"dates": pd.date_range("01-01-2022", periods=20)})
     y = pd.Series([0, 1, 0, 1, np.nan] * 4)
+    y.ww.init(logical_type="double")
 
     imputer = TimeSeriesImputer(target_impute_strategy="forwards_fill")
     _, y_t = imputer.fit_transform(X, y)
@@ -287,24 +286,26 @@ def test_imputer_does_not_reset_index():
     X.loc[5, "input_val"] = np.nan
     X.loc[5, "input_cat"] = np.nan
     assert X.index.tolist() == list(range(10))
-    X.ww.init(logical_types={"input_cat": "categorical"})
+    X.ww.init(logical_types={"input_val": IntegerNullable, "input_cat": "categorical"})
 
     X.drop(0, inplace=True)
     y = X.ww.pop("target")
 
+    expected = pd.DataFrame(
+        {
+            "input_val": [1.0, 2, 3, 4, 5, 6, 7, 8, 9],
+            "input_cat": pd.Categorical(["a"] * 6 + ["b"] * 3),
+        },
+        index=list(range(1, 10)),
+    )
+    expected.ww.init(
+        logical_types={"input_val": IntegerNullable, "input_cat": "categorical"},
+    )
+
     imputer = TimeSeriesImputer()
     imputer.fit(X, y=y)
     transformed, _ = imputer.transform(X)
-    pd.testing.assert_frame_equal(
-        transformed,
-        pd.DataFrame(
-            {
-                "input_val": [1.0, 2, 3, 4, 5, 6, 7, 8, 9],
-                "input_cat": pd.Categorical(["a"] * 6 + ["b"] * 3),
-            },
-            index=list(range(1, 10)),
-        ),
-    )
+    pd.testing.assert_frame_equal(transformed, expected)
 
 
 def test_imputer_no_nans(imputer_test_data):
@@ -326,7 +327,7 @@ def test_imputer_no_nans(imputer_test_data):
             ),
             "int col": [0, 1, 2, 0, 3] * 4,
             "object col": pd.Series(["b", "b", "a", "c", "d"] * 4, dtype="category"),
-            "float col": [0.0, 1.0, 0.0, -2.0, 5.0] * 4,
+            "float col": [0.5, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
         },
     )
@@ -348,6 +349,16 @@ def test_imputer_with_none():
             "all None": [None, None, None, None] * 4,
         },
     )
+    X.ww.init(
+        logical_types={
+            "int with None": IntegerNullable,
+            "float with None": "double",
+            "category with None": "categorical",
+            "boolean with None": BooleanNullable,
+            "object with None": "categorical",
+            "all None": "unknown",
+        },
+    )
     y = pd.Series([0, None, 1, 0, 1] * 4)
     imputer = TimeSeriesImputer()
     imputer.fit(X, y)
@@ -359,7 +370,6 @@ def test_imputer_with_none():
             "category with None": pd.Series(["b", "a", "a", "a"] * 4, dtype="category"),
             "boolean with None": pd.Series(
                 [True, True, False, True] * 4,
-                dtype="category",
             ),
             "object with None": pd.Series(["b", "a", "a", "a"] * 4, dtype="category"),
         },
@@ -391,17 +401,17 @@ def test_imputer_all_bool_return_original(data_type, make_data_type):
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_imputer_bool_dtype_object(data_type, make_data_type):
     X = pd.DataFrame([True, np.nan, False, np.nan, True] * 4)
+    X.ww.init(logical_types={0: BooleanNullable})
     y = pd.Series([1, 0, 0, 1, 0] * 4)
     X_expected_arr = pd.DataFrame(
         [True, True, False, False, True] * 4,
-        dtype="category",
     )
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
     imputer = TimeSeriesImputer()
     imputer.fit(X, y)
     X_t, _ = imputer.transform(X)
-    assert_frame_equal(X_expected_arr, X_t)
+    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
 
 
 def test_imputer_unusual_types_as_categorical():
@@ -439,8 +449,8 @@ def test_imputer_unusual_types_as_categorical():
     assert_frame_equal(X_expected, X_t, check_dtype=False)
 
     X["categorical"] = pd.Series(["a", "b", "c", None] * 4, dtype="category")
-    X["numeric"] = pd.Series([2, np.NaN, 3, 4] * 4)
-    X.ww.init(logical_types={"urls": "url"})
+    X["numeric"] = pd.Series([2, np.NaN, 4, 5] * 4)
+    X.ww.init(logical_types={"urls": "url", "numeric": IntegerNullable})
 
     X_expected = pd.DataFrame(
         {
@@ -460,7 +470,7 @@ def test_imputer_unusual_types_as_categorical():
             ]
             * 3,
             "categorical": pd.Series(["a", "b", "c", "c"] * 4, dtype="category"),
-            "numeric": pd.Series([2, 2.5, 3, 4] * 4),
+            "numeric": pd.Series([2, 3, 4, 5] * 4),
         },
     )
     imputer = TimeSeriesImputer(categorical_impute_strategy="forwards_fill")
@@ -480,16 +490,17 @@ def test_imputer_multitype_with_one_bool(data_type, make_data_type):
             ),
         },
     )
+    X_multi.ww.init(
+        logical_types={"bool with nan": BooleanNullable, "bool no nan": Boolean},
+    )
     y = pd.Series([1, 0, 0, 1, 0] * 4)
     X_multi_expected_arr = pd.DataFrame(
         {
             "bool with nan": pd.Series(
                 [True, True, False, False, False] * 4,
-                dtype="category",
             ),
             "bool no nan": pd.Series(
                 [False, False, False, False, True] * 4,
-                dtype=bool,
             ),
         },
     )
@@ -500,7 +511,7 @@ def test_imputer_multitype_with_one_bool(data_type, make_data_type):
     imputer = TimeSeriesImputer()
     imputer.fit(X_multi, y)
     X_multi_t, _ = imputer.transform(X_multi)
-    assert_frame_equal(X_multi_expected_arr, X_multi_t)
+    assert_frame_equal(X_multi_expected_arr, X_multi_t, check_dtype=False)
 
 
 @pytest.mark.parametrize(

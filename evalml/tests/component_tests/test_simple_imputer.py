@@ -186,6 +186,7 @@ def test_simple_imputer_fit_transform_drop_all_nan_columns():
                 "another_col": [0, 1, 2],
             },
         ),
+        check_dtype=False,
     )
 
 
@@ -211,6 +212,7 @@ def test_simple_imputer_transform_drop_all_nan_columns():
                 "another_col": [0, 1, 2],
             },
         ),
+        check_dtype=False,
     )
 
 
@@ -523,11 +525,9 @@ def test_simple_imputer_ignores_natural_language(
     """Test to ensure that the simple imputer just passes through
     natural language columns, unchanged."""
     if df_composition == "single_column":
-        X_df = imputer_test_data[["natural language col"]]
-        X_df.ww.init()
+        X_df = imputer_test_data.ww[["natural language col"]]
     elif df_composition == "full_df":
-        X_df = imputer_test_data[["int col", "float col", "natural language col"]]
-        X_df.ww.init()
+        X_df = imputer_test_data.ww[["int col", "float col", "natural language col"]]
 
     if has_nan == "has_nan":
         X_df.iloc[-1, :] = None
@@ -551,6 +551,8 @@ def test_simple_imputer_ignores_natural_language(
         if numeric_impute_strategy == "mean" and has_nan == "has_nan":
             ans = X_df.mean()
             ans["natural language col"] = pd.NA
+            if "int col" in X_df:
+                X_df["int col"] = X_df["int col"].astype("float")
             X_df.iloc[-1, :] = ans
         elif numeric_impute_strategy == "median" and has_nan == "has_nan":
             ans = X_df.median()
@@ -562,7 +564,7 @@ def test_simple_imputer_ignores_natural_language(
             ans = X_df.mode().iloc[0, :]
             ans["natural language col"] = pd.NA
             X_df.iloc[-1, :] = ans
-        assert_frame_equal(result, X_df)
+        assert_frame_equal(result, X_df, check_dtype=False)
     elif df_composition == "single_column":
         assert_frame_equal(result, X_df)
 

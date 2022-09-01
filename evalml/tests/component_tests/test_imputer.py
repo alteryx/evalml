@@ -89,15 +89,16 @@ def test_numeric_only_input(imputer_test_data):
     expected = pd.DataFrame(
         {
             "int col": [0, 1, 2, 0, 3] * 4,
-            "float col": [0.0, 1.0, 0.0, -2.0, 5.0] * 4,
+            "float col": [0.5, 1.0, 0.0, -2.0, 5.0] * 4,
             "int with nan": [0.5, 1.0, 0.0, 0.0, 1.0] * 4,
-            "float with nan": [0.0, 1.0, 0, -1.0, 0.0] * 4,
+            "float with nan": [0.5, 1.0, 0.25, -1.0, 0.0] * 4,
         },
     )
     assert_frame_equal(transformed, expected, check_dtype=False)
 
     imputer = Imputer()
     transformed = imputer.fit_transform(X, y)
+    expected["float with nan"] = [0.5, 1.0, 0.125, -1.0, 0.0] * 4
     assert_frame_equal(transformed, expected, check_dtype=False)
 
 
@@ -133,7 +134,6 @@ def test_categorical_only_input(imputer_test_data):
             ),
             "bool col with nan": pd.Series(
                 [True, True, False, True, True] * 4,
-                dtype="category",
             ),
         },
     )
@@ -159,21 +159,20 @@ def test_categorical_and_numeric_input(imputer_test_data):
             ),
             "int col": [0, 1, 2, 0, 3] * 4,
             "object col": pd.Series(["b", "b", "a", "c", "d"] * 4, dtype="category"),
-            "float col": [0.0, 1.0, 0.0, -2.0, 5.0] * 4,
+            "float col": [0.5, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
             "categorical with nan": pd.Series(
                 ["0", "1", "0", "0", "3"] * 4,
                 dtype="category",
             ),
             "int with nan": [0.5, 1.0, 0.0, 0.0, 1.0] * 4,
-            "float with nan": [0.0, 1.0, 0, -1.0, 0.0] * 4,
+            "float with nan": [0.5, 1.0, 0.125, -1.0, 0.0] * 4,
             "object with nan": pd.Series(
                 ["b", "b", "b", "c", "b"] * 4,
                 dtype="category",
             ),
             "bool col with nan": pd.Series(
                 [True, True, False, True, True] * 4,
-                dtype="category",
             ),
             "natural language col": pd.Series(
                 ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
@@ -314,14 +313,13 @@ def test_imputer_fill_value(imputer_test_data):
                 ["fill", "1", "0", "0", "3"] * 4,
                 dtype="category",
             ),
-            "float with nan": [0.0, 1.0, -1, -1.0, 0.0] * 4,
+            "float with nan": [0.5, 1.0, -1, -1.0, 0.0] * 4,
             "object with nan": pd.Series(
                 ["b", "b", "fill", "c", "fill"] * 4,
                 dtype="category",
             ),
             "bool col with nan": pd.Series(
                 [True, True, False, True, True] * 4,
-                dtype="category",
             ),
         },
     )
@@ -512,8 +510,9 @@ def test_imputer_all_bool_return_original(data_type, make_data_type):
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_imputer_bool_dtype_object(data_type, make_data_type):
     X = pd.DataFrame([True, np.nan, False, np.nan, True] * 4)
+    X.ww.init(logical_types={0: BooleanNullable})
     y = pd.Series([1, 0, 0, 1, 0] * 4)
-    X_expected_arr = pd.DataFrame([True, True, False, True, True] * 4, dtype="category")
+    X_expected_arr = pd.DataFrame([True, True, False, True, True] * 4)
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
     imputer = Imputer()
@@ -533,16 +532,17 @@ def test_imputer_multitype_with_one_bool(data_type, make_data_type):
             ),
         },
     )
+    X_multi.ww.init(
+        logical_types={"bool with nan": BooleanNullable, "bool no nan": Boolean},
+    )
     y = pd.Series([1, 0, 0, 1, 0] * 4)
     X_multi_expected_arr = pd.DataFrame(
         {
             "bool with nan": pd.Series(
                 [True, False, False, False, False] * 4,
-                dtype="category",
             ),
             "bool no nan": pd.Series(
                 [False, False, False, False, True] * 4,
-                dtype=bool,
             ),
         },
     )
@@ -595,25 +595,21 @@ def test_imputer_bool_preserved(test_case, null_type):
             null_type
         ]
         X = pd.DataFrame(pd.Series([True, False, True, null_type] * 4))
+        X.ww.init(logical_types={0: BooleanNullable})
         expected = pd.DataFrame(
-            pd.Series([True, False, True, True] * 4, dtype="category"),
+            pd.Series([True, False, True, True] * 4),
         )
-        expected_ww_dtype = Categorical
-        check_dtype = True
     elif test_case == "boolean_without_null":
         X = pd.DataFrame(pd.Series([True, False, True, False] * 4))
         expected = pd.DataFrame(pd.Series([True, False, True, False] * 4))
-        expected_ww_dtype = Boolean
-        check_dtype = False
     imputer = Imputer(categorical_impute_strategy="most_frequent")
     transformed = imputer.fit_transform(X)
     pd.testing.assert_frame_equal(
         transformed,
         expected,
-        check_dtype=check_dtype,
     )
     assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-        0: expected_ww_dtype,
+        0: Boolean,
     }
 
 

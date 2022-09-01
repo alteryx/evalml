@@ -2,7 +2,7 @@
 import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import infer_feature_types
+from evalml.utils import downcast_nullable_types, infer_feature_types
 
 
 class TimeSeriesImputer(Transformer):
@@ -165,6 +165,11 @@ class TimeSeriesImputer(Transformer):
 
         if self._interpolate_cols is not None:
             X_interpolate = X.ww[self._interpolate_cols]
+            # Pandas' interpolate function doesn't work with IntegerNullable types at this time
+            X_interpolate = downcast_nullable_types(
+                X_interpolate,
+                ignore_null_cols=False,
+            )
             imputed = X_interpolate.interpolate()
             imputed.bfill(inplace=True)  # Fill in the first value, if missing
             X_not_all_null[X_interpolate.columns] = imputed
@@ -178,6 +183,7 @@ class TimeSeriesImputer(Transformer):
                 y_imputed = y.bfill()
                 y_imputed.pad(inplace=True)
             elif self._impute_target == "interpolate":
+                y = downcast_nullable_types(y, ignore_null_cols=False)
                 y_imputed = y.interpolate()
                 y_imputed.bfill(inplace=True)
             y_imputed.ww.init(schema=y.ww.schema)

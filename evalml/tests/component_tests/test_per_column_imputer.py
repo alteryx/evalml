@@ -204,66 +204,44 @@ def test_datetime_does_not_error(fraud_100):
     assert pci._is_fitted
 
 
-def test_fit_transform_drop_all_nan_columns():
-    X = pd.DataFrame(
-        {
-            "all_nan": [np.nan, np.nan, np.nan],
-            "some_nan": [np.nan, 1, 0],
-            "another_col": [0, 1, 2],
-        },
-    )
-    X.ww.init(logical_types={"all_nan": "Double"})
+def test_fit_transform_drop_all_nan_columns(imputer_test_data):
+    X = imputer_test_data.ww[["all nan", "int col", "int with nan"]]
     strategies = {
-        "all_nan": {"impute_strategy": "most_frequent"},
-        "some_nan": {"impute_strategy": "most_frequent"},
-        "another_col": {"impute_strategy": "most_frequent"},
+        "all nan": {"impute_strategy": "most_frequent"},
+        "int with nan": {"impute_strategy": "most_frequent"},
+        "int col": {"impute_strategy": "most_frequent"},
     }
     transformer = PerColumnImputer(impute_strategies=strategies)
-    X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
-    X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
-    assert_frame_equal(
-        X,
-        pd.DataFrame(
-            {
-                "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [0.0, 1.0, 0.0],
-                "another_col": [0, 1, 2],
-            },
-        ),
-    )
-
-
-def test_transform_drop_all_nan_columns():
-    X = pd.DataFrame(
+    X_expected_arr = pd.DataFrame(
         {
-            "all_nan": [np.nan, np.nan, np.nan],
-            "some_nan": [np.nan, 1, 0],
-            "another_col": [0, 1, 2],
+            "int col": [0, 1, 2, 0, 3] * 4,
+            "int with nan": [0, 1, 0, 0, 1] * 4,
         },
     )
-    X.ww.init(logical_types={"all_nan": "Double"})
+    X_t = transformer.fit_transform(X)
+    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
+    assert "all nan" in X.columns
+
+
+def test_transform_drop_all_nan_columns(imputer_test_data):
+    X = imputer_test_data.ww[["all nan", "int col", "int with nan"]]
     strategies = {
-        "all_nan": {"impute_strategy": "most_frequent"},
-        "some_nan": {"impute_strategy": "most_frequent"},
-        "another_col": {"impute_strategy": "most_frequent"},
+        "all nan": {"impute_strategy": "most_frequent"},
+        "int with nan": {"impute_strategy": "most_frequent"},
+        "int col": {"impute_strategy": "most_frequent"},
     }
     transformer = PerColumnImputer(impute_strategies=strategies)
     transformer.fit(X)
-    X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
+    X_expected_arr = pd.DataFrame(
+        {
+            "int col": [0, 1, 2, 0, 3] * 4,
+            "int with nan": [0, 1, 0, 0, 1] * 4,
+        },
+    )
     X_t = transformer.transform(X)
 
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
-    assert_frame_equal(
-        X,
-        pd.DataFrame(
-            {
-                "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [0.0, 1.0, 0.0],
-                "another_col": [0, 1, 2],
-            },
-        ),
-    )
+    assert "all nan" in X.columns
 
 
 def test_transform_drop_all_nan_columns_empty():
@@ -333,6 +311,12 @@ def test_per_column_imputer_column_subset():
             "column_with_nan_included": [0, 1, np.nan],
         },
     )
+    X.ww.init(
+        logical_types={
+            "column_with_nan_not_included": "IntegerNullable",
+            "column_with_nan_included": "IntegerNullable",
+        },
+    )
     strategies = {
         "all_nan_included": {"impute_strategy": "most_frequent"},
         "column_with_nan_included": {"impute_strategy": "most_frequent"},
@@ -348,26 +332,16 @@ def test_per_column_imputer_column_subset():
     X_expected.ww.init(
         logical_types={
             "all_nan_not_included": "double",
-            "column_with_nan_included": "double",
+            "column_with_nan_included": "IntegerNullable",
         },
     )
     X.ww.init(
         logical_types={"all_nan_included": "Double", "all_nan_not_included": "Double"},
     )
     X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected, X_t)
-    assert_frame_equal(
-        X,
-        pd.DataFrame(
-            {
-                "all_nan_not_included": [np.nan, np.nan, np.nan],
-                "all_nan_included": [np.nan, np.nan, np.nan],
-                "column_with_nan_not_included": [np.nan, 1, 0],
-                # Because of https://github.com/alteryx/evalml/issues/2055
-                "column_with_nan_included": [0.0, 1.0, 0.0],
-            },
-        ),
-    )
+    assert_frame_equal(X_expected, X_t, check_dtype=False)
+    assert "all_nan_not_included" in X.columns
+    assert "all_nan_included" in X.columns
 
 
 def test_per_column_imputer_impute_strategies_is_None():

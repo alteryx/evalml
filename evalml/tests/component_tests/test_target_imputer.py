@@ -155,7 +155,7 @@ def test_target_imputer_numpy_input():
     imputer = TargetImputer(impute_strategy="mean")
     y_expected = np.array([1, 0, 2])
     _, y_t = imputer.fit_transform(None, y)
-    assert np.allclose(y_expected, y_t)
+    assert np.allclose(y_expected, np.array(y_t, dtype="int"))
     np.testing.assert_almost_equal(y, np.array([np.nan, 0, 2]))
 
 
@@ -165,6 +165,7 @@ def test_target_imputer_does_not_reset_index():
     assert y.index.tolist() == list(range(10))
 
     y.drop(0, inplace=True)
+    y.ww.init(logical_type="double")
     pd.testing.assert_series_equal(
         pd.Series(
             [1, 2, 3, 4, np.nan, 6, 7, 8, 9],
@@ -177,10 +178,9 @@ def test_target_imputer_does_not_reset_index():
     imputer = TargetImputer(impute_strategy="mean")
     imputer.fit(None, y=y)
     _, y_t = imputer.transform(None, y)
-    pd.testing.assert_series_equal(
-        pd.Series([1.0, 2, 3, 4, 5, 6, 7, 8, 9], dtype=float, index=list(range(1, 10))),
-        y_t,
-    )
+    expected = pd.Series([1.0, 2, 3, 4, 5, 6, 7, 8, 9], index=list(range(1, 10)))
+    expected.ww.init(logical_type="double")
+    pd.testing.assert_series_equal(expected, y_t)
 
 
 @pytest.mark.parametrize(

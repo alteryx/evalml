@@ -2057,7 +2057,7 @@ def dummy_data_check_validate_output_errors():
 
 @pytest.fixture
 def imputer_test_data():
-    return pd.DataFrame(
+    X = pd.DataFrame(
         {
             "dates": pd.date_range("01-01-2022", periods=20),
             "categorical col": pd.Series(
@@ -2066,14 +2066,14 @@ def imputer_test_data():
             ),
             "int col": [0, 1, 2, 0, 3] * 4,
             "object col": ["b", "b", "a", "c", "d"] * 4,
-            "float col": [0.0, 1.0, 0.0, -2.0, 5.0] * 4,
+            "float col": [0.5, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
             "categorical with nan": pd.Series(
                 [np.nan, "1", "0", "0", "3"] * 4,
                 dtype="category",
             ),
             "int with nan": [np.nan, 1, 0, 0, 1] * 4,
-            "float with nan": [0.0, 1.0, np.nan, -1.0, 0.0] * 4,
+            "float with nan": [0.5, 1.0, np.nan, -1.0, 0.0] * 4,
             "object with nan": ["b", "b", np.nan, "c", np.nan] * 4,
             "bool col with nan": pd.Series(
                 [True, np.nan, False, np.nan, True] * 4,
@@ -2090,3 +2090,22 @@ def imputer_test_data():
             ),
         },
     )
+    X.ww.init(
+        logical_types={
+            "dates": "datetime",
+            "categorical col": "categorical",
+            "int col": "integer",
+            "object col": "categorical",
+            "float col": "double",
+            "bool col": "boolean",
+            "categorical with nan": "categorical",
+            "int with nan": "IntegerNullable",
+            "float with nan": "double",
+            "object with nan": "categorical",
+            "bool col with nan": "BooleanNullable",
+            "all nan": "unknown",
+            "all nan cat": "categorical",
+            "natural language col": "NaturalLanguage",
+        },
+    )
+    return X
