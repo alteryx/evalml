@@ -510,7 +510,7 @@ def test_component_graph_fit_transform(
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Cannot call fit_transform() on a component graph because the final component is an Estimator. Use fit_and_transform_all_but_final instead."
+            "Cannot call fit_transform() on a component graph because the final component is an Estimator. Use fit_and_transform_all_but_final instead.",
         ),
     ):
         component_graph.fit_transform(X, y)
@@ -2767,6 +2767,6 @@ def test_get_component_input_logical_types():
     no_estimator.fit(X, y)
     assert no_estimator.last_component_input_logical_types == {
         "cat": Categorical(),
-        "numeric": Integer(),
+        "numeric": Double(),
         "email": EmailAddress(),
     }
