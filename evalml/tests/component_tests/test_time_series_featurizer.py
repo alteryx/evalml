@@ -160,6 +160,7 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
             time_index="date",
             delay_features=False,
         ).fit_transform(X=X, y=y),
+        check_dtype=False,
     )
 
 
