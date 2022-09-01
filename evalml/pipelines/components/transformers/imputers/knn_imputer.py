@@ -75,6 +75,7 @@ class KNNImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X = infer_feature_types(X)
+
         not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
         original_index = X.index
 
@@ -88,25 +89,20 @@ class KNNImputer(Transformer):
 
         X_t = self._component_obj.transform(X_t)
         X_t = pd.DataFrame(X_t, columns=not_all_null_or_natural_language_cols)
+
         X_schema = X.ww.schema
 
-        original_X_schema = X_schema.get_subset_schema(
-            subset_cols=X_schema._filter_cols(exclude=["BooleanNullable"]),
-        )
-        X_bool_nullable_cols = X_schema._filter_cols(include=["Categorical"])
+        X_bool_nullable_cols = X_schema._filter_cols(include=["BooleanNullable"])
         new_ltypes_for_bool_nullable_cols = {
             col: "Boolean" for col in X_bool_nullable_cols
         }
+
         # Add back in natural language columns, unchanged
         if len(natural_language_cols) > 0:
             X_t = woodwork.concat_columns([X_t, X[natural_language_cols]])
 
-        X_bool_nullable_cols = X_schema._filter_cols(include=["BooleanNullable"])
-
-        for col in X_bool_nullable_cols:
-            new_ltypes_for_bool_nullable_cols[col] = "boolean"
         X_t.ww.init(
-            schema=original_X_schema,
+            schema=X_schema,
             logical_types=new_ltypes_for_bool_nullable_cols,
         )
 

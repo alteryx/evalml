@@ -1,10 +1,12 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from pandas.testing import assert_frame_equal
 from sklearn.impute import KNNImputer as Sk_KNNImputer
 
 from evalml.pipelines.components.transformers.imputers import KNNImputer
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 @pytest.mark.parametrize("n_neighbors", [1, 2, 5])
@@ -39,6 +41,9 @@ def test_knn_imputer_all_bool_return_original(data_type, make_data_type):
     X_t = imputer.transform(X)
     assert_frame_equal(X_expected_arr, X_t)
 
+    X = infer_feature_types(X)
+    assert_frame_equal(X.ww.types, X_t.ww.types)
+
 
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_knn_imputer_boolean_dtype(data_type, make_data_type):
@@ -47,7 +52,6 @@ def test_knn_imputer_boolean_dtype(data_type, make_data_type):
             "some_nan": pd.Series([True, np.nan, False, np.nan, True], dtype="boolean"),
         },
     )
-    X.ww.init(logical_types={"some_nan": "BooleanNullable"})
     y = pd.Series([1, 0, 0, 1, 0])
     X_expected_arr = pd.DataFrame(
         {
@@ -57,8 +61,8 @@ def test_knn_imputer_boolean_dtype(data_type, make_data_type):
     X = make_data_type(data_type, X)
     imputer = KNNImputer(number_neighbors=1)
     X_t = imputer.fit_transform(X, y)
-    X_ww_expected = "<Series: some_nan (Physical Type = bool) (Logical Type = Boolean) (Semantic Tags = set())>"
-    assert str(X_t.ww["some_nan"].ww) == X_ww_expected
+
+    assert type(X_t.ww.logical_types["some_nan"]) == ww.logical_types.Boolean
     assert_frame_equal(X_expected_arr, X_t)
 
 
@@ -87,37 +91,8 @@ def test_knn_imputer_multitype_with_one_bool(data_type, make_data_type):
     imputer.fit(X_multi, y)
     X_multi_t = imputer.transform(X_multi)
     assert_frame_equal(X_multi_expected_arr, X_multi_t)
-
-
-def test_knn_imputer_revert_categorical_to_boolean():
-    X = pd.DataFrame(
-        {
-            "Booleans": pd.Series(
-                [True, True, True, False, False],
-                dtype="boolean",
-            ),
-            "Numbers": pd.Series(
-                [10, 11, 12, 13, 14],
-                dtype="float",
-            ),
-        },
-    )
-    y = pd.Series([1, 1, 1, 0, 0])
-    imputer = KNNImputer(number_neighbors=1)
-    X_t = imputer.fit_transform(X, y)
-    X_expected = pd.DataFrame(
-        {
-            "Booleans": pd.Series(
-                [True, True, True, False, False],
-                dtype="bool",
-            ),
-            "Numbers": pd.Series(
-                [10.0, 11.0, 12.0, 13.0, 14.0],
-                dtype="float",
-            ),
-        },
-    )
-    assert_frame_equal(X_expected, X_t)
+    for col in X_multi_t:
+        assert type(X_multi_t.ww.logical_types[col]) == ww.logical_types.Boolean
 
 
 @pytest.mark.parametrize("df_composition", ["full_df", "single_column"])
@@ -147,7 +122,6 @@ def test_knn_imputer_ignores_natural_language(
 
     result = imputer.transform(X_df, y)
 
-    # raise Exception
     if df_composition == "full_df":
         X_df = X_df.astype(
             {"int col": float},
