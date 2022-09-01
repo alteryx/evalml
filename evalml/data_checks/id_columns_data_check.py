@@ -182,7 +182,7 @@ class IDColumnsDataCheck(DataCheck):
                 check_all_unique
             ].index.tolist()  # columns whose values are all unique
 
-            # Temporary solution for baton logical types mapping integers to doubles in woodwork logical types.
+            # Temporary solution for downstream instances of integers being mapped to doubles.
             # Will be removed when resolved.
             if dtypes == ["Double"]:
                 cols_with_all_unique = [
