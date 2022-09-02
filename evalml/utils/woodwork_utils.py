@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import woodwork as ww
 from woodwork.type_sys.type_system import Integer, Double, Boolean, IntegerNullable, BooleanNullable, AgeNullable
-from woodwork import init_series, is_schema_valid, get_invalid_schema_message
+from woodwork.accessor_utils import init_series, is_schema_valid, get_invalid_schema_message
 
 from evalml.utils.gen_utils import is_all_numeric
 
