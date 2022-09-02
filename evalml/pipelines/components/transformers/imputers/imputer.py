@@ -2,7 +2,7 @@
 import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.pipelines.components.transformers.imputers import SimpleImputer
+from evalml.pipelines.components.transformers.imputers import KNNImputer, SimpleImputer
 from evalml.utils import downcast_nullable_types, infer_feature_types
 from evalml.utils.gen_utils import is_categorical_actually_boolean
 
@@ -23,19 +23,19 @@ class Imputer(Transformer):
     name = "Imputer"
     hyperparameter_ranges = {
         "categorical_impute_strategy": ["most_frequent"],
-        "numeric_impute_strategy": ["mean", "median", "most_frequent"],
-        "boolean_impute_strategy": ["most_frequent"],
+        "numeric_impute_strategy": ["mean", "median", "most_frequent", "knn"],
+        "boolean_impute_strategy": ["most_frequent", "knn"],
     }
     """{
         "categorical_impute_strategy": ["most_frequent"],
-        "numeric_impute_strategy": ["mean", "median", "most_frequent"],
-        "boolean_impute_strategy": ["most_frequent"]
+        "numeric_impute_strategy": ["mean", "median", "most_frequent", "knn"],
+        "boolean_impute_strategy": ["most_frequent", "knn"]
     }"""
     _valid_categorical_impute_strategies = set(["most_frequent", "constant"])
     _valid_numeric_impute_strategies = set(
-        ["mean", "median", "most_frequent", "constant"],
+        ["mean", "median", "most_frequent", "constant", "knn"],
     )
-    _valid_boolean_impute_strategies = set(["most_frequent", "constant"])
+    _valid_boolean_impute_strategies = set(["most_frequent", "constant", "knn"])
 
     def __init__(
         self,
@@ -75,16 +75,28 @@ class Imputer(Transformer):
             fill_value=categorical_fill_value,
             **kwargs,
         )
-        self._boolean_imputer = SimpleImputer(
-            impute_strategy=boolean_impute_strategy,
-            fill_value=boolean_fill_value,
-            **kwargs,
-        )
-        self._numeric_imputer = SimpleImputer(
-            impute_strategy=numeric_impute_strategy,
-            fill_value=numeric_fill_value,
-            **kwargs,
-        )
+        if boolean_impute_strategy == "knn":
+            self._boolean_imputer = KNNImputer(
+                number_neighbors=1,
+                **kwargs,
+            )
+        else:
+            self._boolean_imputer = SimpleImputer(
+                impute_strategy=boolean_impute_strategy,
+                fill_value=boolean_fill_value,
+                **kwargs,
+            )
+        if numeric_impute_strategy == "knn":
+            self._numeric_imputer = KNNImputer(
+                number_neighbors=3,
+                **kwargs,
+            )
+        else:
+            self._numeric_imputer = SimpleImputer(
+                impute_strategy=numeric_impute_strategy,
+                fill_value=numeric_fill_value,
+                **kwargs,
+            )
         self._all_null_cols = None
         self._numeric_cols = None
         self._categorical_cols = None
