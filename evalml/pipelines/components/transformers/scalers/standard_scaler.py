@@ -72,10 +72,7 @@ class StandardScaler(Transformer):
         X_scaled_columns = X.ww[self.scaled_columns]
         scaled = self._component_obj.transform(X_scaled_columns)
         X[self.scaled_columns] = scaled
-        X.ww.init(
-            schema=X.ww.schema,
-            logical_types={col: "Double" for col in self.scaled_columns},
-        )
+        X.ww.set_types(logical_types={col: "Double" for col in self.scaled_columns})
         return X
 
     def fit_transform(self, X, y=None):
