@@ -1,10 +1,10 @@
-"""Data check that checks if there are high number of Unknown type of columns."""
+"""Data check that checks if there are high number of Unknown type in a dataframe."""
 from evalml.data_checks import DataCheck, DataCheckMessageCode, DataCheckWarning
 from evalml.utils import infer_feature_types
 
 
 class UnknownTypeDataCheck(DataCheck):
-    """Check if there are a high number of features that are labelled as unknown by Woodwork."""
+    """Checks if there are a high number of features that are labelled as unknown by Woodwork in a dataframe."""
 
     def __init__(
         self,
@@ -17,7 +17,7 @@ class UnknownTypeDataCheck(DataCheck):
         self.unknown_percentage_threshold = unknown_percentage_threshold
 
     def validate(self, X, y=None):
-        """Check if there are any rows or columns that have a high percentage of unknown types.
+        """Checks if a dataframe has a high percentage of unknown types.
 
         Args:
             X (pd.DataFrame, np.ndarray): Features.
