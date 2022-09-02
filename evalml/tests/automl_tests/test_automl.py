@@ -5139,7 +5139,12 @@ def test_exclude_featurizers_errors(X_y_binary):
             ],
         )
 
-    problem_configuration = {"gap": 0, "max_delay": 7, "forecast_horizon": 7, "time_index": "date"}
+    problem_configuration = {
+        "gap": 0,
+        "max_delay": 7,
+        "forecast_horizon": 7,
+        "time_index": "date",
+    }
     match_text = "For time series problems, if DatetimeFeaturizer is excluded, must also exclude TimeSeriesFeaturizer"
     with pytest.raises(
         ValueError,
