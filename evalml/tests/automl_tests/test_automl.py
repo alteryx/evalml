@@ -5120,7 +5120,7 @@ def test_exclude_featurizers(
     )
 
 
-def test_exclude_featurizers_error(X_y_binary):
+def test_exclude_featurizers_errors(X_y_binary):
     X, y = X_y_binary
     match_text = (
         "Invalid value provided for exclude_featurizers. Must be one of: "
@@ -5136,6 +5136,37 @@ def test_exclude_featurizers_error(X_y_binary):
             problem_type="binary",
             exclude_featurizers=[
                 "InvalidNameFeaturizer",
+            ],
+        )
+
+    problem_configuration = {"gap": 0, "max_delay": 7, "forecast_horizon": 7, "time_index": "date"}
+    match_text = "For time series problems, if DatetimeFeaturizer is excluded, must also exclude TimeSeriesFeaturizer"
+    with pytest.raises(
+        ValueError,
+        match=match_text,
+    ):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="time series regression",
+            problem_configuration=problem_configuration,
+            exclude_featurizers=[
+                "DatetimeFeaturizer",
+            ],
+        )
+
+    match_text = "For time series problems, if TimeSeriesFeaturizer is excluded, must also exclude DatetimeFeaturizer"
+    with pytest.raises(
+        ValueError,
+        match=match_text,
+    ):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="time series multiclass",
+            problem_configuration=problem_configuration,
+            exclude_featurizers=[
+                "TimeSeriesFeaturizer",
             ],
         )
 

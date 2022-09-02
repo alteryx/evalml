@@ -753,6 +753,11 @@ class AutoMLSearch:
                 f"Invalid value provided for exclude_featurizers. Must be one of: {', '.join(featurizer_names)}",
             )
         self.exclude_featurizers = exclude_featurizers or []
+        if is_time_series(problem_type):
+            if "DatetimeFeaturizer" in exclude_featurizers and "TimeSeriesFeaturizer" not in exclude_featurizers:
+                raise ValueError("For time series problems, if DatetimeFeaturizer is excluded, must also exclude TimeSeriesFeaturizer")
+            elif "TimeSeriesFeaturizer" in exclude_featurizers and "DatetimeFeaturizer" not in exclude_featurizers:
+                raise ValueError("For time series problems, if TimeSeriesFeaturizer is excluded, must also exclude DatetimeFeaturizer")
 
         if is_classification(self.problem_type):
             self._sampler_name = self.sampler_method
