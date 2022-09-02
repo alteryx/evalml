@@ -70,7 +70,6 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             and self.estimator is not None
             and self.estimator.name not in time_series_native_estimators
         )
-        print("test")
 
     @staticmethod
     def _convert_to_woodwork(X, y):
