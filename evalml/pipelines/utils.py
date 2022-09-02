@@ -90,15 +90,12 @@ def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
     ]
 
     nullable_target = isinstance(y.ww.logical_type, tuple(types_replace_null_handles))
-    print(len(input_logical_types.intersection(set(types_replace_null_handles))))
-    print(nullable_target)
 
     if (
         len(input_logical_types.intersection(set(types_replace_null_handles)))
         or nullable_target
     ):
         component.append(ReplaceNullableTypes)
-    print(component)
     return component
 
 

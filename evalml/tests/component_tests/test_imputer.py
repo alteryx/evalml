@@ -11,7 +11,6 @@ from woodwork.logical_types import (
     BooleanNullable,
     Categorical,
     Double,
-    Integer,
     NaturalLanguage,
 )
 
