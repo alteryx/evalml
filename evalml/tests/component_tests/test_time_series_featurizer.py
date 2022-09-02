@@ -13,13 +13,13 @@ ROLLING_TRANSFORM_METHOD_NAME = "_compute_rolling_transforms"
 DELAYED_FEATURES_METHOD_NAME = "_compute_delays"
 
 
-@pytest.fixture
-def delayed_features_data():
-    X = pd.DataFrame(
-        {"feature": range(1, 32), "date": pd.date_range("2021-01-01", periods=31)},
-    )
-    y = pd.Series(range(1, 32))
-    return X, y
+# @pytest.fixture
+# def ts_data():
+#     X = pd.DataFrame(
+#         {"feature": range(1, 32), "date": pd.date_range("2021-01-01", periods=31)},
+#     )
+#     y = pd.Series(range(1, 32))
+#     return X, y
 
 
 def test_delayed_features_transformer_init():
@@ -56,8 +56,8 @@ def test_delayed_features_init_raises_if_conf_level_None():
         TimeSeriesFeaturizer(conf_level=None)
 
 
-def test_delayed_features_raises_if_time_index_None(delayed_features_data):
-    X, y = delayed_features_data
+def test_delayed_features_raises_if_time_index_None(ts_data):
+    X, _, y = ts_data()
     with pytest.raises(ValueError, match=" cannot be None"):
         dft = TimeSeriesFeaturizer(time_index=None)
         dft.fit_transform(X, y)
@@ -67,6 +67,7 @@ def encode_y_as_string(y):
     y = y.astype("category")
     y_answer = y.astype(int) - 1
     y = y.map(lambda val: str(val).zfill(2))
+    y.ww.init(logical_type="categorical")
     return y, y_answer
 
 
@@ -76,6 +77,7 @@ def encode_X_as_string(X):
     # So that the encoder encodes the values in ascending order. This makes it easier to
     # specify the answer for each unit test
     X.feature = pd.Categorical(X.feature.map(lambda val: str(val).zfill(2)))
+    X.ww.init(logical_types={"feature": "categorical"})
     return X, X_answer
 
 
@@ -99,9 +101,9 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
     mock_roll,
     encode_X_as_str,
     encode_y_as_str,
-    delayed_features_data,
+    ts_data,
 ):
-    X, y = delayed_features_data
+    X, _, y = ts_data()
     X, X_answer, y, y_answer = encode_X_y_as_strings(
         X,
         y,
@@ -121,16 +123,14 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
             "target_delay_4": y_answer.shift(4),
         },
     )
-    assert_frame_equal(
-        answer,
-        TimeSeriesFeaturizer(
-            max_delay=3,
-            gap=0,
-            forecast_horizon=1,
-            conf_level=1.0,
-            time_index="date",
-        ).fit_transform(X=X, y=y),
-    )
+    X_t = TimeSeriesFeaturizer(
+        max_delay=3,
+        gap=0,
+        forecast_horizon=1,
+        conf_level=1.0,
+        time_index="date",
+    ).fit_transform(X=X, y=y)
+    assert_frame_equal(answer, X_t)
 
     answer_only_y = pd.DataFrame(
         {
@@ -164,9 +164,9 @@ def test_delayed_feature_extractor_maxdelay5_forecasthorizon1_gap0(
     mock_roll,
     encode_X_as_str,
     encode_y_as_str,
-    delayed_features_data,
+    ts_data,
 ):
-    X, y = delayed_features_data
+    X, _, y = ts_data()
     X, X_answer, y, y_answer = encode_X_y_as_strings(
         X,
         y,
@@ -235,9 +235,9 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
     mock_roll,
     encode_X_as_str,
     encode_y_as_str,
-    delayed_features_data,
+    ts_data,
 ):
-    X, y = delayed_features_data
+    X, _, y = ts_data()
     X, X_answer, y, y_answer = encode_X_y_as_strings(
         X,
         y,
@@ -295,8 +295,11 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
     f"evalml.pipelines.TimeSeriesFeaturizer.{ROLLING_TRANSFORM_METHOD_NAME}",
     return_value=pd.DataFrame(),
 )
-def test_delayed_feature_extractor_numpy(mock_roll, delayed_features_data):
-    X, y = delayed_features_data
+def test_delayed_feature_extractor_numpy(mock_roll):
+    X = pd.DataFrame(
+        {"feature": range(1, 32), "date": pd.date_range("2021-01-01", periods=31)},
+    )
+    y = pd.Series(range(1, 32))
     X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, False, False)
     X_np = X.values
     y_np = y.values
@@ -309,16 +312,14 @@ def test_delayed_feature_extractor_numpy(mock_roll, delayed_features_data):
             "target_delay_11": y_answer.shift(11),
         },
     )
-    assert_frame_equal(
-        answer,
-        TimeSeriesFeaturizer(
-            max_delay=3,
-            forecast_horizon=7,
-            gap=1,
-            conf_level=1.0,
-            time_index=1,
-        ).fit_transform(X_np, y_np),
-    )
+    X_t = TimeSeriesFeaturizer(
+        max_delay=3,
+        forecast_horizon=7,
+        gap=1,
+        conf_level=1.0,
+        time_index=1,
+    ).fit_transform(X_np, y_np)
+    assert_frame_equal(answer, X_t)
     answer_only_y = pd.DataFrame(
         {
             "date": X["date"],
@@ -328,17 +329,15 @@ def test_delayed_feature_extractor_numpy(mock_roll, delayed_features_data):
             "target_delay_11": y_answer.shift(11),
         },
     )
-    assert_frame_equal(
-        answer_only_y,
-        TimeSeriesFeaturizer(
-            max_delay=3,
-            forecast_horizon=7,
-            gap=1,
-            conf_level=1.0,
-            time_index="date",
-            delay_features=False,
-        ).fit_transform(X=X, y=y_np),
-    )
+    X_t = TimeSeriesFeaturizer(
+        max_delay=3,
+        forecast_horizon=7,
+        gap=1,
+        conf_level=1.0,
+        time_index="date",
+        delay_features=False,
+    ).fit_transform(X=X, y=y_np)
+    assert_frame_equal(answer_only_y, X_t)
 
 
 @pytest.mark.parametrize(
@@ -357,9 +356,9 @@ def test_lagged_feature_extractor_delay_features_delay_target(
     encode_X_as_str,
     delay_features,
     delay_target,
-    delayed_features_data,
+    ts_data,
 ):
-    X, y = delayed_features_data
+    X, _, y = ts_data()
     X, X_answer, y, y_answer = encode_X_y_as_strings(
         X,
         y,
@@ -416,9 +415,9 @@ def test_lagged_feature_extractor_delay_target(
     encode_X_as_str,
     delay_features,
     delay_target,
-    delayed_features_data,
+    ts_data,
 ):
-    X, y = delayed_features_data
+    X, _, y = ts_data()
     X, X_answer, y, y_answer = encode_X_y_as_strings(
         X,
         y,
@@ -466,19 +465,19 @@ def test_delay_feature_transformer_supports_custom_index(
     encode_y_as_str,
     data_type,
     make_data_type,
-    delayed_features_data,
+    ts_data,
 ):
-    X, y = delayed_features_data
+    X, _, y = ts_data()
     X, X_answer, y, y_answer = encode_X_y_as_strings(
         X,
         y,
         encode_X_as_str,
         encode_y_as_str,
     )
-    X.index = pd.RangeIndex(50, 81)
-    X_answer.index = pd.RangeIndex(50, 81)
-    y.index = pd.RangeIndex(50, 81)
-    y_answer.index = pd.RangeIndex(50, 81)
+    X.index = pd.RangeIndex(50, 90)
+    X_answer.index = pd.RangeIndex(50, 90)
+    y.index = pd.RangeIndex(50, 90)
+    y_answer.index = pd.RangeIndex(50, 90)
     answer = pd.DataFrame(
         {
             "date": X["date"],
@@ -491,7 +490,12 @@ def test_delay_feature_transformer_supports_custom_index(
             "target_delay_9": y_answer.shift(9),
             "target_delay_10": y_answer.shift(10),
         },
-        index=pd.RangeIndex(50, 81),
+        index=pd.RangeIndex(50, 90),
+    )
+    answer.ww.init(
+        logical_types={
+            col: "Double" if col != "date" else "datetime" for col in answer.columns
+        },
     )
     if not encode_y_as_str and not encode_X_as_str:
         rolling_features = pd.DataFrame(
@@ -499,7 +503,7 @@ def test_delay_feature_transformer_supports_custom_index(
                 "feature_rolling_mean": X_answer.feature.shift(7).rolling(4, 4).mean(),
                 "target_rolling_mean": y_answer.shift(7).rolling(4, 4).mean(),
             },
-            index=pd.RangeIndex(50, 81),
+            index=pd.RangeIndex(50, 90),
         )
         rolling_features_target_only = rolling_features
     elif encode_y_as_str and not encode_X_as_str:
@@ -507,7 +511,7 @@ def test_delay_feature_transformer_supports_custom_index(
             {
                 "feature_rolling_mean": X_answer.feature.shift(7).rolling(4, 4).mean(),
             },
-            index=pd.RangeIndex(50, 81),
+            index=pd.RangeIndex(50, 90),
         )
         rolling_features_target_only = rolling_features
     elif not encode_y_as_str and encode_X_as_str:
@@ -515,17 +519,20 @@ def test_delay_feature_transformer_supports_custom_index(
             {
                 "target_rolling_mean": y_answer.shift(7).rolling(4, 4).mean(),
             },
-            index=pd.RangeIndex(50, 81),
+            index=pd.RangeIndex(50, 90),
         )
         rolling_features_target_only = pd.DataFrame(
             {
                 "target_rolling_mean": y_answer.shift(7).rolling(4, 4).mean(),
             },
-            index=pd.RangeIndex(50, 81),
+            index=pd.RangeIndex(50, 90),
         )
     else:
         rolling_features = pd.DataFrame()
         rolling_features_target_only = pd.DataFrame()
+    rolling_features_target_only.ww.init(
+        logical_types={col: "Double" for col in rolling_features_target_only.columns},
+    )
 
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
@@ -550,7 +557,13 @@ def test_delay_feature_transformer_supports_custom_index(
             "target_delay_9": y_answer.shift(9),
             "target_delay_10": y_answer.shift(10),
         },
-        index=pd.RangeIndex(50, 81),
+        index=pd.RangeIndex(50, 90),
+    )
+    answer_only_y.ww.init(
+        logical_types={
+            col: "Double" if col != "date" else "datetime"
+            for col in answer_only_y.columns
+        },
     )
     answer_only_y = ww.concat_columns([answer_only_y, rolling_features_target_only])
     assert_frame_equal(
@@ -566,11 +579,21 @@ def test_delay_feature_transformer_supports_custom_index(
     )
 
 
-def test_delay_feature_transformer_multiple_categorical_columns(delayed_features_data):
-    X, y = delayed_features_data
+def test_delay_feature_transformer_multiple_categorical_columns(ts_data):
+    X, _, y = ts_data()
     X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, True, True)
-    X["feature_2"] = pd.Categorical(["a"] * 10 + ["aa"] * 10 + ["aaa"] * 10 + ["aaaa"])
-    X_answer["feature_2"] = pd.Series([0] * 10 + [1] * 10 + [2] * 10 + [3])
+    logical_types = X.ww.logical_types
+
+    X["feature_2"] = pd.Categorical(
+        ["a"] * 10 + ["aa"] * 10 + ["aaa"] * 10 + ["aaaa"] * 10,
+    )
+    logical_types["feature_2"] = "categorical"
+    X.ww.init(logical_types=logical_types)
+
+    X_answer["feature_2"] = pd.Series(
+        [0] * 10 + [1] * 10 + [2] * 10 + [3] * 10,
+        index=X.index,
+    )
     answer = pd.DataFrame(
         {
             "date": X["date"],
@@ -582,20 +605,18 @@ def test_delay_feature_transformer_multiple_categorical_columns(delayed_features
             "target_delay_12": y_answer.shift(12),
         },
     )
-    assert_frame_equal(
-        answer,
-        TimeSeriesFeaturizer(
-            max_delay=1,
-            forecast_horizon=9,
-            gap=2,
-            conf_level=1.0,
-            time_index="date",
-        ).fit_transform(X, y),
-    )
+    X_t = TimeSeriesFeaturizer(
+        max_delay=1,
+        forecast_horizon=9,
+        gap=2,
+        conf_level=1.0,
+        time_index="date",
+    ).fit_transform(X, y)
+    assert_frame_equal(answer, X_t)
 
 
-def test_delay_feature_transformer_y_is_none(delayed_features_data):
-    X, _ = delayed_features_data
+def test_delay_feature_transformer_y_is_none(ts_data):
+    X, _, _ = ts_data()
     answer = pd.DataFrame(
         {
             "date": X["date"],
@@ -616,8 +637,8 @@ def test_delay_feature_transformer_y_is_none(delayed_features_data):
     )
 
 
-def test_delayed_feature_transformer_does_not_modify_input_data(delayed_features_data):
-    X, _ = delayed_features_data
+def test_delayed_feature_transformer_does_not_modify_input_data(ts_data):
+    X, _, _ = ts_data()
     expected = X.copy()
     _ = TimeSeriesFeaturizer(
         max_delay=1,
@@ -642,9 +663,9 @@ def test_time_series_featurizer_rolling_mean(
     forecast_horizon,
     rolling_window_size,
     gap,
-    delayed_features_data,
+    ts_data,
 ):
-    X, y = delayed_features_data
+    X, _, y = ts_data()
     mock_delay.return_value = X
     output = TimeSeriesFeaturizer(
         max_delay=max_delay,
@@ -680,9 +701,9 @@ def test_time_series_featurizer_does_not_need_to_delay_to_compute_means(
     forecast_horizon,
     gap,
     rolling_window_size,
-    delayed_features_data,
+    ts_data,
 ):
-    X, y = delayed_features_data
+    X, _, y = ts_data()
     output = TimeSeriesFeaturizer(
         max_delay=max_delay,
         forecast_horizon=forecast_horizon,
@@ -705,6 +726,12 @@ def test_time_series_featurizer_does_not_need_to_delay_to_compute_means(
             "date": X["date"],
             "feature_rolling_mean": rolling_means,
             "target_rolling_mean": rolling_means_target,
+        },
+    )
+    expected.ww.init(
+        logical_types={
+            "feature_rolling_mean": "double",
+            "target_rolling_mean": "double",
         },
     )
     assert_frame_equal(output, expected)
@@ -811,6 +838,7 @@ def test_delayed_feature_transformer_selects_first_lag_if_none_significant(
         },
     )
     y = pd.Series(np.arange(10000))
+    X.ww.init(logical_types={"feature": "IntegerNullable", "date": "datetime"})
 
     acf_series = np.arange(len(y))
     ci = np.ones((len(y), 2))
@@ -837,6 +865,13 @@ def test_delayed_feature_transformer_selects_first_lag_if_none_significant(
                 1 + FORECAST_HORIZON,
             ),
             f"target_delay_{1 + FORECAST_HORIZON}": y.shift(1 + FORECAST_HORIZON),
+        },
+    )
+    answer.ww.init(
+        logical_types={
+            "date": "datetime",
+            f"feature_delay_{1 + FORECAST_HORIZON}": "double",
+            f"target_delay_{1 + FORECAST_HORIZON}": "double",
         },
     )
     assert_frame_equal(new_X, answer)
@@ -888,27 +923,10 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
         transformed_logical_types = {
             k: type(v) for k, v in transformed.ww.logical_types.items()
         }
-        if logical_type in [Integer, Double, Categorical]:
-            assert transformed_logical_types == {
-                "date": Datetime,
-                "0_delay_1": Double,
-                "0_delay_2": Double,
-                "target_delay_1": Double,
-                "target_delay_2": Double,
-            }
-        elif logical_type == Boolean:
-            assert transformed_logical_types == {
-                "date": Datetime,
-                "0_delay_1": Double,
-                "0_delay_2": Double,
-                "target_delay_1": Double,
-                "target_delay_2": Double,
-            }
-        else:
-            assert transformed_logical_types == {
-                "date": Datetime,
-                "0_delay_1": Double,
-                "0_delay_2": Double,
-                "target_delay_1": Double,
-                "target_delay_2": Double,
-            }
+        assert transformed_logical_types == {
+            "date": Datetime,
+            "0_delay_1": Double,
+            "0_delay_2": Double,
+            "target_delay_1": Double,
+            "target_delay_2": Double,
+        }

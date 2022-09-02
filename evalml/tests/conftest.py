@@ -285,7 +285,7 @@ def ts_data():
     ):
         X = pd.DataFrame(index=[i + 1 for i in range(50)])
         dates = pd.date_range("1/1/21", periods=50, freq=freq)
-        feature = pd.Series([1, 5, 2] * 10 + [3, 1] * 10, index=X.index)
+        feature = pd.Series([1, 4, 2] * 10 + [3, 1] * 10, index=X.index)
         y = pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5)
 
         X_train = X.iloc[:40]
