@@ -1,17 +1,19 @@
 """Woodwork utility methods."""
 import numpy as np
 import pandas as pd
-from woodwork import logical_types, init_series, is_schema_valid, get_invalid_schema_message
+import woodwork as ww
+from woodwork.type_sys.type_system import Integer, Double, Boolean, IntegerNullable, BooleanNullable, AgeNullable
+from woodwork import init_series, is_schema_valid, get_invalid_schema_message
 
 from evalml.utils.gen_utils import is_all_numeric
 
 numeric_and_boolean_ww = [
-   logical_types.Integer.type_string,
-   logical_types.Double.type_string,
-   logical_types.Boolean.type_string,
-   logical_types.IntegerNullable.type_string,
-   logical_types.BooleanNullable.type_string,
-   logical_types.AgeNullable.type_string,
+   Integer.type_string,
+   Double.type_string,
+   Boolean.type_string,
+   IntegerNullable.type_string,
+   BooleanNullable.type_string,
+   AgeNullable.type_string,
 ]
 
 
