@@ -85,7 +85,10 @@ def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
     input_logical_types = {type(lt) for lt in X.ww.logical_types.values()}
     types_replace_null_handles = [
         logical_types.AgeNullable,
+        logical_types.Boolean,
         logical_types.BooleanNullable,
+        logical_types.Double,
+        logical_types.Integer,
         logical_types.IntegerNullable,
     ]
 
