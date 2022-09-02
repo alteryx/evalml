@@ -50,22 +50,27 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             parameters=parameters,
             random_seed=random_seed,
         )
-        datetime_featurizer_excluded = (
-            "DateTime Featurizer" not in self.component_graph.compute_order
+        datetime_featurizer_included = (
+            "DateTime Featurizer" in self.component_graph.compute_order
+            or "Not Known In Advance Pipeline - DateTime Featurizer"
+            in self.component_graph.compute_order
         )
-        time_series_featurizer_excluded = (
-            "Time Series Featurizer" not in self.component_graph.compute_order
+        time_series_featurizer_included = (
+            "Time Series Featurizer" in self.component_graph.compute_order
+            or "Not Known In Advance Pipeline - Time Series Featurizer"
+            in self.component_graph.compute_order
         )
         time_series_native_estimators = [
             "ARIMA Regressor",
             "Prophet Regressor",
         ]
         self.should_drop_time_index = (
-            datetime_featurizer_excluded
-            and time_series_featurizer_excluded
+            not datetime_featurizer_included
+            and not time_series_featurizer_included
             and self.estimator is not None
             and self.estimator.name not in time_series_native_estimators
         )
+        print("test")
 
     @staticmethod
     def _convert_to_woodwork(X, y):
