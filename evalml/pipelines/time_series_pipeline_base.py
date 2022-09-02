@@ -53,13 +53,16 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         datetime_featurizer_excluded = (
             "DateTime Featurizer" not in self.component_graph.compute_order
         )
+        time_series_featurizer_excluded = (
+            "Time Series Featurizer" not in self.component_graph.compute_order
+        )
         time_series_native_estimators = [
             "ARIMA Regressor",
             "Prophet Regressor",
-            "Time Series Baseline Estimator",
         ]
         self.should_drop_time_index = (
             datetime_featurizer_excluded
+            and time_series_featurizer_excluded
             and self.estimator is not None
             and self.estimator.name not in time_series_native_estimators
         )
