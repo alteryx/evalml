@@ -306,7 +306,14 @@ class InvalidTargetDataCheck(DataCheck):
                             message="Input target and features have mismatched indices order.",
                             data_check_name=self.name,
                             message_code=DataCheckMessageCode.MISMATCHED_INDICES_ORDER,
-                            details={},
+                            details={
+                                "set_x_index": set(X_index),
+                                "first_x_index": X_index[:20],
+                                "last_x_index": X_index[-20:],
+                                "set_y_index": set(y_index),
+                                "first_y_index": y_index[:20],
+                                "last_y_index": y_index[-20:],
+                            },
                         ).to_dict(),
                     )
                 else:
