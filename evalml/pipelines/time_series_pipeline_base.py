@@ -60,6 +60,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         ]
         self.should_drop_time_index = (
             datetime_featurizer_excluded
+            and self.estimator is not None
             and self.estimator.name not in time_series_native_estimators
         )
 
