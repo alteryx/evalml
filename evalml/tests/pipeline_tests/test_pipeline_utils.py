@@ -1067,7 +1067,7 @@ def test_make_pipeline_from_multiple_graphs_prior_components(X_y_binary):
     )
     assert (
         combined_pipeline.component_graph.get_inputs("Second Pipeline - Imputer")[0]
-        == "Second Pipeline - Replace Nullable Types Transformer.x"
+        == "DFS Transformer.x"
     )
 
 

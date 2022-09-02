@@ -29,6 +29,16 @@ def delayed_features_data():
     return X, y
 
 
+def _expect_double_for_categorical(expected, encode_X_as_str=True):
+    # Because _compute_delays initializes cols_derived_from_categoricals as Double
+    logical_types = {}
+    if encode_X_as_str:
+        logical_types = {
+            col: Double for col in expected.columns if col.startswith("feature_")
+        }
+    return logical_types
+
+
 def test_delayed_features_transformer_init():
     delayed_features = TimeSeriesFeaturizer(
         max_delay=4,
@@ -128,7 +138,8 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
             "target_delay_4": y_answer.shift(4),
         },
     )
-    answer.ww.init()
+    logical_types = _expect_double_for_categorical(answer, encode_X_as_str)
+    answer.ww.init(logical_types=logical_types)
     assert_frame_equal(
         answer,
         TimeSeriesFeaturizer(
@@ -200,7 +211,9 @@ def test_delayed_feature_extractor_maxdelay5_forecasthorizon1_gap0(
             "target_delay_6": y_answer.shift(6),
         },
     )
-    answer.ww.init()
+    logical_types = _expect_double_for_categorical(answer, encode_X_as_str)
+    answer.ww.init(logical_types=logical_types)
+
     assert_frame_equal(
         answer,
         TimeSeriesFeaturizer(
@@ -269,7 +282,8 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
             "target_delay_11": y_answer.shift(11),
         },
     )
-    answer.ww.init()
+    logical_types = _expect_double_for_categorical(answer, encode_X_as_str)
+    answer.ww.init(logical_types=logical_types)
     assert_frame_equal(
         answer,
         TimeSeriesFeaturizer(
@@ -414,7 +428,8 @@ def test_lagged_feature_extractor_delay_features_delay_target(
         conf_level=1.0,
         time_index="date",
     )
-    all_delays.ww.init()
+    logical_types = _expect_double_for_categorical(all_delays, encode_X_as_str)
+    all_delays.ww.init(logical_types=logical_types)
     assert_frame_equal(all_delays, transformer.fit_transform(X, y))
 
 
@@ -473,7 +488,8 @@ def test_lagged_feature_extractor_delay_target(
         conf_level=1.0,
         time_index="date",
     )
-    answer.ww.init()
+    logical_types = _expect_double_for_categorical(answer, encode_X_as_str)
+    answer.ww.init(logical_types=logical_types)
     assert_frame_equal(answer, transformer.fit_transform(X, y))
 
 
@@ -512,6 +528,8 @@ def test_delay_feature_transformer_supports_custom_index(
         },
         index=pd.RangeIndex(50, 81),
     )
+    logical_types = _expect_double_for_categorical(answer, encode_X_as_str)
+    answer.ww.init(logical_types=logical_types)
     if not encode_y_as_str and not encode_X_as_str:
         rolling_features = pd.DataFrame(
             {
@@ -602,7 +620,8 @@ def test_delay_feature_transformer_multiple_categorical_columns(delayed_features
             "target_delay_12": y_answer.shift(12),
         },
     )
-    answer.ww.init()
+    logical_types = _expect_double_for_categorical(answer)
+    answer.ww.init(logical_types=logical_types)
     assert_frame_equal(
         answer,
         TimeSeriesFeaturizer(
@@ -917,8 +936,12 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
         if logical_type in [Integer, Double, Categorical, Boolean]:
             assert transformed_logical_types == {
                 "date": Datetime,
-                "0_delay_1": IntegerNullable,
-                "0_delay_2": IntegerNullable,
+                "0_delay_1": Double
+                if logical_type in [Categorical, Boolean]
+                else IntegerNullable,
+                "0_delay_2": Double
+                if logical_type in [Categorical, Boolean]
+                else IntegerNullable,
                 "target_delay_1": IntegerNullable,
                 "target_delay_2": IntegerNullable,
             }
