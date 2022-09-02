@@ -1,17 +1,17 @@
 """Woodwork utility methods."""
 import numpy as np
 import pandas as pd
-import woodwork as ww
+from woodwork import logical_types, init_series, is_schema_valid, get_invalid_schema_message
 
 from evalml.utils.gen_utils import is_all_numeric
 
 numeric_and_boolean_ww = [
-    ww.logical_types.Integer.type_string,
-    ww.logical_types.Double.type_string,
-    ww.logical_types.Boolean.type_string,
-    ww.logical_types.IntegerNullable.type_string,
-    ww.logical_types.BooleanNullable.type_string,
-    ww.logical_types.AgeNullable.type_string,
+   logical_types.Integer.type_string,
+   logical_types.Double.type_string,
+   logical_types.Boolean.type_string,
+   logical_types.IntegerNullable.type_string,
+   logical_types.BooleanNullable.type_string,
+   logical_types.AgeNullable.type_string,
 ]
 
 
@@ -32,7 +32,7 @@ def infer_feature_types(data, feature_types=None):
 
     Args:
         data (pd.DataFrame, pd.Series): Input data to convert to a Woodwork data structure.
-        feature_types (string, ww.logical_type obj, dict, optional): If data is a 2D structure, feature_types must be a dictionary
+        feature_types (string,logical_type obj, dict, optional): If data is a 2D structure, feature_types must be a dictionary
             mapping column names to the type of data represented in the column. If data is a 1D structure, then feature_types must be
             a Woodwork logical type or a string representing a Woodwork logical type ("Double", "Integer", "Boolean", "Categorical", "Datetime", "NaturalLanguage")
 
@@ -48,10 +48,10 @@ def infer_feature_types(data, feature_types=None):
         data = _numpy_to_pandas(data)
 
     if data.ww.schema is not None:
-        if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(
+        if isinstance(data, pd.DataFrame) and not is_schema_valid(
             data, data.ww.schema
         ):
-            ww_error = ww.get_invalid_schema_message(data, data.ww.schema)
+            ww_error =get_invalid_schema_message(data, data.ww.schema)
             if "dtype mismatch" in ww_error:
                 ww_error = (
                     "Dataframe types are not consistent with logical types. This usually happens "
@@ -68,7 +68,7 @@ def infer_feature_types(data, feature_types=None):
         if all(data.isna()):
             data = data.replace(pd.NA, np.nan)
             feature_types = "Double"
-        return ww.init_series(data, logical_type=feature_types)
+        return init_series(data, logical_type=feature_types)
     else:
         ww_data = data.copy()
         ww_data.ww.init(logical_types=feature_types)
