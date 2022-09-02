@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Added support for BooleanNullable columns in EvalML pipelines and imputer :pr:`3678`
+        * Pass time index column to time series native estimators but drop otherwise :pr:`3691`
     * Changes
         * Pinned ``pmdarima`` < 2.0.0 :pr:`3679`
     * Documentation Changes
