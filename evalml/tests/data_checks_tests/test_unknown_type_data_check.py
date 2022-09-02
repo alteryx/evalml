@@ -2,8 +2,6 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks import (
-    DataCheckActionCode,
-    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
     UnknownTypeDataCheck,
