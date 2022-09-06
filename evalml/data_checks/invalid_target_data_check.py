@@ -300,9 +300,6 @@ class InvalidTargetDataCheck(DataCheck):
                 )
 
             if X_index != y_index:
-                raise TypeError(
-                    f"Len(X_index): {len(X_index)} Len(y_index): {len(y_index)}  X_index: {X_index}  y_index: {y_index}",
-                )
                 if set(X_index) == set(y_index):
                     messages.append(
                         DataCheckWarning(
