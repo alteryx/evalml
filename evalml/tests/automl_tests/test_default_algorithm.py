@@ -328,10 +328,8 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
     X, y = X_y_binary
     mock_get_names.return_value = ["0", "1", "2"]
 
-    X = pd.DataFrame(X)
     for col in columns:
-        X[col] = pd.Series(range(len(X)))
-    X.ww.init()
+        X.ww[col] = pd.Series(range(len(X)))
     X.ww.set_types({col: "Unknown" for col in columns})
 
     algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)

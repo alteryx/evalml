@@ -745,7 +745,9 @@ def X_y_binary():
         n_redundant=2,
         random_state=0,
     )
-
+    X = pd.DataFrame(X)
+    X.ww.init(logical_types={col: "double" for col in X.columns})
+    y = ww.init_series(pd.Series(y), logical_type="integer")
     return X, y
 
 
@@ -769,6 +771,9 @@ def X_y_regression():
         n_informative=3,
         random_state=0,
     )
+    X = pd.DataFrame(X)
+    X.ww.init(logical_types={col: "double" for col in X.columns})
+    y = ww.init_series(pd.Series(y), logical_type="double")
     return X, y
 
 
@@ -782,6 +787,9 @@ def X_y_multi():
         n_redundant=2,
         random_state=0,
     )
+    X = pd.DataFrame(X)
+    X.ww.init(logical_types={col: "double" for col in X.columns})
+    y = ww.init_series(pd.Series(y), logical_type="integer")
     return X, y
 
 
@@ -1471,8 +1479,19 @@ def fitted_tree_estimators(tree_estimators, X_y_binary, X_y_regression):
     est_clf, est_reg = tree_estimators
     X_b, y_b = X_y_binary
     X_r, y_r = X_y_regression
-    X_b = pd.DataFrame(X_b, columns=[f"Testing_{col}" for col in range(len(X_b[0]))])
-    X_r = pd.DataFrame(X_r, columns=[f"Testing_{col}" for col in range(len(X_r[0]))])
+
+    b_cols = columns = [f"Testing_{col}" for col in X_b.columns]
+    X_b = pd.DataFrame(X_b)
+    X_b.columns = b_cols
+    X_b.ww.init(logical_types={col: "double" for col in X_b.columns})
+
+    r_cols = columns = [f"Testing_{col}" for col in X_r.columns]
+    X_r = pd.DataFrame(
+        X_r,
+    )
+    X_r.columns = r_cols
+    X_r.ww.init(logical_types={col: "double" for col in X_r.columns})
+
     est_clf.fit(X_b, y_b)
     est_reg.fit(X_r, y_r)
     return est_clf, est_reg

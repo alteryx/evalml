@@ -1056,8 +1056,8 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
         X, y = X_y_regression
         pipeline = linear_regression_pipeline
 
-    X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
-    y = pd.Series(y)
+    X = pd.DataFrame(X)
+    X.columns = [str(i) for i in range(X.shape[1])]
     X["categorical_column"] = pd.Series([i % 3 for i in range(X.shape[0])]).astype(
         "str",
     )
@@ -1649,8 +1649,7 @@ def test_partial_dependence_scale_error():
 def test_partial_dependence_unknown(indices, error, X_y_binary):
     # test to see if we can get partial dependence fine with a dataset that has unknown features
     X, y = X_y_binary
-    X = pd.DataFrame(X)
-    X.ww.init(logical_types={0: "unknown"})
+    X.ww.set_types({0: "unknown"})
     pl = BinaryClassificationPipeline(["Random Forest Classifier"])
     pl.fit(X, y)
     if error:
@@ -1925,8 +1924,8 @@ def test_partial_dependence_jupyter_graph_check(
     logistic_regression_binary_pipeline,
 ):
     X, y = X_y_binary
-    X = X[:20, :5]
-    y = y[:20]
+    X = X.ww.iloc[:20, :5]
+    y = y.ww.iloc[:20]
     logistic_regression_binary_pipeline.fit(X, y)
 
     jupyter_check.return_value = True

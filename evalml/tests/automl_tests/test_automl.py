@@ -4125,10 +4125,8 @@ def test_automl_thresholding_train_pipelines(mock_objective, threshold, X_y_bina
 def test_automl_drop_unknown_columns(columns, AutoMLTestEnv, X_y_binary, caplog):
     caplog.clear()
     X, y = X_y_binary
-    X = pd.DataFrame(X)
     for col in columns:
-        X[col] = pd.Series(range(len(X)))
-    X.ww.init()
+        X.ww[col] = pd.Series(range(len(X)))
     X.ww.set_types({col: "Unknown" for col in columns})
     automl = AutoMLSearch(
         X_train=X,
@@ -4765,9 +4763,9 @@ def test_automl_accepts_features(
     AutoMLTestEnv,
 ):
     X, y = X_y_binary
-    X_pd = pd.DataFrame(X)
-    X_pd.columns = X_pd.columns.astype(str)
-    X_transform = X_pd.iloc[len(X) // 3 :]
+    X = pd.DataFrame(X)  # Drop ww information since setting column types fails
+    X.columns = X.columns.astype(str)
+    X_transform = X.iloc[len(X) // 3 :]
 
     if features == "with_features_provided":
         es = ft.EntitySet()

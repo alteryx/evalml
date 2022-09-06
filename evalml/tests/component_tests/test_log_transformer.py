@@ -16,33 +16,29 @@ def test_log_transformer_no_y(X_y_regression):
     y = None
 
     output_X, output_y = LogTransformer().fit_transform(X, y)
-    np.testing.assert_equal(X, output_X)
+    pd.testing.assert_frame_equal(X, output_X)
     assert not output_y
 
 
 @pytest.mark.parametrize("input_type", ["np", "pd", "ww"])
 @pytest.mark.parametrize("data_type", ["positive", "mixed", "negative"])
 def test_log_transformer_fit_transform(data_type, input_type, X_y_regression):
-    X_, y_ = X_y_regression
+    X, y = X_y_regression
     if data_type == "positive":
-        y_ = np.abs(y_)
+        y = np.abs(y)
     elif data_type == "negative":
-        y_ = -np.abs(y_)
-
-    X = pd.DataFrame(X_)
-    y = pd.Series(y_)
+        y = -np.abs(y)
 
     if input_type == "np":
         X = X.values
         y = y.values
-    elif input_type == "ww":
-        X = X.copy()
-        X.ww.init()
-        y = ww.init_series(y.copy())
+    elif input_type == "pd":
+        X = pd.DataFrame(X)
+        y = pd.Series(y)
 
-    if y_.min() <= 0:
-        y_ = y_ + abs(y_.min()) + 1
-    expected_log = np.log(y_)
+    if y.min() <= 0:
+        y = y + abs(y.min()) + 1
+    expected_log = np.log(y)
 
     output_X, output_y = LogTransformer().fit_transform(X, y)
 

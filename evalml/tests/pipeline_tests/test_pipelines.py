@@ -1170,21 +1170,17 @@ def test_feature_importance_has_feature_names(
     logistic_regression_binary_pipeline,
 ):
     X, y = X_y_binary
-    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
+    X = pd.DataFrame(X)
+    col_names = ["col_{}".format(col) for col in X.columns]
+    X.columns = col_names
+    X.ww.init(logical_types={col: "double" for col in X.columns})
     parameters = {
         "Imputer": {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "mean",
         },
-        "RF Classifier Select From Model": {
-            "percent_features": 1.0,
-            "number_features": len(X.columns),
-            "n_estimators": 20,
-        },
         "Logistic Regression Classifier": {"penalty": "l2", "C": 1.0, "n_jobs": 1},
     }
-
     clf = logistic_regression_binary_pipeline.new(parameters)
     clf.fit(X, y)
     assert len(clf.feature_importance) == len(X.columns)
@@ -1197,8 +1193,10 @@ def test_nonlinear_feature_importance_has_feature_names(
     nonlinear_binary_pipeline,
 ):
     X, y = X_y_binary
-    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
+    col_names = ["col_{}".format(col) for col in X.columns]
+    X = pd.DataFrame(X)
+    X.columns = col_names
+    X.ww.init(logical_types={col: "double" for col in X.columns})
     parameters = {
         "Imputer": {
             "categorical_impute_strategy": "most_frequent",
@@ -2239,7 +2237,6 @@ def test_binary_pipeline_string_target_thresholding(
     X_y_binary,
 ):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
     y = ww.init_series(pd.Series([f"String value {i}" for i in y]), "Categorical")
     pipeline = logistic_regression_binary_pipeline
     if is_time_series:

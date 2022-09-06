@@ -497,7 +497,7 @@ def test_pipeline_custom_hyperparameters_make_pipeline(
     AutoMLTestEnv,
 ):
     X, y = X_y_multi
-    X = pd.DataFrame(X, columns=[f"Column_{i}" for i in range(20)])
+    X.ww.columns = [f"Column_{i}" for i in range(20)]
 
     component_graph_ = None
     search_parameters_ = {}

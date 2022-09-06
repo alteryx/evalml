@@ -1897,8 +1897,7 @@ def test_explain_predictions_best_worst_callback(mock_make_table):
 @pytest.mark.parametrize("indices", [0, 1])
 def test_explain_predictions_unknown(indices, X_y_binary):
     X, y = X_y_binary
-    X = pd.DataFrame(X)
-    X.ww.init(logical_types={0: "unknown"})
+    X.ww.set_types({0: "unknown"})
     pl = BinaryClassificationPipeline(["Random Forest Classifier"])
     pl.fit(X, y)
 

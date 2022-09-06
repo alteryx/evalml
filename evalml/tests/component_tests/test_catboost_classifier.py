@@ -10,8 +10,7 @@ def test_catboost_classifier_random_seed_bounds_seed(X_y_binary):
     """ensure catboost's RNG doesn't fail for the min/max bounds we support on user-inputted random seeds"""
     X, y = X_y_binary
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
-    y = pd.Series(y)
+    X.ww.columns = col_names
     clf = CatBoostClassifier(
         n_estimators=1,
         max_depth=1,

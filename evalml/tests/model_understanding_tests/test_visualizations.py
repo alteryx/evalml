@@ -191,8 +191,8 @@ def test_jupyter_graph_check(
     logistic_regression_binary_pipeline,
 ):
     X, y = X_y_binary
-    X = X[:20, :5]
-    y = y[:20]
+    X = X.ww.iloc[:20, :5]
+    y = y.ww.iloc[:20]
     logistic_regression_binary_pipeline.fit(X, y)
     cbm = CostBenefitMatrix(
         true_positive=1,

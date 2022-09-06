@@ -822,9 +822,8 @@ def test_component_has_random_seed(component_class):
 
 @pytest.mark.parametrize("component_class", _all_transformers())
 def test_transformer_transform_output_type(component_class, X_y_binary):
-    X_np, y_np = X_y_binary
-    assert isinstance(X_np, np.ndarray)
-    assert isinstance(y_np, np.ndarray)
+    X, y = X_y_binary
+    X_np, y_np = X.values, y.values
     y_list = list(y_np)
     X_df_no_col_names = pd.DataFrame(X_np)
     range_index = pd.RangeIndex(start=0, stop=X_np.shape[1], step=1)
@@ -850,7 +849,6 @@ def test_transformer_transform_output_type(component_class, X_y_binary):
         pytest.skip(
             "Skipping because these tests are handled in their respective test files",
         )
-    print("Testing transformer {}".format(component_class.name))
     for X, y, X_cols_expected in datatype_combos:
         print(
             'Checking output of transform for transformer "{}" on X type {} cols {}, y type {} name {}'.format(

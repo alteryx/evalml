@@ -130,9 +130,8 @@ def test_all_estimators_check_fit_input_type_regression(
 
 
 def test_estimator_predict_output_type(X_y_binary, helper_functions):
-    X_np, y_np = X_y_binary
-    assert isinstance(X_np, np.ndarray)
-    assert isinstance(y_np, np.ndarray)
+    X, y = X_y_binary
+    X_np, y_np = X.values, y.values
 
     y_list = list(y_np)
     X_df_no_col_names = pd.DataFrame(X_np)
