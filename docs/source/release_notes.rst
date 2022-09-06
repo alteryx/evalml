@@ -7,6 +7,7 @@ Release Notes
         * ``IDColumnsDataCheck`` now only returns an action code to set the first column as the primary key if it contains unique values :pr:`3639`
         * ``IDColumnsDataCheck`` now can handle primary key columns containing "integer" values that are of the double type :pr:`3683` 
         * Added support for BooleanNullable columns in EvalML pipelines and imputer :pr:`3678`
+        * Updated StandardScaler to only apply to numeric columns :pr:`3686`
         * Pass time index column to time series native estimators but drop otherwise :pr:`3691`
     * Changes
         * Unpinned sktime to allow for version 0.13.2 :pr:`3685`
