@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Pass time index column to time series native estimators but drop otherwise :pr:`3691`
     * Fixes
     * Changes
     * Documentation Changes
@@ -19,7 +20,6 @@ Release Notes
         * ``IDColumnsDataCheck`` now can handle primary key columns containing "integer" values that are of the double type :pr:`3683`
         * Added support for BooleanNullable columns in EvalML pipelines and imputer :pr:`3678`
         * Updated StandardScaler to only apply to numeric columns :pr:`3686`
-        * Pass time index column to time series native estimators but drop otherwise :pr:`3691`
     * Changes
         * Unpinned sktime to allow for version 0.13.2 :pr:`3685`
         * Pinned ``pmdarima`` < 2.0.0 :pr:`3679`
