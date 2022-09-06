@@ -44,14 +44,11 @@ class StandardScaler(Transformer):
             self
         """
         X = infer_feature_types(X)
-        X_can_scale_columns = X.ww.select(self._supported_types)
-        X_can_scale_columns = X_can_scale_columns.ww.select(exclude=["datetime"])
-        self.scaled_columns = X_can_scale_columns.columns.tolist()
-        if not self.scaled_columns:
+        X_scalable = X.ww.select(self._supported_types)
+        self.scaled_columns = list(X_scalable.columns)
+        if X_scalable.empty:
             return self
-
-        X_scaled_columns = X.ww[self.scaled_columns]
-        self._component_obj.fit(X_scaled_columns)
+        self._component_obj.fit(X_scalable)
         return self
 
     def transform(self, X, y=None):
