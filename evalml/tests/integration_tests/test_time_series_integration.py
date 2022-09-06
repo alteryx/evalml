@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from featuretools import EntitySet, Feature, calculate_feature_matrix, dfs
 
 from evalml.automl import AutoMLSearch
 from evalml.preprocessing import TimeSeriesSplit
@@ -146,3 +147,63 @@ def test_can_run_automl_for_time_series_known_in_advance(
     )
     # Treat all features as not known-in-advanced
     automl.best_pipeline.predict(X_valid, X_train=X, y_train=y)
+
+
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ],
+)
+def test_can_run_automl_for_time_series_with_exclude_featurizers(
+    problem_type,
+):
+
+    X = pd.DataFrame(
+        {
+            "features": range(101, 101 + PERIODS),
+            "date": pd.date_range("2010-10-01", periods=PERIODS),
+        },
+    )
+    y = pd.Series(range(PERIODS))
+    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        # So that we have coverage for sampling
+        y = (
+            pd.Series([1] * 50 + [0] * 450)
+            .sample(frac=1, random_state=0, replace=False)
+            .reset_index(drop=True)
+        )
+    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        y = y % 3
+
+    es = EntitySet()
+    es.add_dataframe(dataframe_name="X", dataframe=X, index="id", make_index=True)
+    features = dfs(
+        entityset=es, target_dataframe_name="X", max_depth=1, features_only=True
+    )
+    # time index must be included in input data
+    features.append(Feature(es["X"].ww["date"]))
+    feature_matrix = calculate_feature_matrix(entityset=es, features=features)
+    # target lagged features must be present with correct start delay (gap + forecast horizon)
+    feature_matrix.ww["target_delay_6"] = y.shift(6)
+
+    automl = AutoMLSearch(
+        feature_matrix,
+        y,
+        problem_type=problem_type,
+        problem_configuration={
+            "max_delay": 5,
+            "gap": 3,
+            "forecast_horizon": 3,
+            "time_index": "date",
+        },
+        optimize_thresholds=False,
+        exclude_featurizers=["DatetimeFeaturizer", "TimeSeriesFeaturizer"],
+    )
+    automl.search()
+
+    rankings = automl.rankings
+    for score in rankings["validation_score"].values:
+        assert pd.notnull(score)
