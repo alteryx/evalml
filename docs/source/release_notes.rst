@@ -5,8 +5,9 @@ Release Notes
         *  Added ``KNNImputer`` class and created new knn parameter for Imputer :pr:`3662`
     * Fixes
         * ``IDColumnsDataCheck`` now only returns an action code to set the first column as the primary key if it contains unique values :pr:`3639`
-        * ``IDColumnsDataCheck`` now can handle primary key columns containing "integer" values that are of the double type :pr:`3683` 
+        * ``IDColumnsDataCheck`` now can handle primary key columns containing "integer" values that are of the double type :pr:`3683`
         * Added support for BooleanNullable columns in EvalML pipelines and imputer :pr:`3678`
+        * Updated StandardScaler to only apply to numeric columns :pr:`3686`
     * Changes
         * Unpinned sktime to allow for version 0.13.2 :pr:`3685`
         * Pinned ``pmdarima`` < 2.0.0 :pr:`3679`
