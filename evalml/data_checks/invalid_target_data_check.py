@@ -307,6 +307,9 @@ class InvalidTargetDataCheck(DataCheck):
                             data_check_name=self.name,
                             message_code=DataCheckMessageCode.MISMATCHED_INDICES_ORDER,
                             details={
+                                "not_equal": X_index != y_index,
+                                "type_X": f"{type(X_index)}",
+                                "type_y": f"{type(y_index)}",
                                 "first_x_index": X_index[:20],
                                 "last_x_index": X_index[-20:],
                                 "first_y_index": y_index[:20],
