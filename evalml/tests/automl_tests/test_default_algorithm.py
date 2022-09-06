@@ -358,7 +358,9 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
                 assert pipeline.parameters[component_name]["columns"] == columns
 
 
-def test_make_split_pipeline(X_y_binary):
+@pytest.mark.parametrize("sampler", ["Oversampler", None])
+@pytest.mark.parametrize("features", [True, False])
+def test_make_split_pipeline(sampler, features, X_y_binary):
     X, y = X_y_binary
 
     X = pd.DataFrame(X)
@@ -369,24 +371,36 @@ def test_make_split_pipeline(X_y_binary):
     X["B"] = "b"
     X["C"] = "c"
 
-    algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)
+    algo = DefaultAlgorithm(
+        X,
+        y,
+        ProblemTypes.BINARY,
+        sampler_name=sampler,
+        features=features,
+    )
     algo._selected_cols = ["1", "2", "3"]
     algo._selected_cat_cols = ["A", "B", "C"]
     pipeline = algo._make_split_pipeline(RandomForestClassifier, "test_pipeline")
-    compute_order = [
-        "Label Encoder",
-        "Categorical Pipeline - Select Columns Transformer",
-        "Categorical Pipeline - Label Encoder",
-        "Categorical Pipeline - Replace Nullable Types Transformer",
-        "Categorical Pipeline - Imputer",
-        "Categorical Pipeline - One Hot Encoder",
-        "Numeric Pipeline - Select Columns By Type Transformer",
-        "Numeric Pipeline - Label Encoder",
-        "Numeric Pipeline - Replace Nullable Types Transformer",
-        "Numeric Pipeline - Imputer",
-        "Numeric Pipeline - Select Columns Transformer",
-        "Random Forest Classifier",
-    ]
+    compute_order = ["Label Encoder"]
+    if features:
+        compute_order.extend(["DFS Transformer"])
+    if sampler:
+        compute_order.extend([sampler])
+    compute_order.extend(
+        [
+            "Categorical Pipeline - Select Columns Transformer",
+            "Categorical Pipeline - Label Encoder",
+            "Categorical Pipeline - Replace Nullable Types Transformer",
+            "Categorical Pipeline - Imputer",
+            "Categorical Pipeline - One Hot Encoder",
+            "Numeric Pipeline - Select Columns By Type Transformer",
+            "Numeric Pipeline - Label Encoder",
+            "Numeric Pipeline - Replace Nullable Types Transformer",
+            "Numeric Pipeline - Imputer",
+            "Numeric Pipeline - Select Columns Transformer",
+            "Random Forest Classifier",
+        ],
+    )
     assert pipeline.component_graph.compute_order == compute_order
     assert pipeline.name == "test_pipeline"
     assert pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][
