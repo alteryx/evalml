@@ -54,6 +54,14 @@ def data_checks_input_dataframe():
         },
     )
     X["nan_dt_col"][0] = None
+    X.ww.init(
+        logical_types={
+            "lots_of_null": "categorical",
+            "natural_language_nan": "NaturalLanguage",
+            "nullable_integer": "IntegerNullable",
+            "nullable_bool": "BooleanNullable",
+        },
+    )
     return X
 
 
@@ -277,17 +285,9 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
 
     y = pd.Series([0, 1, np.nan, 1, 0])
     y_multiclass = pd.Series([0, 1, np.nan, 2, 0])
-    X.ww.init(
-        logical_types={
-            "lots_of_null": "categorical",
-            "natural_language_nan": "NaturalLanguage",
-            "nullable_integer": "IntegerNullable",
-            "nullable_bool": "BooleanNullable",
-        },
-    )
     if input_type == "ww":
-        y = ww.init_series(y)
-        y_multiclass = ww.init_series(y_multiclass)
+        y = ww.init_series(y, logical_type="double")
+        y_multiclass = ww.init_series(y_multiclass, logical_type="double")
 
     data_checks = DefaultDataChecks(
         "binary",
@@ -379,13 +379,6 @@ def test_default_data_checks_regression(input_type, data_checks_input_dataframe)
 
     y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
     y_no_variance = pd.Series([5] * 5)
-    X.ww.init(
-        logical_types={
-            "lots_of_null": "categorical",
-            "natural_language_nan": "NaturalLanguage",
-            "nullable_bool": "BooleanNullable",
-        },
-    )
     if input_type == "ww":
         y = ww.init_series(y)
         y_no_variance = ww.init_series(y_no_variance)
@@ -442,6 +435,7 @@ def test_default_data_checks_null_rows():
         },
     )
     y = pd.Series([0, 1, np.nan, 1, 0])
+    y.ww.init(logical_type="double")
     data_checks = DefaultDataChecks(
         "regression",
         get_default_primary_search_objective("regression"),
