@@ -9,6 +9,7 @@ from woodwork.logical_types import URL, Categorical, Double, Integer, Unknown
 from evalml.utils import (
     _convert_numeric_dataset_pandas,
     _schema_is_equal,
+    downcast_nullable_types,
     infer_feature_types,
 )
 
@@ -284,3 +285,22 @@ def test_schema_is_equal_fraud(fraud_100):
     X2 = X.copy()
     X2.ww.init()
     assert _schema_is_equal(X.ww.schema, X2.ww.schema)
+
+
+def test_downcast_nullable_types():
+    X = pd.DataFrame(
+        {"int": [1, 0, 1, 1, 0.0], "bool": [True, False, True, True, False]},
+    )
+    X.ww.init(logical_types={"int": "IntegerNullable", "bool": "BooleanNullable"})
+
+    X_t = downcast_nullable_types(X)
+    assert X_t.ww.logical_types["int"].type_string == "double"
+    assert X_t.ww.logical_types["bool"].type_string == "boolean"
+
+    y_int = X.ww["int"]
+    y_int_t = downcast_nullable_types(y_int)
+    assert y_int_t.ww.logical_type.type_string == "double"
+
+    y_bool = X.ww["bool"]
+    y_bool_t = downcast_nullable_types(y_bool)
+    assert y_bool_t.ww.logical_type.type_string == "boolean"

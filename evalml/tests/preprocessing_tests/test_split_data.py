@@ -54,9 +54,6 @@ def test_split_data(
     assert isinstance(y_test, pd.Series)
 
     if is_time_series(problem_type):
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-            y = pd.Series(y)
         pd.testing.assert_frame_equal(X_test, X[int(train_size) :], check_dtype=False)
         pd.testing.assert_series_equal(y_test, y[int(train_size) :], check_dtype=False)
 
