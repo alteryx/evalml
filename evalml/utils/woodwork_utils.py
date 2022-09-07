@@ -2,14 +2,6 @@
 import numpy as np
 import pandas as pd
 import woodwork as ww
-from woodwork.logical_types import (
-    AgeNullable,
-    Boolean,
-    BooleanNullable,
-    Double,
-    Integer,
-    IntegerNullable,
-)
 
 from evalml.utils.gen_utils import is_all_numeric
 
