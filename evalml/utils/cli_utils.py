@@ -141,7 +141,10 @@ def get_evalml_pip_requirements(evalml_path, ignore_packages=None):
     requirements = []
     with open(pathlib.Path(evalml_path, "pyproject.toml"), "rb") as f:
         toml_dict = tomli.load(f)
-        requirements = toml_dict["project"]["dependencies"]
+        for req in requirements:
+            if len(req) > 1:
+                package = Requirement(req)
+                requirements.append(package)
 
     return standardize_format(
         requirements,
