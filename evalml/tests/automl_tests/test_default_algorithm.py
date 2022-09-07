@@ -263,11 +263,20 @@ def test_evalml_algo_search_hyperparameters(
     X_y_categorical_classification,
 ):
     X, y = X_y_categorical_classification
-    X.ww.init()
     cat_cols = list(X.ww.select("categorical").columns)
-    mock_get_names.return_value = ["0", "1", "2", "Sex_male", "Embarked_S"]
+    mock_get_names.return_value = [
+        "0",
+        "1",
+        "2",
+        "Sex_male",
+        "Ticket_A/5 21171",
+        "C85",
+        "Embarked_S",
+    ]
     mock_get_feature_provenance.return_value = {
         "Sex": ["Sex_male"],
+        "Ticket": ["Ticket_A/5 21171"],
+        "Cabin": ["C85"],
         "Embarked": ["Embarked_S"],
     }
 
@@ -440,9 +449,19 @@ def test_select_cat_cols(
     X, y = X_y_categorical_classification
     X.ww.init()
     cat_cols = list(X.ww.select("categorical").columns)
-    mock_get_names.return_value = ["0", "1", "2", "Sex_male", "Embarked_S"]
+    mock_get_names.return_value = [
+        "0",
+        "1",
+        "2",
+        "Sex_male",
+        "Ticket_A/5 21171",
+        "C85",
+        "Embarked_S",
+    ]
     mock_get_feature_provenance.return_value = {
         "Sex": ["Sex_male"],
+        "Ticket": ["Ticket_A/5 21171"],
+        "Cabin": ["C85"],
         "Embarked": ["Embarked_S"],
     }
 

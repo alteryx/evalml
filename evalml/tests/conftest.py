@@ -803,6 +803,18 @@ def X_y_categorical_regression():
 
     # add categorical dtype
     X["smoker"] = X["smoker"].astype("category")
+
+    X.ww.init(
+        logical_types={
+            "total_bill": "double",
+            "sex": "categorical",
+            "smoker": "categorical",
+            "day": "categorical",
+            "time": "categorical",
+            "size": "integer",
+        },
+    )
+    y.ww.init(logical_type="double")
     return X, y
 
 
@@ -813,6 +825,21 @@ def X_y_categorical_classification():
 
     y = titanic["Survived"]
     X = titanic.drop(["Survived", "Name"], axis=1)
+    X.ww.init(
+        logical_types={
+            "PassengerId": "integer",
+            "Pclass": "integer",
+            "Sex": "categorical",
+            "Age": "double",
+            "SibSp": "integer",
+            "Parch": "integer",
+            "Ticket": "categorical",
+            "Fare": "double",
+            "Cabin": "categorical",
+            "Embarked": "categorical",
+        },
+    )
+    y.ww.init(logical_type="integer")
     return X, y
 
 
@@ -1340,7 +1367,6 @@ def fitted_decision_tree_classification_pipeline(X_y_categorical_classification)
         },
     )
     X, y = X_y_categorical_classification
-    X.ww.init(logical_types={"Ticket": "categorical", "Cabin": "categorical"})
     pipeline.fit(X, y)
     return pipeline
 
