@@ -1,7 +1,5 @@
 import warnings
 
-import pandas as pd
-
 from evalml.pipelines.components import CatBoostClassifier
 from evalml.utils import SEED_BOUNDS
 

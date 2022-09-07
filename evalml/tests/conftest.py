@@ -1517,12 +1517,12 @@ def fitted_tree_estimators(tree_estimators, X_y_binary, X_y_regression):
     X_b, y_b = X_y_binary
     X_r, y_r = X_y_regression
 
-    b_cols = columns = [f"Testing_{col}" for col in X_b.columns]
+    b_cols = [f"Testing_{col}" for col in X_b.columns]
     X_b = pd.DataFrame(X_b)
     X_b.columns = b_cols
     X_b.ww.init(logical_types={col: "double" for col in X_b.columns})
 
-    r_cols = columns = [f"Testing_{col}" for col in X_r.columns]
+    r_cols = [f"Testing_{col}" for col in X_r.columns]
     X_r = pd.DataFrame(
         X_r,
     )

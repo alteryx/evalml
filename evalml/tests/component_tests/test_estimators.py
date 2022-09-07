@@ -13,13 +13,7 @@ from evalml.pipelines.components.utils import (
     _all_estimators_used_in_search,
     get_estimators,
 )
-from evalml.problem_types import (
-    ProblemTypes,
-    handle_problem_types,
-    is_binary,
-    is_multiclass,
-    is_regression,
-)
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.problem_types.utils import is_classification
 from evalml.utils import get_random_state
 

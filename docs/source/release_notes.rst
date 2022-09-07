@@ -4,8 +4,10 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Added support for using ``downcast_nullable_types`` with Series as well as DataFrames :pr:`3697`
     * Documentation Changes
     * Testing Changes
+        * Updated pytest fixtures and brittle test files to explicitly set woodwork typing information :pr:`3697`
 
 .. warning::
 
