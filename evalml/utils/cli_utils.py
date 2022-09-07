@@ -120,7 +120,7 @@ def standardize_format(packages, ignore_packages=None):
             continue
         name = CONDA_TO_PIP_NAME.get(package.name, package.name)
         if package.specs:
-            all_specs = ",".join(["".join(spec) for spec in package.specs])
+            all_specs = ",".join(["".join(str(spec)) for spec in package.specifier])
             standardized = f"{name}{all_specs}"
         else:
             standardized = name
