@@ -730,6 +730,7 @@ def _make_pipeline_from_multiple_graphs(
     pipeline_name=None,
     sub_pipeline_names=None,
     prior_components=None,
+    pre_estimator_components=None,
     random_seed=0,
 ):
     """Creates a pipeline from multiple preprocessing pipelines and a final estimator. Final y input to the estimator will be chosen from the last of the input pipelines.
@@ -742,6 +743,7 @@ def _make_pipeline_from_multiple_graphs(
         pipeline_name (str): Custom name for the final pipeline.
         sub_pipeline_names (Dict): Dictionary mapping original input pipeline names to new names. This will be used to rename components. Defaults to None.
         prior_components (Dict): Component graph of components preceding the split of multiple graphs. Must be in component graph format, {"Label Encoder": ["Label Encoder", "X", "y"]} and currently restricted to components that only alter X input.
+        pre_estimator_components (Dict): Component graph of components before the estimator after the split of multiple graphs. Must be in component graph format, {"Label Encoder": ["Label Encoder", "X", "y"]} and currently restricted to components that only alter X input.
         random_seed (int): Random seed for the pipeline. Defaults to 0.
 
     Returns:
@@ -844,9 +846,32 @@ def _make_pipeline_from_multiple_graphs(
         final_components.append(final_component)
 
     final_y = final_y_candidate if final_y_candidate else final_y
-    component_graph[estimator.name] = (
-        [estimator] + [comp + ".x" for comp in final_components] + [final_y]
-    )
+    last_pre_estimator_component = None
+    if pre_estimator_components:
+        first_pre_estimator_component = (
+            list(pre_estimator_components.keys())[0]
+            if pre_estimator_components
+            else None
+        )
+        pre_estimator_components[first_pre_estimator_component] = (
+            [first_pre_estimator_component]
+            + [comp + ".x" for comp in final_components]
+            + [final_y]
+        )
+        component_graph.update(pre_estimator_components)
+        last_pre_estimator_component = (
+            list(pre_estimator_components.keys())[-1]
+            if pre_estimator_components
+            else None
+        )
+    if last_pre_estimator_component:
+        component_graph[estimator.name] = (
+            [estimator] + [last_pre_estimator_component + ".x"] + [final_y]
+        )
+    else:
+        component_graph[estimator.name] = (
+            [estimator] + [comp + ".x" for comp in final_components] + [final_y]
+        )
     pipeline_class = {
         ProblemTypes.BINARY: BinaryClassificationPipeline,
         ProblemTypes.MULTICLASS: MulticlassClassificationPipeline,

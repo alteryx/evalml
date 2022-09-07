@@ -384,8 +384,6 @@ def test_make_split_pipeline(sampler, features, X_y_binary):
     compute_order = ["Label Encoder"]
     if features:
         compute_order.extend(["DFS Transformer"])
-    if sampler:
-        compute_order.extend([sampler])
     compute_order.extend(
         [
             "Categorical Pipeline - Select Columns Transformer",
@@ -398,9 +396,12 @@ def test_make_split_pipeline(sampler, features, X_y_binary):
             "Numeric Pipeline - Replace Nullable Types Transformer",
             "Numeric Pipeline - Imputer",
             "Numeric Pipeline - Select Columns Transformer",
-            "Random Forest Classifier",
         ],
     )
+    if sampler:
+        compute_order.extend([sampler])
+    compute_order.append("Random Forest Classifier")
+
     assert pipeline.component_graph.compute_order == compute_order
     assert pipeline.name == "test_pipeline"
     assert pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][

@@ -595,12 +595,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     estimator,
                     self.sampler_name,
                 )[0]
-                if self.features:
-                    prior_components.update(
-                        {sampler.name: [sampler.name, "DFS Transformer.x", "y"]},
-                    )
-                else:
-                    prior_components.update({sampler.name: [sampler.name, "X", "y"]})
+                pre_estimator_components = {sampler.name: [sampler.name, "X", "y"]}
+            else:
+                pre_estimator_components = None
+
             input_pipelines = [numeric_pipeline, categorical_pipeline]
             sub_pipeline_names = {
                 numeric_pipeline.name: "Numeric",
@@ -614,6 +612,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 random_seed=self.random_seed,
                 sub_pipeline_names=sub_pipeline_names,
                 prior_components=prior_components,
+                pre_estimator_components=pre_estimator_components,
             )
         elif self._selected_cat_cols and not self._selected_cols:
             categorical_pipeline_parameters = {
