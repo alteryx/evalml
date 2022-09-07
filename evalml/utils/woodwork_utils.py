@@ -116,3 +116,36 @@ def _schema_is_equal(first, other):
     ]
     semantic = first.semantic_tags == other.semantic_tags
     return logical and semantic
+
+
+def downcast_nullable_types(X, ignore_null_cols=True):
+    """Downcasts IntegerNullable, BooleanNullable types to Double, Boolean in order to support certain estimators like ARIMA, CatBoost, and LightGBM.
+
+    Args:
+        X (pd.DataFrame): Feature data.
+        ignore_null_cols (bool): Whether to ignore downcasting columns with null values or not. Defaults to True.
+
+    Returns:
+        X: DataFrame initialized with logical type information where BooleanNullable are cast as Double.
+    """
+    X_bool_nullable_cols = X.ww.select("BooleanNullable")
+    X_int_nullable_cols = X.ww.select(["IntegerNullable", "AgeNullable"])
+    non_null_columns = (
+        set(X.dropna(axis=1).columns) if ignore_null_cols else set(X.columns)
+    )
+    new_ltypes = {
+        col: "Boolean" for col in X_bool_nullable_cols if col in non_null_columns
+    }
+    new_ltypes.update(
+        {
+            col: "BooleanNullable"
+            for col in X_bool_nullable_cols
+            if col not in new_ltypes
+        },
+    )
+    new_ltypes.update(
+        {col: "Double" for col in X_int_nullable_cols if col in non_null_columns},
+    )
+    if new_ltypes:
+        X.ww.set_types(logical_types=new_ltypes)
+    return X

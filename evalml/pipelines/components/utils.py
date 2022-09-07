@@ -163,6 +163,45 @@ def handle_component_class(component_class):
     return component_class
 
 
+def drop_natural_language_columns(X):
+    """Drops natural language columns from dataframes for the imputers.
+
+    Args:
+        X (pd.Dataframe): The dataframe that we want to impute on.
+
+    Returns:
+        pd.Dataframe: the dataframe with any natural language columns dropped.
+        list: list of all the columns that are considered natural language.
+    """
+    natural_language_columns = list(
+        X.ww.select(["NaturalLanguage"], return_schema=True).columns.keys(),
+    )
+    if natural_language_columns:
+        X = X.ww.copy()
+        X = X.ww.drop(columns=natural_language_columns)
+    return X, natural_language_columns
+
+
+def set_boolean_columns_to_categorical(X):
+    """Sets boolean columns to categorical for the imputer.
+
+    Args:
+        X (pd.Dataframe): The dataframe that we want to impute on.
+
+    Returns:
+        pd.Dataframe: the dataframe with any of its ww columns that are boolean set to categorical.
+    """
+    X = X.ww.copy()
+    X_schema = X.ww.schema
+    original_X_schema = X_schema.get_subset_schema(
+        subset_cols=X_schema._filter_cols(exclude=["Boolean"]),
+    )
+    X_boolean_cols = X_schema._filter_cols(include=["Boolean"])
+    new_ltypes_for_boolean_cols = {col: "Categorical" for col in X_boolean_cols}
+    X.ww.init(schema=original_X_schema, logical_types=new_ltypes_for_boolean_cols)
+    return X
+
+
 class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
     """Scikit-learn classifier wrapper class."""
 

@@ -8,6 +8,7 @@ import woodwork as ww
 from pandas.testing import assert_frame_equal
 from woodwork.logical_types import (
     Boolean,
+    BooleanNullable,
     Categorical,
     Double,
     Integer,
@@ -15,6 +16,7 @@ from woodwork.logical_types import (
 )
 
 from evalml.pipelines.components import Imputer
+from evalml.pipelines.components.transformers.imputers import KNNImputer, SimpleImputer
 
 
 def test_invalid_strategy_parameters():
@@ -69,12 +71,34 @@ def test_imputer_init(
     }
     expected_hyperparameters = {
         "categorical_impute_strategy": ["most_frequent"],
-        "numeric_impute_strategy": ["mean", "median", "most_frequent"],
-        "boolean_impute_strategy": ["most_frequent"],
+        "numeric_impute_strategy": ["mean", "median", "most_frequent", "knn"],
+        "boolean_impute_strategy": ["most_frequent", "knn"],
     }
     assert imputer.name == "Imputer"
     assert imputer.parameters == expected_parameters
     assert imputer.hyperparameter_ranges == expected_hyperparameters
+
+
+@pytest.mark.parametrize("categorical_impute_strategy", ["most_frequent", "constant"])
+def test_knn_as_input(categorical_impute_strategy):
+    imputer = Imputer(
+        categorical_impute_strategy=categorical_impute_strategy,
+        numeric_impute_strategy="knn",
+        boolean_impute_strategy="knn",
+    )
+    assert isinstance(imputer._categorical_imputer, SimpleImputer)
+    assert isinstance(imputer._numeric_imputer, KNNImputer)
+    assert isinstance(imputer._boolean_imputer, KNNImputer)
+
+    expected_numeric_parameters = {
+        "number_neighbors": 3,
+    }
+    expected_boolean_parameters = {
+        "number_neighbors": 1,
+    }
+
+    assert imputer._numeric_imputer.parameters == expected_numeric_parameters
+    assert imputer._boolean_imputer.parameters == expected_boolean_parameters
 
 
 def test_numeric_only_input(imputer_test_data):
@@ -668,14 +692,14 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
         "NaturalLanguage": NaturalLanguage,
         "Boolean": Boolean,
     }[logical_type]
-    y = pd.Series([1, 2, 1])
-
-    # Column with Nans to boolean used to fail. Now it doesn't but it should.
     if has_nan == "has_nan" and logical_type == Boolean:
-        return
+        logical_type = BooleanNullable
+    y = pd.Series([1, 2, 1])
     try:
         X = X_df.copy()
-        if has_nan == "has_nan":
+        if has_nan == "has_nan" and logical_type == BooleanNullable:
+            X.iloc[len(X_df) - 1, 0] = None
+        elif has_nan == "has_nan":
             X.iloc[len(X_df) - 1, 0] = np.nan
         X.ww.init(logical_types={data: logical_type})
     except ww.exceptions.TypeConversionError:
@@ -685,7 +709,11 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     assert isinstance(transformed, pd.DataFrame)
-    if numeric_impute_strategy == "most_frequent":
+    if logical_type == BooleanNullable:
+        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+            data: Boolean,
+        }
+    elif numeric_impute_strategy == "most_frequent":
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             data: logical_type,
         }
