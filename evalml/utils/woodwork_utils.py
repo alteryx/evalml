@@ -134,16 +134,8 @@ def downcast_nullable_types(data, ignore_null_cols=True):
             data.ww.set_type("Double")
         return data
 
-    data_schema = data.ww.schema
-    original_schema = data_schema.get_subset_schema(
-        subset_cols=data_schema._filter_cols(
-            exclude=["BooleanNullable", "IntegerNullable"],
-        ),
-    )
-    bool_nullable_cols = data_schema._filter_cols(include=["BooleanNullable"])
-    int_nullable_cols = data_schema._filter_cols(
-        include=["IntegerNullable", "AgeNullable"],
-    )
+    bool_nullable_cols = data.ww.select("BooleanNullable")
+    int_nullable_cols = data.ww.select(["IntegerNullable", "AgeNullable"])
     non_null_columns = (
         set(data.dropna(axis=1).columns) if ignore_null_cols else set(data.columns)
     )
@@ -151,7 +143,11 @@ def downcast_nullable_types(data, ignore_null_cols=True):
         col: "Boolean" for col in bool_nullable_cols if col in non_null_columns
     }
     new_ltypes.update(
+        {col: "BooleanNullable" for col in bool_nullable_cols if col not in new_ltypes},
+    )
+    new_ltypes.update(
         {col: "Double" for col in int_nullable_cols if col in non_null_columns},
     )
-    data.ww.init(schema=original_schema, logical_types=new_ltypes)
+    if new_ltypes:
+        data.ww.set_types(logical_types=new_ltypes)
     return data

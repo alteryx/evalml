@@ -2615,7 +2615,7 @@ def test_get_hyperparameter_ranges():
                 categories=("most_frequent", "mean"),
                 prior=None,
             ),
-            "boolean_impute_strategy": ["most_frequent"],
+            "boolean_impute_strategy": ["most_frequent", "knn"],
         },
         "Random Forest Classifier": {
             "n_estimators": Integer(

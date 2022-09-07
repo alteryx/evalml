@@ -4648,7 +4648,7 @@ def test_cv_validation_scores_time_series(
 @pytest.mark.parametrize(
     "parameter,expected",
     [
-        ("mean", ["mean", "median", "most_frequent"]),
+        ("mean", ["mean", "median", "most_frequent", "knn"]),
         (Categorical(["mean"]), Categorical(["mean"])),
     ],
 )

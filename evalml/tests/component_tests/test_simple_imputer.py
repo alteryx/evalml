@@ -486,10 +486,8 @@ def test_simple_imputer_woodwork_custom_overrides_returned_by_components(
         impute_strategy_to_use = "most_frequent"
 
     imputer = SimpleImputer(impute_strategy=impute_strategy_to_use)
-    imputer.fit(X, y)
-    transformed = imputer.transform(X, y)
+    transformed = imputer.fit_transform(X, y)
     assert isinstance(transformed, pd.DataFrame)
-
     assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
         data: logical_type,
     }

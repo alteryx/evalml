@@ -106,6 +106,17 @@ def get_test_data_with_or_without_primary_key():
                 X_dict["col_1_id"] = [1, 1, 2, 3]
             X = pd.DataFrame.from_dict(X_dict)
 
+        elif input_type == "double":
+            X_dict = {
+                "col_1_id": [0.0, 1.0, 2.0, 3.0],
+                "col_2": [2, 3, 4, 5],
+                "col_3_id": [1, 1, 2, 3],
+                "col_5": [0, 0, 1, 2],
+            }
+            if not has_primary_key:
+                X_dict["col_1_id"] = [1.0, 1.0, 2.0, 3.0]
+            X = pd.DataFrame.from_dict(X_dict)
+
         elif input_type == "string":
             X_dict = {
                 "col_1_id": ["a", "b", "c", "d"],
