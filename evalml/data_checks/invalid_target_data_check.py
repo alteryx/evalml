@@ -197,8 +197,10 @@ class InvalidTargetDataCheck(DataCheck):
                 ).to_dict(),
             )
             return messages
+        assert list(X.index) == list(y.index)
 
         y = infer_feature_types(y)
+        assert list(X.index) == list(y.index)
         messages = self._check_target_has_nan(y, messages)
         if any(error["code"] == "TARGET_IS_EMPTY_OR_FULLY_NULL" for error in messages):
             # If our target is empty or fully null, no need to check for other invalid targets, return immediately.
@@ -286,6 +288,7 @@ class InvalidTargetDataCheck(DataCheck):
             y_index = list(y.index)
             X_length = len(X_index)
             y_length = len(y_index)
+            assert list(X.index) == list(y.index)
             if X_length != y_length:
                 messages.append(
                     DataCheckWarning(
