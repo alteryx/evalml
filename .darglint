@@ -1,4 +1,5 @@
 [darglint]
 ignore=DAR402
-ignore_regex=^_(.*)
+ignore_regex=^test_(.*)|^_(.*)
 strictness=short
+docstring_style=google
