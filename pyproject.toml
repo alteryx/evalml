@@ -140,7 +140,9 @@ namespaces = true
 "*" = [
     "* __pycache__",
     "*.py[co]",
-    "docs/*"
+    "docs/*",
+    "unpacked_sdist",
+    "dist",
 ]
 
 [tool.setuptools.dynamic]
