@@ -1,6 +1,158 @@
+[project]
+name = "evalml"
+readme = "README.md"
+description = "an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions."
+dynamic = ["version"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+]
+authors = [
+    {name="Alteryx, Inc.", email="open_source_support@alteryx.com"}
+]
+maintainers = [
+    {name="Alteryx, Inc.", email="open_source_support@alteryx.com"}
+]
+keywords = ["data science", "machine learning", "optimization", "automl"]
+license = {text = "BSD 3-clause"}
+requires-python = ">=3.8,<4"
+dependencies = [
+    "numpy >= 1.21.0",
+    "pandas >= 1.4.0",
+    "scipy >= 1.5.0",
+    "scikit-learn >= 1.1.2",
+    "scikit-optimize >= 0.9.0",
+    "pyzmq >= 20.0.0",
+    "colorama >= 0.4.4",
+    "cloudpickle >= 1.5.0",
+    "click >= 7.1.2",
+    "requirements-parser >= 0.2.0",
+    "shap >= 0.40.0",
+    "statsmodels >= 0.12.2",
+    "texttable >= 1.6.2",
+    "woodwork >= 0.16.2, < 0.17.0",
+    "dask >= 2021.10.0",
+    "nlp-primitives >= 2.1.0,!=2.6.0",
+    "featuretools >= 1.7.0",
+    "networkx >= 2.5, < 2.6",
+    "plotly >= 5.0.0",
+    "kaleido >= 0.1.0",
+    "ipywidgets >= 7.5",
+    "xgboost >= 1.5.1",
+    "catboost >= 0.20",
+    "lightgbm >= 2.3.1",
+    "matplotlib >= 3.3.3",
+    "graphviz >= 0.13; platform_system!='Windows'",
+    "seaborn >= 0.11.1",
+    "category_encoders >= 2.2.2",
+    "imbalanced-learn >= 0.9.1",
+    "pmdarima >= 1.8.1, < 2.0.0",
+    "sktime >= 0.7.0",
+    "lime >= 0.2.0.1",
+    "vowpalwabbit >= 8.11.0",
+]
+
+[project.urls]
+"Documentation" = "https://evalml.alteryx.com"
+"Source Code"= "https://github.com/alteryx/evalml/"
+"Changes" = "https://evalml.alteryx.com/en/latest/release_notes.html"
+"Issue Tracker" = "https://github.com/alteryx/evalml/issues"
+"Twitter" = "https://twitter.com/alteryxoss"
+"Chat" = "https://join.slack.com/t/alteryx-oss/shared_invite/zt-182tyvuxv-NzIn6eiCEf8TBziuKp0bNA"
+
+[project.optional-dependencies]
+test = [
+    "pytest == 7.1.2",
+    "pytest-xdist == 2.1.0",
+    "pytest-timeout == 1.4.2",
+    "pytest-cov == 2.10.1",
+    "nbval == 0.9.3",
+    "IPython >= 7.16.3",
+    "codecov == 2.1.11",
+    "PyYAML == 5.4",
+    "coverage[toml] >= 6.4",
+]
+docs = [
+    "docutils >=0.15.2, <0.17",
+    "pydata-sphinx-theme >= 0.3.1",
+    "astroid <= 2.6.6",
+    "Sphinx >= 4.5.0",
+    "nbconvert >= 6.4.5",
+    "nbsphinx >= 0.8.5",
+    "sphinx-autoapi",
+    "sphinx-inline-tabs == 2022.1.2b11",
+    "sphinx-copybutton == 0.4.0",
+    "myst-parser == 0.16.1",
+]
+dev = [
+    "flake8 == 3.7.0",
+    "black[jupyter] == 22.3.0",
+    "isort == 5.10.1",
+    "pydocstyle == 6.1.1",
+    "darglint == 1.8.0",
+    "pre-commit == 2.20.0",
+    "evalml[test]",
+    "evalml[docs]",
+]
+updater = [
+    "alteryx-open-src-update-checker >= 2.1.0"
+]
+prophet = [
+    "prophet-prebuilt == 1.0.2",
+]
+complete = [
+    "evalml[prophet]",
+    "evalml[updater]",
+]
+
+[project.scripts]
+featuretools = "featuretools.__main__:cli"
+
+[tool.setuptools]
+include-package-data = true
+license-files = [
+    "LICENSE",
+]
+
+[tool.setuptools.packages.find]
+namespaces = true
+
+[tool.setuptools.package-data]
+"*" = [
+    "*.txt",
+    "README.md",
+]
+"evalml" = [
+    "tests/data/*.csv",
+    "tests/data/*.csv.gz",
+]
+
+[tool.setuptools.exclude-package-data]
+"*" = [
+    "* __pycache__",
+    "*.py[co]",
+    "docs/*"
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "evalml.version.__version__"}
+
+
 [build-system]
 requires = [
-    "setuptools >= 47",
+    "setuptools >= 61.0.0",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
@@ -23,7 +175,7 @@ skip = "__init__.py"
 multi_line_output = 3
 
 [tool.black]
-target-version = ["py39"]
+target-version = ["py10"]
 
 [tool.coverage.run]
 source = ["evalml"]

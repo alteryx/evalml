@@ -1,0 +1,4 @@
+[darglint]
+ignore=DAR402
+ignore_regex=^_(.*)
+strictness=short

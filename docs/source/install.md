@@ -48,7 +48,7 @@ $ conda install -c conda-forge evalml-core
 
 EvalML includes several optional dependencies. The `xgboost` and `catboost` packages support pipelines built around those modeling libraries. The `plotly` and `ipywidgets` packages support plotting functionality in automl searches. These dependencies are recommended, and are included with EvalML by default but are not required in order to install and use EvalML.
 
-EvalML's core dependencies are listed in `core-requirements.txt` in the source code, while the default collection of requirements is specified in `setup.cfg`'s `install_requires`.
+EvalML's core dependencies are listed in `core-requirements.txt` in the source code, while the default collection of requirements is specified in `pyproject.toml`'s `dependencies`.
 
 To install EvalML with only the core-required dependencies with pypi, first download the EvalML source [from pypi](https://pypi.org/project/evalml/#files) or [github](https://github.com/alteryx/evalml) to access the requirements files before running the following command.
 

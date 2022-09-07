@@ -31,6 +31,6 @@ repos:
     rev: 22.3.0
     hooks:
       - id: black
-        args: [--target-version=py39]
+        args: [--target-version=py310]
         additional_dependencies: [".[jupyter]"]
         types_or: [python, jupyter]

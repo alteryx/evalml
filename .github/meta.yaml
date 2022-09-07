@@ -52,7 +52,7 @@ outputs:
         - nbval ==0.9.3
       source_files:
         - evalml/*
-        - setup.cfg
+        - pyproject.toml
       commands:
         - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
 
@@ -87,7 +87,7 @@ outputs:
         - pytest-xdist
       source_files:
         - evalml/*
-        - setup.cfg
+        - pyproject.toml
       commands:
         - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
 
