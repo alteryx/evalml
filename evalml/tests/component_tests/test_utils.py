@@ -3,9 +3,8 @@ import inspect
 import numpy as np
 import pandas as pd
 import pytest
-
-from woodwork.logical_types import Boolean, BooleanNullable, Double, Integer
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import Boolean, BooleanNullable, Double, Integer
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family import ModelFamily
@@ -267,7 +266,7 @@ def test_downcast_int_nullable_to_double(data_type):
     else:
         assert isinstance(df, np.ndarray)
 
-        
+
 def test_drop_natural_languages():
     X = pd.DataFrame(
         {

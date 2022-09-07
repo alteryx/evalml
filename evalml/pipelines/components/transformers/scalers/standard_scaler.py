@@ -1,4 +1,5 @@
 """A transformer that standardizes input features by removing the mean and scaling to unit variance."""
+import pandas as pd
 from sklearn.preprocessing import StandardScaler as SkScaler
 
 from evalml.pipelines.components.transformers import Transformer
