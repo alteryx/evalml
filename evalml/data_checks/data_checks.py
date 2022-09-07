@@ -95,10 +95,16 @@ class DataChecks:
             dict: Dictionary containing DataCheckMessage objects
         """
         messages = []
+        if y is not None:
+            assert list(X.index) == list(y.index)
         X = infer_feature_types(X)
+        if y is not None:
+            assert list(X.index) == list(y.index)
         X = X.ww.drop(list(X.ww.select("index", return_schema=True).columns))
         if y is not None:
+            assert list(X.index) == list(y.index)
             y = infer_feature_types(y)
+            assert list(X.index) == list(y.index)
 
         for data_check in self.data_checks:
             messages_new = data_check.validate(X, y)
