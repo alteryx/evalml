@@ -8,6 +8,7 @@ import sys
 
 import pkg_resources
 import tomli
+from packaging.requirements import Requirement
 
 import evalml
 from evalml.utils import get_logger
