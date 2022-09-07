@@ -117,9 +117,6 @@ complete = [
     "evalml[updater]",
 ]
 
-[project.scripts]
-featuretools = "featuretools.__main__:cli"
-
 [tool.setuptools]
 include-package-data = true
 license-files = [
