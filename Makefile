@@ -104,8 +104,12 @@ upgradepip:
 upgradebuild:
 	python -m pip install --upgrade build
 
+.PHONY: upgradesetuptools
+upgradesetuptools:
+	python -m pip install --upgrade setuptools
+
 .PHONY: package_evalml
-package_evalml: upgradepip upgradebuild
+package_evalml: upgradepip upgradebuild upgradesetuptools
 	python -m build
 	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
 	tar -zxvf "dist/evalml-${PACKAGE}.tar.gz"
