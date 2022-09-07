@@ -143,8 +143,7 @@ def get_evalml_pip_requirements(evalml_path, ignore_packages=None):
         toml_dict = tomli.load(f)
         for req in requirements:
             if len(req) > 1:
-                package = Requirement(req)
-                requirements.append(package)
+                requirements.append(Requirement(req))
 
     return standardize_format(
         requirements,
