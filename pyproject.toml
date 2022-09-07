@@ -83,6 +83,7 @@ test = [
     "codecov == 2.1.11",
     "PyYAML == 5.4",
     "coverage[toml] >= 6.4",
+    "tomli == 2.0.1",
 ]
 docs = [
     "docutils >=0.15.2, <0.17",
