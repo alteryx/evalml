@@ -85,7 +85,6 @@ class ReplaceNullableTypes(Transformer):
                     y_t = init_series(y_t, logical_type="Categorical")
         elif y is None:
             y_t = None
-
         return X_t, y_t
 
     def fit_transform(self, X, y=None):
