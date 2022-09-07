@@ -42,10 +42,14 @@ def infer_feature_types(data, feature_types=None):
     Raises:
         ValueError: If there is a mismatch between the dataframe and the woodwork schema.
     """
+    temp_data = data.copy()
+    assert list(data.index) == list(temp_data.index)
     if isinstance(data, list):
         data = _list_to_pandas(data)
+        assert list(data.index) == list(temp_data.index)
     elif isinstance(data, np.ndarray):
         data = _numpy_to_pandas(data)
+        assert list(data.index) == list(temp_data.index)
 
     if data.ww.schema is not None:
         if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(
@@ -62,7 +66,9 @@ def infer_feature_types(data, feature_types=None):
             else:
                 ww_error = f"{ww_error}. Please initialize ww with df.ww.init() to get rid of this message."
             raise ValueError(ww_error)
+        assert list(data.index) == list(temp_data.index)
         data.ww.init(schema=data.ww.schema)
+        assert list(data.index) == list(temp_data.index)
         return data
 
     if isinstance(data, pd.Series):
@@ -71,8 +77,13 @@ def infer_feature_types(data, feature_types=None):
             feature_types = "Double"
         return ww.init_series(data, logical_type=feature_types)
     else:
+        assert list(data.index) == list(temp_data.index)
         ww_data = data.copy()
+        assert list(data.index) == list(temp_data.index)
+        assert list(data.index) == list(ww_data.index)
         ww_data.ww.init(logical_types=feature_types)
+        assert list(data.index) == list(temp_data.index)
+        assert list(data.index) == list(ww_data.index)
         return ww_data
 
 
