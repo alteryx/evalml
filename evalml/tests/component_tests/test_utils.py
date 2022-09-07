@@ -4,7 +4,13 @@ import numpy as np
 import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
-from woodwork.logical_types import Boolean, BooleanNullable, Double, Integer
+from woodwork.logical_types import (
+    Boolean,
+    BooleanNullable,
+    Double,
+    Integer,
+    IntegerNullable,
+)
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family import ModelFamily
@@ -17,7 +23,6 @@ from evalml.pipelines.components import ComponentBase, RandomForestClassifier
 from evalml.pipelines.components.utils import (
     _all_estimators,
     all_components,
-    downcast_int_nullable_to_double,
     drop_natural_language_columns,
     estimator_unable_to_handle_nans,
     handle_component_class,
@@ -26,7 +31,7 @@ from evalml.pipelines.components.utils import (
     set_boolean_columns_to_categorical,
 )
 from evalml.problem_types import ProblemTypes
-from evalml.utils.woodwork_utils import infer_feature_types
+from evalml.utils.woodwork_utils import downcast_nullable_types, infer_feature_types
 
 binary = pd.Series([0] * 800 + [1] * 200)
 multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
@@ -238,33 +243,46 @@ def test_estimator_unable_to_handle_nans():
         estimator_unable_to_handle_nans("error")
 
 
-@pytest.mark.parametrize("data_type", ["ww", "pd", "np"])
-def test_downcast_int_nullable_to_double(data_type):
+@pytest.mark.parametrize("data_type", ["ww", "pd"])
+@pytest.mark.parametrize("force_double", [True, False])
+@pytest.mark.parametrize("force_bool", [False, False])
+def test_downcast_nullable_types(data_type, force_double, force_bool):
     df = pd.DataFrame()
     df["ints"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
-    df["ints_null"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, pd.NA] * 5
+    df["ints_nullable_with_nulls"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, pd.NA] * 5
     df["bools"] = [True, False, True, False, True] * 10
-    df["bools_null"] = [True, False, True, False, pd.NA] * 10
+    df["bools_nullable_with_nulls"] = [True, False, True, False, pd.NA] * 10
 
     if data_type == "ww":
         df.ww.init()
     elif data_type == "np":
         df = df.to_numpy()
 
-    df = downcast_int_nullable_to_double(df)
-
     expected_ltypes = {
         "ints": Integer,
-        "ints_null": Double,
+        "ints_nullable_with_nulls": IntegerNullable,
         "bools": Boolean,
-        "bools_null": BooleanNullable,
+        "bools_nullable_with_nulls": BooleanNullable,
     }
 
-    if data_type in ["ww", "pd"]:
-        for col, ltype in df.ww.logical_types.items():
-            assert str(ltype) == str(expected_ltypes[col])
-    else:
-        assert isinstance(df, np.ndarray)
+    df = downcast_nullable_types(df, force_double=force_double, force_bool=force_bool)
+
+    if force_bool or force_double:
+        if force_double:
+            expected_ltypes.update(
+                {
+                    "ints_nullable_with_nulls": Double,
+                },
+            )
+        if force_bool:
+            expected_ltypes.update(
+                {
+                    "bools_nullable_with_nulls": Boolean,
+                },
+            )
+
+    for col, ltype in df.ww.logical_types.items():
+        assert str(ltype) == str(expected_ltypes[col])
 
 
 def test_drop_natural_languages():

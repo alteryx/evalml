@@ -7,9 +7,8 @@ from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
-from evalml.pipelines.components.utils import downcast_int_nullable_to_double
 from evalml.problem_types import ProblemTypes
-from evalml.utils import import_or_raise, infer_feature_types
+from evalml.utils import downcast_nullable_types, import_or_raise, infer_feature_types
 
 
 class CatBoostRegressor(Estimator):
@@ -109,7 +108,7 @@ class CatBoostRegressor(Estimator):
         cat_cols = list(X.ww.select("category", return_schema=True).columns)
         self.input_feature_names = list(X.columns)
         X, y = super()._manage_woodwork(X, y)
-        X = downcast_int_nullable_to_double(X)
+        X = downcast_nullable_types(X, force_double=True)
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return self
 
