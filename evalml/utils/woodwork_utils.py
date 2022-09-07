@@ -2,6 +2,14 @@
 import numpy as np
 import pandas as pd
 import woodwork as ww
+from woodwork.logical_types import (
+    AgeNullable,
+    Boolean,
+    BooleanNullable,
+    Double,
+    Integer,
+    IntegerNullable,
+)
 
 from evalml.utils.gen_utils import is_all_numeric
 
@@ -128,10 +136,13 @@ def downcast_nullable_types(data, ignore_null_cols=True):
         data: DataFrame or Series initialized with logical type information where BooleanNullable are cast as Double.
     """
     if isinstance(data, pd.Series):
-        if data.ww.logical_type.type_string == "BooleanNullable":
-            data.ww.set_type("Boolean")
-        if data.ww.logical_type.type_string in ["IntegerNullable", "AgeNullable"]:
-            data.ww.set_type("Double")
+        if isinstance(data.ww.logical_type, ww.logical_types.BooleanNullable):
+            data = data.ww.set_logical_type("Boolean")
+        if isinstance(
+            data.ww.logical_type,
+            ww.logical_types.IntegerNullable,
+        ) or isinstance(data.ww.logical_type, ww.logical_types.AgeNullable):
+            data = data.ww.set_logical_type("Double")
         return data
 
     bool_nullable_cols = data.ww.select("BooleanNullable")

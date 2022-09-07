@@ -293,7 +293,7 @@ def test_downcast_nullable_types():
     )
     X.ww.init(logical_types={"int": "IntegerNullable", "bool": "BooleanNullable"})
 
-    X_t = downcast_nullable_types(X)
+    X_t = downcast_nullable_types(X.ww.copy())
     assert X_t.ww.logical_types["int"].type_string == "double"
     assert X_t.ww.logical_types["bool"].type_string == "boolean"
 
