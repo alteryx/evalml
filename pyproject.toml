@@ -99,7 +99,7 @@ docs = [
 ]
 dev = [
     "flake8 == 3.7.0",
-    "black[jupyter] == 22.3.0",
+    "black[jupyter] == 22.6.0",
     "isort == 5.10.1",
     "pydocstyle == 6.1.1",
     "darglint == 1.8.0",
