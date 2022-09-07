@@ -128,6 +128,8 @@ def downcast_nullable_types(X, ignore_null_cols=True):
     Returns:
         X: DataFrame initialized with logical type information where BooleanNullable are cast as Double.
     """
+    if X.ww.schema is None:
+        X = infer_feature_types(X)
     X_bool_nullable_cols = X.ww.select("BooleanNullable")
     X_int_nullable_cols = X.ww.select(["IntegerNullable", "AgeNullable"])
     non_null_columns = (
