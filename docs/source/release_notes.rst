@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Transition to use pyproject.toml only (move away from setup.cfg)  :pr:`3698`
     * Documentation Changes
     * Testing Changes
 
