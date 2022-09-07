@@ -5,6 +5,10 @@ from sklearn.impute import SimpleImputer as SkImputer
 from woodwork.logical_types import Double
 
 from evalml.pipelines.components.transformers import Transformer
+from evalml.pipelines.components.utils import (
+    drop_natural_language_columns,
+    set_boolean_columns_to_categorical,
+)
 from evalml.utils import infer_feature_types
 from evalml.utils.gen_utils import is_categorical_actually_boolean
 
@@ -46,24 +50,6 @@ class SimpleImputer(Transformer):
             random_seed=random_seed,
         )
 
-    def _drop_natural_language_columns(self, X):
-        natural_language_columns = list(
-            X.ww.select(["NaturalLanguage"], return_schema=True).columns.keys(),
-        )
-        if natural_language_columns:
-            X = X.ww.copy()
-            X = X.ww.drop(columns=natural_language_columns)
-        return X, natural_language_columns
-
-    def _set_boolean_columns_to_categorical(self, X):
-        boolean_columns = list(
-            X.ww.select(["Boolean"], return_schema=True).columns.keys(),
-        )
-        if boolean_columns:
-            X = X.ww.copy()
-            X.ww.set_types({col: "Categorical" for col in boolean_columns})
-        return X
-
     def fit(self, X, y=None):
         """Fits imputer to data. 'None' values are converted to np.nan before imputation and are treated as the same.
 
@@ -95,13 +81,12 @@ class SimpleImputer(Transformer):
         nan_ratio = X.isna().sum() / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
-        X, _ = self._drop_natural_language_columns(X)
-        X = self._set_boolean_columns_to_categorical(X)
+        X, _ = drop_natural_language_columns(X)
+        X = set_boolean_columns_to_categorical(X)
 
         # If the Dataframe only had natural language columns, do nothing.
         if X.shape[1] == 0:
             return self
-
         self._component_obj.fit(X, y)
         return self
 
@@ -126,8 +111,8 @@ class SimpleImputer(Transformer):
         original_index = X.index
 
         # Drop natural language columns and transform the other columns
-        X_t, natural_language_cols = self._drop_natural_language_columns(X)
-        if X_t.shape[-1] == 0:
+        X_t, natural_language_cols = drop_natural_language_columns(X)
+        if X_t.shape[1] == 0:
             return X
         not_all_null_or_natural_language_cols = [
             col for col in not_all_null_cols if col not in natural_language_cols
@@ -158,7 +143,6 @@ class SimpleImputer(Transformer):
 
         if not_all_null_or_natural_language_cols:
             X_t.index = original_index
-
         return X_t
 
     def fit_transform(self, X, y=None):

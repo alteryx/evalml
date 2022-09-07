@@ -128,16 +128,8 @@ def downcast_nullable_types(X, ignore_null_cols=True):
     Returns:
         X: DataFrame initialized with logical type information where BooleanNullable are cast as Double.
     """
-    X_schema = X.ww.schema
-    original_X_schema = X_schema.get_subset_schema(
-        subset_cols=X_schema._filter_cols(
-            exclude=["BooleanNullable", "IntegerNullable"],
-        ),
-    )
-    X_bool_nullable_cols = X_schema._filter_cols(include=["BooleanNullable"])
-    X_int_nullable_cols = X_schema._filter_cols(
-        include=["IntegerNullable", "AgeNullable"],
-    )
+    X_bool_nullable_cols = X.ww.select("BooleanNullable")
+    X_int_nullable_cols = X.ww.select(["IntegerNullable", "AgeNullable"])
     non_null_columns = (
         set(X.dropna(axis=1).columns) if ignore_null_cols else set(X.columns)
     )
@@ -145,7 +137,15 @@ def downcast_nullable_types(X, ignore_null_cols=True):
         col: "Boolean" for col in X_bool_nullable_cols if col in non_null_columns
     }
     new_ltypes.update(
+        {
+            col: "BooleanNullable"
+            for col in X_bool_nullable_cols
+            if col not in new_ltypes
+        },
+    )
+    new_ltypes.update(
         {col: "Double" for col in X_int_nullable_cols if col in non_null_columns},
     )
-    X.ww.init(schema=original_X_schema, logical_types=new_ltypes)
+    if new_ltypes:
+        X.ww.set_types(logical_types=new_ltypes)
     return X

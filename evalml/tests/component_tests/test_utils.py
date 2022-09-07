@@ -3,7 +3,9 @@ import inspect
 import numpy as np
 import pandas as pd
 import pytest
+
 from woodwork.logical_types import Boolean, BooleanNullable, Double, Integer
+from pandas.testing import assert_frame_equal
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family import ModelFamily
@@ -17,12 +19,15 @@ from evalml.pipelines.components.utils import (
     _all_estimators,
     all_components,
     downcast_int_nullable_to_double,
+    drop_natural_language_columns,
     estimator_unable_to_handle_nans,
     handle_component_class,
     make_balancing_dictionary,
     scikit_learn_wrapped_estimator,
+    set_boolean_columns_to_categorical,
 )
 from evalml.problem_types import ProblemTypes
+from evalml.utils.woodwork_utils import infer_feature_types
 
 binary = pd.Series([0] * 800 + [1] * 200)
 multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
@@ -48,6 +53,7 @@ all_requirements_set = set(
         "Extra Trees Regressor",
         "Imputer",
         "KNN Classifier",
+        "KNN Imputer",
         "LSA Transformer",
         "Label Encoder",
         "Linear Discriminant Analysis Transformer",
@@ -260,3 +266,74 @@ def test_downcast_int_nullable_to_double(data_type):
             assert str(ltype) == str(expected_ltypes[col])
     else:
         assert isinstance(df, np.ndarray)
+
+        
+def test_drop_natural_languages():
+    X = pd.DataFrame(
+        {
+            "bool with nan": pd.Series(
+                [True, pd.NA, False, pd.NA, False],
+                dtype="boolean",
+            ),
+            "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
+            "natural language": pd.Series(["asdf", "fdsa", "a", "b", "c"]),
+        },
+    )
+    X = infer_feature_types(X)
+    print(X.ww)
+    X.ww.set_types(
+        logical_types={
+            "natural language": "natural_language",
+        },
+    )
+    X_t, dropped_cols = drop_natural_language_columns(X)
+    expected_dropped = ["natural language"]
+    assert expected_dropped == dropped_cols
+    assert len(X_t.columns) == 2
+    X_expected = pd.DataFrame(
+        {
+            "bool with nan": pd.Series(
+                [True, pd.NA, False, pd.NA, False],
+                dtype="boolean",
+            ),
+            "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
+        },
+    )
+    assert_frame_equal(X_expected, X_t)
+
+
+def test_set_boolean_columns_to_categorical():
+    X = pd.DataFrame(
+        {
+            "bool with nan": pd.Series(
+                [True, pd.NA, False, pd.NA, False],
+                dtype="boolean",
+            ),
+            "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
+            "natural language": pd.Series(["asdf", "fdsa", "a", "b", "c"]),
+        },
+    )
+    X_e = pd.DataFrame(
+        {
+            "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
+        },
+    )
+    X_e = infer_feature_types(X_e)
+    X_e.ww.set_types(
+        logical_types={
+            "bool no nan": "Categorical",
+        },
+    )
+    X = infer_feature_types(X)
+    assert len(X.ww.select(["Categorical"]) == 0)
+
+    X = set_boolean_columns_to_categorical(X)
+
+    assert len(X.ww.select(["Categorical"]).columns) == 1
+    assert len(X.ww.select(["Categorical"]) == 5)
+
+    assert_frame_equal(
+        X.ww.select(["Categorical"]),
+        X_e.ww.select(["Categorical"]),
+        check_dtype=False,
+    )
