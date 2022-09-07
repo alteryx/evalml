@@ -147,7 +147,7 @@ namespaces = true
 ]
 
 [tool.setuptools.dynamic]
-version = {attr = "evalml.version.__version__"}
+version = {attr = "evalml.__version__"}
 
 
 [build-system]

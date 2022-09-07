@@ -1,5 +1,4 @@
 """EvalML."""
-from evalml.version import __version__
 import warnings
 
 # hack to prevent warnings from skopt
@@ -23,3 +22,5 @@ with warnings.catch_warnings():
     import skopt
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+__version__ = "0.57.0"
