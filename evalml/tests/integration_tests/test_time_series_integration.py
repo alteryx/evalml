@@ -207,3 +207,11 @@ def test_can_run_automl_for_time_series_with_exclude_featurizers(
     rankings = automl.rankings
     for score in rankings["validation_score"].values:
         assert pd.notnull(score)
+
+    num_pipelines = automl._num_pipelines()
+    for pipeline_number in range(num_pipelines):
+        pipeline = automl.get_pipeline(pipeline_number)
+        if pipeline.estimator.name in ["ARIMA Regressor", "Prophet Regressor"]:
+            assert not pipeline.should_drop_time_index
+        else:
+            assert pipeline.should_drop_time_index
