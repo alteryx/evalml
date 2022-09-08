@@ -341,6 +341,7 @@ def test_dask_sends_woodwork_schema(X_y_binary_cls):
         random_seed=automl_data.random_seed,
         X_schema=X.ww.schema,
         y_schema=y.ww.schema,
+        errors=automl_data.errors,
     )
 
     # TestSchemaCheckPipeline will verify that the schema is preserved by the time we call
