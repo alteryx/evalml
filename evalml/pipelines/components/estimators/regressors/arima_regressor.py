@@ -170,7 +170,7 @@ class ARIMARegressor(Estimator):
             ValueError: If y was not passed in.
         """
         if X is not None:
-            X = downcast_nullable_types(X, force_double=True)
+            X = downcast_nullable_types(X)
             X = X.fillna(X.mean())
         X, y = self._manage_woodwork(X, y)
         if y is None:

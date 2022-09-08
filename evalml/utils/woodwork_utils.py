@@ -121,16 +121,12 @@ def _schema_is_equal(first, other):
 def downcast_nullable_types(
     X,
     ignore_null_cols=True,
-    force_double=False,
-    force_bool=False,
 ):
     """Downcasts IntegerNullable, BooleanNullable types to Double, Boolean in order to support certain estimators like ARIMA, CatBoost, and LightGBM.
 
     Args:
         X (pd.DataFrame): Feature data.
         ignore_null_cols (bool): Whether to ignore downcasting columns with null values or not. Defaults to True.
-        force_double (bool): Forces IntegerNullable to Double. If this or force_bool, ignore_null_cols will be ignored.
-        force_bool (bool): Forces BooleanNullable to Boolean. If this or force_double, ignore_null_cols will be ignored.
 
     Returns:
         X: DataFrame initialized with logical type information where BooleanNullable are cast as Double.
@@ -138,39 +134,25 @@ def downcast_nullable_types(
     if X.ww.schema is None:
         X.ww.init()
 
-    new_ltypes = {}
     X_bool_nullable_cols = X.ww.select("BooleanNullable")
     X_int_nullable_cols = X.ww.select(["IntegerNullable", "AgeNullable"])
 
-    forced_downcast = False
-    if force_bool:
-        new_ltypes.update(
-            {col: "Boolean" for col in X_bool_nullable_cols},
-        )
-        forced_downcast = True
-    if force_double:
-        new_ltypes.update(
-            {col: "Double" for col in X_int_nullable_cols},
-        )
-        forced_downcast = True
-
-    if not forced_downcast:
-        non_null_columns = (
-            set(X.dropna(axis=1).columns) if ignore_null_cols else set(X.columns)
-        )
-        new_ltypes = {
-            col: "Boolean" for col in X_bool_nullable_cols if col in non_null_columns
-        }
-        new_ltypes.update(
-            {
-                col: "BooleanNullable"
-                for col in X_bool_nullable_cols
-                if col not in new_ltypes
-            },
-        )
-        new_ltypes.update(
-            {col: "Double" for col in X_int_nullable_cols if col in non_null_columns},
-        )
+    non_null_columns = (
+        set(X.dropna(axis=1).columns) if ignore_null_cols else set(X.columns)
+    )
+    new_ltypes = {
+        col: "Boolean" for col in X_bool_nullable_cols if col in non_null_columns
+    }
+    new_ltypes.update(
+        {
+            col: "BooleanNullable"
+            for col in X_bool_nullable_cols
+            if col not in new_ltypes
+        },
+    )
+    new_ltypes.update(
+        {col: "Double" for col in X_int_nullable_cols if col in non_null_columns},
+    )
 
     if new_ltypes:
         X.ww.set_types(logical_types=new_ltypes)

@@ -243,45 +243,42 @@ def test_estimator_unable_to_handle_nans():
         estimator_unable_to_handle_nans("error")
 
 
-@pytest.mark.parametrize("data_type", ["ww", "pd"])
-@pytest.mark.parametrize("force_double", [True, False])
-@pytest.mark.parametrize("force_bool", [False, False])
-def test_downcast_nullable_types(data_type, force_double, force_bool):
+def test_test_downcast_nullable_types_can_handle_no_schema():
     df = pd.DataFrame()
     df["ints"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
+
+    df_dc = downcast_nullable_types(df)
+
+    assert df_dc.ww.schema is not None
+
+
+@pytest.mark.parametrize("ignore_null_cols", [True, False])
+def test_downcast_nullable_types(ignore_null_cols):
+    df = pd.DataFrame()
+    df["ints"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
+    df["ints_nullable"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
     df["ints_nullable_with_nulls"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, pd.NA] * 5
     df["bools"] = [True, False, True, False, True] * 10
-    df["bools_nullable_with_nulls"] = [True, False, True, False, pd.NA] * 10
-
-    if data_type == "ww":
-        df.ww.init()
-    elif data_type == "np":
-        df = df.to_numpy()
+    df["bools_nullable"] = [True, False, True, False, True] * 10
 
     expected_ltypes = {
         "ints": Integer,
-        "ints_nullable_with_nulls": IntegerNullable,
+        "ints_nullable": Double,
+        "ints_nullable_with_nulls": IntegerNullable if ignore_null_cols else Double,
         "bools": Boolean,
-        "bools_nullable_with_nulls": BooleanNullable,
+        "bools_nullable": Boolean,
     }
 
-    df = downcast_nullable_types(df, force_double=force_double, force_bool=force_bool)
+    forced_ltypes = {
+        "ints_nullable": IntegerNullable,
+        "bools_nullable": BooleanNullable,
+    }
 
-    if force_bool or force_double:
-        if force_double:
-            expected_ltypes.update(
-                {
-                    "ints_nullable_with_nulls": Double,
-                },
-            )
-        if force_bool:
-            expected_ltypes.update(
-                {
-                    "bools_nullable_with_nulls": Boolean,
-                },
-            )
+    df.ww.init(logical_types=forced_ltypes)
 
-    for col, ltype in df.ww.logical_types.items():
+    df_dc = downcast_nullable_types(df, ignore_null_cols=ignore_null_cols)
+
+    for col, ltype in df_dc.ww.logical_types.items():
         assert str(ltype) == str(expected_ltypes[col])
 
 

@@ -165,7 +165,7 @@ class LightGBMRegressor(Estimator):
         X_encoded = self._encode_categories(X, fit=True)
         if y is not None:
             y = infer_feature_types(y)
-        X_encoded = downcast_nullable_types(X_encoded, force_double=True)
+        X_encoded = downcast_nullable_types(X_encoded)
         self._component_obj.fit(X_encoded, y)
         return self
 
