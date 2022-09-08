@@ -323,8 +323,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             for pipeline in pipelines:
                 if pipeline.name not in self._tuners:
                     self._create_tuner(pipeline)
-
-                select_parameters = self._create_select_parameters()
+                select_parameters = (
+                    self._create_select_parameters()
+                    if not is_time_series(self.problem_type)
+                    else {}
+                )
                 parameters = (
                     self._tuners[pipeline.name].get_starting_parameters(
                         self._hyperparameters,
