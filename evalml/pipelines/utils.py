@@ -866,7 +866,9 @@ def _make_pipeline_from_multiple_graphs(
         )
     if last_pre_estimator_component:
         component_graph[estimator.name] = (
-            [estimator] + [last_pre_estimator_component + ".x"] + [final_y]
+            [estimator]
+            + [last_pre_estimator_component + ".x"]
+            + [last_pre_estimator_component + ".y"]
         )
     else:
         component_graph[estimator.name] = (
