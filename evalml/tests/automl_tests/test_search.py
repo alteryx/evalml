@@ -159,3 +159,22 @@ def test_search_args(mock_automl_search, mock_data_checks_validate, X_y_binary):
             tolerance=0.5,
             mode="everything",
         )
+
+
+def test_this():
+    df = pd.read_csv(
+        "/Users/parthiv.naresh/Documents/Datasets/TimeSeriesRegression/AirPassengers.csv",
+    )
+    y = df.pop("#Passengers")
+
+    config = {"time_index": "Month", "gap": 0, "max_delay": 12, "forecast_horizon": 3}
+
+    aml = AutoMLSearch(
+        df,
+        y,
+        problem_type="time series regression",
+        problem_configuration=config,
+        verbose=True,
+    )
+    aml.search()
+    print(aml.full_rankings)
