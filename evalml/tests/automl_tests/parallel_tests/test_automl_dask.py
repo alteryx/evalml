@@ -36,7 +36,6 @@ def sequential_results(X_y_binary_cls):
     return seq_results
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize(
     "engine_str",
     engine_strs,
@@ -77,7 +76,6 @@ def test_automl(
     )
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize(
     "engine_str",
     engine_strs,
@@ -114,7 +112,6 @@ def test_automl_max_iterations(
     assert len(sequential_rankings) == len(parallel_rankings) == max_iterations
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize(
     "engine_str",
     engine_strs,
@@ -143,7 +140,6 @@ def test_automl_train_dask_error_callback(
     automl.close_engine()
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize(
     "engine_str",
     engine_strs,
@@ -172,7 +168,6 @@ def test_automl_score_dask_error_callback(
     automl.close_engine()
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize(
     "engine_str",
     engine_strs,
@@ -230,7 +225,6 @@ def test_automl_immediate_quit(
     automl.close_engine()
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize(
     "engine_str",
     engine_strs + ["sequential"],
@@ -266,7 +260,6 @@ def test_automl_convenience_exception(X_y_binary_cls):
         )
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize(
     "engine_str",
     engine_strs + ["cf_process"],
@@ -284,7 +277,6 @@ def test_automl_closes_engines(engine_str, X_y_binary_cls):
     assert automl._engine.is_closed
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize(
     "engine_str",
     engine_strs + ["sequential"],
