@@ -165,7 +165,7 @@ html_static_path = ["_static"]
 #
 # html_sidebars = {}
 html_js_files = [
-    "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js"
+    "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js",
 ]
 
 
@@ -330,14 +330,6 @@ class PatchedPythonDomain(PythonDomain):
 
 
 def setup(app):
-    p = Path("/home/docs/.ipython/profile_default/startup")
-    if p.exists():
-        print(f"Adding disable-warnings.py and set-headers.py to {str(p)}")
-        p.mkdir(parents=True, exist_ok=True)
-        shutil.copy(
-            "disable-warnings.py", "/home/docs/.ipython/profile_default/startup/"
-        )
-        shutil.copy("set-headers.py", "/home/docs/.ipython/profile_default/startup")
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_js_file(
         "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js",
