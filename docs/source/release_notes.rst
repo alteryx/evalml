@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Pass time index column to time series native estimators but drop otherwise :pr:`3691`
     * Fixes
+        * Fix search order changing when using ``DefaultAlgorithm`` :pr:`3704`
     * Changes
     * Documentation Changes
     * Testing Changes
