@@ -35,6 +35,22 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         """
         return self.estimator.predict_proba(features)
 
+    def fit(self, X, y):
+        """Fit a time series classification model.
+
+        Args:
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray): The target training labels of length [n_samples]
+
+        Returns:
+            self
+
+        Raises:
+            ValueError: If the number of unique classes in y are not appropriate for the type of pipeline.
+        """
+        X = self._drop_time_index(X)
+        return super().fit(X, y)
+
     def predict_proba_in_sample(self, X_holdout, y_holdout, X_train, y_train):
         """Predict on future data where the target is known, e.g. cross validation.
 
@@ -151,6 +167,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         """
         X, y = self._convert_to_woodwork(X, y)
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
+        X = self._drop_time_index(X)
+        X_train = self._drop_time_index(X_train)
         objectives = self.create_objectives(objectives)
         y_predicted, y_predicted_proba = self._compute_predictions(
             X,
