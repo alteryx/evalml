@@ -182,7 +182,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return estimators
 
     def _non_naive_estimators(self):
-        print(get_estimators(self.problem_type))
         return [
             est
             for est in get_estimators(self.problem_type)
