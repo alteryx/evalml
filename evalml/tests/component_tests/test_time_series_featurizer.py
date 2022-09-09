@@ -13,15 +13,6 @@ ROLLING_TRANSFORM_METHOD_NAME = "_compute_rolling_transforms"
 DELAYED_FEATURES_METHOD_NAME = "_compute_delays"
 
 
-# @pytest.fixture
-# def ts_data():
-#     X = pd.DataFrame(
-#         {"feature": range(1, 32), "date": pd.date_range("2021-01-01", periods=31)},
-#     )
-#     y = pd.Series(range(1, 32))
-#     return X, y
-
-
 def test_delayed_features_transformer_init():
     delayed_features = TimeSeriesFeaturizer(
         max_delay=4,
