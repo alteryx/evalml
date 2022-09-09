@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Pass time index column to time series native estimators but drop otherwise :pr:`3691`
+        * Added ``errors`` attribute to ``AutoMLSearch`` for useful debugging :pr:`3702`
     * Fixes
     * Changes
     * Documentation Changes
