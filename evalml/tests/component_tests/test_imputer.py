@@ -121,7 +121,7 @@ def test_numeric_only_input(imputer_test_data):
 
     imputer = Imputer()
     transformed = imputer.fit_transform(X, y)
-    expected["float with nan"] = [0.5, 1.0, 0.125, -1.0, 0.0] * 4
+    expected["float with nan"] = [0.3, 1.0, 0.075, -1.0, 0.0] * 4
     assert_frame_equal(transformed, expected, check_dtype=False)
 
 

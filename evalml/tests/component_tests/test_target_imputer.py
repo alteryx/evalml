@@ -153,7 +153,7 @@ def test_target_imputer_fit_transform_all_nan_empty(y):
 def test_target_imputer_numpy_input():
     y = np.array([np.nan, 0, 2])
     imputer = TargetImputer(impute_strategy="mean")
-    y_expected = pd.Series([1, 0, 2], dtype="int64")
+    y_expected = pd.Series([1, 0, 2], dtype="float64")
     _, y_t = imputer.fit_transform(None, y)
     assert y_expected.equals(y_t)
     np.testing.assert_almost_equal(y, np.array([np.nan, 0, 2]))

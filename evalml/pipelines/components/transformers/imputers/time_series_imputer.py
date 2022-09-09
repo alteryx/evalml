@@ -166,6 +166,7 @@ class TimeSeriesImputer(Transformer):
         if self._interpolate_cols is not None:
             X_interpolate = X.ww[self._interpolate_cols]
             # Pandas' interpolate function doesn't work with IntegerNullable types at this time
+            # https://github.com/pandas-dev/pandas/issues/40252
             X_interpolate = downcast_nullable_types(
                 X_interpolate,
                 ignore_null_cols=False,
