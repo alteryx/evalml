@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Pass time index column to time series native estimators but drop otherwise :pr:`3691`
     * Fixes
     * Changes
     * Documentation Changes
