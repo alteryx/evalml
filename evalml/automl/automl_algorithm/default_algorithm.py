@@ -182,9 +182,12 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return estimators
 
     def _non_naive_estimators(self):
-        return list(
-            set(get_estimators(self.problem_type)) - set(self._naive_estimators()),
-        )
+        print(get_estimators(self.problem_type))
+        return [
+            est
+            for est in get_estimators(self.problem_type)
+            if est not in self._naive_estimators()
+        ]
 
     def _init_pipelines_with_starter_params(self, pipelines):
         next_batch = []
