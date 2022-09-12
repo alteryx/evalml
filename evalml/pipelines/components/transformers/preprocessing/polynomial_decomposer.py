@@ -30,6 +30,11 @@ class PolynomialDecomposer(Decomposer):
         time_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
         degree (int): Degree for the polynomial. If 1, linear model is fit to the data.
             If 2, quadratic model is fit, etc. Defaults to 1.
+        seasonal_period (int): The number of entries in the time series data that corresponds to one period of a
+            cyclic signal.  For instance, if data is known to possess a weekly seasonal signal, and if the data
+            is daily data, seasonal_period should be 7.  For daily data with a yearly seasonal signal, seasonal_period
+            should be 365.  Defaults to -1, which uses the statsmodels libarary's freq_to_period function.
+            https://github.com/statsmodels/statsmodels/blob/main/statsmodels/tsa/tsatools.py
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -42,17 +47,30 @@ class PolynomialDecomposer(Decomposer):
     modifies_target = True
 
     def __init__(
-        self, time_index: str = None, degree: int = 1, random_seed: int = 0, **kwargs
+        self,
+        time_index: str = None,
+        degree: int = 1,
+        seasonal_period: int = -1,
+        random_seed: int = 0,
+        **kwargs,
     ):
-        if not isinstance(degree, int):
-            if isinstance(degree, float) and degree.is_integer():
-                degree = int(degree)
-            else:
-                raise TypeError(
-                    f"Parameter 'degree' must be an integer!: Received {type(degree).__name__}",
-                )
+        def raise_typeerror_if_not_int(var_name, var_value):
+            if not isinstance(var_value, int):
+                if isinstance(var_value, float) and var_value.is_integer():
+                    var_value = int(var_value)
+                else:
+                    raise TypeError(
+                        f"Parameter 'degree' must be an integer!: Received {type(degree).__name__}",
+                    )
+            return var_value
 
-        params = {"degree": degree}
+        degree = raise_typeerror_if_not_int("degree", degree)
+        self.seasonal_period = raise_typeerror_if_not_int(
+            "seasonal_period",
+            seasonal_period,
+        )
+
+        params = {"degree": degree, "seasonal_period": self.seasonal_period}
         params.update(kwargs)
         error_msg = "sktime is not installed. Please install using 'pip install sktime'"
 
@@ -183,11 +201,18 @@ class PolynomialDecomposer(Decomposer):
         # statsmodel's seasonal_decompose() repeats the seasonal signal over the length of
         # the given array.  We'll extract the first iteration and save it for use in .transform()
         # TODO: Resolve with https://github.com/alteryx/evalml/issues/3708
-        self.periodicity = freq_to_period(self.frequency)
+        if self.seasonal_period == -1:
+            self.periodicity = freq_to_period(self.frequency)
+        else:
+            self.periodicity = self.seasonal_period
 
-        self.seasonality = seasonal_decompose(y_detrended_with_time_index).seasonal[
-            0 : self.periodicity
-        ]
+        # self.seasonality = seasonal_decompose(y_detrended_with_time_index).seasonal[
+        #     0 : self.periodicity
+        # ]
+        self.seasonality = seasonal_decompose(
+            y_detrended_with_time_index,
+            period=self.periodicity,
+        ).seasonal[0 : self.periodicity]
 
         return self
 
@@ -329,7 +354,10 @@ class PolynomialDecomposer(Decomposer):
                 raise ValueError(
                     "PolynomialDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
                 )
-            seasonality = seasonal_decompose(y - trend).seasonal
+            seasonality = seasonal_decompose(
+                y - trend,
+                period=self.seasonal_period,
+            ).seasonal
             residual = y - trend - seasonality
             return pd.DataFrame(
                 {

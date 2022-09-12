@@ -11,7 +11,11 @@ from evalml.pipelines.components import PolynomialDecomposer
 
 def test_polynomial_decomposer_init():
     delayed_features = PolynomialDecomposer(degree=3, time_index="dates")
-    assert delayed_features.parameters == {"degree": 3, "time_index": "dates"}
+    assert delayed_features.parameters == {
+        "degree": 3,
+        "seasonal_period": -1,
+        "time_index": "dates",
+    }
 
 
 def test_polynomial_decomposer_init_raises_error_if_degree_not_int():
@@ -416,7 +420,7 @@ def test_pdc():
     import matplotlib.pyplot as plt
 
     step = 0.01
-    period = 5
+    period = 9
     freq = 2 * np.pi / period / step
     x = np.arange(0, 1, step)
     dts = pd.date_range(datetime.today(), periods=len(x))
@@ -428,7 +432,7 @@ def test_pdc():
     plt.plot(y[0:14], label="signal")
     plt.show()
 
-    pdc = PolynomialDecomposer(degree=3)
+    pdc = PolynomialDecomposer(degree=1, seasonal_period=period)
     pdc.fit_transform(X, y)
     res = pdc.get_trend_dataframe(X, y)
     plt.plot(y, label="signal")
