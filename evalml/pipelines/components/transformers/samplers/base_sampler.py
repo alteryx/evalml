@@ -60,7 +60,8 @@ class BaseSampler(Transformer):
             pd.DataFrame, pd.Series: Prepared X and y data as pandas types
         """
         X = infer_feature_types(X)
-        if len(X.ww.select(IntegerNullable).columns) > 0:
+        int_nullable_cols = X.ww.select(IntegerNullable).columns
+        if len(int_nullable_cols) > 0:
             try:
                 X = X.astype(
                     {

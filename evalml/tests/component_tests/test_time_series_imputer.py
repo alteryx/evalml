@@ -441,7 +441,7 @@ def test_imputer_unusual_types_as_categorical():
     assert_frame_equal(X_expected, X_t, check_dtype=False, check_categorical=False)
 
     X["categorical"] = pd.Series(["a", "b", "c", None] * 4, dtype="category")
-    X["numeric"] = pd.Series([2.0, np.NaN, 3, 4] * 4)
+    X["numeric"] = pd.Series([2.0, np.NaN, 3, 4] * 4, dtype="Int64")
     X.ww.init(logical_types={"urls": "url"})
 
     X_expected = pd.DataFrame(

@@ -118,10 +118,7 @@ def _schema_is_equal(first, other):
     return logical and semantic
 
 
-def downcast_nullable_types(
-    X,
-    ignore_null_cols=True,
-):
+def downcast_nullable_types(X, ignore_null_cols=True):
     """Downcasts IntegerNullable, BooleanNullable types to Double and Boolean respectively.
 
     Args:

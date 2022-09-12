@@ -39,6 +39,20 @@ def _expect_double_for_categorical(expected, encode_X_as_str=True):
     return logical_types
 
 
+def _expect_ltypes_by_column(df):
+    ltypes = {}
+    for col in df.columns:
+        if not isinstance(col, str):
+            continue
+        if "feature_delay" in col:
+            ltypes[col] = IntegerNullable
+        elif "rolling_mean" in col:
+            ltypes[col] = (
+                IntegerNullable if df[col].dropna().mod(1).eq(0).all() else Double
+            )
+    return ltypes
+
+
 def test_delayed_features_transformer_init():
     delayed_features = TimeSeriesFeaturizer(
         max_delay=4,
@@ -160,7 +174,8 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
             "target_delay_4": y_answer.shift(4),
         },
     )
-    answer_only_y.ww.init()
+    logical_types = _expect_ltypes_by_column(answer_only_y)
+    answer_only_y.ww.init(logical_types=logical_types)
     assert_frame_equal(
         answer_only_y,
         TimeSeriesFeaturizer(
@@ -236,7 +251,8 @@ def test_delayed_feature_extractor_maxdelay5_forecasthorizon1_gap0(
             "target_delay_6": y_answer.shift(6),
         },
     )
-    answer_only_y.ww.init()
+    logical_types = _expect_ltypes_by_column(answer_only_y)
+    answer_only_y.ww.init(logical_types=logical_types)
     assert_frame_equal(
         answer_only_y,
         TimeSeriesFeaturizer(
@@ -304,7 +320,8 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
             "target_delay_11": y_answer.shift(11),
         },
     )
-    answer_only_y.ww.init()
+    logical_types = _expect_ltypes_by_column(answer_only_y)
+    answer_only_y.ww.init(logical_types=logical_types)
     assert_frame_equal(
         answer_only_y,
         TimeSeriesFeaturizer(
@@ -336,7 +353,8 @@ def test_delayed_feature_extractor_numpy(mock_roll, delayed_features_data):
             "target_delay_11": y_answer.shift(11),
         },
     )
-    answer.ww.init()
+    logical_types = _expect_ltypes_by_column(answer)
+    answer.ww.init(logical_types=logical_types)
     res = TimeSeriesFeaturizer(
         max_delay=3,
         forecast_horizon=7,
@@ -358,7 +376,8 @@ def test_delayed_feature_extractor_numpy(mock_roll, delayed_features_data):
             "target_delay_11": y_answer.shift(11),
         },
     )
-    answer_only_y.ww.init()
+    logical_types = _expect_ltypes_by_column(answer_only_y)
+    answer_only_y.ww.init(logical_types=logical_types)
     assert_frame_equal(
         answer_only_y,
         TimeSeriesFeaturizer(
@@ -644,7 +663,8 @@ def test_delay_feature_transformer_y_is_none(delayed_features_data):
             "feature_rolling_mean": X.feature.shift(11).rolling(2, 2).mean(),
         },
     )
-    answer.ww.init()
+    logical_types = _expect_ltypes_by_column(answer)
+    answer.ww.init(logical_types=logical_types)
     assert_frame_equal(
         answer,
         TimeSeriesFeaturizer(
@@ -709,7 +729,8 @@ def test_time_series_featurizer_rolling_mean(
             "target_rolling_mean": rolling_means_target,
         },
     )
-    expected.ww.init()
+    logical_types = _expect_ltypes_by_column(expected)
+    expected.ww.init(logical_types=logical_types)
     assert_frame_equal(output, expected)
 
 
@@ -749,7 +770,8 @@ def test_time_series_featurizer_does_not_need_to_delay_to_compute_means(
             "target_rolling_mean": rolling_means_target,
         },
     )
-    expected.ww.init()
+    logical_types = _expect_ltypes_by_column(expected)
+    expected.ww.init(logical_types=logical_types)
     assert_frame_equal(output, expected)
 
 
@@ -829,7 +851,8 @@ def test_delayed_feature_transformer_conf_level(
     )
     # Sort columns in alphabetical order
     answer = answer.sort_index(axis=1)
-    answer.ww.init()
+    logical_types = _expect_ltypes_by_column(answer)
+    answer.ww.init(logical_types=logical_types)
     assert_frame_equal(new_X, answer)
 
 
@@ -883,7 +906,8 @@ def test_delayed_feature_transformer_selects_first_lag_if_none_significant(
             f"target_delay_{1 + FORECAST_HORIZON}": y.shift(1 + FORECAST_HORIZON),
         },
     )
-    answer.ww.init()
+    logical_types = _expect_ltypes_by_column(answer)
+    answer.ww.init(logical_types=logical_types)
     assert_frame_equal(new_X, answer)
 
 

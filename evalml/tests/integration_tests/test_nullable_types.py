@@ -73,12 +73,7 @@ def test_imputer_can_impute_features_generated_from_null_email_url_features():
         {
             "email": ["me@email.com", "foo@bar.org", "baz@foo.gov", None],
             "url": ["evalml.org", "woodwork.gov", None, "compose.edu"],
-            "number": [
-                1,
-                None,
-                3,
-                4,
-            ],
+            "number": [1, None, 3, 4],
             "another number": [7, 8, 9, 10],
             "categorical": ["boo", "bar", "baz", "go"],
         },
