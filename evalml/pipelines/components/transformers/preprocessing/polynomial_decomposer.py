@@ -203,12 +203,10 @@ class PolynomialDecomposer(Decomposer):
         # TODO: Resolve with https://github.com/alteryx/evalml/issues/3708
         if self.seasonal_period == -1:
             self.periodicity = freq_to_period(self.frequency)
+            self.seasonal_period = self.periodicity
         else:
             self.periodicity = self.seasonal_period
 
-        # self.seasonality = seasonal_decompose(y_detrended_with_time_index).seasonal[
-        #     0 : self.periodicity
-        # ]
         self.seasonality = seasonal_decompose(
             y_detrended_with_time_index,
             period=self.periodicity,
