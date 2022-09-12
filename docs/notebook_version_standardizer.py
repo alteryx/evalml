@@ -89,7 +89,10 @@ def _standardize_outputs(notebooks):
 def _check_delete_empty_cell(notebook, delete=True):
     with open(notebook, "r") as f:
         source = json.load(f)
-        cell = source["cells"][-1]
+        try:
+            cell = source["cells"][-1]
+        except:
+            return True
         if cell["cell_type"] == "code" and cell["source"] == []:
             # this is an empty cell, which we should delete
             if delete:
@@ -146,7 +149,7 @@ def standardize(desired_version):
         desired_version,
     )
     executed_notebooks, empty_cells = _get_notebooks_with_executions_and_empty(
-        notebooks
+        notebooks,
     )
     if different_versions:
         _standardize_versions(different_versions, desired_version)
@@ -175,7 +178,7 @@ def standardize(desired_version):
 def check_execution():
     notebooks = _get_ipython_notebooks(DOCS_PATH)
     executed_notebooks, empty_cells = _get_notebooks_with_executions_and_empty(
-        notebooks
+        notebooks,
     )
     if executed_notebooks:
         executed_notebooks = ["\t" + notebook for notebook in executed_notebooks]

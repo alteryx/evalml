@@ -182,6 +182,7 @@ class PolynomialDecomposer(Decomposer):
 
         # statsmodel's seasonal_decompose() repeats the seasonal signal over the length of
         # the given array.  We'll extract the first iteration and save it for use in .transform()
+        # TODO: Resolve with https://github.com/alteryx/evalml/issues/3708
         self.periodicity = freq_to_period(self.frequency)
 
         self.seasonality = seasonal_decompose(y_detrended_with_time_index).seasonal[

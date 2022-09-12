@@ -5,6 +5,7 @@ import woodwork as ww
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
+from evalml.demos import load_weather
 from evalml.pipelines.components import PolynomialDecomposer
 
 
@@ -383,3 +384,56 @@ def test_polynomial_decomposer_uses_time_index(
     else:
         # Smoke test the fit_transform() method
         decomposer.fit_transform(X, y)
+
+
+@pytest.mark.parametrize("test", [0, 1])
+def test_polynomial_decomposer_bug(test):
+    X, y = load_weather()
+    pdc = PolynomialDecomposer(degree=3)
+    X = X.set_index("Date").asfreq("d")
+    y = y.set_axis(X.index)
+    X_t, y_t = pdc.fit_transform(X, y)
+    import matplotlib.pyplot as plt
+
+    # plt.plot(y.set_axis(X["Date"]), "bo")
+    # plt.plot(y_t, "rx")
+    # plt.show()
+    # freq = X.ww.infer_temporal_frequencies()["Date"]
+    # X_train_time = X.set_index("Date").asfreq(freq)
+    # y = y.set_axis(X_train_time.index)
+    res = pdc.get_trend_dataframe(X, y)
+    plt.plot(y, label="signal")
+    plt.plot(res[0]["trend"], label="trend")
+    plt.plot(res[0]["seasonality"], label="seasonality")
+    plt.plot(res[0]["residual"], label="residual")
+    plt.legend()
+    plt.show()
+
+
+def test_pdc():
+    from datetime import datetime
+
+    import matplotlib.pyplot as plt
+
+    step = 0.01
+    period = 5
+    freq = 2 * np.pi / period / step
+    x = np.arange(0, 1, step)
+    dts = pd.date_range(datetime.today(), periods=len(x))
+    X = pd.DataFrame({"x": x})
+    X = X.set_index(dts)
+    y = pd.Series(np.sin(freq * x) + x + 2)
+    y = y.set_axis(X.index)
+
+    plt.plot(y[0:14], label="signal")
+    plt.show()
+
+    pdc = PolynomialDecomposer(degree=3)
+    pdc.fit_transform(X, y)
+    res = pdc.get_trend_dataframe(X, y)
+    plt.plot(y, label="signal")
+    plt.plot(res[0]["trend"], label="trend")
+    plt.plot(res[0]["seasonality"], label="seasonality")
+    plt.plot(res[0]["residual"], label="residual")
+    plt.legend()
+    plt.show()
