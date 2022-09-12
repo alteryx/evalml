@@ -50,6 +50,26 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             parameters=parameters,
             random_seed=random_seed,
         )
+        datetime_featurizer_included = (
+            "DateTime Featurizer" in self.component_graph.compute_order
+            or "Not Known In Advance Pipeline - DateTime Featurizer"
+            in self.component_graph.compute_order
+        )
+        time_series_featurizer_included = (
+            "Time Series Featurizer" in self.component_graph.compute_order
+            or "Not Known In Advance Pipeline - Time Series Featurizer"
+            in self.component_graph.compute_order
+        )
+        time_series_native_estimators = [
+            "ARIMA Regressor",
+            "Prophet Regressor",
+        ]
+        self.should_drop_time_index = (
+            not datetime_featurizer_included
+            and not time_series_featurizer_included
+            and self.estimator is not None
+            and self.estimator.name not in time_series_native_estimators
+        )
 
     @staticmethod
     def _convert_to_woodwork(X, y):
@@ -114,6 +134,12 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         )
         return padded_features, padded_target
 
+    def _drop_time_index(self, X):
+        """Helper method to drop the time index column from the data if DateTime Featurizer is not present."""
+        if self.should_drop_time_index and self.time_index in X.columns:
+            X = X.drop(columns=[self.time_index])
+        return X
+
     def transform_all_but_final(self, X, y=None, X_train=None, y_train=None):
         """Transforms the data by applying all pre-processing components.
 
@@ -132,7 +158,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         X, y = self._convert_to_woodwork(X, y)
 
         empty_training_data = X_train.empty or y_train.empty
-        if empty_training_data:
+        if empty_training_data or self.should_drop_time_index:
             features_holdout = super().transform_all_but_final(X, y)
         else:
             padded_features, padded_target = self._add_training_data_to_X_Y(
@@ -165,6 +191,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             raise ValueError(
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator.",
             )
+        X = self._drop_time_index(X)
+        X_train = self._drop_time_index(X_train)
         target = infer_feature_types(y)
         features = self.transform_all_but_final(X, target, X_train, y_train)
         predictions = self._estimator_predict(features)
@@ -202,6 +230,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             raise ValueError(
                 "Make sure to include an input for y_train when calling time series' predict",
             )
+        X = self._drop_time_index(X)
+        X_train = self._drop_time_index(X_train)
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         if self.estimator is None:
             raise ValueError(

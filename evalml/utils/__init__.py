@@ -32,5 +32,6 @@ from evalml.utils.woodwork_utils import (
     infer_feature_types,
     _convert_numeric_dataset_pandas,
     _schema_is_equal,
+    downcast_int_nullable_to_double,
     downcast_nullable_types,
 )

@@ -1141,7 +1141,7 @@ def dummy_ts_binary_tree_classifier_pipeline_class():
 
     class MockBinaryClassificationPipeline(TimeSeriesBinaryClassificationPipeline):
         estimator = dec_tree_classifier
-        component_graph = [estimator]
+        component_graph = ["DateTime Featurizer", estimator]
 
         def __init__(
             self,

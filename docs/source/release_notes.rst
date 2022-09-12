@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Updated to run with Woodwork >= 0.18.0 :pr:`3700`, :pr:`3701`
+        * Pass time index column to time series native estimators but drop otherwise :pr:`3691`
     * Fixes
     * Changes
     * Documentation Changes

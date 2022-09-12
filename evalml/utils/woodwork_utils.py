@@ -122,7 +122,7 @@ def downcast_nullable_types(
     X,
     ignore_null_cols=True,
 ):
-    """Downcasts IntegerNullable, BooleanNullable types to Double, Boolean in order to support certain estimators like ARIMA, CatBoost, and LightGBM.
+    """Downcasts IntegerNullable, BooleanNullable types to Double and Boolean respectively.
 
     Args:
         X (pd.DataFrame): Feature data.
@@ -154,6 +154,25 @@ def downcast_nullable_types(
         {col: "Double" for col in X_int_nullable_cols if col in non_null_columns},
     )
 
+    if new_ltypes:
+        X.ww.set_types(logical_types=new_ltypes)
+    return X
+
+
+def downcast_int_nullable_to_double(X):
+    """Downcasts IntegerNullable type to Double in order to support certain estimators like ARIMA, CatBoost, and LightGBM.
+
+    Args:
+        X (pd.DataFrame): Feature data.
+
+    Returns:
+        X: DataFrame initialized with logical type information where IntegerNullable are cast as Double.
+    """
+    if X.ww.schema is None:
+        X.ww.init()
+
+    X_int_nullable_cols = X.ww.select(["IntegerNullable", "AgeNullable"])
+    new_ltypes = {col: "Double" for col in X_int_nullable_cols}
     if new_ltypes:
         X.ww.set_types(logical_types=new_ltypes)
     return X

@@ -31,7 +31,11 @@ from evalml.pipelines.components.utils import (
     set_boolean_columns_to_categorical,
 )
 from evalml.problem_types import ProblemTypes
-from evalml.utils.woodwork_utils import downcast_nullable_types, infer_feature_types
+from evalml.utils.woodwork_utils import (
+    downcast_int_nullable_to_double,
+    downcast_nullable_types,
+    infer_feature_types,
+)
 
 binary = pd.Series([0] * 800 + [1] * 200)
 multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
@@ -282,6 +286,28 @@ def test_downcast_nullable_types(ignore_null_cols):
         assert str(ltype) == str(expected_ltypes[col])
 
 
+def test_downcast_int_nullable_to_double():
+    df = pd.DataFrame()
+    df["ints"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
+    df["ints_nullable"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
+    df["ints_nullable_with_nulls"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, pd.NA] * 5
+
+    expected_ltypes = {
+        "ints": Integer,
+        "ints_nullable": Double,
+        "ints_nullable_with_nulls": Double,
+    }
+
+    forced_ltypes = {
+        "ints_nullable": IntegerNullable,
+    }
+    df.ww.init(logical_types=forced_ltypes)
+    df_dc = downcast_int_nullable_to_double(df)
+
+    for col, ltype in df_dc.ww.logical_types.items():
+        assert str(ltype) == str(expected_ltypes[col])
+
+
 def test_drop_natural_languages():
     X = pd.DataFrame(
         {
@@ -294,7 +320,6 @@ def test_drop_natural_languages():
         },
     )
     X = infer_feature_types(X)
-    print(X.ww)
     X.ww.set_types(
         logical_types={
             "natural language": "natural_language",
