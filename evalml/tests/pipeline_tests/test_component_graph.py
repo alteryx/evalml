@@ -2761,6 +2761,6 @@ def test_get_component_input_logical_types():
     no_estimator.fit(X, y)
     assert no_estimator.last_component_input_logical_types == {
         "cat": Categorical(),
-        "numeric": Integer(),
+        "numeric": Double(),
         "email": EmailAddress(),
     }

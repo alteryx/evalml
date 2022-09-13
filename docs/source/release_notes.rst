@@ -2,6 +2,8 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Updated to run with Woodwork >= 0.18.0 :pr:`3700`
+        * Pass time index column to time series native estimators but drop otherwise :pr:`3691`
     * Fixes
     * Changes
         * Added support for using ``downcast_nullable_types`` with Series as well as DataFrames :pr:`3697`

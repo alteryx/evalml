@@ -135,7 +135,7 @@ def test_categorical_only_input(imputer_test_data):
     )
     imputer = TimeSeriesImputer()
     transformed, _ = imputer.fit_transform(X, y)
-    assert_frame_equal(transformed, expected, check_dtype=False)
+    assert_frame_equal(transformed, expected, check_dtype=True)
     assert "all nan cat" not in transformed.columns
 
     expected["categorical with nan"] = pd.Series(
@@ -152,7 +152,7 @@ def test_categorical_only_input(imputer_test_data):
 
     imputer = TimeSeriesImputer(categorical_impute_strategy="backwards_fill")
     transformed, _ = imputer.fit_transform(X, y)
-    assert_frame_equal(transformed, expected, check_dtype=False)
+    assert_frame_equal(transformed, expected, check_dtype=True)
 
 
 def test_categorical_and_numeric_input(imputer_test_data):
@@ -305,7 +305,18 @@ def test_imputer_does_not_reset_index():
     imputer = TimeSeriesImputer()
     imputer.fit(X, y=y)
     transformed, _ = imputer.transform(X)
-    pd.testing.assert_frame_equal(transformed, expected)
+    expected = pd.DataFrame(
+        {
+            "input_val": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            "input_cat": pd.Categorical(["a"] * 6 + ["b"] * 3),
+        },
+        index=list(range(1, 10)),
+    ).astype({"input_val": float})
+
+    pd.testing.assert_frame_equal(
+        transformed,
+        expected,
+    )
 
 
 def test_imputer_no_nans(imputer_test_data):
@@ -448,7 +459,7 @@ def test_imputer_unusual_types_as_categorical():
     imputer = TimeSeriesImputer(categorical_impute_strategy="backwards_fill")
     imputer.fit(X, y)
     X_t, _ = imputer.transform(X)
-    assert_frame_equal(X_expected, X_t, check_dtype=False)
+    assert_frame_equal(X_expected, X_t, check_dtype=False, check_categorical=False)
 
     X["categorical"] = pd.Series(["a", "b", "c", None] * 4, dtype="category")
     X["numeric"] = pd.Series([2, np.NaN, 4, 5] * 4)
@@ -478,7 +489,7 @@ def test_imputer_unusual_types_as_categorical():
     imputer = TimeSeriesImputer(categorical_impute_strategy="forwards_fill")
     imputer.fit(X, y)
     X_t, _ = imputer.transform(X)
-    assert_frame_equal(X_expected, X_t, check_dtype=False)
+    assert_frame_equal(X_expected, X_t, check_dtype=False, check_categorical=False)
 
 
 @pytest.mark.parametrize("data_type", ["pd", "ww"])

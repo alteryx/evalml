@@ -331,7 +331,8 @@ def test_per_column_imputer_column_subset():
     )
     X_expected.ww.init(
         logical_types={
-            "all_nan_not_included": "double",
+            "all_nan_not_included": "Double",
+            "column_with_nan_not_included": "IntegerNullable",
             "column_with_nan_included": "IntegerNullable",
         },
     )
@@ -339,9 +340,18 @@ def test_per_column_imputer_column_subset():
         logical_types={"all_nan_included": "Double", "all_nan_not_included": "Double"},
     )
     X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected, X_t, check_dtype=False)
-    assert "all_nan_not_included" in X.columns
-    assert "all_nan_included" in X.columns
+    assert_frame_equal(X_expected, X_t)
+    assert_frame_equal(
+        X,
+        pd.DataFrame(
+            {
+                "all_nan_not_included": [np.nan, np.nan, np.nan],
+                "all_nan_included": [np.nan, np.nan, np.nan],
+                "column_with_nan_not_included": [pd.NA, 1, 0],
+                "column_with_nan_included": [0, 1, 0],
+            },
+        ).astype({"column_with_nan_not_included": "Int64"}),
+    )
 
 
 def test_per_column_imputer_impute_strategies_is_None():

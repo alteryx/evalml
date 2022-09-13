@@ -182,11 +182,10 @@ def test_simple_imputer_fit_transform_drop_all_nan_columns():
         pd.DataFrame(
             {
                 "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [np.nan, 1, 0],
+                "some_nan": [pd.NA, 1, 0],
                 "another_col": [0, 1, 2],
             },
-        ),
-        check_dtype=False,
+        ).astype({"some_nan": "Int64"}),
     )
 
 
@@ -208,11 +207,10 @@ def test_simple_imputer_transform_drop_all_nan_columns():
         pd.DataFrame(
             {
                 "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [np.nan, 1, 0],
+                "some_nan": [pd.NA, 1, 0],
                 "another_col": [0, 1, 2],
             },
-        ),
-        check_dtype=False,
+        ).astype({"some_nan": "Int64"}),
     )
 
 
@@ -529,6 +527,8 @@ def test_simple_imputer_ignores_natural_language(
 
     if has_nan == "has_nan":
         X_df.iloc[-1, :] = None
+        if "int col" in X_df:
+            X_df = X_df.astype({"int col": "Int64"})
         X_df.ww.init()
     y = pd.Series([x for x in range(X_df.shape[1])])
 
@@ -556,6 +556,9 @@ def test_simple_imputer_ignores_natural_language(
         elif numeric_impute_strategy == "median" and has_nan == "has_nan":
             ans = X_df.median()
             ans["natural language col"] = pd.NA
+            X_df = X_df.astype(
+                {"int col": float},
+            )  # Convert to float as the imputer will do this as we're requesting the mean
             X_df.iloc[-1, :] = ans
         elif numeric_impute_strategy == "constant" and has_nan == "has_nan":
             X_df.iloc[-1, 0:2] = fill_value

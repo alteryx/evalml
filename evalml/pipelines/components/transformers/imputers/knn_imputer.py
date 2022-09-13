@@ -51,11 +51,10 @@ class KNNImputer(Transformer):
 
         """
         X = infer_feature_types(X)
-
-        nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
-        self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
-
         X, _ = drop_natural_language_columns(X)
+
+        nan_ratio = X.isna().sum() / X.shape[0]
+        self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
         # If the Dataframe only had natural language columns, do nothing.
         if X.shape[1] == 0:
@@ -93,9 +92,11 @@ class KNNImputer(Transformer):
         X_schema = X.ww.schema
 
         X_bool_nullable_cols = X_schema._filter_cols(include=["BooleanNullable"])
-        new_ltypes_for_bool_nullable_cols = {
-            col: "Boolean" for col in X_bool_nullable_cols
-        }
+        X_int_nullable_cols = X_schema._filter_cols(include=["IntegerNullable"])
+        new_ltypes_for_nullable_cols = {col: "Boolean" for col in X_bool_nullable_cols}
+        new_ltypes_for_nullable_cols.update(
+            {col: "Double" for col in X_int_nullable_cols},
+        )
 
         # Add back in natural language columns, unchanged
         if len(natural_language_cols) > 0:
@@ -103,7 +104,7 @@ class KNNImputer(Transformer):
 
         X_t.ww.init(
             schema=X_schema,
-            logical_types=new_ltypes_for_bool_nullable_cols,
+            logical_types=new_ltypes_for_nullable_cols,
         )
 
         if not_all_null_or_natural_language_cols:

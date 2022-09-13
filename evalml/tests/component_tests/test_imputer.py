@@ -11,7 +11,6 @@ from woodwork.logical_types import (
     BooleanNullable,
     Categorical,
     Double,
-    Integer,
     NaturalLanguage,
 )
 
@@ -119,9 +118,9 @@ def test_numeric_only_input(imputer_test_data):
     )
     assert_frame_equal(transformed, expected, check_dtype=False)
 
-    imputer = Imputer()
+    imputer = Imputer(numeric_impute_strategy="median")
     transformed = imputer.fit_transform(X, y)
-    expected["float with nan"] = [0.3, 1.0, 0.075, -1.0, 0.0] * 4
+    expected["float with nan"] = [0.3, 1.0, 0.15, -1.0, 0.0] * 4
     assert_frame_equal(transformed, expected, check_dtype=False)
 
 
@@ -588,7 +587,9 @@ def test_imputer_int_preserved():
         transformed,
         pd.DataFrame(pd.Series([1, 2, 11, 14 / 3])),
     )
-    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Double}
+    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+        0: Double,
+    }
 
     X = pd.DataFrame(pd.Series([1, 2, 3, np.nan]))
     imputer = Imputer(numeric_impute_strategy="mean")
@@ -598,7 +599,9 @@ def test_imputer_int_preserved():
         pd.DataFrame(pd.Series([1, 2, 3, 2])),
         check_dtype=False,
     )
-    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Double}
+    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+        0: Double,
+    }
 
     X = pd.DataFrame(pd.Series([1, 2, 3, 4], dtype="int"))
     imputer = Imputer(numeric_impute_strategy="mean")
@@ -608,7 +611,7 @@ def test_imputer_int_preserved():
         pd.DataFrame(pd.Series([1, 2, 3, 4])),
         check_dtype=False,
     )
-    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Integer}
+    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Double}
 
 
 @pytest.mark.parametrize("null_type", ["pandas_na", "numpy_nan", "python_none"])
@@ -683,7 +686,7 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
         "bool col": imputer_test_data[["bool col"]],
     }[data]
     logical_type = {
-        "Integer": Integer,
+        "Integer": Double,
         "Double": Double,
         "Categorical": Categorical,
         "NaturalLanguage": NaturalLanguage,

@@ -286,8 +286,8 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
     y = pd.Series([0, 1, np.nan, 1, 0])
     y_multiclass = pd.Series([0, 1, np.nan, 2, 0])
     if input_type == "ww":
-        y = ww.init_series(y, logical_type="double")
-        y_multiclass = ww.init_series(y_multiclass, logical_type="double")
+        y = ww.init_series(y)
+        y_multiclass = ww.init_series(y_multiclass)
 
     data_checks = DefaultDataChecks(
         "binary",
@@ -295,7 +295,7 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
     )
     imbalance = [
         DataCheckError(
-            message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 1.0]",
+            message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0, 1]",
             data_check_name="ClassImbalanceDataCheck",
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": [0.0, 1.0]},
@@ -319,7 +319,7 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
     # multiclass
     imbalance = [
         DataCheckError(
-            message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 1.0, 2.0]",
+            message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0, 1, 2]",
             data_check_name="ClassImbalanceDataCheck",
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": [0.0, 1.0, 2.0]},
@@ -435,7 +435,6 @@ def test_default_data_checks_null_rows():
         },
     )
     y = pd.Series([0, 1, np.nan, 1, 0])
-    y.ww.init(logical_type="double")
     data_checks = DefaultDataChecks(
         "regression",
         get_default_primary_search_objective("regression"),
@@ -504,6 +503,14 @@ def test_default_data_checks_null_rows():
                     metadata={"columns": ["all_null", "also_all_null"]},
                 ),
             ],
+        ).to_dict(),
+        DataCheckError(
+            message="Target is unsupported integer_nullable type. Valid Woodwork "
+            "logical types include: integer, double",
+            data_check_name="TargetDistributionDataCheck",
+            message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
+            details={"unsupported_type": "integer_nullable"},
+            action_options=[],
         ).to_dict(),
     ]
     validation_messages = data_checks.validate(X, y)

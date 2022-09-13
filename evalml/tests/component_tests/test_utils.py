@@ -248,7 +248,6 @@ def test_drop_natural_languages():
         },
     )
     X = infer_feature_types(X)
-    print(X.ww)
     X.ww.set_types(
         logical_types={
             "natural language": "natural_language",
