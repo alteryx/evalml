@@ -4046,8 +4046,8 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
     baseline.fit(X_train, y_train)
 
     expected_predictions = y.shift(1)[4:]
+    expected_predictions = expected_predictions.astype("int64")
     if problem_type != ProblemTypes.TIME_SERIES_REGRESSION:
-        expected_predictions = expected_predictions.astype("int64")
         expected_predictions = pd.Series(expected_predictions, name="target_delay_1")
 
     preds = baseline.predict(X_validation, None, X_train, y_train)

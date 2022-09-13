@@ -15,7 +15,7 @@ matplotlib-inline==0.1.6
 networkx==2.5.1
 nlp-primitives==2.7.1
 numpy==1.22.4
-pandas==1.4.1
+pandas==1.4.4
 plotly==5.10.0
 pmdarima==1.8.5
 pyzmq==23.2.1
@@ -29,5 +29,5 @@ sktime==0.13.2
 statsmodels==0.13.2
 texttable==1.6.4
 vowpalwabbit==9.3.0
-woodwork==0.16.4
+woodwork==0.18.0
 xgboost==1.6.2

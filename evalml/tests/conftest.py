@@ -857,12 +857,15 @@ def text_df():
 
 @pytest.fixture
 def ts_data():
-    X, y = pd.DataFrame(
-        {
-            "features": range(101, 132),
-            "date": pd.date_range("2020-10-01", "2020-10-31"),
-        },
-    ), pd.Series(range(1, 32))
+    X, y = (
+        pd.DataFrame(
+            {
+                "features": range(101, 132),
+                "date": pd.date_range("2020-10-01", "2020-10-31"),
+            },
+        ),
+        pd.Series(range(1, 32)),
+    )
     y.index = pd.date_range("2020-10-01", "2020-10-31")
     X.index = pd.date_range("2020-10-01", "2020-10-31")
     return X, y
@@ -2087,14 +2090,14 @@ def imputer_test_data():
             ),
             "int col": [0, 1, 2, 0, 3] * 4,
             "object col": ["b", "b", "a", "c", "d"] * 4,
-            "float col": [0.0, 1.0, 0.0, -2.0, 5.0] * 4,
+            "float col": [0.1, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
             "categorical with nan": pd.Series(
                 [np.nan, "1", "0", "0", "3"] * 4,
                 dtype="category",
             ),
             "int with nan": [np.nan, 1, 0, 0, 1] * 4,
-            "float with nan": [0.0, 1.0, np.nan, -1.0, 0.0] * 4,
+            "float with nan": [0.3, 1.0, np.nan, -1.0, 0.0] * 4,
             "object with nan": ["b", "b", np.nan, "c", np.nan] * 4,
             "bool col with nan": pd.Series(
                 [True, np.nan, False, np.nan, True] * 4,

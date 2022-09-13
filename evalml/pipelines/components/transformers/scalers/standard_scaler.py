@@ -1,4 +1,5 @@
 """A transformer that standardizes input features by removing the mean and scaling to unit variance."""
+import pandas as pd
 from sklearn.preprocessing import StandardScaler as SkScaler
 
 from evalml.pipelines.components.transformers import Transformer
@@ -82,5 +83,7 @@ class StandardScaler(Transformer):
         Returns:
             pd.DataFrame: Transformed data.
         """
-        X = infer_feature_types(X)
+        if not isinstance(X, pd.DataFrame):
+            X = infer_feature_types(X)
+        X = X.select_dtypes(exclude=["datetime"])
         return self.fit(X, y).transform(X, y)

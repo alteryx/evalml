@@ -4,11 +4,22 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from woodwork.logical_types import URL, Categorical, Double, Integer, Unknown
+from woodwork.logical_types import (
+    URL,
+    Boolean,
+    BooleanNullable,
+    Categorical,
+    Double,
+    Integer,
+    IntegerNullable,
+    Unknown,
+)
 
 from evalml.utils import (
     _convert_numeric_dataset_pandas,
     _schema_is_equal,
+    downcast_int_nullable_to_double,
+    downcast_nullable_types,
     infer_feature_types,
 )
 
@@ -284,3 +295,64 @@ def test_schema_is_equal_fraud(fraud_100):
     X2 = X.copy()
     X2.ww.init()
     assert _schema_is_equal(X.ww.schema, X2.ww.schema)
+
+
+def test_test_downcast_nullable_types_can_handle_no_schema():
+    df = pd.DataFrame()
+    df["ints"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
+
+    df_dc = downcast_nullable_types(df)
+
+    assert df_dc.ww.schema is not None
+
+
+@pytest.mark.parametrize("ignore_null_cols", [True, False])
+def test_downcast_nullable_types(ignore_null_cols):
+    df = pd.DataFrame()
+    df["ints"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
+    df["ints_nullable"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
+    df["ints_nullable_with_nulls"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, pd.NA] * 5
+    df["bools"] = [True, False, True, False, True] * 10
+    df["bools_nullable"] = [True, False, True, False, True] * 10
+
+    expected_ltypes = {
+        "ints": Integer,
+        "ints_nullable": Double,
+        "ints_nullable_with_nulls": IntegerNullable if ignore_null_cols else Double,
+        "bools": Boolean,
+        "bools_nullable": Boolean,
+    }
+
+    forced_ltypes = {
+        "ints_nullable": IntegerNullable,
+        "bools_nullable": BooleanNullable,
+    }
+
+    df.ww.init(logical_types=forced_ltypes)
+
+    df_dc = downcast_nullable_types(df, ignore_null_cols=ignore_null_cols)
+
+    for col, ltype in df_dc.ww.logical_types.items():
+        assert str(ltype) == str(expected_ltypes[col])
+
+
+def test_downcast_int_nullable_to_double():
+    df = pd.DataFrame()
+    df["ints"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
+    df["ints_nullable"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
+    df["ints_nullable_with_nulls"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, pd.NA] * 5
+
+    expected_ltypes = {
+        "ints": Integer,
+        "ints_nullable": Double,
+        "ints_nullable_with_nulls": Double,
+    }
+
+    forced_ltypes = {
+        "ints_nullable": IntegerNullable,
+    }
+    df.ww.init(logical_types=forced_ltypes)
+    df_dc = downcast_int_nullable_to_double(df)
+
+    for col, ltype in df_dc.ww.logical_types.items():
+        assert str(ltype) == str(expected_ltypes[col])
