@@ -729,7 +729,8 @@ def _make_pipeline_from_multiple_graphs(
     parameters=None,
     pipeline_name=None,
     sub_pipeline_names=None,
-    prior_components=None,
+    pre_pipeline_components=None,
+    post_pipelines_components=None,
     random_seed=0,
 ):
     """Creates a pipeline from multiple preprocessing pipelines and a final estimator. Final y input to the estimator will be chosen from the last of the input pipelines.
@@ -741,7 +742,8 @@ def _make_pipeline_from_multiple_graphs(
         parameters (Dict): Parameters to initialize pipeline with. Defaults to an empty dictionary.
         pipeline_name (str): Custom name for the final pipeline.
         sub_pipeline_names (Dict): Dictionary mapping original input pipeline names to new names. This will be used to rename components. Defaults to None.
-        prior_components (Dict): Component graph of components preceding the split of multiple graphs. Must be in component graph format, {"Label Encoder": ["Label Encoder", "X", "y"]} and currently restricted to components that only alter X input.
+        pre_pipeline_components (Dict): Component graph of components preceding the split of multiple graphs. Must be in component graph format, {"Label Encoder": ["Label Encoder", "X", "y"]} and currently restricted to components that only alter X input.
+        post_pipelines_components (Dict): Component graph of components before the estimator after the split of multiple graphs. Must be in component graph format, {"Label Encoder": ["Label Encoder", "X", "y"]} and currently restricted to components that only alter X input.
         random_seed (int): Random seed for the pipeline. Defaults to 0.
 
     Returns:
@@ -760,11 +762,13 @@ def _make_pipeline_from_multiple_graphs(
     final_components = []
     used_names = []
 
-    prior_components = {} if not prior_components else prior_components
-    last_prior_component = (
-        list(prior_components.keys())[-1] if prior_components else None
+    pre_pipeline_components = (
+        {} if not pre_pipeline_components else pre_pipeline_components
     )
-    component_graph = prior_components
+    last_prior_component = (
+        list(pre_pipeline_components.keys())[-1] if pre_pipeline_components else None
+    )
+    component_graph = pre_pipeline_components
     if is_classification(problem_type):
         component_graph.update({"Label Encoder": ["Label Encoder", "X", "y"]})
 
@@ -844,9 +848,26 @@ def _make_pipeline_from_multiple_graphs(
         final_components.append(final_component)
 
     final_y = final_y_candidate if final_y_candidate else final_y
-    component_graph[estimator.name] = (
-        [estimator] + [comp + ".x" for comp in final_components] + [final_y]
-    )
+    last_pre_estimator_component = None
+    if post_pipelines_components:
+        first_pre_estimator_component = list(post_pipelines_components.keys())[0]
+        post_pipelines_components[first_pre_estimator_component] = (
+            [first_pre_estimator_component]
+            + [comp + ".x" for comp in final_components]
+            + [final_y]
+        )
+        component_graph.update(post_pipelines_components)
+        last_pre_estimator_component = list(post_pipelines_components.keys())[-1]
+    if last_pre_estimator_component:
+        component_graph[estimator.name] = (
+            [estimator]
+            + [last_pre_estimator_component + ".x"]
+            + [last_pre_estimator_component + ".y"]
+        )
+    else:
+        component_graph[estimator.name] = (
+            [estimator] + [comp + ".x" for comp in final_components] + [final_y]
+        )
     pipeline_class = {
         ProblemTypes.BINARY: BinaryClassificationPipeline,
         ProblemTypes.MULTICLASS: MulticlassClassificationPipeline,
