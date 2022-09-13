@@ -1017,10 +1017,10 @@ def test_make_pipeline_from_multiple_graphs_with_sampler(X_y_binary):
     )
 
 
-def test_make_pipeline_from_multiple_graphs_prior_components(X_y_binary):
+def test_make_pipeline_from_multiple_graphs_pre_pipeline_components(X_y_binary):
     X, y = X_y_binary
     estimator = handle_component_class("Random Forest Classifier")
-    prior_components = {"DFS Transformer": ["DFS Transformer", "X", "y"]}
+    pre_pipeline_components = {"DFS Transformer": ["DFS Transformer", "X", "y"]}
     pipeline_1 = make_pipeline(
         X,
         y,
@@ -1049,7 +1049,7 @@ def test_make_pipeline_from_multiple_graphs_prior_components(X_y_binary):
         input_pipelines=input_pipelines,
         estimator=estimator,
         problem_type=ProblemTypes.BINARY,
-        prior_components=prior_components,
+        pre_pipeline_components=pre_pipeline_components,
         sub_pipeline_names=sub_pipeline_names,
     )
 

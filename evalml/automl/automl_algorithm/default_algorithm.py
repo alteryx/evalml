@@ -17,7 +17,11 @@ from evalml.pipelines.components.transformers.column_selectors import (
     SelectColumns,
 )
 from evalml.pipelines.components.utils import get_estimators, handle_component_class
-from evalml.pipelines.utils import _make_pipeline_from_multiple_graphs, make_pipeline
+from evalml.pipelines.utils import (
+    _get_sampler,
+    _make_pipeline_from_multiple_graphs,
+    make_pipeline,
+)
 from evalml.problem_types import is_regression, is_time_series
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
@@ -182,9 +186,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return estimators
 
     def _non_naive_estimators(self):
-        return list(
-            set(get_estimators(self.problem_type)) - set(self._naive_estimators()),
-        )
+        return [
+            est
+            for est in get_estimators(self.problem_type)
+            if est not in self._naive_estimators()
+        ]
 
     def _init_pipelines_with_starter_params(self, pipelines):
         next_batch = []
@@ -559,7 +565,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 self.y,
                 estimator,
                 self.problem_type,
-                sampler_name=self.sampler_name,
+                sampler_name=None,
                 parameters=categorical_pipeline_parameters,
                 extra_components_before=[SelectColumns],
                 use_estimator=False,
@@ -571,18 +577,30 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 self.y,
                 estimator,
                 self.problem_type,
-                sampler_name=self.sampler_name,
+                sampler_name=None,
                 parameters=numeric_pipeline_parameters,
                 extra_components_before=[SelectByType],
                 extra_components_after=[SelectColumns],
                 use_estimator=False,
                 exclude_featurizers=self.exclude_featurizers,
             )
-            prior_components = (
+            pre_pipeline_components = (
                 {"DFS Transformer": ["DFS Transformer", "X", "y"]}
                 if self.features
                 else {}
             )
+            if self.sampler_name:
+                sampler = _get_sampler(
+                    self.X,
+                    self.y,
+                    self.problem_type,
+                    estimator,
+                    self.sampler_name,
+                )[0]
+                post_pipelines_components = {sampler.name: [sampler.name, "X", "y"]}
+            else:
+                post_pipelines_components = None
+
             input_pipelines = [numeric_pipeline, categorical_pipeline]
             sub_pipeline_names = {
                 numeric_pipeline.name: "Numeric",
@@ -595,7 +613,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 pipeline_name=pipeline_name,
                 random_seed=self.random_seed,
                 sub_pipeline_names=sub_pipeline_names,
-                prior_components=prior_components,
+                pre_pipeline_components=pre_pipeline_components,
+                post_pipelines_components=post_pipelines_components,
             )
         elif self._selected_cat_cols and not self._selected_cols:
             categorical_pipeline_parameters = {
