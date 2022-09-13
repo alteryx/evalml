@@ -11,6 +11,7 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     SEED_BOUNDS,
     _rename_column_names_to_numeric,
+    downcast_int_nullable_to_double,
     import_or_raise,
     infer_feature_types,
 )
@@ -164,6 +165,7 @@ class LightGBMRegressor(Estimator):
         X_encoded = self._encode_categories(X, fit=True)
         if y is not None:
             y = infer_feature_types(y)
+        X_encoded = downcast_int_nullable_to_double(X_encoded)
         self._component_obj.fit(X_encoded, y)
         return self
 
