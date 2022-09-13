@@ -31,6 +31,7 @@ automl_data = AutoMLConfig(
     random_seed=random_seed,
     X_schema=None,
     y_schema=None,
+    errors={},
 )
 
 
