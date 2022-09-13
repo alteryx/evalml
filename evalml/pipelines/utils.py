@@ -850,22 +850,14 @@ def _make_pipeline_from_multiple_graphs(
     final_y = final_y_candidate if final_y_candidate else final_y
     last_pre_estimator_component = None
     if post_pipelines_components:
-        first_pre_estimator_component = (
-            list(post_pipelines_components.keys())[0]
-            if post_pipelines_components
-            else None
-        )
+        first_pre_estimator_component = list(post_pipelines_components.keys())[0]
         post_pipelines_components[first_pre_estimator_component] = (
             [first_pre_estimator_component]
             + [comp + ".x" for comp in final_components]
             + [final_y]
         )
         component_graph.update(post_pipelines_components)
-        last_pre_estimator_component = (
-            list(post_pipelines_components.keys())[-1]
-            if post_pipelines_components
-            else None
-        )
+        last_pre_estimator_component = list(post_pipelines_components.keys())[-1]
     if last_pre_estimator_component:
         component_graph[estimator.name] = (
             [estimator]
