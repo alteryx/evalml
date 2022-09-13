@@ -393,24 +393,24 @@ def test_polynomial_decomposer_uses_time_index(
 @pytest.mark.parametrize("test", [0, 1])
 def test_polynomial_decomposer_bug(test):
     X, y = load_weather()
-    pdc = PolynomialDecomposer(degree=3)
+    pdc = PolynomialDecomposer(degree=3, seasonal_period=365)
     X = X.set_index("Date").asfreq("d")
     y = y.set_axis(X.index)
     X_t, y_t = pdc.fit_transform(X, y)
     import matplotlib.pyplot as plt
 
-    # plt.plot(y.set_axis(X["Date"]), "bo")
-    # plt.plot(y_t, "rx")
-    # plt.show()
-    # freq = X.ww.infer_temporal_frequencies()["Date"]
-    # X_train_time = X.set_index("Date").asfreq(freq)
-    # y = y.set_axis(X_train_time.index)
     res = pdc.get_trend_dataframe(X, y)
-    plt.plot(y, label="signal")
-    plt.plot(res[0]["trend"], label="trend")
-    plt.plot(res[0]["seasonality"], label="seasonality")
-    plt.plot(res[0]["residual"], label="residual")
-    plt.legend()
+    fig, axs = plt.subplots(4)
+    fig.set_size_inches(18.5, 14.5)
+    axs[0].plot(y, "r")
+    axs[0].set_title("signal")
+    axs[1].plot(res[0]["trend"], "b")
+    axs[1].set_title("trend")
+    axs[2].plot(res[0]["seasonality"], "g")
+    axs[2].set_title("seasonality")
+    axs[3].plot(res[0]["residual"], "y")
+    axs[3].set_title("residual")
+    fig.legend()
     plt.show()
 
 
