@@ -78,8 +78,7 @@ class SimpleImputer(Transformer):
             raise ValueError(
                 "SimpleImputer cannot handle dataframes with both boolean and categorical features.  Use Imputer instead.",
             )
-
-        nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
+        nan_ratio = X.isna().sum() / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
         X, _ = drop_natural_language_columns(X)
