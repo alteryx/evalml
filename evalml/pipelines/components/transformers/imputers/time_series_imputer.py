@@ -1,5 +1,6 @@
 """Component that imputes missing data according to a specified timeseries-specific imputation strategy."""
 import pandas as pd
+import woodwork as ww
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
@@ -150,6 +151,11 @@ class TimeSeriesImputer(Transformer):
 
         X_not_all_null = X.ww.drop(self._all_null_cols)
         X_schema = X_not_all_null.ww.schema
+        X_schema = X_schema.get_subset_schema(
+            subset_cols=X_schema._filter_cols(
+                exclude=["IntegerNullable", "BooleanNullable"],
+            ),
+        )
 
         if self._forwards_cols is not None:
             X_forward = X.ww[self._forwards_cols]
@@ -165,9 +171,13 @@ class TimeSeriesImputer(Transformer):
 
         if self._interpolate_cols is not None:
             X_interpolate = X.ww[self._interpolate_cols]
-            imputed = X_interpolate.interpolate()
+            # TODO: Revert when pandas introduces Float64 dtype
+            imputed = X_interpolate.astype(
+                float,
+            ).interpolate()  # Cast to float because Int64 not handled
             imputed.bfill(inplace=True)  # Fill in the first value, if missing
             X_not_all_null[X_interpolate.columns] = imputed
+        X_not_all_null.ww.init(schema=X_schema)
 
         y_imputed = pd.Series(y)
         if y is not None and len(y) > 0:
@@ -178,10 +188,9 @@ class TimeSeriesImputer(Transformer):
                 y_imputed = y.bfill()
                 y_imputed.pad(inplace=True)
             elif self._impute_target == "interpolate":
-                y_imputed = y.interpolate()
+                # TODO: Revert when pandas introduces Float64 dtype
+                y_imputed = y.astype(float).interpolate()
                 y_imputed.bfill(inplace=True)
-            y_imputed.ww.init(schema=y.ww.schema)
-
-        X_not_all_null.ww.init(schema=X_schema)
+            y_imputed = ww.init_series(y_imputed)
 
         return X_not_all_null, y_imputed

@@ -153,9 +153,9 @@ def test_target_imputer_fit_transform_all_nan_empty(y):
 def test_target_imputer_numpy_input():
     y = np.array([np.nan, 0, 2])
     imputer = TargetImputer(impute_strategy="mean")
-    y_expected = np.array([1, 0, 2])
+    y_expected = pd.Series([1, 0, 2], dtype="int64")
     _, y_t = imputer.fit_transform(None, y)
-    assert np.allclose(y_expected, y_t)
+    assert y_expected.equals(y_t)
     np.testing.assert_almost_equal(y, np.array([np.nan, 0, 2]))
 
 
@@ -178,7 +178,7 @@ def test_target_imputer_does_not_reset_index():
     imputer.fit(None, y=y)
     _, y_t = imputer.transform(None, y)
     pd.testing.assert_series_equal(
-        pd.Series([1.0, 2, 3, 4, 5, 6, 7, 8, 9], dtype=float, index=list(range(1, 10))),
+        pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype="int64", index=list(range(1, 10))),
         y_t,
     )
 
