@@ -49,6 +49,13 @@ from evalml.pipelines.component_graph import ComponentGraph
 from evalml.pipelines.pipeline_base import PipelineBase
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline
+from evalml.pipelines.ensemble_binary_classification_pipeline import (
+    EnsembleBinaryClassificationPipeline,
+)
+from evalml.pipelines.ensemble_multiclass_classification_pipeline import (
+    EnsembleMulticlassClassificationPipeline,
+)
+from evalml.pipelines.ensemble_regression_pipeline import EnsembleRegressionPipeline
 from evalml.pipelines.multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
 )
