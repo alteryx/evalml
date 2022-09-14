@@ -25,7 +25,13 @@ class PipelineBaseMeta(BaseMeta):
         @wraps(method)
         def _check_for_fit(self, *args, **kwargs):
             klass = type(self).__name__
-            if not self._is_fitted:
+            # Transforms in ensemble methods do not need fit if they are composed of fitted pipelines
+            is_ensemble_transform = (
+                "Ensemble" in klass
+                and method.__name__ == "transform"
+                and self._all_input_pipelines_fitted
+            )
+            if not self._is_fitted and not is_ensemble_transform:
                 raise PipelineNotYetFittedError(
                     f"This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}.",
                 )

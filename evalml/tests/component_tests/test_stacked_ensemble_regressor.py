@@ -13,7 +13,7 @@ from evalml.pipelines.components import (
     RandomForestRegressor,
 )
 from evalml.pipelines.components.ensemble import StackedEnsembleRegressor
-from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
+from evalml.pipelines.utils import _make_stacked_ensemble_supergraph_pipeline
 from evalml.problem_types import ProblemTypes
 
 
@@ -155,7 +155,7 @@ def test_stacked_same_model_family():
         RegressionPipeline(component_graph=graph_linear),
     ]
 
-    pipeline = _make_stacked_ensemble_pipeline(
+    pipeline = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=input_pipelines,
         problem_type=ProblemTypes.REGRESSION,
     )
@@ -201,7 +201,7 @@ def test_ensembler_str_and_classes():
         },
     )
 
-    ensemble_pipeline = _make_stacked_ensemble_pipeline(
+    ensemble_pipeline = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=[reg_pl_1, reg_pl_2],
         problem_type=ProblemTypes.REGRESSION,
     )
@@ -222,7 +222,7 @@ def test_ensembler_str_and_classes():
         },
     )
 
-    ensemble_pipeline = _make_stacked_ensemble_pipeline(
+    ensemble_pipeline = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=[reg_pl_1, reg_pl_2],
         problem_type=ProblemTypes.REGRESSION,
     )
@@ -255,7 +255,7 @@ def test_ensembler_use_component_preds(
     reg_pl_1 = RegressionPipeline([RandomForestRegressor])
     reg_pl_2 = RegressionPipeline([ElasticNetRegressor])
 
-    ensemble_pipeline = _make_stacked_ensemble_pipeline(
+    ensemble_pipeline = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=[reg_pl_1, reg_pl_2],
         problem_type=ProblemTypes.REGRESSION,
     )
@@ -297,12 +297,12 @@ def test_stacked_ensemble_cache_train_predict(
         ),
     ]
 
-    pl_cache = _make_stacked_ensemble_pipeline(
+    pl_cache = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=input_pipelines,
         problem_type=ProblemTypes.REGRESSION,
         cached_data=cache,
     )
-    pl_no_cache = _make_stacked_ensemble_pipeline(
+    pl_no_cache = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=input_pipelines,
         problem_type=ProblemTypes.REGRESSION,
         cached_data=None,

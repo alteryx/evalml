@@ -1,11 +1,11 @@
 """Pipeline subclass for all binary classification pipelines."""
-from multiprocessing.sharedctypes import Value
 
 import numpy as np
 import pandas as pd
 import woodwork as ww
 
 from evalml.automl.utils import make_data_splitter
+from evalml.pipelines.ensemble_pipeline_mixin import EnsemblePipelineMixin
 from evalml.pipelines.multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
 )
@@ -14,7 +14,10 @@ from evalml.problem_types.utils import is_binary, is_multiclass
 from evalml.utils import infer_feature_types
 
 
-class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline):
+class EnsembleMulticlassClassificationPipeline(
+    MulticlassClassificationPipeline,
+    EnsemblePipelineMixin,
+):
     """Pipeline subclass for all binary classification pipelines.
 
     Args:
@@ -78,19 +81,6 @@ class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline)
         )
         self._is_stacked_ensemble = True
 
-    def _predict(self, X, objective=None):
-        """Make predictions using selected features.
-
-        Args:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]
-            objective (Object or string): The objective to use to make predictions.
-
-        Returns:
-            pd.Series: Estimated labels
-        """
-        metalearner_X = self.transform(X)
-        return self.component_graph.predict(metalearner_X)
-
     def predict_proba(self, X, X_train=None, y_train=None):
         """Make predictions using selected features.
 
@@ -104,26 +94,6 @@ class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline)
 
         metalearner_X = self.transform(X)
         return super().predict_proba(metalearner_X)
-
-    @property
-    def _all_input_pipelines_fitted(self):
-        for pipeline in self.input_pipelines:
-            if not pipeline._is_fitted:
-                return False
-        return True
-
-    def _fit_input_pipelines(self, X, y, force_retrain=False):
-        fitted_pipelines = []
-        for pipeline in self.input_pipelines:
-            if pipeline._is_fitted and not force_retrain:
-                fitted_pipelines.append(pipeline)
-            else:
-                if force_retrain:
-                    new_pl = pipeline.clone()
-                else:
-                    new_pl = pipeline
-                fitted_pipelines.append(new_pl.fit(X, y))
-        self.input_pipelines = fitted_pipelines
 
     def fit(self, X, y, data_splitter=None, force_retrain=False):
         """Build a classification model. For string and categorical targets, classes are sorted by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.

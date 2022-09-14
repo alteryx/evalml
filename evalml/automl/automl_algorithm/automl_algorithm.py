@@ -5,7 +5,10 @@ from abc import ABC, abstractmethod
 from skopt.space import Categorical, Integer, Real
 
 from evalml.exceptions import PipelineNotFoundError
-from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
+from evalml.pipelines.utils import (
+    _make_stacked_ensemble_pipeline,
+    _make_stacked_ensemble_supergraph_pipeline,
+)
 from evalml.problem_types import is_multiclass
 from evalml.tuners import SKOptTuner
 
@@ -175,24 +178,37 @@ class AutoMLAlgorithm(ABC):
 
     def _create_ensemble(self, label_encoder_params=None):
         next_batch = []
-        best_pipelines = list(self._best_pipeline_info.values())
-        problem_type = best_pipelines[0]["pipeline"].problem_type
+        best_pipelines_info = list(self._best_pipeline_info.values())
+        best_pipelines = []
+        for pipeline in best_pipelines_info:
+            best_pipelines.append(pipeline["pipeline"])
+        problem_type = best_pipelines_info[0]["pipeline"].problem_type
+        if label_encoder_params is not None:
+            label_encoder_params = {"Label Encoder": label_encoder_params}
+        else:
+            label_encoder_params = {}
+
+        # New implementation
+        ensemble_v3_pl = _make_stacked_ensemble_pipeline(
+            input_pipelines=best_pipelines,
+            problem_type=problem_type,
+            random_seed=self.random_seed,
+            label_encoder_params=label_encoder_params,
+        )
+        next_batch.append(ensemble_v3_pl)
+
+        # Previous implementation
         n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
         input_pipelines = []
         cached_data = {
             model_family: x["cached_data"]
             for model_family, x in self._best_pipeline_info.items()
         }
-        for pipeline_dict in best_pipelines:
+        for pipeline_dict in best_pipelines_info:
             pipeline = pipeline_dict["pipeline"]
             input_pipelines.append(pipeline)
 
-        if label_encoder_params is not None:
-            label_encoder_params = {"Label Encoder": label_encoder_params}
-        else:
-            label_encoder_params = {}
-
-        ensemble = _make_stacked_ensemble_pipeline(
+        ensemble = _make_stacked_ensemble_supergraph_pipeline(
             input_pipelines,
             problem_type,
             random_seed=self.random_seed,

@@ -1,24 +1,14 @@
 """Pipeline subclass for all binary classification pipelines."""
-from multiprocessing.sharedctypes import Value
-
-import numpy as np
 import pandas as pd
-import woodwork as ww
-from matplotlib.cbook import Stack
 
 from evalml.automl.utils import make_data_splitter
-from evalml.objectives import get_objective
-from evalml.pipelines.binary_classification_pipeline_mixin import (
-    BinaryClassificationPipelineMixin,
-)
-from evalml.pipelines.components import LabelEncoder, StackedEnsembleRegressor
+from evalml.pipelines.ensemble_pipeline_mixin import EnsemblePipelineMixin
 from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.problem_types import ProblemTypes
-from evalml.problem_types.utils import is_binary, is_multiclass
 from evalml.utils import infer_feature_types
 
 
-class EnsembleRegressionPipeline(RegressionPipeline):
+class EnsembleRegressionPipeline(RegressionPipeline, EnsemblePipelineMixin):
     """Pipeline subclass for all binary classification pipelines.
 
     Args:
@@ -94,26 +84,6 @@ class EnsembleRegressionPipeline(RegressionPipeline):
         predictions = self.inverse_transform(predictions)
         predictions.name = self.input_target_name
         return infer_feature_types(predictions)
-
-    @property
-    def _all_input_pipelines_fitted(self):
-        for pipeline in self.input_pipelines:
-            if not pipeline._is_fitted:
-                return False
-        return True
-
-    def _fit_input_pipelines(self, X, y, force_retrain=False):
-        fitted_pipelines = []
-        for pipeline in self.input_pipelines:
-            if pipeline._is_fitted and not force_retrain:
-                fitted_pipelines.append(pipeline)
-            else:
-                if force_retrain:
-                    new_pl = pipeline.clone()
-                else:
-                    new_pl = pipeline
-                fitted_pipelines.append(new_pl.fit(X, y))
-        self.input_pipelines = fitted_pipelines
 
     def fit(self, X, y, data_splitter=None, force_retrain=False):
         """Build a classification model. For string and categorical targets, classes are sorted by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
@@ -197,8 +167,6 @@ class EnsembleRegressionPipeline(RegressionPipeline):
             custom_name=self.custom_name,
             random_seed=self.random_seed,
         )
-        if is_binary(self.problem_type):
-            clone.threshold = self.threshold
         return clone
 
     def new(self, parameters, random_seed=0):
