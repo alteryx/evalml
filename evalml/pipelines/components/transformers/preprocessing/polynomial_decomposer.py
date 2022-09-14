@@ -184,6 +184,11 @@ class PolynomialDecomposer(Decomposer):
         if y is None:
             raise ValueError("y cannot be None for PolynomialDecomposer!")
 
+        # Change the y index to a matching datetimeindex or else we get a failure
+        # in ForecastingHorizon during decomposition.
+        if not isinstance(y.index, pd.DatetimeIndex):
+            y = self._set_time_index(X, y)
+
         # Copying y as we might modify it's index
         y_orig = infer_feature_types(y).copy()
         self._component_obj.fit(y_orig)
@@ -240,13 +245,14 @@ class PolynomialDecomposer(Decomposer):
         if y is None:
             return X, y
 
-        # Remove polynomial trend then seasonality of detrended signal
-        y_ww = infer_feature_types(y)
-        y_detrended = self._component_obj.transform(y_ww)
-
+        # Give the internal target signal a datetime index built from X
         y = y.copy()
         if not isinstance(y.index, pd.DatetimeIndex):
             y = self._set_time_index(X, y)
+
+        # Remove polynomial trend then seasonality of detrended signal
+        y_ww = infer_feature_types(y)
+        y_detrended = self._component_obj.transform(y_ww)
 
         if isinstance(y.index, pd.DatetimeIndex):
             # Repeat the seasonal signal over the target data
@@ -337,6 +343,11 @@ class PolynomialDecomposer(Decomposer):
             raise ValueError(
                 "Provided DatetimeIndex of X should have an inferred frequency.",
             )
+        # Change the y index to a matching datetimeindex or else we get a failure
+        # in ForecastingHorizon during decomposition.
+        if not isinstance(y.index, pd.DatetimeIndex):
+            y = self._set_time_index(X, y)
+
         fh = ForecastingHorizon(X.index, is_relative=False)
 
         result_dfs = []
@@ -359,6 +370,7 @@ class PolynomialDecomposer(Decomposer):
             residual = y - trend - seasonality
             return pd.DataFrame(
                 {
+                    "signal": y,
                     "trend": trend,
                     "seasonality": seasonality,
                     "residual": residual,
@@ -370,7 +382,5 @@ class PolynomialDecomposer(Decomposer):
         elif isinstance(y, pd.DataFrame):
             for colname in y.columns:
                 result_dfs.append(_decompose_target(X, y[colname], fh))
-        else:
-            raise TypeError("y must be pd.Series or pd.DataFrame!")
 
         return result_dfs

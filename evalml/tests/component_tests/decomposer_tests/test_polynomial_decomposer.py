@@ -56,10 +56,6 @@ def test_polynomial_decomposer_get_trend_dataframe_raises_errors(ts_data):
         X_int_index = X.reset_index()
         pdt.get_trend_dataframe(X_int_index, y)
 
-    with pytest.raises(TypeError, match="y must be pd.Series or pd.DataFrame!"):
-        y = np.array(y.values)
-        pdt.get_trend_dataframe(X, y)
-
     with pytest.raises(
         ValueError,
         match="Provided DatetimeIndex of X should have an inferred frequency.",
@@ -167,7 +163,7 @@ def test_polynomial_decomposer_get_trend_dataframe(
     result_dfs = pdt.get_trend_dataframe(X, y)
 
     def get_trend_dataframe_format_correct(df):
-        return set(df.columns) == {"trend", "seasonality", "residual"}
+        return set(df.columns) == {"signal", "trend", "seasonality", "residual"}
 
     def get_trend_dataframe_values_correct(df, y):
         np.testing.assert_array_almost_equal(
@@ -224,11 +220,6 @@ def test_polynomial_decomposer_needs_monotonic_index(ts_data):
         decomposer.fit_transform(X, y_shuffled)
     expected_errors = ["monotonically", "X must be in an sktime compatible format"]
     assert any([error in str(exec_info.value) for error in expected_errors])
-    with pytest.raises(
-        Exception,
-    ):
-        y_string_index = pd.Series(np.arange(31), index=[f"row_{i}" for i in range(31)])
-        decomposer.fit_transform(X, y_string_index)
 
 
 @pytest.mark.parametrize(
@@ -386,35 +377,25 @@ def test_polynomial_decomposer_uses_time_index(
         ):
             decomposer.fit_transform(X, y)
     else:
-        # Smoke test the fit_transform() method
-        decomposer.fit_transform(X, y)
+        X_t, y_t = decomposer.fit_transform(X, y)
+
+        # If the fit_transform() succeeds, assert the original X and y
+        # have unchanged indices.
+        if X_has_time_index == "X_doesnt_have_time_index":
+            assert not isinstance(X.index, pd.DatetimeIndex)
+        else:
+            assert isinstance(X.index, pd.DatetimeIndex)
+        if y_has_time_index == "y_doesnt_have_time_index":
+            assert not isinstance(y.index, pd.DatetimeIndex)
+        else:
+            assert isinstance(y.index, pd.DatetimeIndex)
 
 
-@pytest.mark.parametrize("test", [0, 1])
-def test_polynomial_decomposer_bug(test):
-    X, y = load_weather()
-    pdc = PolynomialDecomposer(degree=3, seasonal_period=365)
-    X = X.set_index("Date").asfreq("d")
-    y = y.set_axis(X.index)
-    X_t, y_t = pdc.fit_transform(X, y)
-    import matplotlib.pyplot as plt
-
-    res = pdc.get_trend_dataframe(X, y)
-    fig, axs = plt.subplots(4)
-    fig.set_size_inches(18.5, 14.5)
-    axs[0].plot(y, "r")
-    axs[0].set_title("signal")
-    axs[1].plot(res[0]["trend"], "b")
-    axs[1].set_title("trend")
-    axs[2].plot(res[0]["seasonality"], "g")
-    axs[2].set_title("seasonality")
-    axs[3].plot(res[0]["residual"], "y")
-    axs[3].set_title("residual")
-    fig.legend()
-    plt.show()
-
-
-def test_pdc():
+@pytest.mark.parametrize(
+    "y_has_time_index",
+    ["y_has_time_index", "y_doesnt_have_time_index"],
+)
+def test_pdc(y_has_time_index):
     from datetime import datetime
 
     import matplotlib.pyplot as plt
@@ -427,15 +408,16 @@ def test_pdc():
     X = pd.DataFrame({"x": x})
     X = X.set_index(dts)
     y = pd.Series(np.sin(freq * x) + x + 2)
-    y = y.set_axis(X.index)
+    if y_has_time_index == "y_has_time_index":
+        y = y.set_axis(X.index)
 
-    plt.plot(y[0:14], label="signal")
+    plt.plot(y, label="signal")
     plt.show()
 
     pdc = PolynomialDecomposer(degree=1, seasonal_period=period)
     pdc.fit_transform(X, y)
     res = pdc.get_trend_dataframe(X, y)
-    plt.plot(y, label="signal")
+    plt.plot(res[0]["signal"], label="signal")
     plt.plot(res[0]["trend"], label="trend")
     plt.plot(res[0]["seasonality"], label="seasonality")
     plt.plot(res[0]["residual"], label="residual")
