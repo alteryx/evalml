@@ -17,7 +17,7 @@ from evalml.pipelines.components import (
     RandomForestClassifier,
     StackedEnsembleClassifier,
 )
-from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
+from evalml.pipelines.utils import _make_stacked_ensemble_supergraph_pipeline
 from evalml.problem_types import ProblemTypes
 
 
@@ -194,7 +194,7 @@ def test_ensembler_str_and_classes():
         },
     )
 
-    ensemble_pipeline = _make_stacked_ensemble_pipeline(
+    ensemble_pipeline = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=[reg_pl_1, reg_pl_2],
         problem_type=ProblemTypes.BINARY,
     )
@@ -215,7 +215,7 @@ def test_ensembler_str_and_classes():
         },
     )
 
-    ensemble_pipeline = _make_stacked_ensemble_pipeline(
+    ensemble_pipeline = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=[reg_pl_1, reg_pl_2],
         problem_type=ProblemTypes.REGRESSION,
     )
@@ -249,7 +249,7 @@ def test_stacked_ensemble_nondefault_y():
         ),
     ]
 
-    pl = _make_stacked_ensemble_pipeline(
+    pl = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=input_pipelines,
         problem_type=ProblemTypes.BINARY,
     )
@@ -275,7 +275,7 @@ def test_stacked_ensemble_keep_estimator_parameters(X_y_binary):
         ),
     ]
 
-    pl = _make_stacked_ensemble_pipeline(
+    pl = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=input_pipelines,
         problem_type=ProblemTypes.BINARY,
     )
@@ -319,7 +319,7 @@ def test_ensembler_use_component_preds_binary(
     reg_pl_1 = BinaryClassificationPipeline([RandomForestClassifier])
     reg_pl_2 = BinaryClassificationPipeline([ElasticNetClassifier])
 
-    ensemble_pipeline = _make_stacked_ensemble_pipeline(
+    ensemble_pipeline = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=[reg_pl_1, reg_pl_2],
         problem_type=ProblemTypes.BINARY,
     )
@@ -361,7 +361,7 @@ def test_ensembler_use_component_preds_multi(
     reg_pl_1 = MulticlassClassificationPipeline([RandomForestClassifier])
     reg_pl_2 = MulticlassClassificationPipeline([ElasticNetClassifier])
 
-    ensemble_pipeline = _make_stacked_ensemble_pipeline(
+    ensemble_pipeline = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=[reg_pl_1, reg_pl_2],
         problem_type=ProblemTypes.MULTICLASS,
     )
@@ -417,7 +417,7 @@ def test_stacked_ensemble_cache(X_y_binary):
         },
     }
 
-    pl = _make_stacked_ensemble_pipeline(
+    pl = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=input_pipelines,
         problem_type=ProblemTypes.BINARY,
         cached_data=cache,
@@ -474,12 +474,12 @@ def test_stacked_ensemble_cache_training(
 
     mock_consolidate.return_value = (X, y)
 
-    pl_cache = _make_stacked_ensemble_pipeline(
+    pl_cache = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=input_pipelines,
         problem_type=ProblemTypes.BINARY,
         cached_data=cache,
     )
-    pl_no_cache = _make_stacked_ensemble_pipeline(
+    pl_no_cache = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=input_pipelines,
         problem_type=ProblemTypes.BINARY,
         cached_data=None,
@@ -540,7 +540,7 @@ def test_stacked_ensemble_cache_train_predict(
         ),
     ]
 
-    pl_cache = _make_stacked_ensemble_pipeline(
+    pl_cache = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=input_pipelines,
         problem_type=ProblemTypes.BINARY,
         cached_data=cache,

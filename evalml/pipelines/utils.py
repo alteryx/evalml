@@ -49,6 +49,13 @@ from evalml.pipelines.components.utils import (
     get_estimators,
     handle_component_class,
 )
+from evalml.pipelines.ensemble_binary_classification_pipeline import (
+    EnsembleBinaryClassificationPipeline,
+)
+from evalml.pipelines.ensemble_multiclass_classification_pipeline import (
+    EnsembleMulticlassClassificationPipeline,
+)
+from evalml.pipelines.ensemble_regression_pipeline import EnsembleRegressionPipeline
 from evalml.pipelines.multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
 )
@@ -572,6 +579,50 @@ def generate_pipeline_code(element):
 
 
 def _make_stacked_ensemble_pipeline(
+    input_pipelines,
+    problem_type,
+    final_estimator=None,
+    n_jobs=-1,
+    random_seed=0,
+    cached_data=None,
+    label_encoder_params=None,
+):
+    """Creates a pipeline with a stacked ensemble estimator.
+
+    Args:
+        input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
+        problem_type (ProblemType): Problem type of pipeline
+        final_estimator (Estimator): Metalearner to use for the ensembler. Defaults to None.
+        n_jobs (int or None): Integer describing level of parallelism used for pipelines.
+            None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
+            Defaults to -1.
+        cached_data (dict): A dictionary of cached data, where the keys are the model family. Expected to be of format
+            {model_family: {hash1: trained_component_graph, hash2: trained_component_graph...}...}.
+            Defaults to None.
+        label_encoder_params (dict): The parameters passed in for the label encoder, used only for classification problems. Defaults to None.
+
+    Returns:
+        Pipeline with appropriate stacked ensemble estimator.
+    """
+    pipeline_class = {
+        ProblemTypes.BINARY: EnsembleBinaryClassificationPipeline,
+        ProblemTypes.MULTICLASS: EnsembleMulticlassClassificationPipeline,
+        ProblemTypes.REGRESSION: EnsembleRegressionPipeline,
+    }[problem_type]
+
+    component_graph = (
+        {"Stacked Ensembler": [final_estimator, "X", "y"]} if final_estimator else None
+    )
+
+    return pipeline_class(
+        input_pipelines=input_pipelines,
+        component_graph=component_graph,
+        parameters=label_encoder_params,
+        random_seed=random_seed,
+    )
+
+
+def _make_stacked_ensemble_supergraph_pipeline(
     input_pipelines,
     problem_type,
     final_estimator=None,

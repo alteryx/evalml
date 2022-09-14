@@ -71,7 +71,7 @@ from evalml.pipelines.components import (
 )
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
-    _make_stacked_ensemble_pipeline,
+    _make_stacked_ensemble_supergraph_pipeline,
 )
 from evalml.preprocessing import TimeSeriesSplit, TrainingValidationSplit, split_data
 from evalml.problem_types import (
@@ -3694,7 +3694,10 @@ def test_score_batch_works(
         BinaryClassificationPipeline([classifier])
         for classifier in stackable_classifiers[:2]
     ]
-    ensemble = _make_stacked_ensemble_pipeline(input_pipelines, ProblemTypes.BINARY)
+    ensemble = _make_stacked_ensemble_supergraph_pipeline(
+        input_pipelines,
+        ProblemTypes.BINARY,
+    )
     ensemble._custom_name = f"Pipeline {len(pipeline_score_side_effect) - 1}"
     pipelines.append(ensemble)
 

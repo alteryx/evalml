@@ -18,7 +18,7 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
-from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
+from evalml.pipelines.utils import _make_stacked_ensemble_supergraph_pipeline
 from evalml.problem_types import ProblemTypes
 
 
@@ -632,7 +632,7 @@ def test_partial_dependence_ensemble_pipeline(problem_type, X_y_binary, X_y_regr
             RegressionPipeline(["Random Forest Regressor"]),
             RegressionPipeline(["Elastic Net Regressor"]),
         ]
-    pipeline = _make_stacked_ensemble_pipeline(
+    pipeline = _make_stacked_ensemble_supergraph_pipeline(
         input_pipelines=input_pipelines,
         problem_type=problem_type,
     )
