@@ -37,6 +37,7 @@ from evalml.pipelines.components import (
     SVMRegressor,
     ExponentialSmoothingRegressor,
     ARIMARegressor,
+    ARIMAStatsRegressor,
     ProphetRegressor,
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
