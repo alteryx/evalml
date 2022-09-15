@@ -352,7 +352,7 @@ def test_polynomial_decomposer_uses_time_index(
         and X_has_time_index == "X_doesnt_have_time_index"
         and y_has_time_index == "y_doesnt_have_time_index"
     ):
-        err_msg = "There are no Datetime features in the feature data and neither the feature or target data doesn't have Datetime index."
+        err_msg = "There are no Datetime features in the feature data and neither the feature nor the target data have a DateTime index."
 
     # The time series data has too much time data
     elif (
