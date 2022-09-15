@@ -11,7 +11,6 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Added github workflow to run looking glass performance tests on merge to main :pr:`3690`
 
 .. warning::
 
