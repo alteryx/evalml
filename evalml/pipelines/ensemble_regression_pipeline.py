@@ -1,14 +1,13 @@
 """Pipeline subclass for all binary classification pipelines."""
 import pandas as pd
 
-from evalml.automl.utils import make_data_splitter
-from evalml.pipelines.ensemble_pipeline_mixin import EnsemblePipelineMixin
+from evalml.pipelines.ensemble_pipeline_base import EnsemblePipelineBase
 from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
 
-class EnsembleRegressionPipeline(RegressionPipeline, EnsemblePipelineMixin):
+class EnsembleRegressionPipeline(EnsemblePipelineBase, RegressionPipeline):
     """Pipeline subclass for all binary classification pipelines.
 
     Args:
@@ -54,19 +53,17 @@ class EnsembleRegressionPipeline(RegressionPipeline, EnsemblePipelineMixin):
         custom_name=None,
         random_seed=0,
     ):
-        self.input_pipelines = input_pipelines
-
         if component_graph is None:
             component_graph = {
                 "Stacked Ensembler": ["Stacked Ensemble Regressor", "X", "y"],
             }
         super().__init__(
-            component_graph,
+            input_pipelines=input_pipelines,
+            component_graph=component_graph,
             custom_name=custom_name,
             parameters=parameters,
             random_seed=random_seed,
         )
-        self._is_stacked_ensemble = True
 
     def predict(self, X, objective=None):
         """Make predictions using selected features.
@@ -109,6 +106,8 @@ class EnsembleRegressionPipeline(RegressionPipeline, EnsemblePipelineMixin):
             self._fit_input_pipelines(X, y, force_retrain=True)
 
         if data_splitter is None:
+            from evalml.automl.utils import make_data_splitter
+
             data_splitter = make_data_splitter(
                 X,
                 y,
@@ -153,37 +152,3 @@ class EnsembleRegressionPipeline(RegressionPipeline, EnsemblePipelineMixin):
             input_pipeline_preds[pipeline.name] = pl_preds
 
         return pd.DataFrame(input_pipeline_preds)
-
-    def clone(self):
-        """Constructs a new pipeline with the same components, parameters, and random seed.
-
-        Returns:
-            A new instance of this pipeline with identical components, parameters, and random seed.
-        """
-        clone = self.__class__(
-            input_pipelines=self.input_pipelines,
-            component_graph=self.component_graph,
-            parameters=self.parameters,
-            custom_name=self.custom_name,
-            random_seed=self.random_seed,
-        )
-        return clone
-
-    def new(self, parameters, random_seed=0):
-        """Constructs a new instance of the pipeline with the same component graph but with a different set of parameters. Not to be confused with python's __new__ method.
-
-        Args:
-            parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                 An empty dictionary or None implies using all default values for component parameters. Defaults to None.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-
-        Returns:
-            A new instance of this pipeline with identical components.
-        """
-        return self.__class__(
-            self.input_pipelines,
-            self.component_graph,
-            parameters=parameters,
-            custom_name=self.custom_name,
-            random_seed=random_seed,
-        )

@@ -62,10 +62,9 @@ from evalml.pipelines.time_series_regression_pipeline import (
     TimeSeriesRegressionPipeline,
 )
 
-# from evalml.pipelines.ensemble_binary_classification_pipeline import (
-#     EnsembleBinaryClassificationPipeline,
-# )
-# from evalml.pipelines.ensemble_multiclass_classification_pipeline import (
-#     EnsembleMulticlassClassificationPipeline,
-# )
-# from evalml.pipelines.ensemble_regression_pipeline import EnsembleRegressionPipeline
+from evalml.pipelines.ensemble_classification_pipelines import (
+    EnsembleClassificationPipeline,
+    EnsembleBinaryClassificationPipeline,
+    EnsembleMulticlassClassificationPipeline,
+)
+from evalml.pipelines.ensemble_regression_pipeline import EnsembleRegressionPipeline
