@@ -518,6 +518,7 @@ class AutoMLSearch:
                 "Time series support in evalml is still in beta, which means we are still actively building "
                 "its core features. Please be mindful of that when running search().",
             )
+        self.errors = {}
         self._SLEEP_TIME = 0.1
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback
@@ -811,6 +812,7 @@ class AutoMLSearch:
             self.random_seed,
             self.X_train.ww.schema,
             self.y_train.ww.schema,
+            self.errors,
         )
 
         text_in_ensembling = (
@@ -1151,8 +1153,11 @@ class AutoMLSearch:
                 len(current_batch_pipeline_scores)
                 and current_batch_pipeline_scores.isna().all()
             ):
+                error_msgs = set(
+                    [str(pl_fold["Exception"]) for pl_fold in self.errors.values()],
+                )
                 raise AutoMLSearchException(
-                    f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.",
+                    f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}. Exception(s) raised: {error_msgs}. Check the 'errors' attribute of the AutoMLSearch object for a full breakdown of errors and tracebacks.",
                 )
             if len(pipeline_times) > 0:
                 pipeline_times["Total time of batch"] = time_elapsed(start_batch_time)

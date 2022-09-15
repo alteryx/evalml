@@ -129,6 +129,7 @@ def test_train_pipeline_trains_and_tunes_threshold(
         0,
         None,
         None,
+        {},
     )
     env = AutoMLTestEnv("binary")
     with env.test_context():
@@ -149,6 +150,7 @@ def test_train_pipeline_trains_and_tunes_threshold(
         0,
         None,
         None,
+        {},
     )
     with env.test_context():
         _ = train_pipeline(dummy_binary_pipeline, X, y, automl_config=automl_config)
@@ -185,6 +187,7 @@ def test_train_pipeline_trains_and_tunes_threshold_ts(
         0,
         None,
         None,
+        {},
     )
     cv_pipeline, _ = train_pipeline(ts_binary, X, y, automl_config=automl_config)
     assert cv_pipeline.threshold is not None
@@ -221,6 +224,7 @@ def test_train_pipelines_cache(
         0,
         None,
         None,
+        {},
     )
     env = AutoMLTestEnv("binary")
     with env.test_context():

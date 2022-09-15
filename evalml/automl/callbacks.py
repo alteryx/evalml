@@ -26,6 +26,10 @@ def raise_error_callback(exception, traceback, automl, **kwargs):
     """
     logger.error(f"AutoML search raised a fatal exception: {str(exception)}")
     logger.error("\n".join(traceback))
+    automl.errors["Raised error"] = {
+        "Traceback": traceback,
+        "Exception": exception,
+    }
     raise exception
 
 
@@ -61,3 +65,8 @@ def log_error_callback(exception, traceback, automl, **kwargs):
     )
     logger.error(f"\t\t\tFold {fold_num}: Parameters:\n\t{pipeline.parameters}")
     logger.error(f"\t\t\tFold {fold_num}: Traceback:\n{trace}")
+    automl.errors[f"{pipeline.name}_fold_{fold_num}"] = {
+        "Parameters": pipeline.parameters,
+        "Traceback": trace,
+        "Exception": exception,
+    }

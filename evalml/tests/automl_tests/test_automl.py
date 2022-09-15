@@ -1803,12 +1803,18 @@ def test_pipelines_in_batch_return_nan(
         n_jobs=1,
     )
     env = AutoMLTestEnv("binary")
+    assert len(automl.errors) == 0
     with pytest.raises(
         AutoMLSearchException,
         match="All pipelines in the current AutoML batch produced a score of np.nan on the primary objective",
     ):
         with env.test_context(score_return_value={"Log Loss Binary": None}):
             automl.search()
+    assert len(automl.errors) > 0
+    for pipeline_name, pipeline_error in automl.errors.items():
+        assert "Label Encoder" in pipeline_error["Parameters"]
+        assert isinstance(pipeline_error["Exception"], TypeError)
+        assert "line" in pipeline_error["Traceback"]
 
 
 @patch("evalml.automl.automl_algorithm.IterativeAlgorithm.next_batch")
@@ -1850,12 +1856,14 @@ def test_pipelines_in_batch_return_none(
         n_jobs=1,
     )
     env = AutoMLTestEnv("binary")
+    assert len(automl.errors) == 0
     with pytest.raises(
         AutoMLSearchException,
         match="All pipelines in the current AutoML batch produced a score of np.nan on the primary objective",
     ):
         with env.test_context(score_return_value={"Log Loss Binary": None}):
             automl.search()
+    assert len(automl.errors) > 0
 
 
 @patch("evalml.automl.engine.engine_base.split_data")
@@ -1873,6 +1881,7 @@ def test_error_during_train_test_split(mock_split_data, X_y_binary, AutoMLTestEn
         train_best_pipeline=False,
     )
     env = AutoMLTestEnv("binary")
+    assert len(automl.errors) == 0
     with pytest.raises(
         AutoMLSearchException,
         match="All pipelines in the current AutoML batch produced a score of np.nan on the primary objective",
@@ -1881,6 +1890,7 @@ def test_error_during_train_test_split(mock_split_data, X_y_binary, AutoMLTestEn
             automl.search()
     for pipeline in automl.results["pipeline_results"].values():
         assert np.isnan(pipeline["mean_cv_score"])
+    assert len(automl.errors) > 0
 
 
 all_objectives = (
@@ -2784,12 +2794,13 @@ def test_automl_error_callback(error_type, callback, AutoMLTestEnv, X_y_binary, 
 
     if callback == silent_error_callback:
         assert msg not in caplog.text
-    if callback == log_error_callback:
-        assert f"Exception during automl search: {msg}" in caplog.text
+    else:
+        assert len(automl.errors) > 0
         assert msg in caplog.text
-    if callback in [raise_error_callback]:
-        assert f"AutoML search raised a fatal exception: {msg}" in caplog.text
-        assert msg in caplog.text
+        if callback == log_error_callback:
+            assert f"Exception during automl search: {msg}" in caplog.text
+        if callback in [raise_error_callback]:
+            assert f"AutoML search raised a fatal exception: {msg}" in caplog.text
 
 
 @pytest.mark.parametrize(
