@@ -4,6 +4,7 @@ from evalml.pipelines.components.transformers.encoders import (
     OneHotEncoder,
     TargetEncoder,
     LabelEncoder,
+    OrdinalEncoder,
 )
 from evalml.pipelines.components.transformers.feature_selection import (
     FeatureSelector,
