@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - lg-main-test
 
 jobs:
   performance_tests:
@@ -47,22 +48,22 @@ jobs:
       - name: Run default algorithm performance test (current)
         id: current_default
         run: |
-          response=$( looking-glass run-evalml-automl --username machineFL --automl-algo default --datasets-yaml datasets_v2.yaml --evalml-branch ${{ steps.get_hashes.outputs.current_hash }} --job-desc ${{ steps.get_hashes.outputs.current_hash }}_default )
+          response=$( looking-glass run-evalml-automl --looking-glass-branch fl/test --username machineFL --automl-algo default --datasets-yaml datasets_small_0.yaml --evalml-branch ${{ steps.get_hashes.outputs.current_hash }} --job-desc ${{ steps.get_hashes.outputs.current_hash }}_default )
           echo "::set-output name=job_id::$(echo $response | sed 's/.*Job ID: \([^ ]*\).*/\1/')"
       - name: Run iterative algorithm performance test (current)
         id: current_iterative
         run: |
-          response=$( looking-glass run-evalml-automl --username machineFL --automl-algo iterative --datasets-yaml datasets_v2.yaml --evalml-branch ${{ steps.get_hashes.outputs.current_hash }} --job-desc ${{ steps.get_hashes.outputs.current_hash }}_iterative )
+          response=$( looking-glass run-evalml-automl --looking-glass-branch fl/test --username machineFL --automl-algo iterative --datasets-yaml datasets_small_0.yaml --evalml-branch ${{ steps.get_hashes.outputs.current_hash }} --job-desc ${{ steps.get_hashes.outputs.current_hash }}_iterative )
           echo "::set-output name=job_id::$(echo $response | sed 's/.*Job ID: \([^ ]*\).*/\1/')"
       - name: Run default algorithm performance test (previous)
         id: previous_default
         run: |
-          response=$( looking-glass run-evalml-automl --username machineFL --automl-algo default --datasets-yaml datasets_v2.yaml --evalml-branch ${{ steps.get_hashes.outputs.previous_hash }} --job-desc ${{ steps.get_hashes.outputs.previous_hash }}_default )
+          response=$( looking-glass run-evalml-automl --looking-glass-branch fl/test --username machineFL --automl-algo default --datasets-yaml datasets_small_0.yaml --evalml-branch ${{ steps.get_hashes.outputs.previous_hash }} --job-desc ${{ steps.get_hashes.outputs.previous_hash }}_default )
           echo "::set-output name=job_id::$(echo $response | sed 's/.*Job ID: \([^ ]*\).*/\1/')"
       - name: Run iterative algorithm performance test (previous)
         id: previous_iterative
         run: |
-          response=$( looking-glass run-evalml-automl --username machineFL --automl-algo iterative --datasets-yaml datasets_v2.yaml --evalml-branch ${{ steps.get_hashes.outputs.previous_hash }} --job-desc ${{ steps.get_hashes.outputs.previous_hash }}_iterative )
+          response=$( looking-glass run-evalml-automl --looking-glass-branch fl/test --username machineFL --automl-algo iterative --datasets-yaml datasets_small_0.yaml --evalml-branch ${{ steps.get_hashes.outputs.previous_hash }} --job-desc ${{ steps.get_hashes.outputs.previous_hash }}_iterative )
           echo "::set-output name=job_id::$(echo $response | sed 's/.*Job ID: \([^ ]*\).*/\1/')"
       - name: Await results
         id: results
