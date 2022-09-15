@@ -49,10 +49,8 @@ from evalml.pipelines.components.utils import (
     get_estimators,
     handle_component_class,
 )
-from evalml.pipelines.ensemble_binary_classification_pipeline import (
+from evalml.pipelines.ensemble_classification_pipelines import (
     EnsembleBinaryClassificationPipeline,
-)
-from evalml.pipelines.ensemble_multiclass_classification_pipeline import (
     EnsembleMulticlassClassificationPipeline,
 )
 from evalml.pipelines.ensemble_regression_pipeline import EnsembleRegressionPipeline

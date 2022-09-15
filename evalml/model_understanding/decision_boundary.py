@@ -4,7 +4,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline
 from evalml.utils import infer_feature_types
 
 

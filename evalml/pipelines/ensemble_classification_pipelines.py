@@ -4,19 +4,18 @@ import numpy as np
 import pandas as pd
 import woodwork as ww
 
-from evalml.automl.utils import make_data_splitter
 from evalml.objectives import get_objective
 from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline
-from evalml.pipelines.ensemble_pipeline_mixin import EnsemblePipelineMixin
+from evalml.pipelines.ensemble_pipeline_base import EnsemblePipelineBase
+from evalml.pipelines.multiclass_classification_pipeline import (
+    MulticlassClassificationPipeline,
+)
 from evalml.problem_types import ProblemTypes
 from evalml.problem_types.utils import is_binary, is_multiclass
 from evalml.utils import infer_feature_types
 
 
-class EnsembleBinaryClassificationPipeline(
-    BinaryClassificationPipeline,
-    EnsemblePipelineMixin,
-):
+class EnsembleClassificationPipeline(EnsemblePipelineBase):
     """Pipeline subclass for all binary classification pipelines.
 
     Args:
@@ -52,7 +51,7 @@ class EnsembleBinaryClassificationPipeline(
         ...                                        'solver': 'liblinear'}}
     """
 
-    name = "V3 Stacked Ensemble Classifier"
+    name = "V3 Classification Ensemble Pipeline"
 
     def __init__(
         self,
@@ -62,8 +61,6 @@ class EnsembleBinaryClassificationPipeline(
         custom_name=None,
         random_seed=0,
     ):
-        self.input_pipelines = input_pipelines
-
         if component_graph is None:
             component_graph = {
                 "Label Encoder": ["Label Encoder", "X", "y"],
@@ -74,12 +71,12 @@ class EnsembleBinaryClassificationPipeline(
                 ],
             }
         super().__init__(
-            component_graph,
+            input_pipelines=input_pipelines,
+            component_graph=component_graph,
             custom_name=custom_name,
             parameters=parameters,
             random_seed=random_seed,
         )
-        self._is_stacked_ensemble = True
 
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
@@ -147,6 +144,8 @@ class EnsembleBinaryClassificationPipeline(
             self._fit_input_pipelines(X, y, force_retrain=True)
 
         if data_splitter is None:
+            from evalml.automl.utils import make_data_splitter
+
             data_splitter = make_data_splitter(X, y, problem_type=ProblemTypes.BINARY)
 
         splits = data_splitter.split(X, y)
@@ -218,38 +217,86 @@ class EnsembleBinaryClassificationPipeline(
 
         return ww.concat_columns(input_pipeline_preds)
 
-    def clone(self):
-        """Constructs a new pipeline with the same components, parameters, and random seed.
 
-        Returns:
-            A new instance of this pipeline with identical components, parameters, and random seed.
-        """
-        clone = self.__class__(
-            input_pipelines=self.input_pipelines,
-            component_graph=self.component_graph,
-            parameters=self.parameters,
-            custom_name=self.custom_name,
-            random_seed=self.random_seed,
-        )
-        if is_binary(self.problem_type):
-            clone.threshold = self.threshold
-        return clone
+class EnsembleBinaryClassificationPipeline(
+    EnsembleClassificationPipeline,
+    BinaryClassificationPipeline,
+):
+    """Pipeline subclass for all binary classification pipelines.
 
-    def new(self, parameters, random_seed=0):
-        """Constructs a new instance of the pipeline with the same component graph but with a different set of parameters. Not to be confused with python's __new__ method.
+    Args:
+        component_graph (ComponentGraph, list, dict): ComponentGraph instance, list of components in order, or dictionary of components.
+            Accepts strings or ComponentBase subclasses in the list.
+            Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
+            component's index in the list. For example, the component graph
+            [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
+            ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
+        parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+             An empty dictionary or None implies using all default values for component parameters. Defaults to None.
+        custom_name (str): Custom name for the pipeline. Defaults to None.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
 
-        Args:
-            parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                 An empty dictionary or None implies using all default values for component parameters. Defaults to None.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
+    Example:
+        >>> pipeline = BinaryClassificationPipeline(component_graph=["Simple Imputer", "Logistic Regression Classifier"],
+        ...                                         parameters={"Logistic Regression Classifier": {"penalty": "elasticnet",
+        ...                                                                                        "solver": "liblinear"}},
+        ...                                         custom_name="My Binary Pipeline")
+        ...
+        >>> assert pipeline.custom_name == "My Binary Pipeline"
+        >>> assert pipeline.component_graph.component_dict.keys() == {'Simple Imputer', 'Logistic Regression Classifier'}
 
-        Returns:
-            A new instance of this pipeline with identical components.
-        """
-        return self.__class__(
-            self.input_pipelines,
-            self.component_graph,
-            parameters=parameters,
-            custom_name=self.custom_name,
-            random_seed=random_seed,
-        )
+        The pipeline parameters will be chosen from the default parameters for every component, unless specific parameters
+        were passed in as they were above.
+
+        >>> assert pipeline.parameters == {
+        ...     'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
+        ...     'Logistic Regression Classifier': {'penalty': 'elasticnet',
+        ...                                        'C': 1.0,
+        ...                                        'n_jobs': -1,
+        ...                                        'multi_class': 'auto',
+        ...                                        'solver': 'liblinear'}}
+    """
+
+    name = "V3 Binary Classification Ensemble Pipeline"
+
+
+class EnsembleMulticlassClassificationPipeline(
+    EnsembleClassificationPipeline,
+    MulticlassClassificationPipeline,
+):
+    """Pipeline subclass for all binary classification pipelines.
+
+    Args:
+        component_graph (ComponentGraph, list, dict): ComponentGraph instance, list of components in order, or dictionary of components.
+            Accepts strings or ComponentBase subclasses in the list.
+            Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
+            component's index in the list. For example, the component graph
+            [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
+            ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
+        parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+             An empty dictionary or None implies using all default values for component parameters. Defaults to None.
+        custom_name (str): Custom name for the pipeline. Defaults to None.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+
+    Example:
+        >>> pipeline = BinaryClassificationPipeline(component_graph=["Simple Imputer", "Logistic Regression Classifier"],
+        ...                                         parameters={"Logistic Regression Classifier": {"penalty": "elasticnet",
+        ...                                                                                        "solver": "liblinear"}},
+        ...                                         custom_name="My Binary Pipeline")
+        ...
+        >>> assert pipeline.custom_name == "My Binary Pipeline"
+        >>> assert pipeline.component_graph.component_dict.keys() == {'Simple Imputer', 'Logistic Regression Classifier'}
+
+        The pipeline parameters will be chosen from the default parameters for every component, unless specific parameters
+        were passed in as they were above.
+
+        >>> assert pipeline.parameters == {
+        ...     'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
+        ...     'Logistic Regression Classifier': {'penalty': 'elasticnet',
+        ...                                        'C': 1.0,
+        ...                                        'n_jobs': -1,
+        ...                                        'multi_class': 'auto',
+        ...                                        'solver': 'liblinear'}}
+    """
+
+    name = "V3 Multiclass Classification Ensemble Pipeline"
