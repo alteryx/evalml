@@ -99,6 +99,7 @@ jobs:
           echo "Iterative Algorith Report: $iterative_url"
       - name: Notify on Slack
         run: |
+          filename_base=${{ steps.get_hashes.outputs.current_hash }}_v_${{ steps.get_hashes.outputs.previous_hash }}
           presigned_default_url=$( aws s3 presign ${{ steps.s3_upload.outputs.default_report_url }} --expires-in 604800 )
           presigned_iterative_url=$( aws s3 presign ${{ steps.s3_upload.outputs.iterative_report_url }} --expires-in 604800 )
           response=$(
