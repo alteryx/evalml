@@ -192,12 +192,7 @@ class PolynomialDecomposer(Decomposer):
         y_orig = infer_feature_types(y).copy()
         self._component_obj.fit(y_orig)
 
-        y_detrended = self._component_obj.transform(y_orig)
-
-        if not isinstance(y_detrended.index, pd.DatetimeIndex):
-            y_detrended_with_time_index = self._set_time_index(X, y_detrended)
-        else:
-            y_detrended_with_time_index = y_detrended
+        y_detrended_with_time_index = self._component_obj.transform(y_orig)
 
         # Save the frequency of the fitted series for checking against transform data.
         self.frequency = y_detrended_with_time_index.index.freqstr
@@ -260,7 +255,7 @@ class PolynomialDecomposer(Decomposer):
                 len(y_detrended) // self.periodicity + 1,
             ).T[: len(y_detrended)]
 
-        y_t = pd.Series(y_detrended - seasonal).set_axis(y.index)
+        y_t = pd.Series(y_detrended - seasonal)
         y_t.ww.init(logical_type="double")
         return X, y_t
 
