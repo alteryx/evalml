@@ -106,7 +106,7 @@ jobs:
           curl -X POST https://slack.com/api/chat.postMessage -H 'Content-type: application/json;charset=UTF-8' -H 'Authorization: Bearer ${{ secrets.LG_SLACK_TOKEN }}' \
           --data-binary @- << EOF
           {
-            "channel": "C042B5JBBPF"
+            "channel": "C042B5JBBPF",
             "blocks": [
               {
                 "type": "section",
