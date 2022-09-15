@@ -411,7 +411,7 @@ def test_polynomial_decomposer_plot_decomposition(y_has_time_index):
 
     pdc = PolynomialDecomposer(degree=1, seasonal_period=period)
     pdc.fit_transform(X, y)
-    fig, axs = pdc.plot_decomposition(X, y, show=True)
+    fig, axs = pdc.plot_decomposition(X, y, show=False)
     assert isinstance(fig, matplotlib.pyplot.Figure)
     assert isinstance(axs, np.ndarray)
     assert all([isinstance(ax, matplotlib.pyplot.Axes) for ax in axs])

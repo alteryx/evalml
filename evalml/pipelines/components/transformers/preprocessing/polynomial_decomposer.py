@@ -100,16 +100,14 @@ class PolynomialDecomposer(Decomposer):
             dt_col = pd.Series(dt_df.index)
         elif dt_df.ww.select("Datetime").shape[1] == 0:
             raise ValueError(
-                "There are no Datetime features in the feature data and neither the feature or target data doesn't have Datetime index.",
+                "There are no Datetime features in the feature data and neither the feature nor the target data have a DateTime index.",
             )
         # Use a datetime column of the features if there's only one
         elif dt_df.ww.select("Datetime").shape[1] == 1:
             dt_col = dt_df.ww.select("Datetime").squeeze()
         # With more than one datetime column, use the time_index parameter, if provided.
         elif dt_df.ww.select("Datetime").shape[1] > 1:
-            if ("time_index" not in self.parameters) or (
-                self.parameters["time_index"] is None
-            ):
+            if self.parameters.get("time_index", None) is None:
                 raise ValueError(
                     "Too many Datetime features provided in data but no time_index column specified during __init__.",
                 )
@@ -125,11 +123,11 @@ class PolynomialDecomposer(Decomposer):
         )
         return y.set_axis(time_index)
 
-    def _build_seasonal_signal(self, y_ww, periodic_signal, periodicity, frequency):
+    def _build_seasonal_signal(self, y, periodic_signal, periodicity, frequency):
         """Projects the cyclical, seasonal signal forward to cover the target data.
 
         Args:
-            y_ww (pandas.Series): Target data to be transformed
+            y (pandas.Series): Target data to be transformed
             periodic_signal (pandas.Series): Single period of the detected seasonal signal
             periodicity (int): Number of time units in a single cycle of the seasonal signal
             frequency (str): String representing the detected frequency of the time series data.
@@ -142,7 +140,7 @@ class PolynomialDecomposer(Decomposer):
             pandas.Series: the seasonal signal extended to cover the target data to be transformed
         """
         # Determine where the seasonality starts
-        first_index_diff = y_ww.index[0] - periodic_signal.index[0]
+        first_index_diff = y.index[0] - periodic_signal.index[0]
         delta = pd.to_timedelta(1, frequency)
         period = pd.to_timedelta(periodicity, frequency)
 
@@ -157,12 +155,12 @@ class PolynomialDecomposer(Decomposer):
 
         # Repeat the single, rotated period of seasonal data to cover the entirety of the data
         # to be transformed.
-        seasonal = np.tile(rotated_seasonal_sample, len(y_ww) // periodicity + 1).T[
-            : len(y_ww)
+        seasonal = np.tile(rotated_seasonal_sample, len(y) // periodicity + 1).T[
+            : len(y)
         ]  # The extrapolated seasonal data will be too long, so truncate.
 
         # Add the date times back in.
-        return pd.Series(seasonal, index=y_ww.index)
+        return pd.Series(seasonal, index=y.index)
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> PolynomialDecomposer:
         """Fits the PolynomialDecomposer and determine the seasonal signal.
@@ -412,6 +410,6 @@ class PolynomialDecomposer(Decomposer):
         axs[2].set_title("seasonality")
         axs[3].plot(decomposition_results[0]["residual"], "y")
         axs[3].set_title("residual")
-        if show:
+        if show:  # pragma: no cover
             plt.show()
         return fig, axs

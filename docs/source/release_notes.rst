@@ -11,7 +11,7 @@ Release Notes
         * Fix search order changing when using ``DefaultAlgorithm`` :pr:`3704`
     * Changes
         * Bumped up minimum version of sktime to 0.12.0. :pr:`3599`
-        * Added abstract Detrender class as a parent to PolynomialDecomposer to support additional decomposers. :pr:`3599`
+        * Added abstract Decomposer class as a parent to PolynomialDecomposer to support additional decomposers. :pr:`3599`
         * Pinned ``pmdarima`` < 2.0.0 :pr:`3679`
         * Added support for using ``downcast_nullable_types`` with Series as well as DataFrames :pr:`3697`
     * Documentation Changes
