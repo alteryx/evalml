@@ -1,6 +1,7 @@
 """Component that removes trends from time series by fitting a polynomial to the data."""
 from __future__ import annotations
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import sklearn.exceptions
@@ -326,8 +327,9 @@ class PolynomialDecomposer(Decomposer):
                 a DataFrame for multivariate problems.
 
         Returns:
-            list of pd.DataFrame: Each DataFrame contains the columns "trend", "seasonality" and "residual,"
-                with the column values being the decomposed elements of the target data.
+            list of pd.DataFrame: Each DataFrame contains the columns "signal", "trend", "seasonality" and "residual,"
+                with the latter 3 column values being the decomposed elements of the target data.  The "signal" column
+                is simply the input target signal but reindexed with a datetime index to match the input features.
 
         Raises:
             TypeError: If X does not have time-series data in the index.
@@ -384,3 +386,32 @@ class PolynomialDecomposer(Decomposer):
                 result_dfs.append(_decompose_target(X, y[colname], fh))
 
         return result_dfs
+
+    def plot_decomposition(self, X: pd.DataFrame, y: pd.Series, show=False):
+        """Plots the decomposition of the target signal.
+
+        Args:
+            X (pd.DataFrame): Input data with time series data in index.
+            y (pd.Series or pd.DataFrame): Target variable data provided as a Series for univariate problems or
+                a DataFrame for multivariate problems.
+            show (bool): Whether to display the plot or not. Defaults to False.
+
+        Returns:
+            matplotlib.pyplot.Figure, matplotlib.pyplot.Axes: The figure and axes that have the decompositions
+                plotted on them
+
+        """
+        decomposition_results = self.get_trend_dataframe(X, y)
+        fig, axs = plt.subplots(4)
+        fig.set_size_inches(18.5, 14.5)
+        axs[0].plot(decomposition_results[0]["signal"], "r")
+        axs[0].set_title("signal")
+        axs[1].plot(decomposition_results[0]["trend"], "b")
+        axs[1].set_title("trend")
+        axs[2].plot(decomposition_results[0]["seasonality"], "g")
+        axs[2].set_title("seasonality")
+        axs[3].plot(decomposition_results[0]["residual"], "y")
+        axs[3].set_title("residual")
+        if show:
+            plt.show()
+        return fig, axs

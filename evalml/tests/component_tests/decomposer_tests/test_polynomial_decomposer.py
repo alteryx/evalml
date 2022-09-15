@@ -1,3 +1,6 @@
+from datetime import datetime
+
+import matplotlib.pyplot
 import numpy as np
 import pandas as pd
 import pytest
@@ -5,7 +8,6 @@ import woodwork as ww
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
-from evalml.demos import load_weather
 from evalml.pipelines.components import PolynomialDecomposer
 
 
@@ -395,11 +397,7 @@ def test_polynomial_decomposer_uses_time_index(
     "y_has_time_index",
     ["y_has_time_index", "y_doesnt_have_time_index"],
 )
-def test_pdc(y_has_time_index):
-    from datetime import datetime
-
-    import matplotlib.pyplot as plt
-
+def test_polynomial_decomposer_plot_decomposition(y_has_time_index):
     step = 0.01
     period = 9
     freq = 2 * np.pi / period / step
@@ -411,15 +409,9 @@ def test_pdc(y_has_time_index):
     if y_has_time_index == "y_has_time_index":
         y = y.set_axis(X.index)
 
-    plt.plot(y, label="signal")
-    plt.show()
-
     pdc = PolynomialDecomposer(degree=1, seasonal_period=period)
     pdc.fit_transform(X, y)
-    res = pdc.get_trend_dataframe(X, y)
-    plt.plot(res[0]["signal"], label="signal")
-    plt.plot(res[0]["trend"], label="trend")
-    plt.plot(res[0]["seasonality"], label="seasonality")
-    plt.plot(res[0]["residual"], label="residual")
-    plt.legend()
-    plt.show()
+    fig, axs = pdc.plot_decomposition(X, y, show=True)
+    assert isinstance(fig, matplotlib.pyplot.Figure)
+    assert isinstance(axs, np.ndarray)
+    assert all([isinstance(ax, matplotlib.pyplot.Axes) for ax in axs])
