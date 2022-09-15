@@ -102,7 +102,8 @@ jobs:
         run: |
           presigned_default_url=$( aws s3 presign ${{ steps.s3_upload.outputs.default_report_url }} --expires-in 604800 )
           presigned_iterative_url=$( aws s3 presign ${{ steps.s3_upload.outputs.iterative_report_url }} --expires-in 604800 )
-          response=$(curl -X POST ${{ secrets.LG_SLACK_NOTIFICATION_WEBHOOK }} -H 'Content-type: application/json;charset=UTF-8' -H 'Authorization: Bearer ${{ secrets.LG_SLACK_TOKEN }}' \
+          response=$(
+          curl -X POST ${{ secrets.LG_SLACK_NOTIFICATION_WEBHOOK }} -H 'Content-type: application/json;charset=UTF-8' -H 'Authorization: Bearer ${{ secrets.LG_SLACK_TOKEN }}' \
           --data-binary @- << EOF
           {
             "channel": "C042B5JBBPF"
@@ -166,7 +167,8 @@ jobs:
               }
             ]
           }
-          EOF)
+          EOF
+          )
           ts=$(echo response | jq .ts)
           curl -F 'file=@${filename_base}_default.html' -F channels=C042B5JBBPF -F 'thread_ts=$ts' -H 'Authorization: Bearer ${{ secrets.LG_SLACK_TOKEN }}'  https://slack.com/api/files.upload
           curl -F 'file=@${filename_base}_iterative.html' -F channels=C042B5JBBPF -F 'thread_ts=$ts' -H 'Authorization: Bearer ${{ secrets.LG_SLACK_TOKEN }}'  https://slack.com/api/files.upload
