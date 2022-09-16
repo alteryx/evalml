@@ -127,7 +127,7 @@ jobs:
                 "fields": [
                   {
                     "type": "mrkdwn",
-                    "text": "*Current Commit*: <${{ github.event.head_commit.url }}|${{ steps.get_hashes.outputs.current_hash }}> - ${{ github.event.head_commit.message }}"
+                    "text": "*Current Commit*: <${{ github.event.head_commit.url }}|${{ steps.get_hashes.outputs.current_hash }}>"
                   },
                   {
                     "type": "mrkdwn",
