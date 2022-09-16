@@ -131,6 +131,8 @@ def downcast_nullable_types(data, ignore_null_cols=True):
         data.ww.init()
 
     if isinstance(data, pd.Series):
+        if ignore_null_cols and data.isna().any():
+            return data
         if isinstance(data.ww.logical_type, ww.logical_types.BooleanNullable):
             data = data.ww.set_logical_type("Boolean")
         if isinstance(
