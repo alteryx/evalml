@@ -415,3 +415,57 @@ def test_polynomial_decomposer_plot_decomposition(y_has_time_index):
     assert isinstance(fig, matplotlib.pyplot.Figure)
     assert isinstance(axs, np.ndarray)
     assert all([isinstance(ax, matplotlib.pyplot.Axes) for ax in axs])
+
+
+@pytest.mark.parametrize(
+    "dataframe_has_datatime_index",
+    ["df_has_datetime_index", "df_doesnt_have_datetime_index"],
+)
+@pytest.mark.parametrize(
+    "multiple_time_features",
+    ["has_another_time_feature", "doesnt_have_another_time_feature"],
+)
+@pytest.mark.parametrize(
+    "time_index_exists",
+    ["time_index_does_exist", "time_index_does_not_exist"],
+)
+def test_polynomial_decomposer_prefers_users_time_index(
+    dataframe_has_datatime_index,
+    multiple_time_features,
+    time_index_exists,
+    ts_data,
+):
+    periods = 30
+    dates_1 = pd.date_range("2020-01-01", periods=periods)
+    dates_2 = pd.date_range("2021-01-01", periods=periods)
+    dates_3 = pd.date_range("2022-01-01", periods=periods)
+    vals = np.arange(0, periods)
+    y = pd.Series(vals)
+    X = pd.DataFrame({"values": vals})
+
+    if time_index_exists == "time_index_does_exist":
+        X["dates"] = dates_1
+
+    if multiple_time_features == "has_another_time_feature":
+        X["more_dates"] = dates_2
+
+    if dataframe_has_datatime_index == "df_has_datetime_index":
+        X.set_axis(pd.DatetimeIndex(dates_3))
+
+    pdc = PolynomialDecomposer(time_index="dates")
+
+    err_msg = None
+    if time_index_exists == "time_index_does_not_exist":
+        if multiple_time_features == "has_another_time_feature":
+            expected_values = dates_2.values
+        else:
+            err_msg = "There are no Datetime features in the feature data and neither the feature nor the target data have a DateTime index."
+    else:
+        expected_values = dates_1.values
+
+    if err_msg:
+        with pytest.raises(ValueError, match=err_msg):
+            X_t, y_t = pdc.fit_transform(X, y)
+    else:
+        X_t, y_t = pdc.fit_transform(X, y)
+        assert all(y_t.index.values == expected_values)

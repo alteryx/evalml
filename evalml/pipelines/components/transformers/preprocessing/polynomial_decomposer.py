@@ -1,6 +1,8 @@
 """Component that removes trends from time series by fitting a polynomial to the data."""
 from __future__ import annotations
 
+import logging
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -65,6 +67,7 @@ class PolynomialDecomposer(Decomposer):
                     )
             return var_value
 
+        self.logger = logging.getLogger(__name__)
         degree = raise_typeerror_if_not_int("degree", degree)
         self.seasonal_period = raise_typeerror_if_not_int(
             "seasonal_period",
@@ -83,6 +86,7 @@ class PolynomialDecomposer(Decomposer):
 
         decomposer = detrend.Detrender(trend.PolynomialTrendForecaster(degree=degree))
 
+        self.time_index = time_index
         params["time_index"] = time_index
 
         super().__init__(
@@ -95,6 +99,14 @@ class PolynomialDecomposer(Decomposer):
         """Ensures that target data has a pandas.DatetimeIndex that matches feature data."""
         dt_df = infer_feature_types(X)
 
+        # Prefer the user's provided time_index, if it exists
+        if self.time_index:
+            try:
+                dt_col = dt_df[self.time_index]
+            except KeyError:
+                self.logger.warning(
+                    f"PolynomialDecomposer could not find requested time_index {self.time_index}",
+                )
         # Use the feature data's index, preferentially
         if isinstance(dt_df.index, pd.DatetimeIndex):
             dt_col = pd.Series(dt_df.index)
