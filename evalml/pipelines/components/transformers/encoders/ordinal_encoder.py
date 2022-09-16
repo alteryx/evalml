@@ -11,11 +11,12 @@ from evalml.pipelines.components import ComponentBaseMeta
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import infer_feature_types
 
-"""A transformer that encodes categorical features in a one-hot numeric array."""
+"""A transformer that encodes ordinal features."""
 
 
 class OrdinalEncoderMeta(ComponentBaseMeta):
     METHODS_TO_CHECK = ComponentBaseMeta.METHODS_TO_CHECK + [
+        # --> probs need to add categories back
         "get_feature_names",
     ]
 
@@ -131,14 +132,21 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                         frac=1,
                         random_state=self._initial_state,
                     )
+                    # --> make sure this is sorting on the number
                     value_counts = value_counts.sort_values(
                         [col],
                         ascending=False,
                         kind="mergesort",
                     )
                     unique_values = value_counts.head(top_n).index.tolist()
-                unique_values = np.sort(unique_values)
-                categories.append(unique_values)
+
+                categories.append(list(unique_values))
+
+        # Add any null values into the categories lists so that they can get handled correctly
+        if isinstance(categories, list):
+            for i, col in enumerate(X_t[self.features_to_encode]):
+                if X_t[col].isna().any():
+                    categories[i] += [np.nan]
 
         self._encoder = SKOrdinalEncoder(
             categories=categories,
@@ -148,7 +156,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         )
 
         self._encoder.fit(X_t[self.features_to_encode])
-        # --> logic to set up input parameters?
         return self
 
     def transform(self, X, y=None):

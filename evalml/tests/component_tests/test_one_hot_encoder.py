@@ -483,6 +483,7 @@ def test_more_top_n_unique_values_large():
 
 
 def test_categorical_dtype():
+    # --> I dont get what this is testin
     # test that columns with the categorical type are encoded properly
     X = pd.DataFrame(
         {
