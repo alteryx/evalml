@@ -103,22 +103,23 @@ class PolynomialDecomposer(Decomposer):
         if self.time_index and self.time_index in dt_df.columns:
             dt_col = dt_df[self.time_index]
         # If user's provided time_index doesn't exist, log it and find some datetimes to use
-        elif self.time_index and self.time_index not in dt_df.columns:
+        elif (self.time_index is None) or self.time_index not in dt_df.columns:
             self.logger.warning(
                 f"PolynomialDecomposer could not find requested time_index {self.time_index}",
             )
             # Use the feature data's index, preferentially
+            num_datetime_features = dt_df.ww.select("Datetime").shape[1]
             if isinstance(dt_df.index, pd.DatetimeIndex):
                 dt_col = pd.Series(dt_df.index)
-            elif dt_df.ww.select("Datetime").shape[1] == 0:
+            elif num_datetime_features == 0:
                 raise ValueError(
                     "There are no Datetime features in the feature data and neither the feature nor the target data have a DateTime index.",
                 )
             # Use a datetime column of the features if there's only one
-            elif dt_df.ww.select("Datetime").shape[1] == 1:
+            elif num_datetime_features == 1:
                 dt_col = dt_df.ww.select("Datetime").squeeze()
             # With more than one datetime column, use the time_index parameter, if provided.
-            elif dt_df.ww.select("Datetime").shape[1] > 1:
+            elif num_datetime_features > 1:
                 if self.parameters.get("time_index", None) is None:
                     raise ValueError(
                         "Too many Datetime features provided in data but no time_index column specified during __init__.",
