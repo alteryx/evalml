@@ -104,14 +104,26 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         if len(self.features_to_encode) == 0:
             categories = "auto"
         elif self.parameters["categories"] is not None:
-            categories = self.parameters["categories"]
-            if len(categories) != len(self.features_to_encode) or not isinstance(
-                categories[0],
+            input_categories = self.parameters["categories"]
+            if len(input_categories) != len(self.features_to_encode) or not isinstance(
+                input_categories[0],
                 list,
             ):
                 raise ValueError(
                     "Categories argument must contain a list of categories for each categorical feature",
                 )
+
+            # Categories should be in the same order as the data's Ordinal.order categories
+            # even if it's a subset
+            # --> refactor this to be nicer
+            categories = []
+            for i, col_categories in enumerate(input_categories):
+                categories_order = X.ww.logical_types[X.columns[i]].order
+                ordered_categories = [
+                    cat for cat in categories_order if cat in col_categories
+                ]
+                categories.append(ordered_categories)
+
             # --> should we compare with the ordinal categories to make sure they're all at least in there?
             # --> if so, add a test
         else:

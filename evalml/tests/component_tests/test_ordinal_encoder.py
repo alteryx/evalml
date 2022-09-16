@@ -453,79 +453,119 @@ def test_no_top_n():
     assert "Found unknown categories" in exec_info.value.args[0]
 
 
-# def test_categories():
-#     X = pd.DataFrame(
-#         {
-#             "col_1": ["a", "b", "c", "d", "e", "f", "g"],
-#             "col_2": ["a", "c", "d", "b", "e", "e", "f"],
-#             "col_3": ["a", "a", "a", "a", "a", "a", "b"],
-#             "col_4": [2, 0, 1, 3, 0, 1, 2],
-#         },
-#     )
-#     X = set_first_three_columns_to_categorical(X)
+def test_categories_set_at_init():
+    X = pd.DataFrame(
+        {
+            "col_1": ["a", "b", "c", "d", "e", "f", "g"],
+            "col_2": ["a", "c", "d", "b", "e", "e", "f"],
+            "col_3": ["a", "a", "a", "a", "a", "a", "b"],
+            "col_4": [2, 0, 1, 3, 0, 1, 2],
+        },
+    )
+    full_categories = [
+        ["a", "b", "c", "d", "e", "f", "g"],
+        ["a", "b", "c", "d", "e", "f"],
+        ["a", "b"],
+    ]
+    X = set_first_three_columns_to_ordinal_with_categories(
+        X,
+        categories=full_categories,
+    )
 
-#     categories = [["a", "b", "c", "d"], ["a", "b", "c"], ["a", "b"]]
+    categories = [["a", "b", "c", "d"], ["a", "b", "c"], ["a", "b"]]
 
-#     # test categories value works
-#     encoder = OrdinalEncoder(top_n=None, categories=categories, random_seed=2)
-#     encoder.fit(X)
-#     X_t = encoder.transform(X)
+    # test categories value works when transforming
+    encoder = OrdinalEncoder(
+        top_n=None,
+        categories=categories,
+        handle_unknown="use_encoded_value",
+        unknown_value=-1,
+        random_seed=2,
+    )
+    encoder.fit(X)
+    X_t = encoder.transform(X)
 
-#     col_names = set(X_t.columns)
-#     expected_col_names = set(
-#         [
-#             "col_1_a",
-#             "col_1_b",
-#             "col_1_c",
-#             "col_1_d",
-#             "col_2_a",
-#             "col_2_b",
-#             "col_2_c",
-#             "col_3_a",
-#             "col_3_b",
-#             "col_4",
-#         ],
-#     )
-#     assert X_t.shape == (7, 10)
-#     assert col_names == expected_col_names
-
-#     # test categories with top_n errors
-#     with pytest.raises(
-#         ValueError,
-#         match="Cannot use categories and top_n arguments simultaneously",
-#     ):
-#         encoder = OrdinalEncoder(top_n=10, categories=categories, random_seed=2)
+    assert list(X_t["col_1_ordinally_encoded"]) == [0, 1, 2, 3, -1, -1, -1]
+    assert list(X_t["col_2_ordinally_encoded"]) == [0, 2, -1, 1, -1, -1, -1]
+    assert list(X_t["col_3_ordinally_encoded"]) == [0, 0, 0, 0, 0, 0, 1]
 
 
-# def test_less_than_top_n_unique_values():
-#     # test that columns with less than n unique values encodes properly
-#     X = pd.DataFrame(
-#         {
-#             "col_1": ["a", "b", "c", "d", "a"],
-#             "col_2": ["a", "b", "a", "c", "b"],
-#             "col_3": ["a", "a", "a", "a", "a"],
-#             "col_4": [2, 0, 1, 0, 0],
-#         },
-#     )
-#     X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical"})
-#     encoder = OrdinalEncoder(top_n=5)
-#     encoder.fit(X)
-#     X_t = encoder.transform(X)
-#     expected_col_names = set(
-#         [
-#             "col_1_a",
-#             "col_1_b",
-#             "col_1_c",
-#             "col_1_d",
-#             "col_2_a",
-#             "col_2_b",
-#             "col_2_c",
-#             "col_3_a",
-#             "col_4",
-#         ],
-#     )
-#     col_names = set(X_t.columns)
-#     assert col_names == expected_col_names
+def test_categories_different_order_from_ltype():
+    # The order of categories comes from the Ordinal.order property of the data.
+    # Categories passed in as input to the encoder just determine what subset should
+    # be used.
+    X = pd.DataFrame(
+        {
+            "col_1": ["a", "b", "c", "d", "e", "f", "g"],
+            "col_2": ["a", "c", "d", "b", "e", "e", "f"],
+            "col_3": ["a", "a", "a", "a", "a", "a", "b"],
+            "col_4": [2, 0, 1, 3, 0, 1, 2],
+        },
+    )
+    full_categories = [
+        ["a", "b", "c", "d", "e", "f", "g"],
+        ["a", "b", "c", "d", "e", "f"],
+        ["a", "b"],
+    ]
+    X = set_first_three_columns_to_ordinal_with_categories(
+        X,
+        categories=full_categories,
+    )
+
+    # The order doesn't match the full categories above but outputted data will still match above
+    categories = [["d", "a", "c", "b"], ["c", "b", "a"], ["b", "a"]]
+
+    # test categories value works when transforming
+    encoder = OrdinalEncoder(
+        top_n=None,
+        categories=categories,
+        handle_unknown="use_encoded_value",
+        unknown_value=-1,
+        random_seed=2,
+    )
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+
+    assert list(X_t["col_1_ordinally_encoded"]) == [0, 1, 2, 3, -1, -1, -1]
+    assert list(X_t["col_2_ordinally_encoded"]) == [0, 2, -1, 1, -1, -1, -1]
+    assert list(X_t["col_3_ordinally_encoded"]) == [0, 0, 0, 0, 0, 0, 1]
+
+
+def test_less_than_top_n_unique_values():
+    X = pd.DataFrame(
+        {
+            "col_1": ["a", "b", "c", "d", "d"],
+            "col_2": ["a", "b", "a", "c", "b"],
+            "col_3": ["a", "a", "a", "a", "a"],
+            "col_4": [2, 0, 1, 0, 0],
+        },
+    )
+    X.ww.init(
+        logical_types={
+            "col_1": Ordinal(order=["a", "b", "c", "d"]),
+            "col_2": Ordinal(order=["c", "b", "a"]),
+            "col_3": "categorical",
+        },
+    )
+
+    encoder = OrdinalEncoder(top_n=5)
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+
+    assert set(X_t.columns) == {
+        "col_1_ordinally_encoded",
+        "col_2_ordinally_encoded",
+        "col_3",
+        "col_4",
+    }
+    pd.testing.assert_series_equal(
+        X_t["col_1_ordinally_encoded"],
+        pd.Series([0, 1, 2, 3, 3], name="col_1_ordinally_encoded", dtype="float64"),
+    )
+    pd.testing.assert_series_equal(
+        X_t["col_2_ordinally_encoded"],
+        pd.Series([2, 1, 2, 0, 1], name="col_2_ordinally_encoded", dtype="float64"),
+    )
 
 
 # def test_more_top_n_unique_values():
