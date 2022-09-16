@@ -953,7 +953,7 @@ class ComponentGraph:
     def inverse_transform(self, y):
         """Apply component inverse_transform methods to estimator predictions in reverse order.
 
-        Components that implement inverse_transform are PolynomialDecomposer, LabelEncoder (tbd).
+        Components that implement inverse_transform are PolynomialDecomposer, LogTransformer, LabelEncoder (tbd).
 
         Args:
             y: (pd.Series): Final component features.
