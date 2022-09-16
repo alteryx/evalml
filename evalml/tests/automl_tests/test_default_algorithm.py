@@ -263,11 +263,20 @@ def test_evalml_algo_search_hyperparameters(
     X_y_categorical_classification,
 ):
     X, y = X_y_categorical_classification
-    X.ww.init()
     cat_cols = list(X.ww.select("categorical").columns)
-    mock_get_names.return_value = ["0", "1", "2", "Sex_male", "Embarked_S"]
+    mock_get_names.return_value = [
+        "0",
+        "1",
+        "2",
+        "Sex_male",
+        "Ticket_A/5 21171",
+        "C85",
+        "Embarked_S",
+    ]
     mock_get_feature_provenance.return_value = {
         "Sex": ["Sex_male"],
+        "Ticket": ["Ticket_A/5 21171"],
+        "Cabin": ["C85"],
         "Embarked": ["Embarked_S"],
     }
 
@@ -328,10 +337,8 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
     X, y = X_y_binary
     mock_get_names.return_value = ["0", "1", "2"]
 
-    X = pd.DataFrame(X)
     for col in columns:
-        X[col] = pd.Series(range(len(X)))
-    X.ww.init()
+        X.ww[col] = pd.Series(range(len(X)))
     X.ww.set_types({col: "Unknown" for col in columns})
 
     algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)
@@ -457,9 +464,19 @@ def test_select_cat_cols(
     X, y = X_y_categorical_classification
     X.ww.init()
     cat_cols = list(X.ww.select("categorical").columns)
-    mock_get_names.return_value = ["0", "1", "2", "Sex_male", "Embarked_S"]
+    mock_get_names.return_value = [
+        "0",
+        "1",
+        "2",
+        "Sex_male",
+        "Ticket_A/5 21171",
+        "C85",
+        "Embarked_S",
+    ]
     mock_get_feature_provenance.return_value = {
         "Sex": ["Sex_male"],
+        "Ticket": ["Ticket_A/5 21171"],
+        "Cabin": ["C85"],
         "Embarked": ["Embarked_S"],
     }
 
@@ -564,30 +581,22 @@ def test_default_algorithm_allow_long_running_models_next_batch(
 
 
 @pytest.mark.parametrize(
-    "automl_type",
+    "problem_type",
     [
-        ProblemTypes.TIME_SERIES_BINARY,
-        ProblemTypes.TIME_SERIES_MULTICLASS,
-        ProblemTypes.TIME_SERIES_REGRESSION,
+        "time series binary",
+        "time series multiclass",
+        "time series regression",
     ],
 )
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
 def test_default_algorithm_time_series(
     mock_get_names,
-    automl_type,
+    problem_type,
     ts_data,
-    ts_data_binary,
-    ts_data_multi,
 ):
-    if automl_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = ts_data_binary
-    elif automl_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = ts_data_multi
-    elif automl_type == ProblemTypes.TIME_SERIES_REGRESSION:
-        X, y = ts_data
+    X, _, y = ts_data(problem_type=problem_type)
 
     mock_get_names.return_value = ["0", "1", "2"]
-    problem_type = ProblemTypes.TIME_SERIES_REGRESSION
     sampler_name = None
     search_parameters = {
         "pipeline": {
@@ -654,36 +663,27 @@ def test_default_algorithm_time_series(
 
 
 @pytest.mark.parametrize(
-    "automl_type",
+    "problem_type",
     [
-        ProblemTypes.TIME_SERIES_BINARY,
-        ProblemTypes.TIME_SERIES_MULTICLASS,
-        ProblemTypes.TIME_SERIES_REGRESSION,
+        "time series binary",
+        "time series multiclass",
+        "time series regression",
     ],
 )
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
 def test_default_algorithm_time_series_known_in_advance(
     mock_get_names,
-    automl_type,
+    problem_type,
     ts_data,
-    ts_data_binary,
-    ts_data_multi,
 ):
-    if automl_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = ts_data_binary
-    elif automl_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = ts_data_multi
-    elif automl_type == ProblemTypes.TIME_SERIES_REGRESSION:
-        X, y = ts_data
+    X, _, y = ts_data(problem_type=problem_type)
 
-    X.ww.init()
     X.ww["email"] = pd.Series(["foo@foo.com"] * X.shape[0], index=X.index)
     X.ww["category"] = pd.Series(["a"] * X.shape[0], index=X.index)
     X.ww.set_types({"email": "EmailAddress", "category": "Categorical"})
     known_in_advance = ["email", "category"]
 
     mock_get_names.return_value = ["0", "1", "2"]
-    problem_type = ProblemTypes.TIME_SERIES_REGRESSION
     sampler_name = None
     search_parameters = {
         "pipeline": {
@@ -717,7 +717,7 @@ def test_default_algorithm_time_series_known_in_advance(
         )
         assert pipeline.parameters[
             "Not Known In Advance Pipeline - Select Columns Transformer"
-        ]["columns"] == ["features", "date"]
+        ]["columns"] == ["feature", "date"]
     add_result(algo, first_batch)
 
     second_batch = algo.next_batch()
@@ -732,7 +732,7 @@ def test_default_algorithm_time_series_known_in_advance(
         )
         assert pipeline.parameters[
             "Not Known In Advance Pipeline - Select Columns Transformer"
-        ]["columns"] == ["features", "date"]
+        ]["columns"] == ["feature", "date"]
     add_result(algo, second_batch)
 
     final_batch = algo.next_batch()
@@ -752,7 +752,7 @@ def test_default_algorithm_time_series_known_in_advance(
         )
         assert pipeline.parameters[
             "Not Known In Advance Pipeline - Select Columns Transformer"
-        ]["columns"] == ["features", "date"]
+        ]["columns"] == ["feature", "date"]
     add_result(algo, final_batch)
 
     long_explore = algo.next_batch()
@@ -774,14 +774,18 @@ def test_default_algorithm_time_series_known_in_advance(
 @pytest.mark.parametrize(
     "automl_type",
     [
-        ProblemTypes.TIME_SERIES_BINARY,
-        ProblemTypes.TIME_SERIES_MULTICLASS,
-        ProblemTypes.TIME_SERIES_REGRESSION,
+        "time series binary",
+        "time series multiclass",
+        "time series regression",
     ],
 )
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
-def test_default_algorithm_time_series_ensembling(mock_get_names, automl_type, ts_data):
-    X, y = ts_data
+def test_default_algorithm_time_series_ensembling(
+    mock_get_names,
+    automl_type,
+    ts_data,
+):
+    X, _, y = ts_data()
     with pytest.raises(
         ValueError,
         match="Ensembling is not available for time series problems in DefaultAlgorithm.",

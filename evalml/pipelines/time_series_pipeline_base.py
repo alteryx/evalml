@@ -171,7 +171,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 y_train,
             )
             features = super().transform_all_but_final(padded_features, padded_target)
-            features_holdout = features.iloc[-len(y) :]
+            features_holdout = features.ww.iloc[-len(y) :]
         return features_holdout
 
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):

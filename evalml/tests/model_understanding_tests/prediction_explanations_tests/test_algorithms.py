@@ -304,11 +304,14 @@ def test_explainers(
             ), f"A SHAP value must be computed for every data point to explain!"
 
 
-def test_lime_xgboost(X_y_multi):
+@pytest.mark.parametrize("data_type", ["ww", "np"])
+def test_lime_xgboost(data_type, X_y_multi):
 
     from evalml.pipelines.components import XGBoostClassifier
 
     X, y = X_y_multi
+    if data_type == "np":
+        X, y = X.values, y.values
 
     xgboost_pipeline = make_pipeline(X, y, XGBoostClassifier, "multiclass")
     xgboost_values = calculate_lime_for_test(X, y, xgboost_pipeline, 1)

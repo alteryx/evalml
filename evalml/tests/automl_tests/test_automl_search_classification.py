@@ -733,12 +733,11 @@ def test_max_time(X_y_binary):
 )
 def test_automl_supports_time_series_classification(
     problem_type,
-    ts_data_binary,
-    ts_data_multi,
+    ts_data,
     AutoMLTestEnv,
 ):
+    X, _, y = ts_data(problem_type=problem_type)
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = ts_data_binary
         baseline = TimeSeriesBinaryClassificationPipeline(
             component_graph=["Time Series Baseline Estimator"],
             parameters={
@@ -757,9 +756,7 @@ def test_automl_supports_time_series_classification(
             },
         )
         score_return_value = {"Log Loss Binary": 0.2}
-        problem_type = "time series binary"
     else:
-        X, y = ts_data_multi
         baseline = TimeSeriesMulticlassClassificationPipeline(
             component_graph=["Time Series Baseline Estimator"],
             parameters={
@@ -778,7 +775,6 @@ def test_automl_supports_time_series_classification(
             },
         )
         score_return_value = {"Log Loss Multiclass": 0.25}
-        problem_type = "time series multiclass"
 
     configuration = {
         "time_index": "date",
@@ -819,12 +815,12 @@ def test_automl_time_series_classification_threshold(
     mock_split_data,
     optimize,
     objective,
-    ts_data_binary,
+    ts_data,
     AutoMLTestEnv,
 ):
-    X, y = ts_data_binary
     score_return_value = {objective: 0.4}
     problem_type = "time series binary"
+    X, _, y = ts_data(problem_type=problem_type)
 
     configuration = {
         "time_index": "date",
@@ -1197,7 +1193,7 @@ def test_time_series_pipeline_parameter_warnings(
     search_parameters,
     set_values,
     AutoMLTestEnv,
-    ts_data_binary,
+    ts_data,
 ):
     search_parameters.update(
         {
@@ -1209,7 +1205,7 @@ def test_time_series_pipeline_parameter_warnings(
             },
         },
     )
-    X, y = ts_data_binary
+    X, _, y = ts_data(problem_type="time series binary")
     configuration = {
         "time_index": "date",
         "gap": 0,

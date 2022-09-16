@@ -455,8 +455,7 @@ def test_fit_component_graph(
 ):
     X, y = X_y_binary
     mock_fit_transform.return_value = pd.DataFrame(X)
-    mock_predict_proba.return_value = pd.DataFrame(y)
-    mock_predict_proba.return_value.ww.init()
+    mock_predict_proba.return_value = y
     component_graph = ComponentGraph(example_graph).instantiate()
     component_graph.fit(X, y)
 
@@ -473,8 +472,6 @@ def test_fit_correct_inputs(
     X_y_binary,
 ):
     X, y = X_y_binary
-    X = pd.DataFrame(X)
-    y = pd.Series(y)
     graph = {
         "Target Imputer": [TargetImputer, "X", "y"],
         "OHE": [OneHotEncoder, "Target Imputer.x", "Target Imputer.y"],
@@ -553,8 +550,7 @@ def test_component_graph_fit_and_transform_all_but_final(
     mock_X_t = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
     mock_fit_transform.return_value = mock_X_t
     mock_fit.return_value = Estimator
-    mock_predict_proba.return_value = pd.DataFrame(y)
-    mock_predict_proba.return_value.ww.init()
+    mock_predict_proba.return_value = y
 
     component_graph.fit_and_transform_all_but_final(X, y)
 
@@ -568,8 +564,7 @@ def test_component_graph_fit_and_transform_all_but_final(
 @patch("evalml.pipelines.components.Estimator.predict")
 def test_predict(mock_predict, mock_predict_proba, mock_fit, example_graph, X_y_binary):
     X, y = X_y_binary
-    mock_predict_proba.return_value = pd.DataFrame(y)
-    mock_predict_proba.return_value.ww.init()
+    mock_predict_proba.return_value = y
     mock_predict.return_value = pd.Series(y)
     component_graph = ComponentGraph(example_graph).instantiate()
     component_graph.fit(X, y)
@@ -667,8 +662,7 @@ def test_predict_repeat_estimator(
     X_y_binary,
 ):
     X, y = X_y_binary
-    mock_predict_proba.return_value = pd.DataFrame(y)
-    mock_predict_proba.return_value.ww.init()
+    mock_predict_proba.return_value = y
     mock_predict.return_value = pd.Series(y)
     graph = {
         "Imputer": [Imputer, "X", "y"],

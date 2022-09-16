@@ -1,7 +1,5 @@
 import warnings
 
-import pandas as pd
-
 from evalml.pipelines.components import CatBoostRegressor
 from evalml.utils import SEED_BOUNDS
 
@@ -10,8 +8,7 @@ def test_catboost_regressor_random_seed_bounds_seed(X_y_regression):
     """ensure catboost's RNG doesn't fail for the min/max bounds we support on user-inputted random seeds"""
     X, y = X_y_regression
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
-    y = pd.Series(y)
+    X.ww.columns = col_names
     clf = CatBoostRegressor(
         n_estimators=1,
         max_depth=1,

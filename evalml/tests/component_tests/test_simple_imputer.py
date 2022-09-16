@@ -521,11 +521,9 @@ def test_simple_imputer_ignores_natural_language(
     """Test to ensure that the simple imputer just passes through
     natural language columns, unchanged."""
     if df_composition == "single_column":
-        X_df = imputer_test_data[["natural language col"]]
-        X_df.ww.init()
+        X_df = imputer_test_data.ww[["natural language col"]]
     elif df_composition == "full_df":
-        X_df = imputer_test_data[["int col", "float col", "natural language col"]]
-        X_df.ww.init()
+        X_df = imputer_test_data.ww[["int col", "float col", "natural language col"]]
 
     if has_nan == "has_nan":
         X_df.iloc[-1, :] = None
@@ -553,7 +551,7 @@ def test_simple_imputer_ignores_natural_language(
             ans["natural language col"] = pd.NA
             X_df = X_df.astype(
                 {"int col": float},
-            )  # Convert to float as the imputer will do this as we're requesting the mean
+            )
             X_df.iloc[-1, :] = ans
         elif numeric_impute_strategy == "median" and has_nan == "has_nan":
             ans = X_df.median()
@@ -568,7 +566,7 @@ def test_simple_imputer_ignores_natural_language(
             ans = X_df.mode().iloc[0, :]
             ans["natural language col"] = pd.NA
             X_df.iloc[-1, :] = ans
-        assert_frame_equal(result, X_df)
+        assert_frame_equal(result, X_df, check_dtype=False)
     elif df_composition == "single_column":
         assert_frame_equal(result, X_df)
 

@@ -64,12 +64,12 @@ def test_transform(X_y_binary, X_y_multi, X_y_regression):
     datasets = locals()
     for dataset in datasets.values():
         X, y = dataset
-        X_pd = pd.DataFrame(X)
-        X_pd.columns = X_pd.columns.astype(str)
+        X = pd.DataFrame(X)  # Drop ww information since setting column types fails
+        X.columns = X.columns.astype(str)
         es = ft.EntitySet()
         es = es.add_dataframe(
             dataframe_name="X",
-            dataframe=X_pd,
+            dataframe=X,
             index="index",
             make_index=True,
         )
@@ -85,9 +85,9 @@ def test_transform(X_y_binary, X_y_multi, X_y_regression):
         feature.fit(X, y)
         feature.transform(X)
 
-        X_pd.ww.init()
-        feature.fit(X_pd)
-        feature.transform(X_pd)
+        X.ww.init(logical_types={col: "double" for col in X.columns})
+        feature.fit(X)
+        feature.transform(X)
 
 
 def test_transform_subset(X_y_binary, X_y_multi, X_y_regression):

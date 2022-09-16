@@ -229,9 +229,8 @@ def test_samplers_perform_equally(
     sampling_dic = {"sampling_ratio": sampling_ratio}
     random_seed = 1
     if component_sampler != "SMOTE":
-        X = infer_feature_types(
-            X,
-            feature_types={
+        X.ww.set_types(
+            {
                 0: "Categorical",
                 1: "Categorical",
                 2: "Categorical",
@@ -264,27 +263,27 @@ def test_samplers_perform_equally(
 def test_smoten_categorical_boolean(X_y_binary, im):
 
     X, y = X_y_binary
-    X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Boolean"})
-    X_ww = X_ww.drop(range(2, len(X_ww.columns)), axis=1)
+    X.ww.set_types({0: "Categorical", 1: "Boolean"})
+    X = X.drop(range(2, len(X.columns)), axis=1)
     sn = Oversampler()
-    _ = sn.fit_transform(X_ww, y)
+    _ = sn.fit_transform(X, y)
     assert sn.sampler == im.SMOTEN
 
 
 def test_smotenc_boolean_numeric(X_y_binary, im):
 
     X, y = X_y_binary
-    X_ww = infer_feature_types(X, feature_types={5: "Boolean", 12: "Boolean"})
+    X.ww.set_types({5: "Boolean", 12: "Boolean"})
     snc = Oversampler()
-    _, _ = snc.fit_transform(X_ww, y)
+    _, _ = snc.fit_transform(X, y)
     assert snc.sampler == im.SMOTENC
 
 
 def test_smotenc_categorical_features(X_y_binary):
     X, y = X_y_binary
-    X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
+    X.ww.set_types({0: "Categorical", 1: "Categorical"})
     snc = Oversampler()
-    _ = snc.fit_transform(X_ww, y)
+    _ = snc.fit_transform(X, y)
     assert snc.categorical_features == [0, 1]
 
 

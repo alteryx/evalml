@@ -966,9 +966,9 @@ def test_iterative_algorithm_passes_features(
     dummy_binary_pipeline_classes,
 ):
     X, y = X_y_binary
-    X_pd = pd.DataFrame(X)
-    X_pd.columns = X_pd.columns.astype(str)
-    X_transform = X_pd.iloc[len(X) // 3 :]
+    X = pd.DataFrame(X)  # Drop ww information since setting column types fails
+    X.columns = X.columns.astype(str)
+    X_transform = X.iloc[len(X) // 3 :]
 
     es = ft.EntitySet()
     es = es.add_dataframe(

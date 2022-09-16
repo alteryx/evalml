@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import pytest
 
 from evalml.model_family import ModelFamily
@@ -50,19 +49,8 @@ def test_time_series_baseline(
     gap,
     problem_type,
     ts_data,
-    ts_data_binary,
-    ts_data_multi,
 ):
-
-    if problem_type == problem_type.TIME_SERIES_REGRESSION:
-        X, y = ts_data
-    elif problem_type == problem_type.TIME_SERIES_BINARY:
-        X, y = ts_data_binary
-    else:
-        X, y = ts_data_multi
-
-    X = pd.DataFrame(X)
-    y = pd.Series(y)
+    X, _, y = ts_data(problem_type=problem_type)
 
     X_train, y_train = X.iloc[:15], y.iloc[:15]
     X_validation = X.iloc[(15 + gap) : (15 + gap + forecast_horizon)]

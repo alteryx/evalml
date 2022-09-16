@@ -56,7 +56,7 @@ def test_init_with_other_params():
 
 
 def test_feature_importance(ts_data):
-    X, y = ts_data
+    X, _, y = ts_data()
     clf = ProphetRegressor(
         time_index="date",
         uncertainty_samples=False,
@@ -66,7 +66,7 @@ def test_feature_importance(ts_data):
     assert clf.feature_importance == np.zeros(1)
 
 
-def test_get_params(ts_data):
+def test_get_params():
     clf = ProphetRegressor()
     assert clf.get_params() == {
         "changepoint_prior_scale": 0.05,
@@ -80,7 +80,7 @@ def test_get_params(ts_data):
 
 @pytest.mark.parametrize("index_status", [None, "wrong_column"])
 def test_build_prophet_df_time_index_errors(index_status, ts_data):
-    X, y = ts_data
+    X, _, y = ts_data()
 
     if index_status is None:
         with pytest.raises(ValueError, match="time_index cannot be None!"):
@@ -95,7 +95,7 @@ def test_build_prophet_df_time_index_errors(index_status, ts_data):
 
 @pytest.mark.parametrize("drop_index", [None, "X", "y", "both"])
 def test_fit_predict_ts(ts_data, drop_index, prophet):
-    X, y = ts_data
+    X, _, y = ts_data()
     if drop_index is None:
         assert isinstance(X.index, pd.DatetimeIndex)
         assert isinstance(y.index, pd.DatetimeIndex)

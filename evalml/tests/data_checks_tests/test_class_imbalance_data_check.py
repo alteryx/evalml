@@ -57,9 +57,9 @@ def test_class_imbalance_data_check_binary(test_size, input_type):
 
     elif input_type == "ww":
         X.ww.init()
-        y = ww.init_series(y)
-        y_long = ww.init_series(y_long)
-        y_balanced = ww.init_series(y_balanced)
+        y = ww.init_series(y, logical_type="integer")
+        y_long = ww.init_series(y_long, logical_type="integer")
+        y_balanced = ww.init_series(y_balanced, logical_type="integer")
 
     class_imbalance_check = ClassImbalanceDataCheck(
         min_samples=1,
@@ -138,11 +138,17 @@ def test_class_imbalance_data_check_multiclass(test_size, input_type):
 
     elif input_type == "ww":
         X.ww.init()
-        y = ww.init_series(y)
-        y_imbalanced_default_threshold = ww.init_series(y_imbalanced_default_threshold)
-        y_imbalanced_set_threshold = ww.init_series(y_imbalanced_set_threshold)
-        y_imbalanced_cv = ww.init_series(y_imbalanced_cv)
-        y_long = ww.init_series(y_long)
+        y = ww.init_series(y, logical_type="integer")
+        y_imbalanced_default_threshold = ww.init_series(
+            y_imbalanced_default_threshold,
+            logical_type="integer",
+        )
+        y_imbalanced_set_threshold = ww.init_series(
+            y_imbalanced_set_threshold,
+            logical_type="integer",
+        )
+        y_imbalanced_cv = ww.init_series(y_imbalanced_cv, logical_type="integer")
+        y_long = ww.init_series(y_long, logical_type="integer")
 
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=0, test_size=test_size)
     assert class_imbalance_check.validate(X, y) == []
@@ -330,9 +336,9 @@ def test_class_imbalance_nonnumeric(test_size, input_type):
 
     if input_type == "ww":
         X.ww.init()
-        y_bools = ww.init_series(y_bools)
-        y_binary = ww.init_series(y_binary)
-        y_multiclass = ww.init_series(y_multiclass)
+        y_bools = ww.init_series(y_bools, logical_type="boolean")
+        y_binary = ww.init_series(y_binary, logical_type="categorical")
+        y_multiclass = ww.init_series(y_multiclass, logical_type="categorical")
 
     class_imbalance_check = ClassImbalanceDataCheck(
         threshold=0.25,
@@ -420,9 +426,12 @@ def test_class_imbalance_nonnumeric_balanced(test_size, input_type):
     )
     if input_type == "ww":
         X.ww.init()
-        y_bools_balanced = ww.init_series(y_bools_balanced)
-        y_binary_balanced = ww.init_series(y_binary_balanced)
-        y_multiclass_balanced = ww.init_series(y_multiclass_balanced)
+        y_bools_balanced = ww.init_series(y_bools_balanced, logical_type="boolean")
+        y_binary_balanced = ww.init_series(
+            y_binary_balanced,
+            logical_type="categorical",
+        )
+        y_multiclass_balanced = ww.init_series(y_multiclass_balanced, "categorical")
 
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=1, test_size=test_size)
     assert class_imbalance_check.validate(X, y_multiclass_balanced) == []
@@ -447,8 +456,11 @@ def test_class_imbalance_severe(test_size, min_samples, input_type):
     )
     if input_type == "ww":
         X.ww.init()
-        y_values_binary = ww.init_series(y_values_binary)
-        y_values_multiclass = ww.init_series(y_values_multiclass)
+        y_values_binary = ww.init_series(y_values_binary, logical_type="integer")
+        y_values_multiclass = ww.init_series(
+            y_values_multiclass,
+            logical_type="integer",
+        )
 
     class_imbalance_check = ClassImbalanceDataCheck(
         min_samples=min_samples,

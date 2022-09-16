@@ -218,20 +218,16 @@ def test_fit_drop_nans_before_estimator(
     max_delay,
     include_delayed_features,
     ts_data,
-    ts_data_binary,
 ):
 
-    X, y = ts_data
-
-    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
-        X, y = ts_data_binary
+    X, _, y = ts_data(problem_type=pipeline_class.problem_type)
 
     if include_delayed_features:
         train_index = pd.date_range(
-            f"2020-10-{1 + forecast_horizon + gap + max_delay}",
-            "2020-10-31",
+            f"2021-01-{1 + forecast_horizon + gap + max_delay}",
+            "2021-02-09",
         )
-        expected_target = y[gap + max_delay + forecast_horizon : 32]
+        expected_target = y[gap + max_delay + forecast_horizon : 40]
         component_graph = {
             "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
             "Drop NaN Rows Transformer": [
@@ -246,7 +242,7 @@ def test_fit_drop_nans_before_estimator(
             ],
         }
     else:
-        train_index = pd.date_range(f"2020-10-01", f"2020-10-31")
+        train_index = pd.date_range("2021-01-01", periods=40)
         expected_target = y
         component_graph = [estimator_name]
 
@@ -312,7 +308,7 @@ def test_transform_all_but_final_for_time_series(
     max_delay,
     ts_data,
 ):
-    X, y = ts_data
+    X, _, y = ts_data()
     pipeline = TimeSeriesRegressionPipeline(
         component_graph={
             "Time Series Featurizer": [
@@ -432,18 +428,18 @@ def test_predict_and_predict_in_sample(
     ts_data,
 ):
 
-    X, target = ts_data
+    X, _, target = ts_data(problem_type=pipeline_class.problem_type)
     if include_feature_not_known_in_advance:
-        X["not_known_in_advance_1"] = pd.Series(range(X.shape[0]), index=X.index) + 200
-        X["not_known_in_advance_2"] = pd.Series(range(X.shape[0]), index=X.index) + 100
+        X.ww["not_known_in_advance_1"] = (
+            pd.Series(range(X.shape[0]), index=X.index) + 200
+        )
+        X.ww["not_known_in_advance_2"] = (
+            pd.Series(range(X.shape[0]), index=X.index) + 100
+        )
 
-    mock_to_check = mock_classifier_predict
-    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
-        target = target % 2
-    elif pipeline_class == TimeSeriesMulticlassClassificationPipeline:
-        target = target % 3
-    else:
-        mock_to_check = mock_regressor_predict
+    mock_to_check = mock_regressor_predict
+    if is_classification(pipeline_class.problem_type):
+        mock_to_check = mock_classifier_predict
     mock_to_check.side_effect = lambda x: x.iloc[: x.shape[0], 0]
 
     component_graph = {
@@ -461,8 +457,7 @@ def test_predict_and_predict_in_sample(
     }
 
     def predict_proba(X):
-        X2 = X.iloc[: X.shape[0]]
-        X2.ww.init()
+        X2 = X.ww.iloc[: X.shape[0]]
         return X2
 
     mock_classifier_predict_proba.side_effect = predict_proba
@@ -480,8 +475,9 @@ def test_predict_and_predict_in_sample(
     expected_features_in_sample = expected_features.ww.iloc[20:]
     expected_features_pred = expected_features[20 + gap : 20 + gap + n_to_pred]
 
-    X_predict_in_sample, target_predict_in_sample = X.iloc[20:], target.iloc[20:]
-    X_predict = X.iloc[20 + gap : 20 + gap + n_to_pred]
+    X_train, target_train = X.ww.iloc[:20], target.ww.iloc[:20]
+    X_predict_in_sample, target_predict_in_sample = X.ww.iloc[20:], target.ww.iloc[20:]
+    X_predict = X.ww.iloc[20 + gap : 20 + gap + n_to_pred]
 
     if include_feature_not_known_in_advance:
         X_predict.drop(columns=["not_known_in_advance_1", "not_known_in_advance_2"])
@@ -528,42 +524,49 @@ def test_predict_and_predict_in_sample(
             target,
         )
         expected_features_in_sample = expected_features.ww.iloc[20:]
-        expected_features_pred = expected_features[20 + gap : 20 + gap + n_to_pred]
+        expected_features_pred = expected_features.ww.iloc[
+            20 + gap : 20 + gap + n_to_pred
+        ]
 
     pl = pipeline_class(component_graph=component_graph, parameters=parameters)
-    pl.fit(X.iloc[:20], target.iloc[:20])
+    pl.fit(X_train, target_train)
 
     preds_in_sample = pl.predict_in_sample(
         X_predict_in_sample,
         target_predict_in_sample,
-        X.iloc[:20],
-        target.iloc[:20],
+        X_train,
+        target_train,
     )
     assert_frame_equal(mock_to_check.call_args[0][0], expected_features_in_sample)
     mock_to_check.reset_mock()
     preds = pl.predict(
         X_predict,
         None,
-        X_train=X.iloc[:20],
-        y_train=target.iloc[:20],
+        X_train=X_train,
+        y_train=target_train,
     )
-    assert_frame_equal(mock_to_check.call_args[0][0], expected_features_pred)
+    assert_frame_equal(
+        mock_to_check.call_args[0][0],
+        expected_features_pred,
+        check_dtype=False,
+    )
     if is_classification(pl.problem_type):
         pred_proba = pl.predict_proba(
             X_predict,
-            X_train=X.iloc[:20],
-            y_train=target.iloc[:20],
+            X_train=X_train,
+            y_train=target_train,
         )
         assert_frame_equal(
             mock_classifier_predict_proba.call_args[0][0],
             expected_features_pred,
+            check_dtype=False,
         )
         assert len(pred_proba) == n_to_pred
 
     assert len(preds) == n_to_pred
     assert (preds.index == target.iloc[20 + gap : 20 + n_to_pred + gap].index).all()
-    assert len(preds_in_sample) == len(target.iloc[20:])
-    assert (preds_in_sample.index == target.iloc[20:].index).all()
+    assert len(preds_in_sample) == len(target.ww.iloc[20:])
+    assert (preds_in_sample.index == target.ww.iloc[20:].index).all()
 
 
 @pytest.mark.parametrize(
@@ -584,15 +587,10 @@ def test_predict_and_predict_in_sample_with_time_index(
     ts_data,
 ):
 
-    X, target = ts_data
-    X["date"] = X.index
-    mock_to_check = mock_classifier_predict
-    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
-        target = target % 2
-    elif pipeline_class == TimeSeriesMulticlassClassificationPipeline:
-        target = target % 3
-    else:
-        mock_to_check = mock_regressor_predict
+    X, _, target = ts_data(problem_type=pipeline_class.problem_type)
+    mock_to_check = mock_regressor_predict
+    if is_classification(pipeline_class.problem_type):
+        mock_to_check = mock_classifier_predict
     mock_to_check.side_effect = lambda x: x.iloc[: x.shape[0], 0]
     component_graph = {
         "Time Series Featurizer": [
@@ -717,24 +715,24 @@ def test_ts_score(
     include_delayed_features,
     only_use_y,
     ts_data,
-    ts_data_binary,
 ):
     if pipeline_class == TimeSeriesBinaryClassificationPipeline:
         mock_score = mock_binary_score
     if only_use_y and (not include_delayed_features or (max_delay == 0 and gap == 0)):
         pytest.skip("This would result in an empty feature dataframe.")
 
-    X, y = ts_data
-
-    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
-        X, y = ts_data_binary
+    X, _, y = ts_data(problem_type=pipeline_class.problem_type)
+    X, y = X[:30], y[:30]
 
     last_train_date = X.shape[0] - forecast_horizon - gap
     X_train, y_train = X.iloc[:last_train_date], y.iloc[:last_train_date]
     X_holdout, y_holdout = X.iloc[last_train_date:], y.iloc[last_train_date:]
 
-    expected_target = y[last_train_date:32]
-    target_index = pd.date_range(f"2020-10-{last_train_date + 1}", f"2020-10-31")
+    expected_target = y[last_train_date : X.shape[0]]
+    target_index = pd.date_range(
+        f"2021-01-{last_train_date + 1}",
+        f"2021-01-{X.shape[0]}",
+    )
 
     pl = pipeline_class(
         component_graph=["Time Series Featurizer", estimator_name],
@@ -800,17 +798,14 @@ def test_classification_pipeline_encodes_targets(
     mock_predict_proba,
     mock_fit,
     pipeline_class,
-    ts_data_binary,
-    ts_data_multi,
+    ts_data,
 ):
-
+    X, _, y = ts_data(problem_type=pipeline_class.problem_type)
     if pipeline_class == TimeSeriesMulticlassClassificationPipeline:
-        X, y = ts_data_multi
-        y_series = pd.Series(y)
         df = pd.DataFrame(
-            {"negative": y_series, "positive": y_series, "neither": y_series},
+            {"negative": y, "positive": y, "neither": y},
         )
-        y_encoded = y_series.map(
+        y_encoded = y.map(
             lambda label: "positive"
             if label == 1
             else "neither"
@@ -818,15 +813,12 @@ def test_classification_pipeline_encodes_targets(
             else "negative",
         ).astype("category")
     else:
-        X, y = ts_data_binary
-        y_series = pd.Series(y)
-        df = pd.DataFrame({"negative": y_series, "positive": y_series})
-        y_encoded = y_series.map(
+        df = pd.DataFrame({"negative": y, "positive": y})
+        y_encoded = y.map(
             lambda label: "positive" if label == 1 else "negative",
         ).astype("category")
 
     df.ww.init()
-    mock_predict.side_effect = lambda data: ww.init_series(y_series[: data.shape[0]])
     mock_predict_proba.side_effect = lambda data: df.ww.iloc[: len(data)]
 
     X_train, y_encoded_train = X.iloc[:29], y_encoded.iloc[:29]
@@ -932,8 +924,6 @@ def test_ts_score_works(
     pipeline_class,
     objectives,
     data_type,
-    ts_data_binary,
-    ts_data_multi,
     ts_data,
     make_data_type,
     time_series_regression_pipeline_class,
@@ -971,16 +961,12 @@ def test_ts_score_works(
             estimator: {"n_jobs": 1},
         },
     )
+    X, _, y = ts_data(problem_type=pl.problem_type)
     if pl.problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = ts_data_binary
         y = pd.Series(y).map(lambda label: "good" if label == 1 else "bad")
     elif pl.problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = ts_data_multi
         label_map = {0: "good", 1: "bad", 2: "best"}
         y = pd.Series(y).map(lambda label: label_map[label])
-    else:
-        X, y = ts_data
-        y = pd.Series(y)
 
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
@@ -1119,27 +1105,23 @@ def time_series_default_pipeline_classification_parameters():
 )
 def test_time_series_pipeline_predict_none_parameter_valueerror(
     problem_type,
-    ts_data_binary,
-    ts_data_multi,
     ts_data,
     time_series_binary_classification_pipeline_class,
     time_series_multiclass_classification_pipeline_class,
     time_series_regression_pipeline_class,
     time_series_default_pipeline_classification_parameters,
 ):
+    X_train, X, y_train = ts_data(problem_type=problem_type)
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = ts_data_binary
         clf = time_series_binary_classification_pipeline_class(
             parameters=time_series_default_pipeline_classification_parameters,
         )
 
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = ts_data_multi
         clf = time_series_multiclass_classification_pipeline_class(
             parameters=time_series_default_pipeline_classification_parameters,
         )
     else:
-        X, y = ts_data
         clf = time_series_regression_pipeline_class(
             parameters={
                 "Random Forest Regressor": {"n_jobs": 1},
@@ -1157,9 +1139,6 @@ def test_time_series_pipeline_predict_none_parameter_valueerror(
                 },
             },
         )
-
-    X, y = pd.DataFrame(X), pd.Series(y)
-    X_train, y_train = X.iloc[:21], y.iloc[:21]
     clf.fit(X_train, y_train)
     with pytest.raises(
         ValueError,
@@ -1183,27 +1162,23 @@ def test_time_series_pipeline_predict_none_parameter_valueerror(
 )
 def test_time_series_pipeline_not_fitted_error(
     problem_type,
-    ts_data_binary,
-    ts_data_multi,
     ts_data,
     time_series_binary_classification_pipeline_class,
     time_series_multiclass_classification_pipeline_class,
     time_series_regression_pipeline_class,
     time_series_default_pipeline_classification_parameters,
 ):
+    X_train, X_holdout, y_train = ts_data(problem_type=problem_type)
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = ts_data_binary
         clf = time_series_binary_classification_pipeline_class(
             parameters=time_series_default_pipeline_classification_parameters,
         )
 
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = ts_data_multi
         clf = time_series_multiclass_classification_pipeline_class(
             parameters=time_series_default_pipeline_classification_parameters,
         )
     else:
-        X, y = ts_data
         clf = time_series_regression_pipeline_class(
             parameters={
                 "Random Forest Regressor": {"n_jobs": 1},
@@ -1221,10 +1196,6 @@ def test_time_series_pipeline_not_fitted_error(
                 },
             },
         )
-
-    X, y = pd.DataFrame(X), pd.Series(y)
-    X_train, y_train = X.iloc[:21], y.iloc[:21]
-    X_holdout = X.iloc[21:]
 
     with pytest.raises(PipelineNotYetFittedError):
         clf.predict(X_holdout, None, X_train, y_train)
@@ -1273,12 +1244,10 @@ def test_time_series_pipeline_not_fitted_error(
 def test_ts_binary_pipeline_target_thresholding(
     make_data_type,
     time_series_binary_classification_pipeline_class,
-    ts_data_binary,
+    ts_data,
     time_series_default_pipeline_classification_parameters,
 ):
-    X, y = ts_data_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
+    X, _, y = ts_data(problem_type="time series binary")
     objective = get_objective("F1", return_instance=True)
 
     binary_pipeline = time_series_binary_classification_pipeline_class(
@@ -1370,9 +1339,7 @@ def test_time_series_pipeline_fit_with_transformed_target(
         def transform(self, X, y):
             return infer_feature_types(X), infer_feature_types(y) + 2
 
-    X, y = ts_data
-    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        y = y % 2
+    X, _, y = ts_data(problem_type=problem_type)
 
     if is_classification(problem_type):
         estimator = "Logistic Regression Classifier"
@@ -1401,7 +1368,7 @@ def test_time_series_pipeline_fit_with_transformed_target(
 
 
 def test_time_series_pipeline_with_detrender(ts_data):
-    X, y = ts_data
+    X, _, y = ts_data()
     component_graph = {
         "Polynomial Detrender": ["Polynomial Detrender", "X", "y"],
         "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
@@ -1434,8 +1401,8 @@ def test_time_series_pipeline_with_detrender(ts_data):
             },
         },
     )
-    X_train, y_train = X[:23], y[:23]
-    X_validation, y_validation = X[24:], y[24:]
+    X_train, y_train = X[:33], y[:33]
+    X_validation, y_validation = X[34:], y[34:]
     pipeline.fit(X_train, y_train)
     predictions = pipeline.predict(X_validation, None, X_train, y_train)
     features = pipeline.transform_all_but_final(
@@ -1463,16 +1430,10 @@ def test_time_series_pipeline_with_detrender(ts_data):
 def test_ts_pipeline_predict_without_final_estimator(
     problem_type,
     make_data_type,
-    ts_data_binary,
-    ts_data_multi,
+    ts_data,
 ):
-    X, y = ts_data_multi
+    X, _, y = ts_data(problem_type=problem_type)
 
-    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = ts_data_binary
-
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
     X.ww["date"] = pd.Series(pd.date_range("2010-01-01", periods=X.shape[0]))
     X_train, y_train = X.ww.iloc[:70], y.ww.iloc[:70]
     X_validation = X.ww.iloc[70:73]
@@ -1577,15 +1538,13 @@ def test_ts_pipeline_transform(
 )
 def test_ts_pipeline_transform_with_final_estimator(
     problem_type,
-    ts_data_binary,
-    ts_data_multi,
     ts_data,
     time_series_binary_classification_pipeline_class,
     time_series_multiclass_classification_pipeline_class,
     time_series_regression_pipeline_class,
     make_data_type,
 ):
-    X, y = ts_data_binary
+    X, _, y = ts_data(problem_type=problem_type)
 
     def make_data(X, y):
         X = make_data_type("ww", X)
@@ -1615,7 +1574,6 @@ def test_ts_pipeline_transform_with_final_estimator(
         )
 
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = ts_data_multi
         X_train, y_train, X_validation, y_validation = make_data(X, y)
         pipeline = time_series_multiclass_classification_pipeline_class(
             parameters={
@@ -1635,7 +1593,6 @@ def test_ts_pipeline_transform_with_final_estimator(
             },
         )
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
-        X, y = ts_data
         X_train, y_train, X_validation, y_validation = make_data(X, y)
         pipeline = time_series_regression_pipeline_class(
             parameters={

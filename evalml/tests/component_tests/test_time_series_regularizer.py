@@ -167,7 +167,7 @@ def test_ts_regularizer_no_freq():
 
 
 def test_ts_regularizer_no_issues(ts_data):
-    X, y = ts_data
+    X, _, y = ts_data()
 
     ts_regularizer = TimeSeriesRegularizer(time_index="date")
     X_output, y_output = ts_regularizer.fit_transform(X, y)
