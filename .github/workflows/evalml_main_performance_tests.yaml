@@ -127,7 +127,7 @@ jobs:
                 "fields": [
                   {
                     "type": "mrkdwn",
-                    "text": "*Current Commit*: <${{ github.event.head_commit.url }}|${{ steps.get_hashes.outputs.current_hash }}> - ${{ github.event.head_commit.message }}"
+                    "text": "*Current Commit*: <${{ github.event.head_commit.url }}|${{ steps.get_hashes.outputs.current_hash }}>"
                   },
                   {
                     "type": "mrkdwn",
@@ -169,6 +169,7 @@ jobs:
           }
           EOF
           )
+          echo $response
           ts=$(echo $response | jq .ts)
           curl -F "file=@${filename_base}_default.html" -F channels=C042B5JBBPF -F 'thread_ts=$ts' -H 'Authorization: Bearer ${{ secrets.LG_SLACK_TOKEN }}'  https://slack.com/api/files.upload
           curl -F "file=@${filename_base}_iterative.html" -F channels=C042B5JBBPF -F 'thread_ts=$ts' -H 'Authorization: Bearer ${{ secrets.LG_SLACK_TOKEN }}'  https://slack.com/api/files.upload
