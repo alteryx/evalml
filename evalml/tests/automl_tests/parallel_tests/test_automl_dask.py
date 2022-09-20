@@ -285,29 +285,14 @@ def test_automl_closes_engines(engine_str, X_y_binary_cls):
 def test_score_pipelines_passes_X_train_y_train(
     problem_type,
     engine_str,
-    X_y_binary,
-    X_y_regression,
-    X_y_multi,
-    AutoMLTestEnv,
-    ts_data_binary,
-    ts_data_multi,
+    X_y_based_on_pipeline_or_problem_type,
     ts_data,
+    AutoMLTestEnv,
 ):
-    if is_binary(problem_type):
-        if is_time_series(problem_type):
-            X, y = ts_data_binary
-        else:
-            X, y = X_y_binary
-    elif is_multiclass(problem_type):
-        if is_time_series(problem_type):
-            X, y = ts_data_multi
-        else:
-            X, y = X_y_multi
+    if is_time_series(problem_type):
+        X, _, y = ts_data(problem_type=problem_type)
     else:
-        if is_time_series(problem_type):
-            X, y = ts_data
-        else:
-            X, y = X_y_regression
+        X, y = X_y_based_on_pipeline_or_problem_type(problem_type)
 
     half = X.shape[0] // 2
     X_train, y_train = pd.DataFrame(X[:half]), pd.Series(y[:half])

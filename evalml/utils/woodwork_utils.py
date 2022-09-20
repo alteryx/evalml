@@ -62,7 +62,6 @@ def infer_feature_types(data, feature_types=None):
             else:
                 ww_error = f"{ww_error}. Please initialize ww with df.ww.init() to get rid of this message."
             raise ValueError(ww_error)
-        data.ww.init(schema=data.ww.schema)
         return data
 
     if isinstance(data, pd.Series):
@@ -118,42 +117,49 @@ def _schema_is_equal(first, other):
     return logical and semantic
 
 
-def downcast_nullable_types(X, ignore_null_cols=True):
-    """Downcasts IntegerNullable, BooleanNullable types to Double and Boolean respectively.
+def downcast_nullable_types(data, ignore_null_cols=True):
+    """Downcasts IntegerNullable, BooleanNullable types to Double, Boolean in order to support certain estimators like ARIMA, CatBoost, and LightGBM.
 
     Args:
-        X (pd.DataFrame): Feature data.
+        data (pd.DataFrame, pd.Series): Feature data.
         ignore_null_cols (bool): Whether to ignore downcasting columns with null values or not. Defaults to True.
 
     Returns:
-        X: DataFrame initialized with logical type information where BooleanNullable are cast as Double.
+        data: DataFrame or Series initialized with logical type information where BooleanNullable are cast as Double.
     """
-    if X.ww.schema is None:
-        X.ww.init()
+    if data.ww.schema is None:
+        data.ww.init()
 
-    X_bool_nullable_cols = X.ww.select("BooleanNullable")
-    X_int_nullable_cols = X.ww.select(["IntegerNullable", "AgeNullable"])
+    if isinstance(data, pd.Series):
+        if ignore_null_cols and data.isna().any():
+            return data
+        if isinstance(data.ww.logical_type, ww.logical_types.BooleanNullable):
+            data = data.ww.set_logical_type("Boolean")
+        if isinstance(
+            data.ww.logical_type,
+            ww.logical_types.IntegerNullable,
+        ) or isinstance(data.ww.logical_type, ww.logical_types.AgeNullable):
+            data = data.ww.set_logical_type("Double")
+        return data
 
+    bool_nullable_cols = data.ww.select("BooleanNullable")
+    int_nullable_cols = data.ww.select(["IntegerNullable", "AgeNullable"])
     non_null_columns = (
-        set(X.dropna(axis=1).columns) if ignore_null_cols else set(X.columns)
+        set(data.dropna(axis=1).columns) if ignore_null_cols else set(data.columns)
     )
     new_ltypes = {
-        col: "Boolean" for col in X_bool_nullable_cols if col in non_null_columns
+        col: "Boolean" for col in bool_nullable_cols if col in non_null_columns
     }
     new_ltypes.update(
-        {
-            col: "BooleanNullable"
-            for col in X_bool_nullable_cols
-            if col not in new_ltypes
-        },
+        {col: "BooleanNullable" for col in bool_nullable_cols if col not in new_ltypes},
     )
     new_ltypes.update(
-        {col: "Double" for col in X_int_nullable_cols if col in non_null_columns},
+        {col: "Double" for col in int_nullable_cols if col in non_null_columns},
     )
 
     if new_ltypes:
-        X.ww.set_types(logical_types=new_ltypes)
-    return X
+        data.ww.set_types(logical_types=new_ltypes)
+    return data
 
 
 def downcast_int_nullable_to_double(X):

@@ -191,8 +191,8 @@ def test_jupyter_graph_check(
     logistic_regression_binary_pipeline,
 ):
     X, y = X_y_binary
-    X = X[:20, :5]
-    y = y[:20]
+    X = X.ww.iloc[:20, :5]
+    y = y.ww.iloc[:20]
     logistic_regression_binary_pipeline.fit(X, y)
     cbm = CostBenefitMatrix(
         true_positive=1,
@@ -320,9 +320,9 @@ def test_graph_prediction_vs_actual(data_type, go):
 
 
 def test_get_prediction_vs_actual_over_time_data(ts_data):
-    X, y = ts_data
-    X_train, y_train = X.iloc[:15], y.iloc[:15]
-    X_test, y_test = X.iloc[15:], y.iloc[15:]
+    X, _, y = ts_data()
+    X_train, y_train = X.iloc[:30], y.iloc[:30]
+    X_test, y_test = X.iloc[30:], y.iloc[30:]
 
     pipeline = TimeSeriesRegressionPipeline(
         ["DateTime Featurizer", "Elastic Net Regressor"],
@@ -350,10 +350,9 @@ def test_get_prediction_vs_actual_over_time_data(ts_data):
 
 
 def test_graph_prediction_vs_actual_over_time(ts_data, go):
-
-    X, y = ts_data
-    X_train, y_train = X.iloc[:15], y.iloc[:15]
-    X_test, y_test = X.iloc[15:], y.iloc[15:]
+    X, _, y = ts_data()
+    X_train, y_train = X.iloc[:30], y.iloc[:30]
+    X_test, y_test = X.iloc[30:], y.iloc[30:]
 
     pipeline = TimeSeriesRegressionPipeline(
         ["DateTime Featurizer", "Elastic Net Regressor"],

@@ -447,8 +447,6 @@ def test_stacked_ensemble_cache_training(
     X_y_binary,
 ):
     X, y = X_y_binary
-    X = pd.DataFrame(X)
-    X.ww.init()
     mock_estimator_predict.return_value = y
     mock_transformer_transform.return_value = X
     mock_label.return_value = y

@@ -218,8 +218,7 @@ def test_log_metrics_only_passed_directly(X_y_regression):
 
 @pytest.mark.parametrize("freq", ["D", "MS"])
 def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, ts_data):
-    X, y = ts_data
-    X["date"] = pd.date_range(start="1/1/2018", periods=31, freq=freq)
+    X, _, y = ts_data(freq=freq)
 
     configuration = {
         "time_index": "date",

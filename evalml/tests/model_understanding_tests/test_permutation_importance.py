@@ -694,8 +694,7 @@ def test_get_permutation_importance_one_column_pipeline_does_not_support_fast(
 def test_permutation_importance_unknown(X_y_binary):
     # test to see if we can get permutation importance fine with a dataset that has unknown features
     X, y = X_y_binary
-    X = pd.DataFrame(X)
-    X.ww.init(logical_types={0: "unknown"})
+    X.ww.set_types({0: "unknown"})
     pl = BinaryClassificationPipeline(["Random Forest Classifier"])
     pl.fit(X, y)
     s = calculate_permutation_importance(pl, X, y, objective="Log Loss Binary")
@@ -868,8 +867,8 @@ def test_jupyter_graph_check(
     logistic_regression_binary_pipeline,
 ):
     X, y = X_y_binary
-    X = X[:20, :5]
-    y = y[:20]
+    X = X.ww.iloc[:20, :5]
+    y = y.ww.iloc[:20]
     logistic_regression_binary_pipeline.fit(X, y)
     jupyter_check.return_value = False
     with pytest.warns(None) as graph_valid:

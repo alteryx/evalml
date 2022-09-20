@@ -207,7 +207,9 @@ class TimeSeriesFeaturizer(Transformer):
         if y is not None and "numeric" in y.ww.semantic_tags:
             data[f"target_rolling_mean"] = rolling_mean(y.index, y)
         data.index = X.index
-        data.ww.init()
+        data.ww.init(
+            logical_types={col: "Double" for col in data.columns},
+        )
         return data
 
     def _compute_delays(self, X_ww, y):
@@ -258,7 +260,7 @@ class TimeSeriesFeaturizer(Transformer):
         # Features created from categorical columns should no longer be categorical
         lagged_features = pd.DataFrame(lagged_features)
         lagged_features.ww.init(
-            logical_types={col: "Double" for col in cols_derived_from_categoricals},
+            logical_types={col: "Double" for col in lagged_features.columns},
         )
         lagged_features.index = X_ww.index
         return ww.concat_columns([X_ww, lagged_features])

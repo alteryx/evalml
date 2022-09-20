@@ -163,8 +163,12 @@ def test_train_pipeline_trains_and_tunes_threshold_ts(
     ts_data,
     dummy_ts_binary_tree_classifier_pipeline_class,
 ):
-    X = pd.DataFrame(pd.date_range("1/1/21", periods=32), columns=["date"])
-    y = pd.Series([0, 1, 0, 1] * 8)
+    X, _, y = ts_data(
+        train_features_index_dt=False,
+        train_target_index_dt=False,
+        no_features=True,
+        problem_type="time series binary",
+    )
 
     params = {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "time_index": "date"}
     ts_binary = dummy_ts_binary_tree_classifier_pipeline_class(

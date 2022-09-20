@@ -37,6 +37,8 @@ from evalml.preprocessing import load_data
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
+    is_binary,
+    is_multiclass,
     is_regression,
     is_time_series,
 )
@@ -281,25 +283,26 @@ def get_test_data_from_configuration():
 
 
 @pytest.fixture
-def get_ts_X_y():
+def ts_data():
     def _get_X_y(
-        train_features_index_dt,
-        train_target_index_dt,
-        train_none,
-        datetime_feature,
-        no_features,
-        test_features_index_dt,
+        train_features_index_dt=True,
+        train_target_index_dt=True,
+        train_none=False,
+        datetime_feature=True,
+        no_features=False,
+        test_features_index_dt=True,
+        freq="D",
+        problem_type="time series regression",
     ):
         X = pd.DataFrame(index=[i + 1 for i in range(50)])
-        dates = pd.date_range("1/1/21", periods=50)
-        feature = pd.Series([1, 5, 2] * 10 + [3, 1] * 10, index=X.index)
+        dates = pd.date_range("1/1/21", periods=50, freq=freq)
+        feature = pd.Series([1, 4, 2] * 10 + [3, 1] * 10, index=X.index)
         y = pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5)
-        X.ww.init()
-        y = ww.init_series(y)
 
-        X_train = X.ww.iloc[:40]
-        X_test = X.ww.iloc[40:]
-        y_train = y.ww.iloc[:40]
+        X_train = X.iloc[:40]
+        X_test = X.iloc[40:]
+        y_train = y.iloc[:40]
+        logical_types = {}
 
         if train_features_index_dt:
             X_train.index = dates[:40]
@@ -308,13 +311,24 @@ def get_ts_X_y():
         if test_features_index_dt:
             X_test.index = dates[40:]
         if not no_features:
-            X_train.ww["Feature"] = pd.Series(feature[:40].values, index=X_train.index)
-            X_test.ww["Feature"] = pd.Series(feature[40:].values, index=X_test.index)
-            if datetime_feature:
-                X_train.ww["Dates"] = pd.Series(dates[:40].values, index=X_train.index)
-                X_test.ww["Dates"] = pd.Series(dates[40:].values, index=X_test.index)
+            X_train["feature"] = pd.Series(feature[:40].values, index=X_train.index)
+            X_test["feature"] = pd.Series(feature[40:].values, index=X_test.index)
+            logical_types["feature"] = "integer"
+        if datetime_feature:
+            X_train["date"] = pd.Series(dates[:40].values, index=X_train.index)
+            X_test["date"] = pd.Series(dates[40:].values, index=X_test.index)
+            logical_types["date"] = "datetime"
         if train_none:
             X_train = None
+        if is_binary(problem_type):
+            y_train = y_train % 2
+        if is_multiclass(problem_type):
+            y_train = y_train % 3
+
+        if X_train is not None:
+            X_train.ww.init(logical_types=logical_types)
+        X_test.ww.init(logical_types=logical_types)
+        y_train.ww.init(logical_type="integer")
 
         return X_train, X_test, y_train
 
@@ -742,7 +756,9 @@ def X_y_binary():
         n_redundant=2,
         random_state=0,
     )
-
+    X = pd.DataFrame(X)
+    X.ww.init(logical_types={col: "double" for col in X.columns})
+    y = ww.init_series(pd.Series(y), logical_type="integer")
     return X, y
 
 
@@ -766,6 +782,9 @@ def X_y_regression():
         n_informative=3,
         random_state=0,
     )
+    X = pd.DataFrame(X)
+    X.ww.init(logical_types={col: "double" for col in X.columns})
+    y = ww.init_series(pd.Series(y), logical_type="double")
     return X, y
 
 
@@ -779,6 +798,9 @@ def X_y_multi():
         n_redundant=2,
         random_state=0,
     )
+    X = pd.DataFrame(X)
+    X.ww.init(logical_types={col: "double" for col in X.columns})
+    y = ww.init_series(pd.Series(y), logical_type="integer")
     return X, y
 
 
@@ -792,6 +814,18 @@ def X_y_categorical_regression():
 
     # add categorical dtype
     X["smoker"] = X["smoker"].astype("category")
+
+    X.ww.init(
+        logical_types={
+            "total_bill": "double",
+            "sex": "categorical",
+            "smoker": "categorical",
+            "day": "categorical",
+            "time": "categorical",
+            "size": "integer",
+        },
+    )
+    y.ww.init(logical_type="double")
     return X, y
 
 
@@ -802,6 +836,21 @@ def X_y_categorical_classification():
 
     y = titanic["Survived"]
     X = titanic.drop(["Survived", "Name"], axis=1)
+    X.ww.init(
+        logical_types={
+            "PassengerId": "integer",
+            "Pclass": "integer",
+            "Sex": "categorical",
+            "Age": "double",
+            "SibSp": "integer",
+            "Parch": "integer",
+            "Ticket": "categorical",
+            "Fare": "double",
+            "Cabin": "categorical",
+            "Embarked": "categorical",
+        },
+    )
+    y.ww.init(logical_type="integer")
     return X, y
 
 
@@ -812,6 +861,9 @@ def X_y_based_on_pipeline_or_problem_type(X_y_binary, X_y_multi, X_y_regression)
             ProblemTypes.BINARY: "binary",
             ProblemTypes.MULTICLASS: "multiclass",
             ProblemTypes.REGRESSION: "regression",
+            ProblemTypes.TIME_SERIES_BINARY: "binary",
+            ProblemTypes.TIME_SERIES_MULTICLASS: "multiclass",
+            ProblemTypes.TIME_SERIES_REGRESSION: "regression",
         }
         pipeline_classes = {
             BinaryClassificationPipeline: "binary",
@@ -853,36 +905,6 @@ def text_df():
     )
     df.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     yield df
-
-
-@pytest.fixture
-def ts_data():
-    X, y = (
-        pd.DataFrame(
-            {
-                "features": range(101, 132),
-                "date": pd.date_range("2020-10-01", "2020-10-31"),
-            },
-        ),
-        pd.Series(range(1, 32)),
-    )
-    y.index = pd.date_range("2020-10-01", "2020-10-31")
-    X.index = pd.date_range("2020-10-01", "2020-10-31")
-    return X, y
-
-
-@pytest.fixture
-def ts_data_binary(ts_data):
-    X, y = ts_data
-    y = y % 2
-    return X, y
-
-
-@pytest.fixture
-def ts_data_multi(ts_data):
-    X, y = ts_data
-    y = y % 3
-    return X, y
 
 
 @pytest.fixture
@@ -1356,7 +1378,6 @@ def fitted_decision_tree_classification_pipeline(X_y_categorical_classification)
         },
     )
     X, y = X_y_categorical_classification
-    X.ww.init(logical_types={"Ticket": "categorical", "Cabin": "categorical"})
     pipeline.fit(X, y)
     return pipeline
 
@@ -1495,8 +1516,19 @@ def fitted_tree_estimators(tree_estimators, X_y_binary, X_y_regression):
     est_clf, est_reg = tree_estimators
     X_b, y_b = X_y_binary
     X_r, y_r = X_y_regression
-    X_b = pd.DataFrame(X_b, columns=[f"Testing_{col}" for col in range(len(X_b[0]))])
-    X_r = pd.DataFrame(X_r, columns=[f"Testing_{col}" for col in range(len(X_r[0]))])
+
+    b_cols = [f"Testing_{col}" for col in X_b.columns]
+    X_b = pd.DataFrame(X_b)
+    X_b.columns = b_cols
+    X_b.ww.init(logical_types={col: "double" for col in X_b.columns})
+
+    r_cols = [f"Testing_{col}" for col in X_r.columns]
+    X_r = pd.DataFrame(
+        X_r,
+    )
+    X_r.columns = r_cols
+    X_r.ww.init(logical_types={col: "double" for col in X_r.columns})
+
     est_clf.fit(X_b, y_b)
     est_reg.fit(X_r, y_r)
     return est_clf, est_reg
@@ -2081,7 +2113,7 @@ def dummy_data_check_validate_output_errors():
 
 @pytest.fixture
 def imputer_test_data():
-    return pd.DataFrame(
+    X = pd.DataFrame(
         {
             "dates": pd.date_range("01-01-2022", periods=20),
             "categorical col": pd.Series(
@@ -2114,3 +2146,22 @@ def imputer_test_data():
             ),
         },
     )
+    X.ww.init(
+        logical_types={
+            "dates": "datetime",
+            "categorical col": "categorical",
+            "int col": "integer",
+            "object col": "categorical",
+            "float col": "double",
+            "bool col": "boolean",
+            "categorical with nan": "categorical",
+            "int with nan": "IntegerNullable",
+            "float with nan": "double",
+            "object with nan": "categorical",
+            "bool col with nan": "BooleanNullable",
+            "all nan": "unknown",
+            "all nan cat": "categorical",
+            "natural language col": "NaturalLanguage",
+        },
+    )
+    return X

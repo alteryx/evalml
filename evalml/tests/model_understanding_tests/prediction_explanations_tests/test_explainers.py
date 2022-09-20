@@ -986,7 +986,7 @@ def test_explain_predictions_best_worst_custom_metric(
 
 
 def test_explain_predictions_time_series(ts_data):
-    X, y = ts_data
+    X, _, y = ts_data()
 
     ts_pipeline = TimeSeriesRegressionPipeline(
         component_graph={
@@ -1023,8 +1023,8 @@ def test_explain_predictions_time_series(ts_data):
             "Random Forest Regressor": {"n_jobs": 1},
         },
     )
-    X_train, y_train = X[:15], y[:15]
-    X_validation, y_validation = X[15:], y[15:]
+    X_train, y_train = X[:25], y[:25]
+    X_validation, y_validation = X[25:], y[25:]
     ts_pipeline.fit(X_train, y_train)
 
     exp = explain_predictions(
@@ -1057,12 +1057,8 @@ def test_explain_predictions_best_worst_time_series(
     pipeline_class,
     estimator,
     ts_data,
-    ts_data_binary,
 ):
-    X, y = ts_data
-
-    if is_binary(pipeline_class.problem_type):
-        X, y = ts_data_binary
+    X, _, y = ts_data(problem_type=pipeline_class.problem_type)
 
     ts_pipeline = pipeline_class(
         component_graph={
@@ -1098,8 +1094,8 @@ def test_explain_predictions_best_worst_time_series(
             },
         },
     )
-    X_train, y_train = X[:15], y[:15]
-    X_validation, y_validation = X[15:], y[15:]
+    X_train, y_train = X[:25], y[:25]
+    X_validation, y_validation = X[25:], y[25:]
     ts_pipeline.fit(X_train, y_train)
 
     exp = explain_predictions_best_worst(
@@ -1901,8 +1897,7 @@ def test_explain_predictions_best_worst_callback(mock_make_table):
 @pytest.mark.parametrize("indices", [0, 1])
 def test_explain_predictions_unknown(indices, X_y_binary):
     X, y = X_y_binary
-    X = pd.DataFrame(X)
-    X.ww.init(logical_types={0: "unknown"})
+    X.ww.set_types({0: "unknown"})
     pl = BinaryClassificationPipeline(["Random Forest Classifier"])
     pl.fit(X, y)
 

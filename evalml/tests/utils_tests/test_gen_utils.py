@@ -819,9 +819,8 @@ def test_time_series_pipeline_validates_holdout_data(
     forecast_horizon,
     gap,
     ts_data,
-    ts_data_binary,
 ):
-    X, y = ts_data
+    X, _, y = ts_data()
     problem_config = {
         "time_index": "date",
         "gap": gap,

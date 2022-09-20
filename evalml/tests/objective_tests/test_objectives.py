@@ -135,10 +135,10 @@ def test_objective_outputs(
     X_y_binary,
     X_y_multi,
 ):
-    _, y_binary_np = X_y_binary
-    assert isinstance(y_binary_np, np.ndarray)
-    _, y_multi_np = X_y_multi
-    assert isinstance(y_multi_np, np.ndarray)
+    _, y_binary = X_y_binary
+    y_binary_np = y_binary.values
+    _, y_multi = X_y_multi
+    y_multi_np = y_multi.values
     y_true_multi_np = y_multi_np
     y_pred_multi_np = y_multi_np
     # convert to a simulated predicted probability, which must range between 0 and 1

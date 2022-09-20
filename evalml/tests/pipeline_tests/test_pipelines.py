@@ -1170,21 +1170,17 @@ def test_feature_importance_has_feature_names(
     logistic_regression_binary_pipeline,
 ):
     X, y = X_y_binary
-    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
+    X = pd.DataFrame(X)
+    col_names = ["col_{}".format(col) for col in X.columns]
+    X.columns = col_names
+    X.ww.init(logical_types={col: "double" for col in X.columns})
     parameters = {
         "Imputer": {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "mean",
         },
-        "RF Classifier Select From Model": {
-            "percent_features": 1.0,
-            "number_features": len(X.columns),
-            "n_estimators": 20,
-        },
         "Logistic Regression Classifier": {"penalty": "l2", "C": 1.0, "n_jobs": 1},
     }
-
     clf = logistic_regression_binary_pipeline.new(parameters)
     clf.fit(X, y)
     assert len(clf.feature_importance) == len(X.columns)
@@ -1197,8 +1193,10 @@ def test_nonlinear_feature_importance_has_feature_names(
     nonlinear_binary_pipeline,
 ):
     X, y = X_y_binary
-    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
+    col_names = ["col_{}".format(col) for col in X.columns]
+    X = pd.DataFrame(X)
+    X.columns = col_names
+    X.ww.init(logical_types={col: "double" for col in X.columns})
     parameters = {
         "Imputer": {
             "categorical_impute_strategy": "most_frequent",
@@ -1979,8 +1977,6 @@ def test_predict_has_input_target_name(
     X_y_multi,
     X_y_regression,
     ts_data,
-    ts_data_binary,
-    ts_data_multi,
     logistic_regression_binary_pipeline,
     logistic_regression_multiclass_pipeline,
     linear_regression_pipeline,
@@ -2001,9 +1997,7 @@ def test_predict_has_input_target_name(
         clf = linear_regression_pipeline
 
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
-        X, y = ts_data
-        X_validation = X[29:31]
-        X, y = X[:29], y[:29]
+        X, X_validation, y = ts_data()
         clf = time_series_regression_pipeline_class(
             parameters={
                 "pipeline": {
@@ -2021,9 +2015,7 @@ def test_predict_has_input_target_name(
             },
         )
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = ts_data_binary
-        X_validation = X[29:31]
-        X, y = X[:29], y[:29]
+        X, X_validation, y = ts_data(problem_type="time series binary")
         clf = time_series_binary_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
@@ -2042,9 +2034,7 @@ def test_predict_has_input_target_name(
             },
         )
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = ts_data_multi
-        X_validation = X[29:31]
-        X, y = X[:29], y[:29]
+        X, X_validation, y = ts_data(problem_type="time series multiclass")
         clf = time_series_multiclass_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
@@ -2247,7 +2237,6 @@ def test_binary_pipeline_string_target_thresholding(
     X_y_binary,
 ):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
     y = ww.init_series(pd.Series([f"String value {i}" for i in y]), "Categorical")
     pipeline = logistic_regression_binary_pipeline
     if is_time_series:

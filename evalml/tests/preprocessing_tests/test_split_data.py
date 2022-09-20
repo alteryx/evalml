@@ -29,7 +29,7 @@ def test_split_data(
         X, y = X_y_regression
     problem_configuration = None
     if is_time_series(problem_type):
-        problem_configuration = {"gap": 1, "max_delay": 7, "time_index": "ts_data"}
+        problem_configuration = {"gap": 1, "max_delay": 7, "time_index": "date"}
 
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
@@ -54,9 +54,6 @@ def test_split_data(
     assert isinstance(y_test, pd.Series)
 
     if is_time_series(problem_type):
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-            y = pd.Series(y)
         pd.testing.assert_frame_equal(X_test, X[int(train_size) :], check_dtype=False)
         pd.testing.assert_series_equal(y_test, y[int(train_size) :], check_dtype=False)
 
@@ -73,7 +70,7 @@ def test_split_data_defaults(problem_type, data_type, get_test_data_from_configu
 
     problem_configuration = None
     if is_time_series(problem_type):
-        problem_configuration = {"gap": 1, "max_delay": 7, "time_index": "ts_data"}
+        problem_configuration = {"gap": 1, "max_delay": 7, "time_index": "date"}
         test_pct = 0.1
     else:
         test_pct = 0.2
@@ -116,7 +113,7 @@ def test_split_data_ts(test, X_y_regression):
         "gap": 1,
         "max_delay": 7,
         "forecast_horizon": fh,
-        "time_index": "ts_data",
+        "time_index": "date",
     }
     X_train, X_test, y_train, y_test = split_data(
         X,

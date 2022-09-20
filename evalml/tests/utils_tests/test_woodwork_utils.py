@@ -297,7 +297,40 @@ def test_schema_is_equal_fraud(fraud_100):
     assert _schema_is_equal(X.ww.schema, X2.ww.schema)
 
 
-def test_test_downcast_nullable_types_can_handle_no_schema():
+@pytest.mark.parametrize("ignore_null_cols", [True, False])
+def test_downcast_nullable_types_series(ignore_null_cols):
+    X = pd.DataFrame(
+        {
+            "int": [1, 0, 1, 1, 0.0],
+            "bool": [True, False, True, True, False],
+            "int with nan": [1, 0, 1, 1, pd.NA],
+        },
+    )
+    X.ww.init(
+        logical_types={
+            "int": IntegerNullable,
+            "bool": BooleanNullable,
+            "int with nan": IntegerNullable,
+        },
+    )
+
+    y_int = X.ww["int"]
+    y_int_t = downcast_nullable_types(y_int, ignore_null_cols)
+    assert y_int_t.ww.logical_type.type_string == Double.type_string
+
+    y_bool = X.ww["bool"]
+    y_bool_t = downcast_nullable_types(y_bool, ignore_null_cols)
+    assert y_bool_t.ww.logical_type.type_string == Boolean.type_string
+
+    y_int_nan = X.ww["int with nan"]
+    y_int_nan_t = downcast_nullable_types(y_int_nan, ignore_null_cols)
+    if ignore_null_cols:
+        assert y_int_nan_t.ww.logical_type.type_string == IntegerNullable.type_string
+    else:
+        assert y_int_t.ww.logical_type.type_string == Double.type_string
+
+
+def test_downcast_nullable_types_can_handle_no_schema():
     df = pd.DataFrame()
     df["ints"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
 

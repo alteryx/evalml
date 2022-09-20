@@ -53,7 +53,7 @@ def test_fraud_objective_function_amount_col(X_y_binary):
         ValueError,
         match="`this column does not exist` is not a valid column in X.",
     ):
-        objective.objective_function(y_true, y_predicted, X.tolist())
+        objective.objective_function(y_true, y_predicted, X.values.tolist())
 
 
 def test_input_contains_nan(X_y_binary):
