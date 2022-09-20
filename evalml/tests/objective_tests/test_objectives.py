@@ -14,6 +14,9 @@ from evalml.objectives import (
     get_core_objectives,
     get_non_core_objectives,
     get_objective,
+    get_optimization_objectives,
+    get_ranking_objectives,
+    ranking_only_objectives,
 )
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.objectives.utils import _all_objectives_dict
@@ -102,6 +105,26 @@ def test_get_core_objectives_types():
     assert len(get_core_objectives(ProblemTypes.BINARY)) == 8
     assert len(get_core_objectives(ProblemTypes.REGRESSION)) == 7
     assert len(get_core_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 7
+
+
+def test_get_optimization_objectives_types():
+    assert len(get_optimization_objectives(ProblemTypes.MULTICLASS)) == 13
+    assert len(get_optimization_objectives(ProblemTypes.BINARY)) == 8
+    assert len(get_optimization_objectives(ProblemTypes.REGRESSION)) == 7
+    assert len(get_optimization_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 7
+
+
+def test_get_ranking_objectives_types():
+    assert len(get_ranking_objectives(ProblemTypes.MULTICLASS)) == 16
+    assert len(get_ranking_objectives(ProblemTypes.BINARY)) == 9
+    assert len(get_ranking_objectives(ProblemTypes.REGRESSION)) == 9
+    assert len(get_ranking_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 10
+
+
+def test_optimization_excludes_ranking():
+    objs = get_optimization_objectives(ProblemTypes.BINARY)
+    for obj in objs:
+        assert obj.__class__ not in ranking_only_objectives()
 
 
 def test_get_time_series_objectives_types(time_series_objectives):
