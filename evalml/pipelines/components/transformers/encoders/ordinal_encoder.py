@@ -22,6 +22,36 @@ class OrdinalEncoderMeta(ComponentBaseMeta):
 
 
 class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
+    """A transformer that encodes ordinal features as an array of ordinal integers representing
+    the relative order of categories.
+
+    Args:
+        top_n (int): Number of categories per column to encode. If None, all categories will be encoded.
+            Otherwise, the `n` most frequent will be encoded and all others will be handled as unknown values.
+            To not have unknown values raise an error, set handle_unknown to "use_encoded_value".
+            Defaults to 10.
+        features_to_encode (list[str]): List of columns to encode. All other columns will remain untouched.
+            If None, all appropriate columns will be encoded. Defaults to None.
+        categories (list[list[str]]): A two dimensional list of categories, where `categories[i]` is a list of the categories
+            for the column at index `i`. The order of categories for a column does not matter.
+            Any category not present in categories will be handled as an unknown value.
+            To not have unknown values raise an error, set handle_unknown to "use_encoded_value".
+            This can also be `None` or `"auto"` if `top_n` is not None. Cannot be specified if top_n
+            is specified. Defaults to None.
+        handle_unknown ("error" or "use_encoded_value"): Whether to ignore or error for unknown categories
+            for a feature encountered during `fit` or `transform`. When set to "error",
+            an error will be raised when an unknown category is found.
+            When set to "use_encoded_value", unknown categories will be encoded as the value given
+            for the parameter unknown_value. Defaults to "error."
+        unknown_value (int or np.nan): The value to use for unknown categories seen during fit or transform.
+            Required when the parameter handle_unknown is set to "use_encoded_value."
+            The value has to be distinct from the values used to encode any of the categories in fit.
+            Defaults to None.
+        encoded_missing_value (int or np.nan): The value to use for missing (null) values seen during
+            fit or transform. Defaults to np.nan. #--> do we need an option to raise an error here?
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
+
     name = "Ordinal Encoder"
     hyperparameter_ranges = {}
     """{}"""
@@ -33,14 +63,14 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         categories=None,
         handle_unknown="error",
         unknown_value=None,
-        encoded_missing_value=np.nan,  # --> maybe this should be np.nan since that's the utils ddefault
+        encoded_missing_value=np.nan,
         random_seed=0,
         **kwargs,
     ):
         parameters = {
             "top_n": top_n,
             "features_to_encode": features_to_encode,
-            "categories": categories,  # --> the cols must have their categories set - so maybe don't need this set?
+            "categories": categories,
             "handle_unknown": handle_unknown,
             "unknown_value": unknown_value,
             "encoded_missing_value": encoded_missing_value,
@@ -62,7 +92,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         if top_n is not None and categories is not None:
             raise ValueError("Cannot use categories and top_n arguments simultaneously")
 
-        # --> add a check for encoded_missing_values is int or npnan? What about unknown value?
         self.features_to_encode = features_to_encode
         self._encoder = None
 
@@ -81,26 +110,30 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
 
     def fit(self, X, y=None):
         top_n = self.parameters["top_n"]
-        # --> we don't ever infer as Ordinal if theyre not set before this wont get used
+        # Ordinal type is not inferred by Woodwork, so if it wasn't set before, it won't be set at init
         X = infer_feature_types(X)
         if self.features_to_encode is None:
-            # --> should update to not include ordinals? Maybe that's configurable based on whether ordinal encoder is used?
             self.features_to_encode = self._get_ordinal_cols(X)
+        else:
+            logical_types = X.ww.logical_types
+            for col in self.features_to_encode:
+                ltype = logical_types[col]
+                if not isinstance(ltype, Ordinal):
+                    raise TypeError(
+                        f"Column {col} specified in features_to_encode is not Ordinal in nature",
+                    )
 
         X_t = X
         invalid_features = [
             col for col in self.features_to_encode if col not in list(X.columns)
         ]
         if len(invalid_features) > 0:
-            # --> what if features to encode includes non ordinal cols?
             raise ValueError(
                 "Could not find and encode {} in input data.".format(
                     ", ".join(invalid_features),
                 ),
             )
 
-        # helper util to handle unknown ? Probs not needed bc I think the encoder can do wha twe need
-        # --> handle categories logic - includes topn - which means we do need to do value counts when theres more than n values
         if len(self.features_to_encode) == 0:
             categories = "auto"
         elif self.parameters["categories"] is not None:
@@ -113,12 +146,13 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                     "Categories argument must contain a list of categories for each categorical feature",
                 )
 
-            # Categories should be in the same order as the data's Ordinal.order categories
-            # even if it's a subset
+            # Categories, as they're passed into SKOrdinalEncoder should be in the same order
+            # as the data's Ordinal.order categories even if it's a subset
             # --> refactor this to be nicer
             categories = []
             for i, col_categories in enumerate(input_categories):
                 categories_order = X.ww.logical_types[X.columns[i]].order
+
                 ordered_categories = [
                     cat for cat in categories_order if cat in col_categories
                 ]
@@ -131,16 +165,13 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
             ww_logical_types = X.ww.logical_types
             for col in X_t[self.features_to_encode]:
                 ltype = ww_logical_types[col]
-                assert isinstance(ltype, Ordinal)
-                # --> if this is sampled data, the order might not be accurate?
+
                 column_categories = ltype.order
 
                 if top_n is None or len(column_categories) <= top_n:
                     unique_values = column_categories
                 else:
                     value_counts = X_t[col].value_counts(dropna=False).to_frame()
-                    # --> is it worth comparing to the column's order? maybe not
-                    # --> i assume randomness here is so that we aren' always using the same columns?
                     value_counts = value_counts.sample(
                         frac=1,
                         random_state=self._initial_state,

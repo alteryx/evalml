@@ -1,8 +1,10 @@
 import re
+from multiprocessing.sharedctypes import Value
 
 import numpy as np
 import pandas as pd
 import pytest
+from pyexpat import features
 from woodwork.logical_types import Ordinal
 
 from evalml.exceptions import ComponentNotYetFittedError
@@ -93,13 +95,49 @@ def test_invalid_inputs():
 # --> test feats to encode includes non ordinals
 
 
-def test_ordinal_encoder_col_missing():
+def test_top_n_error_without_handle_unknown():
     X = pd.DataFrame({"col_1": [2, 0, 1, 0, 0], "col_2": ["a", "b", "a", "c", "d"]})
+    X.ww.init(logical_types={"col_2": Ordinal(order=["a", "b", "c", "d"])})
 
-    encoder = OrdinalEncoder(top_n=5, features_to_encode=["col_3", "col_4"])
+    encoder = OrdinalEncoder(top_n=2)
 
-    with pytest.raises(ValueError, match="Could not find and encode"):
+    error_segment = "Found unknown categories"
+    with pytest.raises(ValueError, match=error_segment):
         encoder.fit(X)
+
+
+def test_features_to_encode_non_ordinal_cols():
+    X = pd.DataFrame({"col_1": [2, 0, 1, 0, 0], "col_2": ["a", "b", "a", "c", "d"]})
+    X.ww.init(logical_types={"col_2": Ordinal(order=["a", "b", "c", "d"])})
+
+    encoder = OrdinalEncoder(features_to_encode=["col_1"])
+    error = "Column col_1 specified in features_to_encode is not Ordinal in nature"
+    with pytest.raises(TypeError, match=error):
+        encoder.fit(X)
+
+
+def test_categories_specified_not_present_in_data():
+    """Make sure that we can handle categories during fit that aren't present in
+    the data so that they can be seen during transform
+    """
+    X = pd.DataFrame({"col_1": ["a", "b", "a", "c", "d"]})
+    X.ww.init(logical_types={"col_1": Ordinal(order=["a", "b", "c", "d"])})
+    # --> weird that we have to put empty list for columns that arent ordinal in nature when specifing categories....
+    # check with OHE if that's the case??
+    # -->THIS IS STILL FAILING
+
+    encoder = OrdinalEncoder(
+        top_n=None,
+        categories=[["a", "x"]],
+        handle_unknown="use_encoded_value",
+        unknown_value=-1,
+    )
+    encoder.fit(X)
+
+    X_2 = pd.DataFrame({"col_1": ["a", "b", "a", "c", "x"]})
+    X_2.ww.init(logical_types={"col_1": Ordinal(order=["a", "b", "c", "x"])})
+    X_t = encoder.transform(X_2)
+    assert list(X_t["col_1_ordinally_encoded"]) == [0, -1, 0, -1, 1]
 
 
 def test_ordinal_encoder_is_no_op_for_df_of_non_ordinal_features():
@@ -350,13 +388,13 @@ def test_ordinal_encoder_diff_na_types():
             "col_3": Ordinal(order=categories[2]),
         },
     )
-    encoder = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+    encoder = OrdinalEncoder(encoded_missing_value=-1)
     encoder.fit(X)
     X_t = encoder.transform(X)
-    # Confirm all are still null
-    assert pd.isna(X_t["col_1_ordinally_encoded"].iloc[-1])
-    assert pd.isna(X_t["col_2_ordinally_encoded"].iloc[-1])
-    assert pd.isna(X_t["col_3_ordinally_encoded"].iloc[-1])
+    # Confirm were recognized as null and encoded
+    assert X_t["col_1_ordinally_encoded"].iloc[-1] == -1
+    assert X_t["col_2_ordinally_encoded"].iloc[-1] == -1
+    assert X_t["col_3_ordinally_encoded"].iloc[-1] == -1
 
 
 # --> diff combinations of parameters
@@ -613,6 +651,11 @@ def test_numpy_input():
     encoder.fit(X)
     X_t = encoder.transform(X)
     pd.testing.assert_frame_equal(pd.DataFrame(X), X_t, check_dtype=False)
+
+
+# --> thest case when top_n > # categories and handle unknown is error
+# --> case when top_n < # cats and handle unknown is error
+# --> unknown value not seen during fit seen at transform
 
 
 @pytest.mark.parametrize(
