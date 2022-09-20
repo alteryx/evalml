@@ -7,6 +7,7 @@ from woodwork.logical_types import Ordinal
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import OrdinalEncoder
+from evalml.utils import get_random_seed
 
 
 def set_first_three_columns_to_ordinal_with_categories(X, categories):
@@ -288,7 +289,7 @@ def test_null_values_in_dataframe():
     X_t = encoder.transform(X)
     assert X_t["col_1_ordinally_encoded"].iloc[-1] == -1
 
-    # --> not sure that this is the desired behavior - in ohe it gets treated as its own category
+    # --> not sure that this is the desired behavior - in ordinal_encoder it gets treated as its own category
     # Test NaN doesn't get counted as a category to encode, so it still gets
     # encoded as missing and not unknown even if it's not in the top n
     X = pd.DataFrame(
@@ -633,174 +634,165 @@ def test_ordinal_encoder_preserves_custom_index(index):
     assert not new_df.isna().any(axis=None)
 
 
-# def test_ordinal_encoder_categories():
-#     X = pd.DataFrame(
-#         {"col_1": ["a"] * 10, "col_2": ["a"] * 3 + ["b"] * 3 + ["c"] * 2 + ["d"] * 2},
-#     )
-#     X.ww.init(logical_types={"col_2": "categorical"})
-#     encoder = OrdinalEncoder(top_n=2)
-#     with pytest.raises(
-#         ComponentNotYetFittedError,
-#         match="This OrdinalEncoder is not fitted yet. You must fit OrdinalEncoder before calling categories.",
-#     ):
-#         encoder.categories("col_1")
+def test_ordinal_encoder_categories():
+    X = pd.DataFrame(
+        {"col_1": ["a"] * 10, "col_2": ["a"] * 3 + ["b"] * 3 + ["c"] * 2 + ["d"] * 2},
+    )
+    X.ww.init(
+        logical_types={
+            "col_1": Ordinal(order=["a"]),
+            "col_2": Ordinal(order=["a", "b", "c", "d"]),
+        },
+    )
+    encoder = OrdinalEncoder(
+        top_n=2,
+        handle_unknown="use_encoded_value",
+        unknown_value=-1,
+    )
+    with pytest.raises(
+        ComponentNotYetFittedError,
+        match="This OrdinalEncoder is not fitted yet. You must fit OrdinalEncoder before calling categories.",
+    ):
+        encoder.categories("col_1")
 
-#     encoder.fit(X)
-#     np.testing.assert_array_equal(encoder.categories("col_1"), np.array(["a"]))
-#     np.testing.assert_array_equal(encoder.categories("col_2"), np.array(["a", "b"]))
-#     with pytest.raises(
-#         ValueError,
-#         match='Feature "col_12345" was not provided to ordinal encoder as a training feature',
-#     ):
-#         encoder.categories("col_12345")
-
-
-# def test_ohe_get_feature_names():
-#     X = pd.DataFrame(
-#         {"col_1": ["a"] * 10, "col_2": ["a"] * 3 + ["b"] * 3 + ["c"] * 2 + ["d"] * 2},
-#     )
-#     X.ww.init(logical_types={"col_2": "categorical"})
-#     ohe = OneHotEncoder(top_n=2)
-#     with pytest.raises(
-#         ComponentNotYetFittedError,
-#         match="This OneHotEncoder is not fitted yet. You must fit OneHotEncoder before calling get_feature_names.",
-#     ):
-#         ohe.get_feature_names()
-#     ohe.fit(X)
-#     np.testing.assert_array_equal(
-#         ohe.get_feature_names(),
-#         np.array(["col_1_a", "col_2_a", "col_2_b"]),
-#     )
-
-#     X = pd.DataFrame({"col_1": ["a"] * 4 + ["b"] * 6, "col_2": ["b"] * 3 + ["c"] * 7})
-#     ohe = OneHotEncoder(drop="if_binary")
-#     ohe.fit(X)
-#     np.testing.assert_array_equal(
-#         ohe.get_feature_names(),
-#         np.array(["col_1_a", "col_2_b"]),
-#     )
+    encoder.fit(X)
+    np.testing.assert_array_equal(encoder.categories("col_1"), np.array(["a"]))
+    np.testing.assert_array_equal(encoder.categories("col_2"), np.array(["a", "b"]))
+    with pytest.raises(
+        ValueError,
+        match='Feature "col_12345" was not provided to ordinal encoder as a training feature',
+    ):
+        encoder.categories("col_12345")
 
 
-# def test_ohe_features_to_encode():
-#     # Test feature that doesn't need encoding and
-#     # feature that needs encoding but is not specified remain untouched
-#     X = pd.DataFrame({"col_1": [2, 0, 1, 0, 0], "col_2": ["a", "b", "a", "c", "d"]})
+def test_ordinal_encoder_get_feature_names():
+    X = pd.DataFrame(
+        {"col_1": ["a"] * 10, "col_2": ["a"] * 3 + ["b"] * 3 + ["c"] * 2 + ["d"] * 2},
+    )
+    X.ww.init(
+        logical_types={
+            "col_1": Ordinal(order=["a"]),
+            "col_2": Ordinal(order=["a", "b", "c", "d"]),
+        },
+    )
 
-#     encoder = OneHotEncoder(top_n=5, features_to_encode=["col_1"])
-#     encoder.fit(X)
-#     X_t = encoder.transform(X)
-#     expected_col_names = set(["col_1_0", "col_1_1", "col_1_2", "col_2"])
-#     col_names = set(X_t.columns)
-#     assert col_names == expected_col_names
-#     assert [X_t[col].dtype == "uint8" for col in X_t]
+    ordinal_encoder = OrdinalEncoder(
+        top_n=2,
+        handle_unknown="use_encoded_value",
+        unknown_value=-1,
+    )
+    with pytest.raises(
+        ComponentNotYetFittedError,
+        match="This OrdinalEncoder is not fitted yet. You must fit OrdinalEncoder before calling get_feature_names.",
+    ):
+        ordinal_encoder.get_feature_names()
+    ordinal_encoder.fit(X)
+    np.testing.assert_array_equal(
+        ordinal_encoder.get_feature_names(),
+        np.array(["col_1_ordinally_encoded", "col_2_ordinally_encoded"]),
+    )
 
-#     encoder = OneHotEncoder(top_n=5, features_to_encode=["col_1", "col_2"])
-#     encoder.fit(X)
-#     X_t = encoder.transform(X)
-#     expected_col_names = set(
-#         ["col_1_0", "col_1_1", "col_1_2", "col_2_a", "col_2_b", "col_2_c", "col_2_d"],
-#     )
-#     col_names = set(X_t.columns)
-#     assert col_names == expected_col_names
-#     assert [X_t[col].dtype == "uint8" for col in X_t]
-
-
-# def test_ohe_features_to_encode_col_missing():
-#     X = pd.DataFrame({"col_1": [2, 0, 1, 0, 0], "col_2": ["a", "b", "a", "c", "d"]})
-
-#     encoder = OneHotEncoder(top_n=5, features_to_encode=["col_3", "col_4"])
-
-#     with pytest.raises(ValueError, match="Could not find and encode"):
-#         encoder.fit(X)
-
-
-# def test_ohe_features_to_encode_no_col_names():
-#     X = pd.DataFrame([["b", 0], ["a", 1], ["b", 1]])
-#     encoder = OneHotEncoder(top_n=5, features_to_encode=[0])
-#     encoder.fit(X)
-#     X_t = encoder.transform(X)
-#     expected_col_names = set([1, "0_a"])
-#     col_names = set(X_t.columns)
-#     assert col_names == expected_col_names
-#     assert [X_t[col].dtype == "uint8" for col in X_t]
+    ordinal_encoder = OrdinalEncoder(features_to_encode=["col_2"])
+    ordinal_encoder.fit(X)
+    np.testing.assert_array_equal(
+        ordinal_encoder.get_feature_names(),
+        np.array(["col_2_ordinally_encoded"]),
+    )
 
 
-# def test_ohe_top_n_categories_always_the_same():
-#     df = pd.DataFrame(
-#         {
-#             "categories": ["cat_1"] * 5
-#             + ["cat_2"] * 4
-#             + ["cat_3"] * 3
-#             + ["cat_4"] * 3
-#             + ["cat_5"] * 3,
-#             "numbers": range(18),
-#         },
-#     )
+def test_ordinal_encoder_features_to_encode():
+    # Test feature that doesn't need encoding and
+    # feature that needs encoding but is not specified remain untouched
+    X = pd.DataFrame({"col_1": [2, 0, 1, 0, 0], "col_2": ["a", "b", "a", "c", "d"]})
+    X.ww.init(
+        logical_types={
+            "col_1": Ordinal(order=[0, 1, 2]),
+            "col_2": Ordinal(order=["a", "b", "c", "d"]),
+        },
+    )
 
-#     def check_df_equality(random_seed):
-#         ohe = OneHotEncoder(top_n=4, random_seed=random_seed)
-#         df1 = ohe.fit_transform(df)
-#         df2 = ohe.fit_transform(df)
-#         assert_frame_equal(df1, df2)
+    encoder = OrdinalEncoder(top_n=5, features_to_encode=["col_1"])
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    expected_col_names = set(["col_2", "col_1_ordinally_encoded"])
+    col_names = set(X_t.columns)
+    assert col_names == expected_col_names
+    assert [X_t[col].dtype == "uint8" for col in X_t]
 
-#     check_df_equality(5)
-#     check_df_equality(get_random_seed(5))
+    encoder = OrdinalEncoder(top_n=5, features_to_encode=["col_1", "col_2"])
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    expected_col_names = set(
+        ["col_1_ordinally_encoded", "col_2_ordinally_encoded"],
+    )
+    col_names = set(X_t.columns)
+    assert col_names == expected_col_names
+    assert [X_t[col].dtype == "uint8" for col in X_t]
 
 
-# def test_ohe_column_names_unique():
-#     df = pd.DataFrame({"A": ["x_y"], "A_x": ["y"]})
-#     df.ww.init(logical_types={"A": "categorical", "A_x": "categorical"})
-#     df_transformed = OneHotEncoder().fit_transform(df)
-#     assert set(df_transformed.columns) == {"A_x_y", "A_x_y_1"}
+def test_ordinal_encoder_features_to_encode_col_missing():
+    X = pd.DataFrame({"col_1": [2, 0, 1, 0, 0], "col_2": ["a", "b", "a", "c", "d"]})
+    X.ww.init(
+        logical_types={
+            "col_1": Ordinal(order=[0, 1, 2]),
+            "col_2": Ordinal(order=["a", "b", "c", "d"]),
+        },
+    )
 
-#     df = pd.DataFrame(
-#         {
-#             "A": ["x_y", "z", "z"],
-#             "A_x": [
-#                 "y",
-#                 "a",
-#                 "a",
-#             ],
-#             "A_x_y": ["1", "y", "y"],
-#         },
-#     )
-#     df.ww.init(
-#         logical_types={
-#             "A": "categorical",
-#             "A_x": "categorical",
-#             "A_x_y": "categorical",
-#         },
-#     )
-#     df_transformed = OneHotEncoder().fit_transform(df)
-#     # category y in A_x gets mapped to A_x_y_1 because A_x_y already exists
-#     # category 1 in A_x_y gets mapped to A_x_y_1_1 because A_x_y_1 already exists
-#     assert set(df_transformed.columns) == {"A_x_y", "A_x_y_1", "A_x_y_1_1"}
+    encoder = OrdinalEncoder(top_n=5, features_to_encode=["col_3", "col_4"])
 
-#     df = pd.DataFrame(
-#         {"A": ["x_y", "z", "a"], "A_x": ["y_1", "y", "b"], "A_x_y": ["1", "y", "c"]},
-#     )
-#     df.ww.init(
-#         logical_types={
-#             "A": "categorical",
-#             "A_x": "categorical",
-#             "A_x_y": "categorical",
-#         },
-#     )
-#     df_transformed = OneHotEncoder().fit_transform(df)
-#     # category y in A_x gets mapped to A_x_y_1 because A_x_y already exists
-#     # category y_1 in A_x gets mapped to A_x_y_1_1 because A_x_y_1 already exists
-#     # category 1 in A_x_y gets mapped to A_x_y_1_2 because A_x_y_1_1 already exists
-#     assert set(df_transformed.columns) == {
-#         "A_x_y",
-#         "A_z",
-#         "A_a",
-#         "A_x_y_1",
-#         "A_x_y_1_1",
-#         "A_x_b",
-#         "A_x_y_1_2",
-#         "A_x_y_y",
-#         "A_x_y_c",
-#     }
+    with pytest.raises(ValueError, match="Could not find and encode"):
+        encoder.fit(X)
+
+
+def test_ordinal_encoder_features_to_encode_no_col_names():
+    X = pd.DataFrame([["b", 0], ["a", 1], ["b", 1]])
+    X.ww.init(
+        logical_types={
+            0: Ordinal(order=["b", "a"]),
+            1: Ordinal(order=[0, 1]),
+        },
+    )
+    encoder = OrdinalEncoder(top_n=5, features_to_encode=[0])
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    expected_col_names = set([1, "0_ordinally_encoded"])
+    col_names = set(X_t.columns)
+    assert col_names == expected_col_names
+    assert [X_t[col].dtype == "uint8" for col in X_t]
+
+
+def test_ordinal_encoder_top_n_categories_always_the_same_when_no_ties():
+    df = pd.DataFrame(
+        {
+            "categories": ["cat_1"] * 5
+            + ["cat_2"] * 4
+            + ["cat_3"] * 3
+            + ["cat_4"] * 3
+            + ["cat_5"] * 3,
+            "numbers": range(18),
+        },
+    )
+    df.ww.init(
+        logical_types={
+            "categories": Ordinal(order=["cat_1", "cat_2", "cat_3", "cat_4", "cat_5"]),
+        },
+    )
+
+    def check_df_equality(random_seed):
+        ordinal_encoder = OrdinalEncoder(
+            top_n=4,
+            random_seed=random_seed,
+            handle_unknown="use_encoded_value",
+            unknown_value=-1,
+        )
+
+        df1 = ordinal_encoder.fit_transform(df)
+        df2 = ordinal_encoder.fit_transform(df)
+        pd.testing.assert_frame_equal(df1, df2)
+
+    check_df_equality(5)
+    check_df_equality(get_random_seed(5))
 
 
 # @pytest.mark.parametrize(
@@ -821,7 +813,8 @@ def test_ordinal_encoder_preserves_custom_index(index):
 #         ),
 #     ],
 # )
-# def test_ohe_woodwork_custom_overrides_returned_by_components(X_df):
+# def test_ordinal_encoder_woodwork_custom_overrides_returned_by_components(X_df):
+# --> what's the point of adding this??
 #     y = pd.Series([1, 2, 1])
 #     override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime, Boolean]
 #     for logical_type in override_types:
@@ -834,9 +827,9 @@ def test_ordinal_encoder_preserves_custom_index(index):
 #             # Casting the fourth and fifth dataframes to datetime will produce all NaNs
 #             continue
 
-#         ohe = OneHotEncoder()
-#         ohe.fit(X, y)
-#         transformed = ohe.transform(X, y)
+#         ordinal_encoder = OrdinalEncoder()
+#         ordinal_encoder.fit(X, y)
+#         transformed = ordinal_encoder.transform(X, y)
 #         assert isinstance(transformed, pd.DataFrame)
 #         if logical_type != Categorical:
 #             assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
@@ -844,22 +837,28 @@ def test_ordinal_encoder_preserves_custom_index(index):
 #             }
 
 
-# def test_ohe_output_bools():
-#     X = pd.DataFrame(
-#         {
-#             "bool": [bool(i % 2) for i in range(100)],
-#             "categorical": ["dog"] * 20 + ["cat"] * 40 + ["fish"] * 40,
-#             "integers": [i for i in range(100)],
-#         },
-#     )
-#     X.ww.init()
-#     y = pd.Series([i % 2 for i in range(100)])
-#     y.ww.init()
-#     ohe = OneHotEncoder()
-#     output = ohe.fit_transform(X, y)
-#     for name, types in output.ww.types["Logical Type"].items():
-#         if name == "integers":
-#             assert str(types) == "Integer"
-#         else:
-#             assert str(types) == "Boolean"
-#     assert len(output.columns) == 5
+def test_ordinal_encoder_output_doubles():
+    X = pd.DataFrame(
+        {
+            "bool": [bool(i % 2) for i in range(100)],
+            "categorical": ["dog"] * 20 + ["cat"] * 40 + ["fish"] * 40,
+            "integers": [i for i in range(100)],
+        },
+    )
+    X.ww.init(
+        logical_types={
+            "categorical": Ordinal(order=["dog", "cat", "fish"]),
+        },
+    )
+    y = pd.Series([i % 2 for i in range(100)])
+    y.ww.init()
+    ordinal_encoder = OrdinalEncoder()
+    output = ordinal_encoder.fit_transform(X, y)
+    for name, types in output.ww.types["Logical Type"].items():
+        if name == "integers":
+            assert str(types) == "Integer"
+        elif name == "bool":
+            assert str(types) == "Boolean"
+        else:
+            assert str(types) == "Double"
+    assert len(output.columns) == len(X.columns)

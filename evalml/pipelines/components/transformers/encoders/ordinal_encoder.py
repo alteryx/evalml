@@ -16,7 +16,7 @@ from evalml.utils import infer_feature_types
 
 class OrdinalEncoderMeta(ComponentBaseMeta):
     METHODS_TO_CHECK = ComponentBaseMeta.METHODS_TO_CHECK + [
-        # --> probs need to add categories back
+        "categories",
         "get_feature_names",
     ]
 
@@ -224,19 +224,19 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         """Returns a list of the unique categories to be encoded for the particular feature, in order.
 
         Args:
-            feature_name (str): The name of any feature provided to one-hot encoder during fit.
+            feature_name (str): The name of any feature provided to ordinal encoder during fit.
 
         Returns:
             np.ndarray: The unique categories, in the same dtype as they were provided during fit.
 
         Raises:
-            ValueError: If feature was not provided to one-hot encoder as a training feature.
+            ValueError: If feature was not provided to ordinal encoder as a training feature.
         """
         try:
             index = self.features_to_encode.index(feature_name)
         except Exception:
             raise ValueError(
-                f'Feature "{feature_name}" was not provided to one-hot encoder as a training feature',
+                f'Feature "{feature_name}" was not provided to ordinal encoder as a training feature',
             )
         return self._encoder.categories_[index]
 
