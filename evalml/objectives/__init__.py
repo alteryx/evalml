@@ -54,4 +54,7 @@ from evalml.objectives.utils import (
     get_all_objective_names,
     get_non_core_objectives,
     get_core_objective_names,
+    get_optimization_objectives,
+    get_ranking_objectives,
+    ranking_only_objectives,
 )
