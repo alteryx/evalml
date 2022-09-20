@@ -140,6 +140,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                 else:
                     value_counts = X_t[col].value_counts(dropna=False).to_frame()
                     # --> is it worth comparing to the column's order? maybe not
+                    # --> i assume randomness here is so that we aren' always using the same columns?
                     value_counts = value_counts.sample(
                         frac=1,
                         random_state=self._initial_state,
@@ -152,7 +153,14 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                     )
                     unique_values = value_counts.head(top_n).index.tolist()
 
-                categories.append(list(unique_values))
+                # Categories should be in the same order as the data's Ordinal.order categories
+                categories_order = X.ww.logical_types[col].order
+                unique_values_in_order = [
+                    cat for cat in categories_order if cat in unique_values
+                ]
+                categories.append(unique_values_in_order)
+
+                # Categories should be in the same order as the data's Ordinal.order categories
 
         # Add any null values into the categories lists so that they can get handled correctly
         if isinstance(categories, list):
