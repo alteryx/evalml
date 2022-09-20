@@ -59,6 +59,7 @@ class EnsembleClassificationPipeline(EnsemblePipelineBase):
         component_graph=None,
         parameters=None,
         custom_name=None,
+        cv_valid_data=None,
         random_seed=0,
     ):
         if component_graph is None:
@@ -75,6 +76,7 @@ class EnsembleClassificationPipeline(EnsemblePipelineBase):
             component_graph=component_graph,
             custom_name=custom_name,
             parameters=parameters,
+            cv_valid_data=cv_valid_data,
             random_seed=random_seed,
         )
 
@@ -88,19 +90,8 @@ class EnsembleClassificationPipeline(EnsemblePipelineBase):
         Returns:
             pd.Series: Estimated labels
         """
-        if objective is not None:
-            objective = get_objective(objective, return_instance=True)
-            if not objective.is_defined_for_problem_type(self.problem_type):
-                raise ValueError(
-                    "You can only use a binary classification objective to make predictions for a binary classification pipeline.",
-                )
-
         metalearner_X = self.transform(X)
-        if self.threshold is None:
-            return self.component_graph.predict(metalearner_X)
-        ypred_proba = self.predict_proba(metalearner_X)
-        predictions = self._predict_with_objective(X, ypred_proba, objective)
-        return infer_feature_types(predictions)
+        return super()._predict(metalearner_X, objective=objective)
 
     def predict_proba(self, X, X_train=None, y_train=None):
         """Make predictions using selected features.
@@ -115,6 +106,21 @@ class EnsembleClassificationPipeline(EnsemblePipelineBase):
 
         metalearner_X = self.transform(X)
         return super().predict_proba(metalearner_X)
+
+    def _preds_processor(self, preds, pipeline_name):
+        if not isinstance(preds, pd.DataFrame):
+            raise ValueError("Preds must be in the form of a pd.Dataframe")
+        new_columns = {}
+        for i, column in enumerate(preds.columns):
+            new_columns[column] = i
+        preds.ww.rename(new_columns, inplace=True)
+        if len(preds.columns) == 2:
+            # If it is a binary problem, drop the first column since both columns are colinear
+            preds = preds.ww.drop(preds.columns[0])
+        preds = preds.ww.rename(
+            {col: f"Col {str(col)} {pipeline_name}.x" for col in preds.columns},
+        )
+        return preds
 
     def fit(self, X, y, data_splitter=None, force_retrain=False):
         """Build a classification model. For string and categorical targets, classes are sorted by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
@@ -143,50 +149,58 @@ class EnsembleClassificationPipeline(EnsemblePipelineBase):
         if not self._all_input_pipelines_fitted or force_retrain is True:
             self._fit_input_pipelines(X, y, force_retrain=True)
 
-        if data_splitter is None:
-            from evalml.automl.utils import make_data_splitter
-
-            data_splitter = make_data_splitter(X, y, problem_type=ProblemTypes.BINARY)
-
-        splits = data_splitter.split(X, y)
-
         metalearner_X = []
         metalearner_y = []
 
-        pred_pls = []
-        for pipeline in self.input_pipelines:
-            pred_pls.append(pipeline.clone())
+        if self.cv_valid_data and force_retrain is False:
+            for pipeline_name, cv_valid_data in self.cv_valid_data.items():
+                pl_valid_preds = []
+                for X, preds in cv_valid_data:
+                    pl_valid_preds.append(self._preds_processor(preds, pipeline_name))
 
-        # Split off pipelines for CV
-        for i, (train, valid) in enumerate(splits):
-            fold_X = []
-            X_train, X_valid = X.ww.iloc[train], X.ww.iloc[valid]
-            y_train, y_valid = y.ww.iloc[train], y.ww.iloc[valid]
+                pl_all_preds = pd.concat(pl_valid_preds)
+                metalearner_X.append(pl_all_preds)
 
-            for pipeline in pred_pls:
-                pipeline.fit(X_train, y_train)
-                pl_preds = pipeline.predict_proba(X_valid)
-                if isinstance(pl_preds, pd.DataFrame):
-                    new_columns = {}
-                    for i, column in enumerate(pl_preds.columns):
-                        new_columns[column] = i
-                    pl_preds.ww.rename(new_columns, inplace=True)
-                    if len(pl_preds.columns) == 2:
-                        # If it is a binary problem, drop the first column since both columns are colinear
-                        pl_preds = pl_preds.ww.drop(pl_preds.columns[0])
-                    pl_preds = pl_preds.ww.rename(
-                        {
-                            col: f"Col {str(col)} {pipeline.name}.x"
-                            for col in pl_preds.columns
-                        },
-                    )
-                fold_X.append(pl_preds)
+            metalearner_X = ww.concat_columns(metalearner_X)
+            metalearner_y = y
+            if len(metalearner_X) != len(metalearner_y):
+                metalearner_X = metalearner_X.loc[metalearner_y.index]
 
-            metalearner_X.append(ww.concat_columns(fold_X))
-            metalearner_y.append(y_valid)
+        else:
+            if data_splitter is None:
+                from evalml.automl.utils import make_data_splitter
 
-        metalearner_X = pd.concat(metalearner_X)
-        metalearner_y = pd.concat(metalearner_y)
+                data_splitter = make_data_splitter(
+                    X,
+                    y,
+                    problem_type=ProblemTypes.BINARY,
+                )
+
+            splits = data_splitter.split(X, y)
+
+            metalearner_X = []
+            metalearner_y = []
+
+            pred_pls = []
+            for pipeline in self.input_pipelines:
+                pred_pls.append(pipeline.clone())
+
+            # Split off pipelines for CV
+            for i, (train, valid) in enumerate(splits):
+                fold_X = []
+                X_train, X_valid = X.ww.iloc[train], X.ww.iloc[valid]
+                y_train, y_valid = y.ww.iloc[train], y.ww.iloc[valid]
+
+                for pipeline in pred_pls:
+                    pipeline.fit(X_train, y_train)
+                    pl_preds = pipeline.predict_proba(X_valid)
+                    fold_X.append(self._preds_processor(pl_preds, pipeline.name))
+
+                metalearner_X.append(ww.concat_columns(fold_X))
+                metalearner_y.append(y_valid)
+
+            metalearner_X = pd.concat(metalearner_X)
+            metalearner_y = pd.concat(metalearner_y)
 
         self.component_graph.fit(metalearner_X, metalearner_y)
 
@@ -199,21 +213,7 @@ class EnsembleClassificationPipeline(EnsemblePipelineBase):
         input_pipeline_preds = []
         for pipeline in self.input_pipelines:
             pl_preds = pipeline.predict_proba(X)
-            if isinstance(pl_preds, pd.DataFrame):
-                new_columns = {}
-                for i, column in enumerate(pl_preds.columns):
-                    new_columns[column] = i
-                pl_preds.ww.rename(new_columns, inplace=True)
-                if len(pl_preds.columns) == 2:
-                    # If it is a binary problem, drop the first column since both columns are colinear
-                    pl_preds = pl_preds.ww.drop(pl_preds.columns[0])
-                pl_preds = pl_preds.ww.rename(
-                    {
-                        col: f"Col {str(col)} {pipeline.name}.x"
-                        for col in pl_preds.columns
-                    },
-                )
-            input_pipeline_preds.append(pl_preds)
+            input_pipeline_preds.append(self._preds_processor(pl_preds, pipeline.name))
 
         return ww.concat_columns(input_pipeline_preds)
 

@@ -51,6 +51,7 @@ class EnsembleRegressionPipeline(EnsemblePipelineBase, RegressionPipeline):
         component_graph=None,
         parameters=None,
         custom_name=None,
+        cv_valid_data=None,
         random_seed=0,
     ):
         if component_graph is None:
@@ -62,6 +63,7 @@ class EnsembleRegressionPipeline(EnsemblePipelineBase, RegressionPipeline):
             component_graph=component_graph,
             custom_name=custom_name,
             parameters=parameters,
+            cv_valid_data=None,
             random_seed=random_seed,
         )
 
@@ -119,26 +121,40 @@ class EnsembleRegressionPipeline(EnsemblePipelineBase, RegressionPipeline):
         metalearner_X = []
         metalearner_y = []
 
-        pred_pls = []
-        for pipeline in self.input_pipelines:
-            pred_pls.append(pipeline.clone())
+        if self.cv_valid_data and force_retrain is False:
+            for pipeline_name, cv_valid_data in self.cv_valid_data.items():
+                fold_X = {}
+                for X, preds in cv_valid_data:
+                    fold_X[pipeline.name] = preds
 
-        # Split off pipelines for CV
-        for i, (train, valid) in enumerate(splits):
-            fold_X = {}
-            X_train, X_valid = X.ww.iloc[train], X.ww.iloc[valid]
-            y_train, y_valid = y.ww.iloc[train], y.ww.iloc[valid]
+                metalearner_X.append(pd.DataFrame(fold_X))
 
-            for pipeline in pred_pls:
-                pipeline.fit(X_train, y_train)
-                pl_preds = pipeline.predict(X_valid)
-                fold_X[pipeline.name] = pl_preds
+            metalearner_X = pd.concat(metalearner_X)
+            metalearner_y = y
 
-            metalearner_X.append(pd.DataFrame(fold_X))
-            metalearner_y.append(y_valid)
+            if len(metalearner_X) != len(metalearner_y):
+                metalearner_X = metalearner_X.loc[metalearner_y.index]
+        else:
+            pred_pls = []
+            for pipeline in self.input_pipelines:
+                pred_pls.append(pipeline.clone())
 
-        metalearner_X = pd.concat(metalearner_X)
-        metalearner_y = pd.concat(metalearner_y)
+            # Split off pipelines for CV
+            for i, (train, valid) in enumerate(splits):
+                fold_X = {}
+                X_train, X_valid = X.ww.iloc[train], X.ww.iloc[valid]
+                y_train, y_valid = y.ww.iloc[train], y.ww.iloc[valid]
+
+                for pipeline in pred_pls:
+                    pipeline.fit(X_train, y_train)
+                    pl_preds = pipeline.predict(X_valid)
+                    fold_X[pipeline.name] = pl_preds
+
+                metalearner_X.append(pd.DataFrame(fold_X))
+                metalearner_y.append(y_valid)
+
+            metalearner_X = pd.concat(metalearner_X)
+            metalearner_y = pd.concat(metalearner_y)
 
         self.component_graph.fit(metalearner_X, metalearner_y)
         return self

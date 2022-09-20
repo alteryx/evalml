@@ -189,10 +189,15 @@ class AutoMLAlgorithm(ABC):
             label_encoder_params = {}
 
         # New implementation
+        cv_valid_data = {
+            x["pipeline"].name: x["cv_valid_data"]
+            for _, x in self._best_pipeline_info.items()
+        }
         ensemble_v3_pl = _make_stacked_ensemble_pipeline(
             input_pipelines=best_pipelines,
             problem_type=problem_type,
             random_seed=self.random_seed,
+            cv_valid_data=cv_valid_data,
             label_encoder_params=label_encoder_params,
         )
         next_batch.append(ensemble_v3_pl)

@@ -10,10 +10,12 @@ class EnsemblePipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         component_graph,
         parameters=None,
         custom_name=None,
+        cv_valid_data=None,
         random_seed=0,
     ):
         self.input_pipelines = input_pipelines
         self._is_stacked_ensemble = True
+        self.cv_valid_data = cv_valid_data
 
         super().__init__(
             component_graph,
@@ -53,6 +55,7 @@ class EnsemblePipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             component_graph=self.component_graph,
             parameters=self.parameters,
             custom_name=self.custom_name,
+            cv_valid_data=self.cv_valid_data,
             random_seed=self.random_seed,
         )
         return clone
@@ -73,5 +76,6 @@ class EnsemblePipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             self.component_graph,
             parameters=parameters,
             custom_name=self.custom_name,
+            cv_valid_data=self.cv_valid_data,
             random_seed=random_seed,
         )

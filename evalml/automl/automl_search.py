@@ -200,6 +200,7 @@ def search(
         "problem_configuration": problem_configuration,
         "data_splitter": data_splitter,
         "timing": timing,
+        "ensembling": True,
     }
 
     data_checks = DefaultDataChecks(
@@ -760,14 +761,14 @@ class AutoMLSearch:
                 and "TimeSeriesFeaturizer" not in exclude_featurizers
             ):
                 raise ValueError(
-                    "For time series problems, if DatetimeFeaturizer is excluded, must also exclude TimeSeriesFeaturizer"
+                    "For time series problems, if DatetimeFeaturizer is excluded, must also exclude TimeSeriesFeaturizer",
                 )
             elif (
                 "TimeSeriesFeaturizer" in exclude_featurizers
                 and "DatetimeFeaturizer" not in exclude_featurizers
             ):
                 raise ValueError(
-                    "For time series problems, if TimeSeriesFeaturizer is excluded, must also exclude DatetimeFeaturizer"
+                    "For time series problems, if TimeSeriesFeaturizer is excluded, must also exclude DatetimeFeaturizer",
                 )
         self.exclude_featurizers = exclude_featurizers or []
 
@@ -812,6 +813,7 @@ class AutoMLSearch:
             self.random_seed,
             self.X_train.ww.schema,
             self.y_train.ww.schema,
+            self.ensembling,
             self.errors,
         )
 
@@ -1326,7 +1328,7 @@ class AutoMLSearch:
         cv_data = evaluation_results["cv_data"]
         cv_scores = evaluation_results["cv_scores"]
         is_baseline = pipeline.model_family == ModelFamily.BASELINE
-        mean_cv_score = np.nan if len(cv_scores) == 1 else cv_scores.mean()
+        mean_cv_score = np.nan if len(cv_scores) <= 1 else cv_scores.mean()
         if len(cv_scores) == 1 and evaluation_results["holdout_score"] is None:
             validation_score = cv_scores[0]
         elif evaluation_results["holdout_score"] is None:
@@ -1453,10 +1455,13 @@ class AutoMLSearch:
             raise PipelineNotFoundError(
                 "Pipeline class or parameters not found in automl results",
             )
-        new_pipeline = pipeline.new(parameters, random_seed=self.random_seed)
-        if is_binary(self.problem_type):
-            new_pipeline.threshold = None
-        return new_pipeline
+        if pipeline._is_fitted:
+            return pipeline.clone()
+        else:
+            new_pipeline = pipeline.new(parameters, random_seed=self.random_seed)
+            if is_binary(self.problem_type):
+                new_pipeline.threshold = None
+            return new_pipeline
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline.

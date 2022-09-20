@@ -11,6 +11,7 @@ import woodwork as ww
 
 from evalml.automl.utils import tune_binary_threshold
 from evalml.exceptions import PipelineScoreError
+from evalml.model_family import ModelFamily
 from evalml.preprocessing import split_data
 from evalml.problem_types import (
     ProblemTypes,
@@ -355,6 +356,21 @@ def train_and_score_pipeline(
             "mean_cv_score": score,
             "binary_classification_threshold": None,
         }
+        if (
+            automl_config.ensembling
+            and stored_pipeline.model_family != ModelFamily.ENSEMBLE
+        ):
+            if automl_config.problem_type == ProblemTypes.REGRESSION:
+                fold_preds = stored_pipeline.predict(X_valid)
+            else:
+                fold_preds = stored_pipeline.predict_proba(X_valid)
+            evaluation_entry.update(
+                {
+                    "fold_valid_X": X_valid,
+                    "fold_valid_preds": fold_preds,
+                },
+            )
+
         if (
             is_binary(automl_config.problem_type)
             and stored_pipeline is not None

@@ -540,6 +540,15 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     },
                 },
             )
+            if "fold_valid_X" in trained_pipeline_results["cv_data"][0]:
+                cv_valid_data = []
+                for fold_data in trained_pipeline_results["cv_data"]:
+                    cv_valid_data.append(
+                        (fold_data["fold_valid_X"], fold_data["fold_valid_preds"]),
+                    )
+                    self._best_pipeline_info[pipeline.model_family].update(
+                        {"cv_valid_data": cv_valid_data},
+                    )
 
     def _make_split_pipeline(self, estimator, pipeline_name=None):
         if self._X_with_cat_cols is None or self._X_without_cat_cols is None:
