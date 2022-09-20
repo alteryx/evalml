@@ -360,6 +360,7 @@ def test_ordinal_encoder_diff_na_types():
 
 
 # --> diff combinations of parameters
+# --> test args that can be arrays as arrays
 
 
 def test_handle_unknown():
@@ -762,7 +763,7 @@ def test_ordinal_encoder_features_to_encode_no_col_names():
     assert [X_t[col].dtype == "uint8" for col in X_t]
 
 
-def test_ordinal_encoder_top_n_categories_always_the_same_when_no_ties():
+def test_ordinal_encoder_top_n_categories_always_the_same():
     df = pd.DataFrame(
         {
             "categories": ["cat_1"] * 5
@@ -813,8 +814,7 @@ def test_ordinal_encoder_top_n_categories_always_the_same_when_no_ties():
 #         ),
 #     ],
 # )
-# def test_ordinal_encoder_woodwork_custom_overrides_returned_by_components(X_df):
-# --> what's the point of adding this??
+
 #     y = pd.Series([1, 2, 1])
 #     override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime, Boolean]
 #     for logical_type in override_types:
@@ -843,6 +843,7 @@ def test_ordinal_encoder_output_doubles():
             "bool": [bool(i % 2) for i in range(100)],
             "categorical": ["dog"] * 20 + ["cat"] * 40 + ["fish"] * 40,
             "integers": [i for i in range(100)],
+            "doubles": [i * 1.0 for i in range(100)],
         },
     )
     X.ww.init(
@@ -862,3 +863,63 @@ def test_ordinal_encoder_output_doubles():
         else:
             assert str(types) == "Double"
     assert len(output.columns) == len(X.columns)
+
+
+@pytest.mark.parametrize("data_type", ["list", "np", "pd_no_index", "pd_index", "ww"])
+def test_data_types(data_type):
+    if data_type == "list":
+        X = [["a"], ["b"], ["c"]] * 5
+    elif data_type == "np":
+        X = np.array([["a"], ["b"], ["c"]] * 5)
+    elif data_type == "pd_no_index":
+        X = pd.DataFrame(["a", "b", "c"] * 5)
+    elif data_type == "pd_index":
+        # --> doing int 0 here might defeat the purpose of the no index one?
+        X = pd.DataFrame(["a", "b", "c"] * 5, columns=[0])
+    elif data_type == "ww":
+        X = pd.DataFrame(["a", "b", "c"] * 5)
+        X.ww.init(
+            logical_types={
+                0: Ordinal(order=["a", "b", "c"]),
+            },
+        )
+    encoder = OrdinalEncoder()
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+
+    if data_type != "ww":
+        # Woodwork wont infer Ordinal, so none of the other types will encode features
+        assert not encoder.features_to_encode
+        expected_df = pd.DataFrame(
+            [["a"], ["b"], ["c"]] * 5,
+            columns=[0],
+            dtype="category",
+        )
+        pd.testing.assert_frame_equal(X_t, expected_df)
+    else:
+        assert list(X_t.columns) == ["0_ordinally_encoded"]
+        expected_df = pd.DataFrame(
+            [[0], [1], [2]] * 5,
+            columns=["0_ordinally_encoded"],
+            dtype="float64",
+        )
+        pd.testing.assert_frame_equal(X_t, expected_df)
+
+
+"""
+Tests I didn't include from the ohe tests and why
+
+were not relevant to the ordinal encoder
+    - test_drop_first
+    - test_drop_binary
+    - test_drop_parameter_is_array
+    - test_drop_binary_and_top_n_2
+    - test_ohe_column_names_unique
+Couldn't understand the reason for
+    - test_categorical_dtype
+    - test_all_numerical_dtype
+    - test_ordinal_encoder_woodwork_custom_overrides_returned_by_components
+Seemed redundant to other tests
+    - test_more_top_n_unique_values_large
+    - test_large_number_of_categories - kind of just another test of top_n arg
+"""
