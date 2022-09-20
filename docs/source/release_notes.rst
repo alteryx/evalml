@@ -19,6 +19,7 @@ Release Notes
         * Updated pytest fixtures and brittle test files to explicitly set woodwork typing information :pr:`3697`
         * Added github workflow to run looking glass performance tests on merge to main :pr:`3690`
         * Fixed looking glass performance test script :pr:`3715`
+        * Remove commit message from looking glass slack message :pr:`3719`
 
 .. warning::
 
