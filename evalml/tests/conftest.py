@@ -917,7 +917,7 @@ def ts_data_long():
     ), pd.Series(range(1, 93))
     y.index = pd.date_range("2020-10-01", "2020-12-31")
     X.index = pd.date_range("2020-10-01", "2020-12-31")
-    return X, y
+    return X, None, y
 
 
 @pytest.fixture

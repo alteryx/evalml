@@ -1380,7 +1380,7 @@ def test_time_series_pipeline_fit_with_transformed_target(
     ],
 )
 def test_time_series_pipeline_with_decomposer(data_length, ts_data, ts_data_long):
-    X, _, y = ts_data() if data_length == "short" else ts_data_long()
+    X, _, y = ts_data() if data_length == "short" else ts_data_long
     component_graph = {
         "Polynomial Decomposer": ["Polynomial Decomposer", "X", "y"],
         "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],

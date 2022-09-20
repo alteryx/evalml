@@ -7,7 +7,6 @@ import pytest
 import woodwork as ww
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
-from woodwork.logical_types import Datetime
 
 from evalml.pipelines.components import PolynomialDecomposer
 
@@ -154,9 +153,6 @@ def test_polynomial_decomposer_get_trend_dataframe(
         np.arange(X_input.shape[0]).reshape(-1, 1),
     )
     lin_reg.fit(features, y_input)
-    detrended_values = y_input.values - lin_reg.predict(features)
-    expected_index = y_input.index if input_type != "np" else range(y_input.shape[0])
-    expected_answer = pd.Series(detrended_values, index=expected_index)
 
     X, y = X_input, y_input
 
@@ -166,7 +162,7 @@ def test_polynomial_decomposer_get_trend_dataframe(
         y = ww.init_series(y_input.copy())
 
     pdt = PolynomialDecomposer(degree=degree)
-    output_X, output_y = pdt.fit_transform(X, y)
+    pdt.fit_transform(X, y)
 
     # get_trend_dataframe() is only expected to work with datetime indices
     if variateness == "multivariate":
