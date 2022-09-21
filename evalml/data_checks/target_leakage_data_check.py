@@ -17,10 +17,11 @@ except AttributeError:
 
 
 class TargetLeakageDataCheck(DataCheck):
-    """Check if any of the features are highly correlated with the target by using mutual information, Pearson correlation, and other correlation metrics available in Woodwork's `dependece_dict method <https://woodwork.alteryx.com/en/stable/generated/woodwork.table_accessor.WoodworkTableAccessor.dependence_dict.html#woodwork.table_accessor.WoodworkTableAccessor.dependence_dict>_`.
+    """Check if any of the features are highly correlated with the target by using mutual information, Pearson correlation, and other correlation metrics.
 
     If `method='mutual_info'`, this data check uses mutual information and supports all target and feature types.
     Other correlation metrics only support binary with numeric and boolean dtypes, and return a value in [-1, 1], while mutual information returns a value in [0, 1].
+    Correlation metrics available can be found in Woodwork's `dependence_dict method <https://woodwork.alteryx.com/en/stable/generated/woodwork.table_accessor.WoodworkTableAccessor.dependence_dict.html#woodwork.table_accessor.WoodworkTableAccessor.dependence_dict>`_.
 
     Args:
         pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
