@@ -43,10 +43,13 @@ class TargetLeakageDataCheck(DataCheck):
         highly_corr_cols = []
         try:
             X2 = X.ww.copy()
-            X2.ww["target_y"] = y
+            target_str = "target_y"
+            while target_str in list(X2.columns):
+                target_str += "_y"
+            X2.ww[target_str] = y
             dep_corr = X2.ww.dependence_dict(
                 measures=self.method,
-                target_col="target_y",
+                target_col=target_str,
             )
             highly_corr_cols = [
                 corr_info["column_1"]

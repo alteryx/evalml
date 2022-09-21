@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 import numpy as np
@@ -457,3 +458,50 @@ def test_target_leakage_maintains_logical_types():
     # Mutual information is not supported for Unknown logical types, so should not be included
     assert not any(message["message"].startswith("Column 'A'") for message in messages)
     assert len(messages) == 1
+
+
+def test_target_leakage_methods():
+    try:
+        methods = ww.utils.get_valid_correlation_metrics()
+    except AttributeError:
+        methods = ["mutual_info", "pearson", "max"]
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape("Method '{}' not in {}".format("fake_method", methods)),
+    ):
+        TargetLeakageDataCheck(method="fake_method")
+
+
+def test_target_leakage_target_string():
+    try:
+        ww.utils.get_valid_correlation_metrics()
+        y = pd.Series([1, 0, 1, 1])
+        X = pd.DataFrame()
+        X["target_y"] = y * 3
+        X["target_y_y"] = y - 1
+        X["target"] = y / 10
+        X["d"] = ~y
+        X["e"] = [0, 0, 0, 0] * 10
+        leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5)
+
+        expected = [
+            DataCheckWarning(
+                message="Columns 'target_y', 'target_y_y', 'target', 'd' are 80.0% or more correlated with the target",
+                data_check_name=target_leakage_data_check_name,
+                message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+                details={"columns": ["target_y", "target_y_y", "target", "d"]},
+                action_options=[
+                    DataCheckActionOption(
+                        DataCheckActionCode.DROP_COL,
+                        data_check_name=target_leakage_data_check_name,
+                        metadata={"columns": ["target_y", "target_y_y", "target", "d"]},
+                    ),
+                ],
+            ).to_dict(),
+        ]
+        assert leakage_check.validate(X, y) == expected
+    except:
+        pytest.skip(
+            "Skipping test because woodwork util `get_valid_correlation_metrics` does not exist",
+        )
