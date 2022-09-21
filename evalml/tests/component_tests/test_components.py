@@ -43,7 +43,7 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     Oversampler,
     PerColumnImputer,
-    PolynomialDetrender,
+    PolynomialDecomposer,
     ProphetRegressor,
     RandomForestClassifier,
     RandomForestRegressor,
@@ -807,7 +807,7 @@ def test_components_init_kwargs(component_class):
         component = component_class(test_arg="test")
         component_with_different_kwargs = component_class(diff_test_arg="test")
         assert component.parameters["test_arg"] == "test"
-        if not isinstance(component, (PolynomialDetrender, LabelEncoder)):
+        if not isinstance(component, (PolynomialDecomposer, LabelEncoder)):
             assert component._component_obj.test_arg == "test"
         # Test equality of different components with same or different kwargs
         assert component == component_class(test_arg="test")
@@ -841,7 +841,7 @@ def test_transformer_transform_output_type(component_class, X_y_binary):
     ]
 
     if component_class in [
-        PolynomialDetrender,
+        PolynomialDecomposer,
         LogTransformer,
         LabelEncoder,
         TimeSeriesRegularizer,
@@ -1107,7 +1107,11 @@ def test_all_transformers_check_fit(component_class, X_y_binary, ts_data):
     # SMOTE will throw errors if we call it but cannot oversample
     if "Oversampler" == component_class.name:
         component = component_class(sampling_ratio=1)
-    elif component_class in [TimeSeriesFeaturizer, TimeSeriesRegularizer]:
+    elif component_class in [
+        TimeSeriesFeaturizer,
+        TimeSeriesRegularizer,
+        PolynomialDecomposer,
+    ]:
         X, _, y = ts_data(problem_type="time series binary")
         component = component_class(time_index="date")
 
@@ -1229,7 +1233,11 @@ def test_all_transformers_check_fit_input_type(
     if not component_class.needs_fitting or "Oversampler" in component_class.name:
         # since SMOTE determines categorical columns through the logical type, it can only accept ww data
         pytest.xfail()
-    if component_class in [TimeSeriesFeaturizer, TimeSeriesRegularizer]:
+    if component_class in [
+        TimeSeriesFeaturizer,
+        TimeSeriesRegularizer,
+        PolynomialDecomposer,
+    ]:
         X, _, y = ts_data(problem_type="time series binary")
         kwargs = {"time_index": "date"}
 
@@ -1268,6 +1276,7 @@ def test_serialization(
         ProphetRegressor,
         TimeSeriesFeaturizer,
         TimeSeriesRegularizer,
+        PolynomialDecomposer,
     ]
 
     print("Testing serialization of component {}".format(component_class.name))
@@ -1568,10 +1577,10 @@ def test_transformer_fit_and_transform_respect_custom_indices(
         check_names = False
         if use_custom_index:
             pytest.skip("The DFSTransformer changes the index so we skip it.")
-    if transformer_class == PolynomialDetrender:
+    if transformer_class == PolynomialDecomposer:
         pytest.skip(
-            "Skipping PolynomialDetrender because we test that it respects custom indices in "
-            "test_polynomial_detrender.py",
+            "Skipping PolynomialDecomposer because we test that it respects custom indices in "
+            "test_polynomial_decomposer.py",
         )
 
     X, y = X_y_binary
