@@ -398,6 +398,24 @@ def test_polynomial_decomposer_uses_time_index(
             assert isinstance(y.index, pd.DatetimeIndex)
 
 
+def generate_seasonal_data(period, step, trend_degree=1):
+    """Function that returns data with a linear trend and a seasonal signal with specified period."""
+    freq = 2 * np.pi / period / step
+    x = np.arange(0, 1, step)
+    dts = pd.date_range(datetime.today(), periods=len(x))
+    X = pd.DataFrame({"x": x})
+    X = X.set_index(dts)
+    if trend_degree == 1:
+        y_trend = pd.Series(x + 2)
+    elif trend_degree == 2:
+        y_trend = pd.Series(x**2)
+    elif trend_degree == 3:
+        y_trend = pd.Series((x - 5) ** 3 + x**2)
+    y_seasonal = pd.Series(np.sin(freq * x))
+    y = y_trend + y_seasonal
+    return X, y
+
+
 @pytest.mark.parametrize(
     "y_has_time_index",
     ["y_has_time_index", "y_doesnt_have_time_index"],
@@ -405,12 +423,7 @@ def test_polynomial_decomposer_uses_time_index(
 def test_polynomial_decomposer_plot_decomposition(y_has_time_index):
     step = 0.01
     period = 9
-    freq = 2 * np.pi / period / step
-    x = np.arange(0, 1, step)
-    dts = pd.date_range(datetime.today(), periods=len(x))
-    X = pd.DataFrame({"x": x})
-    X = X.set_index(dts)
-    y = pd.Series(np.sin(freq * x) + x + 2)
+    X, y = generate_seasonal_data(period, step)
     if y_has_time_index == "y_has_time_index":
         y = y.set_axis(X.index)
 
@@ -474,3 +487,19 @@ def test_polynomial_decomposer_prefers_users_time_index(
     else:
         X_t, y_t = pdc.fit_transform(X, y)
         assert all(y_t.index.values == expected_values)
+
+
+@pytest.mark.parametrize("period", [7, 30, 365])
+@pytest.mark.parametrize("trend_degree", [1, 2, 3])
+def test_polynomial_decomposer_determine_periodicity(period, trend_degree):
+    X, y = generate_seasonal_data(period, step=0.0001, trend_degree=trend_degree)
+    X.to_csv(f"synthetic_period{period}.csv")
+    pdc = PolynomialDecomposer(degree=1, seasonal_period=period)
+    ac = pdc.determine_periodicity(X, y)
+
+    import matplotlib.pyplot as plt
+
+    fig, axs = plt.subplots(1, 1)
+    axs.plot(y[:500])
+    axs.hlines(y=0.2, xmin=0, xmax=ac, linewidth=2, color="r")
+    plt.show()
