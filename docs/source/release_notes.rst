@@ -2,6 +2,17 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.58.0 Sept. 20, 2022**
+    * Enhancements
         * Defined `get_trend_df()` for PolynomialDecomposer to allow decomposition of target data into trend, seasonality and residual. :pr:`3720`
         * Updated to run with Woodwork >= 0.18.0 :pr:`3700`
         * Pass time index column to time series native estimators but drop otherwise :pr:`3691`
@@ -20,10 +31,6 @@ Release Notes
         * Added github workflow to run looking glass performance tests on merge to main :pr:`3690`
         * Fixed looking glass performance test script :pr:`3715`
         * Remove commit message from looking glass slack message :pr:`3719`
-
-.. warning::
-
-    **Breaking Changes**
 
 **v0.57.0 Sept. 6, 2022**
     * Enhancements
