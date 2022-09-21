@@ -373,16 +373,21 @@ def train_and_score_pipeline(
             automl_config.ensembling
             and stored_pipeline.model_family != ModelFamily.ENSEMBLE
         ):
-            if automl_config.problem_type == ProblemTypes.REGRESSION:
-                fold_preds = stored_pipeline.predict(X_valid)
-            else:
-                fold_preds = stored_pipeline.predict_proba(X_valid)
             evaluation_entry.update(
                 {
-                    "fold_valid_X": X_valid,
-                    "fold_valid_preds": fold_preds,
+                    "cv_pipeline": stored_pipeline,
                 },
             )
+            # if automl_config.problem_type == ProblemTypes.REGRESSION:
+            #     fold_preds = stored_pipeline.predict(X_valid)
+            # else:
+            #     fold_preds = stored_pipeline.predict_proba(X_valid)
+            # evaluation_entry.update(
+            #     {
+            #         "fold_valid_X": X_valid,
+            #         "fold_valid_preds": fold_preds,
+            #     },
+            # )
 
         if (
             is_binary(automl_config.problem_type)

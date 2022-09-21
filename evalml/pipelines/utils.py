@@ -582,7 +582,7 @@ def _make_stacked_ensemble_pipeline(
     final_estimator=None,
     n_jobs=-1,
     random_seed=0,
-    cv_valid_data=None,
+    cv_pipelines=None,
     label_encoder_params=None,
 ):
     """Creates a pipeline with a stacked ensemble estimator.
@@ -616,7 +616,7 @@ def _make_stacked_ensemble_pipeline(
         input_pipelines=input_pipelines,
         component_graph=component_graph,
         parameters=label_encoder_params,
-        cv_valid_data=cv_valid_data,
+        cv_pipelines=cv_pipelines,
         random_seed=random_seed,
     )
 

@@ -189,39 +189,43 @@ class AutoMLAlgorithm(ABC):
             label_encoder_params = {}
 
         # New implementation
-        cv_valid_data = {
-            x["pipeline"].name: x["cv_valid_data"]
+        # cv_valid_data = {
+        #     x["pipeline"].name: x["cv_valid_data"]
+        #     for _, x in self._best_pipeline_info.items()
+        # }
+        cv_pipelines = {
+            x["pipeline"].name: x["cv_pipelines"]
             for _, x in self._best_pipeline_info.items()
         }
         ensemble_v3_pl = _make_stacked_ensemble_pipeline(
             input_pipelines=best_pipelines,
             problem_type=problem_type,
             random_seed=self.random_seed,
-            cv_valid_data=cv_valid_data,
+            cv_pipelines=cv_pipelines,
             label_encoder_params=label_encoder_params,
         )
         next_batch.append(ensemble_v3_pl)
 
-        # # Previous implementation
-        # n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
-        # input_pipelines = []
-        # cached_data = {
-        #     model_family: x["cached_data"]
-        #     for model_family, x in self._best_pipeline_info.items()
-        # }
-        # for pipeline_dict in best_pipelines_info:
-        #     pipeline = pipeline_dict["pipeline"]
-        #     input_pipelines.append(pipeline)
+        # Previous implementation
+        n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
+        input_pipelines = []
+        cached_data = {
+            model_family: x["cached_data"]
+            for model_family, x in self._best_pipeline_info.items()
+        }
+        for pipeline_dict in best_pipelines_info:
+            pipeline = pipeline_dict["pipeline"]
+            input_pipelines.append(pipeline)
 
-        # ensemble = _make_stacked_ensemble_supergraph_pipeline(
-        #     input_pipelines,
-        #     problem_type,
-        #     random_seed=self.random_seed,
-        #     n_jobs=n_jobs_ensemble,
-        #     cached_data=cached_data,
-        #     label_encoder_params=label_encoder_params,
-        # )
-        # next_batch.append(ensemble)
+        ensemble = _make_stacked_ensemble_supergraph_pipeline(
+            input_pipelines,
+            problem_type,
+            random_seed=self.random_seed,
+            n_jobs=n_jobs_ensemble,
+            cached_data=cached_data,
+            label_encoder_params=label_encoder_params,
+        )
+        next_batch.append(ensemble)
         return next_batch
 
     def _set_additional_pipeline_params(self):

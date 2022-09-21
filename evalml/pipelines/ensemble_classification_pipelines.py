@@ -59,7 +59,7 @@ class EnsembleClassificationPipeline(EnsemblePipelineBase):
         component_graph=None,
         parameters=None,
         custom_name=None,
-        cv_valid_data=None,
+        cv_pipelines=None,
         random_seed=0,
     ):
         if component_graph is None:
@@ -76,7 +76,7 @@ class EnsembleClassificationPipeline(EnsemblePipelineBase):
             component_graph=component_graph,
             custom_name=custom_name,
             parameters=parameters,
-            cv_valid_data=cv_valid_data,
+            cv_pipelines=cv_pipelines,
             random_seed=random_seed,
         )
 
@@ -152,58 +152,39 @@ class EnsembleClassificationPipeline(EnsemblePipelineBase):
         metalearner_X = []
         metalearner_y = []
 
-        self.cv_valid_data = None
+        if data_splitter is None:
+            from evalml.automl.utils import make_data_splitter
 
-        if self.cv_valid_data and force_retrain is False:
-            for pipeline_name, cv_valid_data in self.cv_valid_data.items():
-                pl_valid_preds = []
-                for X, preds in cv_valid_data:
-                    pl_valid_preds.append(self._preds_processor(preds, pipeline_name))
+            data_splitter = make_data_splitter(
+                X,
+                y,
+                problem_type=ProblemTypes.BINARY,
+            )
 
-                pl_all_preds = pd.concat(pl_valid_preds)
-                metalearner_X.append(pl_all_preds)
+        splits = data_splitter.split(X, y)
 
-            metalearner_X = ww.concat_columns(metalearner_X)
-            metalearner_y = y
-            if len(metalearner_X) != len(metalearner_y):
-                metalearner_X = metalearner_X.loc[metalearner_y.index]
+        for i, (train, valid) in enumerate(splits):
+            fold_X = []
+            X_train, X_valid = X.ww.iloc[train], X.ww.iloc[valid]
+            y_train, y_valid = y.ww.iloc[train], y.ww.iloc[valid]
 
-        else:
-            if data_splitter is None:
-                from evalml.automl.utils import make_data_splitter
-
-                data_splitter = make_data_splitter(
-                    X,
-                    y,
-                    problem_type=ProblemTypes.BINARY,
-                )
-
-            splits = data_splitter.split(X, y)
-
-            metalearner_X = []
-            metalearner_y = []
-
-            pred_pls = []
-            for pipeline in self.input_pipelines:
-                pred_pls.append(pipeline.clone())
-
-            # Split off pipelines for CV
-            for i, (train, valid) in enumerate(splits):
-                fold_X = []
-                X_train, X_valid = X.ww.iloc[train], X.ww.iloc[valid]
-                y_train, y_valid = y.ww.iloc[train], y.ww.iloc[valid]
-
-                for pipeline in pred_pls:
+            if self.cv_pipelines and force_retrain is False:
+                for pipeline_name, cv_pipelines in self.cv_pipelines.items():
+                    pipeline = cv_pipelines[i]
+                    pl_preds = pipeline.predict_proba(X_valid)
+                    fold_X.append(self._preds_processor(pl_preds, pipeline_name))
+            else:
+                for pipeline in self.input_pipelines:
                     pipeline = pipeline.clone()
                     pipeline.fit(X_train, y_train)
                     pl_preds = pipeline.predict_proba(X_valid)
                     fold_X.append(self._preds_processor(pl_preds, pipeline.name))
 
-                metalearner_X.append(ww.concat_columns(fold_X))
-                metalearner_y.append(y_valid)
+            metalearner_X.append(ww.concat_columns(fold_X))
+            metalearner_y.append(y_valid)
 
-            metalearner_X = pd.concat(metalearner_X)
-            metalearner_y = pd.concat(metalearner_y)
+        metalearner_X = pd.concat(metalearner_X)
+        metalearner_y = pd.concat(metalearner_y)
 
         self.component_graph.fit(metalearner_X, metalearner_y)
 

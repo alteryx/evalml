@@ -186,8 +186,8 @@ AutoMLConfig = namedtuple(
         "random_seed",
         "X_schema",
         "y_schema",
-        "errors",
         "ensembling",
+        "errors",
     ],
 )
 
