@@ -102,7 +102,7 @@ def test_target_leakage_data_check_singular_warning():
 def test_target_leakage_data_check_empty(data_type, make_data_type):
     X = make_data_type(data_type, pd.DataFrame())
     y = make_data_type(data_type, pd.Series())
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method="mutual")
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method="mutual_info")
     assert leakage_check.validate(X, y) == []
 
 
@@ -344,16 +344,20 @@ def test_target_leakage_regression():
 
 
 def test_target_leakage_data_check_warnings_pearson():
-    y = pd.Series([1, 0, 1, 1])
+    y = pd.Series([1, 0, 1, 1] * 10)
     X = pd.DataFrame()
     X["a"] = y * 3
     X["b"] = y - 1
     X["c"] = y / 10
     X["d"] = ~y
-    X["e"] = [0, 0, 0, 0]
+    X["e"] = [0, 0, 0, 0] * 10
     y = y.astype(bool)
 
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method="pearson")
+    # pearsons does not support boolean columns
+    assert leakage_check.validate(X, y) == []
+
+    y = y.astype(int)
     assert leakage_check.validate(X, y) == [
         DataCheckWarning(
             message="Columns 'a', 'b', 'c', 'd' are 50.0% or more correlated with the target",
@@ -370,7 +374,7 @@ def test_target_leakage_data_check_warnings_pearson():
         ).to_dict(),
     ]
 
-    y = ["a", "b", "a", "a"]
+    y = ["a", "b", "a", "a"] * 10
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method="pearson")
     assert leakage_check.validate(X, y) == []
 
@@ -381,14 +385,13 @@ def test_target_leakage_data_check_input_formats_pearson():
     # test empty pd.DataFrame, empty pd.Series
     assert leakage_check.validate(pd.DataFrame(), pd.Series()) == []
 
-    y = pd.Series([1, 0, 1, 1])
+    y = pd.Series([1, 0, 1, 1] * 10)
     X = pd.DataFrame()
     X["a"] = y * 3
     X["b"] = y - 1
     X["c"] = y / 10
     X["d"] = ~y
-    X["e"] = [0, 0, 0, 0]
-    y = y.astype(bool)
+    X["e"] = [0, 0, 0, 0] * 10
 
     expected = [
         DataCheckWarning(

@@ -1,4 +1,6 @@
 """Data check that checks if any of the features are highly correlated with the target by using mutual information or Pearson correlation."""
+import woodwork as ww
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckActionCode,
@@ -8,62 +10,66 @@ from evalml.data_checks import (
 )
 from evalml.utils.woodwork_utils import infer_feature_types, numeric_and_boolean_ww
 
+try:
+    methods = ww.utils.get_valid_correlation_metrics()
+except AttributeError:
+    methods = ["mutual_info", "pearson", "max"]
+
 
 class TargetLeakageDataCheck(DataCheck):
-    """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.
+    __doc__ = f"""Check if any of the features are highly correlated with the target by using mutual information, Pearson correlation, and other correlation metrics available in Woodwork's `dependece_dict method <https://woodwork.alteryx.com/en/stable/generated/woodwork.table_accessor.WoodworkTableAccessor.dependence_dict.html#woodwork.table_accessor.WoodworkTableAccessor.dependence_dict>_`.
 
-    If `method='mutual'`, this data check uses mutual information and supports all target and feature types.
-    Otherwise, if `method='pearson'`, it uses Pearson correlation and only supports binary with numeric and boolean dtypes.
-    Pearson correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
+    If `method='mutual_info'`, this data check uses mutual information and supports all target and feature types.
+    Other correlation metrics only support binary with numeric and boolean dtypes, and return a value in [-1, 1], while mutual information returns a value in [0, 1].
 
     Args:
         pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
-        method (string): The method to determine correlation. Use 'mutual' for mutual information, otherwise 'pearson' for Pearson correlation. Defaults to 'mutual'.
+        method (string): The method to determine correlation. Use 'max' for the maximum correlation, or for specific correlation metrics, use their name (ie 'mutual_info' for mutual information, 'pearson' for Pearson correlation, etc).
+            Possible values are {methods}. Defaults to 'max', which will use all available correlation metrics and find the max value.
     """
 
-    def __init__(self, pct_corr_threshold=0.95, method="mutual"):
+    def __init__(self, pct_corr_threshold=0.95, method="max"):
         if pct_corr_threshold < 0 or pct_corr_threshold > 1:
             raise ValueError(
                 "pct_corr_threshold must be a float between 0 and 1, inclusive.",
             )
-        if method not in ["mutual", "pearson"]:
-            raise ValueError(f"Method '{method}' not in ['mutual', 'pearson']")
+        if method not in methods:
+            raise ValueError(f"Method '{method}' not in {methods}")
         self.pct_corr_threshold = pct_corr_threshold
         self.method = method
 
-    def _calculate_pearson(self, X, y):
+    def _calculate_dependence(self, X, y):
         highly_corr_cols = []
-        X_num = X.ww.select(include=numeric_and_boolean_ww)
-        if (
-            y.ww.logical_type.type_string not in numeric_and_boolean_ww
-            or len(X_num.columns) == 0
-        ):
+        try:
+            X2 = X.ww.copy()
+            X2.ww["target_y"] = y
+            dep_corr = X2.ww.dependence_dict(
+                measures=self.method,
+                target_col="target_y",
+            )
+            highly_corr_cols = [
+                corr_info["column_1"]
+                for corr_info in dep_corr
+                if abs(corr_info[self.method]) >= self.pct_corr_threshold
+            ]
+        except TypeError:
+            # no parameter for `target_col` yet
+            for col in X.columns:
+                cols_to_compare = X.ww[[col]]
+                cols_to_compare.ww[str(col) + "y"] = y
+                corr_info = cols_to_compare.ww.dependence_dict(measures=self.method)
+                if (
+                    len(corr_info) > 0
+                    and abs(corr_info[0][self.method]) >= self.pct_corr_threshold
+                ):
+                    highly_corr_cols.append(col)
             return highly_corr_cols
-        highly_corr_cols = [
-            label
-            for label, col in X_num.iteritems()
-            if abs(y.corr(col)) >= self.pct_corr_threshold
-        ]
-        return highly_corr_cols
-
-    def _calculate_mutual_information(self, X, y):
-        highly_corr_cols = []
-        for col in X.columns:
-            cols_to_compare = X.ww[[col]]
-            cols_to_compare.ww[str(col) + "y"] = y
-            mutual_info = cols_to_compare.ww.mutual_information()
-            if (
-                len(mutual_info) > 0
-                and mutual_info["mutual_info"].iloc[0] > self.pct_corr_threshold
-            ):
-                highly_corr_cols.append(col)
-        return highly_corr_cols
 
     def validate(self, X, y):
-        """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.
+        """Check if any of the features are highly correlated with the target by using mutual information, Pearson correlation, and/or Spearman correlation.
 
-        If `method='mutual'`, supports all target and feature types. Otherwise, if `method='pearson'` only supports binary with numeric and boolean dtypes.
-        Pearson correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
+        If `method='mutual'` or `'method='max'`, supports all target and feature types. Otherwise, if `method='pearson'` or `method='spearman'`, only supports binary with numeric and boolean dtypes.
+        Pearson and Spearman correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
 
         Args:
             X (pd.DataFrame, np.ndarray): The input features to check.
@@ -105,7 +111,7 @@ class TargetLeakageDataCheck(DataCheck):
             ... ]
 
 
-            The default method can be changed to pearson from mutual information.
+            The default method can be changed to pearson from max.
 
             >>> X["x"] = y / 2
             >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method="pearson")
@@ -133,10 +139,7 @@ class TargetLeakageDataCheck(DataCheck):
         X = infer_feature_types(X)
         y = infer_feature_types(y)
 
-        if self.method == "pearson":
-            highly_corr_cols = self._calculate_pearson(X, y)
-        else:
-            highly_corr_cols = self._calculate_mutual_information(X, y)
+        highly_corr_cols = self._calculate_dependence(X, y)
         warning_msg_singular = "Column {} is {}% or more correlated with the target"
         warning_msg_plural = "Columns {} are {}% or more correlated with the target"
 
