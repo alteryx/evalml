@@ -104,6 +104,14 @@ class Decomposer(Transformer):
             relative_maxima = argrelextrema(autocorrelation, np.greater)[0]
             return relative_maxima
 
+        def _detrend_on_fly(y):
+            # Try detrending the data first to get better results.
+            self.fit(X, y)
+            res = self.get_trend_dataframe(X, y)
+            y_time_index = self._set_time_index(X, y)
+            y_detrended = y_time_index - res[0]["trend"]
+            return y_detrended
+
         if method == "autocorrelation":
             import matplotlib.pyplot as plt
 
@@ -114,15 +122,13 @@ class Decomposer(Transformer):
                 x = relative_maxima / relative_maxima[0]
                 xx = np.arange(1, len(relative_maxima) + 1)
                 if not all(x == xx):
-                    raise Exception
+                    old_relative_maxima = relative_maxima
+                    y_detrended = _detrend_on_fly(y)
+                    relative_maxima = _get_rel_max_from_acf(y_detrended)
+                    print("hi")
             else:
-                # Try detrending the data first to get better results.
-                self.fit(X, y)
-                res = self.get_trend_dataframe(X, y)
-                y_time_index = self._set_time_index(X, y)
-                y_detrended = y_time_index - res[0]["trend"]
+                y_detrended = _detrend_on_fly(y)
                 relative_maxima = _get_rel_max_from_acf(y_detrended)
-                print("hi")
 
         elif method == "partial-autocorrelation":
             partial_autocorrelation = sm.tsa.pacf(y, nlags=400)

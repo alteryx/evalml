@@ -502,4 +502,5 @@ def test_polynomial_decomposer_determine_periodicity(period, trend_degree):
     fig, axs = plt.subplots(1, 1)
     axs.plot(y[:500])
     axs.hlines(y=0.2, xmin=0, xmax=ac, linewidth=2, color="r")
+    axs.set_title(f"p:{period}, t:{trend_degree}")
     plt.show()
