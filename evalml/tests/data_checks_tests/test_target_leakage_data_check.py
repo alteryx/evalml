@@ -501,7 +501,7 @@ def test_target_leakage_target_string():
             ).to_dict(),
         ]
         assert leakage_check.validate(X, y) == expected
-    except:
+    except AttributeError:
         pytest.skip(
             "Skipping test because woodwork util `get_valid_correlation_metrics` does not exist",
         )
