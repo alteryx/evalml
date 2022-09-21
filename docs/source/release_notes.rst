@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Automatic sorting of the ``time_index`` prior to running ``DataChecks`` has been disabled :pr:`3723`
     * Documentation Changes
     * Testing Changes
 
