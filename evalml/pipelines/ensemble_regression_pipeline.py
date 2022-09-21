@@ -121,9 +121,7 @@ class EnsembleRegressionPipeline(EnsemblePipelineBase, RegressionPipeline):
         metalearner_X = []
         metalearner_y = []
 
-        pred_pls = []
-        for pipeline in self.input_pipelines:
-            pred_pls.append(pipeline.clone())
+        self.cv_pipelines = None
 
         # Split off pipelines for CV
         for i, (train, valid) in enumerate(splits):
@@ -137,7 +135,7 @@ class EnsembleRegressionPipeline(EnsemblePipelineBase, RegressionPipeline):
                     pl_preds = pipeline.predict(X_valid)
                     fold_X[pipeline_name] = pl_preds
             else:
-                for pipeline in pred_pls:
+                for pipeline in self.input_pipelines:
                     pipeline = pipeline.clone()
                     pipeline.fit(X_train, y_train)
                     pl_preds = pipeline.predict(X_valid)

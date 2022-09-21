@@ -163,6 +163,8 @@ class EnsembleClassificationPipeline(EnsemblePipelineBase):
 
         splits = data_splitter.split(X, y)
 
+        self.cv_pipelines = None
+
         for i, (train, valid) in enumerate(splits):
             fold_X = []
             X_train, X_valid = X.ww.iloc[train], X.ww.iloc[valid]
