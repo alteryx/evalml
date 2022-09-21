@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fix holdout warning message showing when using default parameters :pr:`3727`
     * Changes
     * Documentation Changes
     * Testing Changes
