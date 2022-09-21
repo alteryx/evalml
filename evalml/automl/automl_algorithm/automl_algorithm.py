@@ -202,26 +202,26 @@ class AutoMLAlgorithm(ABC):
         )
         next_batch.append(ensemble_v3_pl)
 
-        # # Previous implementation
-        # n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
-        # input_pipelines = []
-        # cached_data = {
-        #     model_family: x["cached_data"]
-        #     for model_family, x in self._best_pipeline_info.items()
-        # }
-        # for pipeline_dict in best_pipelines_info:
-        #     pipeline = pipeline_dict["pipeline"]
-        #     input_pipelines.append(pipeline)
+        # Previous implementation
+        n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
+        input_pipelines = []
+        cached_data = {
+            model_family: x["cached_data"]
+            for model_family, x in self._best_pipeline_info.items()
+        }
+        for pipeline_dict in best_pipelines_info:
+            pipeline = pipeline_dict["pipeline"]
+            input_pipelines.append(pipeline)
 
-        # ensemble = _make_stacked_ensemble_supergraph_pipeline(
-        #     input_pipelines,
-        #     problem_type,
-        #     random_seed=self.random_seed,
-        #     n_jobs=n_jobs_ensemble,
-        #     cached_data=cached_data,
-        #     label_encoder_params=label_encoder_params,
-        # )
-        # next_batch.append(ensemble)
+        ensemble = _make_stacked_ensemble_supergraph_pipeline(
+            input_pipelines,
+            problem_type,
+            random_seed=self.random_seed,
+            n_jobs=n_jobs_ensemble,
+            cached_data=cached_data,
+            label_encoder_params=label_encoder_params,
+        )
+        next_batch.append(ensemble)
         return next_batch
 
     def _set_additional_pipeline_params(self):

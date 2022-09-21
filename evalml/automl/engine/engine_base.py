@@ -127,7 +127,15 @@ class EngineBase(ABC):
         """Submit job for pipeline scoring."""
 
 
-def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False):
+def train_pipeline(
+    pipeline,
+    X,
+    y,
+    automl_config,
+    schema=True,
+    get_hashes=False,
+    force_retrain=False,
+):
     """Train a pipeline and tune the threshold if necessary.
 
     Args:
@@ -175,7 +183,12 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False)
         )
     cv_pipeline = pipeline.clone()
     if cv_pipeline._is_stacked_ensemble:
-        cv_pipeline.fit(X, y, data_splitter=automl_config.data_splitter)
+        cv_pipeline.fit(
+            X,
+            y,
+            data_splitter=automl_config.data_splitter,
+            force_retrain=force_retrain,
+        )
     else:
         cv_pipeline.fit(X, y)
     tune_binary_threshold(
@@ -399,6 +412,15 @@ def train_and_score_pipeline(
         )
         logger.info(
             f"\tFinished holdout set scoring - {automl_config.objective.name}: {holdout_score:.3f}",
+        )
+    else:
+        stored_pipeline, _ = train_pipeline(
+            pipeline,
+            full_X_train,
+            full_y_train,
+            automl_config,
+            schema=False,
+            force_retrain=True,
         )
 
     training_time = time.time() - start

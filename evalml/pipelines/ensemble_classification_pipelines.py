@@ -152,6 +152,8 @@ class EnsembleClassificationPipeline(EnsemblePipelineBase):
         metalearner_X = []
         metalearner_y = []
 
+        self.cv_valid_data = None
+
         if self.cv_valid_data and force_retrain is False:
             for pipeline_name, cv_valid_data in self.cv_valid_data.items():
                 pl_valid_preds = []
@@ -192,6 +194,7 @@ class EnsembleClassificationPipeline(EnsemblePipelineBase):
                 y_train, y_valid = y.ww.iloc[train], y.ww.iloc[valid]
 
                 for pipeline in pred_pls:
+                    pipeline = pipeline.clone()
                     pipeline.fit(X_train, y_train)
                     pl_preds = pipeline.predict_proba(X_valid)
                     fold_X.append(self._preds_processor(pl_preds, pipeline.name))
