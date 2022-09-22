@@ -104,13 +104,22 @@ class Decomposer(Transformer):
         """
 
         def _get_rel_max_from_acf(y):
-            return argrelextrema(
-                sm.tsa.acf(y, nlags=np.maximum(400, len(y))),
+            import matplotlib.pyplot as plt
+
+            acf = sm.tsa.acf(y, nlags=np.maximum(400, len(y)))
+            filter_acf = [acf[i] if (acf[i] > 0) else 0 for i in range(len(acf))]
+            rel_max = argrelextrema(
+                np.array(filter_acf),
                 np.greater,
+                order=5,  # considers 5 points on either side to determine rel max
             )[0]
+            max_acfs = [acf[i] for i in rel_max]
+            rel_max = np.array([filter_acf.index(max(max_acfs))])
+            return rel_max
 
         def _get_rel_max_from_pacf(y):
-            return argrelextrema(sm.tsa.pacf(y), np.greater)[0]
+            pacf = sm.tsa.pacf(y)
+            return argrelextrema(pacf, np.greater)[0]
 
         def _detrend_on_fly(y):
             self.fit(X, y)
