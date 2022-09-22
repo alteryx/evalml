@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Enhanced Decomposer with ``determine_periodicity`` function to automatically determine periodicity of seasonal target. :pr:`3729`
     * Fixes
     * Changes
     * Documentation Changes
