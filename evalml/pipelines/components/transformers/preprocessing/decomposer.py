@@ -97,15 +97,21 @@ class Decomposer(Transformer):
                 Note: the target data can contain multiple seasonal signals.  This function will only return the first,
                 and thus, shortest period.  E.g. if the target has both weekly and yearly seasonality, the function will
                 only return "7" and not return "365".
+
+        Raises:
+            ValueError: if no periodicity could be detected
         """
 
         def _get_rel_max_from_acf(y):
-            autocorrelation = sm.tsa.acf(y, nlags=400)
-            relative_maxima = argrelextrema(autocorrelation, np.greater)[0]
-            return relative_maxima
+            return argrelextrema(
+                sm.tsa.acf(y, nlags=np.maximum(400, len(y))),
+                np.greater,
+            )[0]
+
+        def _get_rel_max_from_pacf(y):
+            return argrelextrema(sm.tsa.pacf(y), np.greater)[0]
 
         def _detrend_on_fly(y):
-            # Try detrending the data first to get better results.
             self.fit(X, y)
             res = self.get_trend_dataframe(X, y)
             y_time_index = self._set_time_index(X, y)
@@ -113,29 +119,26 @@ class Decomposer(Transformer):
             return y_detrended
 
         if method == "autocorrelation":
-            import matplotlib.pyplot as plt
-
-            relative_maxima = _get_rel_max_from_acf(y)
-
-            if len(relative_maxima) > 0:
-                # Check that the distance between local maxima is about the same
-                x = relative_maxima / relative_maxima[0]
-                xx = np.arange(1, len(relative_maxima) + 1)
-                if not all(x == xx):
-                    old_relative_maxima = relative_maxima
-                    y_detrended = _detrend_on_fly(y)
-                    relative_maxima = _get_rel_max_from_acf(y_detrended)
-                    print("hi")
-            else:
-                y_detrended = _detrend_on_fly(y)
-                relative_maxima = _get_rel_max_from_acf(y_detrended)
-
+            _get_rel_max = _get_rel_max_from_acf
         elif method == "partial-autocorrelation":
-            partial_autocorrelation = sm.tsa.pacf(y, nlags=400)
-            relative_maxima = argrelextrema(partial_autocorrelation, np.greater)[0]
+            _get_rel_max = _get_rel_max_from_pacf
 
-        # import matplotlib.pyplot as plt
-        # plt.plot(autocorrelation, "bo")
-        # plt.plot(partial_autocorrelation, "rx")
-        # plt.show()
+        relative_maxima = _get_rel_max(y)
+
+        if len(relative_maxima) > 0:
+            # Check that the distance between local maxima is about the same
+            ratio = relative_maxima / relative_maxima[0]
+            expected_ratio = np.arange(1, len(relative_maxima) + 1)
+
+            # Make the target more stationary and try again
+            if not all(ratio == expected_ratio):
+                y_detrended = _detrend_on_fly(y)
+                relative_maxima = _get_rel_max(y_detrended)
+        else:
+            # Make the target more stationary and try again
+            y_detrended = _detrend_on_fly(y)
+            relative_maxima = _get_rel_max(y_detrended)
+
+        if len(relative_maxima) == 0:
+            raise ValueError("No periodic signal could be detected in target data.")
         return relative_maxima[0]
