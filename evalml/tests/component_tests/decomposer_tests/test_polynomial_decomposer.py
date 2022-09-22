@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import PolynomialFeatures, minmax_scale
 
 from evalml.pipelines.components import PolynomialDecomposer
 
@@ -409,7 +409,6 @@ def generate_seasonal_data(period, step=None, num_periods=10, scale=1, trend_deg
     dts = pd.date_range(datetime.today(), periods=len(x))
     X = pd.DataFrame({"x": x})
     X = X.set_index(dts)
-    from sklearn.preprocessing import minmax_scale
 
     if trend_degree == 1:
         y_trend = pd.Series(scale * minmax_scale(x + 2))
