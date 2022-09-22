@@ -85,6 +85,7 @@ class Decomposer(Transformer):
         """Function that uses autocorrelative methods to determine the first, signficant period of the seasonal signal.
 
         Args:
+            X (pandas.DataFrame): The feature data of the time series problem.
             y (pandas.Series): The target data of a time series problem.
             method (str): Either "autocorrelation" or "partial-autocorrelation".  The method by which to determine the
                 first period of the seasonal part of the target signal.  Defaults to "autocorrelation".
@@ -142,3 +143,17 @@ class Decomposer(Transformer):
         if len(relative_maxima) == 0:
             raise ValueError("No periodic signal could be detected in target data.")
         return relative_maxima[0]
+
+    def set_seasonal_period(self, X, y):
+        """Function to set the component's seasonal period based on the target's seasonality.
+
+        Args:
+            X (pandas.DataFrame): The feature data of the time series problem.
+            y (pandas.Series): The target data of a time series problem.
+
+        Returns:
+            None
+
+        """
+        self.seasonal_period = self.determine_periodicity(X, y)
+        self.parameters["seasonal_period"] = self.seasonal_period

@@ -533,3 +533,17 @@ def test_polynomial_decomposer_determine_periodicity(
     # plt.show()
 
     assert ac == period
+
+
+@pytest.mark.parametrize("period", [7, 30, 365])
+def test_polynomial_decomposer_set_period(period):
+    X, y = generate_seasonal_data(period)
+    pdc = PolynomialDecomposer()
+
+    assert pdc.seasonal_period == -1
+    assert pdc.parameters["seasonal_period"] == -1
+
+    pdc.set_seasonal_period(X, y)
+
+    assert pdc.seasonal_period == period
+    assert pdc.parameters["seasonal_period"]
