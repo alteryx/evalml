@@ -494,9 +494,6 @@ def test_polynomial_decomposer_prefers_users_time_index(
         assert all(y_t.index.values == expected_values)
 
 
-pytest.param(1, False, marks=pytest.mark.xfail(reason="some bug"))
-
-
 @pytest.mark.parametrize(
     "periodicity_determination_method",
     [
@@ -524,13 +521,6 @@ def test_polynomial_decomposer_determine_periodicity(
 
     pdc = PolynomialDecomposer(degree=trend_degree, seasonal_period=period)
     ac = pdc.determine_periodicity(X, y, method=periodicity_determination_method)
-
-    # import matplotlib.pyplot as plt
-    # fig, axs = plt.subplots(1, 1)
-    # axs.plot(y[:500])
-    # axs.hlines(y=0.2, xmin=0, xmax=ac, linewidth=2, color="r")
-    # axs.set_title(f"p:{period}, t:{trend_degree}")
-    # plt.show()
 
     assert ac == period
 
