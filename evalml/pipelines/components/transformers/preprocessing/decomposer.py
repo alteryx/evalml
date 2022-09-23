@@ -93,9 +93,7 @@ class Decomposer(Transformer):
         Returns:
             (int): The integer number of entries in time series data over which the seasonal part of the target data
                 repeats.  If the time series data is in days, then this is the number of days that it takes the target's
-                seasonal signal to repeat.
-
-                Note: the target data can contain multiple seasonal signals.  This function will only return the first,
+                seasonal signal to repeat. Note: the target data can contain multiple seasonal signals.  This function will only return the first,
                 and thus, shortest period.  E.g. if the target has both weekly and yearly seasonality, the function will
                 only return "7" and not return "365".
 

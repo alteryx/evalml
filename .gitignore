@@ -1,3 +1,5 @@
+*.csv
+
 # Licenses
 licenses/
 # IDE
