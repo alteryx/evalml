@@ -89,7 +89,10 @@ def _standardize_outputs(notebooks):
 def _check_delete_empty_cell(notebook, delete=True):
     with open(notebook, "r") as f:
         source = json.load(f)
-        cell = source["cells"][-1]
+        try:
+            cell = source["cells"][-1]
+        except:
+            return True
         if cell["cell_type"] == "code" and cell["source"] == []:
             # this is an empty cell, which we should delete
             if delete:
