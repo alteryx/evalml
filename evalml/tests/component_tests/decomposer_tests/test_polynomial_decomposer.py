@@ -550,5 +550,5 @@ def test_polynomial_decomposer_set_period(period):
 
     pdc.set_seasonal_period(X, y)
 
-    assert pdc.seasonal_period == period
+    assert period - 1 <= pdc.seasonal_period <= period + 1
     assert pdc.parameters["seasonal_period"]
