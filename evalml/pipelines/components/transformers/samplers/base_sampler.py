@@ -96,15 +96,13 @@ class BaseSampler(Transformer):
         X, y = self._prepare_data(X, y)
 
         categorical_columns = X.ww.select("Categorical", return_schema=True).columns
-        if len(categorical_columns):
-            for col in categorical_columns:
-                X[col] = X[col].astype("object")
+        for col in categorical_columns:
+            X[col] = X[col].astype("object")
 
         X_new, y_new = self._component_obj.fit_resample(X, y)
 
-        if len(categorical_columns):
-            for col in categorical_columns:
-                X[col] = X[col].astype("category")
+        for col in categorical_columns:
+            X[col] = X[col].astype("category")
 
         X_new.ww.init(schema=X.ww.schema)
         y_new.ww.init(schema=y.ww.schema)
