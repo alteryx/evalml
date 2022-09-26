@@ -66,7 +66,6 @@ class Decomposer(Transformer):
                     raise ValueError(
                         f"Too many Datetime features provided in data and provided time_index column {time_index_col} not present in data.",
                     )
-                dt_col = dt_df.ww[self.parameters["time_index"]]
 
         time_index = pd.DatetimeIndex(dt_col, freq=pd.infer_freq(dt_col)).rename(
             y.index.name,
@@ -133,21 +132,9 @@ class Decomposer(Transformer):
         # Make the data more stationary by detrending
         y_detrended = _detrend_on_fly(X, y)
         relative_maxima = _get_rel_max(y_detrended)
-        print(f"Decomposer discovered {len(relative_maxima)} possible periods.")
-        if len(relative_maxima) > 0:
-            # Check that the distance between local maxima is about the same
-            ratio = relative_maxima / relative_maxima[0]
-            expected_ratio = np.arange(1, len(relative_maxima) + 1)
-            if not all(ratio == expected_ratio):
-                raise ValueError("Danger: Will Robinson")
-            # # Make the target more stationary and try again
-            # if not all(ratio == expected_ratio):
-            #     y_detrended = _detrend_on_fly(X, y)
-            #     relative_maxima = _get_rel_max(y_detrended)
-        # else:
-        #     # Make the target more stationary and try again
-        #     y_detrended = _detrend_on_fly(X, y)
-        #     relative_maxima = _get_rel_max(y_detrended)
+        self.logger.warning(
+            f"Decomposer discovered {len(relative_maxima)} possible periods.",
+        )
 
         if len(relative_maxima) == 0:
             self.logger.warning("No periodic signal could be detected in target data.")
@@ -160,9 +147,6 @@ class Decomposer(Transformer):
         Args:
             X (pandas.DataFrame): The feature data of the time series problem.
             y (pandas.Series): The target data of a time series problem.
-
-        Returns:
-            None
 
         """
         self.seasonal_period = self.determine_periodicity(X, y)
