@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Enhanced Decomposer with ``determine_periodicity`` function to automatically determine periodicity of seasonal target. :pr:`3729`
     * Fixes
+        * Fix holdout warning message showing when using default parameters :pr:`3727`
     * Changes
     * Documentation Changes
     * Testing Changes

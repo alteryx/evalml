@@ -661,8 +661,8 @@ class AutoMLSearch:
             raise ValueError(
                 "Holdout set size must be greater than 0 and less than 1. Set holdout set size to 0 to disable holdout set evaluation.",
             )
-        if self.passed_holdout_set is False:
-            if len(X_train) >= self._HOLDOUT_SET_MIN_ROWS and self.holdout_set_size > 0:
+        if self.passed_holdout_set is False and self.holdout_set_size > 0:
+            if len(X_train) >= self._HOLDOUT_SET_MIN_ROWS:
                 # Create holdout set from X_train and y_train data because X_train above or at row threshold
                 X_train, X_holdout, y_train, y_holdout = split_data(
                     X_train,
@@ -677,7 +677,7 @@ class AutoMLSearch:
                 )
             else:
                 self.logger.info(
-                    f"Dataset size is too small to create holdout set. Mininum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X_train)} rows. Holdout set evaluation is disabled.",
+                    f"Dataset size is too small to create holdout set. Minimum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X_train)} rows. Holdout set evaluation is disabled.",
                 )
         # Set holdout data in AutoML search if provided as parameter
         self.X_train = infer_feature_types(X_train)
@@ -760,14 +760,14 @@ class AutoMLSearch:
                 and "TimeSeriesFeaturizer" not in exclude_featurizers
             ):
                 raise ValueError(
-                    "For time series problems, if DatetimeFeaturizer is excluded, must also exclude TimeSeriesFeaturizer"
+                    "For time series problems, if DatetimeFeaturizer is excluded, must also exclude TimeSeriesFeaturizer",
                 )
             elif (
                 "TimeSeriesFeaturizer" in exclude_featurizers
                 and "DatetimeFeaturizer" not in exclude_featurizers
             ):
                 raise ValueError(
-                    "For time series problems, if TimeSeriesFeaturizer is excluded, must also exclude DatetimeFeaturizer"
+                    "For time series problems, if TimeSeriesFeaturizer is excluded, must also exclude DatetimeFeaturizer",
                 )
         self.exclude_featurizers = exclude_featurizers or []
 
