@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fix holdout warning message showing when using default parameters :pr:`3727`
     * Changes
         * Automatic sorting of the ``time_index`` prior to running ``DataChecks`` has been disabled :pr:`3723`
     * Documentation Changes

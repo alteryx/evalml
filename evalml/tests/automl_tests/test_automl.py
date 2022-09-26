@@ -5228,11 +5228,22 @@ def test_init_create_holdout_set(caplog):
         y_train=y,
         problem_type="binary",
         verbose=True,
+    )
+    out = caplog.text
+
+    match_text = f"Dataset size is too small to create holdout set. Minimum dataset size is {AutoMLSearch._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X)} rows. Holdout set evaluation is disabled."
+    assert match_text not in out
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        verbose=True,
         holdout_set_size=0.1,
     )
     out = caplog.text
 
-    match_text = f"Dataset size is too small to create holdout set. Mininum dataset size is {AutoMLSearch._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X)} rows. Holdout set evaluation is disabled."
+    match_text = f"Dataset size is too small to create holdout set. Minimum dataset size is {AutoMLSearch._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X)} rows. Holdout set evaluation is disabled."
     assert match_text in out
     assert "AutoMLSearch will use mean CV score to rank pipelines." in out
     assert len(automl.X_train) == len(X)
