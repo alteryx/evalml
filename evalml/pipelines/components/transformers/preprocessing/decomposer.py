@@ -91,19 +91,15 @@ class Decomposer(Transformer):
                 first period of the seasonal part of the target signal.  Defaults to "autocorrelation".
 
         Returns:
-            (int): The integer number of entries in time series data over which the seasonal part of the target data
+            (list[int]): The integer numbers of entries in time series data over which the seasonal part of the target data
                 repeats.  If the time series data is in days, then this is the number of days that it takes the target's
-                seasonal signal to repeat. Note: the target data can contain multiple seasonal signals.  This function will only return the first,
-                and thus, shortest period.  E.g. if the target has both weekly and yearly seasonality, the function will
-                only return "7" and not return "365".
+                seasonal signal to repeat. Note: the target data can contain multiple seasonal signals.  This function
+                will only return the first, and thus, shortest period.  E.g. if the target has both weekly and yearly
+                seasonality, the function will only return "7" and not return "365".  If no period is detected, returns [None].
 
-        Raises:
-            ValueError: if no periodicity could be detected
         """
 
         def _get_rel_max_from_acf(y):
-            import matplotlib.pyplot as plt
-
             acf = sm.tsa.acf(y, nlags=np.maximum(400, len(y)))
             filter_acf = [acf[i] if (acf[i] > 0) else 0 for i in range(len(acf))]
             rel_max = argrelextrema(
@@ -112,14 +108,17 @@ class Decomposer(Transformer):
                 order=5,  # considers 5 points on either side to determine rel max
             )[0]
             max_acfs = [acf[i] for i in rel_max]
-            rel_max = np.array([filter_acf.index(max(max_acfs))])
+            if len(max_acfs) > 0:
+                rel_max = np.array([filter_acf.index(max(max_acfs))])
+            else:
+                rel_max = []
             return rel_max
 
         def _get_rel_max_from_pacf(y):
             pacf = sm.tsa.pacf(y)
             return argrelextrema(pacf, np.greater)[0]
 
-        def _detrend_on_fly(y):
+        def _detrend_on_fly(X, y):
             self.fit(X, y)
             res = self.get_trend_dataframe(X, y)
             y_time_index = self._set_time_index(X, y)
@@ -131,24 +130,28 @@ class Decomposer(Transformer):
         elif method == "partial-autocorrelation":
             _get_rel_max = _get_rel_max_from_pacf
 
-        relative_maxima = _get_rel_max(y)
-
+        # Make the data more stationary by detrending
+        y_detrended = _detrend_on_fly(X, y)
+        relative_maxima = _get_rel_max(y_detrended)
+        print(f"Decomposer discovered {len(relative_maxima)} possible periods.")
         if len(relative_maxima) > 0:
             # Check that the distance between local maxima is about the same
             ratio = relative_maxima / relative_maxima[0]
             expected_ratio = np.arange(1, len(relative_maxima) + 1)
-
-            # Make the target more stationary and try again
             if not all(ratio == expected_ratio):
-                y_detrended = _detrend_on_fly(y)
-                relative_maxima = _get_rel_max(y_detrended)
-        else:
-            # Make the target more stationary and try again
-            y_detrended = _detrend_on_fly(y)
-            relative_maxima = _get_rel_max(y_detrended)
+                raise ValueError("Danger: Will Robinson")
+            # # Make the target more stationary and try again
+            # if not all(ratio == expected_ratio):
+            #     y_detrended = _detrend_on_fly(X, y)
+            #     relative_maxima = _get_rel_max(y_detrended)
+        # else:
+        #     # Make the target more stationary and try again
+        #     y_detrended = _detrend_on_fly(X, y)
+        #     relative_maxima = _get_rel_max(y_detrended)
 
         if len(relative_maxima) == 0:
-            raise ValueError("No periodic signal could be detected in target data.")
+            self.logger.warning("No periodic signal could be detected in target data.")
+            relative_maxima = [None]
         return relative_maxima[0]
 
     def set_seasonal_period(self, X, y):
