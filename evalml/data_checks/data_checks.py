@@ -95,7 +95,8 @@ class DataChecks:
             dict: Dictionary containing DataCheckMessage objects
         """
         messages = []
-        X = infer_feature_types(X)
+        existing_schema = X.ww.schema
+        X.ww.init(schema=existing_schema, already_sorted=True)
         X = X.ww.drop(list(X.ww.select("index", return_schema=True).columns))
         if y is not None:
             y = infer_feature_types(y)
