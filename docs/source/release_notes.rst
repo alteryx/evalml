@@ -7,6 +7,7 @@ Release Notes
         * Fixed bug in Oversampler where categorical dtypes would fail :pr:`3732`
     * Changes
         * Automatic sorting of the ``time_index`` prior to running ``DataChecks`` has been disabled :pr:`3723`
+        * Use Woodwork's ``dependence_dict`` method to calculate for ``TargetLeakageDataCheck`` :pr:`3728`
     * Documentation Changes
     * Testing Changes
         * Update job to use new looking glass report command :pr:`3733`
@@ -29,7 +30,6 @@ Release Notes
         * Added abstract Decomposer class as a parent to PolynomialDecomposer to support additional decomposers. :pr:`3720`
         * Pinned ``pmdarima`` < 2.0.0 :pr:`3679`
         * Added support for using ``downcast_nullable_types`` with Series as well as DataFrames :pr:`3697`
-        * Use Woodwork's ``dependence_dict`` method to calculate for ``TargetLeakageDataCheck`` :pr:`3728`
     * Documentation Changes
     * Testing Changes
         * Updated pytest fixtures and brittle test files to explicitly set woodwork typing information :pr:`3697`

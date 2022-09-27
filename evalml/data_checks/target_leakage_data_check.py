@@ -1,5 +1,5 @@
 """Data check that checks if any of the features are highly correlated with the target by using mutual information or Pearson correlation."""
-import woodwork as ww
+from woodwork.config import CONFIG_DEFAULTS
 
 from evalml.data_checks import (
     DataCheck,
@@ -9,11 +9,6 @@ from evalml.data_checks import (
     DataCheckWarning,
 )
 from evalml.utils.woodwork_utils import infer_feature_types
-
-try:
-    methods = ww.utils.get_valid_correlation_metrics()
-except AttributeError:
-    methods = ["mutual_info", "pearson", "max"]
 
 
 class TargetLeakageDataCheck(DataCheck):
@@ -34,6 +29,10 @@ class TargetLeakageDataCheck(DataCheck):
             raise ValueError(
                 "pct_corr_threshold must be a float between 0 and 1, inclusive.",
             )
+        methods = CONFIG_DEFAULTS.get(
+            "correlation_metrics",
+            ["mutual_info", "pearson", "max"],
+        )
         if method not in methods:
             raise ValueError(f"Method '{method}' not in {methods}")
         self.pct_corr_threshold = pct_corr_threshold
@@ -41,33 +40,21 @@ class TargetLeakageDataCheck(DataCheck):
 
     def _calculate_dependence(self, X, y):
         highly_corr_cols = []
-        try:
-            X2 = X.ww.copy()
-            target_str = "target_y"
-            while target_str in list(X2.columns):
-                target_str += "_y"
-            X2.ww[target_str] = y
-            dep_corr = X2.ww.dependence_dict(
-                measures=self.method,
-                target_col=target_str,
-            )
-            highly_corr_cols = [
-                corr_info["column_1"]
-                for corr_info in dep_corr
-                if abs(corr_info[self.method]) >= self.pct_corr_threshold
-            ]
-        except TypeError:
-            # no parameter for `target_col` yet
-            for col in X.columns:
-                cols_to_compare = X.ww[[col]]
-                cols_to_compare.ww[str(col) + "y"] = y
-                corr_info = cols_to_compare.ww.dependence_dict(measures=self.method)
-                if (
-                    len(corr_info) > 0
-                    and abs(corr_info[0][self.method]) >= self.pct_corr_threshold
-                ):
-                    highly_corr_cols.append(col)
-            return highly_corr_cols
+        X2 = X.ww.copy()
+        target_str = "target_y"
+        while target_str in list(X2.columns):
+            target_str += "_y"
+        X2.ww[target_str] = y
+        dep_corr = X2.ww.dependence_dict(
+            measures=self.method,
+            target_col=target_str,
+        )
+        highly_corr_cols = [
+            corr_info["column_1"]
+            for corr_info in dep_corr
+            if abs(corr_info[self.method]) >= self.pct_corr_threshold
+        ]
+        return highly_corr_cols
 
     def validate(self, X, y):
         """Check if any of the features are highly correlated with the target by using mutual information, Pearson correlation, and/or Spearman correlation.
