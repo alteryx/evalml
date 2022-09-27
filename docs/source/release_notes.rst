@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.59.0 Sept. 27, 2022**
+    * Enhancements
         * Enhanced Decomposer with ``determine_periodicity`` function to automatically determine periodicity of seasonal target. :pr:`3729`
         * Enhanced Decomposer with ``set_seasonal_period`` function to set a ``Decomposer`` object's seasonal period automatically. :pr:`3729`
     * Fixes
@@ -13,9 +25,6 @@ Release Notes
     * Testing Changes
         * Update job to use new looking glass report command :pr:`3733`
 
-.. warning::
-
-    **Breaking Changes**
 
 **v0.58.0 Sept. 20, 2022**
     * Enhancements
