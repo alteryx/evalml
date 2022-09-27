@@ -3,7 +3,8 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Fix holdout warning message showing when using default parameters :pr:`3727`
+        * Fixed holdout warning message showing when using default parameters :pr:`3727`
+        * Fixed bug in Oversampler where categorical dtypes would fail :pr:`3732`
     * Changes
     * Documentation Changes
     * Testing Changes
