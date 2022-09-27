@@ -286,6 +286,12 @@ def test_smotenc_categorical_features(X_y_binary):
     _ = snc.fit_transform(X, y)
     assert snc.categorical_features == [0, 1]
 
+    X[0] = pd.Series(["A", "B", "C", "A", "C"] * 20, dtype="category")
+    X.ww.init()
+    snc = Oversampler()
+    _ = snc.fit_transform(X, y)
+    assert snc.categorical_features == [0, 1]
+
 
 def test_smotenc_category_features(X_y_binary):
     X, y = X_y_binary

@@ -94,7 +94,15 @@ class BaseSampler(Transformer):
             pd.DataFrame, pd.Series: Transformed features and target.
         """
         X, y = self._prepare_data(X, y)
+
+        categorical_columns = X.ww.select("Categorical", return_schema=True).columns
+        for col in categorical_columns:
+            X[col] = X[col].astype("object")
+
         X_new, y_new = self._component_obj.fit_resample(X, y)
+
+        for col in categorical_columns:
+            X[col] = X[col].astype("category")
 
         X_new.ww.init(schema=X.ww.schema)
         y_new.ww.init(schema=y.ww.schema)
