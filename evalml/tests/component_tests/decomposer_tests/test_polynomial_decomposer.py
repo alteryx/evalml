@@ -6,9 +6,8 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures, minmax_scale
+from sklearn.preprocessing import PolynomialFeatures
 
-from evalml.demos import load_weather
 from evalml.pipelines.components import PolynomialDecomposer
 
 
@@ -399,59 +398,17 @@ def test_polynomial_decomposer_uses_time_index(
             assert isinstance(y.index, pd.DatetimeIndex)
 
 
-def generate_seasonal_data(
-    period,
-    step=None,
-    num_periods=10,
-    scale=1,
-    trend_degree=1,
-    real_or_synthetic="synthetic",
-):
-    """Function that returns data with a linear trend and a seasonal signal with specified period."""
-
-    def generate_synthetic_data(period, step, num_periods, scale, trend_degree):
-        if period is None:
-            x = np.arange(0, 1, 0.01)
-        elif step is not None:
-            freq = 2 * np.pi / period / step
-            x = np.arange(0, 1, step)
-        else:
-            freq = 2 * np.pi / period
-            x = np.arange(0, period * num_periods, 1)
-        dts = pd.date_range(datetime.today(), periods=len(x))
-        X = pd.DataFrame({"x": x})
-        X = X.set_index(dts)
-
-        if trend_degree == 1:
-            y_trend = pd.Series(scale * minmax_scale(x + 2))
-        elif trend_degree == 2:
-            y_trend = pd.Series(scale * minmax_scale(x**2))
-        elif trend_degree == 3:
-            y_trend = pd.Series(scale * minmax_scale((x - 5) ** 3 + x**2))
-        if period is not None:
-            y_seasonal = pd.Series(np.sin(freq * x))
-        else:
-            y_seasonal = pd.Series(np.zeros(len(x)))
-        y = y_trend + y_seasonal
-        return X, y
-
-    if real_or_synthetic == "synthetic":
-        X, y = generate_synthetic_data(period, step, num_periods, scale, trend_degree)
-    elif real_or_synthetic == "real":
-        X, y = load_weather()
-        y = y.set_axis(X["Date"]).asfreq(pd.infer_freq(X["Date"]))
-        X = X.set_index("Date").asfreq(pd.infer_freq(X["Date"]))
-    return X, y
-
-
 @pytest.mark.parametrize(
     "y_has_time_index",
     ["y_has_time_index", "y_doesnt_have_time_index"],
 )
-def test_polynomial_decomposer_plot_decomposition(y_has_time_index):
+def test_polynomial_decomposer_plot_decomposition(
+    y_has_time_index,
+    generate_seasonal_data,
+):
     step = 0.01
     period = 9
-    X, y = generate_seasonal_data(period, step)
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period, step)
     if y_has_time_index == "y_has_time_index":
         y = y.set_axis(X.index)
 
@@ -550,12 +507,12 @@ def test_polynomial_decomposer_determine_periodicity(
     decomposer_picked_correct_degree,
     periodicity_determination_method,
     synthetic_data,
+    generate_seasonal_data,
 ):
 
-    X, y = generate_seasonal_data(
+    X, y = generate_seasonal_data(real_or_synthetic=synthetic_data)(
         period,
         trend_degree=trend_degree,
-        real_or_synthetic=synthetic_data,
     )
 
     if period is None:
@@ -583,8 +540,8 @@ def test_polynomial_decomposer_determine_periodicity(
 
 
 @pytest.mark.parametrize("period", [7, 30, 365])
-def test_polynomial_decomposer_set_period(period):
-    X, y = generate_seasonal_data(period)
+def test_polynomial_decomposer_set_period(period, generate_seasonal_data):
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period)
     pdc = PolynomialDecomposer()
 
     assert pdc.seasonal_period == -1

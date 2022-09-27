@@ -100,6 +100,7 @@ class Decomposer(Transformer):
         """
 
         def _get_rel_max_from_acf(y):
+            """Determines the relative maxima of the target's autocorrelation."""
             acf = sm.tsa.acf(y, nlags=np.maximum(400, len(y)))
             filter_acf = [acf[i] if (acf[i] > 0) else 0 for i in range(len(acf))]
             rel_max = argrelextrema(
@@ -115,10 +116,12 @@ class Decomposer(Transformer):
             return rel_max
 
         def _get_rel_max_from_pacf(y):
+            """Determines the relative maxima of the target's partial autocorrelation."""
             pacf = sm.tsa.pacf(y)
             return argrelextrema(pacf, np.greater)[0]
 
         def _detrend_on_fly(X, y):
+            """Uses the underlying decomposer to determine the target's trend and remove it."""
             self.fit(X, y)
             res = self.get_trend_dataframe(X, y)
             y_time_index = self._set_time_index(X, y)
@@ -129,7 +132,8 @@ class Decomposer(Transformer):
             _get_rel_max = _get_rel_max_from_acf
         elif method == "partial-autocorrelation":
             self.logger.warning(
-                "Partial autocorrelation should not be used yet.  Resulting period might not be accurate.",
+                "Partial autocorrelations are not currently guaranteed to be accurate due to the need for continuing "
+                "algorithmic work and should not be used at this time.",
             )
             _get_rel_max = _get_rel_max_from_pacf
 

@@ -1,6 +1,7 @@
 import contextlib
 import os
 import sys
+from datetime import datetime
 from unittest.mock import PropertyMock, patch
 
 import numpy as np
@@ -9,9 +10,11 @@ import py
 import pytest
 import woodwork as ww
 from sklearn import datasets
+from sklearn.preprocessing import minmax_scale
 from skopt.space import Integer, Real
 from woodwork import logical_types as ww_logical_types
 
+from evalml.demos import load_weather
 from evalml.model_family import ModelFamily
 from evalml.objectives import BinaryClassificationObjective
 from evalml.objectives.utils import get_core_objectives, get_non_core_objectives
@@ -2192,3 +2195,54 @@ def imputer_test_data():
         },
     )
     return X
+
+
+@pytest.fixture
+def generate_seasonal_data():
+    """Function that returns data with a linear trend and a seasonal signal with specified period."""
+
+    def generate_real_data(period, step=None, num_periods=10, scale=1, trend_degree=1):
+        X, y = load_weather()
+        y = y.set_axis(X["Date"]).asfreq(pd.infer_freq(X["Date"]))
+        X = X.set_index("Date").asfreq(pd.infer_freq(X["Date"]))
+        return X, y
+
+    def generate_synthetic_data(
+        period,
+        step=None,
+        num_periods=10,
+        scale=1,
+        trend_degree=1,
+    ):
+        if period is None:
+            x = np.arange(0, 1, 0.01)
+        elif step is not None:
+            freq = 2 * np.pi / period / step
+            x = np.arange(0, 1, step)
+        else:
+            freq = 2 * np.pi / period
+            x = np.arange(0, period * num_periods, 1)
+        dts = pd.date_range(datetime.today(), periods=len(x))
+        X = pd.DataFrame({"x": x})
+        X = X.set_index(dts)
+
+        if trend_degree == 1:
+            y_trend = pd.Series(scale * minmax_scale(x + 2))
+        elif trend_degree == 2:
+            y_trend = pd.Series(scale * minmax_scale(x**2))
+        elif trend_degree == 3:
+            y_trend = pd.Series(scale * minmax_scale((x - 5) ** 3 + x**2))
+        if period is not None:
+            y_seasonal = pd.Series(np.sin(freq * x))
+        else:
+            y_seasonal = pd.Series(np.zeros(len(x)))
+        y = y_trend + y_seasonal
+        return X, y
+
+    def _return_proper_func(real_or_synthetic):
+        if real_or_synthetic == "synthetic":
+            return generate_synthetic_data
+        elif real_or_synthetic == "real":
+            return generate_real_data
+
+    return _return_proper_func
