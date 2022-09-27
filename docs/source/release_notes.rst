@@ -6,6 +6,7 @@ Release Notes
         * Fixed holdout warning message showing when using default parameters :pr:`3727`
         * Fixed bug in Oversampler where categorical dtypes would fail :pr:`3732`
     * Changes
+        * Automatic sorting of the ``time_index`` prior to running ``DataChecks`` has been disabled :pr:`3723`
     * Documentation Changes
     * Testing Changes
         * Update job to use new looking glass report command :pr:`3733`
