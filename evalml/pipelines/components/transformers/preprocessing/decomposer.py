@@ -140,7 +140,7 @@ class Decomposer(Transformer):
         # Make the data more stationary by detrending
         y_detrended = _detrend_on_fly(X, y)
         relative_maxima = _get_rel_max(y_detrended)
-        self.logger.warning(
+        self.logger.info(
             f"Decomposer discovered {len(relative_maxima)} possible periods.",
         )
 
