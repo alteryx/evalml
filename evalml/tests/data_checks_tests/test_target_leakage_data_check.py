@@ -4,6 +4,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from woodwork.config import CONFIG_DEFAULTS
 
 from evalml.data_checks import (
