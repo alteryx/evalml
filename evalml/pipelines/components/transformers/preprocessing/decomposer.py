@@ -87,7 +87,8 @@ class Decomposer(Transformer):
             X (pandas.DataFrame): The feature data of the time series problem.
             y (pandas.Series): The target data of a time series problem.
             method (str): Either "autocorrelation" or "partial-autocorrelation".  The method by which to determine the
-                first period of the seasonal part of the target signal.  Defaults to "autocorrelation".
+                first period of the seasonal part of the target signal.  "partial-autocorrelation" should currently not 
+                be used.  Defaults to "autocorrelation".
 
         Returns:
             (list[int]): The integer numbers of entries in time series data over which the seasonal part of the target data
@@ -127,6 +128,7 @@ class Decomposer(Transformer):
         if method == "autocorrelation":
             _get_rel_max = _get_rel_max_from_acf
         elif method == "partial-autocorrelation":
+            self.logger.warning("Partial autocorrelation should not be used yet.  Resulting period might not be accurate.")
             _get_rel_max = _get_rel_max_from_pacf
 
         # Make the data more stationary by detrending
