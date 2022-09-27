@@ -8,6 +8,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Update job to use new looking glass report command :pr:`3733`
 
 .. warning::
 

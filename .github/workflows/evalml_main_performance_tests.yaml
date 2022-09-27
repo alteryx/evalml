@@ -83,8 +83,8 @@ jobs:
       - name: Generate reports
         run: |
           filename_base=${{ steps.get_hashes.outputs.current_hash }}_v_${{ steps.get_hashes.outputs.previous_hash }}
-          looking-glass get-report --previous-path ${{ steps.previous_default.outputs.job_id }} -n ${{ steps.current_default.outputs.job_id }} --output-name ${filename_base}_default --output-type html
-          looking-glass get-report --previous-path ${{ steps.previous_iterative.outputs.job_id }} -n ${{ steps.current_iterative.outputs.job_id }} --output-name ${filename_base}_iterative --output-type html
+          looking-glass run-local-report --previous-path ${{ steps.previous_default.outputs.job_id }} -n ${{ steps.current_default.outputs.job_id }} --output-name ${filename_base}_default --output-type html
+          looking-glass run-local-report --previous-path ${{ steps.previous_iterative.outputs.job_id }} -n ${{ steps.current_iterative.outputs.job_id }} --output-name ${filename_base}_iterative --output-type html
       - name: Upload reports to S3
         id: s3_upload
         run: |
