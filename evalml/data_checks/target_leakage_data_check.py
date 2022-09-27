@@ -29,10 +29,7 @@ class TargetLeakageDataCheck(DataCheck):
             raise ValueError(
                 "pct_corr_threshold must be a float between 0 and 1, inclusive.",
             )
-        methods = CONFIG_DEFAULTS.get(
-            "correlation_metrics",
-            ["mutual_info", "pearson", "max"],
-        )
+        methods = CONFIG_DEFAULTS["correlation_metrics"]
         if method not in methods:
             raise ValueError(f"Method '{method}' not in {methods}")
         self.pct_corr_threshold = pct_corr_threshold
@@ -45,10 +42,14 @@ class TargetLeakageDataCheck(DataCheck):
         while target_str in list(X2.columns):
             target_str += "_y"
         X2.ww[target_str] = y
-        dep_corr = X2.ww.dependence_dict(
-            measures=self.method,
-            target_col=target_str,
-        )
+        try:
+            dep_corr = X2.ww.dependence_dict(
+                measures=self.method,
+                target_col=target_str,
+            )
+        except KeyError:
+            # keyError raised when the target does not appear due to incompatibility with the metric, return []
+            return []
         highly_corr_cols = [
             corr_info["column_1"]
             for corr_info in dep_corr
