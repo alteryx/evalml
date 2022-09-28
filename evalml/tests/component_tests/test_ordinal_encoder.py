@@ -234,7 +234,6 @@ def test_ordinal_encoder_recognizes_ordinal_columns():
     assert encoder.features_to_encode == ["col_1", "col_2", "col_3"]
     assert encoder.features_to_encode == list(encoder._encoder.feature_names_in_)
 
-    # --> this isn't really testing its ability to recognize ordinals - its testing features to encode
     encoder = OrdinalEncoder(features_to_encode=["col_1"])
     encoder.fit(X)
     assert encoder.features_to_encode == ["col_1"]
@@ -359,50 +358,6 @@ def test_null_values_in_dataframe():
     X_t = encoder.transform(X)
     assert X_t["col_1_ordinally_encoded"].iloc[-1] == -1
 
-    # --> not sure that this is the desired behavior - in ordinal_encoder it gets treated as its own category
-    # Test NaN doesn't get counted as a category to encode, so it still gets
-    # encoded as missing and not unknown even if it's not in the top n
-    X = pd.DataFrame(
-        {
-            "col_1": ["a", "a", "c", "c", np.nan],
-            "col_2": ["a", "b", "a", "c", "b"],
-            "col_3": ["a", "a", "a", "a", "a"],
-            "col_4": [2, 0, 1, np.nan, 0],
-        },
-    )
-    categories = [["a", "b", "c"], ["a", "b", "c"], ["a"]]
-    X.ww.init(
-        logical_types={
-            "col_1": Ordinal(order=categories[0]),
-            "col_2": Ordinal(order=categories[1]),
-        },
-    )
-    encoder = OrdinalEncoder(
-        top_n=2,
-        handle_unknown="use_encoded_value",
-        unknown_value=-1,
-    )
-    encoder.fit(X)
-    X_t = encoder.transform(X)
-    assert pd.isna(X_t["col_1_ordinally_encoded"].iloc[-1])
-    assert X_t["col_2_ordinally_encoded"].iloc[3] == -1
-
-    # Test handle_missing='error' throws an error
-    # --> not currently an option - should we add?
-    # encoder_error = OrdinalEncoder(handle_missing="error")
-
-    # X = pd.DataFrame(
-    #     {
-    #         "col_1": [np.nan, "b", "c", "d", "e", "f", "g"],
-    #         "col_2": ["a", "c", "d", "b", "e", "e", "f"],
-    #         "col_3": ["a", "a", "a", "a", "a", "a", "b"],
-    #         "col_4": [2, 0, 1, 3, 0, 1, 2],
-    #     },
-    # )
-    # X.ww.init(logical_types={"col_1": "categorical"})
-    # with pytest.raises(ValueError, match="Input contains NaN"):
-    #     encoder_error.fit(X)
-
 
 def test_ordinal_encoder_diff_na_types():
     X = pd.DataFrame(
@@ -427,6 +382,89 @@ def test_ordinal_encoder_diff_na_types():
     assert X_t["col_1_ordinally_encoded"].iloc[-1] == -1
     assert X_t["col_2_ordinally_encoded"].iloc[-1] == -1
     assert X_t["col_3_ordinally_encoded"].iloc[-1] == -1
+
+
+def test_null_values_with_top_n():
+    # --> not sure that this is the desired behavior - in ordinal_encoder it gets treated as its own category
+    """Null values shouldn't get counted towards the top_n, so check that if nan is inside or
+    outside of top_n, the behavior doesn't change."""
+    # nan would be in the top_n of col 1 but not 2 if it counted towards top_n
+    X = pd.DataFrame(
+        {
+            "col_1": ["a", "b", "c", np.nan, np.nan],
+            "col_2": [
+                "a",
+                "b",
+                "a",
+                "c",
+                np.nan,
+            ],
+            "col_3": ["a", "a", "a", "a", "a"],
+        },
+    )
+    # Note - we cant include the null value in the categories used by Woodwork
+    # because it sets the pandas dtypes' categories and they can't include a null value
+    categories = [["a", "b", "c", "d"], ["a", "b", "c"]]
+    X.ww.init(
+        logical_types={
+            "col_1": Ordinal(order=categories[0]),
+            "col_2": Ordinal(order=categories[1]),
+        },
+    )
+
+    # Nans should not get handled as unknown even if they're not within the top n
+    encoder = OrdinalEncoder(
+        top_n=1,
+        handle_unknown="use_encoded_value",
+        unknown_value=-1,
+    )
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    # Check that none of the null values were treated as unknown values
+    assert pd.isna(X_t["col_1_ordinally_encoded"].iloc[-1])
+    assert pd.isna(X_t["col_1_ordinally_encoded"].iloc[-2])
+    assert pd.isna(X_t["col_2_ordinally_encoded"].iloc[-1])
+
+
+def test_null_values_with_categories_specified():
+    """Nans aren't treated by Woodwork as categories in ordinal cols, so they shouldn't
+    have an impact on the categories parameter and be handled entirely independently."""
+    X = pd.DataFrame(
+        {
+            "col_1": ["a", "b", "c", np.nan, np.nan],
+            "col_2": [
+                "a",
+                "b",
+                "a",
+                "c",
+                np.nan,
+            ],
+            "col_3": ["a", "a", "a", "a", "a"],
+        },
+    )
+    # Note - we cant include the null value in the categories used by Woodwork
+    # because it sets the pandas dtypes' categories and they can't include a null value
+    categories = [["a", "b", "c", "d"], ["a", "b", "c"]]
+    X.ww.init(
+        logical_types={
+            "col_1": Ordinal(order=categories[0]),
+            "col_2": Ordinal(order=categories[1]),
+        },
+    )
+
+    # Try putting a nan in the categories list in one of the columns but not the other
+    encoder = OrdinalEncoder(
+        categories=[["a"], ["a", np.nan]],
+        handle_unknown="use_encoded_value",
+        unknown_value=-1,
+        top_n=None,
+    )
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    # Check that the null values were handled as missing even when they're present in categories
+    assert pd.isna(X_t["col_1_ordinally_encoded"].iloc[-1])
+    assert pd.isna(X_t["col_1_ordinally_encoded"].iloc[-2])
+    assert pd.isna(X_t["col_2_ordinally_encoded"].iloc[-1])
 
 
 def test_handle_unknown():
@@ -553,6 +591,44 @@ def test_categories_set_at_init():
     assert list(X_t["col_1_ordinally_encoded"]) == [0, 1, 2, 3, -1, -1, -1]
     assert list(X_t["col_2_ordinally_encoded"]) == [0, 2, -1, 1, -1, -1, -1]
     assert list(X_t["col_3_ordinally_encoded"]) == [0, 0, 0, 0, 0, 0, 1]
+
+
+def test_categories_includes_not_present_value():
+    """This tests the case where the categories we pass into the encoder include
+    values that aren't in the data or even the Ordinal.order."""
+    X = pd.DataFrame(
+        {
+            "col_1": ["a", "b", "c", "d", "e", "f", "g"],
+            "col_2": ["a", "c", "d", "b", "e", "e", "f"],
+            "col_3": ["a", "a", "a", "a", "a", "a", "b"],
+            "col_4": [2, 0, 1, 3, 0, 1, 2],
+        },
+    )
+    full_categories = [
+        ["a", "b", "c", "d", "e", "f", "g"],
+        ["a", "b", "c", "d", "e", "f"],
+        ["a", "b"],
+    ]
+    X = set_first_three_columns_to_ordinal_with_categories(
+        X,
+        categories=full_categories,
+    )
+
+    # Categories passed in has value "x" that's not in the data
+    categories = [["a", "x"], ["a", "x"], ["a", "x"]]
+
+    # test categories value works when transforming
+    encoder = OrdinalEncoder(
+        top_n=None,
+        categories=categories,
+        handle_unknown="use_encoded_value",
+        unknown_value=-1,
+        random_seed=2,
+    )
+    encoder.fit(X)
+    assert set(encoder.categories("col_1")) == {"a"}
+    assert set(encoder.categories("col_2")) == {"a"}
+    assert set(encoder.categories("col_3")) == {"a"}
 
 
 def test_categories_different_order_from_ltype():

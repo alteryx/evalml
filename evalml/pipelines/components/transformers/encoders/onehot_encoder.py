@@ -110,7 +110,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         top_n = self.parameters["top_n"]
         X = infer_feature_types(X)
         if self.features_to_encode is None:
-            # --> should update to not include ordinals? Maybe that's configurable based on whether ordinal encoder is used?
+            # --> should update to not include ordinals once the ord encoder is integragted? Maybe that's configurable based on whether ordinal encoder is used?
             self.features_to_encode = self._get_cat_cols(X)
 
         X_t = X
