@@ -63,7 +63,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         categories=None,
         handle_unknown="error",
         unknown_value=None,
-        encoded_missing_value=np.nan,
+        encoded_missing_value=None,
         random_seed=0,
         **kwargs,
     ):
@@ -224,11 +224,15 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                 if X_t[col].isna().any():
                     categories[i] += [np.nan]
 
+        encoded_missing_value = self.parameters["encoded_missing_value"]
+        if encoded_missing_value is None:
+            encoded_missing_value = np.nan
+
         self._encoder = SKOrdinalEncoder(
             categories=categories,
             handle_unknown=self.parameters["handle_unknown"],
             unknown_value=self.parameters["unknown_value"],
-            encoded_missing_value=self.parameters["encoded_missing_value"],
+            encoded_missing_value=encoded_missing_value,
         )
 
         self._encoder.fit(X_t[self.features_to_encode])

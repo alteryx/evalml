@@ -26,7 +26,7 @@ def test_init():
         "categories": None,
         "handle_unknown": "error",
         "unknown_value": None,
-        "encoded_missing_value": np.nan,
+        "encoded_missing_value": None,
     }
     encoder = OrdinalEncoder()
     assert encoder.parameters == parameters
@@ -40,7 +40,7 @@ def test_parameters():
         "categories": None,
         "handle_unknown": "error",
         "unknown_value": None,
-        "encoded_missing_value": np.nan,
+        "encoded_missing_value": None,
     }
     assert encoder.parameters == expected_parameters
 
