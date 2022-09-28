@@ -50,11 +50,14 @@ class TargetLeakageDataCheck(DataCheck):
         except KeyError:
             # keyError raised when the target does not appear due to incompatibility with the metric, return []
             return []
-        highly_corr_cols = [
-            corr_info["column_1"]
-            for corr_info in dep_corr
-            if abs(corr_info[self.method]) >= self.pct_corr_threshold
-        ]
+        highly_corr_cols = sorted(
+            [
+                corr_info["column_1"]
+                for corr_info in dep_corr
+                if abs(corr_info[self.method]) >= self.pct_corr_threshold
+            ],
+            key=lambda x: X2.columns.tolist().index(x),
+        )
         return highly_corr_cols
 
     def validate(self, X, y):
