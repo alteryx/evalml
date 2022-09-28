@@ -193,15 +193,15 @@ def test_target_leakage_types():
 
     expected = [
         DataCheckWarning(
-            message="Columns 'c', 'a', 'b' are 80.0% or more correlated with the target",
+            message="Columns 'a', 'b', 'c' are 80.0% or more correlated with the target",
             data_check_name=target_leakage_data_check_name,
             message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-            details={"columns": ["c", "a", "b"]},
+            details={"columns": ["a", "b", "c"]},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    metadata={"columns": ["c", "a", "b"]},
+                    metadata={"columns": ["a", "b", "c"]},
                 ),
             ],
         ).to_dict(),
