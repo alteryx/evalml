@@ -219,8 +219,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         # missing values
         if isinstance(categories, list):
             for i, col in enumerate(X_t[self.features_to_encode]):
-                # --> handle nans as error here if that's a behavior we want
-                # --> and if we want the option to handle nans as unknowns do that here as well
                 if X_t[col].isna().any():
                     categories[i] += [np.nan]
 
@@ -273,7 +271,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         """Return feature names for the ordinal features after fitting.
 
         Since ordinal encoding creates one encoded feature per column in features_to_encode, feature
-        names are formatted as {column_name}_ordinally_encoded --> choose a better name?? maybe one that includes how many categories were encoded
+        names are formatted as {column_name}_ordinally_encoded
 
         Returns:
             np.ndarray: The feature names after encoding, provided in the same order as input_features.

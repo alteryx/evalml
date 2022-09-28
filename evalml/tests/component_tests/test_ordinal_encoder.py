@@ -381,7 +381,6 @@ def test_ordinal_encoder_diff_na_types():
 
 
 def test_null_values_with_top_n():
-    # --> not sure that this is the desired behavior - in ordinal_encoder it gets treated as its own category
     """Null values shouldn't get counted towards the top_n, so check that if nan is inside or
     outside of top_n, the behavior doesn't change."""
     # nan would be in the top_n of col 1 but not 2 if it counted towards top_n
@@ -968,7 +967,6 @@ def test_data_types(data_type):
     elif data_type == "pd_no_index":
         X = pd.DataFrame(["a", "b", "c"] * 5)
     elif data_type == "pd_index":
-        # --> doing int 0 here might defeat the purpose of the no index one?
         X = pd.DataFrame(["a", "b", "c"] * 5, columns=[0])
     elif data_type == "ww":
         X = pd.DataFrame(["a", "b", "c"] * 5)
