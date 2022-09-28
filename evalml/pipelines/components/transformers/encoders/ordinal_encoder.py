@@ -1,6 +1,4 @@
-"""A transformer that encodes categorical features in a one-hot numeric array."""
-from pdb import set_trace
-
+"""A transformer that encodes ordinal features as an array of ordinal integers representing the relative order of categories."""
 import numpy as np
 import pandas as pd
 import woodwork as ww
@@ -15,6 +13,8 @@ from evalml.utils import infer_feature_types
 
 
 class OrdinalEncoderMeta(ComponentBaseMeta):
+    """A version of the ComponentBaseMeta class which includes validation on an additional ordinal-encoder-specific method `categories`."""
+
     METHODS_TO_CHECK = ComponentBaseMeta.METHODS_TO_CHECK + [
         "categories",
         "get_feature_names",
@@ -22,8 +22,7 @@ class OrdinalEncoderMeta(ComponentBaseMeta):
 
 
 class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
-    """A transformer that encodes ordinal features as an array of ordinal integers representing
-    the relative order of categories.
+    """A transformer that encodes ordinal features as an array of ordinal integers representing the relative order of categories.
 
     Args:
         top_n (int): Number of categories per column to encode. If None, all categories will be encoded.
@@ -110,6 +109,19 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         return list(X.ww.select(include=["ordinal"], return_schema=True).columns)
 
     def fit(self, X, y=None):
+        """Fits the ordinal encoder component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            self
+
+        Raises:
+            ValueError: If encoding a column failed.
+            TypeError: If non-Ordinal columns are specified in features_to_encode.
+        """
         top_n = self.parameters["top_n"]
         # Ordinal type is not inferred by Woodwork, so if it wasn't set before, it won't be set at init
         X = infer_feature_types(X)
@@ -223,6 +235,17 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         return self
 
     def transform(self, X, y=None):
+        """Ordinally encode the input data.
+
+        Args:
+            X (pd.DataFrame): Features to encode.
+            y (pd.Series): Ignored.
+
+        Returns:
+            pd.DataFrame: Transformed data, where each ordinal feature has been encoded into
+            a numerical column using where of ordinal integers represent
+            the relative order of categories.
+        """
         X = infer_feature_types(X)
 
         X_copy = X.ww.copy()
@@ -282,6 +305,13 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         return self._encoder.categories_[index]
 
     def get_feature_names(self):
+        """Return feature names for the ordinal features after fitting.
+
+        Feature names are formatted as {column name}_ordinally_encoded.
+
+        Returns:
+            np.ndarray: The feature names after encoding, provided in the same order as input_features.
+        """
         return self._get_feature_names()
 
     def _get_feature_provenance(self):

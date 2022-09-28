@@ -1,10 +1,6 @@
-import re
-from multiprocessing.sharedctypes import Value
-
 import numpy as np
 import pandas as pd
 import pytest
-from pyexpat import features
 from woodwork.logical_types import Ordinal
 
 from evalml.exceptions import ComponentNotYetFittedError
