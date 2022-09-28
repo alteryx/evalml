@@ -74,12 +74,16 @@ def test_invalid_inputs():
         [["a", "b", "c", "d"], ["a", "b", "c"], ["a"]],
     )
     encoder = OrdinalEncoder(top_n=None, categories=[["a", "b"], ["a", "c"]])
-    error_msg = "Categories argument must contain a list of categories for each categorical feature"
+    error_msg = (
+        "Categories argument must contain a list of categories for each ordinal feature"
+    )
     with pytest.raises(ValueError, match=error_msg):
         encoder.fit(X)
 
     encoder = OrdinalEncoder(top_n=None, categories=["a", "b", "c"])
-    error_msg = "Categories argument must contain a list of categories for each categorical feature"
+    error_msg = (
+        "Categories argument must contain a list of categories for each ordinal feature"
+    )
     with pytest.raises(ValueError, match=error_msg):
         encoder.fit(X)
 
@@ -91,8 +95,48 @@ def test_invalid_inputs():
         OrdinalEncoder(top_n=11, categories=categories, random_seed=2)
 
 
-# --> test no transformation when ordinal type not set and hyes when explicitly set
-# --> test feats to encode includes non ordinals
+def test_categories_list_not_passed_in_for_non_ordinal_column():
+    """We indicate that the categories argument must contain categories only for each ordinal
+    feature, so test the case where we pass in a categories list when not every column is ordinal.
+    """
+    X = pd.DataFrame(
+        {
+            "col_1": [2, 0, 1, 0, 0],
+            "col_2": ["a", "b", "a", "c", "d"],
+            "col_3": ["x", "x", "x", "y", "y"],
+        },
+    )
+    X.ww.init(logical_types={"col_2": Ordinal(order=["a", "b", "c", "d"])})
+
+    encoder = OrdinalEncoder(top_n=None, categories=[["a", "b", "c", "d"]])
+    encoder.fit(X)
+
+    assert len(encoder._encoder.categories_) == len(encoder.features_to_encode)
+
+    error = 'Feature "col_1" was not provided to ordinal encoder as a training feature'
+    with pytest.raises(ValueError, match=error):
+        encoder.categories("col_1")
+
+    # When features_to_encode is passed in, confirm the order there doesn't matter and order of
+    # cols in X is still used in indexing into categories
+    X.ww.init(
+        logical_types={
+            "col_2": Ordinal(order=["a", "b", "c", "d"]),
+            "col_3": Ordinal(order=["x", "y"]),
+        },
+    )
+    encoder = OrdinalEncoder(
+        top_n=None,
+        # features_to_encode passed in different order than the dataframe's cols
+        features_to_encode=["col_3", "col_2"],
+        # categories' order still matches the dataframe's cols
+        categories=[["a", "b", "c", "d"], ["x", "y"]],
+    )
+    encoder.fit(X)
+
+    assert len(encoder._encoder.categories_) == len(encoder.features_to_encode)
+    set(encoder.categories("col_2")) == {"a", "b", "c", "d"}
+    set(encoder.categories("col_3")) == {"x", "y"}
 
 
 def test_top_n_error_without_handle_unknown():
@@ -118,13 +162,14 @@ def test_features_to_encode_non_ordinal_cols():
 
 def test_categories_specified_not_present_in_data():
     """Make sure that we can handle categories during fit that aren't present in
-    the data so that they can be seen during transform
+    the data so that they can be seen during transform. Note that because we fit on the
+    Ordinal.order passed in at fit, that order is the source of truth for
+    potential categories available at transform. In this test, that means that "x",
+    though not in the data at fit, must be in the order in order to not be viewed
+    as an unknown value at transform.
     """
     X = pd.DataFrame({"col_1": ["a", "b", "a", "c", "d"]})
-    X.ww.init(logical_types={"col_1": Ordinal(order=["a", "b", "c", "d"])})
-    # --> weird that we have to put empty list for columns that arent ordinal in nature when specifing categories....
-    # check with OHE if that's the case??
-    # -->THIS IS STILL FAILING
+    X.ww.init(logical_types={"col_1": Ordinal(order=["a", "b", "c", "d", "x"])})
 
     encoder = OrdinalEncoder(
         top_n=None,
@@ -133,9 +178,10 @@ def test_categories_specified_not_present_in_data():
         unknown_value=-1,
     )
     encoder.fit(X)
+    assert set(encoder.categories("col_1")) == {"a", "x"}
 
     X_2 = pd.DataFrame({"col_1": ["a", "b", "a", "c", "x"]})
-    X_2.ww.init(logical_types={"col_1": Ordinal(order=["a", "b", "c", "x"])})
+    X_2.ww.init(logical_types={"col_1": Ordinal(order=["a", "b", "c", "d", "x"])})
     X_t = encoder.transform(X_2)
     assert list(X_t["col_1_ordinally_encoded"]) == [0, -1, 0, -1, 1]
 
@@ -198,9 +244,6 @@ def test_ordinal_encoder_recognizes_ordinal_columns():
         assert list(category_list) == expected_categories[i]
 
 
-# --> test setting non ordinal col in features to encode
-
-
 def test_ordinal_encoder_categories_set_correctly_from_fit():
     # The SKOrdinalEncoder.categories_ attribute is what determines what gets encoded
     # So we're checking how that gets set during fit
@@ -221,13 +264,6 @@ def test_ordinal_encoder_categories_set_correctly_from_fit():
     for i, category_list in enumerate(encoder._encoder.categories_):
         assert list(category_list) == categories[i]
 
-    # Categories set explicitly - means top_n must be set to None
-    # --> this behavior should be tested elsewhere??
-    # encoder = OrdinalEncoder(top_n=None, categories=subset_categories)
-    # with pytest.raises(ValueError) as exec_info:
-    #     encoder.fit(X)
-    # assert "Found unknown categories" in exec_info.value.args[0]
-
     # Categories set at init explicitly - means we have to set top_n to None
     # and handle the unknown case
     subset_categories = [["a"], ["a"], ["a"]]
@@ -241,8 +277,6 @@ def test_ordinal_encoder_categories_set_correctly_from_fit():
     for i, category_list in enumerate(encoder._encoder.categories_):
         assert list(category_list) == subset_categories[i]
 
-    # --> feels weird that you have to supply these values  when just topn is set
-    # --> do we need to mention tie behavior for top_n?
     # Categories not specified, but top_n specified to limit categories
     encoder = OrdinalEncoder(
         top_n=1,
@@ -255,8 +289,6 @@ def test_ordinal_encoder_categories_set_correctly_from_fit():
         assert list(category_list) == expected_categories[i]
 
 
-# --> test feature names
-# --> test encoded feature values
 def test_ordinal_encoder_transform():
     X = pd.DataFrame(
         {
@@ -301,7 +333,7 @@ def test_null_values_in_dataframe():
                 "a",
                 "c",
                 "c",
-            ],  # --> add test where one is none and the other is nan and another is pd.na
+            ],
             "col_3": ["a", "a", "a", "a", "a"],
         },
     )
@@ -397,10 +429,6 @@ def test_ordinal_encoder_diff_na_types():
     assert X_t["col_3_ordinally_encoded"].iloc[-1] == -1
 
 
-# --> diff combinations of parameters
-# --> test args that can be arrays as arrays
-
-
 def test_handle_unknown():
     X = pd.DataFrame(
         {
@@ -439,9 +467,6 @@ def test_handle_unknown():
         # Using the encoder that was fit on data without x
         encoder.transform(X)
     assert "Found unknown categories" in exec_info.value.args[0]
-
-
-# --> passed in categories have a different sorted order than that of the data itsef - use ordinal order as sourceo f truth and just inpput param as ways to specify what subset
 
 
 def test_no_top_n():
@@ -653,11 +678,6 @@ def test_numpy_input():
     pd.testing.assert_frame_equal(pd.DataFrame(X), X_t, check_dtype=False)
 
 
-# --> thest case when top_n > # categories and handle unknown is error
-# --> case when top_n < # cats and handle unknown is error
-# --> unknown value not seen during fit seen at transform
-
-
 @pytest.mark.parametrize(
     "index",
     [
@@ -837,47 +857,6 @@ def test_ordinal_encoder_top_n_categories_always_the_same():
 
     check_df_equality(5)
     check_df_equality(get_random_seed(5))
-
-
-# @pytest.mark.parametrize(
-#     "X_df",
-#     [
-#         pd.DataFrame(
-#             pd.to_datetime(["20190902", "20200519", "20190607"], format="%Y%m%d"),
-#         ),
-#         pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
-#         pd.DataFrame(pd.Series([1.0, 2.0, 3.0], dtype="float")),
-#         pd.DataFrame(pd.Series(["a", "b", "a"], dtype="category")),
-#         pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
-#         pd.DataFrame(
-#             pd.Series(
-#                 ["this will be a natural language column because length", "yay", "hay"],
-#                 dtype="string",
-#             ),
-#         ),
-#     ],
-# )
-
-#     y = pd.Series([1, 2, 1])
-#     override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime, Boolean]
-#     for logical_type in override_types:
-#         try:
-#             X = X_df.copy()
-#             X.ww.init(logical_types={0: logical_type})
-#         except (TypeConversionError, ValueError, TypeError):
-#             continue
-#         if X.loc[:, 0].isna().all():
-#             # Casting the fourth and fifth dataframes to datetime will produce all NaNs
-#             continue
-
-#         ordinal_encoder = OrdinalEncoder()
-#         ordinal_encoder.fit(X, y)
-#         transformed = ordinal_encoder.transform(X, y)
-#         assert isinstance(transformed, pd.DataFrame)
-#         if logical_type != Categorical:
-#             assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-#                 0: logical_type,
-#             }
 
 
 def test_ordinal_encoder_output_doubles():

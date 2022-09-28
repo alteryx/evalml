@@ -31,9 +31,10 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
             To not have unknown values raise an error, set handle_unknown to "use_encoded_value".
             Defaults to 10.
         features_to_encode (list[str]): List of columns to encode. All other columns will remain untouched.
-            If None, all appropriate columns will be encoded. Defaults to None.
+            If None, all appropriate columns will be encoded. Defaults to None. The order of columns does not matter.
         categories (list[list[str]]): A two dimensional list of categories, where `categories[i]` is a list of the categories
-            for the column at index `i`. The order of categories for a column does not matter.
+            for the column at index `i` in the dataframes passed in at fit and transform.
+            The order of categories specified for a column does not matter.
             Any category not present in categories will be handled as an unknown value.
             To not have unknown values raise an error, set handle_unknown to "use_encoded_value".
             This can also be `None` or `"auto"` if `top_n` is not None. Cannot be specified if top_n
@@ -48,7 +49,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
             The value has to be distinct from the values used to encode any of the categories in fit.
             Defaults to None.
         encoded_missing_value (int or np.nan): The value to use for missing (null) values seen during
-            fit or transform. Defaults to np.nan. #--> do we need an option to raise an error here?
+            fit or transform. Defaults to np.nan.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -115,6 +116,18 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         if self.features_to_encode is None:
             self.features_to_encode = self._get_ordinal_cols(X)
         else:
+            # When features_to_encode is user-specified, check that all columns are present
+            # and have the Ordinal logical type
+            not_present_features = [
+                col for col in self.features_to_encode if col not in list(X.columns)
+            ]
+            if len(not_present_features) > 0:
+                raise ValueError(
+                    "Could not find and encode {} in input data.".format(
+                        ", ".join(not_present_features),
+                    ),
+                )
+
             logical_types = X.ww.logical_types
             for col in self.features_to_encode:
                 ltype = logical_types[col]
@@ -123,17 +136,12 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                         f"Column {col} specified in features_to_encode is not Ordinal in nature",
                     )
 
-        X_t = X
-        invalid_features = [
-            col for col in self.features_to_encode if col not in list(X.columns)
-        ]
-        if len(invalid_features) > 0:
-            raise ValueError(
-                "Could not find and encode {} in input data.".format(
-                    ", ".join(invalid_features),
-                ),
-            )
+            # Put features_to_encode in the same relative order as the columns in the dataframe
+            self.features_to_encode = [
+                col for col in X.columns if col in self.features_to_encode
+            ]
 
+        X_t = X
         if len(self.features_to_encode) == 0:
             categories = "auto"
         elif self.parameters["categories"] is not None:
@@ -143,7 +151,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                 list,
             ):
                 raise ValueError(
-                    "Categories argument must contain a list of categories for each categorical feature",
+                    "Categories argument must contain a list of categories for each ordinal feature",
                 )
 
             # Categories, as they're passed into SKOrdinalEncoder should be in the same order
@@ -151,15 +159,12 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
             # --> refactor this to be nicer
             categories = []
             for i, col_categories in enumerate(input_categories):
-                categories_order = X.ww.logical_types[X.columns[i]].order
+                categories_order = X.ww.logical_types[self.features_to_encode[i]].order
 
                 ordered_categories = [
                     cat for cat in categories_order if cat in col_categories
                 ]
                 categories.append(ordered_categories)
-
-            # --> should we compare with the ordinal categories to make sure they're all at least in there?
-            # --> if so, add a test
         else:
             categories = []
             ww_logical_types = X.ww.logical_types
@@ -176,7 +181,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                         frac=1,
                         random_state=self._initial_state,
                     )
-                    # --> make sure this is sorting on the number
                     value_counts = value_counts.sort_values(
                         [col],
                         ascending=False,
@@ -222,7 +226,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                 index=X_copy.index,
             )
             X_cat.columns = self._get_feature_names()
-            # --> could we do Integer or IntegerNullably? Maybe but Double is simpler
             X_cat.ww.init(logical_types={c: "Double" for c in X_cat.columns})
             self._feature_names = X_cat.columns
 
@@ -251,7 +254,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         return unique_names
 
     def categories(self, feature_name):
-        # --> need to make sure this works
         """Returns a list of the unique categories to be encoded for the particular feature, in order.
 
         Args:
