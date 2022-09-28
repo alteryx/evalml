@@ -21,10 +21,10 @@ class TargetLeakageDataCheck(DataCheck):
     Args:
         pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
         method (string): The method to determine correlation. Use 'max' for the maximum correlation, or for specific correlation metrics, use their name (ie 'mutual_info' for mutual information, 'pearson' for Pearson correlation, etc).
-            Defaults to 'max', which will use all available correlation metrics and find the max value.
+            Defaults to 'mutual_info'.
     """
 
-    def __init__(self, pct_corr_threshold=0.95, method="max"):
+    def __init__(self, pct_corr_threshold=0.95, method="mutual_info"):
         if pct_corr_threshold < 0 or pct_corr_threshold > 1:
             raise ValueError(
                 "pct_corr_threshold must be a float between 0 and 1, inclusive.",
