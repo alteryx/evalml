@@ -439,7 +439,7 @@ def test_target_leakage_data_check_input_formats_pearson():
 
 
 @pytest.mark.parametrize("measures", ["pearson", "spearman", "mutual_info", "max"])
-def test_target_leakage_none_pearson_spearman(measures):
+def test_target_leakage_none_measures(measures):
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method=measures)
     y = pd.Series([1, 0, 1, 1] * 6 + [1])
     X = pd.DataFrame()
