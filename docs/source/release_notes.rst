@@ -4,12 +4,14 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Use Woodwork's ``dependence_dict`` method to calculate for ``TargetLeakageDataCheck`` :pr:`3728`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * ``TargetLeakageDataCheck`` now uses argument ``mutual_info`` rather than ``mutual`` :pr:`3728`
 
 
 **v0.59.0 Sept. 27, 2022**
@@ -21,7 +23,6 @@ Release Notes
         * Fixed bug in Oversampler where categorical dtypes would fail :pr:`3732`
     * Changes
         * Automatic sorting of the ``time_index`` prior to running ``DataChecks`` has been disabled :pr:`3723`
-        * Use Woodwork's ``dependence_dict`` method to calculate for ``TargetLeakageDataCheck`` :pr:`3728`
     * Documentation Changes
     * Testing Changes
         * Update job to use new looking glass report command :pr:`3733`

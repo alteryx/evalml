@@ -21,7 +21,7 @@ class TargetLeakageDataCheck(DataCheck):
     Args:
         pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
         method (string): The method to determine correlation. Use 'max' for the maximum correlation, or for specific correlation metrics, use their name (ie 'mutual_info' for mutual information, 'pearson' for Pearson correlation, etc).
-            Defaults to 'mutual_info'.
+            Excludes 'all'. Defaults to 'mutual_info'.
     """
 
     def __init__(self, pct_corr_threshold=0.95, method="mutual_info"):
@@ -32,6 +32,8 @@ class TargetLeakageDataCheck(DataCheck):
         methods = CONFIG_DEFAULTS["correlation_metrics"]
         if method not in methods:
             raise ValueError(f"Method '{method}' not in {methods}")
+        if method == "all":
+            raise ValueError("Cannot use 'all' as the method")
         self.pct_corr_threshold = pct_corr_threshold
         self.method = method
 
@@ -106,7 +108,7 @@ class TargetLeakageDataCheck(DataCheck):
             ... ]
 
 
-            The default method can be changed to pearson from max.
+            The default method can be changed to pearson from mutual_info.
 
             >>> X["x"] = y / 2
             >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method="pearson")

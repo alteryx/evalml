@@ -440,14 +440,25 @@ def test_target_leakage_data_check_input_formats_pearson():
 
 @pytest.mark.parametrize("measures", ["pearson", "spearman"])
 def test_target_leakage_none_pearson_spearman(measures):
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method=measures)
-    y = pd.Series([1, 0, 1, 1])
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method=measures)
+    y = pd.Series([1, 0, 1, 1] * 6 + [1])
     X = pd.DataFrame()
-    X["a"] = [1, 1, 1, 1]
-    X["b"] = [0, 0, 0, 0]
+    X["a"] = ["a", "b", "a", "a"] * 6 + ["a"]
+    X["b"] = y
     y = y.astype(bool)
 
     assert leakage_check.validate(X, y) == []
+
+
+@pytest.mark.parametrize("measures", ["mutual_info", "max"])
+def test_target_leakage_none_other_metrics(measures):
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method=measures)
+    y = pd.Series([1, 0, 1, 1] * 6 + [1])
+    X = pd.DataFrame()
+    X["a"] = ["a", "b", "a", "a"] * 6 + ["a"]
+    X["b"] = y
+    y = y.astype(bool)
+    assert len(leakage_check.validate(X, y))
 
 
 def test_target_leakage_maintains_logical_types():
@@ -498,3 +509,8 @@ def test_target_leakage_target_string():
         ).to_dict(),
     ]
     assert leakage_check.validate(X, y) == expected
+
+
+def test_target_leakage_use_all():
+    with pytest.raises(ValueError, match="Cannot use 'all' as the method"):
+        TargetLeakageDataCheck(method="all")
