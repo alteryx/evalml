@@ -438,7 +438,7 @@ def test_target_leakage_data_check_input_formats_pearson():
     assert leakage_check.validate(X, y.values) == expected
 
 
-@pytest.mark.parametrize("measures", ["pearson", "spearman"])
+@pytest.mark.parametrize("measures", ["pearson", "spearman", "mutual_info", "max"])
 def test_target_leakage_none_pearson_spearman(measures):
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method=measures)
     y = pd.Series([1, 0, 1, 1] * 6 + [1])
@@ -447,17 +447,9 @@ def test_target_leakage_none_pearson_spearman(measures):
     X["b"] = y
     y = y.astype(bool)
 
-    assert leakage_check.validate(X, y) == []
-
-
-@pytest.mark.parametrize("measures", ["mutual_info", "max"])
-def test_target_leakage_none_other_metrics(measures):
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method=measures)
-    y = pd.Series([1, 0, 1, 1] * 6 + [1])
-    X = pd.DataFrame()
-    X["a"] = ["a", "b", "a", "a"] * 6 + ["a"]
-    X["b"] = y
-    y = y.astype(bool)
+    if measures in ["pearson", "spearman"]:
+        assert leakage_check.validate(X, y) == []
+        return
     assert len(leakage_check.validate(X, y))
 
 
