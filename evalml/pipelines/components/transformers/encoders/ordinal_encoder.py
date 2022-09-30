@@ -25,10 +25,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
     """A transformer that encodes ordinal features as an array of ordinal integers representing the relative order of categories.
 
     Args:
-        top_n (int): Number of categories per column to encode. If None, all categories will be encoded.
-            Otherwise, the `n` most frequent will be encoded and all others will be handled as unknown values.
-            To not have unknown values raise an error, set handle_unknown to "use_encoded_value".
-            Defaults to 10.
         features_to_encode (list[str]): List of columns to encode. All other columns will remain untouched.
             If None, all appropriate columns will be encoded. Defaults to None. The order of columns does not matter.
         categories (list[list[str]]): A two dimensional list of categories, where `categories[i]` is a list of the categories
@@ -36,8 +32,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
             The order of categories specified for a column does not matter.
             Any category not present in categories will be handled as an unknown value.
             To not have unknown values raise an error, set handle_unknown to "use_encoded_value".
-            This can also be `None` or `"auto"` if `top_n` is not None. Cannot be specified if top_n
-            is specified. Defaults to None.
+            Defaults to None.
         handle_unknown ("error" or "use_encoded_value"): Whether to ignore or error for unknown categories
             for a feature encountered during `fit` or `transform`. When set to "error",
             an error will be raised when an unknown category is found.
@@ -50,6 +45,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         encoded_missing_value (int or np.nan): The value to use for missing (null) values seen during
             fit or transform. Defaults to np.nan.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+        # --> is random seed still necessary?
     """
 
     name = "Ordinal Encoder"
@@ -58,17 +54,15 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
 
     def __init__(
         self,
-        top_n=10,
         features_to_encode=None,
         categories=None,
         handle_unknown="error",
         unknown_value=None,
         encoded_missing_value=None,
         random_seed=0,
-        **kwargs,
+        **kwargs,  # --> why do we have kwargs if they arent used?? Maybe needed for larger evalml pipeline
     ):
         parameters = {
-            "top_n": top_n,
             "features_to_encode": features_to_encode,
             "categories": categories,
             "handle_unknown": handle_unknown,
@@ -89,8 +83,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                 "be specified as either np.nan or as an int that is distinct from"
                 "the other encoded categories ",
             )
-        if top_n is not None and categories is not None:
-            raise ValueError("Cannot use categories and top_n arguments simultaneously")
 
         self.features_to_encode = features_to_encode
         self._encoder = None
@@ -122,7 +114,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
             ValueError: If encoding a column failed.
             TypeError: If non-Ordinal columns are specified in features_to_encode.
         """
-        top_n = self.parameters["top_n"]
         # Ordinal type is not inferred by Woodwork, so if it wasn't set before, it won't be set at init
         X = infer_feature_types(X)
         if self.features_to_encode is None:
@@ -182,36 +173,12 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                 categories.append(ordered_categories)
         else:
             # Categories unspecified - use ordered categories from a columns' Ordinal logical type
-            # and account for top_n
             categories = []
             for col in X_t[self.features_to_encode]:
                 ltype = ww_logical_types[col]
                 # Copy the order list, since we might mutate it later by adding nans
                 # and don't want to impact the Woodwork types
-                column_ordered_categories = ltype.order.copy()
-
-                if top_n is None or len(column_ordered_categories) <= top_n:
-                    unique_values = column_ordered_categories
-                else:
-                    # Don't count nans as a value
-                    value_counts = X_t[col].value_counts(dropna=True).to_frame()
-                    value_counts = value_counts.sample(
-                        frac=1,
-                        random_state=self._initial_state,
-                    )
-                    value_counts = value_counts.sort_values(
-                        [col],
-                        ascending=False,
-                        kind="mergesort",
-                    )
-                    unique_values = value_counts.head(top_n).index.tolist()
-                    # Categories should be in the same order as the data's Ordinal.order categories
-                    # instead of sorted by most frequent
-                    unique_values = [
-                        cat for cat in column_ordered_categories if cat in unique_values
-                    ]
-
-                categories.append(unique_values)
+                categories.append(ltype.order.copy())
 
         # Add any null values into the categories lists so that they aren't treated as unknown values
         # This is needed because Ordinal.order won't indicate if nulls are present, and SKOrdinalEncoder

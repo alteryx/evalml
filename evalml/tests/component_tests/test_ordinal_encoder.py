@@ -21,7 +21,6 @@ def set_first_three_columns_to_ordinal_with_categories(X, categories):
 
 def test_init():
     parameters = {
-        "top_n": 10,
         "features_to_encode": None,
         "categories": None,
         "handle_unknown": "error",
@@ -33,14 +32,13 @@ def test_init():
 
 
 def test_parameters():
-    encoder = OrdinalEncoder(top_n=123)
+    encoder = OrdinalEncoder(encoded_missing_value=-1)
     expected_parameters = {
-        "top_n": 123,
         "features_to_encode": None,
         "categories": None,
         "handle_unknown": "error",
         "unknown_value": None,
-        "encoded_missing_value": None,
+        "encoded_missing_value": -1,
     }
     assert encoder.parameters == expected_parameters
 
@@ -69,26 +67,19 @@ def test_invalid_inputs():
         X,
         [["a", "b", "c", "d"], ["a", "b", "c"], ["a"]],
     )
-    encoder = OrdinalEncoder(top_n=None, categories=[["a", "b"], ["a", "c"]])
+    encoder = OrdinalEncoder(categories=[["a", "b"], ["a", "c"]])
     error_msg = (
         "Categories argument must contain a list of categories for each ordinal feature"
     )
     with pytest.raises(ValueError, match=error_msg):
         encoder.fit(X)
 
-    encoder = OrdinalEncoder(top_n=None, categories=["a", "b", "c"])
+    encoder = OrdinalEncoder(categories=["a", "b", "c"])
     error_msg = (
         "Categories argument must contain a list of categories for each ordinal feature"
     )
     with pytest.raises(ValueError, match=error_msg):
         encoder.fit(X)
-
-    categories = [["a", "b", "c", "d"], ["a", "b", "c"], ["a", "b"]]
-    with pytest.raises(
-        ValueError,
-        match="Cannot use categories and top_n arguments simultaneously",
-    ):
-        OrdinalEncoder(top_n=11, categories=categories, random_seed=2)
 
 
 def test_categories_list_not_passed_in_for_non_ordinal_column():
@@ -104,7 +95,7 @@ def test_categories_list_not_passed_in_for_non_ordinal_column():
     )
     X.ww.init(logical_types={"col_2": Ordinal(order=["a", "b", "c", "d"])})
 
-    encoder = OrdinalEncoder(top_n=None, categories=[["a", "b", "c", "d"]])
+    encoder = OrdinalEncoder(categories=[["a", "b", "c", "d"]])
     encoder.fit(X)
 
     assert len(encoder._encoder.categories_) == len(encoder.features_to_encode)
@@ -122,7 +113,6 @@ def test_categories_list_not_passed_in_for_non_ordinal_column():
         },
     )
     encoder = OrdinalEncoder(
-        top_n=None,
         # features_to_encode passed in different order than the dataframe's cols
         features_to_encode=["col_3", "col_2"],
         # categories' order still matches the dataframe's cols
@@ -133,17 +123,6 @@ def test_categories_list_not_passed_in_for_non_ordinal_column():
     assert len(encoder._encoder.categories_) == len(encoder.features_to_encode)
     set(encoder.categories("col_2")) == {"a", "b", "c", "d"}
     set(encoder.categories("col_3")) == {"x", "y"}
-
-
-def test_top_n_error_without_handle_unknown():
-    X = pd.DataFrame({"col_1": [2, 0, 1, 0, 0], "col_2": ["a", "b", "a", "c", "d"]})
-    X.ww.init(logical_types={"col_2": Ordinal(order=["a", "b", "c", "d"])})
-
-    encoder = OrdinalEncoder(top_n=2)
-
-    error_segment = "Found unknown categories"
-    with pytest.raises(ValueError, match=error_segment):
-        encoder.fit(X)
 
 
 def test_features_to_encode_non_ordinal_cols():
@@ -168,7 +147,6 @@ def test_categories_specified_not_present_in_data():
     X.ww.init(logical_types={"col_1": Ordinal(order=["a", "b", "c", "d", "x"])})
 
     encoder = OrdinalEncoder(
-        top_n=None,
         categories=[["a", "x"]],
         handle_unknown="use_encoded_value",
         unknown_value=-1,
@@ -259,11 +237,9 @@ def test_ordinal_encoder_categories_set_correctly_from_fit():
     for i, category_list in enumerate(encoder._encoder.categories_):
         assert list(category_list) == categories[i]
 
-    # Categories set at init explicitly - means we have to set top_n to None
-    # and handle the unknown case
+    # Categories set at init explicitly - means we have to handle the unknown case
     subset_categories = [["a"], ["a"], ["a"]]
     encoder = OrdinalEncoder(
-        top_n=None,
         categories=subset_categories,
         handle_unknown="use_encoded_value",
         unknown_value=-1,
@@ -271,17 +247,6 @@ def test_ordinal_encoder_categories_set_correctly_from_fit():
     encoder.fit(X)
     for i, category_list in enumerate(encoder._encoder.categories_):
         assert list(category_list) == subset_categories[i]
-
-    # Categories not specified, but top_n specified to limit categories
-    encoder = OrdinalEncoder(
-        top_n=1,
-        handle_unknown="use_encoded_value",
-        unknown_value=-1,
-    )
-    encoder.fit(X)
-    expected_categories = [["a"], ["b"], ["a"]]
-    for i, category_list in enumerate(encoder._encoder.categories_):
-        assert list(category_list) == expected_categories[i]
 
 
 def test_ordinal_encoder_transform():
@@ -380,47 +345,6 @@ def test_ordinal_encoder_diff_na_types():
     assert X_t["col_3_ordinally_encoded"].iloc[-1] == -1
 
 
-def test_null_values_with_top_n():
-    """Null values shouldn't get counted towards the top_n, so check that if nan is inside or
-    outside of top_n, the behavior doesn't change."""
-    # nan would be in the top_n of col 1 but not 2 if it counted towards top_n
-    X = pd.DataFrame(
-        {
-            "col_1": ["a", "b", "c", np.nan, np.nan],
-            "col_2": [
-                "a",
-                "b",
-                "a",
-                "c",
-                np.nan,
-            ],
-            "col_3": ["a", "a", "a", "a", "a"],
-        },
-    )
-    # Note - we cant include the null value in the categories used by Woodwork
-    # because it sets the pandas dtypes' categories and they can't include a null value
-    categories = [["a", "b", "c", "d"], ["a", "b", "c"]]
-    X.ww.init(
-        logical_types={
-            "col_1": Ordinal(order=categories[0]),
-            "col_2": Ordinal(order=categories[1]),
-        },
-    )
-
-    # Nans should not get handled as unknown even if they're not within the top n
-    encoder = OrdinalEncoder(
-        top_n=1,
-        handle_unknown="use_encoded_value",
-        unknown_value=-1,
-    )
-    encoder.fit(X)
-    X_t = encoder.transform(X)
-    # Check that none of the null values were treated as unknown values
-    assert pd.isna(X_t["col_1_ordinally_encoded"].iloc[-1])
-    assert pd.isna(X_t["col_1_ordinally_encoded"].iloc[-2])
-    assert pd.isna(X_t["col_2_ordinally_encoded"].iloc[-1])
-
-
 def test_null_values_with_categories_specified():
     """Nans aren't treated by Woodwork as categories in ordinal cols, so they shouldn't
     have an impact on the categories parameter and be handled entirely independently."""
@@ -452,7 +376,6 @@ def test_null_values_with_categories_specified():
         categories=[["a"], ["a", np.nan]],
         handle_unknown="use_encoded_value",
         unknown_value=-1,
-        top_n=None,
     )
     encoder.fit(X)
     X_t = encoder.transform(X)
@@ -502,55 +425,6 @@ def test_handle_unknown():
     assert "Found unknown categories" in exec_info.value.args[0]
 
 
-def test_no_top_n():
-    # test all categories in all columns are encoded when top_n is None
-    X = pd.DataFrame(
-        {
-            "col_1": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
-            "col_2": ["a", "c", "d", "b", "e", "e", "f", "a", "b", "c", "d"],
-            "col_3": ["a", "a", "a", "a", "a", "a", "b", "a", "a", "b", "b"],
-            "col_4": [2, 0, 1, 3, 0, 1, 2, 0, 2, 1, 2],
-        },
-    )
-    X.ww.init(
-        logical_types={
-            "col_1": Ordinal(
-                order=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
-            ),
-            "col_2": Ordinal(order=["a", "b", "c", "d", "e", "f"]),
-        },
-    )
-    expected_col_names = set(
-        ["col_3", "col_4", "col_1_ordinally_encoded", "col_2_ordinally_encoded"],
-    )
-
-    encoder = OrdinalEncoder(top_n=None, handle_unknown="error", random_seed=2)
-    encoder.fit(X)
-    X_t = encoder.transform(X)
-
-    col_names = set(X_t.columns)
-    assert col_names == expected_col_names
-
-    # Make sure unknown values cause an error
-    X_new = pd.DataFrame(
-        {
-            "col_1": ["a", "b", "c", "x"],
-            "col_2": ["a", "c", "d", "b"],
-            "col_3": ["a", "a", "a", "a"],
-            "col_4": [2, 0, 1, 3],
-        },
-    )
-    X_new.ww.init(
-        logical_types={
-            "col_1": Ordinal(order=["a", "b", "c", "x"]),
-            "col_2": Ordinal(order=["a", "b", "c", "d"]),
-        },
-    )
-    with pytest.raises(ValueError) as exec_info:
-        encoder.transform(X_new)
-    assert "Found unknown categories" in exec_info.value.args[0]
-
-
 def test_categories_set_at_init():
     X = pd.DataFrame(
         {
@@ -574,7 +448,6 @@ def test_categories_set_at_init():
 
     # test categories value works when transforming
     encoder = OrdinalEncoder(
-        top_n=None,
         categories=categories,
         handle_unknown="use_encoded_value",
         unknown_value=-1,
@@ -614,7 +487,6 @@ def test_categories_includes_not_present_value():
 
     # test categories value works when transforming
     encoder = OrdinalEncoder(
-        top_n=None,
         categories=categories,
         handle_unknown="use_encoded_value",
         unknown_value=-1,
@@ -653,7 +525,6 @@ def test_categories_different_order_from_ltype():
 
     # test categories value works when transforming
     encoder = OrdinalEncoder(
-        top_n=None,
         categories=categories,
         handle_unknown="use_encoded_value",
         unknown_value=-1,
@@ -664,80 +535,6 @@ def test_categories_different_order_from_ltype():
 
     assert list(X_t["col_1_ordinally_encoded"]) == [0, 1, 2, 3, -1, -1, -1]
     assert list(X_t["col_2_ordinally_encoded"]) == [0, 2, -1, 1, -1, -1, -1]
-    assert list(X_t["col_3_ordinally_encoded"]) == [0, 0, 0, 0, 0, 0, 1]
-
-
-def test_less_than_top_n_unique_values():
-    X = pd.DataFrame(
-        {
-            "col_1": ["a", "b", "c", "d", "d"],
-            "col_2": ["a", "b", "a", "c", "b"],
-            "col_3": ["a", "a", "a", "a", "a"],
-            "col_4": [2, 0, 1, 0, 0],
-        },
-    )
-    X.ww.init(
-        logical_types={
-            "col_1": Ordinal(order=["a", "b", "c", "d"]),
-            "col_2": Ordinal(order=["c", "b", "a"]),
-            "col_3": "categorical",
-        },
-    )
-
-    encoder = OrdinalEncoder(top_n=5)
-    encoder.fit(X)
-    X_t = encoder.transform(X)
-
-    assert set(X_t.columns) == {
-        "col_1_ordinally_encoded",
-        "col_2_ordinally_encoded",
-        "col_3",
-        "col_4",
-    }
-    pd.testing.assert_series_equal(
-        X_t["col_1_ordinally_encoded"],
-        pd.Series([0, 1, 2, 3, 3], name="col_1_ordinally_encoded", dtype="float64"),
-    )
-    pd.testing.assert_series_equal(
-        X_t["col_2_ordinally_encoded"],
-        pd.Series([2, 1, 2, 0, 1], name="col_2_ordinally_encoded", dtype="float64"),
-    )
-
-
-def test_more_top_n_unique_values():
-    # test that columns with >= n unique values encodes properly
-    X = pd.DataFrame(
-        {
-            "col_1": ["a", "b", "c", "d", "e", "f", "g"],
-            "col_2": ["a", "c", "d", "b", "e", "e", "f"],
-            "col_3": ["a", "a", "a", "a", "a", "a", "b"],
-            "col_4": [2, 0, 1, 3, 0, 1, 2],
-        },
-    )
-    full_categories = [
-        ["a", "b", "c", "d", "e", "f", "g"],
-        ["a", "b", "c", "d", "e", "f"],
-        ["a", "b"],
-    ]
-    X = set_first_three_columns_to_ordinal_with_categories(
-        X,
-        categories=full_categories,
-    )
-
-    random_seed = 2
-
-    encoder = OrdinalEncoder(
-        top_n=5,
-        random_seed=random_seed,
-        handle_unknown="use_encoded_value",
-        unknown_value=-1,
-    )
-    encoder.fit(X)
-    X_t = encoder.transform(X)
-
-    # With random seed, selected categories are e, b, d, c, g
-    assert list(X_t["col_1_ordinally_encoded"]) == [-1, 0, 1, 2, 3, -1, 4]
-    assert list(X_t["col_2_ordinally_encoded"]) == [0, 2, 3, 1, 4, 4, -1]
     assert list(X_t["col_3_ordinally_encoded"]) == [0, 0, 0, 0, 0, 0, 1]
 
 
@@ -780,7 +577,7 @@ def test_ordinal_encoder_categories():
         },
     )
     encoder = OrdinalEncoder(
-        top_n=2,
+        categories=[["a"], ["a", "b"]],
         handle_unknown="use_encoded_value",
         unknown_value=-1,
     )
@@ -810,9 +607,7 @@ def test_ordinal_encoder_get_feature_names():
             "col_2": Ordinal(order=["a", "b", "c", "d"]),
         },
     )
-
     ordinal_encoder = OrdinalEncoder(
-        top_n=2,
         handle_unknown="use_encoded_value",
         unknown_value=-1,
     )
@@ -845,8 +640,7 @@ def test_ordinal_encoder_features_to_encode():
             "col_2": Ordinal(order=["a", "b", "c", "d"]),
         },
     )
-
-    encoder = OrdinalEncoder(top_n=5, features_to_encode=["col_1"])
+    encoder = OrdinalEncoder(features_to_encode=["col_1"])
     encoder.fit(X)
     X_t = encoder.transform(X)
     expected_col_names = set(["col_2", "col_1_ordinally_encoded"])
@@ -854,7 +648,7 @@ def test_ordinal_encoder_features_to_encode():
     assert col_names == expected_col_names
     assert [X_t[col].dtype == "uint8" for col in X_t]
 
-    encoder = OrdinalEncoder(top_n=5, features_to_encode=["col_1", "col_2"])
+    encoder = OrdinalEncoder(features_to_encode=["col_1", "col_2"])
     encoder.fit(X)
     X_t = encoder.transform(X)
     expected_col_names = set(
@@ -874,7 +668,7 @@ def test_ordinal_encoder_features_to_encode_col_missing():
         },
     )
 
-    encoder = OrdinalEncoder(top_n=5, features_to_encode=["col_3", "col_4"])
+    encoder = OrdinalEncoder(features_to_encode=["col_3", "col_4"])
 
     with pytest.raises(ValueError, match="Could not find and encode"):
         encoder.fit(X)
@@ -888,46 +682,13 @@ def test_ordinal_encoder_features_to_encode_no_col_names():
             1: Ordinal(order=[0, 1]),
         },
     )
-    encoder = OrdinalEncoder(top_n=5, features_to_encode=[0])
+    encoder = OrdinalEncoder(features_to_encode=[0])
     encoder.fit(X)
     X_t = encoder.transform(X)
     expected_col_names = set([1, "0_ordinally_encoded"])
     col_names = set(X_t.columns)
     assert col_names == expected_col_names
     assert [X_t[col].dtype == "uint8" for col in X_t]
-
-
-def test_ordinal_encoder_top_n_categories_always_the_same():
-    df = pd.DataFrame(
-        {
-            "categories": ["cat_1"] * 5
-            + ["cat_2"] * 4
-            + ["cat_3"] * 3
-            + ["cat_4"] * 3
-            + ["cat_5"] * 3,
-            "numbers": range(18),
-        },
-    )
-    df.ww.init(
-        logical_types={
-            "categories": Ordinal(order=["cat_1", "cat_2", "cat_3", "cat_4", "cat_5"]),
-        },
-    )
-
-    def check_df_equality(random_seed):
-        ordinal_encoder = OrdinalEncoder(
-            top_n=4,
-            random_seed=random_seed,
-            handle_unknown="use_encoded_value",
-            unknown_value=-1,
-        )
-
-        df1 = ordinal_encoder.fit_transform(df)
-        df2 = ordinal_encoder.fit_transform(df)
-        pd.testing.assert_frame_equal(df1, df2)
-
-    check_df_equality(5)
-    check_df_equality(get_random_seed(5))
 
 
 def test_ordinal_encoder_output_doubles():
@@ -996,22 +757,3 @@ def test_data_types(data_type):
             dtype="float64",
         )
         pd.testing.assert_frame_equal(X_t, expected_df)
-
-
-"""
-Tests I didn't include from the ohe tests and why
-
-were not relevant to the ordinal encoder
-    - test_drop_first
-    - test_drop_binary
-    - test_drop_parameter_is_array
-    - test_drop_binary_and_top_n_2
-    - test_ohe_column_names_unique
-Couldn't understand the reason for
-    - test_categorical_dtype
-    - test_all_numerical_dtype
-    - test_ordinal_encoder_woodwork_custom_overrides_returned_by_components
-Seemed redundant to other tests
-    - test_more_top_n_unique_values_large
-    - test_large_number_of_categories - kind of just another test of top_n arg
-"""
