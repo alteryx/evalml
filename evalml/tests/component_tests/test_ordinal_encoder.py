@@ -157,7 +157,7 @@ def test_categories_specified_not_present_in_data():
     X_2 = pd.DataFrame({"col_1": ["a", "b", "a", "c", "x"]})
     X_2.ww.init(logical_types={"col_1": Ordinal(order=["a", "b", "c", "d", "x"])})
     X_t = encoder.transform(X_2)
-    assert list(X_t["col_1_ordinally_encoded"]) == [0, -1, 0, -1, 1]
+    assert list(X_t["col_1_ordinal_encoding"]) == [0, -1, 0, -1, 1]
 
 
 def test_ordinal_encoder_is_no_op_for_df_of_non_ordinal_features():
@@ -269,17 +269,17 @@ def test_ordinal_encoder_transform():
     encoder.fit(X)
     X_t = encoder.transform(X)
     assert set(X_t.columns) == {
-        "col_1_ordinally_encoded",
-        "col_2_ordinally_encoded",
+        "col_1_ordinal_encoding",
+        "col_2_ordinal_encoding",
         "col_3",
     }
     pd.testing.assert_series_equal(
-        X_t["col_1_ordinally_encoded"],
-        pd.Series([0, 1, 2, 3, 3], name="col_1_ordinally_encoded", dtype="float64"),
+        X_t["col_1_ordinal_encoding"],
+        pd.Series([0, 1, 2, 3, 3], name="col_1_ordinal_encoding", dtype="float64"),
     )
     pd.testing.assert_series_equal(
-        X_t["col_2_ordinally_encoded"],
-        pd.Series([2, 1, 2, 0, 1], name="col_2_ordinally_encoded", dtype="float64"),
+        X_t["col_2_ordinal_encoding"],
+        pd.Series([2, 1, 2, 0, 1], name="col_2_ordinal_encoding", dtype="float64"),
     )
 
 
@@ -311,13 +311,13 @@ def test_null_values_in_dataframe():
     encoder = OrdinalEncoder()
     encoder.fit(X)
     X_t = encoder.transform(X)
-    assert pd.isna(X_t["col_1_ordinally_encoded"].iloc[-1])
+    assert pd.isna(X_t["col_1_ordinal_encoding"].iloc[-1])
 
     # If we handle unknowns with an encoded value, the nan will be set to that value
     encoder = OrdinalEncoder(encoded_missing_value=-1)
     encoder.fit(X)
     X_t = encoder.transform(X)
-    assert X_t["col_1_ordinally_encoded"].iloc[-1] == -1
+    assert X_t["col_1_ordinal_encoding"].iloc[-1] == -1
 
 
 def test_ordinal_encoder_diff_na_types():
@@ -340,9 +340,9 @@ def test_ordinal_encoder_diff_na_types():
     encoder.fit(X)
     X_t = encoder.transform(X)
     # Confirm were recognized as null and encoded
-    assert X_t["col_1_ordinally_encoded"].iloc[-1] == -1
-    assert X_t["col_2_ordinally_encoded"].iloc[-1] == -1
-    assert X_t["col_3_ordinally_encoded"].iloc[-1] == -1
+    assert X_t["col_1_ordinal_encoding"].iloc[-1] == -1
+    assert X_t["col_2_ordinal_encoding"].iloc[-1] == -1
+    assert X_t["col_3_ordinal_encoding"].iloc[-1] == -1
 
 
 def test_null_values_with_categories_specified():
@@ -380,9 +380,9 @@ def test_null_values_with_categories_specified():
     encoder.fit(X)
     X_t = encoder.transform(X)
     # Check that the null values were handled as missing even when they're present in categories
-    assert pd.isna(X_t["col_1_ordinally_encoded"].iloc[-1])
-    assert pd.isna(X_t["col_1_ordinally_encoded"].iloc[-2])
-    assert pd.isna(X_t["col_2_ordinally_encoded"].iloc[-1])
+    assert pd.isna(X_t["col_1_ordinal_encoding"].iloc[-1])
+    assert pd.isna(X_t["col_1_ordinal_encoding"].iloc[-2])
+    assert pd.isna(X_t["col_2_ordinal_encoding"].iloc[-1])
 
 
 def test_handle_unknown():
@@ -456,9 +456,9 @@ def test_categories_set_at_init():
     encoder.fit(X)
     X_t = encoder.transform(X)
 
-    assert list(X_t["col_1_ordinally_encoded"]) == [0, 1, 2, 3, -1, -1, -1]
-    assert list(X_t["col_2_ordinally_encoded"]) == [0, 2, -1, 1, -1, -1, -1]
-    assert list(X_t["col_3_ordinally_encoded"]) == [0, 0, 0, 0, 0, 0, 1]
+    assert list(X_t["col_1_ordinal_encoding"]) == [0, 1, 2, 3, -1, -1, -1]
+    assert list(X_t["col_2_ordinal_encoding"]) == [0, 2, -1, 1, -1, -1, -1]
+    assert list(X_t["col_3_ordinal_encoding"]) == [0, 0, 0, 0, 0, 0, 1]
 
 
 def test_categories_includes_not_present_value():
@@ -533,17 +533,9 @@ def test_categories_different_order_from_ltype():
     encoder.fit(X)
     X_t = encoder.transform(X)
 
-    assert list(X_t["col_1_ordinally_encoded"]) == [0, 1, 2, 3, -1, -1, -1]
-    assert list(X_t["col_2_ordinally_encoded"]) == [0, 2, -1, 1, -1, -1, -1]
-    assert list(X_t["col_3_ordinally_encoded"]) == [0, 0, 0, 0, 0, 0, 1]
-
-
-def test_numpy_input():
-    X = np.array([[2, 0, 1, 0, 0], [3, 2, 5, 1, 3]])
-    encoder = OrdinalEncoder()
-    encoder.fit(X)
-    X_t = encoder.transform(X)
-    pd.testing.assert_frame_equal(pd.DataFrame(X), X_t, check_dtype=False)
+    assert list(X_t["col_1_ordinal_encoding"]) == [0, 1, 2, 3, -1, -1, -1]
+    assert list(X_t["col_2_ordinal_encoding"]) == [0, 2, -1, 1, -1, -1, -1]
+    assert list(X_t["col_3_ordinal_encoding"]) == [0, 0, 0, 0, 0, 0, 1]
 
 
 @pytest.mark.parametrize(
@@ -619,14 +611,14 @@ def test_ordinal_encoder_get_feature_names():
     ordinal_encoder.fit(X)
     np.testing.assert_array_equal(
         ordinal_encoder.get_feature_names(),
-        np.array(["col_1_ordinally_encoded", "col_2_ordinally_encoded"]),
+        np.array(["col_1_ordinal_encoding", "col_2_ordinal_encoding"]),
     )
 
     ordinal_encoder = OrdinalEncoder(features_to_encode=["col_2"])
     ordinal_encoder.fit(X)
     np.testing.assert_array_equal(
         ordinal_encoder.get_feature_names(),
-        np.array(["col_2_ordinally_encoded"]),
+        np.array(["col_2_ordinal_encoding"]),
     )
 
 
@@ -643,7 +635,7 @@ def test_ordinal_encoder_features_to_encode():
     encoder = OrdinalEncoder(features_to_encode=["col_1"])
     encoder.fit(X)
     X_t = encoder.transform(X)
-    expected_col_names = set(["col_2", "col_1_ordinally_encoded"])
+    expected_col_names = set(["col_2", "col_1_ordinal_encoding"])
     col_names = set(X_t.columns)
     assert col_names == expected_col_names
     assert [X_t[col].dtype == "uint8" for col in X_t]
@@ -652,7 +644,7 @@ def test_ordinal_encoder_features_to_encode():
     encoder.fit(X)
     X_t = encoder.transform(X)
     expected_col_names = set(
-        ["col_1_ordinally_encoded", "col_2_ordinally_encoded"],
+        ["col_1_ordinal_encoding", "col_2_ordinal_encoding"],
     )
     col_names = set(X_t.columns)
     assert col_names == expected_col_names
@@ -685,7 +677,7 @@ def test_ordinal_encoder_features_to_encode_no_col_names():
     encoder = OrdinalEncoder(features_to_encode=[0])
     encoder.fit(X)
     X_t = encoder.transform(X)
-    expected_col_names = set([1, "0_ordinally_encoded"])
+    expected_col_names = set([1, "0_ordinal_encoding"])
     col_names = set(X_t.columns)
     assert col_names == expected_col_names
     assert [X_t[col].dtype == "uint8" for col in X_t]
@@ -719,15 +711,13 @@ def test_ordinal_encoder_output_doubles():
     assert len(output.columns) == len(X.columns)
 
 
-@pytest.mark.parametrize("data_type", ["list", "np", "pd_no_index", "pd_index", "ww"])
+@pytest.mark.parametrize("data_type", ["list", "np", "pd", "ww"])
 def test_data_types(data_type):
     if data_type == "list":
         X = [["a"], ["b"], ["c"]] * 5
     elif data_type == "np":
         X = np.array([["a"], ["b"], ["c"]] * 5)
-    elif data_type == "pd_no_index":
-        X = pd.DataFrame(["a", "b", "c"] * 5)
-    elif data_type == "pd_index":
+    elif data_type == "pd":
         X = pd.DataFrame(["a", "b", "c"] * 5, columns=[0])
     elif data_type == "ww":
         X = pd.DataFrame(["a", "b", "c"] * 5)
@@ -750,10 +740,10 @@ def test_data_types(data_type):
         )
         pd.testing.assert_frame_equal(X_t, expected_df)
     else:
-        assert list(X_t.columns) == ["0_ordinally_encoded"]
+        assert list(X_t.columns) == ["0_ordinal_encoding"]
         expected_df = pd.DataFrame(
             [[0], [1], [2]] * 5,
-            columns=["0_ordinally_encoded"],
+            columns=["0_ordinal_encoding"],
             dtype="float64",
         )
         pd.testing.assert_frame_equal(X_t, expected_df)

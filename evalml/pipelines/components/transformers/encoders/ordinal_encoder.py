@@ -147,9 +147,10 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         X_t = X
 
         ww_logical_types = X.ww.logical_types
+        categories = []
         if len(self.features_to_encode) == 0:
-            # No ordinal features present - categories don't need to be specified
-            categories = "auto"
+            # No ordinal features present - no transformation can take place so return early
+            return self
         elif self.parameters["categories"] is not None:
             # Categories specified - make sure they match the ordinal columns
             input_categories = self.parameters["categories"]
@@ -163,7 +164,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
 
             # Categories, as they're passed into SKOrdinalEncoder should be in the same order
             # as the data's Ordinal.order categories even if it's a subset
-            categories = []
             for i, col_categories in enumerate(input_categories):
                 categories_order = ww_logical_types[self.features_to_encode[i]].order
 
@@ -173,7 +173,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                 categories.append(ordered_categories)
         else:
             # Categories unspecified - use ordered categories from a columns' Ordinal logical type
-            categories = []
             for col in X_t[self.features_to_encode]:
                 ltype = ww_logical_types[col]
                 # Copy the order list, since we might mutate it later by adding nans
@@ -184,10 +183,9 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         # This is needed because Ordinal.order won't indicate if nulls are present, and SKOrdinalEncoder
         # requires any null values be present in the categories list if they are to be encoded as
         # missing values
-        if isinstance(categories, list):
-            for i, col in enumerate(X_t[self.features_to_encode]):
-                if X_t[col].isna().any():
-                    categories[i] += [np.nan]
+        for i, col in enumerate(X_t[self.features_to_encode]):
+            if X_t[col].isna().any():
+                categories[i] += [np.nan]
 
         encoded_missing_value = self.parameters["encoded_missing_value"]
         if encoded_missing_value is None:
@@ -238,7 +236,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         """Return feature names for the ordinal features after fitting.
 
         Since ordinal encoding creates one encoded feature per column in features_to_encode, feature
-        names are formatted as {column_name}_ordinally_encoded
+        names are formatted as {column_name}_ordinal_encoding
 
         Returns:
             np.ndarray: The feature names after encoding, provided in the same order as input_features.
@@ -247,7 +245,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         unique_names = []
         provenance = {}
         for col_name in self.features_to_encode:
-            encoded_name = f"{col_name}_ordinally_encoded"
+            encoded_name = f"{col_name}_ordinal_encoding"
             unique_names.append(encoded_name)
             provenance[col_name] = [encoded_name]
         self._provenance = provenance
@@ -276,7 +274,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
     def get_feature_names(self):
         """Return feature names for the ordinal features after fitting.
 
-        Feature names are formatted as {column name}_ordinally_encoded.
+        Feature names are formatted as {column name}_ordinal_encoding.
 
         Returns:
             np.ndarray: The feature names after encoding, provided in the same order as input_features.
