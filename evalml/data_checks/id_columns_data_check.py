@@ -181,6 +181,7 @@ class IDColumnsDataCheck(DataCheck):
             cols_with_all_unique = check_all_unique[
                 check_all_unique
             ].index.tolist()  # columns whose values are all unique
+
             # Temporary solution for downstream instances of integers being mapped to doubles.
             # Will be removed when resolved.
             if dtypes == ["Double"]:
