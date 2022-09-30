@@ -175,13 +175,12 @@ class IDColumnsDataCheck(DataCheck):
         ]  # columns whose name is "id"
         id_cols = {col: 0.95 for col in cols_named_id}
 
-        for dtypes in [["Double"], ["Integer", "Categorical"]]:
+        for dtypes in [["Double"], ["Integer", "IntegerNullable", "Categorical"]]:
             X_temp = X.ww.select(include=dtypes)
             check_all_unique = X_temp.nunique() == len(X_temp)
             cols_with_all_unique = check_all_unique[
                 check_all_unique
             ].index.tolist()  # columns whose values are all unique
-
             # Temporary solution for downstream instances of integers being mapped to doubles.
             # Will be removed when resolved.
             if dtypes == ["Double"]:
