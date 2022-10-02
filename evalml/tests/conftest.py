@@ -2201,7 +2201,15 @@ def imputer_test_data():
 def generate_seasonal_data():
     """Function that returns data with a linear trend and a seasonal signal with specified period."""
 
-    def generate_real_data(period, step=None, num_periods=10, scale=1, trend_degree=1):
+    def generate_real_data(
+        period,
+        step=None,
+        num_periods=10,
+        scale=1,
+        trend_degree=1,
+        freq_str="D",
+        set_time_index=False,
+    ):
         X, y = load_weather()
         y = y.set_axis(X["Date"]).asfreq(pd.infer_freq(X["Date"]))
         X = X.set_index("Date").asfreq(pd.infer_freq(X["Date"]))
@@ -2213,6 +2221,8 @@ def generate_seasonal_data():
         num_periods=10,
         scale=1,
         trend_degree=1,
+        freq_str="D",
+        set_time_index=False,
     ):
         if period is None:
             x = np.arange(0, 1, 0.01)
@@ -2222,7 +2232,7 @@ def generate_seasonal_data():
         else:
             freq = 2 * np.pi / period
             x = np.arange(0, period * num_periods, 1)
-        dts = pd.date_range(datetime.today(), periods=len(x))
+        dts = pd.date_range(datetime.today(), periods=len(x), freq=freq_str)
         X = pd.DataFrame({"x": x})
         X = X.set_index(dts)
 
@@ -2237,6 +2247,7 @@ def generate_seasonal_data():
         else:
             y_seasonal = pd.Series(np.zeros(len(x)))
         y = y_trend + y_seasonal
+        y = y.set_axis(dts)
         return X, y
 
     def _return_proper_func(real_or_synthetic):

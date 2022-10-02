@@ -1,3 +1,5 @@
+import datetime
+
 import matplotlib.pyplot
 import numpy as np
 import pandas as pd
@@ -6,70 +8,70 @@ import woodwork as ww
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
-from evalml.pipelines.components import PolynomialDecomposer
+from evalml.pipelines.components import STLDecomposer
 
 
-def test_polynomial_decomposer_init():
-    delayed_features = PolynomialDecomposer(degree=3, time_index="dates")
+def test_stl_decomposer_init():
+    delayed_features = STLDecomposer(degree=3, time_index="dates")
     assert delayed_features.parameters == {
         "degree": 3,
-        "seasonal_period": -1,
+        "seasonal_period": 3,
         "time_index": "dates",
     }
 
 
-def test_polynomial_decomposer_init_raises_error_if_degree_not_int():
+def test_stl_decomposer_init_raises_error_if_degree_not_int():
 
     with pytest.raises(TypeError, match="Received str"):
-        PolynomialDecomposer(degree="1")
+        STLDecomposer(degree="1")
 
     with pytest.raises(TypeError, match="Received float"):
-        PolynomialDecomposer(degree=3.4)
+        STLDecomposer(degree=3.4)
 
-    PolynomialDecomposer(degree=3.0)
+    STLDecomposer(degree=3.0)
 
 
-def test_polynomial_decomposer_raises_value_error_target_is_none(ts_data):
+def test_stl_decomposer_raises_value_error_target_is_none(ts_data):
     X, _, y = ts_data()
 
-    with pytest.raises(ValueError, match="y cannot be None for PolynomialDecomposer!"):
-        PolynomialDecomposer(degree=3).fit_transform(X, None)
+    with pytest.raises(ValueError, match="y cannot be None for STLDecomposer!"):
+        STLDecomposer(degree=3).fit_transform(X, None)
 
-    with pytest.raises(ValueError, match="y cannot be None for PolynomialDecomposer!"):
-        PolynomialDecomposer(degree=3).fit(X, None)
+    with pytest.raises(ValueError, match="y cannot be None for STLDecomposer!"):
+        STLDecomposer(degree=3).fit(X, None)
 
-    pdt = PolynomialDecomposer(degree=3).fit(X, y)
+    pdt = STLDecomposer(degree=3).fit(X, y)
 
-    with pytest.raises(ValueError, match="y cannot be None for PolynomialDecomposer!"):
+    with pytest.raises(ValueError, match="y cannot be None for STLDecomposer!"):
         pdt.inverse_transform(None)
 
 
-def test_polynomial_decomposer_get_trend_dataframe_raises_errors(ts_data):
-    X, _, y = ts_data()
-    pdt = PolynomialDecomposer(degree=3)
-    pdt.fit_transform(X, y)
-
-    with pytest.raises(
-        TypeError,
-        match="Provided X should have datetimes in the index.",
-    ):
-        X_int_index = X.reset_index()
-        pdt.get_trend_dataframe(X_int_index, y)
-
-    with pytest.raises(
-        ValueError,
-        match="Provided DatetimeIndex of X should have an inferred frequency.",
-    ):
-        X.index.freq = None
-        pdt.get_trend_dataframe(X, y)
+# def test_polynomial_decomposer_get_trend_dataframe_raises_errors(ts_data):
+#     X, _, y = ts_data()
+#     stl = STLDecomposer()
+#     stl.fit_transform(X, y)
+#
+#     with pytest.raises(
+#         TypeError,
+#         match="Provided X should have datetimes in the index.",
+#     ):
+#         X_int_index = X.reset_index()
+#         pdt.get_trend_dataframe(X_int_index, y)
+#
+#     with pytest.raises(
+#         ValueError,
+#         match="Provided DatetimeIndex of X should have an inferred frequency.",
+#     ):
+#         X.index.freq = None
+#         pdt.get_trend_dataframe(X, y)
 
 
 def test_polynomial_decomposer_transform_returns_same_when_y_none(
     ts_data,
 ):
     X, _, y = ts_data()
-    pdc = PolynomialDecomposer().fit(X, y)
-    X_t, y_t = pdc.transform(X, None)
+    stl = STLDecomposer().fit(X, y)
+    X_t, y_t = stl.transform(X, None)
     pd.testing.assert_frame_equal(X, X_t)
     assert y_t is None
 
@@ -77,7 +79,7 @@ def test_polynomial_decomposer_transform_returns_same_when_y_none(
 @pytest.mark.parametrize("index_type", ["datetime", "integer"])
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("degree", [1, 2, 3])
-def test_polynomial_decomposer_fit_transform(
+def test_stl_decomposer_fit_transform(
     degree,
     input_type,
     index_type,
@@ -106,7 +108,23 @@ def test_polynomial_decomposer_fit_transform(
         X = X.reset_index(drop=True)
         X.ww.init()
 
-    output_X, output_y = PolynomialDecomposer(degree=degree).fit_transform(X, y)
+    stl = STLDecomposer(degree=degree)
+    output_X, output_y = stl.fit_transform(X, y)
+
+    import matplotlib.pyplot as plt
+
+    fig, axs = plt.subplots(4)
+    fig.set_size_inches(18.5, 14.5)
+    axs[0].plot(y, "r")
+    axs[0].set_title("signal")
+    axs[1].plot(stl.trend, "b")
+    axs[1].set_title("trend")
+    axs[2].plot(stl.seasonal, "g")
+    axs[2].set_title("seasonality")
+    axs[3].plot(stl.residual, "y")
+    axs[3].set_title("residual")
+    plt.show()
+
     pd.testing.assert_series_equal(
         expected_answer,
         output_y,
@@ -206,13 +224,35 @@ def test_polynomial_decomposer_get_trend_dataframe_error_not_fit(
             pdt.get_trend_dataframe(X, y)
 
 
+@pytest.mark.parametrize("transformer_fit_on_data", ["in-sample", "out-of-sample"])
 @pytest.mark.parametrize("degree", [1, 2, 3])
-def test_polynomial_decomposer_inverse_transform(degree, ts_data):
-    X, _, y = ts_data()
+def test_stl_decomposer_inverse_transform(
+    degree,
+    generate_seasonal_data,
+    transformer_fit_on_data,
+):
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+        period=7,
+        freq_str="D",
+        set_time_index=True,
+    )
 
-    decomposer = PolynomialDecomposer(degree=degree)
+    decomposer = STLDecomposer(degree=degree, seasonal_period=7)
     output_X, output_y = decomposer.fit_transform(X, y)
-    output_inverse_y = decomposer.inverse_transform(output_y)
+    import matplotlib.pyplot as plt
+
+    if transformer_fit_on_data == "in-sample":
+        output_inverse_y = decomposer.inverse_transform(output_y)
+    elif transformer_fit_on_data == "out-of-sample":
+        import datetime
+
+        delta = datetime.timedelta(days=7)
+        new_index = y.index + delta
+        y_t_new = pd.Series(np.zeros(len(y))).set_axis(new_index)
+        output_inverse_y = decomposer.inverse_transform(y_t_new)
+        plt.plot(output_inverse_y)
+        plt.show()
+        print("hi")
     pd.testing.assert_series_equal(y, output_inverse_y, check_dtype=False)
 
 
@@ -300,187 +340,85 @@ def test_polynomial_decomposer_build_seasonal_signal(
     )
 
 
-@pytest.mark.parametrize("X_num_time_columns", [0, 1, 2, 3])
 @pytest.mark.parametrize(
-    "X_has_time_index",
-    ["X_has_time_index", "X_doesnt_have_time_index"],
-)
-@pytest.mark.parametrize(
-    "y_has_time_index",
-    ["y_has_time_index", "y_doesnt_have_time_index"],
-)
-@pytest.mark.parametrize(
-    "time_index_specified",
+    "period,freq",
     [
-        "time_index_is_specified",
-        "time_index_not_specified",
-        "time_index_is_specified_but_wrong",
-    ],
-)
-def test_polynomial_decomposer_uses_time_index(
-    ts_data,
-    X_has_time_index,
-    X_num_time_columns,
-    y_has_time_index,
-    time_index_specified,
-):
-    X, _, y = ts_data()
-
-    time_index_col_name = "date"
-    assert isinstance(X.index, pd.DatetimeIndex)
-    assert isinstance(y.index, pd.DatetimeIndex)
-
-    # Modify time series data to match testing conditions
-    if X_has_time_index == "X_doesnt_have_time_index":
-        X = X.ww.reset_index(drop=True)
-    if y_has_time_index == "y_doesnt_have_time_index":
-        y = y.reset_index(drop=True)
-    if X_num_time_columns == 0:
-        X = X.ww.drop(columns=[time_index_col_name])
-    elif X_num_time_columns > 1:
-        for addn_col in range(X_num_time_columns - 1):
-            X.ww[time_index_col_name + str(addn_col + 1)] = X.ww[time_index_col_name]
-    time_index = {
-        "time_index_is_specified": "date",
-        "time_index_not_specified": None,
-        "time_index_is_specified_but_wrong": "d4t3s",
-    }[time_index_specified]
-    decomposer = PolynomialDecomposer(time_index=time_index)
-
-    err_msg = None
-
-    # The time series data has no time data
-    if (
-        X_num_time_columns == 0
-        and X_has_time_index == "X_doesnt_have_time_index"
-        and y_has_time_index == "y_doesnt_have_time_index"
-    ):
-        err_msg = "There are no Datetime features in the feature data and neither the feature nor the target data have a DateTime index."
-
-    # The time series data has too much time data
-    elif (
-        X_num_time_columns > 1
-        and time_index_specified == "time_index_not_specified"
-        and y_has_time_index == "y_doesnt_have_time_index"
-        and X_has_time_index != "X_has_time_index"
-    ):
-        err_msg = "Too many Datetime features provided in data but no time_index column specified during __init__."
-
-    # If the wrong time_index column is specified with multiple datetime columns
-    elif (
-        time_index_specified == "time_index_is_specified_but_wrong"
-        and X_num_time_columns > 1
-        and X_has_time_index != "X_has_time_index"
-        and y_has_time_index != "y_has_time_index"
-    ):
-        err_msg = "Too many Datetime features provided in data and provided time_index column d4t3s not present in data."
-
-    if err_msg is not None:
-        with pytest.raises(
-            ValueError,
-            match=err_msg,
-        ):
-            decomposer.fit_transform(X, y)
-    else:
-        X_t, y_t = decomposer.fit_transform(X, y)
-
-        # If the fit_transform() succeeds, assert the original X and y
-        # have unchanged indices.
-        if X_has_time_index == "X_doesnt_have_time_index":
-            assert not isinstance(X.index, pd.DatetimeIndex)
-        else:
-            assert isinstance(X.index, pd.DatetimeIndex)
-        if y_has_time_index == "y_doesnt_have_time_index":
-            assert not isinstance(y.index, pd.DatetimeIndex)
-        else:
-            assert isinstance(y.index, pd.DatetimeIndex)
-
-
-@pytest.mark.parametrize(
-    "y_has_time_index",
-    ["y_has_time_index", "y_doesnt_have_time_index"],
-)
-def test_polynomial_decomposer_plot_decomposition(
-    y_has_time_index,
-    generate_seasonal_data,
-):
-    step = 0.01
-    period = 9
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period, step)
-    if y_has_time_index == "y_has_time_index":
-        y = y.set_axis(X.index)
-
-    pdc = PolynomialDecomposer(degree=1, seasonal_period=period)
-    pdc.fit_transform(X, y)
-    fig, axs = pdc.plot_decomposition(X, y, show=False)
-    assert isinstance(fig, matplotlib.pyplot.Figure)
-    assert isinstance(axs, np.ndarray)
-    assert all([isinstance(ax, matplotlib.pyplot.Axes) for ax in axs])
-
-
-@pytest.mark.parametrize(
-    "periodicity_determination_method",
-    [
-        "autocorrelation",
+        (7, "D"),  # Weekly season
         pytest.param(
-            "partial-autocorrelation",
-            marks=pytest.mark.xfail(reason="Partial Autocorrelation not working yet."),
-        ),
-    ],
-)
-@pytest.mark.parametrize(
-    "period",
-    [
-        7,
-        30,
-        365,
-        pytest.param(
-            None,
+            30,
+            "D",
             marks=pytest.mark.xfail(
-                reason="Don't have a good heuristic to distinguish bad period guess.",
+                reason="STL doesn't perform well on seasonal data with high periods.",
             ),
         ),
+        pytest.param(
+            365,
+            "D",
+            marks=pytest.mark.xfail(
+                reason="STL doesn't perform well on seasonal data with high periods.",
+            ),
+        ),
+        (12, "M"),  # Annual season
+        (4, "M"),  # Quarterly season
     ],
 )
 @pytest.mark.parametrize("trend_degree", [1, 2, 3])
-@pytest.mark.parametrize("decomposer_picked_correct_degree", [True, False])
-@pytest.mark.parametrize("synthetic_data", ["synthetic", "real"])
-def test_polynomial_decomposer_determine_periodicity(
+@pytest.mark.parametrize("synthetic_data", ["synthetic"])  # , "real"])
+def test_stl_fit_transform(
     period,
+    freq,
     trend_degree,
-    decomposer_picked_correct_degree,
-    periodicity_determination_method,
     synthetic_data,
     generate_seasonal_data,
 ):
 
     X, y = generate_seasonal_data(real_or_synthetic=synthetic_data)(
         period,
+        freq_str=freq,
         trend_degree=trend_degree,
     )
+
+    # Get the expected answer
+    lin_reg = LinearRegression(fit_intercept=True)
+    features = PolynomialFeatures(degree=trend_degree).fit_transform(
+        np.arange(X.shape[0]).reshape(-1, 1),
+    )
+    lin_reg.fit(features, y)
+    expected_trend = lin_reg.predict(features)
+    detrended_values = y.values - expected_trend
+    expected_answer = pd.Series(detrended_values)
 
     if period is None:
         component_period = 1
     else:
         component_period = period
 
-    # Test that the seasonality can be determined if trend guess isn't spot on.
-    if not decomposer_picked_correct_degree:
-        trend_degree = 1 if trend_degree in [2, 3] else 2
+    stl = STLDecomposer(seasonal_period=component_period)
 
-    pdc = PolynomialDecomposer(degree=trend_degree, seasonal_period=component_period)
-    ac = pdc.determine_periodicity(X, y, method=periodicity_determination_method)
+    X_t, y_t = stl.fit_transform(X, y)
 
-    if synthetic_data == "synthetic":
-        if period is None:
-            assert ac is None
-        else:
-            assert period - 1 <= ac <= period + 1
-    else:
-        if period is None:
-            assert ac is None
-        else:
-            assert 360 < ac < 370
+    # Check to make sure STL detrended/deseasoned
+    pd.testing.assert_series_equal(
+        pd.Series(np.zeros(len(y_t))),
+        y_t,
+        check_exact=False,
+        check_index=False,
+        check_names=False,
+        atol=0.1,
+    )
+
+    # Check the trend to make sure STL worked properly
+    pd.testing.assert_series_equal(
+        pd.Series(expected_trend),
+        pd.Series(stl.trend),
+        check_exact=False,
+        check_index=False,
+        check_names=False,
+        atol=0.3,
+    )
+
+    # Verify the X is not changed
+    pd.testing.assert_frame_equal(X, X_t)
 
 
 @pytest.mark.parametrize("period", [7, 30, 365])
@@ -495,3 +433,26 @@ def test_polynomial_decomposer_set_period(period, generate_seasonal_data):
 
     assert period - 1 <= pdc.seasonal_period <= period + 1
     assert pdc.parameters["seasonal_period"]
+
+
+def test_thing():
+    import matplotlib.pyplot as plt
+    from statsmodels.datasets import elec_equip as ds
+    from statsmodels.tsa.arima.model import ARIMA
+    from statsmodels.tsa.forecasting.stl import STLForecast
+
+    elec_equip = ds.load().data
+    elec_equip.index.freq = elec_equip.index.inferred_freq
+    stlf = STLForecast(elec_equip, ARIMA, model_kwargs=dict(order=(1, 1, 0), trend="t"))
+    stlf_res = stlf.fit()
+
+    forecast = stlf_res.forecast(24)
+    plt.plot(elec_equip)
+    plt.plot(forecast)
+
+    seasonal = stlf_res._result.seasonal
+    trend = stlf_res._result.trend
+    plt.plot(seasonal)
+    plt.plot(trend)
+    plt.plot(forecast)
+    plt.show()

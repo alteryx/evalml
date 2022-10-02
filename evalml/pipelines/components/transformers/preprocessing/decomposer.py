@@ -24,13 +24,44 @@ class Decomposer(Transformer):
     modifies_features = False
     modifies_target = True
 
-    def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
+    def __init__(
+        self,
+        component_obj=None,
+        random_seed: int = 0,
+        degree: int = 1,
+        seasonal_period: int = -1,
+        time_index: str = None,
+        **kwargs,
+    ):
+
+        degree = self.raise_typeerror_if_not_int("degree", degree)
+        self.seasonal_period = self.raise_typeerror_if_not_int(
+            "seasonal_period",
+            seasonal_period,
+        )
+        self.time_index = time_index
+        parameters = {
+            "degree": degree,
+            "seasonal_period": self.seasonal_period,
+            "time_index": time_index,
+        }
+        parameters.update(kwargs)
         super().__init__(
             parameters=parameters,
             component_obj=component_obj,
             random_seed=random_seed,
             **kwargs,
         )
+
+    def raise_typeerror_if_not_int(self, var_name, var_value):
+        if not isinstance(var_value, int):
+            if isinstance(var_value, float) and var_value.is_integer():
+                var_value = int(var_value)
+            else:
+                raise TypeError(
+                    f"Parameter {var_name} must be an integer!: Received {type(var_value).__name__}",
+                )
+        return var_value
 
     def _set_time_index(self, X, y):
         """Ensures that target data has a pandas.DatetimeIndex that matches feature data."""
@@ -159,3 +190,42 @@ class Decomposer(Transformer):
         """
         self.seasonal_period = self.determine_periodicity(X, y)
         self.parameters["seasonal_period"] = self.seasonal_period
+
+    def _build_seasonal_signal(self, y, periodic_signal, periodicity, frequency):
+        """Projects the cyclical, seasonal signal forward to cover the target data.
+
+        Args:
+            y (pandas.Series): Target data to be transformed
+            periodic_signal (pandas.Series): Single period of the detected seasonal signal
+            periodicity (int): Number of time units in a single cycle of the seasonal signal
+            frequency (str): String representing the detected frequency of the time series data.
+                Uses the same codes as the freqstr attribute of a pandas Series with DatetimeIndex.
+                e.g. "D", "M", "Y" for day, month and year respectively
+                See: https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases
+                See: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.to_timedelta.html
+
+        Returns:
+            pandas.Series: the seasonal signal extended to cover the target data to be transformed
+        """
+        # Determine where the seasonality starts
+        first_index_diff = y.index[0] - periodic_signal.index[0]
+        delta = pd.to_timedelta(1, frequency)
+        period = pd.to_timedelta(periodicity, frequency)
+
+        # Determine which index of the sample of seasonal data the transformed data starts at
+        transform_first_ind = int((first_index_diff % period) / delta)
+
+        # Cycle the sample of seasonal data so the transformed data's effective index is first
+        rotated_seasonal_sample = np.roll(
+            periodic_signal.T.values,
+            -transform_first_ind,
+        )
+
+        # Repeat the single, rotated period of seasonal data to cover the entirety of the data
+        # to be transformed.
+        seasonal = np.tile(rotated_seasonal_sample, len(y) // periodicity + 1).T[
+            : len(y)
+        ]  # The extrapolated seasonal data will be too long, so truncate.
+
+        # Add the date times back in.
+        return pd.Series(seasonal, index=y.index)
