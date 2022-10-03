@@ -470,7 +470,12 @@ def test_target_leakage_methods():
 
     with pytest.raises(
         ValueError,
-        match=re.escape("Method '{}' not in {}".format("fake_method", methods)),
+        match=re.escape(
+            "Method '{}' not in available correlation methods. Available methods include {}".format(
+                "fake_method",
+                methods,
+            ),
+        ),
     ):
         TargetLeakageDataCheck(method="fake_method")
 

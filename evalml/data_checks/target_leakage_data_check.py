@@ -14,13 +14,15 @@ from evalml.utils.woodwork_utils import infer_feature_types
 class TargetLeakageDataCheck(DataCheck):
     """Check if any of the features are highly correlated with the target by using mutual information, Pearson correlation, and other correlation metrics.
 
-    If `method='mutual_info'`, this data check uses mutual information and supports all target and feature types.
-    Other correlation metrics only support binary with numeric and boolean dtypes, and return a value in [-1, 1], while mutual information returns a value in [0, 1].
-    Correlation metrics available can be found in Woodwork's `dependence_dict method <https://woodwork.alteryx.com/en/stable/generated/woodwork.table_accessor.WoodworkTableAccessor.dependence_dict.html#woodwork.table_accessor.WoodworkTableAccessor.dependence_dict>`_.
+    If method='mutual_info', this data check uses mutual information and supports all target and feature types.
+    Other correlation metrics only support binary with numeric and boolean dtypes. This method will return a value in [-1, 1] if other correlation metrics are selected
+    and will returns a value in [0, 1] if mutual information is selected. Correlation metrics available can be found in Woodwork's
+    `dependence_dict method <https://woodwork.alteryx.com/en/stable/generated/woodwork.table_accessor.WoodworkTableAccessor.dependence_dict.html#woodwork.table_accessor.WoodworkTableAccessor.dependence_dict>`_.
 
     Args:
         pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
         method (string): The method to determine correlation. Use 'max' for the maximum correlation, or for specific correlation metrics, use their name (ie 'mutual_info' for mutual information, 'pearson' for Pearson correlation, etc).
+            possible methods can be found in Woodwork's `config <https://woodwork.alteryx.com/en/stable/guides/setting_config_options.html?highlight=config#Viewing-Config-Settings>`_, under `correlation_metrics`.
             Excludes 'all'. Defaults to 'mutual_info'.
     """
 
@@ -31,7 +33,9 @@ class TargetLeakageDataCheck(DataCheck):
             )
         methods = CONFIG_DEFAULTS["correlation_metrics"]
         if method not in methods:
-            raise ValueError(f"Method '{method}' not in {methods}")
+            raise ValueError(
+                f"Method '{method}' not in available correlation methods. Available methods include {methods}",
+            )
         if method == "all":
             raise ValueError("Cannot use 'all' as the method")
         self.pct_corr_threshold = pct_corr_threshold
@@ -65,8 +69,8 @@ class TargetLeakageDataCheck(DataCheck):
     def validate(self, X, y):
         """Check if any of the features are highly correlated with the target by using mutual information, Pearson correlation, and/or Spearman correlation.
 
-        If `method='mutual'` or `'method='max'`, supports all target and feature types. Otherwise, if `method='pearson'` or `method='spearman'`, only supports binary with numeric and boolean dtypes.
-        Pearson and Spearman correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
+        If `method='mutual_info'` or `'method='max'`, supports all target and feature types. Other correlation metrics only support binary with numeric and boolean dtypes.
+        This method will return a value in [-1, 1] if other correlation metrics are selected and will returns a value in [0, 1] if mutual information is selected.
 
         Args:
             X (pd.DataFrame, np.ndarray): The input features to check.
