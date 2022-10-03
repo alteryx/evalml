@@ -4,12 +4,14 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Use Woodwork's ``dependence_dict`` method to calculate for ``TargetLeakageDataCheck`` :pr:`3728`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * ``TargetLeakageDataCheck`` now uses argument ``mutual_info`` rather than ``mutual`` :pr:`3728`
 
 
 **v0.59.0 Sept. 27, 2022**
