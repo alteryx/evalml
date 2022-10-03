@@ -154,14 +154,16 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         elif self.parameters["categories"] is not None:
             # Categories specified - make sure they match the ordinal columns
             input_categories = self.parameters["categories"]
-            if len(input_categories) != len(self.features_to_encode) or not isinstance(
-                input_categories[0],
-                list,
-            ):
+
+            if len(input_categories) != len(self.features_to_encode):
                 raise ValueError(
-                    "Categories argument must contain a list of categories for each ordinal feature",
+                    "Categories argument must contain as many elements as there are Ordinal features.",
                 )
 
+            if not all(isinstance(cats, list) for cats in input_categories):
+                raise ValueError(
+                    "Each element of the categories argument must be a list.",
+                )
             # Categories, as they're passed into SKOrdinalEncoder should be in the same order
             # as the data's Ordinal.order categories even if it's a subset
             for i, col_categories in enumerate(input_categories):
@@ -210,7 +212,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
 
         Returns:
             pd.DataFrame: Transformed data, where each ordinal feature has been encoded into
-            a numerical column using where of ordinal integers represent
+            a numerical column where ordinal integers represent
             the relative order of categories.
         """
         X = infer_feature_types(X)

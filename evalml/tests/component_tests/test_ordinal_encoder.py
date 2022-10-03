@@ -5,7 +5,6 @@ from woodwork.logical_types import Ordinal
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import OrdinalEncoder
-from evalml.utils import get_random_seed
 
 
 def set_first_three_columns_to_ordinal_with_categories(X, categories):
@@ -68,16 +67,12 @@ def test_invalid_inputs():
         [["a", "b", "c", "d"], ["a", "b", "c"], ["a"]],
     )
     encoder = OrdinalEncoder(categories=[["a", "b"], ["a", "c"]])
-    error_msg = (
-        "Categories argument must contain a list of categories for each ordinal feature"
-    )
+    error_msg = "Categories argument must contain as many elements as there are Ordinal features."
     with pytest.raises(ValueError, match=error_msg):
         encoder.fit(X)
 
-    encoder = OrdinalEncoder(categories=["a", "b", "c"])
-    error_msg = (
-        "Categories argument must contain a list of categories for each ordinal feature"
-    )
+    encoder = OrdinalEncoder(categories=[["a", "b"], 1, ["a"]])
+    error_msg = "Each element of the categories argument must be a list."
     with pytest.raises(ValueError, match=error_msg):
         encoder.fit(X)
 
