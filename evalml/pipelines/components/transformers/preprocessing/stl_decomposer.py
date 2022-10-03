@@ -68,8 +68,12 @@ class STLDecomposer(Decomposer):
         self._component_obj = STL(y, seasonal=self.seasonal_period)
         res = self._component_obj.fit()
         self.seasonal = res.seasonal
+        self.seasonality = self.seasonal[: self.seasonal_period]
         self.trend = res.trend
         self.residual = res.resid
+
+        # Save the frequency of the fitted series for checking against transform data.
+        self.frequency = y.index.freqstr
         return self
 
     def transform(
@@ -87,11 +91,24 @@ class STLDecomposer(Decomposer):
             raise ValueError("y_t cannot be None for STLDecomposer!")
         y_t = infer_feature_types(y_t)
 
-        if all(y_t.index == self.trend.index):
+        if len(y_t.index) == len(self.trend.index) and all(
+            y_t.index == self.trend.index,
+        ):
             y = y_t + self.trend + self.seasonal
         else:
             # Determine how many units forward to forecast
-            units_forward = 25
+            right_delta = y_t.index[-1] - self.trend.index[-1]
+            if y_t.index[-1] < self.trend.index[0] or (
+                self.trend.index[-1] > y_t.index[0]
+                and self.trend.index[-1] < y_t.index[-1]
+            ):
+                raise ValueError(
+                    f"STLDecomposer cannot recompose/inverse transform data out of sample and before the data used"
+                    f"to fit the decomposer, or partially in and out of sample."
+                    f"\nRequested date range: {str(y_t.index[0])}:{str(y_t.index[-1])}."
+                    f"\nSample date range: {str(self.trend.index[0])}:{str(self.trend.index[-1])}.",
+                )
+            delta = pd.to_timedelta(1, self.frequency)
 
             # Model the trend and project it forward
             stlf = STLForecast(
@@ -100,17 +117,23 @@ class STLDecomposer(Decomposer):
                 model_kwargs=dict(order=(1, 1, 0), trend="t"),
             )
             stlf_res = stlf.fit()
-            projected_trend = stlf_res.forecast(units_forward)
+            forecast = stlf_res.forecast(int(right_delta / delta))
+            overlapping_ind = [ind for ind in y_t.index if ind in forecast.index]
+            right_projected_trend = forecast[overlapping_ind]
 
             # Reseasonalize
             projected_seasonal = self._build_seasonal_signal(
                 y_t,
                 self.seasonality,
-                self.periodicity,
+                self.seasonal_period,
                 self.frequency,
             )
+
             y = infer_feature_types(
-                pd.Series(y_t + projected_trend + projected_seasonal, index=y_t.index),
+                pd.Series(
+                    y_t + right_projected_trend + projected_seasonal,
+                    index=y_t.index,
+                ),
             )
         return y
 

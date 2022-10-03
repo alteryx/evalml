@@ -224,36 +224,89 @@ def test_polynomial_decomposer_get_trend_dataframe_error_not_fit(
             pdt.get_trend_dataframe(X, y)
 
 
-@pytest.mark.parametrize("transformer_fit_on_data", ["in-sample", "out-of-sample"])
-@pytest.mark.parametrize("degree", [1, 2, 3])
+@pytest.mark.parametrize(
+    "transformer_fit_on_data",
+    [
+        "in-sample",
+        "wholly-out-of-sample",
+        "wholly-out-of-sample-no-gap",
+        "partially-out-of-sample",
+        "out-of-sample-in-past",
+    ],
+)
 def test_stl_decomposer_inverse_transform(
-    degree,
+    # degree,
     generate_seasonal_data,
     transformer_fit_on_data,
 ):
+    # Generate 10 periods (the default) of synthetic seasonal data
+    seasonal_period = 7
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=7,
+        period=seasonal_period,
         freq_str="D",
         set_time_index=True,
     )
+    subset_X = X[: 5 * seasonal_period]
+    subset_y = y[: 5 * seasonal_period]
 
-    decomposer = STLDecomposer(degree=degree, seasonal_period=7)
-    output_X, output_y = decomposer.fit_transform(X, y)
+    decomposer = STLDecomposer(seasonal_period=seasonal_period)
+    output_X, output_y = decomposer.fit_transform(subset_X, subset_y)
+    import datetime
+
     import matplotlib.pyplot as plt
+
+    def plot_things():
+        plt.plot(y)
+        plt.plot(y[new_index], "bo")
+        plt.plot(output_inverse_y, "rx")
+        plt.plot(y_t_new, "gx")
+        plt.plot(subset_y, "yx")
+        plt.show()
 
     if transformer_fit_on_data == "in-sample":
         output_inverse_y = decomposer.inverse_transform(output_y)
-    elif transformer_fit_on_data == "out-of-sample":
-        import datetime
+        pd.testing.assert_series_equal(subset_y, output_inverse_y, check_dtype=False)
+    elif transformer_fit_on_data == "wholly-out-of-sample":
+        # Re-compose 14-days worth of data with a 7 day gap between end of
+        # fit data and start of data to inverse-transform
+        delta = datetime.timedelta(days=seasonal_period)
+    elif transformer_fit_on_data == "wholly-out-of-sample-no-gap":
+        # Re-compose 14-days worth of data with no gap between end of
+        # fit data and start of data to inverse-transform
+        delta = datetime.timedelta(days=1)
+    elif transformer_fit_on_data == "partially-out-of-sample":
+        # Re-compose 14-days worth of data overlapping the in and out-of
+        # sample data.
+        delta = datetime.timedelta(days=-1 * seasonal_period)
+    elif transformer_fit_on_data == "out-of-sample-in-past":
+        # Re-compose 14-days worth of data both out of sample and in the
+        # past.
+        delta = datetime.timedelta(days=-12 * seasonal_period)
 
-        delta = datetime.timedelta(days=7)
-        new_index = y.index + delta
-        y_t_new = pd.Series(np.zeros(len(y))).set_axis(new_index)
-        output_inverse_y = decomposer.inverse_transform(y_t_new)
-        plt.plot(output_inverse_y)
-        plt.show()
-        print("hi")
-    pd.testing.assert_series_equal(y, output_inverse_y, check_dtype=False)
+    if transformer_fit_on_data != "in-sample":
+        new_index = pd.date_range(
+            subset_y.index[-1] + delta,
+            periods=2 * seasonal_period,
+            freq="D",
+        )
+        y_t_new = pd.Series(np.zeros(len(new_index))).set_axis(new_index)
+        if transformer_fit_on_data in [
+            "partially-out-of-sample",
+            "out-of-sample-in-past",
+        ]:
+            with pytest.raises(
+                ValueError,
+                match="STLDecomposer cannot recompose/inverse transform data out of sample",
+            ):
+                output_inverse_y = decomposer.inverse_transform(y_t_new)
+        else:
+            output_inverse_y = decomposer.inverse_transform(y_t_new)
+            pd.testing.assert_series_equal(
+                y[new_index],
+                output_inverse_y,
+                check_exact=False,
+                rtol=1.0e-3,
+            )
 
 
 def test_polynomial_decomposer_needs_monotonic_index(ts_data):
