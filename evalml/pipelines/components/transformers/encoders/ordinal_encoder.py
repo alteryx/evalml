@@ -45,7 +45,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         encoded_missing_value (int or np.nan): The value to use for missing (null) values seen during
             fit or transform. Defaults to np.nan.
         random_seed (int): Seed for the random number generator. Defaults to 0.
-        # --> is random seed still necessary?
     """
 
     name = "Ordinal Encoder"
@@ -60,7 +59,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         unknown_value=None,
         encoded_missing_value=None,
         random_seed=0,
-        **kwargs,  # --> why do we have kwargs if they arent used?? Maybe needed for larger evalml pipeline
+        **kwargs,
     ):
         parameters = {
             "features_to_encode": features_to_encode,
@@ -85,7 +84,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
             )
 
         self.features_to_encode = features_to_encode
-        self._encoder = None
+        self._component_obj = None
 
         super().__init__(
             parameters=parameters,
@@ -144,8 +143,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                 col for col in X.columns if col in self.features_to_encode
             ]
 
-        X_t = X
-
         ww_logical_types = X.ww.logical_types
         categories = []
         if len(self.features_to_encode) == 0:
@@ -175,7 +172,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                 categories.append(ordered_categories)
         else:
             # Categories unspecified - use ordered categories from a columns' Ordinal logical type
-            for col in X_t[self.features_to_encode]:
+            for col in X[self.features_to_encode]:
                 ltype = ww_logical_types[col]
                 # Copy the order list, since we might mutate it later by adding nans
                 # and don't want to impact the Woodwork types
@@ -185,22 +182,22 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         # This is needed because Ordinal.order won't indicate if nulls are present, and SKOrdinalEncoder
         # requires any null values be present in the categories list if they are to be encoded as
         # missing values
-        for i, col in enumerate(X_t[self.features_to_encode]):
-            if X_t[col].isna().any():
+        for i, col in enumerate(X[self.features_to_encode]):
+            if X[col].isna().any():
                 categories[i] += [np.nan]
 
         encoded_missing_value = self.parameters["encoded_missing_value"]
         if encoded_missing_value is None:
             encoded_missing_value = np.nan
 
-        self._encoder = SKOrdinalEncoder(
+        self._component_obj = SKOrdinalEncoder(
             categories=categories,
             handle_unknown=self.parameters["handle_unknown"],
             unknown_value=self.parameters["unknown_value"],
             encoded_missing_value=encoded_missing_value,
         )
 
-        self._encoder.fit(X_t[self.features_to_encode])
+        self._component_obj.fit(X[self.features_to_encode])
         return self
 
     def transform(self, X, y=None):
@@ -218,14 +215,14 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
         X = infer_feature_types(X)
 
         if not self.features_to_encode:
-            # If there are no features to encode, X needs no transformation, so return a copy
-            return X.ww.copy()
+            # If there are no features to encode, X needs no transformation
+            return X
 
         X_orig = X.ww.drop(columns=self.features_to_encode)
 
         # Call sklearn's transform on only the ordinal columns
         X_t = pd.DataFrame(
-            self._encoder.transform(X[self.features_to_encode]),
+            self._component_obj.transform(X[self.features_to_encode]),
             index=X.index,
         )
         X_t.columns = self._get_feature_names()
@@ -273,7 +270,7 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
             raise ValueError(
                 f'Feature "{feature_name}" was not provided to ordinal encoder as a training feature',
             )
-        return self._encoder.categories_[index]
+        return self._component_obj.categories_[index]
 
     def get_feature_names(self):
         """Return feature names for the ordinal features after fitting.

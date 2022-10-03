@@ -93,7 +93,7 @@ def test_categories_list_not_passed_in_for_non_ordinal_column():
     encoder = OrdinalEncoder(categories=[["a", "b", "c", "d"]])
     encoder.fit(X)
 
-    assert len(encoder._encoder.categories_) == len(encoder.features_to_encode)
+    assert len(encoder._component_obj.categories_) == len(encoder.features_to_encode)
 
     error = 'Feature "col_1" was not provided to ordinal encoder as a training feature'
     with pytest.raises(ValueError, match=error):
@@ -115,7 +115,7 @@ def test_categories_list_not_passed_in_for_non_ordinal_column():
     )
     encoder.fit(X)
 
-    assert len(encoder._encoder.categories_) == len(encoder.features_to_encode)
+    assert len(encoder._component_obj.categories_) == len(encoder.features_to_encode)
     set(encoder.categories("col_2")) == {"a", "b", "c", "d"}
     set(encoder.categories("col_3")) == {"x", "y"}
 
@@ -201,14 +201,14 @@ def test_ordinal_encoder_recognizes_ordinal_columns():
     encoder = OrdinalEncoder()
     encoder.fit(X)
     assert encoder.features_to_encode == ["col_1", "col_2", "col_3"]
-    assert encoder.features_to_encode == list(encoder._encoder.feature_names_in_)
+    assert encoder.features_to_encode == list(encoder._component_obj.feature_names_in_)
 
     encoder = OrdinalEncoder(features_to_encode=["col_1"])
     encoder.fit(X)
     assert encoder.features_to_encode == ["col_1"]
-    assert encoder.features_to_encode == list(encoder._encoder.feature_names_in_)
+    assert encoder.features_to_encode == list(encoder._component_obj.feature_names_in_)
     expected_categories = [categories[0]]
-    for i, category_list in enumerate(encoder._encoder.categories_):
+    for i, category_list in enumerate(encoder._component_obj.categories_):
         assert list(category_list) == expected_categories[i]
 
 
@@ -229,7 +229,7 @@ def test_ordinal_encoder_categories_set_correctly_from_fit():
     # No parameters specified
     encoder = OrdinalEncoder()
     encoder.fit(X)
-    for i, category_list in enumerate(encoder._encoder.categories_):
+    for i, category_list in enumerate(encoder._component_obj.categories_):
         assert list(category_list) == categories[i]
 
     # Categories set at init explicitly - means we have to handle the unknown case
@@ -240,7 +240,7 @@ def test_ordinal_encoder_categories_set_correctly_from_fit():
         unknown_value=-1,
     )
     encoder.fit(X)
-    for i, category_list in enumerate(encoder._encoder.categories_):
+    for i, category_list in enumerate(encoder._component_obj.categories_):
         assert list(category_list) == subset_categories[i]
 
 
