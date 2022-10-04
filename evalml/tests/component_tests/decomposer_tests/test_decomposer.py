@@ -317,3 +317,25 @@ def test_polynomial_decomposer_get_trend_dataframe_raises_errors(
     ):
         X.index.freq = None
         dec.get_trend_dataframe(X, y)
+
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    [PolynomialDecomposer, STLDecomposer],
+)
+@pytest.mark.parametrize("period", [7, 30, 365])
+def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal_data):
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period)
+    dec = decomposer_child_class()
+
+    if isinstance(dec, STLDecomposer):
+        assert dec.seasonal_period == 7
+        assert dec.parameters["seasonal_period"] == 7
+    elif isinstance(dec, PolynomialDecomposer):
+        assert dec.seasonal_period == -1
+        assert dec.parameters["seasonal_period"] == -1
+
+    dec.set_seasonal_period(X, y)
+
+    assert 0.95 * period <= dec.seasonal_period <= 1.05 * period
+    assert dec.parameters["seasonal_period"]

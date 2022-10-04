@@ -170,11 +170,13 @@ class STLDecomposer(Decomposer):
         if not isinstance(y.index, pd.DatetimeIndex):
             y = self._set_time_index(X, y)
 
-        return pd.DataFrame(
-            {
-                "signal": y,
-                "trend": self.trend,
-                "seasonality": self.seasonal,
-                "residual": self.residual,
-            },
-        )
+        return [
+            pd.DataFrame(
+                {
+                    "signal": y,
+                    "trend": self.trend,
+                    "seasonality": self.seasonal,
+                    "residual": self.residual,
+                },
+            ),
+        ]
