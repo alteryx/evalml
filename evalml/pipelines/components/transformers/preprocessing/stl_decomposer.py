@@ -29,7 +29,6 @@ class STLDecomposer(Decomposer):
         **kwargs,
     ):
         self.logger = logging.getLogger(__name__)
-
         if seasonal_period % 2 == 0:
             self.logger.warning(
                 f"STLDecomposer provided with an even period of {seasonal_period}"
@@ -72,6 +71,7 @@ class STLDecomposer(Decomposer):
 
         # Save the frequency of the fitted series for checking against transform data.
         self.frequency = y.index.freqstr
+        self.is_fit = True
         return self
 
     def transform(
@@ -169,6 +169,11 @@ class STLDecomposer(Decomposer):
         # in ForecastingHorizon during decomposition.
         if not isinstance(y.index, pd.DatetimeIndex):
             y = self._set_time_index(X, y)
+
+        if not self.is_fit:
+            raise ValueError(
+                "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
+            )
 
         return [
             pd.DataFrame(
