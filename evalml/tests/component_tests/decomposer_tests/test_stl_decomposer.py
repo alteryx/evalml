@@ -307,17 +307,3 @@ def test_stl_fit_transform(
 
     # Verify the X is not changed
     pd.testing.assert_frame_equal(X, X_t)
-
-
-@pytest.mark.parametrize("period", [7, 30, 365])
-def test_stl_decomposer_set_period(period, generate_seasonal_data):
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period)
-    pdc = STLDecomposer()
-
-    assert pdc.seasonal_period == 7
-    assert pdc.parameters["seasonal_period"] == 7
-
-    pdc.set_seasonal_period(X, y)
-
-    assert 0.95 * period <= pdc.seasonal_period <= 1.05 * period
-    assert pdc.parameters["seasonal_period"]
