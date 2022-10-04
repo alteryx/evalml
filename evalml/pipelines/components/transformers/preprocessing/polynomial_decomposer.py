@@ -116,15 +116,14 @@ class PolynomialDecomposer(Decomposer):
         # the given array.  We'll extract the first iteration and save it for use in .transform()
         # TODO: Resolve with https://github.com/alteryx/evalml/issues/3708
         if self.seasonal_period == -1:
-            self.periodicity = freq_to_period(self.frequency)
-            self.seasonal_period = self.periodicity
+            self.seasonal_period = freq_to_period(self.frequency)
         else:
-            self.periodicity = self.seasonal_period
+            self.seasonal_period = self.seasonal_period
 
         self.seasonality = seasonal_decompose(
             y_detrended_with_time_index,
-            period=self.periodicity,
-        ).seasonal[0 : self.periodicity]
+            period=self.seasonal_period,
+        ).seasonal[0 : self.seasonal_period]
 
         return self
 
@@ -167,7 +166,7 @@ class PolynomialDecomposer(Decomposer):
             # Repeat the seasonal signal over the target data
             seasonal = np.tile(
                 self.seasonality.T,
-                len(y_detrended) // self.periodicity + 1,
+                len(y_detrended) // self.seasonal_period + 1,
             ).T[: len(y_detrended)]
 
         y_t = pd.Series(y_detrended - seasonal)
@@ -191,14 +190,14 @@ class PolynomialDecomposer(Decomposer):
         """
         return self.fit(X, y).transform(X, y)
 
-    def inverse_transform(self, y: pd.Series) -> tuple[pd.DataFrame, pd.Series]:
+    def inverse_transform(self, y_t: pd.Series) -> tuple[pd.DataFrame, pd.Series]:
         """Adds back fitted trend and seasonality to target variable.
 
         The polynomial trend is added back into the signal, calling the detrender's inverse_transform().
         Then, the seasonality is projected forward to and added back into the signal.
 
         Args:
-            y (pd.Series): Target variable.
+            y_t (pd.Series): Target variable.
 
         Returns:
             tuple of pd.DataFrame, pd.Series: The first element are the input features returned without modification.
@@ -207,21 +206,21 @@ class PolynomialDecomposer(Decomposer):
         Raises:
             ValueError: If y is None.
         """
-        if y is None:
+        if y_t is None:
             raise ValueError("y cannot be None for PolynomialDecomposer!")
-        y_ww = infer_feature_types(y)
+        y_t = infer_feature_types(y_t)
 
         # Add polynomial trend back to signal
-        y_retrended = self._component_obj.inverse_transform(y_ww)
+        y_retrended = self._component_obj.inverse_transform(y_t)
 
         seasonal = self._build_seasonal_signal(
-            y_ww,
+            y_t,
             self.seasonality,
-            self.periodicity,
+            self.seasonal_period,
             self.frequency,
         )
-        y_t = infer_feature_types(pd.Series(y_retrended + seasonal, index=y_ww.index))
-        return y_t
+        y = infer_feature_types(pd.Series(y_retrended + seasonal, index=y_t.index))
+        return y
 
     def get_trend_dataframe(self, X: pd.DataFrame, y: pd.Series) -> list[pd.DataFrame]:
         """Return a list of dataframes with 3 columns: trend, seasonality, residual.
