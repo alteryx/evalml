@@ -3,15 +3,13 @@ from __future__ import annotations
 
 import logging
 
-import numpy as np
 import pandas as pd
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.forecasting.stl import STLForecast
 from statsmodels.tsa.seasonal import STL as STL
 
 from evalml.pipelines.components.transformers.preprocessing.decomposer import Decomposer
-from evalml.pipelines.components.transformers.preprocessing.stl import STL as github_STL
-from evalml.utils import import_or_raise, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 class STLDecomposer(Decomposer):
@@ -26,7 +24,7 @@ class STLDecomposer(Decomposer):
         self,
         time_index: str = None,
         degree: int = 1,
-        seasonal_period: int = 367,
+        seasonal_period: int = 7,
         random_seed: int = 0,
         **kwargs,
     ):
@@ -137,5 +135,46 @@ class STLDecomposer(Decomposer):
             )
         return y
 
-    def get_trend_dataframe(self, y):
-        pass
+    def get_trend_dataframe(self, X, y):
+        """Return a list of dataframes with 3 columns: trend, seasonality, residual.
+
+        Scikit-learn's PolynomialForecaster is used to generate the trend portion of the target data. statsmodel's
+        seasonal_decompose is used to generate the seasonality of the data.
+
+        Args:
+            X (pd.DataFrame): Input data with time series data in index.
+            y (pd.Series or pd.DataFrame): Target variable data provided as a Series for univariate problems or
+                a DataFrame for multivariate problems.
+
+        Returns:
+            list of pd.DataFrame: Each DataFrame contains the columns "signal", "trend", "seasonality" and "residual,"
+                with the latter 3 column values being the decomposed elements of the target data.  The "signal" column
+                is simply the input target signal but reindexed with a datetime index to match the input features.
+
+        Raises:
+            TypeError: If X does not have time-series data in the index.
+            ValueError: If time series index of X does not have an inferred frequency.
+            ValueError: If the forecaster associated with the detrender has not been fit yet.
+            TypeError: If y is not provided as a pandas Series or DataFrame.
+
+        """
+        X = infer_feature_types(X)
+        if not isinstance(X.index, pd.DatetimeIndex):
+            raise TypeError("Provided X should have datetimes in the index.")
+        if X.index.freq is None:
+            raise ValueError(
+                "Provided DatetimeIndex of X should have an inferred frequency.",
+            )
+        # Change the y index to a matching datetimeindex or else we get a failure
+        # in ForecastingHorizon during decomposition.
+        if not isinstance(y.index, pd.DatetimeIndex):
+            y = self._set_time_index(X, y)
+
+        return pd.DataFrame(
+            {
+                "signal": y,
+                "trend": self.trend,
+                "seasonality": self.seasonal,
+                "residual": self.residual,
+            },
+        )

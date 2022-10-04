@@ -290,3 +290,30 @@ def test_decomposer_build_seasonal_signal(
         full_seasonal_signal[projected_seasonality.index],
         projected_seasonality,
     )
+
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    [PolynomialDecomposer, STLDecomposer],
+)
+def test_polynomial_decomposer_get_trend_dataframe_raises_errors(
+    decomposer_child_class,
+    ts_data,
+):
+    X, _, y = ts_data()
+    dec = decomposer_child_class()
+    dec.fit_transform(X, y)
+
+    with pytest.raises(
+        TypeError,
+        match="Provided X should have datetimes in the index.",
+    ):
+        X_int_index = X.reset_index()
+        dec.get_trend_dataframe(X_int_index, y)
+
+    with pytest.raises(
+        ValueError,
+        match="Provided DatetimeIndex of X should have an inferred frequency.",
+    ):
+        X.index.freq = None
+        dec.get_trend_dataframe(X, y)
