@@ -339,3 +339,73 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
 
     assert 0.95 * period <= dec.seasonal_period <= 1.05 * period
     assert dec.parameters["seasonal_period"]
+
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    [STLDecomposer],  # PolynomialDecomposer,
+)
+@pytest.mark.parametrize(
+    "periodicity_determination_method",
+    [
+        "autocorrelation",
+        # pytest.param(
+        #     "partial-autocorrelation",
+        #     marks=pytest.mark.xfail(reason="Partial Autocorrelation not working yet."),
+        # ),
+    ],
+)
+@pytest.mark.parametrize(
+    "period",
+    [
+        7,
+        30,
+        365,
+        # pytest.param(
+        #     None,
+        #     marks=pytest.mark.xfail(
+        #         reason="Don't have a good heuristic to distinguish bad period guess.",
+        #     ),
+        # ),
+    ],
+)
+@pytest.mark.parametrize("trend_degree", [1, 2, 3])
+@pytest.mark.parametrize("decomposer_picked_correct_degree", [True, False])
+@pytest.mark.parametrize("synthetic_data", ["synthetic", "real"])
+def test_polynomial_decomposer_determine_periodicity(
+    decomposer_child_class,
+    period,
+    trend_degree,
+    decomposer_picked_correct_degree,
+    periodicity_determination_method,
+    synthetic_data,
+    generate_seasonal_data,
+):
+
+    X, y = generate_seasonal_data(real_or_synthetic=synthetic_data)(
+        period,
+        trend_degree=trend_degree,
+    )
+
+    if period is None:
+        component_period = 1
+    else:
+        component_period = period
+
+    # Test that the seasonality can be determined if trend guess isn't spot on.
+    if not decomposer_picked_correct_degree:
+        trend_degree = 1 if trend_degree in [2, 3] else 2
+
+    dec = decomposer_child_class(degree=trend_degree, seasonal_period=component_period)
+    ac = dec.determine_periodicity(X, y, method=periodicity_determination_method)
+
+    if synthetic_data == "synthetic":
+        if period is None:
+            assert ac is None
+        else:
+            assert 0.95 * period <= ac <= 1.05 * period
+    else:
+        if period is None:
+            assert ac is None
+        else:
+            assert 0.95 * period <= ac <= 1.05 * period
