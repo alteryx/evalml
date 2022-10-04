@@ -170,22 +170,6 @@ def test_polynomial_decomposer_get_trend_dataframe(
         ]
 
 
-@pytest.mark.parametrize("fit_before_decompose", [True, False])
-def test_polynomial_decomposer_get_trend_dataframe_error_not_fit(
-    ts_data,
-    fit_before_decompose,
-):
-    X, _, y = ts_data()
-
-    pdt = PolynomialDecomposer(degree=3)
-    if fit_before_decompose:
-        pdt.fit_transform(X, y)
-        pdt.get_trend_dataframe(X, y)
-    else:
-        with pytest.raises(ValueError):
-            pdt.get_trend_dataframe(X, y)
-
-
 @pytest.mark.parametrize("degree", [1, 2, 3])
 def test_polynomial_decomposer_inverse_transform(degree, ts_data):
     X, _, y = ts_data()

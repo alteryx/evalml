@@ -409,3 +409,24 @@ def test_polynomial_decomposer_determine_periodicity(
             assert ac is None
         else:
             assert 0.95 * period <= ac <= 1.05 * period
+
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    [STLDecomposer, PolynomialDecomposer],
+)
+@pytest.mark.parametrize("fit_before_decompose", [True, False])
+def test_decomposer_get_trend_dataframe_error_not_fit(
+    decomposer_child_class,
+    ts_data,
+    fit_before_decompose,
+):
+    X, _, y = ts_data()
+
+    pdt = decomposer_child_class(degree=3)
+    if fit_before_decompose:
+        pdt.fit_transform(X, y)
+        pdt.get_trend_dataframe(X, y)
+    else:
+        with pytest.raises(ValueError):
+            pdt.get_trend_dataframe(X, y)

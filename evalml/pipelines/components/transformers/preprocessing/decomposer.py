@@ -33,7 +33,7 @@ class Decomposer(Transformer):
         time_index: str = None,
         **kwargs,
     ):
-
+        self.is_fit = False
         degree = self.raise_typeerror_if_not_int("degree", degree)
         self.seasonal_period = self.raise_typeerror_if_not_int(
             "seasonal_period",
