@@ -43,6 +43,7 @@ Release Notes
         * Added abstract Decomposer class as a parent to PolynomialDecomposer to support additional decomposers. :pr:`3720`
         * Pinned ``pmdarima`` < 2.0.0 :pr:`3679`
         * Added support for using ``downcast_nullable_types`` with Series as well as DataFrames :pr:`3697`
+        * Added distinction between ranking and optimization objectives :pr:`3721`
     * Documentation Changes
     * Testing Changes
         * Updated pytest fixtures and brittle test files to explicitly set woodwork typing information :pr:`3697`

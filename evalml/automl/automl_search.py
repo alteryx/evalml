@@ -39,9 +39,9 @@ from evalml.exceptions import (
 )
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
-    get_core_objectives,
     get_non_core_objectives,
     get_objective,
+    get_optimization_objectives,
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -561,7 +561,7 @@ class AutoMLSearch:
                 ),
             )
         if additional_objectives is None:
-            additional_objectives = get_core_objectives(self.problem_type)
+            additional_objectives = get_optimization_objectives(self.problem_type)
             # if our main objective is part of default set of objectives for problem_type, remove it
             existing_main_objective = next(
                 (
@@ -905,8 +905,8 @@ class AutoMLSearch:
             if objective in non_core_objectives:
                 raise ValueError(
                     f"{objective.name.lower()} is not allowed in AutoML! "
-                    "Use evalml.objectives.utils.get_core_objective_names() "
-                    "to get all objective names allowed in automl.",
+                    "Use evalml.objectives.utils.get_optimization_objectives() "
+                    "to get all objectives allowed for automl optimization.",
                 )
             return objective()
         return objective
