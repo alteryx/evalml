@@ -212,3 +212,81 @@ def test_decomposer_prefers_users_time_index(
     else:
         X_t, y_t = pdc.fit_transform(X, y)
         assert all(y_t.index.values == expected_values)
+
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    [PolynomialDecomposer, STLDecomposer],
+)
+@pytest.mark.parametrize(
+    "frequency",
+    [
+        "D",
+        "W",
+        "S",
+        "h",
+        "T",
+        pytest.param(
+            "m",
+            marks=pytest.mark.xfail(reason="Frequency considered ambiguous by pandas"),
+        ),
+        pytest.param(
+            "M",
+            marks=pytest.mark.xfail(reason="Frequency considered ambiguous by pandas"),
+        ),
+        pytest.param(
+            "Y",
+            marks=pytest.mark.xfail(reason="Frequency considered ambiguous by pandas"),
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    "test_first_index",
+    ["on period", "before period", "just after period", "mid period"],
+)
+def test_decomposer_build_seasonal_signal(
+    decomposer_child_class,
+    ts_data,
+    test_first_index,
+    frequency,
+):
+    period = 10
+    test_first_index = {
+        "on period": 3 * period,
+        "before period": 3 * period - 1,
+        "just after period": 3 * period + 1,
+        "mid period": 3 * period + 4,
+    }[test_first_index]
+
+    # Data spanning 2021-01-01 to 2021-02-09
+    X, _, y = ts_data()
+
+    # Change the date time index to start at the same time but have different frequency
+    y.set_axis(
+        pd.date_range(start="2021-01-01", periods=len(y), freq=frequency),
+        inplace=True,
+    )
+
+    decomposer = decomposer_child_class(degree=2)
+
+    # Synthesize a one-week long cyclic signal
+    single_period_seasonal_signal = np.sin(y[0:period] * 2 * np.pi / len(y[0:period]))
+    full_seasonal_signal = np.sin(y * 2 * np.pi / len(y[0:period]))
+
+    # Split the target data.  Since the period of this data is 7 days, we'll test
+    # when the cycle begins, an index before it begins, an index after it begins
+    # and in the middle of a cycle
+    y_test = y[test_first_index:]
+
+    projected_seasonality = decomposer._build_seasonal_signal(
+        y_test,
+        single_period_seasonal_signal,
+        period,
+        frequency,
+    )
+
+    # Make sure that the function extracted the correct portion of the repeating, full seasonal signal
+    assert np.allclose(
+        full_seasonal_signal[projected_seasonality.index],
+        projected_seasonality,
+    )
