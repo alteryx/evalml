@@ -3,14 +3,30 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Fix holdout warning message showing when using default parameters :pr:`3727`
     * Changes
+        * Use Woodwork's ``dependence_dict`` method to calculate for ``TargetLeakageDataCheck`` :pr:`3728`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * ``TargetLeakageDataCheck`` now uses argument ``mutual_info`` rather than ``mutual`` :pr:`3728`
+
+
+**v0.59.0 Sept. 27, 2022**
+    * Enhancements
+        * Enhanced Decomposer with ``determine_periodicity`` function to automatically determine periodicity of seasonal target. :pr:`3729`
+        * Enhanced Decomposer with ``set_seasonal_period`` function to set a ``Decomposer`` object's seasonal period automatically. :pr:`3729`
+    * Fixes
+        * Fixed holdout warning message showing when using default parameters :pr:`3727`
+        * Fixed bug in Oversampler where categorical dtypes would fail :pr:`3732`
+    * Changes
+        * Automatic sorting of the ``time_index`` prior to running ``DataChecks`` has been disabled :pr:`3723`
+    * Documentation Changes
+    * Testing Changes
+        * Update job to use new looking glass report command :pr:`3733`
+
 
 **v0.58.0 Sept. 20, 2022**
     * Enhancements

@@ -1,9 +1,11 @@
+import re
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from woodwork.config import CONFIG_DEFAULTS
 
 from evalml.data_checks import (
     DataCheckActionCode,
@@ -102,7 +104,7 @@ def test_target_leakage_data_check_singular_warning():
 def test_target_leakage_data_check_empty(data_type, make_data_type):
     X = make_data_type(data_type, pd.DataFrame())
     y = make_data_type(data_type, pd.Series())
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method="mutual")
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method="mutual_info")
     assert leakage_check.validate(X, y) == []
 
 
@@ -344,16 +346,20 @@ def test_target_leakage_regression():
 
 
 def test_target_leakage_data_check_warnings_pearson():
-    y = pd.Series([1, 0, 1, 1])
+    y = pd.Series([1, 0, 1, 1] * 10)
     X = pd.DataFrame()
     X["a"] = y * 3
     X["b"] = y - 1
     X["c"] = y / 10
     X["d"] = ~y
-    X["e"] = [0, 0, 0, 0]
+    X["e"] = [0, 0, 0, 0] * 10
     y = y.astype(bool)
 
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method="pearson")
+    # pearsons does not support boolean columns
+    assert leakage_check.validate(X, y) == []
+
+    y = y.astype(int)
     assert leakage_check.validate(X, y) == [
         DataCheckWarning(
             message="Columns 'a', 'b', 'c', 'd' are 50.0% or more correlated with the target",
@@ -370,7 +376,7 @@ def test_target_leakage_data_check_warnings_pearson():
         ).to_dict(),
     ]
 
-    y = ["a", "b", "a", "a"]
+    y = ["a", "b", "a", "a"] * 10
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method="pearson")
     assert leakage_check.validate(X, y) == []
 
@@ -381,14 +387,13 @@ def test_target_leakage_data_check_input_formats_pearson():
     # test empty pd.DataFrame, empty pd.Series
     assert leakage_check.validate(pd.DataFrame(), pd.Series()) == []
 
-    y = pd.Series([1, 0, 1, 1])
+    y = pd.Series([1, 0, 1, 1] * 10)
     X = pd.DataFrame()
     X["a"] = y * 3
     X["b"] = y - 1
     X["c"] = y / 10
     X["d"] = ~y
-    X["e"] = [0, 0, 0, 0]
-    y = y.astype(bool)
+    X["e"] = [0, 0, 0, 0] * 10
 
     expected = [
         DataCheckWarning(
@@ -433,15 +438,19 @@ def test_target_leakage_data_check_input_formats_pearson():
     assert leakage_check.validate(X, y.values) == expected
 
 
-def test_target_leakage_none_pearson():
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method="pearson")
-    y = pd.Series([1, 0, 1, 1])
+@pytest.mark.parametrize("measures", ["pearson", "spearman", "mutual_info", "max"])
+def test_target_leakage_none_measures(measures):
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method=measures)
+    y = pd.Series([1, 0, 1, 1] * 6 + [1])
     X = pd.DataFrame()
-    X["a"] = [1, 1, 1, 1]
-    X["b"] = [0, 0, 0, 0]
+    X["a"] = ["a", "b", "a", "a"] * 6 + ["a"]
+    X["b"] = y
     y = y.astype(bool)
 
-    assert leakage_check.validate(X, y) == []
+    if measures in ["pearson", "spearman"]:
+        assert leakage_check.validate(X, y) == []
+        return
+    assert len(leakage_check.validate(X, y))
 
 
 def test_target_leakage_maintains_logical_types():
@@ -454,3 +463,51 @@ def test_target_leakage_maintains_logical_types():
     # Mutual information is not supported for Unknown logical types, so should not be included
     assert not any(message["message"].startswith("Column 'A'") for message in messages)
     assert len(messages) == 1
+
+
+def test_target_leakage_methods():
+    methods = CONFIG_DEFAULTS["correlation_metrics"]
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Method '{}' not in available correlation methods. Available methods include {}".format(
+                "fake_method",
+                methods,
+            ),
+        ),
+    ):
+        TargetLeakageDataCheck(method="fake_method")
+
+
+def test_target_leakage_target_string():
+    y = pd.Series([1, 0, 1, 1] * 10)
+    X = pd.DataFrame()
+    X["target_y"] = y * 3
+    X["target_y_y"] = y - 1
+    X["target"] = y / 10
+    X["d"] = ~y
+    X["e"] = [0, 1, 2, 3] * 10
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
+
+    expected = [
+        DataCheckWarning(
+            message="Columns 'target_y', 'target_y_y', 'target', 'd' are 80.0% or more correlated with the target",
+            data_check_name=target_leakage_data_check_name,
+            message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+            details={"columns": ["target_y", "target_y_y", "target", "d"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=target_leakage_data_check_name,
+                    metadata={"columns": ["target_y", "target_y_y", "target", "d"]},
+                ),
+            ],
+        ).to_dict(),
+    ]
+    assert leakage_check.validate(X, y) == expected
+
+
+def test_target_leakage_use_all():
+    with pytest.raises(ValueError, match="Cannot use 'all' as the method"):
+        TargetLeakageDataCheck(method="all")

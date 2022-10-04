@@ -18,6 +18,7 @@ from evalml.data_checks import (
     DateTimeFormatDataCheck,
     DCAOParameterType,
     DefaultDataChecks,
+    InvalidTargetDataCheck,
     TargetDistributionDataCheck,
     TimeSeriesParametersDataCheck,
     TimeSeriesSplittingDataCheck,
@@ -828,3 +829,39 @@ def test_data_checks_drop_index(X_y_binary):
     validate_args = MockDataCheck.validate.call_args_list
     for arg in validate_args:
         assert "index_col" not in arg[0][0].columns
+
+
+def test_time_index_marked_as_sorted():
+    X = pd.DataFrame()
+    X["dates"] = [
+        "1/1/21",
+        "1/1/21",
+        "1/7/21",
+        "1/7/21",
+        "1/7/21",
+        "1/3/21",
+        "1/10/21",
+        "1/10/21",
+        "1/4/21",
+    ]
+    y = pd.Series([i for i in range(9)])
+
+    X_copy = X.copy()
+    X_copy.ww.init(time_index="dates")
+    dcs = DataChecks(
+        [InvalidTargetDataCheck],
+        {
+            "InvalidTargetDataCheck": {
+                "problem_type": "time series regression",
+                "objective": get_default_primary_search_objective(
+                    "time series regression",
+                ),
+            },
+        },
+    )
+    results = dcs.validate(X_copy, y)
+    assert len(results) == 1
+    assert results[0]["code"] == "MISMATCHED_INDICES_ORDER"
+
+    results = dcs.validate(X, y)
+    assert not len(results)

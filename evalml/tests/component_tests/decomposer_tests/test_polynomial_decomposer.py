@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import matplotlib.pyplot
 import numpy as np
 import pandas as pd
@@ -402,15 +400,13 @@ def test_polynomial_decomposer_uses_time_index(
     "y_has_time_index",
     ["y_has_time_index", "y_doesnt_have_time_index"],
 )
-def test_polynomial_decomposer_plot_decomposition(y_has_time_index):
+def test_polynomial_decomposer_plot_decomposition(
+    y_has_time_index,
+    generate_seasonal_data,
+):
     step = 0.01
     period = 9
-    freq = 2 * np.pi / period / step
-    x = np.arange(0, 1, step)
-    dts = pd.date_range(datetime.today(), periods=len(x))
-    X = pd.DataFrame({"x": x})
-    X = X.set_index(dts)
-    y = pd.Series(np.sin(freq * x) + x + 2)
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period, step)
     if y_has_time_index == "y_has_time_index":
         y = y.set_axis(X.index)
 
@@ -474,3 +470,82 @@ def test_polynomial_decomposer_prefers_users_time_index(
     else:
         X_t, y_t = pdc.fit_transform(X, y)
         assert all(y_t.index.values == expected_values)
+
+
+@pytest.mark.parametrize(
+    "periodicity_determination_method",
+    [
+        "autocorrelation",
+        pytest.param(
+            "partial-autocorrelation",
+            marks=pytest.mark.xfail(reason="Partial Autocorrelation not working yet."),
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    "period",
+    [
+        7,
+        30,
+        365,
+        pytest.param(
+            None,
+            marks=pytest.mark.xfail(
+                reason="Don't have a good heuristic to distinguish bad period guess.",
+            ),
+        ),
+    ],
+)
+@pytest.mark.parametrize("trend_degree", [1, 2, 3])
+@pytest.mark.parametrize("decomposer_picked_correct_degree", [True, False])
+@pytest.mark.parametrize("synthetic_data", ["synthetic", "real"])
+def test_polynomial_decomposer_determine_periodicity(
+    period,
+    trend_degree,
+    decomposer_picked_correct_degree,
+    periodicity_determination_method,
+    synthetic_data,
+    generate_seasonal_data,
+):
+
+    X, y = generate_seasonal_data(real_or_synthetic=synthetic_data)(
+        period,
+        trend_degree=trend_degree,
+    )
+
+    if period is None:
+        component_period = 1
+    else:
+        component_period = period
+
+    # Test that the seasonality can be determined if trend guess isn't spot on.
+    if not decomposer_picked_correct_degree:
+        trend_degree = 1 if trend_degree in [2, 3] else 2
+
+    pdc = PolynomialDecomposer(degree=trend_degree, seasonal_period=component_period)
+    ac = pdc.determine_periodicity(X, y, method=periodicity_determination_method)
+
+    if synthetic_data == "synthetic":
+        if period is None:
+            assert ac is None
+        else:
+            assert period - 1 <= ac <= period + 1
+    else:
+        if period is None:
+            assert ac is None
+        else:
+            assert 360 < ac < 370
+
+
+@pytest.mark.parametrize("period", [7, 30, 365])
+def test_polynomial_decomposer_set_period(period, generate_seasonal_data):
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period)
+    pdc = PolynomialDecomposer()
+
+    assert pdc.seasonal_period == -1
+    assert pdc.parameters["seasonal_period"] == -1
+
+    pdc.set_seasonal_period(X, y)
+
+    assert period - 1 <= pdc.seasonal_period <= period + 1
+    assert pdc.parameters["seasonal_period"]
