@@ -319,25 +319,5 @@ def test_stl_decomposer_set_period(period, generate_seasonal_data):
 
     pdc.set_seasonal_period(X, y)
 
-    assert period - 1 <= pdc.seasonal_period <= period + 1
+    assert 0.95 * period <= pdc.seasonal_period <= 1.05 * period
     assert pdc.parameters["seasonal_period"]
-
-
-def test_polynomial_decomposer_get_trend_dataframe_raises_errors(ts_data):
-    X, _, y = ts_data()
-    stl = STLDecomposer()
-    stl.fit_transform(X, y)
-
-    with pytest.raises(
-        TypeError,
-        match="Provided X should have datetimes in the index.",
-    ):
-        X_int_index = X.reset_index()
-        stl.get_trend_dataframe(X_int_index, y)
-
-    with pytest.raises(
-        ValueError,
-        match="Provided DatetimeIndex of X should have an inferred frequency.",
-    ):
-        X.index.freq = None
-        stl.get_trend_dataframe(X, y)
