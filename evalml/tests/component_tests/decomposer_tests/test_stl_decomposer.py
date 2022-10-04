@@ -46,26 +46,6 @@ def test_stl_decomposer_raises_value_error_target_is_none(ts_data):
         pdt.inverse_transform(None)
 
 
-# def test_polynomial_decomposer_get_trend_dataframe_raises_errors(ts_data):
-#     X, _, y = ts_data()
-#     stl = STLDecomposer()
-#     stl.fit_transform(X, y)
-#
-#     with pytest.raises(
-#         TypeError,
-#         match="Provided X should have datetimes in the index.",
-#     ):
-#         X_int_index = X.reset_index()
-#         pdt.get_trend_dataframe(X_int_index, y)
-#
-#     with pytest.raises(
-#         ValueError,
-#         match="Provided DatetimeIndex of X should have an inferred frequency.",
-#     ):
-#         X.index.freq = None
-#         pdt.get_trend_dataframe(X, y)
-
-
 def test_polynomial_decomposer_transform_returns_same_when_y_none(
     ts_data,
 ):
@@ -74,66 +54,6 @@ def test_polynomial_decomposer_transform_returns_same_when_y_none(
     X_t, y_t = stl.transform(X, None)
     pd.testing.assert_frame_equal(X, X_t)
     assert y_t is None
-
-
-@pytest.mark.parametrize("index_type", ["datetime", "integer"])
-@pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("degree", [1, 2, 3])
-def test_stl_decomposer_fit_transform(
-    degree,
-    input_type,
-    index_type,
-    ts_data,
-):
-
-    X, _, y = ts_data()
-
-    # Get the expected answer
-    lin_reg = LinearRegression(fit_intercept=True)
-    features = PolynomialFeatures(degree=degree).fit_transform(
-        np.arange(X.shape[0]).reshape(-1, 1),
-    )
-    lin_reg.fit(features, y)
-    detrended_values = y.values - lin_reg.predict(features)
-    expected_index = y.index if input_type != "np" else range(y.shape[0])
-    expected_answer = pd.Series(detrended_values, index=expected_index)
-
-    if input_type == "ww":
-        X = X.copy()
-        X.ww.init()
-        y = ww.init_series(y.copy())
-
-    if index_type == "integer":
-        y = y.reset_index(drop=True)
-        X = X.reset_index(drop=True)
-        X.ww.init()
-
-    stl = STLDecomposer(degree=degree)
-    output_X, output_y = stl.fit_transform(X, y)
-
-    import matplotlib.pyplot as plt
-
-    fig, axs = plt.subplots(4)
-    fig.set_size_inches(18.5, 14.5)
-    axs[0].plot(y, "r")
-    axs[0].set_title("signal")
-    axs[1].plot(stl.trend, "b")
-    axs[1].set_title("trend")
-    axs[2].plot(stl.seasonal, "g")
-    axs[2].set_title("seasonality")
-    axs[3].plot(stl.residual, "y")
-    axs[3].set_title("residual")
-    plt.show()
-
-    pd.testing.assert_series_equal(
-        expected_answer,
-        output_y,
-        check_exact=False,
-        rtol=1.9,
-    )
-
-    # Verify the X is not changed
-    pd.testing.assert_frame_equal(X, output_X)
 
 
 @pytest.mark.parametrize(
@@ -235,7 +155,6 @@ def test_polynomial_decomposer_get_trend_dataframe_error_not_fit(
     ],
 )
 def test_stl_decomposer_inverse_transform(
-    # degree,
     generate_seasonal_data,
     transformer_fit_on_data,
 ):
@@ -391,12 +310,12 @@ def test_stl_fit_transform(
 
 
 @pytest.mark.parametrize("period", [7, 30, 365])
-def test_polynomial_decomposer_set_period(period, generate_seasonal_data):
+def test_stl_decomposer_set_period(period, generate_seasonal_data):
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period)
-    pdc = PolynomialDecomposer()
+    pdc = STLDecomposer()
 
-    assert pdc.seasonal_period == -1
-    assert pdc.parameters["seasonal_period"] == -1
+    assert pdc.seasonal_period == 7
+    assert pdc.parameters["seasonal_period"] == 7
 
     pdc.set_seasonal_period(X, y)
 
@@ -404,24 +323,21 @@ def test_polynomial_decomposer_set_period(period, generate_seasonal_data):
     assert pdc.parameters["seasonal_period"]
 
 
-def test_thing():
-    import matplotlib.pyplot as plt
-    from statsmodels.datasets import elec_equip as ds
-    from statsmodels.tsa.arima.model import ARIMA
-    from statsmodels.tsa.forecasting.stl import STLForecast
+def test_polynomial_decomposer_get_trend_dataframe_raises_errors(ts_data):
+    X, _, y = ts_data()
+    stl = STLDecomposer()
+    stl.fit_transform(X, y)
 
-    elec_equip = ds.load().data
-    elec_equip.index.freq = elec_equip.index.inferred_freq
-    stlf = STLForecast(elec_equip, ARIMA, model_kwargs=dict(order=(1, 1, 0), trend="t"))
-    stlf_res = stlf.fit()
+    with pytest.raises(
+        TypeError,
+        match="Provided X should have datetimes in the index.",
+    ):
+        X_int_index = X.reset_index()
+        stl.get_trend_dataframe(X_int_index, y)
 
-    forecast = stlf_res.forecast(24)
-    plt.plot(elec_equip)
-    plt.plot(forecast)
-
-    seasonal = stlf_res._result.seasonal
-    trend = stlf_res._result.trend
-    plt.plot(seasonal)
-    plt.plot(trend)
-    plt.plot(forecast)
-    plt.show()
+    with pytest.raises(
+        ValueError,
+        match="Provided DatetimeIndex of X should have an inferred frequency.",
+    ):
+        X.index.freq = None
+        stl.get_trend_dataframe(X, y)

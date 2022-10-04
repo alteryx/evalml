@@ -44,26 +44,6 @@ def test_polynomial_decomposer_raises_value_error_target_is_none(ts_data):
         pdt.inverse_transform(None)
 
 
-def test_polynomial_decomposer_get_trend_dataframe_raises_errors(ts_data):
-    X, _, y = ts_data()
-    pdt = PolynomialDecomposer(degree=3)
-    pdt.fit_transform(X, y)
-
-    with pytest.raises(
-        TypeError,
-        match="Provided X should have datetimes in the index.",
-    ):
-        X_int_index = X.reset_index()
-        pdt.get_trend_dataframe(X_int_index, y)
-
-    with pytest.raises(
-        ValueError,
-        match="Provided DatetimeIndex of X should have an inferred frequency.",
-    ):
-        X.index.freq = None
-        pdt.get_trend_dataframe(X, y)
-
-
 def test_polynomial_decomposer_transform_returns_same_when_y_none(
     ts_data,
 ):
