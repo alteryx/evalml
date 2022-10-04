@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fix to allow ``IDColumnsDataCheck`` to work with ``IntegerNullable`` inputs :pr:`3740`
     * Changes
         * Use Woodwork's ``dependence_dict`` method to calculate for ``TargetLeakageDataCheck`` :pr:`3728`
     * Documentation Changes

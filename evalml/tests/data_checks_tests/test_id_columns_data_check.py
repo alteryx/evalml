@@ -142,7 +142,8 @@ def test_id_columns_strings():
     ]
 
 
-def test_id_cols_data_check_input_formats():
+@pytest.mark.parametrize("logical_type", ["integer", "integer_nullable", "double"])
+def test_id_cols_data_check_input_formats(logical_type):
     id_cols_check = IDColumnsDataCheck(id_threshold=0.8)
 
     # test empty pd.DataFrame
@@ -150,7 +151,8 @@ def test_id_cols_data_check_input_formats():
 
     #  test Woodwork
     ww_input = pd.DataFrame(np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]))
-    ww_input.ww.init()
+    logical_types = {col: logical_type for col in ww_input.columns}
+    ww_input.ww.init(logical_types=logical_types)
     assert id_cols_check.validate(ww_input) == [
         DataCheckWarning(
             message="Columns '0', '1' are 80.0% or more likely to be an ID column",
@@ -204,7 +206,9 @@ def test_id_cols_data_check_input_formats():
     ]
 
 
-@pytest.mark.parametrize("input_type", ["integer", "string", "double"])
+@pytest.mark.parametrize(
+    "input_type", ["integer", "integer_nullable", "string", "double"]
+)
 def test_identified_first_col_primary_key(
     input_type, get_test_data_with_or_without_primary_key
 ):
@@ -272,7 +276,9 @@ def test_identified_first_col_primary_key(
     ]
 
 
-@pytest.mark.parametrize("input_type", ["integer", "string", "double"])
+@pytest.mark.parametrize(
+    "input_type", ["integer", "integer_nullable", "string", "double"]
+)
 def test_unidentified_first_col_primary_key(
     input_type, get_test_data_with_or_without_primary_key
 ):
@@ -299,6 +305,8 @@ def test_unidentified_first_col_primary_key(
 
     X = X.rename(columns={"col_1_id": "col_1"})
     if input_type == "integer":
+        X.at[0, "col_1"] = 0
+    elif input_type == "integer_nullable":
         X.at[0, "col_1"] = 0
     elif input_type == "double":
         X.at[0, "col_1"] = 0.0

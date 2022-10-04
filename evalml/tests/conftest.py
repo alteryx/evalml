@@ -109,6 +109,17 @@ def get_test_data_with_or_without_primary_key():
                 X_dict["col_1_id"] = [1, 1, 2, 3]
             X = pd.DataFrame.from_dict(X_dict)
 
+        elif input_type == "integer_nullable":
+            X_dict = {
+                "col_1_id": pd.Series([0, 1, 2, 3], dtype="Int64"),
+                "col_2": pd.Series([2, 3, 4, 5], dtype="Int64"),
+                "col_3_id": pd.Series([1, 1, 2, 3], dtype="Int64"),
+                "col_5": pd.Series([0, 0, 1, 2], dtype="Int64"),
+            }
+            if not has_primary_key:
+                X_dict["col_1_id"] = pd.Series([1, 1, 2, 3], dtype="Int64")
+            X = pd.DataFrame.from_dict(X_dict)
+
         elif input_type == "double":
             X_dict = {
                 "col_1_id": [0.0, 1.0, 2.0, 3.0],
