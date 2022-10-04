@@ -27,10 +27,9 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
     Args:
         features_to_encode (list[str]): List of columns to encode. All other columns will remain untouched.
             If None, all appropriate columns will be encoded. Defaults to None. The order of columns does not matter.
-        categories (list[list[str]]): A two dimensional list of categories, where `categories[i]` is a list of the categories
-            for the column at index `i` in the dataframes passed in at fit and transform.
-            The order of categories specified for a column does not matter.
-            Any category not present in categories will be handled as an unknown value.
+        categories (dict[str, list[str]]): A dictionary mapping column names to their categories
+            in the dataframes passed in at fit and transform. The order of categories specified for a column does not matter.
+            Any category found in the data that is not present in categories will be handled as an unknown value.
             To not have unknown values raise an error, set handle_unknown to "use_encoded_value".
             Defaults to None.
         handle_unknown ("error" or "use_encoded_value"): Whether to ignore or error for unknown categories
@@ -139,12 +138,12 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                     )
 
             # Put features_to_encode in the same relative order as the columns in the dataframe
-            self.features_to_encode = [
-                col for col in X.columns if col in self.features_to_encode
-            ]
+            # self.features_to_encode = [
+            #     col for col in X.columns if col in self.features_to_encode
+            # ]
 
         ww_logical_types = X.ww.logical_types
-        categories = []
+        categories = {}
         if len(self.features_to_encode) == 0:
             # No ordinal features present - no transformation can take place so return early
             return self
@@ -154,44 +153,50 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
 
             if len(input_categories) != len(self.features_to_encode):
                 raise ValueError(
-                    "Categories argument must contain as many elements as there are Ordinal features.",
+                    "Categories argument must contain as many elements as there are features to encode.",
                 )
 
-            if not all(isinstance(cats, list) for cats in input_categories):
+            if not all(isinstance(cats, list) for cats in input_categories.values()):
                 raise ValueError(
-                    "Each element of the categories argument must be a list.",
+                    "Each of the values in the categories argument must be a list.",
                 )
             # Categories, as they're passed into SKOrdinalEncoder should be in the same order
             # as the data's Ordinal.order categories even if it's a subset
-            for i, col_categories in enumerate(input_categories):
-                categories_order = ww_logical_types[self.features_to_encode[i]].order
+            for col_name in self.features_to_encode:
+                col_categories = input_categories[col_name]
+                categories_order = ww_logical_types[col_name].order
 
                 ordered_categories = [
                     cat for cat in categories_order if cat in col_categories
                 ]
-                categories.append(ordered_categories)
+                categories[col_name] = ordered_categories
         else:
             # Categories unspecified - use ordered categories from a columns' Ordinal logical type
-            for col in X[self.features_to_encode]:
-                ltype = ww_logical_types[col]
+            for col_name in self.features_to_encode:
+                ltype = ww_logical_types[col_name]
                 # Copy the order list, since we might mutate it later by adding nans
                 # and don't want to impact the Woodwork types
-                categories.append(ltype.order.copy())
+                categories[col_name] = ltype.order.copy()
 
         # Add any null values into the categories lists so that they aren't treated as unknown values
         # This is needed because Ordinal.order won't indicate if nulls are present, and SKOrdinalEncoder
         # requires any null values be present in the categories list if they are to be encoded as
         # missing values
-        for i, col in enumerate(X[self.features_to_encode]):
-            if X[col].isna().any():
-                categories[i] += [np.nan]
+        for col_name in self.features_to_encode:
+            if X[col_name].isna().any():
+                categories[col_name].append(np.nan)
+
+        # sklearn needs categories to be a list in the order of the columns in features_to_encode
+        categories_for_sk_encoder = [
+            categories[col_name] for col_name in self.features_to_encode
+        ]
 
         encoded_missing_value = self.parameters["encoded_missing_value"]
         if encoded_missing_value is None:
             encoded_missing_value = np.nan
 
         self._component_obj = SKOrdinalEncoder(
-            categories=categories,
+            categories=categories_for_sk_encoder,
             handle_unknown=self.parameters["handle_unknown"],
             unknown_value=self.parameters["unknown_value"],
             encoded_missing_value=encoded_missing_value,

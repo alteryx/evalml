@@ -10,9 +10,9 @@ from evalml.pipelines.components import OrdinalEncoder
 def set_first_three_columns_to_ordinal_with_categories(X, categories):
     X.ww.init(
         logical_types={
-            "col_1": Ordinal(order=categories[0]),
-            "col_2": Ordinal(order=categories[1]),
-            "col_3": Ordinal(order=categories[2]),
+            "col_1": Ordinal(order=categories["col_1"]),
+            "col_2": Ordinal(order=categories["col_2"]),
+            "col_3": Ordinal(order=categories["col_3"]),
         },
     )
     return X
@@ -64,15 +64,17 @@ def test_invalid_inputs():
     )
     X = set_first_three_columns_to_ordinal_with_categories(
         X,
-        [["a", "b", "c", "d"], ["a", "b", "c"], ["a"]],
+        {"col_1": ["a", "b", "c", "d"], "col_2": ["a", "b", "c"], "col_3": ["a"]},
     )
-    encoder = OrdinalEncoder(categories=[["a", "b"], ["a", "c"]])
-    error_msg = "Categories argument must contain as many elements as there are Ordinal features."
+    encoder = OrdinalEncoder(categories={"col_1": ["a", "b"], "col_2": ["a", "c"]})
+    error_msg = "Categories argument must contain as many elements as there are features to encode."
     with pytest.raises(ValueError, match=error_msg):
         encoder.fit(X)
 
-    encoder = OrdinalEncoder(categories=[["a", "b"], 1, ["a"]])
-    error_msg = "Each element of the categories argument must be a list."
+    encoder = OrdinalEncoder(
+        categories={"col_1": 1, "col_2": ["a", "c"], "col_3": ["a", "b"]},
+    )
+    error_msg = "Each of the values in the categories argument must be a list."
     with pytest.raises(ValueError, match=error_msg):
         encoder.fit(X)
 
@@ -90,7 +92,7 @@ def test_categories_list_not_passed_in_for_non_ordinal_column():
     )
     X.ww.init(logical_types={"col_2": Ordinal(order=["a", "b", "c", "d"])})
 
-    encoder = OrdinalEncoder(categories=[["a", "b", "c", "d"]])
+    encoder = OrdinalEncoder(categories={"col_2": ["a", "b", "c", "d"]})
     encoder.fit(X)
 
     assert len(encoder._component_obj.categories_) == len(encoder.features_to_encode)
@@ -99,8 +101,8 @@ def test_categories_list_not_passed_in_for_non_ordinal_column():
     with pytest.raises(ValueError, match=error):
         encoder.categories("col_1")
 
-    # When features_to_encode is passed in, confirm the order there doesn't matter and order of
-    # cols in X is still used in indexing into categories
+    # When features_to_encode is passed in, confirm the order there doesn't matter
+    # in indexing into categories_
     X.ww.init(
         logical_types={
             "col_2": Ordinal(order=["a", "b", "c", "d"]),
@@ -110,14 +112,17 @@ def test_categories_list_not_passed_in_for_non_ordinal_column():
     encoder = OrdinalEncoder(
         # features_to_encode passed in different order than the dataframe's cols
         features_to_encode=["col_3", "col_2"],
-        # categories' order still matches the dataframe's cols
-        categories=[["a", "b", "c", "d"], ["x", "y"]],
+        categories={"col_2": ["a", "b", "c", "d"], "col_3": ["x", "y"]},
     )
     encoder.fit(X)
 
     assert len(encoder._component_obj.categories_) == len(encoder.features_to_encode)
     set(encoder.categories("col_2")) == {"a", "b", "c", "d"}
     set(encoder.categories("col_3")) == {"x", "y"}
+
+    X_t = encoder.transform(X)
+    assert list(X_t["col_2_ordinal_encoding"]) == [0, 1, 0, 2, 3]
+    assert list(X_t["col_3_ordinal_encoding"]) == [0, 0, 0, 1, 1]
 
 
 def test_features_to_encode_non_ordinal_cols():
@@ -142,7 +147,7 @@ def test_categories_specified_not_present_in_data():
     X.ww.init(logical_types={"col_1": Ordinal(order=["a", "b", "c", "d", "x"])})
 
     encoder = OrdinalEncoder(
-        categories=[["a", "x"]],
+        categories={"col_1": ["a", "x"]},
         handle_unknown="use_encoded_value",
         unknown_value=-1,
     )
@@ -195,7 +200,11 @@ def test_ordinal_encoder_recognizes_ordinal_columns():
     encoder.fit(X)
     assert not encoder.features_to_encode
 
-    categories = [["a", "b", "c", "d"], ["a", "b", "c"], ["a"]]
+    categories = {
+        "col_1": ["a", "b", "c", "d"],
+        "col_2": ["a", "b", "c"],
+        "col_3": ["a"],
+    }
     X = set_first_three_columns_to_ordinal_with_categories(X, categories=categories)
 
     encoder = OrdinalEncoder()
@@ -207,9 +216,9 @@ def test_ordinal_encoder_recognizes_ordinal_columns():
     encoder.fit(X)
     assert encoder.features_to_encode == ["col_1"]
     assert encoder.features_to_encode == list(encoder._component_obj.feature_names_in_)
-    expected_categories = [categories[0]]
+    expected_categories = {"col_1": categories["col_1"]}
     for i, category_list in enumerate(encoder._component_obj.categories_):
-        assert list(category_list) == expected_categories[i]
+        assert list(category_list) == expected_categories[f"col_{i + 1}"]
 
 
 def test_ordinal_encoder_categories_set_correctly_from_fit():
@@ -223,17 +232,21 @@ def test_ordinal_encoder_categories_set_correctly_from_fit():
             "col_4": [1, 2, 3, 4, 5],
         },
     )
-    categories = [["a", "b", "c", "d"], ["a", "b", "c"], ["a"]]
+    categories = {
+        "col_1": ["a", "b", "c", "d"],
+        "col_2": ["a", "b", "c"],
+        "col_3": ["a"],
+    }
     X = set_first_three_columns_to_ordinal_with_categories(X, categories=categories)
 
     # No parameters specified
     encoder = OrdinalEncoder()
     encoder.fit(X)
     for i, category_list in enumerate(encoder._component_obj.categories_):
-        assert list(category_list) == categories[i]
+        assert list(category_list) == categories[f"col_{i + 1}"]
 
     # Categories set at init explicitly - means we have to handle the unknown case
-    subset_categories = [["a"], ["a"], ["a"]]
+    subset_categories = {"col_1": ["a"], "col_2": ["a"], "col_3": ["a"]}
     encoder = OrdinalEncoder(
         categories=subset_categories,
         handle_unknown="use_encoded_value",
@@ -241,7 +254,7 @@ def test_ordinal_encoder_categories_set_correctly_from_fit():
     )
     encoder.fit(X)
     for i, category_list in enumerate(encoder._component_obj.categories_):
-        assert list(category_list) == subset_categories[i]
+        assert list(category_list) == subset_categories[f"col_{i + 1}"]
 
 
 def test_ordinal_encoder_transform():
@@ -368,7 +381,7 @@ def test_null_values_with_categories_specified():
 
     # Try putting a nan in the categories list in one of the columns but not the other
     encoder = OrdinalEncoder(
-        categories=[["a"], ["a", np.nan]],
+        categories={"col_1": ["a"], "col_2": ["a", np.nan]},
         handle_unknown="use_encoded_value",
         unknown_value=-1,
     )
@@ -389,11 +402,11 @@ def test_handle_unknown():
             "col_4": [2, 0, 1, 3, 0, 1, 2],
         },
     )
-    categories = [
-        ["a", "b", "c", "d", "e", "f", "g"],
-        ["a", "b", "c", "d", "e", "f"],
-        ["a", "b"],
-    ]
+    categories = {
+        "col_1": ["a", "b", "c", "d", "e", "f", "g"],
+        "col_2": ["a", "b", "c", "d", "e", "f"],
+        "col_3": ["a", "b"],
+    }
     X = set_first_three_columns_to_ordinal_with_categories(X, categories=categories)
 
     encoder = OrdinalEncoder(handle_unknown="error")
@@ -408,11 +421,11 @@ def test_handle_unknown():
             "col_4": [2, 0, 1, 3, 0, 1, 2],
         },
     )
-    categories = [
-        ["x", "b", "c", "d", "e", "f", "g"],
-        ["a", "b", "c", "d", "e", "f"],
-        ["a", "b"],
-    ]
+    categories = {
+        "col_1": ["x", "b", "c", "d", "e", "f", "g"],
+        "col_2": ["a", "b", "c", "d", "e", "f"],
+        "col_3": ["a", "b"],
+    }
     X = set_first_three_columns_to_ordinal_with_categories(X, categories=categories)
     with pytest.raises(ValueError) as exec_info:
         # Using the encoder that was fit on data without x
@@ -429,17 +442,22 @@ def test_categories_set_at_init():
             "col_4": [2, 0, 1, 3, 0, 1, 2],
         },
     )
-    full_categories = [
-        ["a", "b", "c", "d", "e", "f", "g"],
-        ["a", "b", "c", "d", "e", "f"],
-        ["a", "b"],
-    ]
+
+    full_categories = {
+        "col_1": ["a", "b", "c", "d", "e", "f", "g"],
+        "col_2": ["a", "b", "c", "d", "e", "f"],
+        "col_3": ["a", "b"],
+    }
     X = set_first_three_columns_to_ordinal_with_categories(
         X,
         categories=full_categories,
     )
 
-    categories = [["a", "b", "c", "d"], ["a", "b", "c"], ["a", "b"]]
+    categories = {
+        "col_1": ["a", "b", "c", "d"],
+        "col_2": ["a", "b", "c"],
+        "col_3": ["a", "b"],
+    }
 
     # test categories value works when transforming
     encoder = OrdinalEncoder(
@@ -467,18 +485,18 @@ def test_categories_includes_not_present_value():
             "col_4": [2, 0, 1, 3, 0, 1, 2],
         },
     )
-    full_categories = [
-        ["a", "b", "c", "d", "e", "f", "g"],
-        ["a", "b", "c", "d", "e", "f"],
-        ["a", "b"],
-    ]
+    full_categories = {
+        "col_1": ["a", "b", "c", "d", "e", "f", "g"],
+        "col_2": ["a", "b", "c", "d", "e", "f"],
+        "col_3": ["a", "b"],
+    }
     X = set_first_three_columns_to_ordinal_with_categories(
         X,
         categories=full_categories,
     )
 
     # Categories passed in has value "x" that's not in the data
-    categories = [["a", "x"], ["a", "x"], ["a", "x"]]
+    categories = {"col_1": ["a", "x"], "col_2": ["a", "x"], "col_3": ["a", "x"]}
 
     # test categories value works when transforming
     encoder = OrdinalEncoder(
@@ -505,18 +523,22 @@ def test_categories_different_order_from_ltype():
             "col_4": [2, 0, 1, 3, 0, 1, 2],
         },
     )
-    full_categories = [
-        ["a", "b", "c", "d", "e", "f", "g"],
-        ["a", "b", "c", "d", "e", "f"],
-        ["a", "b"],
-    ]
+    full_categories = {
+        "col_1": ["a", "b", "c", "d", "e", "f", "g"],
+        "col_2": ["a", "b", "c", "d", "e", "f"],
+        "col_3": ["a", "b"],
+    }
     X = set_first_three_columns_to_ordinal_with_categories(
         X,
         categories=full_categories,
     )
 
     # The order doesn't match the full categories above but outputted data will still match above
-    categories = [["d", "a", "c", "b"], ["c", "b", "a"], ["b", "a"]]
+    categories = {
+        "col_1": ["d", "a", "c", "b"],
+        "col_2": ["c", "b", "a"],
+        "col_3": ["b", "a"],
+    }
 
     # test categories value works when transforming
     encoder = OrdinalEncoder(
@@ -564,7 +586,7 @@ def test_ordinal_encoder_categories():
         },
     )
     encoder = OrdinalEncoder(
-        categories=[["a"], ["a", "b"]],
+        categories={"col_1": ["a"], "col_2": ["a", "b"]},
         handle_unknown="use_encoded_value",
         unknown_value=-1,
     )
