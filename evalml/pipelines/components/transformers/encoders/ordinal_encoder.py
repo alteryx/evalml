@@ -137,11 +137,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
                         f"Column {col} specified in features_to_encode is not Ordinal in nature",
                     )
 
-            # Put features_to_encode in the same relative order as the columns in the dataframe
-            # self.features_to_encode = [
-            #     col for col in X.columns if col in self.features_to_encode
-            # ]
-
         ww_logical_types = X.ww.logical_types
         categories = {}
         if len(self.features_to_encode) == 0:
