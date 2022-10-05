@@ -1,6 +1,5 @@
 """Pipeline base class for time-series classification problems."""
 import pandas as pd
-import woodwork as ww
 from woodwork.statistics_utils import infer_frequency
 
 from evalml.objectives import get_objective

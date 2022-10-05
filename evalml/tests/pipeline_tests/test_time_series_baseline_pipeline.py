@@ -77,18 +77,29 @@ def test_time_series_baseline(
 
 
 @pytest.mark.parametrize("forecast_horizon,gap", [[3, 0], [10, 2], [2, 5]])
-def test_time_series_get_forecast_periods(forecast_horizon, gap, ts_data):
+@pytest.mark.parametrize("numeric_idx", [True, False])
+def test_time_series_get_forecast_periods(forecast_horizon, gap, numeric_idx, ts_data):
     X, _, y = ts_data(problem_type=ProblemTypes.TIME_SERIES_REGRESSION)
+    if numeric_idx:
+        X = X.reset_index(drop=True)
     clf = make_timeseries_baseline_pipeline(
         ProblemTypes.TIME_SERIES_REGRESSION,
         gap,
         forecast_horizon,
         time_index="date",
     )
+
+    with pytest.raises(
+        ValueError,
+        match="Pipeline must be fitted before getting forecast.",
+    ):
+        clf.get_forecast_periods(X)
+
     clf.fit(X, y)
     result = clf.get_forecast_periods(X)
 
     assert result.size == forecast_horizon + gap
+    assert all(result.index == range(len(X), len(X) + forecast_horizon + gap))
     assert result.iloc[0] == X.iloc[-1]["date"] + np.timedelta64(1, "D")
     assert np.issubdtype(result.dtype, np.datetime64)
     assert result.name == "date"

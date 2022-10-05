@@ -1,5 +1,4 @@
 """Pipeline base class for time series regression problems."""
-import numpy as np
 import pandas as pd
 from woodwork.statistics_utils import infer_frequency
 
@@ -111,25 +110,25 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         if not self._is_fitted:
             raise ValueError("Pipeline must be fitted before getting forecast.")
 
-        X = X.reset_index(drop=True)  # Create sequential numeric index
         X = infer_feature_types(X)
 
         # Generate prediction periods
-        first_idx = X.index[-1]
         first_date = X.iloc[-1][self.time_index]
-
-        # Add additional period to account for dropping first date row
         predicted_date_range = pd.Series(
             pd.date_range(
                 start=first_date,
-                periods=self.forecast_horizon + self.gap + 1,
+                periods=self.forecast_horizon
+                + self.gap
+                + 1,  # Add additional period to account for dropping first date row
                 freq=self.frequency,
             ),
         )
 
+        # Generate numerical index
+        first_idx = len(X) - 1 if not isinstance(X.index.dtype, int) else X.index[-1]
         num_idx = pd.Series(range(first_idx, first_idx + predicted_date_range.size))
-
         predicted_date_range.index = num_idx
+
         predicted_date_range = predicted_date_range.drop(predicted_date_range.index[0])
         predicted_date_range.name = self.time_index
         return predicted_date_range
