@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Fix to allow ``IDColumnsDataCheck`` to work with ``IntegerNullable`` inputs :pr:`3740`
+        * Fixed datasets name for main performance tests :pr:`3743`
     * Changes
         * Use Woodwork's ``dependence_dict`` method to calculate for ``TargetLeakageDataCheck`` :pr:`3728`
     * Documentation Changes
