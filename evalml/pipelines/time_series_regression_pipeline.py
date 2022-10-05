@@ -111,7 +111,9 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         if not self._is_fitted:
             raise ValueError("Pipeline must be fitted before getting forecast.")
 
+        X = X.reset_index(drop=True)  # Create sequential numeric index
         X = infer_feature_types(X)
+
         # Generate prediction periods
         first_idx = X.index[-1]
         first_date = X.iloc[-1][self.time_index]
@@ -125,7 +127,6 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             ),
         )
 
-        # Generate sequential index
         num_idx = pd.Series(range(first_idx, first_idx + predicted_date_range.size))
 
         predicted_date_range.index = num_idx
@@ -144,6 +145,6 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             Predictions.
         """
         X, y = self._convert_to_woodwork(X, y)
-        pred_dates = pd.DataFrame(self.get_forecast_periods(X), index=[self.time_index])
+        pred_dates = pd.DataFrame(self.get_forecast_periods(X))
         preds = self.predict(pred_dates, objective=None, X_train=X, y_train=y)
         return preds

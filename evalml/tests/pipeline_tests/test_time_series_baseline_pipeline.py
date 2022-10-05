@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from pandas.testing import assert_series_equal
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import TimeSeriesBaselineEstimator
@@ -73,3 +74,41 @@ def test_time_series_baseline(
     importance = np.array([0] * transformed.shape[1])
     importance[delay_index] = 1
     np.testing.assert_allclose(clf.estimator.feature_importance, importance)
+
+
+@pytest.mark.parametrize("forecast_horizon,gap", [[3, 0], [10, 2], [2, 5]])
+def test_time_series_get_forecast_periods(forecast_horizon, gap, ts_data):
+    X, _, y = ts_data(problem_type=ProblemTypes.TIME_SERIES_REGRESSION)
+    clf = make_timeseries_baseline_pipeline(
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        gap,
+        forecast_horizon,
+        time_index="date",
+    )
+    clf.fit(X, y)
+    result = clf.get_forecast_periods(X)
+
+    assert result.size == forecast_horizon + gap
+    assert result.iloc[0] == X.iloc[-1]["date"] + np.timedelta64(1, "D")
+    assert np.issubdtype(result.dtype, np.datetime64)
+    assert result.name == "date"
+
+
+@pytest.mark.parametrize("forecast_horizon,gap", [[3, 0], [10, 2], [2, 5]])
+def test_time_series_get_forecast_predictions(forecast_horizon, gap, ts_data):
+    X, _, y = ts_data(problem_type=ProblemTypes.TIME_SERIES_REGRESSION)
+
+    X_train, y_train = X.iloc[:15], y.iloc[:15]
+    X_validation = X.iloc[15 : (15 + gap + forecast_horizon)]
+
+    clf = make_timeseries_baseline_pipeline(
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        gap,
+        forecast_horizon,
+        time_index="date",
+    )
+    clf.fit(X_train, y_train)
+    forecast_preds = clf.get_forecast_predictions(X=X_train, y=y_train)
+    X_val_preds = clf.predict(X_validation, X_train=X_train, y_train=y_train)
+
+    assert_series_equal(forecast_preds, X_val_preds)
