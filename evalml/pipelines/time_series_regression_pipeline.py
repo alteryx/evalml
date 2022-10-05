@@ -135,14 +135,14 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         return predicted_date_range
 
     def get_forecast_predictions(self, X, y):
-        """
+        """Generates all possible forecasting predictions based on last period of X.
 
         Args:
             X (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures].
             y (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
 
         Returns:
-            Predictions.
+            Predictions out to `forecast_horizon + gap` periods.
         """
         X, y = self._convert_to_woodwork(X, y)
         pred_dates = pd.DataFrame(self.get_forecast_periods(X))
