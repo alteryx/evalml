@@ -1,5 +1,7 @@
 """Pipeline base class for time-series classification problems."""
 import pandas as pd
+import woodwork as ww
+from woodwork.statistics_utils import infer_frequency
 
 from evalml.objectives import get_objective
 from evalml.pipelines.binary_classification_pipeline_mixin import (
@@ -48,6 +50,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         Raises:
             ValueError: If the number of unique classes in y are not appropriate for the type of pipeline.
         """
+        self.frequency = infer_frequency(X[self.time_index])
         X = self._drop_time_index(X)
         return super().fit(X, y)
 

@@ -1,6 +1,11 @@
 """Pipeline base class for time series regression problems."""
+import numpy as np
+import pandas as pd
+from woodwork.statistics_utils import infer_frequency
+
 from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
@@ -54,6 +59,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             ValueError: If the target is not numeric.
         """
         X, y = self._convert_to_woodwork(X, y)
+        self.frequency = infer_frequency(X[self.time_index])
 
         if "numeric" not in y.ww.semantic_tags:
             raise ValueError(
@@ -88,3 +94,56 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             y_pred_proba=None,
             objectives=objectives,
         )
+
+    def get_forecast_periods(self, X):
+        """Generates all possible forecasting periods based on last period of X.
+
+        Args:
+            X (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures].
+
+        Raises:
+            ValueError: If pipeline is not trained.
+
+        Returns:
+            pd.Series: Datetime periods out to `forecast_horizon + gap`.
+
+        """
+        if not self._is_fitted:
+            raise ValueError("Pipeline must be fitted before getting forecast.")
+
+        X = infer_feature_types(X)
+        # Generate prediction periods
+        first_idx = X.index[-1]
+        first_date = X.iloc[-1][self.time_index]
+
+        # Add additional period to account for dropping first date row
+        predicted_date_range = pd.Series(
+            pd.date_range(
+                start=first_date,
+                periods=self.forecast_horizon + self.gap + 1,
+                freq=self.frequency,
+            ),
+        )
+
+        # Generate sequential index
+        num_idx = pd.Series(range(first_idx, first_idx + predicted_date_range.size))
+
+        predicted_date_range.index = num_idx
+        predicted_date_range = predicted_date_range.drop(predicted_date_range.index[0])
+        predicted_date_range.name = self.time_index
+        return predicted_date_range
+
+    def get_forecast_predictions(self, X, y):
+        """
+
+        Args:
+            X (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures].
+            y (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
+
+        Returns:
+            Predictions.
+        """
+        X, y = self._convert_to_woodwork(X, y)
+        pred_dates = pd.DataFrame(self.get_forecast_periods(X), index=[self.time_index])
+        preds = self.predict(pred_dates, objective=None, X_train=X, y_train=y)
+        return preds
