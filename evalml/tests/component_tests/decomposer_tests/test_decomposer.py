@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import evalml.exceptions
 from evalml.pipelines.components.transformers.preprocessing import (
     PolynomialDecomposer,
     STLDecomposer,
@@ -423,10 +424,12 @@ def test_decomposer_get_trend_dataframe_error_not_fit(
 ):
     X, _, y = ts_data()
 
-    pdt = decomposer_child_class(degree=3)
+    pdt = decomposer_child_class()
     if fit_before_decompose:
         pdt.fit_transform(X, y)
         pdt.get_trend_dataframe(X, y)
     else:
+        with pytest.raises((ValueError, evalml.exceptions.ComponentNotYetFittedError)):
+            pdt.transform(X, y)
         with pytest.raises(ValueError):
             pdt.get_trend_dataframe(X, y)

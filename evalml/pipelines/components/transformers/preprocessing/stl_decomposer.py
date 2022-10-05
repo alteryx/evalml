@@ -11,6 +11,16 @@ from statsmodels.tsa.seasonal import STL as STL
 from evalml.pipelines.components.transformers.preprocessing.decomposer import Decomposer
 from evalml.utils import infer_feature_types
 
+# def fit_check(method):
+#     def inner(ref):
+#         if not ref.is_fit:
+#             raise ValueError(
+#                 "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
+#             )
+#         else:
+#             return method(ref)
+#     return inner
+
 
 class STLDecomposer(Decomposer):
 
@@ -74,19 +84,78 @@ class STLDecomposer(Decomposer):
         self.is_fit = True
         return self
 
+    # @fit_check
     def transform(
         self,
         X: pd.DataFrame,
         y: pd.Series = None,
     ) -> tuple[pd.DataFrame, pd.Series]:
-        return X, self.residual
+        if not self.is_fit:
+            raise ValueError(
+                "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
+            )
+
+        if len(y.index) == len(self.trend.index) and all(
+            y.index == self.trend.index,
+        ):
+            y = self.residual
+        else:
+            # Determine how many units forward to forecast
+            right_projected_trend = self._project_trend(y)
+
+            # Reseasonalize
+            projected_seasonal = self._build_seasonal_signal(
+                y,
+                self.seasonality,
+                self.seasonal_period,
+                self.frequency,
+            )
+
+            y = infer_feature_types(
+                pd.Series(
+                    y - right_projected_trend - projected_seasonal,
+                    index=y.index,
+                ),
+            )
+
+        return X, y
 
     def fit_transform(self, X, y=None):
         return self.fit(X, y).transform(X, y)
 
+    def _project_trend(self, y):
+        right_delta = y.index[-1] - self.trend.index[-1]
+        if y.index[-1] < self.trend.index[0] or (
+            self.trend.index[-1] > y.index[0] and self.trend.index[-1] < y.index[-1]
+        ):
+            raise ValueError(
+                f"STLDecomposer cannot recompose/inverse transform data out of sample and before the data used"
+                f"to fit the decomposer, or partially in and out of sample."
+                f"\nRequested date range: {str(y.index[0])}:{str(y.index[-1])}."
+                f"\nSample date range: {str(self.trend.index[0])}:{str(self.trend.index[-1])}.",
+            )
+        delta = pd.to_timedelta(1, self.frequency)
+
+        # Model the trend and project it forward
+        stlf = STLForecast(
+            self.trend,
+            ARIMA,
+            model_kwargs=dict(order=(1, 1, 0), trend="t"),
+        )
+        stlf_res = stlf.fit()
+        forecast = stlf_res.forecast(int(right_delta / delta))
+        overlapping_ind = [ind for ind in y.index if ind in forecast.index]
+        return forecast[overlapping_ind]
+
+    # @fit_check
     def inverse_transform(self, y_t):
         if y_t is None:
             raise ValueError("y_t cannot be None for STLDecomposer!")
+        if not self.is_fit:
+            raise ValueError(
+                "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
+            )
+
         y_t = infer_feature_types(y_t)
 
         if len(y_t.index) == len(self.trend.index) and all(
@@ -95,29 +164,7 @@ class STLDecomposer(Decomposer):
             y = y_t + self.trend + self.seasonal
         else:
             # Determine how many units forward to forecast
-            right_delta = y_t.index[-1] - self.trend.index[-1]
-            if y_t.index[-1] < self.trend.index[0] or (
-                self.trend.index[-1] > y_t.index[0]
-                and self.trend.index[-1] < y_t.index[-1]
-            ):
-                raise ValueError(
-                    f"STLDecomposer cannot recompose/inverse transform data out of sample and before the data used"
-                    f"to fit the decomposer, or partially in and out of sample."
-                    f"\nRequested date range: {str(y_t.index[0])}:{str(y_t.index[-1])}."
-                    f"\nSample date range: {str(self.trend.index[0])}:{str(self.trend.index[-1])}.",
-                )
-            delta = pd.to_timedelta(1, self.frequency)
-
-            # Model the trend and project it forward
-            stlf = STLForecast(
-                self.trend,
-                ARIMA,
-                model_kwargs=dict(order=(1, 1, 0), trend="t"),
-            )
-            stlf_res = stlf.fit()
-            forecast = stlf_res.forecast(int(right_delta / delta))
-            overlapping_ind = [ind for ind in y_t.index if ind in forecast.index]
-            right_projected_trend = forecast[overlapping_ind]
+            right_projected_trend = self._project_trend(y_t)
 
             # Reseasonalize
             projected_seasonal = self._build_seasonal_signal(
@@ -135,6 +182,7 @@ class STLDecomposer(Decomposer):
             )
         return y
 
+    # @fit_check
     def get_trend_dataframe(self, X, y):
         """Return a list of dataframes with 3 columns: trend, seasonality, residual.
 
@@ -169,12 +217,10 @@ class STLDecomposer(Decomposer):
         # in ForecastingHorizon during decomposition.
         if not isinstance(y.index, pd.DatetimeIndex):
             y = self._set_time_index(X, y)
-
         if not self.is_fit:
             raise ValueError(
                 "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
             )
-
         return [
             pd.DataFrame(
                 {
