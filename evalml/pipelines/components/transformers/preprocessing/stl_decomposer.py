@@ -95,30 +95,32 @@ class STLDecomposer(Decomposer):
                 "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
             )
 
-        if len(y.index) == len(self.trend.index) and all(
-            y.index == self.trend.index,
-        ):
-            y = self.residual
-        else:
+        y_in_sample = pd.Series([])
+        y_out_of_sample = pd.Series([])
+        if y.index[0] <= self.trend.index[-1] and y.index[0] >= self.trend.index[0]:
+            y_in_sample = self.residual[y.index[0] :]
+        if y.index[-1] > self.trend.index[-1]:
+            truncated_y = y[self.trend.index[-1] :][1:]
+
             # Determine how many units forward to forecast
-            right_projected_trend = self._project_trend(y)
+            right_projected_trend = self._project_trend(truncated_y)
 
             # Reseasonalize
             projected_seasonal = self._build_seasonal_signal(
-                y,
+                truncated_y,
                 self.seasonality,
                 self.seasonal_period,
                 self.frequency,
             )
 
-            y = infer_feature_types(
+            y_out_of_sample = infer_feature_types(
                 pd.Series(
-                    y - right_projected_trend - projected_seasonal,
-                    index=y.index,
+                    truncated_y - right_projected_trend - projected_seasonal,
+                    index=truncated_y.index,
                 ),
             )
 
-        return X, y
+        return X, y_in_sample.append(y_out_of_sample)
 
     def fit_transform(self, X, y=None):
         return self.fit(X, y).transform(X, y)
@@ -130,7 +132,7 @@ class STLDecomposer(Decomposer):
         ):
             raise ValueError(
                 f"STLDecomposer cannot recompose/inverse transform data out of sample and before the data used"
-                f"to fit the decomposer, or partially in and out of sample."
+                f"to fit the decomposer."
                 f"\nRequested date range: {str(y.index[0])}:{str(y.index[-1])}."
                 f"\nSample date range: {str(self.trend.index[0])}:{str(self.trend.index[-1])}.",
             )
