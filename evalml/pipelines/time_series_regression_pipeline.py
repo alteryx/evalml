@@ -112,12 +112,11 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             >>> gap = 1
             >>> forecast_horizon = 2
             >>> pipeline = TimeSeriesRegressionPipeline(component_graph=["Linear Regressor"],
-            ...                                                       parameters={"Linear Regressor": {"normalize": True},
-            ...                                                                   "pipeline": {"gap": gap, "max_delay": 1, "forecast_horizon": forecast_horizon, "time_index": "date"}},
-            ...                                                       )
-            ...
-            >>>
+            ...                                         parameters={"Linear Regressor": {"normalize": True},
+            ...                                                     "pipeline": {"gap": gap, "max_delay": 1, "forecast_horizon": forecast_horizon, "time_index": "date"}},
+            ...                                        )
             >>> pipeline.fit(X, y)
+            pipeline = TimeSeriesRegressionPipeline(component_graph={'Linear Regressor': ['Linear Regressor', 'X', 'y']}, parameters={'Linear Regressor':{'fit_intercept': True, 'normalize': True, 'n_jobs': -1}, 'pipeline':{'gap': 1, 'max_delay': 1, 'forecast_horizon': 2, 'time_index': 'date'}}, random_seed=0)
             >>> dates = pipeline.get_forecast_period(X)
             >>> expected = pd.Series(pd.date_range(start='2022-01-11', periods=(gap + forecast_horizon), freq='D'), name='date', index=[10, 11, 12])
             >>> assert dates.equals(expected)
