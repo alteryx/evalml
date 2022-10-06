@@ -4,6 +4,9 @@ from pandas.testing import assert_series_equal
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import TimeSeriesBaselineEstimator
+from evalml.pipelines.time_series_regression_pipeline import (
+    TimeSeriesRegressionPipeline,
+)
 from evalml.pipelines.utils import make_timeseries_baseline_pipeline
 from evalml.problem_types import ProblemTypes
 
@@ -112,12 +115,48 @@ def test_time_series_get_forecast_predictions(forecast_horizon, gap, ts_data):
     X_train, y_train = X.iloc[:15], y.iloc[:15]
     X_validation = X.iloc[15 : (15 + gap + forecast_horizon)]
 
-    clf = make_timeseries_baseline_pipeline(
-        ProblemTypes.TIME_SERIES_REGRESSION,
-        gap,
-        forecast_horizon,
-        time_index="date",
+    clf = TimeSeriesRegressionPipeline(
+        component_graph={
+            "Time Series Featurizer": [
+                "Time Series Featurizer",
+                "X",
+                "y",
+            ],
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
+                "Time Series Featurizer.x",
+                "y",
+            ],
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
+                "DateTime Featurizer.x",
+                "y",
+            ],
+            "Random Forest Regressor": [
+                "Random Forest Regressor",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
+            ],
+        },
+        parameters={
+            "pipeline": {
+                "forecast_horizon": forecast_horizon,
+                "gap": gap,
+                "max_delay": 0,
+                "time_index": "date",
+            },
+            "Random Forest Regressor": {"n_jobs": 1},
+            "Time Series Featurizer": {
+                "max_delay": 0,
+                "gap": gap,
+                "forecast_horizon": forecast_horizon,
+                "conf_level": 1.0,
+                "rolling_window_size": 1.0,
+                "time_index": "date",
+            },
+        },
     )
+
     clf.fit(X_train, y_train)
     forecast_preds = clf.get_forecast_predictions(X=X_train, y=y_train)
     X_val_preds = clf.predict(X_validation, X_train=X_train, y_train=y_train)

@@ -94,8 +94,8 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             objectives=objectives,
         )
 
-    def get_forecast_periods(self, X):
-        """Generates all possible forecasting periods based on last period of X.
+    def get_forecast_period(self, X):
+        """Generates all possible forecasting time points based on latest data point in X.
 
         Args:
             X (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures].
@@ -106,6 +106,21 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         Returns:
             pd.Series: Datetime periods out to `forecast_horizon + gap`.
 
+        Example:
+            >>> X = X = pd.DataFrame({'date': pd.date_range(start='1-1-2022', periods=10, freq='D'), 'feature': range(10, 20)})
+            >>> y = pd.Series(range(0, 10), name='target')
+            >>> gap = 1
+            >>> forecast_horizon = 2
+            >>> pipeline = TimeSeriesRegressionPipeline(component_graph=["Linear Regressor"],
+            ...                                                       parameters={"Linear Regressor": {"normalize": True},
+            ...                                                                   "pipeline": {"gap": gap, "max_delay": 1, "forecast_horizon": forecast_horizon, "time_index": "date"}},
+            ...                                                       )
+            ...
+            >>>
+            >>> pipeline.fit(X, y)
+            >>> dates = pipeline.get_forecast_period(X)
+            >>> expected = pd.Series(pd.date_range(start='2022-01-11', periods=(gap + forecast_horizon), freq='D'), name='date', index=[10, 11, 12])
+            >>> assert dates.equals(expected)
         """
         if not self._is_fitted:
             raise ValueError("Pipeline must be fitted before getting forecast.")
@@ -144,6 +159,6 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             Predictions out to `forecast_horizon + gap` periods.
         """
         X, y = self._convert_to_woodwork(X, y)
-        pred_dates = pd.DataFrame(self.get_forecast_periods(X))
+        pred_dates = pd.DataFrame(self.get_forecast_period(X))
         preds = self.predict(pred_dates, objective=None, X_train=X, y_train=y)
         return preds
