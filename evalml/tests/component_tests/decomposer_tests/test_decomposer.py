@@ -373,7 +373,7 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
 @pytest.mark.parametrize("trend_degree", [1, 2, 3])
 @pytest.mark.parametrize("decomposer_picked_correct_degree", [True, False])
 @pytest.mark.parametrize("synthetic_data", ["synthetic", "real"])
-def test_polynomial_decomposer_determine_periodicity(
+def test_decomposer_determine_periodicity(
     decomposer_child_class,
     period,
     trend_degree,

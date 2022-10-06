@@ -223,7 +223,7 @@ class PolynomialDecomposer(Decomposer):
         return y
 
     def get_trend_dataframe(self, X: pd.DataFrame, y: pd.Series) -> list[pd.DataFrame]:
-        """Return a list of dataframes with 3 columns: trend, seasonality, residual.
+        """Return a list of dataframes with 4 columns: signal, trend, seasonality, residual.
 
         Scikit-learn's PolynomialForecaster is used to generate the trend portion of the target data. statsmodel's
         seasonal_decompose is used to generate the seasonality of the data.
