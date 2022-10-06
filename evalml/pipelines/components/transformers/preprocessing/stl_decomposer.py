@@ -55,10 +55,8 @@ class STLDecomposer(Decomposer):
             **kwargs,
         )
 
-    def _check_oos_past_or_mixed(self, y):
-        if y.index[-1] < self.trend.index[0] or (
-            self.trend.index[-1] > y.index[0] and self.trend.index[-1] < y.index[-1]
-        ):
+    def _check_oos_past(self, y):
+        if y.index[-1] < self.trend.index[0]:
             raise ValueError(
                 f"STLDecomposer cannot transform/inverse transform data out of sample and before the data used"
                 f"to fit the decomposer."
@@ -68,7 +66,7 @@ class STLDecomposer(Decomposer):
 
     def _project_trend(self, y):
         right_delta = y.index[-1] - self.trend.index[-1]
-        self._check_oos_past_or_mixed(y)
+        self._check_oos_past(y)
         delta = pd.to_timedelta(1, self.frequency)
 
         # Model the trend and project it forward
@@ -137,14 +135,28 @@ class STLDecomposer(Decomposer):
                 "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
             )
 
+        self._check_oos_past(y)
+
         y_in_sample = pd.Series([])
         y_out_of_sample = pd.Series([])
-        if y.index[0] <= self.trend.index[-1] and y.index[0] >= self.trend.index[0]:
-            y_in_sample = self.residual[y.index[0] :]
-        if y.index[-1] > self.trend.index[-1]:
-            truncated_y = y[self.trend.index[-1] :][1:]
 
-            projected_trend, projected_seasonality = self._project_trend_and_seasonality(X, truncated_y)
+        # For wholly in-sample data, retrieve stored results.
+        if y.index[0] <= self.trend.index[-1] and y.index[0] >= self.trend.index[0]:
+            y_in_sample = self.residual[y.index[0] : y.index[-1]]
+
+        # For out of sample data....
+        if y.index[-1] > self.trend.index[-1]:
+            try:
+                # ...that is partially out of sample and partially in sample.
+                truncated_y = y[y.index.get_loc(self.trend.index[-1]) + 1 :][0:]
+            except KeyError:
+                # ...that is entirely out of sample.
+                truncated_y = y
+
+            (
+                projected_trend,
+                projected_seasonality,
+            ) = self._project_trend_and_seasonality(X, truncated_y)
 
             y_out_of_sample = infer_feature_types(
                 pd.Series(
@@ -227,7 +239,7 @@ class STLDecomposer(Decomposer):
         if not isinstance(y.index, pd.DatetimeIndex):
             y = self._set_time_index(X, y)
 
-        self._check_oos_past_or_mixed(y)
+        self._check_oos_past(y)
 
         result_dfs = []
 

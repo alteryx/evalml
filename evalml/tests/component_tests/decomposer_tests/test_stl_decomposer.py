@@ -59,8 +59,11 @@ def test_stl_decomposer_raises_value_error_target_is_none(ts_data):
 
 
 def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_test):
+    if transformer_fit_on_data == "in-sample-less-than-sample":
+        # Re-compose 14-days worth of data within, but not spanning the entire sample
+        delta = datetime.timedelta(days=-3 * seasonal_period)
     if transformer_fit_on_data == "wholly-out-of-sample":
-        # Re-compose 14-days worth of data with a 7 day gap between end of
+        # Re-compose 14-days worth of data with a one period gap between end of
         # fit data and start of data to inverse-transform
         delta = datetime.timedelta(days=seasonal_period)
     elif transformer_fit_on_data == "wholly-out-of-sample-no-gap":
@@ -175,6 +178,7 @@ def test_stl_fit_transform_in_sample(
     "transformer_fit_on_data",
     [
         "in-sample",
+        "in-sample-less-than-sample",
         "wholly-out-of-sample",
         "wholly-out-of-sample-no-gap",
         "partially-out-of-sample",
@@ -215,7 +219,6 @@ def test_stl_decomposer_fit_transform_out_of_sample(
             to_test="transform",
         )
         if transformer_fit_on_data in [
-            "partially-out-of-sample",
             "out-of-sample-in-past",
         ]:
             with pytest.raises(
@@ -238,6 +241,7 @@ def test_stl_decomposer_fit_transform_out_of_sample(
     "transformer_fit_on_data",
     [
         "in-sample",
+        "in-sample-less-than-sample",
         "wholly-out-of-sample",
         "wholly-out-of-sample-no-gap",
         "partially-out-of-sample",
@@ -273,7 +277,6 @@ def test_stl_decomposer_inverse_transform(
             to_test="inverse_transform",
         )
         if transformer_fit_on_data in [
-            "partially-out-of-sample",
             "out-of-sample-in-past",
         ]:
             with pytest.raises(
@@ -363,7 +366,6 @@ def test_stl_decomposer_get_trend_dataframe(
             y_t_new = pd.concat([y_t_new, y_t_new], axis=1)
 
         if transformer_fit_on_data in [
-            "partially-out-of-sample",
             "out-of-sample-in-past",
         ]:
             with pytest.raises(
