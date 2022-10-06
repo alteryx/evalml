@@ -43,6 +43,7 @@ from evalml.pipelines.components import (
     VowpalWabbitRegressor,
     DropNaNRowsTransformer,
     TimeSeriesRegularizer,
+    OrdinalEncoder,
 )
 
 from evalml.pipelines.component_graph import ComponentGraph

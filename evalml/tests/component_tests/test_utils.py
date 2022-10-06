@@ -87,6 +87,7 @@ all_requirements_set = set(
         "LightGBM Classifier",
         "LightGBM Regressor",
         "Oversampler",
+        "Ordinal Encoder",
         "Polynomial Decomposer",
         "Prophet Regressor",
         "Target Encoder",

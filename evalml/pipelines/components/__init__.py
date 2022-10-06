@@ -66,6 +66,7 @@ from evalml.pipelines.components.transformers import (
     ReplaceNullableTypes,
     DropNaNRowsTransformer,
     TimeSeriesRegularizer,
+    OrdinalEncoder,
 )
 from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
