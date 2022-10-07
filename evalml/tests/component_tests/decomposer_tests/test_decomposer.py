@@ -347,6 +347,9 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
     assert dec.parameters["seasonal_period"]
 
 
+import itertools
+
+
 @pytest.mark.parametrize(
     "decomposer_child_class",
     decomposer_list,
@@ -361,23 +364,25 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
         # ),
     ],
 )
-@pytest.mark.parametrize(
-    "period",
-    [
-        7,
-        30,
-        365,
-        # pytest.param(
-        #     None,
-        #     marks=pytest.mark.xfail(
-        #         reason="Don't have a good heuristic to distinguish bad period guess.",
-        #     ),
-        # ),
-    ],
-)
-@pytest.mark.parametrize("trend_degree", [1, 2, 3])
+# @pytest.mark.parametrize(
+#     "period",
+#     [
+#         7,
+#         30,
+#         365,
+#         # pytest.param(
+#         #     None,
+#         #     marks=pytest.mark.xfail(
+#         #         reason="Don't have a good heuristic to distinguish bad period guess.",
+#         #     ),
+#         # ),
+#     ],
+# )
 @pytest.mark.parametrize("decomposer_picked_correct_degree", [True, False])
-@pytest.mark.parametrize("synthetic_data", ["synthetic", "real"])
+@pytest.mark.parametrize(
+    "synthetic_data,trend_degree,period",
+    [*itertools.product(["synthetic"], [1, 2, 3], [7, 30, 365]), ("real", 1, 365)],
+)
 def test_decomposer_determine_periodicity(
     decomposer_child_class,
     period,
