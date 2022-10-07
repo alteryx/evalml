@@ -11,8 +11,15 @@ from evalml.pipelines.components.transformers.preprocessing import (
     STLDecomposer,
 )
 
+# All the decomposers to run common tests over.
+decomposer_list = [STLDecomposer, PolynomialDecomposer]
 
-def test_set_time_index():
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    decomposer_list,
+)
+def test_set_time_index(decomposer_child_class):
     x = np.arange(0, 2 * np.pi, 0.01)
     dts = pd.date_range(datetime.today(), periods=len(x))
     X = pd.DataFrame({"x": x})
@@ -21,16 +28,14 @@ def test_set_time_index():
 
     assert isinstance(y.index, pd.RangeIndex)
 
-    # Use the PolynomialDecomposer since we can't use a Decomposer class as it
-    # has abstract methods.
-    decomposer = PolynomialDecomposer()
+    decomposer = decomposer_child_class()
     y_time_index = decomposer._set_time_index(X, y)
     assert isinstance(y_time_index.index, pd.DatetimeIndex)
 
 
 @pytest.mark.parametrize(
     "decomposer_child_class",
-    [PolynomialDecomposer, STLDecomposer],
+    decomposer_list,
 )
 @pytest.mark.parametrize(
     "y_has_time_index",
@@ -57,7 +62,7 @@ def test_decomposer_plot_decomposition(
 
 @pytest.mark.parametrize(
     "decomposer_child_class",
-    [PolynomialDecomposer, STLDecomposer],
+    decomposer_list,
 )
 @pytest.mark.parametrize("X_num_time_columns", [0, 1, 2, 3])
 @pytest.mark.parametrize(
@@ -158,7 +163,7 @@ def test_polynomial_decomposer_uses_time_index(
 
 @pytest.mark.parametrize(
     "decomposer_child_class",
-    [PolynomialDecomposer, STLDecomposer],
+    decomposer_list,
 )
 @pytest.mark.parametrize(
     "dataframe_has_datatime_index",
@@ -217,7 +222,7 @@ def test_decomposer_prefers_users_time_index(
 
 @pytest.mark.parametrize(
     "decomposer_child_class",
-    [PolynomialDecomposer, STLDecomposer],
+    decomposer_list,
 )
 @pytest.mark.parametrize(
     "frequency",
@@ -295,7 +300,7 @@ def test_decomposer_build_seasonal_signal(
 
 @pytest.mark.parametrize(
     "decomposer_child_class",
-    [PolynomialDecomposer, STLDecomposer],
+    decomposer_list,
 )
 def test_polynomial_decomposer_get_trend_dataframe_raises_errors(
     decomposer_child_class,
@@ -322,7 +327,7 @@ def test_polynomial_decomposer_get_trend_dataframe_raises_errors(
 
 @pytest.mark.parametrize(
     "decomposer_child_class",
-    [PolynomialDecomposer, STLDecomposer],
+    decomposer_list,
 )
 @pytest.mark.parametrize("period", [7, 30, 365])
 def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal_data):
@@ -344,7 +349,7 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
 
 @pytest.mark.parametrize(
     "decomposer_child_class",
-    [STLDecomposer],  # PolynomialDecomposer,
+    decomposer_list,
 )
 @pytest.mark.parametrize(
     "periodicity_determination_method",
@@ -414,7 +419,7 @@ def test_decomposer_determine_periodicity(
 
 @pytest.mark.parametrize(
     "decomposer_child_class",
-    [STLDecomposer, PolynomialDecomposer],
+    decomposer_list,
 )
 @pytest.mark.parametrize("fit_before_decompose", [True, False])
 def test_decomposer_get_trend_dataframe_error_not_fit(
@@ -437,9 +442,9 @@ def test_decomposer_get_trend_dataframe_error_not_fit(
 
 @pytest.mark.parametrize(
     "decomposer_child_class",
-    [STLDecomposer, PolynomialDecomposer],
+    decomposer_list,
 )
-def test_polynomial_decomposer_transform_returns_same_when_y_none(
+def test_decomposer_transform_returns_same_when_y_none(
     decomposer_child_class,
     ts_data,
 ):
