@@ -364,20 +364,6 @@ import itertools
         # ),
     ],
 )
-# @pytest.mark.parametrize(
-#     "period",
-#     [
-#         7,
-#         30,
-#         365,
-#         # pytest.param(
-#         #     None,
-#         #     marks=pytest.mark.xfail(
-#         #         reason="Don't have a good heuristic to distinguish bad period guess.",
-#         #     ),
-#         # ),
-#     ],
-# )
 @pytest.mark.parametrize("decomposer_picked_correct_degree", [True, False])
 @pytest.mark.parametrize(
     "synthetic_data,trend_degree,period",
