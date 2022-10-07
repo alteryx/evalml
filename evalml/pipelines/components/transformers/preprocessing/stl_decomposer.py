@@ -55,6 +55,44 @@ class STLDecomposer(Decomposer):
             **kwargs,
         )
 
+    def _check_oos_past(self, y):
+        if y.index[-1] < self.trend.index[0]:
+            raise ValueError(
+                f"STLDecomposer cannot transform/inverse transform data out of sample and before the data used"
+                f"to fit the decomposer."
+                f"\nRequested date range: {str(y.index[0])}:{str(y.index[-1])}."
+                f"\nSample date range: {str(self.trend.index[0])}:{str(self.trend.index[-1])}.",
+            )
+
+    def _project_trend(self, y):
+        right_delta = y.index[-1] - self.trend.index[-1]
+        self._check_oos_past(y)
+        delta = pd.to_timedelta(1, self.frequency)
+
+        # Model the trend and project it forward
+        stlf = STLForecast(
+            self.trend,
+            ARIMA,
+            model_kwargs=dict(order=(1, 1, 0), trend="t"),
+        )
+        stlf_res = stlf.fit()
+        forecast = stlf_res.forecast(int(right_delta / delta))
+        overlapping_ind = [ind for ind in y.index if ind in forecast.index]
+        return forecast[overlapping_ind]
+
+    def _project_trend_and_seasonality(self, X, y):
+        # Determine how many units forward to forecast
+        projected_trend = self._project_trend(y)
+
+        # Reseasonalize
+        projected_seasonality = self._build_seasonal_signal(
+            y,
+            self.seasonality,
+            self.seasonal_period,
+            self.frequency,
+        )
+        return projected_trend, projected_seasonality
+
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> STLDecomposer:
         if y is None:
             raise ValueError("y cannot be None for STLDecomposer!")
@@ -84,38 +122,45 @@ class STLDecomposer(Decomposer):
         self.is_fit = True
         return self
 
-    # @fit_check
     def transform(
         self,
         X: pd.DataFrame,
         y: pd.Series = None,
     ) -> tuple[pd.DataFrame, pd.Series]:
+        if not isinstance(y.index, pd.DatetimeIndex):
+            y = self._set_time_index(X, y)
+
         if not self.is_fit:
             raise ValueError(
                 "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
             )
 
+        self._check_oos_past(y)
+
         y_in_sample = pd.Series([])
         y_out_of_sample = pd.Series([])
+
+        # For wholly in-sample data, retrieve stored results.
         if y.index[0] <= self.trend.index[-1] and y.index[0] >= self.trend.index[0]:
-            y_in_sample = self.residual[y.index[0] :]
+            y_in_sample = self.residual[y.index[0] : y.index[-1]]
+
+        # For out of sample data....
         if y.index[-1] > self.trend.index[-1]:
-            truncated_y = y[self.trend.index[-1] :][1:]
+            try:
+                # ...that is partially out of sample and partially in sample.
+                truncated_y = y[y.index.get_loc(self.trend.index[-1]) + 1 :]
+            except KeyError:
+                # ...that is entirely out of sample.
+                truncated_y = y
 
-            # Determine how many units forward to forecast
-            right_projected_trend = self._project_trend(truncated_y)
-
-            # Reseasonalize
-            projected_seasonal = self._build_seasonal_signal(
-                truncated_y,
-                self.seasonality,
-                self.seasonal_period,
-                self.frequency,
-            )
+            (
+                projected_trend,
+                projected_seasonality,
+            ) = self._project_trend_and_seasonality(X, truncated_y)
 
             y_out_of_sample = infer_feature_types(
                 pd.Series(
-                    truncated_y - right_projected_trend - projected_seasonal,
+                    truncated_y - projected_trend - projected_seasonality,
                     index=truncated_y.index,
                 ),
             )
@@ -124,30 +169,6 @@ class STLDecomposer(Decomposer):
 
     def fit_transform(self, X, y=None):
         return self.fit(X, y).transform(X, y)
-
-    def _project_trend(self, y):
-        right_delta = y.index[-1] - self.trend.index[-1]
-        if y.index[-1] < self.trend.index[0] or (
-            self.trend.index[-1] > y.index[0] and self.trend.index[-1] < y.index[-1]
-        ):
-            raise ValueError(
-                f"STLDecomposer cannot recompose/inverse transform data out of sample and before the data used"
-                f"to fit the decomposer."
-                f"\nRequested date range: {str(y.index[0])}:{str(y.index[-1])}."
-                f"\nSample date range: {str(self.trend.index[0])}:{str(self.trend.index[-1])}.",
-            )
-        delta = pd.to_timedelta(1, self.frequency)
-
-        # Model the trend and project it forward
-        stlf = STLForecast(
-            self.trend,
-            ARIMA,
-            model_kwargs=dict(order=(1, 1, 0), trend="t"),
-        )
-        stlf_res = stlf.fit()
-        forecast = stlf_res.forecast(int(right_delta / delta))
-        overlapping_ind = [ind for ind in y.index if ind in forecast.index]
-        return forecast[overlapping_ind]
 
     # @fit_check
     def inverse_transform(self, y_t):
@@ -159,34 +180,46 @@ class STLDecomposer(Decomposer):
             )
 
         y_t = infer_feature_types(y_t)
+        self._check_oos_past(y_t)
 
-        if len(y_t.index) == len(self.trend.index) and all(
-            y_t.index == self.trend.index,
-        ):
-            y = y_t + self.trend + self.seasonal
-        else:
-            # Determine how many units forward to forecast
-            right_projected_trend = self._project_trend(y_t)
+        y_in_sample = pd.Series([])
+        y_out_of_sample = pd.Series([])
 
-            # Reseasonalize
-            projected_seasonal = self._build_seasonal_signal(
-                y_t,
-                self.seasonality,
-                self.seasonal_period,
-                self.frequency,
+        # For wholly in-sample data, retrieve stored results.
+        if y_t.index[0] <= self.trend.index[-1] and y_t.index[0] >= self.trend.index[0]:
+            left_index = y_t.index[0]
+            right_index = y_t.index[-1]
+            y_in_sample = (
+                y_t
+                + self.trend[left_index:right_index]
+                + self.seasonal[left_index:right_index]
             )
+            y_in_sample = y_in_sample.dropna()
 
-            y = infer_feature_types(
+        # For out of sample data....
+        if y_t.index[-1] > self.trend.index[-1]:
+            try:
+                # ...that is partially out of sample and partially in sample.
+                truncated_y_t = y_t[y_t.index.get_loc(self.trend.index[-1]) + 1 :]
+            except KeyError:
+                # ...that is entirely out of sample.
+                truncated_y_t = y_t
+            (
+                projected_trend,
+                projected_seasonality,
+            ) = self._project_trend_and_seasonality(None, truncated_y_t)
+
+            y_out_of_sample = infer_feature_types(
                 pd.Series(
-                    y_t + right_projected_trend + projected_seasonal,
-                    index=y_t.index,
+                    truncated_y_t + projected_trend + projected_seasonality,
+                    index=truncated_y_t.index,
                 ),
             )
-        return y
+        return y_in_sample.append(y_out_of_sample)
 
     # @fit_check
     def get_trend_dataframe(self, X, y):
-        """Return a list of dataframes with 3 columns: trend, seasonality, residual.
+        """Return a list of dataframes with 4 columns: signal, trend, seasonality, residual.
 
         Scikit-learn's PolynomialForecaster is used to generate the trend portion of the target data. statsmodel's
         seasonal_decompose is used to generate the seasonality of the data.
@@ -208,6 +241,10 @@ class STLDecomposer(Decomposer):
             TypeError: If y is not provided as a pandas Series or DataFrame.
 
         """
+        if not self.is_fit:
+            raise ValueError(
+                "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
+            )
         X = infer_feature_types(X)
         if not isinstance(X.index, pd.DatetimeIndex):
             raise TypeError("Provided X should have datetimes in the index.")
@@ -219,17 +256,38 @@ class STLDecomposer(Decomposer):
         # in ForecastingHorizon during decomposition.
         if not isinstance(y.index, pd.DatetimeIndex):
             y = self._set_time_index(X, y)
-        if not self.is_fit:
-            raise ValueError(
-                "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
-            )
-        return [
-            pd.DataFrame(
+
+        self._check_oos_past(y)
+
+        result_dfs = []
+
+        def _decompose_target(X, y, fh):
+            """Function to generate a single DataFrame with trend, seasonality and residual components."""
+            if len(y.index) == len(self.trend.index) and all(
+                y.index == self.trend.index,
+            ):
+                trend = self.trend
+                seasonality = self.seasonality
+                residual = self.residual
+            else:
+                # TODO: Do a better job cloning.
+                decomposer = STLDecomposer(seasonal_period=self.seasonal_period)
+                decomposer.fit(X, y)
+                trend = decomposer.trend
+                seasonality = decomposer.seasonality
+                residual = decomposer.residual
+            return pd.DataFrame(
                 {
                     "signal": y,
-                    "trend": self.trend,
-                    "seasonality": self.seasonal,
-                    "residual": self.residual,
+                    "trend": trend,
+                    "seasonality": seasonality,
+                    "residual": residual,
                 },
-            ),
-        ]
+            )
+
+        if isinstance(y, pd.Series):
+            result_dfs.append(_decompose_target(X, y, None))
+        elif isinstance(y, pd.DataFrame):
+            for colname in y.columns:
+                result_dfs.append(_decompose_target(X, y[colname], None))
+        return result_dfs

@@ -56,81 +56,14 @@ def test_stl_decomposer_raises_value_error_target_is_none(ts_data):
 #     assert y_t is None
 #
 #
-# @pytest.mark.parametrize(
-#     "variateness",
-#     [
-#         "univariate",
-#         "multivariate",
-#     ],
-# )
-# @pytest.mark.parametrize("fit_before_decompose", [True, False])
-# @pytest.mark.parametrize("input_type", ["pd", "ww"])
-# @pytest.mark.parametrize("degree", [1, 2, 3])
-# def test_polynomial_decomposer_get_trend_dataframe(
-#     degree,
-#     input_type,
-#     fit_before_decompose,
-#     variateness,
-#     ts_data,
-#     ts_data_quadratic_trend,
-#     ts_data_cubic_trend,
-# ):
-#
-#     if degree == 1:
-#         X_input, _, y_input = ts_data()
-#     elif degree == 2:
-#         X_input, y_input = ts_data_quadratic_trend
-#     elif degree == 3:
-#         X_input, y_input = ts_data_cubic_trend
-#
-#     # Get the expected answer
-#     lin_reg = LinearRegression(fit_intercept=True)
-#     features = PolynomialFeatures(degree=degree).fit_transform(
-#         np.arange(X_input.shape[0]).reshape(-1, 1),
-#     )
-#     lin_reg.fit(features, y_input)
-#
-#     X, y = X_input, y_input
-#
-#     if input_type == "ww":
-#         X = X_input.copy()
-#         X.ww.init()
-#         y = ww.init_series(y_input.copy())
-#
-#     pdt = PolynomialDecomposer(degree=degree)
-#     pdt.fit_transform(X, y)
-#
-#     # get_trend_dataframe() is only expected to work with datetime indices
-#     if variateness == "multivariate":
-#         y = pd.concat([y, y], axis=1)
-#     result_dfs = pdt.get_trend_dataframe(X, y)
-#
-#     def get_trend_dataframe_format_correct(df):
-#         return set(df.columns) == {"signal", "trend", "seasonality", "residual"}
-#
-#     def get_trend_dataframe_values_correct(df, y):
-#         np.testing.assert_array_almost_equal(
-#             (df["trend"] + df["seasonality"] + df["residual"]).values,
-#             y.values,
-#         )
-#
-#     assert isinstance(result_dfs, list)
-#     assert all(isinstance(x, pd.DataFrame) for x in result_dfs)
-#     assert all(get_trend_dataframe_format_correct(x) for x in result_dfs)
-#     if variateness == "univariate":
-#         assert len(result_dfs) == 1
-#         [get_trend_dataframe_values_correct(x, y) for x in result_dfs]
-#     elif variateness == "multivariate":
-#         assert len(result_dfs) == 2
-#         [
-#             get_trend_dataframe_values_correct(x, y[idx])
-#             for idx, x in enumerate(result_dfs)
-#         ]
 
 
 def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_test):
+    if transformer_fit_on_data == "in-sample-less-than-sample":
+        # Re-compose 14-days worth of data within, but not spanning the entire sample
+        delta = datetime.timedelta(days=-3 * seasonal_period)
     if transformer_fit_on_data == "wholly-out-of-sample":
-        # Re-compose 14-days worth of data with a 7 day gap between end of
+        # Re-compose 14-days worth of data with a one period gap between end of
         # fit data and start of data to inverse-transform
         delta = datetime.timedelta(days=seasonal_period)
     elif transformer_fit_on_data == "wholly-out-of-sample-no-gap":
@@ -158,127 +91,6 @@ def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_tes
             new_index,
         )
     return y_t_new
-
-
-@pytest.mark.parametrize(
-    "transformer_fit_on_data",
-    [
-        "in-sample",
-        "wholly-out-of-sample",
-        "wholly-out-of-sample-no-gap",
-        "partially-out-of-sample",
-        "out-of-sample-in-past",
-    ],
-)
-def test_stl_decomposer_inverse_transform(
-    generate_seasonal_data,
-    transformer_fit_on_data,
-):
-    # Generate 10 periods (the default) of synthetic seasonal data
-    seasonal_period = 7
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=seasonal_period,
-        freq_str="D",
-        set_time_index=True,
-    )
-    subset_X = X[: 5 * seasonal_period]
-    subset_y = y[: 5 * seasonal_period]
-
-    decomposer = STLDecomposer(seasonal_period=seasonal_period)
-    output_X, output_y = decomposer.fit_transform(subset_X, subset_y)
-
-    if transformer_fit_on_data == "in-sample":
-        output_inverse_y = decomposer.inverse_transform(output_y)
-        pd.testing.assert_series_equal(subset_y, output_inverse_y, check_dtype=False)
-
-    if transformer_fit_on_data != "in-sample":
-        y_t_new = build_test_target(
-            subset_y,
-            seasonal_period,
-            transformer_fit_on_data,
-            to_test="inverse_transform",
-        )
-        if transformer_fit_on_data in [
-            "partially-out-of-sample",
-            "out-of-sample-in-past",
-        ]:
-            with pytest.raises(
-                ValueError,
-                match="STLDecomposer cannot recompose/inverse transform data out of sample",
-            ):
-                output_inverse_y = decomposer.inverse_transform(y_t_new)
-        else:
-            output_inverse_y = decomposer.inverse_transform(y_t_new)
-            pd.testing.assert_series_equal(
-                y[y_t_new.index],
-                output_inverse_y,
-                check_exact=False,
-                rtol=1.0e-3,
-            )
-
-
-@pytest.mark.parametrize(
-    "transformer_fit_on_data",
-    [
-        "in-sample",
-        "wholly-out-of-sample",
-        "wholly-out-of-sample-no-gap",
-        "partially-out-of-sample",
-        "out-of-sample-in-past",
-    ],
-)
-def test_stl_decomposer_fit_transform_out_of_sample(
-    generate_seasonal_data,
-    transformer_fit_on_data,
-):
-    # Generate 10 periods (the default) of synthetic seasonal data
-    seasonal_period = 7
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=seasonal_period,
-        freq_str="D",
-        set_time_index=True,
-    )
-    subset_X = X[: 5 * seasonal_period]
-    subset_y = y[: 5 * seasonal_period]
-
-    decomposer = STLDecomposer(seasonal_period=seasonal_period)
-    decomposer.fit(subset_X, subset_y)
-
-    if transformer_fit_on_data == "in-sample":
-        output_X, output_y = decomposer.transform(subset_X, subset_y)
-        pd.testing.assert_series_equal(
-            pd.Series(np.zeros(len(output_y))).set_axis(subset_y.index),
-            output_y,
-            check_dtype=False,
-            check_names=False,
-        )
-
-    if transformer_fit_on_data != "in-sample":
-        y_new = build_test_target(
-            subset_y,
-            seasonal_period,
-            transformer_fit_on_data,
-            to_test="transform",
-        )
-        if transformer_fit_on_data in [
-            "partially-out-of-sample",
-            "out-of-sample-in-past",
-        ]:
-            with pytest.raises(
-                ValueError,
-                match="STLDecomposer cannot recompose/inverse transform data out of sample",
-            ):
-                output_X, output_inverse_y = decomposer.transform(None, y_new)
-        else:
-            output_X, output_y_t = decomposer.transform(None, y[y_new.index])
-            import matplotlib.pyplot as plt
-
-            pd.testing.assert_series_equal(
-                pd.Series(np.zeros(len(output_y_t))).set_axis(y_new.index),
-                output_y_t,
-                check_exact=False,
-                atol=1.0e-4,
-            )
 
 
 @pytest.mark.parametrize(
@@ -360,3 +172,220 @@ def test_stl_fit_transform_in_sample(
 
     # Verify the X is not changed
     pd.testing.assert_frame_equal(X, X_t)
+
+
+@pytest.mark.parametrize(
+    "transformer_fit_on_data",
+    [
+        "in-sample",
+        "in-sample-less-than-sample",
+        "wholly-out-of-sample",
+        "wholly-out-of-sample-no-gap",
+        "partially-out-of-sample",
+        "out-of-sample-in-past",
+    ],
+)
+def test_stl_decomposer_fit_transform_out_of_sample(
+    generate_seasonal_data,
+    transformer_fit_on_data,
+):
+    # Generate 10 periods (the default) of synthetic seasonal data
+    seasonal_period = 7
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+        period=seasonal_period,
+        freq_str="D",
+        set_time_index=True,
+    )
+    subset_X = X[: 5 * seasonal_period]
+    subset_y = y[: 5 * seasonal_period]
+
+    decomposer = STLDecomposer(seasonal_period=seasonal_period)
+    decomposer.fit(subset_X, subset_y)
+
+    if transformer_fit_on_data == "in-sample":
+        output_X, output_y = decomposer.transform(subset_X, subset_y)
+        pd.testing.assert_series_equal(
+            pd.Series(np.zeros(len(output_y))).set_axis(subset_y.index),
+            output_y,
+            check_dtype=False,
+            check_names=False,
+        )
+
+    if transformer_fit_on_data != "in-sample":
+        y_new = build_test_target(
+            subset_y,
+            seasonal_period,
+            transformer_fit_on_data,
+            to_test="transform",
+        )
+        if transformer_fit_on_data in [
+            "out-of-sample-in-past",
+        ]:
+            with pytest.raises(
+                ValueError,
+                match="STLDecomposer cannot transform/inverse transform data out of sample",
+            ):
+                output_X, output_inverse_y = decomposer.transform(None, y_new)
+        else:
+            output_X, output_y_t = decomposer.transform(None, y[y_new.index])
+
+            pd.testing.assert_series_equal(
+                pd.Series(np.zeros(len(output_y_t))).set_axis(y_new.index),
+                output_y_t,
+                check_exact=False,
+                atol=1.0e-4,
+            )
+
+
+@pytest.mark.parametrize(
+    "transformer_fit_on_data",
+    [
+        "in-sample",
+        "in-sample-less-than-sample",
+        "wholly-out-of-sample",
+        "wholly-out-of-sample-no-gap",
+        "partially-out-of-sample",
+        "out-of-sample-in-past",
+    ],
+)
+def test_stl_decomposer_inverse_transform(
+    generate_seasonal_data,
+    transformer_fit_on_data,
+):
+    # Generate 10 periods (the default) of synthetic seasonal data
+    seasonal_period = 7
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+        period=seasonal_period,
+        freq_str="D",
+        set_time_index=True,
+    )
+    subset_X = X[: 5 * seasonal_period]
+    subset_y = y[: 5 * seasonal_period]
+
+    decomposer = STLDecomposer(seasonal_period=seasonal_period)
+    output_X, output_y = decomposer.fit_transform(subset_X, subset_y)
+
+    if transformer_fit_on_data == "in-sample":
+        output_inverse_y = decomposer.inverse_transform(output_y)
+        pd.testing.assert_series_equal(subset_y, output_inverse_y, check_dtype=False)
+
+    if transformer_fit_on_data != "in-sample":
+        y_t_new = build_test_target(
+            subset_y,
+            seasonal_period,
+            transformer_fit_on_data,
+            to_test="inverse_transform",
+        )
+        if transformer_fit_on_data in [
+            "out-of-sample-in-past",
+        ]:
+            with pytest.raises(
+                ValueError,
+                match="STLDecomposer cannot transform/inverse transform data out of sample",
+            ):
+                output_inverse_y = decomposer.inverse_transform(y_t_new)
+        else:
+            output_inverse_y = decomposer.inverse_transform(y_t_new)
+            pd.testing.assert_series_equal(
+                y[y_t_new.index],
+                output_inverse_y,
+                check_exact=False,
+                rtol=1.0e-3,
+            )
+
+
+@pytest.mark.parametrize(
+    "transformer_fit_on_data",
+    [
+        "in-sample",
+        "wholly-out-of-sample",
+        "wholly-out-of-sample-no-gap",
+        "partially-out-of-sample",
+        "out-of-sample-in-past",
+    ],
+)
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
+@pytest.mark.parametrize("fit_before_decompose", [True, False])
+def test_stl_decomposer_get_trend_dataframe(
+    generate_seasonal_data,
+    transformer_fit_on_data,
+    fit_before_decompose,
+    variateness,
+):
+    def get_trend_dataframe_format_correct(df):
+        return set(df.columns) == {"signal", "trend", "seasonality", "residual"}
+
+    seasonal_period = 7
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+        period=seasonal_period,
+        freq_str="D",
+        set_time_index=True,
+    )
+    subset_X = X[: 5 * seasonal_period]
+    subset_y = y[: 5 * seasonal_period]
+
+    if transformer_fit_on_data == "in-sample":
+        dec = STLDecomposer()
+        dec.fit(subset_X, subset_y)
+
+        # get_trend_dataframe() is only expected to work with datetime indices
+        if variateness == "multivariate":
+            subset_y = pd.concat([subset_y, subset_y], axis=1)
+
+        result_dfs = dec.get_trend_dataframe(subset_X, subset_y)
+
+        assert isinstance(result_dfs, list)
+        assert all(isinstance(x, pd.DataFrame) for x in result_dfs)
+        assert all(get_trend_dataframe_format_correct(x) for x in result_dfs)
+        if variateness == "univariate":
+            assert len(result_dfs) == 1
+            [get_trend_dataframe_format_correct(x) for x in result_dfs]
+        elif variateness == "multivariate":
+            assert len(result_dfs) == 2
+            [get_trend_dataframe_format_correct(x) for idx, x in enumerate(result_dfs)]
+
+    elif transformer_fit_on_data != "in-sample":
+
+        y_t_new = build_test_target(
+            subset_y,
+            seasonal_period,
+            transformer_fit_on_data,
+            to_test="transform",
+        )
+        dec = STLDecomposer()
+        dec.fit(subset_X, subset_y)
+
+        # get_trend_dataframe() is only expected to work with datetime indices
+        if variateness == "multivariate":
+            y_t_new = pd.concat([y_t_new, y_t_new], axis=1)
+
+        if transformer_fit_on_data in [
+            "out-of-sample-in-past",
+        ]:
+            with pytest.raises(
+                ValueError,
+                match="STLDecomposer cannot transform/inverse transform data out of sample",
+            ):
+                result_dfs = dec.get_trend_dataframe(X, y_t_new)
+
+        else:
+            result_dfs = dec.get_trend_dataframe(X.loc[y_t_new.index], y_t_new)
+
+            assert isinstance(result_dfs, list)
+            assert all(isinstance(x, pd.DataFrame) for x in result_dfs)
+            assert all(get_trend_dataframe_format_correct(x) for x in result_dfs)
+            if variateness == "univariate":
+                assert len(result_dfs) == 1
+                [get_trend_dataframe_format_correct(x) for x in result_dfs]
+            elif variateness == "multivariate":
+                assert len(result_dfs) == 2
+                [
+                    get_trend_dataframe_format_correct(x)
+                    for idx, x in enumerate(result_dfs)
+                ]
