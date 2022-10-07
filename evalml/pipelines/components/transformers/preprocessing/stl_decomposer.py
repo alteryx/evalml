@@ -148,7 +148,7 @@ class STLDecomposer(Decomposer):
         if y.index[-1] > self.trend.index[-1]:
             try:
                 # ...that is partially out of sample and partially in sample.
-                truncated_y = y[y.index.get_loc(self.trend.index[-1]) + 1 :][0:]
+                truncated_y = y[y.index.get_loc(self.trend.index[-1]) + 1 :]
             except KeyError:
                 # ...that is entirely out of sample.
                 truncated_y = y
@@ -180,24 +180,42 @@ class STLDecomposer(Decomposer):
             )
 
         y_t = infer_feature_types(y_t)
+        self._check_oos_past(y_t)
 
-        if len(y_t.index) == len(self.trend.index) and all(
-            y_t.index == self.trend.index,
-        ):
-            y = y_t + self.trend + self.seasonal
-        else:
+        y_in_sample = pd.Series([])
+        y_out_of_sample = pd.Series([])
+
+        # For wholly in-sample data, retrieve stored results.
+        if y_t.index[0] <= self.trend.index[-1] and y_t.index[0] >= self.trend.index[0]:
+            left_index = y_t.index[0]
+            right_index = y_t.index[-1]
+            y_in_sample = (
+                y_t
+                + self.trend[left_index:right_index]
+                + self.seasonal[left_index:right_index]
+            )
+            y_in_sample = y_in_sample.dropna()
+
+        # For out of sample data....
+        if y_t.index[-1] > self.trend.index[-1]:
+            try:
+                # ...that is partially out of sample and partially in sample.
+                truncated_y_t = y_t[y_t.index.get_loc(self.trend.index[-1]) + 1 :]
+            except KeyError:
+                # ...that is entirely out of sample.
+                truncated_y_t = y_t
             (
                 projected_trend,
                 projected_seasonality,
-            ) = self._project_trend_and_seasonality(None, y_t)
+            ) = self._project_trend_and_seasonality(None, truncated_y_t)
 
-            y = infer_feature_types(
+            y_out_of_sample = infer_feature_types(
                 pd.Series(
-                    y_t + projected_trend + projected_seasonality,
-                    index=y_t.index,
+                    truncated_y_t + projected_trend + projected_seasonality,
+                    index=truncated_y_t.index,
                 ),
             )
-        return y
+        return y_in_sample.append(y_out_of_sample)
 
     # @fit_check
     def get_trend_dataframe(self, X, y):
