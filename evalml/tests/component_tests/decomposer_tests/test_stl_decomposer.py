@@ -46,18 +46,6 @@ def test_stl_decomposer_raises_value_error_target_is_none(ts_data):
         pdt.inverse_transform(None)
 
 
-# def test_polynomial_decomposer_transform_returns_same_when_y_none(
-#     ts_data,
-# ):
-#     X, _, y = ts_data()
-#     stl = STLDecomposer().fit(X, y)
-#     X_t, y_t = stl.transform(X, None)
-#     pd.testing.assert_frame_equal(X, X_t)
-#     assert y_t is None
-#
-#
-
-
 def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_test):
     if transformer_fit_on_data == "in-sample-less-than-sample":
         # Re-compose 14-days worth of data within, but not spanning the entire sample
@@ -298,6 +286,7 @@ def test_stl_decomposer_inverse_transform(
     "transformer_fit_on_data",
     [
         "in-sample",
+        "in-sample-less-than-sample",
         "wholly-out-of-sample",
         "wholly-out-of-sample-no-gap",
         "partially-out-of-sample",

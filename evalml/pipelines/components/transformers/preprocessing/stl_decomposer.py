@@ -127,6 +127,8 @@ class STLDecomposer(Decomposer):
         X: pd.DataFrame,
         y: pd.Series = None,
     ) -> tuple[pd.DataFrame, pd.Series]:
+        if y is None:
+            return X, y
         if not isinstance(y.index, pd.DatetimeIndex):
             y = self._set_time_index(X, y)
 

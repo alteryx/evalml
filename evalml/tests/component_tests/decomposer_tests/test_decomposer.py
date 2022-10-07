@@ -433,3 +433,18 @@ def test_decomposer_get_trend_dataframe_error_not_fit(
             pdt.transform(X, y)
         with pytest.raises(ValueError):
             pdt.get_trend_dataframe(X, y)
+
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    [STLDecomposer, PolynomialDecomposer],
+)
+def test_polynomial_decomposer_transform_returns_same_when_y_none(
+    decomposer_child_class,
+    ts_data,
+):
+    X, _, y = ts_data()
+    stl = decomposer_child_class().fit(X, y)
+    X_t, y_t = stl.transform(X, None)
+    pd.testing.assert_frame_equal(X, X_t)
+    assert y_t is None
