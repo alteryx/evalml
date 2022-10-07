@@ -107,7 +107,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             pd.Series: Datetime periods out to `forecast_horizon + gap`.
 
         Example:
-            >>> X = X = pd.DataFrame({'date': pd.date_range(start='1-1-2022', periods=10, freq='D'), 'feature': range(10, 20)})
+            >>> X = pd.DataFrame({'date': pd.date_range(start='1-1-2022', periods=10, freq='D'), 'feature': range(10, 20)})
             >>> y = pd.Series(range(0, 10), name='target')
             >>> gap = 1
             >>> forecast_horizon = 2
