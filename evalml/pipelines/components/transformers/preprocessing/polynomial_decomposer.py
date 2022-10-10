@@ -129,7 +129,7 @@ class PolynomialDecomposer(Decomposer):
         """Transforms the target data by removing the polynomial trend and rolling average seasonality.
 
         Applies the fit polynomial detrender to the target data, removing the additive polynomial trend. Then,
-        utilizes the first period's worth of seasonal data determined in the .train() function to extrapolate
+        utilizes the first period's worth of seasonal data determined in the .fit() function to extrapolate
         the seasonal signal of the data to be transformed.  This seasonal signal is also assumed to be additive
         and is removed.
 

@@ -160,6 +160,23 @@ class STLDecomposer(Decomposer):
         X: pd.DataFrame,
         y: pd.Series = None,
     ) -> tuple[pd.DataFrame, pd.Series]:
+        """Transforms the target data by removing the polynomial trend and rolling average seasonality.
+
+        Uses an ARIMA model to project forward the addititve trend and removes it. Then, utilizes the first period's
+        worth of seasonal data determined in the .fit() function to extrapolate the seasonal signal of the data to be
+        transformed.  This seasonal signal is also assumed to be additive and is removed.
+
+        Args:
+            X (pd.DataFrame, optional): Conditionally used to build datetime index.
+            y (pd.Series): Target variable to detrend and deseasonalize.
+
+        Returns:
+            tuple of pd.DataFrame, pd.Series: The input features are returned without modification. The target
+                variable y is detrended and deseasonalized.
+
+        Raises:
+            ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
+        """
         if y is None:
             return X, y
         X, y = self._check_target(X, y)
@@ -196,8 +213,22 @@ class STLDecomposer(Decomposer):
 
         return X, y_in_sample.append(y_out_of_sample)
 
-    # @fit_check
-    def inverse_transform(self, y_t):
+    def inverse_transform(self, y_t: pd.Series) -> tuple[pd.DataFrame, pd.Series]:
+        """Adds back fitted trend and seasonality to target variable.
+
+        The STL trend is projected to cover the entire requested target range, then added back into the signal. Then,
+        the seasonality is projected forward to and added back into the signal.
+
+        Args:
+            y_t (pd.Series): Target variable.
+
+        Returns:
+            tuple of pd.DataFrame, pd.Series: The first element are the input features returned without modification.
+                The second element is the target variable y with the trend and seasonality added back in.
+
+        Raises:
+            ValueError: If y is None.
+        """
         _, y_t = self._check_target(None, y_t)
 
         y_t = infer_feature_types(y_t)
