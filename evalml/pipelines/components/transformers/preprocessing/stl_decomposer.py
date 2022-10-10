@@ -196,9 +196,6 @@ class STLDecomposer(Decomposer):
 
         return X, y_in_sample.append(y_out_of_sample)
 
-    def fit_transform(self, X, y=None):
-        return self.fit(X, y).transform(X, y)
-
     # @fit_check
     def inverse_transform(self, y_t):
         y_t = self._check_target(None, y_t)

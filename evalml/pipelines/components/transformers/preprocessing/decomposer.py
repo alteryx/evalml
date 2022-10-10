@@ -104,6 +104,23 @@ class Decomposer(Transformer):
         )
         return y.set_axis(time_index)
 
+    def fit_transform(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series = None,
+    ) -> tuple[pd.DataFrame, pd.Series]:
+        """Removes fitted trend and seasonality from target variable.
+
+        Args:
+            X (pd.DataFrame, optional): Ignored.
+            y (pd.Series): Target variable to detrend and deseasonalize.
+
+        Returns:
+            tuple of pd.DataFrame, pd.Series: The first element are the input features returned without modification.
+                The second element is the target variable y with the fitted trend removed.
+        """
+        return self.fit(X, y).transform(X, y)
+
     @abstractmethod
     def get_trend_dataframe(self, y):
         """Return a list of dataframes, each with 3 columns: trend, seasonality, residual."""
