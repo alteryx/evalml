@@ -97,7 +97,7 @@ class PolynomialDecomposer(Decomposer):
         """
         y = self._check_target(X, y)
 
-        # Copying y as we might modify it's index
+        # Copying y as we might modify its index
         y_orig = infer_feature_types(y).copy()
         self._component_obj.fit(y_orig)
 
@@ -114,10 +114,11 @@ class PolynomialDecomposer(Decomposer):
         else:
             self.seasonal_period = self.seasonal_period
 
-        self.seasonality = seasonal_decompose(
+        self.seasonal = seasonal_decompose(
             y_detrended_with_time_index,
             period=self.seasonal_period,
-        ).seasonal[0 : self.seasonal_period]
+        ).seasonal
+        self.seasonality = self.seasonal[0 : self.seasonal_period]
         return self
 
     def transform(

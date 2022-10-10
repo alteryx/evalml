@@ -143,6 +143,9 @@ class STLDecomposer(Decomposer):
                 f"STLDecomposer may perform poorly on {data_str} data with a high seasonal period ({self.seasonal_period}).",
             )
 
+        # Save the frequency of the fitted series for checking against transform data.
+        self.frequency = y.index.freqstr
+
         stl = STL(y, seasonal=self.seasonal_period)
         res = stl.fit()
         self.seasonal = res.seasonal
@@ -150,8 +153,6 @@ class STLDecomposer(Decomposer):
         self.trend = res.trend
         self.residual = res.resid
 
-        # Save the frequency of the fitted series for checking against transform data.
-        self.frequency = y.index.freqstr
         return self
 
     def transform(
