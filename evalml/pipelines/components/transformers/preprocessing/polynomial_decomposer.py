@@ -212,7 +212,7 @@ class PolynomialDecomposer(Decomposer):
         # Add polynomial trend back to signal
         y_retrended = self._component_obj.inverse_transform(y_t)
 
-        seasonal = self._build_seasonal_signal(
+        seasonal = self._project_seasonal(
             y_t,
             self.seasonality,
             self.seasonal_period,

@@ -64,6 +64,7 @@ class STLDecomposer(Decomposer):
         )
 
     def _check_oos_past(self, y):
+        """Function to check whether provided target data is out-of-sample and in the past."""
         if y.index[-1] < self.trend.index[0]:
             raise ValueError(
                 f"STLDecomposer cannot transform/inverse transform data out of sample and before the data used"
@@ -73,9 +74,14 @@ class STLDecomposer(Decomposer):
             )
 
     def _project_trend(self, y):
-        right_delta = y.index[-1] - self.trend.index[-1]
+        """Function to project the in-sample trend into the future."""
         self._check_oos_past(y)
-        delta = pd.to_timedelta(1, self.frequency)
+
+        # Determine how many units forward to project by finding the difference,
+        # in index values, between the requested target and the fit data.
+        datetime_difference = y.index[-1] - self.trend.index[-1]
+        datetime_delta = pd.to_timedelta(1, self.frequency)
+        units_forward = int(datetime_difference / datetime_delta)
 
         # Model the trend and project it forward
         stlf = STLForecast(
@@ -84,16 +90,15 @@ class STLDecomposer(Decomposer):
             model_kwargs=dict(order=(1, 1, 0), trend="t"),
         )
         stlf_res = stlf.fit()
-        forecast = stlf_res.forecast(int(right_delta / delta))
+        forecast = stlf_res.forecast(units_forward)
         overlapping_ind = [ind for ind in y.index if ind in forecast.index]
         return forecast[overlapping_ind]
 
-    def _project_trend_and_seasonality(self, X, y):
-        # Determine how many units forward to forecast
+    def _project_trend_and_seasonality(self, y):
+        """Function to project both trend and seasonality forward into the future."""
         projected_trend = self._project_trend(y)
 
-        # Reseasonalize
-        projected_seasonality = self._build_seasonal_signal(
+        projected_seasonality = self._project_seasonal(
             y,
             self.seasonality,
             self.seasonal_period,
@@ -160,7 +165,7 @@ class STLDecomposer(Decomposer):
             (
                 projected_trend,
                 projected_seasonality,
-            ) = self._project_trend_and_seasonality(X, truncated_y)
+            ) = self._project_trend_and_seasonality(truncated_y)
 
             y_out_of_sample = infer_feature_types(
                 pd.Series(
@@ -207,7 +212,7 @@ class STLDecomposer(Decomposer):
             (
                 projected_trend,
                 projected_seasonality,
-            ) = self._project_trend_and_seasonality(None, truncated_y_t)
+            ) = self._project_trend_and_seasonality(truncated_y_t)
 
             y_out_of_sample = infer_feature_types(
                 pd.Series(

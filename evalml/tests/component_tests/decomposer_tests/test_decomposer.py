@@ -284,7 +284,7 @@ def test_decomposer_build_seasonal_signal(
     # and in the middle of a cycle
     y_test = y[test_first_index:]
 
-    projected_seasonality = decomposer._build_seasonal_signal(
+    projected_seasonality = decomposer._project_seasonal(
         y_test,
         single_period_seasonal_signal,
         period,

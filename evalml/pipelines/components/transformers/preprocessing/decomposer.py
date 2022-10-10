@@ -192,8 +192,8 @@ class Decomposer(Transformer):
         self.seasonal_period = self.determine_periodicity(X, y)
         self.parameters["seasonal_period"] = self.seasonal_period
 
-    def _build_seasonal_signal(self, y, periodic_signal, periodicity, frequency):
-        """Projects the cyclical, seasonal signal forward to cover the target data.
+    def _project_seasonal(self, y, periodic_signal, periodicity, frequency):
+        """Projects the seasonal signal forward to cover the target data.
 
         Args:
             y (pandas.Series): Target data to be transformed
