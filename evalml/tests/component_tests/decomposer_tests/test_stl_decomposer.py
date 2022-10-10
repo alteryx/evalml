@@ -1,10 +1,8 @@
 import datetime
 
-import matplotlib.pyplot
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
@@ -44,6 +42,16 @@ def test_stl_decomposer_raises_value_error_target_is_none(ts_data):
 
     with pytest.raises(ValueError, match="y_t cannot be None for STLDecomposer!"):
         pdt.inverse_transform(None)
+
+
+def test_stl_decomposer_auto_sets_seasonal_period_to_odd(ts_data):
+    X, _, y = ts_data()
+
+    stl = STLDecomposer(seasonal_period=3)
+    assert stl.seasonal_period == 3
+
+    stl = STLDecomposer(seasonal_period=4)
+    assert stl.seasonal_period == 5
 
 
 def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_test):

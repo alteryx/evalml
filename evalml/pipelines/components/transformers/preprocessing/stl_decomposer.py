@@ -13,6 +13,21 @@ from evalml.utils import infer_feature_types
 
 
 class STLDecomposer(Decomposer):
+    """Removes trends and seasonality from time series using the STL algorithm.
+
+    https://www.statsmodels.org/dev/generated/statsmodels.tsa.seasonal.STL.html
+
+    Args:
+        time_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
+        degree (int): Not currently used.  STL 3x "degree-like" values.  None are able to be set at
+            this time. Defaults to 1.
+        seasonal_period (int): The number of entries in the time series data that corresponds to one period of a
+            cyclic signal.  For instance, if data is known to possess a weekly seasonal signal, and if the data
+            is daily data, seasonal_period should be 7.  For daily data with a yearly seasonal signal, seasonal_period
+            should be 365.  For compatibility with the underlying STL algorithm, must be odd. If an even number
+            is provided, the next, highest odd number will be used. Defaults to 7.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "STL Decomposer"
     hyperparameter_ranges = {}
@@ -23,12 +38,15 @@ class STLDecomposer(Decomposer):
     def __init__(
         self,
         time_index: str = None,
-        degree: int = 1,
+        degree: int = 1,  # Currently unused.
         seasonal_period: int = 7,
         random_seed: int = 0,
         **kwargs,
     ):
         self.logger = logging.getLogger(__name__)
+
+        # Programmatically adjust seasonal_period to fit underlying STL requirements,
+        # that seasonal_period must be odd.
         if seasonal_period % 2 == 0:
             self.logger.warning(
                 f"STLDecomposer provided with an even period of {seasonal_period}"
