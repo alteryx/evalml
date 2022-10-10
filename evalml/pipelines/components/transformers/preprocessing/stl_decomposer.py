@@ -107,11 +107,31 @@ class STLDecomposer(Decomposer):
         return projected_trend, projected_seasonality
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> STLDecomposer:
-        if y is None:
-            raise ValueError("y cannot be None for STLDecomposer!")
+        """Fits the PolynomialDecomposer and determine the seasonal signal.
 
-        if not isinstance(y.index, pd.DatetimeIndex):
-            y = self._set_time_index(X, y)
+        Instantiates a statsmodels STL decompose object with the component's stored
+        parameters and fits it.  Since the statsmodels object does not fit the sklearn
+        api, it is not saved during __init__() in _component_obj and will be re-instantiated
+        each time fit is called.
+
+        To emulate the sklearn API, when the STL decomposer is fit, the full seasonal
+        component, a single period sample of the seasonal component, the full
+        trend-cycle component and the residual are saved.
+
+        y(t) = S(t) + T(t) + R(t)
+
+        Args:
+            X (pd.DataFrame, optional): Conditionally used to build datetime index.
+            y (pd.Series): Target variable to detrend and deseasonalize.
+
+        Returns:
+            self
+
+        Raises:
+            ValueError: If y is None.
+            ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
+        """
+        y = self._check_target(X, y)
 
         # Warn for poor decomposition use with higher periods
         if self.seasonal_period > 14:
@@ -123,8 +143,8 @@ class STLDecomposer(Decomposer):
                 f"STLDecomposer may perform poorly on {data_str} data with a high seasonal period ({self.seasonal_period}).",
             )
 
-        self._component_obj = STL(y, seasonal=self.seasonal_period)
-        res = self._component_obj.fit()
+        stl = STL(y, seasonal=self.seasonal_period)
+        res = stl.fit()
         self.seasonal = res.seasonal
         self.seasonality = self.seasonal[: self.seasonal_period]
         self.trend = res.trend
@@ -181,8 +201,7 @@ class STLDecomposer(Decomposer):
 
     # @fit_check
     def inverse_transform(self, y_t):
-        if y_t is None:
-            raise ValueError("y_t cannot be None for STLDecomposer!")
+        y_t = self._check_target(None, y_t)
 
         y_t = infer_feature_types(y_t)
         self._check_oos_past(y_t)

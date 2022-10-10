@@ -29,21 +29,6 @@ def test_stl_decomposer_init_raises_error_if_degree_not_int():
     STLDecomposer(degree=3.0)
 
 
-def test_stl_decomposer_raises_value_error_target_is_none(ts_data):
-    X, _, y = ts_data()
-
-    with pytest.raises(ValueError, match="y cannot be None for STLDecomposer!"):
-        STLDecomposer(degree=3).fit_transform(X, None)
-
-    with pytest.raises(ValueError, match="y cannot be None for STLDecomposer!"):
-        STLDecomposer(degree=3).fit(X, None)
-
-    pdt = STLDecomposer(degree=3).fit(X, y)
-
-    with pytest.raises(ValueError, match="y_t cannot be None for STLDecomposer!"):
-        pdt.inverse_transform(None)
-
-
 def test_stl_decomposer_auto_sets_seasonal_period_to_odd(ts_data):
     X, _, y = ts_data()
 

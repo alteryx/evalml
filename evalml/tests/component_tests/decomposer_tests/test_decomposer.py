@@ -444,3 +444,25 @@ def test_decomposer_transform_returns_same_when_y_none(
     X_t, y_t = stl.transform(X, None)
     pd.testing.assert_frame_equal(X, X_t)
     assert y_t is None
+
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    decomposer_list,
+)
+def test_stl_decomposer_raises_value_error_target_is_none(
+    decomposer_child_class,
+    ts_data,
+):
+    X, _, y = ts_data()
+
+    with pytest.raises(ValueError, match="cannot be None for Decomposer!"):
+        decomposer_child_class(degree=3).fit_transform(X, None)
+
+    with pytest.raises(ValueError, match="cannot be None for Decomposer!"):
+        decomposer_child_class(degree=3).fit(X, None)
+
+    dec = decomposer_child_class(degree=3).fit(X, y)
+
+    with pytest.raises(ValueError, match="cannot be None for Decomposer!"):
+        dec.inverse_transform(None)

@@ -95,13 +95,7 @@ class PolynomialDecomposer(Decomposer):
             ValueError: If y is None.
             ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
-        if y is None:
-            raise ValueError("y cannot be None for PolynomialDecomposer!")
-
-        # Change the y index to a matching datetimeindex or else we get a failure
-        # in ForecastingHorizon during decomposition.
-        if not isinstance(y.index, pd.DatetimeIndex):
-            y = self._set_time_index(X, y)
+        y = self._check_target(X, y)
 
         # Copying y as we might modify it's index
         y_orig = infer_feature_types(y).copy()
@@ -205,8 +199,8 @@ class PolynomialDecomposer(Decomposer):
         Raises:
             ValueError: If y is None.
         """
-        if y_t is None:
-            raise ValueError("y cannot be None for PolynomialDecomposer!")
+        y_t = self._check_target(None, y_t)
+
         y_t = infer_feature_types(y_t)
 
         # Add polynomial trend back to signal

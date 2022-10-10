@@ -29,21 +29,6 @@ def test_polynomial_decomposer_init_raises_error_if_degree_not_int():
     PolynomialDecomposer(degree=3.0)
 
 
-def test_polynomial_decomposer_raises_value_error_target_is_none(ts_data):
-    X, _, y = ts_data()
-
-    with pytest.raises(ValueError, match="y cannot be None for PolynomialDecomposer!"):
-        PolynomialDecomposer(degree=3).fit_transform(X, None)
-
-    with pytest.raises(ValueError, match="y cannot be None for PolynomialDecomposer!"):
-        PolynomialDecomposer(degree=3).fit(X, None)
-
-    pdt = PolynomialDecomposer(degree=3).fit(X, y)
-
-    with pytest.raises(ValueError, match="y cannot be None for PolynomialDecomposer!"):
-        pdt.inverse_transform(None)
-
-
 def test_polynomial_decomposer_transform_returns_same_when_y_none(
     ts_data,
 ):

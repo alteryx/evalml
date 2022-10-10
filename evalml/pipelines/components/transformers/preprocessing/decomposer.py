@@ -259,3 +259,15 @@ class Decomposer(Transformer):
         if show:  # pragma: no cover
             plt.show()
         return fig, axs
+
+    def _check_target(self, X, y):
+        """Function to ensure target is not None and has a pandas.DatetimeIndex."""
+        if y is None:
+            raise ValueError("y cannot be None for Decomposer!")
+
+        # Change the y index to a matching datetimeindex or else we get a failure
+        # in ForecastingHorizon during decomposition.
+        if not isinstance(y.index, pd.DatetimeIndex):
+            y = self._set_time_index(X, y)
+
+        return y
