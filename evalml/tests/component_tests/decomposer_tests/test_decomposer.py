@@ -425,9 +425,9 @@ def test_decomposer_get_trend_dataframe_error_not_fit(
         pdt.fit_transform(X, y)
         pdt.get_trend_dataframe(X, y)
     else:
-        with pytest.raises((ValueError, evalml.exceptions.ComponentNotYetFittedError)):
+        with pytest.raises(evalml.exceptions.ComponentNotYetFittedError):
             pdt.transform(X, y)
-        with pytest.raises(ValueError):
+        with pytest.raises(evalml.exceptions.ComponentNotYetFittedError):
             pdt.get_trend_dataframe(X, y)
 
 

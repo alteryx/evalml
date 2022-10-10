@@ -11,16 +11,6 @@ from statsmodels.tsa.seasonal import STL as STL
 from evalml.pipelines.components.transformers.preprocessing.decomposer import Decomposer
 from evalml.utils import infer_feature_types
 
-# def fit_check(method):
-#     def inner(ref):
-#         if not ref.is_fit:
-#             raise ValueError(
-#                 "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
-#             )
-#         else:
-#             return method(ref)
-#     return inner
-
 
 class STLDecomposer(Decomposer):
 
@@ -119,7 +109,6 @@ class STLDecomposer(Decomposer):
 
         # Save the frequency of the fitted series for checking against transform data.
         self.frequency = y.index.freqstr
-        self.is_fit = True
         return self
 
     def transform(
@@ -131,11 +120,6 @@ class STLDecomposer(Decomposer):
             return X, y
         if not isinstance(y.index, pd.DatetimeIndex):
             y = self._set_time_index(X, y)
-
-        if not self.is_fit:
-            raise ValueError(
-                "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
-            )
 
         self._check_oos_past(y)
 
@@ -176,10 +160,6 @@ class STLDecomposer(Decomposer):
     def inverse_transform(self, y_t):
         if y_t is None:
             raise ValueError("y_t cannot be None for STLDecomposer!")
-        if not self.is_fit:
-            raise ValueError(
-                "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
-            )
 
         y_t = infer_feature_types(y_t)
         self._check_oos_past(y_t)
@@ -243,10 +223,6 @@ class STLDecomposer(Decomposer):
             TypeError: If y is not provided as a pandas Series or DataFrame.
 
         """
-        if not self.is_fit:
-            raise ValueError(
-                "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
-            )
         X = infer_feature_types(X)
         if not isinstance(X.index, pd.DatetimeIndex):
             raise TypeError("Provided X should have datetimes in the index.")

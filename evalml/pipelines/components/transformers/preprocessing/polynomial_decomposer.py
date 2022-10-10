@@ -124,7 +124,6 @@ class PolynomialDecomposer(Decomposer):
             y_detrended_with_time_index,
             period=self.seasonal_period,
         ).seasonal[0 : self.seasonal_period]
-        self.is_fit = True
         return self
 
     def transform(
@@ -256,11 +255,6 @@ class PolynomialDecomposer(Decomposer):
         # in ForecastingHorizon during decomposition.
         if not isinstance(y.index, pd.DatetimeIndex):
             y = self._set_time_index(X, y)
-
-        if not self.is_fit:
-            raise ValueError(
-                "STLDecomposer has not been fit yet.  Please fit it and then build the decomposed dataframe.",
-            )
 
         fh = ForecastingHorizon(X.index, is_relative=False)
 

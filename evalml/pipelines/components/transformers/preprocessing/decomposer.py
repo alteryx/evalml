@@ -24,6 +24,7 @@ class Decomposer(Transformer):
     hyperparameter_ranges = None
     modifies_features = False
     modifies_target = True
+    needs_fitting = True
 
     def __init__(
         self,
@@ -34,7 +35,6 @@ class Decomposer(Transformer):
         time_index: str = None,
         **kwargs,
     ):
-        self.is_fit = False
         degree = self.raise_typeerror_if_not_int("degree", degree)
         self.seasonal_period = self.raise_typeerror_if_not_int(
             "seasonal_period",
