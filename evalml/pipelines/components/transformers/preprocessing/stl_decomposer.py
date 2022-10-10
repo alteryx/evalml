@@ -20,7 +20,7 @@ class STLDecomposer(Decomposer):
 
     Args:
         time_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
-        degree (int): Not currently used.  STL possesses 3x "degree-like" values.  None are able to be set at
+        degree (int): Not currently used.  STL 3x "degree-like" values.  None are able to be set at
             this time. Defaults to 1.
         seasonal_period (int): The number of entries in the time series data that corresponds to one period of a
             cyclic signal.  For instance, if data is known to possess a weekly seasonal signal, and if the data

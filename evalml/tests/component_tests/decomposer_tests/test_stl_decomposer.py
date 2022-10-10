@@ -39,6 +39,16 @@ def test_stl_decomposer_auto_sets_seasonal_period_to_odd(ts_data):
     assert stl.seasonal_period == 5
 
 
+def test_stl_decomposer_auto_sets_seasonal_period_to_odd(ts_data):
+    X, _, y = ts_data()
+
+    stl = STLDecomposer(seasonal_period=3)
+    assert stl.seasonal_period == 3
+
+    stl = STLDecomposer(seasonal_period=4)
+    assert stl.seasonal_period == 5
+
+
 def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_test):
     """Function to build a sample target.  Based on subset_y being daily data containing 5 periods of a periodic signal."""
     if transformer_fit_on_data == "in-sample-less-than-sample":
