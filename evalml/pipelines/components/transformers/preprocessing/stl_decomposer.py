@@ -269,7 +269,6 @@ class STLDecomposer(Decomposer):
             )
         return y_in_sample.append(y_out_of_sample)
 
-    # @fit_check
     def get_trend_dataframe(self, X, y):
         """Return a list of dataframes with 4 columns: signal, trend, seasonality, residual.
 
