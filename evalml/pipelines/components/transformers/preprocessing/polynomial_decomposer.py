@@ -95,7 +95,7 @@ class PolynomialDecomposer(Decomposer):
             ValueError: If y is None.
             ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
-        y = self._check_target(X, y)
+        X, y = self._check_target(X, y)
 
         # Copying y as we might modify its index
         y_orig = infer_feature_types(y).copy()
@@ -146,11 +146,10 @@ class PolynomialDecomposer(Decomposer):
         """
         if y is None:
             return X, y
+        X, y = self._check_target(X, y)
 
         # Give the internal target signal a datetime index built from X
         y = y.copy()
-        if not isinstance(y.index, pd.DatetimeIndex):
-            y = self._set_time_index(X, y)
 
         # Remove polynomial trend then seasonality of detrended signal
         y_ww = infer_feature_types(y)
@@ -183,7 +182,7 @@ class PolynomialDecomposer(Decomposer):
         Raises:
             ValueError: If y is None.
         """
-        y_t = self._check_target(None, y_t)
+        _, y_t = self._check_target(None, y_t)
 
         y_t = infer_feature_types(y_t)
 

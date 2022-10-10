@@ -131,7 +131,7 @@ class STLDecomposer(Decomposer):
             ValueError: If y is None.
             ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
-        y = self._check_target(X, y)
+        X, y = self._check_target(X, y)
 
         # Warn for poor decomposition use with higher periods
         if self.seasonal_period > 14:
@@ -162,8 +162,7 @@ class STLDecomposer(Decomposer):
     ) -> tuple[pd.DataFrame, pd.Series]:
         if y is None:
             return X, y
-        if not isinstance(y.index, pd.DatetimeIndex):
-            y = self._set_time_index(X, y)
+        X, y = self._check_target(X, y)
 
         self._check_oos_past(y)
 
@@ -199,7 +198,7 @@ class STLDecomposer(Decomposer):
 
     # @fit_check
     def inverse_transform(self, y_t):
-        y_t = self._check_target(None, y_t)
+        _, y_t = self._check_target(None, y_t)
 
         y_t = infer_feature_types(y_t)
         self._check_oos_past(y_t)

@@ -279,6 +279,7 @@ class Decomposer(Transformer):
 
     def _check_target(self, X, y):
         """Function to ensure target is not None and has a pandas.DatetimeIndex."""
+
         if y is None:
             raise ValueError("y cannot be None for Decomposer!")
 
@@ -287,4 +288,4 @@ class Decomposer(Transformer):
         if not isinstance(y.index, pd.DatetimeIndex):
             y = self._set_time_index(X, y)
 
-        return y
+        return X, y
