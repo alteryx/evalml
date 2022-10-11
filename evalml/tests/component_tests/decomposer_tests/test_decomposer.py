@@ -382,28 +382,17 @@ def test_decomposer_determine_periodicity(
         trend_degree=trend_degree,
     )
 
-    if period is None:
-        component_period = 1
-    else:
-        component_period = period
-
     # Test that the seasonality can be determined if trend guess isn't spot on.
     if not decomposer_picked_correct_degree:
         trend_degree = 1 if trend_degree in [2, 3] else 2
 
-    dec = decomposer_child_class(degree=trend_degree, seasonal_period=component_period)
+    dec = decomposer_child_class(degree=trend_degree, seasonal_period=period)
     ac = dec.determine_periodicity(X, y, method=periodicity_determination_method)
 
     if synthetic_data == "synthetic":
-        if period is None:
-            assert ac is None
-        else:
-            assert 0.95 * period <= ac <= 1.05 * period
+        assert 0.95 * period <= ac <= 1.05 * period
     else:
-        if period is None:
-            assert ac is None
-        else:
-            assert 0.95 * period <= ac <= 1.05 * period
+        assert 0.95 * period <= ac <= 1.05 * period
 
 
 @pytest.mark.parametrize(

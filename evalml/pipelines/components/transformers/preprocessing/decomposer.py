@@ -250,7 +250,12 @@ class Decomposer(Transformer):
         # Add the date times back in.
         return pd.Series(seasonal, index=y.index)
 
-    def plot_decomposition(self, X: pd.DataFrame, y: pd.Series, show=False):
+    def plot_decomposition(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series,
+        show: bool = False,
+    ) -> tuple[plt.Figure, list]:
         """Plots the decomposition of the target signal.
 
         Args:
@@ -260,7 +265,7 @@ class Decomposer(Transformer):
             show (bool): Whether to display the plot or not. Defaults to False.
 
         Returns:
-            matplotlib.pyplot.Figure, matplotlib.pyplot.Axes: The figure and axes that have the decompositions
+            matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]: The figure and axes that have the decompositions
                 plotted on them
 
         """

@@ -207,7 +207,7 @@ def test_stl_decomposer_fit_transform_out_of_sample(
                 pd.Series(np.zeros(len(output_y_t))).set_axis(y_new.index),
                 output_y_t,
                 check_exact=False,
-                atol=1.0e-4,
+                atol=5.0e-4,
             )
 
 
