@@ -119,14 +119,8 @@ def test_stl_fit_transform_in_sample(
     )
     lin_reg.fit(features, y)
     expected_trend = lin_reg.predict(features)
-    detrended_values = y.values - expected_trend
 
-    if period is None:
-        component_period = 1
-    else:
-        component_period = period
-
-    stl = STLDecomposer(seasonal_period=component_period)
+    stl = STLDecomposer(seasonal_period=period)
 
     X_t, y_t = stl.fit_transform(X, y)
 
