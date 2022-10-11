@@ -120,7 +120,6 @@ def test_stl_fit_transform_in_sample(
     lin_reg.fit(features, y)
     expected_trend = lin_reg.predict(features)
     detrended_values = y.values - expected_trend
-    expected_answer = pd.Series(detrended_values)
 
     if period is None:
         component_period = 1
@@ -371,3 +370,24 @@ def test_stl_decomposer_get_trend_dataframe(
                     get_trend_dataframe_format_correct(x)
                     for idx, x in enumerate(result_dfs)
                 ]
+
+
+def test_stl_decomposer_get_trend_dataframe_sets_time_index_internally(
+    generate_seasonal_data,
+):
+    def get_trend_dataframe_format_correct(df):
+        return set(df.columns) == {"signal", "trend", "seasonality", "residual"}
+
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+        period=7,
+        set_time_index=False,
+    )
+    assert not isinstance(y.index, pd.DatetimeIndex)
+
+    stl = STLDecomposer()
+    stl.fit(X, y)
+    result_dfs = stl.get_trend_dataframe(X, y)
+
+    assert isinstance(result_dfs, list)
+    assert all(isinstance(x, pd.DataFrame) for x in result_dfs)
+    assert all(get_trend_dataframe_format_correct(x) for x in result_dfs)

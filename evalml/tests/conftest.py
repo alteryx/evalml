@@ -2258,7 +2258,8 @@ def generate_seasonal_data():
         else:
             y_seasonal = pd.Series(np.zeros(len(x)))
         y = y_trend + y_seasonal
-        y = y.set_axis(dts)
+        if set_time_index:
+            y = y.set_axis(dts)
         return X, y
 
     def _return_proper_func(real_or_synthetic):

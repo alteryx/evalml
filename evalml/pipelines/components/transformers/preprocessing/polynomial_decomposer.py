@@ -3,10 +3,8 @@ from __future__ import annotations
 
 import logging
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import sklearn.exceptions
 from skopt.space import Integer
 from sktime.forecasting.base._fh import ForecastingHorizon
 from statsmodels.tsa.seasonal import seasonal_decompose

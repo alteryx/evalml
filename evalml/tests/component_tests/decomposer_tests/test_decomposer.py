@@ -1,3 +1,4 @@
+import itertools
 from datetime import datetime
 
 import matplotlib
@@ -347,9 +348,6 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
     assert dec.parameters["seasonal_period"]
 
 
-import itertools
-
-
 @pytest.mark.parametrize(
     "decomposer_child_class",
     decomposer_list,
@@ -358,10 +356,10 @@ import itertools
     "periodicity_determination_method",
     [
         "autocorrelation",
-        # pytest.param(
-        #     "partial-autocorrelation",
-        #     marks=pytest.mark.xfail(reason="Partial Autocorrelation not working yet."),
-        # ),
+        pytest.param(
+            "partial-autocorrelation",
+            marks=pytest.mark.xfail(reason="Partial Autocorrelation not working yet."),
+        ),
     ],
 )
 @pytest.mark.parametrize("decomposer_picked_correct_degree", [True, False])
