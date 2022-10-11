@@ -56,7 +56,7 @@ class Decomposer(Transformer):
             **kwargs,
         )
 
-    def _raise_typeerror_if_not_int(self, var_name, var_value):
+    def _raise_typeerror_if_not_int(self, var_name: str, var_value: str):
         if not isinstance(var_value, int):
             if isinstance(var_value, float) and var_value.is_integer():
                 var_value = int(var_value)
@@ -66,7 +66,7 @@ class Decomposer(Transformer):
                 )
         return var_value
 
-    def _set_time_index(self, X, y):
+    def _set_time_index(self, X: pd.DataFrame, y: pd.Series):
         """Ensures that target data has a pandas.DatetimeIndex that matches feature data."""
         dt_df = infer_feature_types(X)
 
@@ -124,14 +124,19 @@ class Decomposer(Transformer):
         return self.fit(X, y).transform(X, y)
 
     @abstractmethod
-    def get_trend_dataframe(self, y):
+    def get_trend_dataframe(self, y: pd.Series):
         """Return a list of dataframes, each with 3 columns: trend, seasonality, residual."""
 
     @abstractmethod
-    def inverse_transform(self, y):
+    def inverse_transform(self, y: pd.Series):
         """Add the trend + seasonality back to y."""
 
-    def determine_periodicity(self, X, y, method="autocorrelation"):
+    def determine_periodicity(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series,
+        method: str = "autocorrelation",
+    ):
         """Function that uses autocorrelative methods to determine the first, signficant period of the seasonal signal.
 
         Args:
@@ -200,7 +205,7 @@ class Decomposer(Transformer):
             relative_maxima = [None]
         return relative_maxima[0]
 
-    def set_seasonal_period(self, X, y):
+    def set_seasonal_period(self, X: pd.DataFrame, y: pd.Series):
         """Function to set the component's seasonal period based on the target's seasonality.
 
         Args:
@@ -211,7 +216,13 @@ class Decomposer(Transformer):
         self.seasonal_period = self.determine_periodicity(X, y)
         self.parameters["seasonal_period"] = self.seasonal_period
 
-    def _project_seasonal(self, y, periodic_signal, periodicity, frequency):
+    def _project_seasonal(
+        self,
+        y: pd.Series,
+        periodic_signal: pd.Series,
+        periodicity: pd.Series,
+        frequency: str,
+    ):
         """Projects the seasonal signal forward to cover the target data.
 
         Args:
@@ -284,7 +295,7 @@ class Decomposer(Transformer):
             plt.show()
         return fig, axs
 
-    def _check_target(self, X, y):
+    def _check_target(self, X: pd.DataFrame, y: pd.Series):
         """Function to ensure target is not None and has a pandas.DatetimeIndex."""
         if y is None:
             raise ValueError("y cannot be None for Decomposer!")
