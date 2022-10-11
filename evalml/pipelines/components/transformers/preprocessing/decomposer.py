@@ -37,8 +37,8 @@ class Decomposer(Transformer):
         time_index: str = None,
         **kwargs,
     ):
-        degree = self.raise_typeerror_if_not_int("degree", degree)
-        self.seasonal_period = self.raise_typeerror_if_not_int(
+        degree = self._raise_typeerror_if_not_int("degree", degree)
+        self.seasonal_period = self._raise_typeerror_if_not_int(
             "seasonal_period",
             seasonal_period,
         )
@@ -56,7 +56,7 @@ class Decomposer(Transformer):
             **kwargs,
         )
 
-    def raise_typeerror_if_not_int(self, var_name, var_value):
+    def _raise_typeerror_if_not_int(self, var_name, var_value):
         if not isinstance(var_value, int):
             if isinstance(var_value, float) and var_value.is_integer():
                 var_value = int(var_value)
@@ -281,7 +281,6 @@ class Decomposer(Transformer):
 
     def _check_target(self, X, y):
         """Function to ensure target is not None and has a pandas.DatetimeIndex."""
-
         if y is None:
             raise ValueError("y cannot be None for Decomposer!")
 

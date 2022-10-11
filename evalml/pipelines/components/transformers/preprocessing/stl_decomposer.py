@@ -314,20 +314,20 @@ class STLDecomposer(Decomposer):
                 y.index == self.trend.index,
             ):
                 trend = self.trend
-                seasonality = self.seasonality
+                seasonal = self.seasonal
                 residual = self.residual
             else:
                 # TODO: Do a better job cloning.
                 decomposer = STLDecomposer(seasonal_period=self.seasonal_period)
                 decomposer.fit(X, y)
                 trend = decomposer.trend
-                seasonality = decomposer.seasonality
+                seasonal = decomposer.seasonal
                 residual = decomposer.residual
             return pd.DataFrame(
                 {
                     "signal": y,
                     "trend": trend,
-                    "seasonality": seasonality,
+                    "seasonality": seasonal,
                     "residual": residual,
                 },
             )
