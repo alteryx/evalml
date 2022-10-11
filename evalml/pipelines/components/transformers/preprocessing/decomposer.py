@@ -1,4 +1,6 @@
 """Component that removes trends from time series and returns the decomposed components."""
+from __future__ import annotations
+
 from abc import abstractmethod
 
 import matplotlib.pyplot as plt
