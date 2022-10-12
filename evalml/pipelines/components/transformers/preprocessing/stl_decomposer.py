@@ -79,7 +79,16 @@ class STLDecomposer(Decomposer):
 
         # Determine how many units forward to project by finding the difference,
         # in index values, between the requested target and the fit data.
-        units_forward = len(pd.date_range(start=self.trend.index[-1], end=y.index[-1], freq=self.frequency))-1
+        units_forward = (
+            len(
+                pd.date_range(
+                    start=self.trend.index[-1],
+                    end=y.index[-1],
+                    freq=self.frequency,
+                ),
+            )
+            - 1
+        )
 
         # Model the trend and project it forward
         stlf = STLForecast(
