@@ -4,6 +4,8 @@ Implementation borrows from sklearn "brute" calculation but with our
 own modification to better handle mixed data types in the grid
 as well as EvalML pipelines.
 """
+from pdb import set_trace
+
 import numpy as np
 import pandas as pd
 import woodwork as ww
@@ -237,25 +239,45 @@ def _partial_dependence_calculation(pipeline, grid, features, X):
     predictions = []
     averaged_predictions = []
 
-    if is_regression(pipeline.problem_type):
-        prediction_method = pipeline.predict
-    else:
-        prediction_method = pipeline.predict_proba
+    X_t = pipeline.transform_all_but_final(X)
+    estimator = pipeline.estimator
 
-    X_eval = X.ww.copy()
+    if is_regression(pipeline.problem_type):
+        prediction_method = estimator.predict
+    else:
+        prediction_method = estimator.predict_proba
+
     for _, new_values in grid.iterrows():
         for i, variable in enumerate(features):
             part_dep_column = pd.Series(
-                [new_values[i]] * X_eval.shape[0],
-                index=X_eval.index,
-            )
-            X_eval.ww[variable] = ww.init_series(
-                part_dep_column,
-                logical_type=X_eval.ww.logical_types[variable],
+                [new_values[i]] * X.shape[0],
+                index=X.index,
             )
 
-        pred = prediction_method(X_eval)
+            changed_col_df = pd.DataFrame({variable: part_dep_column})
+            changed_col_df.ww.init(
+                logical_types={variable: X.ww.logical_types[variable]},
+            )
 
+            # Take the changed column and send it through transform by itself
+            pipeline_copy = pipeline.clone()
+            # --> clone won't keep any internal parameters of the estimator - like the random forest params - like which features to divide upon - would be lost
+            # keep the internally fit estimator -
+
+            # --> need to pass y through - is that problematic?? yes, bc it breaks the existing api
+            # we don't really need y, right?
+            # We should be able to get all info we need from the pipeline, right??
+            # make sure that ll the parameter
+            y = [0, 0.2, 1.4, 1] * 4
+            pipeline_copy.fit(X.ww[[variable]], y)
+            X_t_single_col = pipeline_copy.transform_all_but_final(changed_col_df)
+
+            cols_to_replace = pipeline._get_feature_provenance().get(variable) or [
+                variable,
+            ]
+            X_t[cols_to_replace] = X_t_single_col
+
+        pred = prediction_method(X_t)
         predictions.append(pred)
         # average over samples
         averaged_predictions.append(np.mean(pred, axis=0))
