@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 
 import pandas as pd
+from pandas.core.index import Int64Index
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.forecasting.stl import STLForecast
 from statsmodels.tsa.seasonal import STL as STL
@@ -65,30 +66,41 @@ class STLDecomposer(Decomposer):
 
     def _check_oos_past(self, y):
         """Function to check whether provided target data is out-of-sample and in the past."""
-        if y.index[0] < self.trend.index[0]:
+
+        index = self._choose_proper_index(y)
+
+        if y.index[0] < index[0]:
             raise ValueError(
                 f"STLDecomposer cannot transform/inverse transform data out of sample and before the data used"
                 f"to fit the decomposer."
                 f"\nRequested date range: {str(y.index[0])}:{str(y.index[-1])}."
-                f"\nSample date range: {str(self.trend.index[0])}:{str(self.trend.index[-1])}.",
+                f"\nSample date range: {str(index[0])}:{str(index[-1])}.",
             )
 
     def _project_trend(self, y):
         """Function to project the in-sample trend into the future."""
         self._check_oos_past(y)
 
+        index = self._choose_proper_index(y)
+
         # Determine how many units forward to project by finding the difference,
         # in index values, between the requested target and the fit data.
-        units_forward = (
-            len(
-                pd.date_range(
-                    start=self.trend.index[-1],
-                    end=y.index[-1],
-                    freq=self.frequency,
-                ),
+        if isinstance(y.index, pd.DatetimeIndex):
+            units_forward = (
+                len(
+                    pd.date_range(
+                        start=self.trend.index[-1],
+                        end=y.index[-1],
+                        freq=self.frequency,
+                    ),
+                )
+                - 1
             )
-            - 1
-        )
+        elif isinstance(y.index, Int64Index):
+            units_forward = int(y.index[-1] - index[-1])
+
+        # TODO: Need to have a datetime index on the series going into STLForecast.  Might have to
+        # recreate it on the fly.
 
         # Model the trend and project it forward
         stlf = STLForecast(
@@ -98,8 +110,19 @@ class STLDecomposer(Decomposer):
         )
         stlf_res = stlf.fit()
         forecast = stlf_res.forecast(units_forward)
+
+        # Handle out-of-sample forecasts.  The forecast will have additional data
+        # between the end of the in-sample data and the beginning of the
+        # requested out-of-sample data to inverse transform.
         overlapping_ind = [ind for ind in y.index if ind in forecast.index]
-        return forecast[overlapping_ind]
+        if len(overlapping_ind) > 0:
+            return forecast[overlapping_ind]
+        # This branch handles the cross-validation cases where the indices are
+        # integer indices and we know the forecast length will match the requested
+        # transform data length.
+        else:
+            forecast.index = y.index
+            return forecast
 
     def _project_trend_and_seasonality(self, y):
         """Function to project both trend and seasonality forward into the future."""
@@ -138,6 +161,7 @@ class STLDecomposer(Decomposer):
             ValueError: If y is None.
             ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
+        self.original_index = y.index if y is not None else None
         X, y = self._check_target(X, y)
 
         # Warn for poor decomposition use with higher periods
@@ -236,12 +260,13 @@ class STLDecomposer(Decomposer):
         Raises:
             ValueError: If y is None.
         """
-        # _, y_t = self._check_target(None, y_t)
         if y_t is None:
-            raise ValueError("y_t cannot be None for STLDecomposer!")
+            raise ValueError("y_t cannot be None for Decomposer!")
 
         y_t = infer_feature_types(y_t)
         self._check_oos_past(y_t)
+
+        index = self._choose_proper_index(y_t)
 
         y_in_sample = pd.Series([])
         y_out_of_sample = pd.Series([])
@@ -258,10 +283,10 @@ class STLDecomposer(Decomposer):
             y_in_sample = y_in_sample.dropna()
 
         # For out of sample data....
-        if y_t.index[-1] > self.trend.index[-1]:
+        if y_t.index[-1] > index[-1]:
             try:
                 # ...that is partially out of sample and partially in sample.
-                truncated_y_t = y_t[y_t.index.get_loc(self.trend.index[-1]) + 1 :]
+                truncated_y_t = y_t[y_t.index.get_loc(index[-1]) + 1 :]
             except KeyError:
                 # ...that is entirely out of sample.
                 truncated_y_t = y_t
