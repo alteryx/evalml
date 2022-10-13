@@ -193,8 +193,8 @@ class STLDecomposer(Decomposer):
         y_in_sample = pd.Series([])
         y_out_of_sample = pd.Series([])
 
-        # For wholly in-sample data, retrieve stored results.
-        if y.index[0] <= self.trend.index[-1] and y.index[0] >= self.trend.index[0]:
+        # For partially and wholly in-sample data, retrieve stored results.
+        if self.trend.index[0] <= y.index[0] <= self.trend.index[-1]:
             y_in_sample = self.residual[y.index[0] : y.index[-1]]
 
         # For out of sample data....
@@ -244,8 +244,8 @@ class STLDecomposer(Decomposer):
         y_in_sample = pd.Series([])
         y_out_of_sample = pd.Series([])
 
-        # For wholly in-sample data, retrieve stored results.
-        if y_t.index[0] <= self.trend.index[-1] and y_t.index[0] >= self.trend.index[0]:
+        # For partially and wholly in-sample data, retrieve stored results.
+        if self.trend.index[0] <= y_t.index[0] <= self.trend.index[-1]:
             left_index = y_t.index[0]
             right_index = y_t.index[-1]
             y_in_sample = (
