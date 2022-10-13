@@ -266,7 +266,6 @@ def train_and_score_pipeline(
             score = scores[automl_config.objective.name]
             pipeline_cache[hashes] = fitted_pipeline.component_graph.component_instances
         except Exception as e:
-            raise e
             if automl_config.error_callback is not None:
                 automl_config.error_callback(
                     exception=e,
