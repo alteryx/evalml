@@ -1,4 +1,5 @@
 import re
+from pdb import set_trace
 from unittest.mock import patch
 
 import numpy as np
@@ -73,6 +74,48 @@ def test_partial_dependence_problem_types(
     assert not part_dep.isnull().any(axis=None)
 
 
+@pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
+@pytest.mark.parametrize(
+    "problem_type",
+    [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
+)
+def test_partial_dependence_optimized_problem_types(
+    data_type,
+    problem_type,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
+    logistic_regression_binary_pipeline,
+    logistic_regression_multiclass_pipeline,
+    linear_regression_pipeline,
+    make_data_type,
+):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        pipeline = logistic_regression_binary_pipeline
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        pipeline = logistic_regression_multiclass_pipeline
+
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        pipeline = linear_regression_pipeline
+
+    X = make_data_type(data_type, X)
+    pipeline.fit(X, y)
+    old_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
+    new_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features=0,
+        grid_resolution=5,
+        use_new=True,
+        y=y,
+    )
+
+    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+
+
 def test_partial_dependence_string_feature_name(
     breast_cancer_local,
     logistic_regression_binary_pipeline,
@@ -93,6 +136,17 @@ def test_partial_dependence_string_feature_name(
     assert len(part_dep["partial_dependence"]) == 5
     assert len(part_dep["feature_values"]) == 5
     assert not part_dep.isnull().any(axis=None)
+
+    new_part_dep = partial_dependence(
+        logistic_regression_binary_pipeline,
+        X,
+        features="mean radius",
+        grid_resolution=5,
+        use_new=True,
+        y=y,
+    )
+
+    pd.testing.assert_frame_equal(part_dep, new_part_dep)
 
 
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
@@ -126,12 +180,100 @@ def test_partial_dependence_with_non_numeric_columns(
     assert not part_dep.isnull().any(axis=None)
 
 
+def test_partial_dependence_transform_X_fully_ahead_regression(
+    linear_regression_pipeline,
+):
+    X = pd.DataFrame(
+        {
+            "numeric": [1, 2, 3, 0] * 4,
+            "also numeric": [2, 3, 4, 1] * 4,
+            "string": ["a", "b", "a", "c"] * 4,
+            "also string": ["c", "b", "a", "c"] * 4,
+        },
+    )
+    X.ww.init()
+    y = [0, 0.2, 1.4, 1] * 4
+
+    linear_regression_pipeline.fit(X, y)
+
+    old_pd_results = partial_dependence(
+        linear_regression_pipeline,
+        X,
+        features="also numeric",
+        use_new=False,
+    )
+    new_pd_results = partial_dependence(
+        linear_regression_pipeline,
+        X,
+        features="also numeric",
+        use_new=True,
+        y=y,
+    )
+
+    pd.testing.assert_frame_equal(old_pd_results, new_pd_results)
+
+    # in outer fn, we just define the grid values to us as our partial dependence permutation values
+
+
+def test_partial_dependence_optimization_catboost(X_y_binary):
+    X, y = X_y_binary
+    y_small = ["a", "b", "a"] * 5
+    pipeline_class = BinaryClassificationPipeline
+
+    pipeline = pipeline_class(
+        component_graph=["CatBoost Classifier"],
+        parameters={"CatBoost Classifier": {"thread_count": 1}},
+    )
+    pipeline.fit(X, y)
+    old_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
+    new_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features=0,
+        grid_resolution=5,
+        use_new=True,
+        y=y,
+    )
+
+    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+
+    # test that CatBoost can natively handle non-numerical columns as feature passed to partial_dependence
+    X = pd.DataFrame(
+        {
+            "numeric": [1, 2, 3] * 5,
+            "also numeric": [2, 3, 4] * 5,
+            "string": ["a", "b", "c"] * 5,
+            "also string": ["c", "b", "a"] * 5,
+        },
+    )
+    pipeline = pipeline_class(
+        component_graph=["CatBoost Classifier"],
+        parameters={"CatBoost Classifier": {"thread_count": 1}},
+    )
+    pipeline.fit(X, y_small)
+    old_part_dep = partial_dependence(pipeline, X, features="string")
+    new_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features="string",
+        use_new=True,
+        y=y_small,
+    )
+
+    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+
+
 @patch(
     "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
+@patch(
+    "evalml.pipelines.components.estimators.Estimator.predict_proba",
+    side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
+)
 def test_partial_dependence_with_ww_category_columns(
     mock_predict_proba,
+    mock_estimator_predict_proba,
     fraud_100,
     logistic_regression_binary_pipeline,
 ):
@@ -158,6 +300,15 @@ def test_partial_dependence_with_ww_category_columns(
     assert len(part_dep["partial_dependence"]) == 11
     assert len(part_dep["feature_values"]) == 11
     assert not part_dep.isnull().any(axis=None)
+
+    new_part_dep = partial_dependence(
+        logistic_regression_binary_pipeline,
+        X,
+        features="store_id",
+        use_new=True,
+        y=y,
+    )
+    pd.testing.assert_frame_equal(part_dep, new_part_dep)
 
     part_dep = partial_dependence(
         logistic_regression_binary_pipeline,
@@ -186,6 +337,15 @@ def test_partial_dependence_with_ww_category_columns(
     assert len(part_dep["partial_dependence"]) == 11
     assert len(part_dep["feature_values"]) == 11
     assert not part_dep.isnull().any(axis=None)
+
+    new_part_dep = partial_dependence(
+        logistic_regression_binary_pipeline,
+        X,
+        features="region",
+        use_new=True,
+        y=y,
+    )
+    pd.testing.assert_frame_equal(part_dep, new_part_dep)
 
 
 @patch(
@@ -334,12 +494,32 @@ def test_partial_dependence_xgboost_feature_names(
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().all().all()
 
+    new_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features="<[0]",
+        grid_resolution=5,
+        use_new=True,
+        y=y,
+    )
+    pd.testing.assert_frame_equal(part_dep, new_part_dep)
+
     part_dep = partial_dependence(pipeline, X, features=1, grid_resolution=5)
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().all().all()
 
+    new_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features=1,
+        grid_resolution=5,
+        use_new=True,
+        y=y,
+    )
+    pd.testing.assert_frame_equal(part_dep, new_part_dep)
 
-def test_partial_dependence_multiclass(
+
+def test_partial_dependence_multiclass_ah(
     wine_local,
     logistic_regression_multiclass_pipeline,
 ):
@@ -364,6 +544,16 @@ def test_partial_dependence_multiclass(
         "class_label",
     ]
 
+    new_part_dep = partial_dependence(
+        logistic_regression_multiclass_pipeline,
+        X,
+        features="magnesium",
+        grid_resolution=grid_resolution,
+        use_new=True,
+        y=y,
+    )
+    pd.testing.assert_frame_equal(one_way_part_dep, new_part_dep)
+
     two_way_part_dep = partial_dependence(
         pipeline=logistic_regression_multiclass_pipeline,
         X=X,
@@ -375,6 +565,16 @@ def test_partial_dependence_multiclass(
     assert two_way_part_dep["class_label"].nunique() == num_classes
     assert len(two_way_part_dep.index) == num_classes * grid_resolution
     assert len(two_way_part_dep.columns) == grid_resolution + 1
+
+    new_part_dep = partial_dependence(
+        logistic_regression_multiclass_pipeline,
+        X,
+        features=("magnesium", "alcohol"),
+        grid_resolution=grid_resolution,
+        use_new=True,
+        y=y,
+    )
+    pd.testing.assert_frame_equal(two_way_part_dep, new_part_dep)
 
     two_way_part_dep, two_way_ice_data = partial_dependence(
         pipeline=logistic_regression_multiclass_pipeline,
@@ -395,6 +595,20 @@ def test_partial_dependence_multiclass(
         assert two_way_part_dep["class_label"].nunique() == num_classes
         assert len(two_way_part_dep.index) == num_classes * grid_resolution
         assert len(two_way_part_dep.columns) == grid_resolution + 1
+
+    new_part_dep, new_ice_data = partial_dependence(
+        logistic_regression_multiclass_pipeline,
+        X,
+        features=("magnesium", "alcohol"),
+        grid_resolution=grid_resolution,
+        kind="both",
+        use_new=True,
+        y=y,
+    )
+    pd.testing.assert_frame_equal(two_way_part_dep, new_part_dep)
+    for i, ice_df in enumerate(two_way_ice_data):
+        new_ice_df = new_ice_data[i]
+        pd.testing.assert_frame_equal(ice_df, new_ice_df)
 
 
 def test_partial_dependence_multiclass_numeric_labels(
@@ -640,6 +854,33 @@ def test_partial_dependence_ensemble_pipeline(problem_type, X_y_binary, X_y_regr
     part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().all().all()
+
+
+# @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
+# def test_partial_dependence_optimized_ensemble_pipeline(problem_type, X_y_binary, X_y_regression):
+#     # --> BROKEN - stacked ensemble doesn't work for my initial implementation
+#     if problem_type == ProblemTypes.BINARY:
+#         X, y = X_y_binary
+#         input_pipelines = [
+#             BinaryClassificationPipeline(["Random Forest Classifier"]),
+#             BinaryClassificationPipeline(["Elastic Net Classifier"]),
+#         ]
+#     else:
+#         X, y = X_y_regression
+#         input_pipelines = [
+#             RegressionPipeline(["Random Forest Regressor"]),
+#             RegressionPipeline(["Elastic Net Regressor"]),
+#         ]
+#     pipeline = _make_stacked_ensemble_pipeline(
+#         input_pipelines=input_pipelines,
+#         problem_type=problem_type,
+#     )
+#     pipeline.fit(X, y)
+
+#     old_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
+#     new_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5, use_new=True, y=y)
+
+#     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
 
 
 def test_graph_partial_dependence(

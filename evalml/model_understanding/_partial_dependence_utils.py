@@ -4,8 +4,6 @@ Implementation borrows from sklearn "brute" calculation but with our
 own modification to better handle mixed data types in the grid
 as well as EvalML pipelines.
 """
-from pdb import set_trace
-
 import numpy as np
 import pandas as pd
 import woodwork as ww
@@ -239,7 +237,70 @@ def _partial_dependence_calculation(pipeline, grid, features, X):
     predictions = []
     averaged_predictions = []
 
-    X_t = pipeline.transform_all_but_final(X)
+    if is_regression(pipeline.problem_type):
+        prediction_method = pipeline.predict
+    else:
+        prediction_method = pipeline.predict_proba
+
+    X_eval = X.ww.copy()
+    for _, new_values in grid.iterrows():
+        for i, variable in enumerate(features):
+            part_dep_column = pd.Series(
+                [new_values[i]] * X_eval.shape[0],
+                index=X_eval.index,
+            )
+            X_eval.ww[variable] = ww.init_series(
+                part_dep_column,
+                logical_type=X_eval.ww.logical_types[variable],
+            )
+        pred = prediction_method(X_eval)
+
+        predictions.append(pred)
+        # average over samples
+        averaged_predictions.append(np.mean(pred, axis=0))
+
+    n_samples = X.shape[0]
+
+    # reshape to (n_instances, n_points) for binary/regression
+    # reshape to (n_classes, n_instances, n_points) for multiclass
+    predictions = np.array(predictions).T
+    if is_regression(pipeline.problem_type) and predictions.ndim == 2:
+        predictions = predictions.reshape(n_samples, -1)
+    elif predictions.shape[0] == 2:
+        predictions = predictions[1]
+        predictions = predictions.reshape(n_samples, -1)
+
+    # reshape averaged_predictions to (1, n_points) for binary/regression
+    # reshape averaged_predictions to (n_classes, n_points) for multiclass.
+    averaged_predictions = np.array(averaged_predictions).T
+    if is_regression(pipeline.problem_type) and averaged_predictions.ndim == 1:
+        averaged_predictions = averaged_predictions.reshape(1, -1)
+    elif averaged_predictions.shape[0] == 2:
+        averaged_predictions = averaged_predictions[1]
+        averaged_predictions = averaged_predictions.reshape(1, -1)
+
+    return averaged_predictions, predictions
+
+
+def _partial_dependence_calculation_2(pipeline, grid, features, X, y):
+    """Do the partial dependence calculation once the grid is computed.
+
+    Args:
+        pipeline (PipelineBase): pipeline.
+        grid (pd.DataFrame): Grid of features to compute the partial dependence on.
+        features (list(str)): Column names of input data
+        X (pd.DataFrame): Input data.
+
+    Returns:
+        Tuple (np.ndarray, np.ndarray): averaged and individual predictions for
+            all points in the grid.
+    """
+    predictions = []
+    averaged_predictions = []
+
+    # --> sometimes transform all but final is mutating X :( - had to do ww copy
+    X_eval = X.ww.copy()
+    X_t = pipeline.transform_all_but_final(X_eval)
     estimator = pipeline.estimator
 
     if is_regression(pipeline.problem_type):
@@ -261,21 +322,15 @@ def _partial_dependence_calculation(pipeline, grid, features, X):
 
             # Take the changed column and send it through transform by itself
             pipeline_copy = pipeline.clone()
-            # --> clone won't keep any internal parameters of the estimator - like the random forest params - like which features to divide upon - would be lost
-            # keep the internally fit estimator -
 
-            # --> need to pass y through - is that problematic?? yes, bc it breaks the existing api
-            # we don't really need y, right?
-            # We should be able to get all info we need from the pipeline, right??
-            # make sure that ll the parameter
-            y = [0, 0.2, 1.4, 1] * 4
             pipeline_copy.fit(X.ww[[variable]], y)
             X_t_single_col = pipeline_copy.transform_all_but_final(changed_col_df)
 
             cols_to_replace = pipeline._get_feature_provenance().get(variable) or [
                 variable,
             ]
-            X_t[cols_to_replace] = X_t_single_col
+            # --> not keeping in woodwork - problematic?
+            X_t[list(cols_to_replace)] = X_t_single_col
 
         pred = prediction_method(X_t)
         predictions.append(pred)
@@ -313,6 +368,8 @@ def _partial_dependence(
     grid_resolution=100,
     kind="average",
     custom_range=None,
+    use_new=False,
+    y=None,
 ):
     """Compute the partial dependence for features of X.
 
@@ -351,12 +408,22 @@ def _partial_dependence(
         grid_resolution,
         custom_range,
     )
-    averaged_predictions, predictions = _partial_dependence_calculation(
-        pipeline,
-        grid,
-        features,
-        X,
-    )
+
+    if use_new:
+        averaged_predictions, predictions = _partial_dependence_calculation_2(
+            pipeline,
+            grid,
+            features,
+            X,
+            y,
+        )
+    else:
+        averaged_predictions, predictions = _partial_dependence_calculation(
+            pipeline,
+            grid,
+            features,
+            X,
+        )
 
     # reshape predictions to
     # (n_outputs, n_instances, n_values_feature_0, n_values_feature_1, ...)
