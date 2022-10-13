@@ -227,6 +227,7 @@ def test_stl_decomposer_fit_transform_out_of_sample(
         "wholly-out-of-sample-no-gap",
         "partially-out-of-sample",
         "out-of-sample-in-past",
+        "partially-out-of-sample-in-past",
     ],
 )
 def test_stl_decomposer_inverse_transform(
@@ -259,6 +260,7 @@ def test_stl_decomposer_inverse_transform(
         )
         if transformer_fit_on_data in [
             "out-of-sample-in-past",
+            "partially-out-of-sample-in-past",
         ]:
             with pytest.raises(
                 ValueError,
@@ -284,6 +286,7 @@ def test_stl_decomposer_inverse_transform(
         "wholly-out-of-sample-no-gap",
         "partially-out-of-sample",
         "out-of-sample-in-past",
+        "partially-out-of-sample-in-past",
     ],
 )
 @pytest.mark.parametrize(
@@ -349,6 +352,7 @@ def test_stl_decomposer_get_trend_dataframe(
 
         if transformer_fit_on_data in [
             "out-of-sample-in-past",
+            "partially-out-of-sample-in-past",
         ]:
             with pytest.raises(
                 ValueError,
