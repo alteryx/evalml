@@ -2296,23 +2296,6 @@ def test_time_series_regression_with_parameters(ts_data):
 
 
 def test_time_series_regression_with_decomposer(ts_data):
-    # X, _, y = ts_data()
-    # # X.index.name = "date"
-    # problem_configuration = {
-    #     "time_index": "date",
-    #     "gap": 1,
-    #     "max_delay": 0,
-    #     "forecast_horizon": 2,
-    # }
-    # automl = AutoMLSearch(
-    #     X_train=X,
-    #     y_train=y,
-    #     problem_type="time series regression",
-    #     objective="auto",
-    #     problem_configuration=problem_configuration,
-    #     max_batches=3,
-    # )
-    # automl.search()
 
     target = "OlympicGames_pageviews"
     time_index = "Date"
