@@ -236,7 +236,9 @@ class STLDecomposer(Decomposer):
         Raises:
             ValueError: If y is None.
         """
-        _, y_t = self._check_target(None, y_t)
+        # _, y_t = self._check_target(None, y_t)
+        if y_t is None:
+            raise ValueError("y_t cannot be None for STLDecomposer!")
 
         y_t = infer_feature_types(y_t)
         self._check_oos_past(y_t)
