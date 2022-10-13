@@ -66,7 +66,6 @@ class STLDecomposer(Decomposer):
 
     def _check_oos_past(self, y):
         """Function to check whether provided target data is out-of-sample and in the past."""
-
         index = self._choose_proper_index(y)
 
         if y.index[0] < index[0]:
