@@ -40,6 +40,7 @@ def test_stl_decomposer_auto_sets_seasonal_period_to_odd(ts_data):
 
 
 def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_test):
+    """Function to build a sample target.  Based on subset_y being daily data containing 5 periods of a periodic signal."""
     if transformer_fit_on_data == "in-sample-less-than-sample":
         # Re-compose 14-days worth of data within, but not spanning the entire sample
         delta = datetime.timedelta(days=-3 * seasonal_period)
@@ -59,6 +60,10 @@ def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_tes
         # Re-compose 14-days worth of data both out of sample and in the
         # past.
         delta = datetime.timedelta(days=-12 * seasonal_period)
+    elif transformer_fit_on_data == "partially-out-of-sample-in-past":
+        # Re-compose 14-days worth of data partially out of sample and in the
+        # past.
+        delta = datetime.timedelta(days=-6 * seasonal_period)
 
     new_index = pd.date_range(
         subset_y.index[-1] + delta,
@@ -157,6 +162,7 @@ def test_stl_fit_transform_in_sample(
         "wholly-out-of-sample-no-gap",
         "partially-out-of-sample",
         "out-of-sample-in-past",
+        "partially-out-of-sample-in-past",
     ],
 )
 def test_stl_decomposer_fit_transform_out_of_sample(
@@ -170,8 +176,8 @@ def test_stl_decomposer_fit_transform_out_of_sample(
         freq_str="D",
         set_time_index=True,
     )
-    subset_X = X[: 5 * seasonal_period]
-    subset_y = y[: 5 * seasonal_period]
+    subset_X = X[2 * seasonal_period : 7 * seasonal_period]
+    subset_y = y[2 * seasonal_period : 7 * seasonal_period]
 
     decomposer = STLDecomposer(seasonal_period=seasonal_period)
     decomposer.fit(subset_X, subset_y)
@@ -194,6 +200,7 @@ def test_stl_decomposer_fit_transform_out_of_sample(
         )
         if transformer_fit_on_data in [
             "out-of-sample-in-past",
+            "partially-out-of-sample-in-past",
         ]:
             with pytest.raises(
                 ValueError,

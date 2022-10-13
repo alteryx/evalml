@@ -65,7 +65,7 @@ class STLDecomposer(Decomposer):
 
     def _check_oos_past(self, y):
         """Function to check whether provided target data is out-of-sample and in the past."""
-        if y.index[-1] < self.trend.index[0]:
+        if y.index[0] < self.trend.index[0]:
             raise ValueError(
                 f"STLDecomposer cannot transform/inverse transform data out of sample and before the data used"
                 f"to fit the decomposer."
