@@ -253,6 +253,7 @@ def _partial_dependence_calculation(pipeline, grid, features, X):
                 part_dep_column,
                 logical_type=X_eval.ww.logical_types[variable],
             )
+
         pred = prediction_method(X_eval)
 
         predictions.append(pred)
