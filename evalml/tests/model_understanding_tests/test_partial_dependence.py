@@ -2221,3 +2221,31 @@ def test_partial_dependence_jupyter_graph_check(
         )
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
+
+
+def test_partial_dependence_after_dropped_feature(X_y_categorical_regression):
+    X, y = X_y_categorical_regression
+
+    pipeline = RegressionPipeline(
+        [
+            "Imputer",
+            "One Hot Encoder",
+            "RF Regressor Select From Model",
+            "Random Forest Regressor",
+        ],
+    )
+    pipeline.fit(X, y)
+    # set_trace()
+
+    # --> broken with "day" and "time" bc they're dropped or have dropped values
+    # --> works with "total_bill" bc it's not dropped
+    old_part_dep = partial_dependence(pipeline, X, features="day")
+    new_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features="day",
+        use_new=True,
+        y=y,
+    )
+
+    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
