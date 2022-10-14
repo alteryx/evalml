@@ -4,6 +4,8 @@ Implementation borrows from sklearn "brute" calculation but with our
 own modification to better handle mixed data types in the grid
 as well as EvalML pipelines.
 """
+from pdb import set_trace
+
 import numpy as np
 import pandas as pd
 import woodwork as ww
@@ -309,6 +311,13 @@ def _partial_dependence_calculation_2(pipeline, grid, features, X, y):
     else:
         prediction_method = estimator.predict_proba
 
+    # Create a fit pipeline for each feature
+    cloned_feature_pipelines = {}
+    for variable in features:
+        pipeline_copy = pipeline.clone()
+        pipeline_copy.fit(X.ww[[variable]], y)
+        cloned_feature_pipelines[variable] = pipeline_copy
+
     for _, new_values in grid.iterrows():
         for i, variable in enumerate(features):
             part_dep_column = pd.Series(
@@ -322,9 +331,8 @@ def _partial_dependence_calculation_2(pipeline, grid, features, X, y):
             )
 
             # Take the changed column and send it through transform by itself
-            pipeline_copy = pipeline.clone()
+            pipeline_copy = cloned_feature_pipelines[variable]
 
-            pipeline_copy.fit(X.ww[[variable]], y)
             X_t_single_col = pipeline_copy.transform_all_but_final(changed_col_df)
 
             cols_to_replace = pipeline._get_feature_provenance().get(variable) or [

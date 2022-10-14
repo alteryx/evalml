@@ -1,4 +1,5 @@
 import re
+import timeit
 from pdb import set_trace
 from unittest.mock import patch
 
@@ -830,6 +831,47 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
     assert len(ind_preds) == 5
     for ind_df in ind_preds:
         assert ind_df.shape == (2, 3)
+
+
+@pytest.mark.parametrize(
+    "problem_type",
+    [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
+)
+def test_random_forests_optimized(
+    problem_type,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
+):
+    component_graph = ["Imputer", "One Hot Encoder", "Random Forest Classifier"]
+    if problem_type == ProblemTypes.REGRESSION:
+        pipeline = RegressionPipeline(
+            component_graph=["Imputer", "One Hot Encoder", "Random Forest Regressor"],
+        )
+        X, y = X_y_regression
+    elif problem_type == ProblemTypes.BINARY:
+        pipeline = BinaryClassificationPipeline(
+            component_graph=["Imputer", "One Hot Encoder", "Random Forest Classifier"],
+        )
+        X, y = X_y_binary
+    elif problem_type == ProblemTypes.MULTICLASS:
+        pipeline = MulticlassClassificationPipeline(
+            component_graph=["Imputer", "One Hot Encoder", "Random Forest Classifier"],
+        )
+        X, y = X_y_multi
+
+        pipeline.fit(X, y)
+        old_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
+        new_part_dep = partial_dependence(
+            pipeline,
+            X,
+            features=0,
+            grid_resolution=5,
+            use_new=True,
+            y=y,
+        )
+
+        pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
