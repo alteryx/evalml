@@ -397,3 +397,47 @@ def test_arima_regressor_respects_use_covariates(mock_predict, mock_fit, ts_data
     assert "y" in mock_fit.call_args.kwargs
     mock_predict.assert_called_once()
     assert "X" not in mock_predict.call_args.kwargs
+
+
+def test_arima_regressor_prediction_intervals(ts_data):
+    X_train, X_test, y_train = ts_data()
+    clf = ARIMARegressor(use_covariates=False)
+
+    clf.fit(X_train, y_train)
+    result = clf.predict(X_test)
+    result_95 = clf.get_prediction_intervals(X_test)
+
+    conf_ints = list(result_95.keys())
+    data = list(result_95.values())
+
+    mean_preds = pd.concat((data[0], data[1]), axis=1).mean(axis=1)
+
+    pd.testing.assert_series_equal(result, mean_preds)
+    pd.testing.assert_series_equal(clf.preds_95_lower, data[0])
+    pd.testing.assert_series_equal(clf.preds_95_upper, data[1])
+    assert len(conf_ints) == 2
+    assert len(data) == 2
+    assert conf_ints[0] == "0.95_lower"
+    assert conf_ints[1] == "0.95_upper"
+
+    coverages = [0.95, 0.90, 0.85]
+    results_coverage = clf.get_prediction_intervals(X_test, None, coverages)
+    predictions = clf.predict(X_test)
+
+    conf_ints = list(results_coverage.keys())
+    data = list(results_coverage.values())
+
+    assert len(conf_ints) == 6
+    assert len(data) == 6
+
+    for interval in coverages:
+        conf_int_lower = f"{interval}_lower"
+        conf_int_upper = f"{interval}_upper"
+
+        assert (results_coverage[conf_int_upper] > predictions).all()
+        assert (predictions > results_coverage[conf_int_lower]).all()
+        mean_preds = pd.concat(
+            (results_coverage[conf_int_lower], results_coverage[conf_int_upper]),
+            axis=1,
+        ).mean(axis=1)
+        pd.testing.assert_series_equal(mean_preds, predictions)
