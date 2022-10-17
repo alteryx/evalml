@@ -223,7 +223,7 @@ class Decomposer(Transformer):
 
     def _choose_proper_index(self, y):
         # TODO: Need to update this after we upgrade to Pandas 1.5+ and Int64Index is deprecated.
-        if isinstance(y.index, Int64Index):
+        if isinstance(y.index, (Int64Index, pd.RangeIndex)):
             index = self.original_index
         elif isinstance(y.index, pd.DatetimeIndex):
             index = self.trend.index

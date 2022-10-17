@@ -209,6 +209,7 @@ class STLDecomposer(Decomposer):
         """
         if y is None:
             return X, y
+        original_index = y.index
         X, y = self._check_target(X, y)
 
         self._check_oos_past(y)
@@ -240,8 +241,9 @@ class STLDecomposer(Decomposer):
                     index=truncated_y.index,
                 ),
             )
-
-        return X, y_in_sample.append(y_out_of_sample)
+        y_t = y_in_sample.append(y_out_of_sample)
+        y_t.index = original_index
+        return X, y_t
 
     def inverse_transform(self, y_t: pd.Series) -> tuple[pd.DataFrame, pd.Series]:
         """Adds back fitted trend and seasonality to target variable.
@@ -261,6 +263,7 @@ class STLDecomposer(Decomposer):
         """
         if y_t is None:
             raise ValueError("y_t cannot be None for Decomposer!")
+        original_index = y_t.index
 
         y_t = infer_feature_types(y_t)
         self._check_oos_past(y_t)
@@ -271,14 +274,24 @@ class STLDecomposer(Decomposer):
         y_out_of_sample = pd.Series([])
 
         # For partially and wholly in-sample data, retrieve stored results.
-        if self.trend.index[0] <= y_t.index[0] <= self.trend.index[-1]:
+        if index[0] <= y_t.index[0] <= index[-1]:
             left_index = y_t.index[0]
-            right_index = y_t.index[-1]
-            y_in_sample = (
-                y_t
-                + self.trend[left_index:right_index]
-                + self.seasonal[left_index:right_index]
+            right_index = (
+                y_t.index[-1] + 1
+                if isinstance(y_t.index, (Int64Index, pd.RangeIndex))
+                else y_t.index[-1] + 1 * y_t.index.freq
             )
+            trend = (
+                self.trend[left_index:right_index].reset_index(drop=True)
+                if isinstance(y_t.index, (Int64Index, pd.RangeIndex))
+                else self.trend[left_index:right_index]
+            )
+            seasonal = (
+                self.seasonal[left_index:right_index].reset_index(drop=True)
+                if isinstance(y_t.index, (Int64Index, pd.RangeIndex))
+                else self.seasonal[left_index:right_index]
+            )
+            y_in_sample = y_t + trend + seasonal
             y_in_sample = y_in_sample.dropna()
 
         # For out of sample data....
@@ -300,7 +313,9 @@ class STLDecomposer(Decomposer):
                     index=truncated_y_t.index,
                 ),
             )
-        return y_in_sample.append(y_out_of_sample)
+        y = y_in_sample.append(y_out_of_sample)
+        y.index = original_index
+        return y
 
     def get_trend_dataframe(self, X, y):
         """Return a list of dataframes with 4 columns: signal, trend, seasonality, residual.

@@ -218,7 +218,7 @@ def test_decomposer_prefers_users_time_index(
             X_t, y_t = pdc.fit_transform(X, y)
     else:
         X_t, y_t = pdc.fit_transform(X, y)
-        assert all(y_t.index.values == expected_values)
+        assert all(pdc.trend.index.values == expected_values)
 
 
 @pytest.mark.parametrize(
