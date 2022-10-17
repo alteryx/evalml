@@ -396,3 +396,27 @@ def test_stl_decomposer_get_trend_dataframe_sets_time_index_internally(
     assert isinstance(result_dfs, list)
     assert all(isinstance(x, pd.DataFrame) for x in result_dfs)
     assert all(get_trend_dataframe_format_correct(x) for x in result_dfs)
+
+
+def test_stl_decomposer_doesnt_modify_target_index(
+    generate_seasonal_data,
+):
+
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+        period=7,
+        set_time_index=False,
+    )
+    original_X_index = X.index
+    original_y_index = y.index
+
+    stl = STLDecomposer()
+    stl.fit(X, y)
+    pd.testing.assert_index_equal(X.index, original_X_index)
+    pd.testing.assert_index_equal(y.index, original_y_index)
+
+    X_t, y_t = stl.transform(X, y)
+    pd.testing.assert_index_equal(X_t.index, original_X_index)
+    pd.testing.assert_index_equal(y_t.index, original_y_index)
+
+    y_new = stl.inverse_transform(y_t)
+    pd.testing.assert_index_equal(y_new.index, original_y_index)
