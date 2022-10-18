@@ -81,7 +81,7 @@ class Decomposer(Transformer):
         # If user's provided time_index doesn't exist, log it and find some datetimes to use
         elif (self.time_index is None) or self.time_index not in dt_df.columns:
             self.logger.warning(
-                f"PolynomialDecomposer could not find requested time_index {self.time_index}",
+                f"Decomposer could not find requested time_index {self.time_index}",
             )
             # Use the feature data's index, preferentially
             num_datetime_features = dt_df.ww.select("Datetime").shape[1]
@@ -230,7 +230,7 @@ class Decomposer(Transformer):
             index = self.trend.index
         else:
             raise ValueError(
-                f"STLDecomposer doesn't support target data with index of type ({type(y.index)})",
+                f"Decomposer doesn't support target data with index of type ({type(y.index)})",
             )
         return index
 
@@ -264,7 +264,7 @@ class Decomposer(Transformer):
         if isinstance(y.index, pd.DatetimeIndex):
             delta = pd.to_timedelta(1, frequency)
             period = pd.to_timedelta(periodicity, frequency)
-        elif isinstance(y.index, Int64Index):
+        elif isinstance(y.index, (Int64Index, pd.RangeIndex)):
             delta = 1
             period = periodicity
 

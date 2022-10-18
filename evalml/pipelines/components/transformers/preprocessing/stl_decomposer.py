@@ -72,8 +72,8 @@ class STLDecomposer(Decomposer):
             raise ValueError(
                 f"STLDecomposer cannot transform/inverse transform data out of sample and before the data used"
                 f"to fit the decomposer."
-                f"\nRequested date range: {str(y.index[0])}:{str(y.index[-1])}."
-                f"\nSample date range: {str(index[0])}:{str(index[-1])}.",
+                f"\nRequested range: {str(y.index[0])}:{str(y.index[-1])}."
+                f"\nSample range: {str(index[0])}:{str(index[-1])}.",
             )
 
     def _project_trend(self, y):
@@ -131,8 +131,6 @@ class STLDecomposer(Decomposer):
             self.seasonal_period,
             self.frequency,
         )
-        pd.testing.assert_index_equal(y.index, projected_seasonality.index)
-        pd.testing.assert_index_equal(y.index, projected_trend.index)
         return projected_trend, projected_seasonality
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> STLDecomposer:
@@ -319,9 +317,6 @@ class STLDecomposer(Decomposer):
 
     def get_trend_dataframe(self, X, y):
         """Return a list of dataframes with 4 columns: signal, trend, seasonality, residual.
-
-        Scikit-learn's PolynomialForecaster is used to generate the trend portion of the target data. statsmodel's
-        seasonal_decompose is used to generate the seasonality of the data.
 
         Args:
             X (pd.DataFrame): Input data with time series data in index.
