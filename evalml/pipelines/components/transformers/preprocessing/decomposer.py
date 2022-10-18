@@ -20,6 +20,10 @@ class Decomposer(Transformer):
         parameters (dict): Dictionary of parameters to pass to component object.
         component_obj (class) : Instance of a detrender/deseasonalizer class.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+        degree (int) : Currently the degree of the PolynomialDecomposer, not used for STLDecomposer.
+        seasonal_period (int) : The best guess, in units, for the period of the seasonal signal.
+        time_index (str) : The column name of the feature matrix (X) that the datetime information
+            should be pulled from.
     """
 
     name = "Decomposer"
@@ -56,7 +60,7 @@ class Decomposer(Transformer):
             **kwargs,
         )
 
-    def _raise_typeerror_if_not_int(self, var_name: str, var_value: str):
+    def _raise_typeerror_if_not_int(self, var_name: str, var_value):
         if not isinstance(var_value, int):
             if isinstance(var_value, float) and var_value.is_integer():
                 var_value = int(var_value)

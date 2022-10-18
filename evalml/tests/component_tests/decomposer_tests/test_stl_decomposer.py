@@ -102,7 +102,7 @@ def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_tes
     ],
 )
 @pytest.mark.parametrize("trend_degree", [1, 2, 3])
-@pytest.mark.parametrize("synthetic_data", ["synthetic"])  # , "real"])
+@pytest.mark.parametrize("synthetic_data", ["synthetic"])
 def test_stl_fit_transform_in_sample(
     period,
     freq,
