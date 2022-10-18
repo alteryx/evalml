@@ -114,7 +114,7 @@ class STLDecomposer(Decomposer):
         return projected_trend, projected_seasonality
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> STLDecomposer:
-        """Fits the PolynomialDecomposer and determine the seasonal signal.
+        """Fits the STLDecomposer and determine the seasonal signal.
 
         Instantiates a statsmodels STL decompose object with the component's stored
         parameters and fits it.  Since the statsmodels object does not fit the sklearn
@@ -167,7 +167,7 @@ class STLDecomposer(Decomposer):
         X: pd.DataFrame,
         y: pd.Series = None,
     ) -> tuple[pd.DataFrame, pd.Series]:
-        """Transforms the target data by removing the polynomial trend and rolling average seasonality.
+        """Transforms the target data by removing the STL trend and seasonality.
 
         Uses an ARIMA model to project forward the addititve trend and removes it. Then, utilizes the first period's
         worth of seasonal data determined in the .fit() function to extrapolate the seasonal signal of the data to be
