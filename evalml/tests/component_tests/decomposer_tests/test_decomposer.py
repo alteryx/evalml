@@ -463,3 +463,21 @@ def test_stl_decomposer_raises_value_error_target_is_none(
 
     with pytest.raises(ValueError, match="cannot be None for Decomposer!"):
         dec.inverse_transform(None)
+
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    decomposer_list,
+)
+def test_decomposer_bad_target_index(
+    decomposer_child_class,
+    ts_data,
+):
+    X, _, y = ts_data()
+    dec = decomposer_child_class()
+    y.index = pd.CategoricalIndex(["cat_index" for x in range(len(y))])
+    with pytest.raises(
+        ValueError,
+        match="doesn't support target data with index of type",
+    ):
+        dec._choose_proper_index(y)
