@@ -120,8 +120,9 @@ class STLDecomposer(Decomposer):
         # integer indices and we know the forecast length will match the requested
         # transform data length.
         else:
-            forecast.index = y.index
-            return forecast
+            fore = forecast[-len(y) :]
+            fore.index = y.index
+            return fore
 
     def _project_trend_and_seasonality(self, y):
         """Function to project both trend and seasonality forward into the future."""
@@ -133,6 +134,8 @@ class STLDecomposer(Decomposer):
             self.seasonal_period,
             self.frequency,
         )
+        pd.testing.assert_index_equal(y.index, projected_seasonality.index)
+        pd.testing.assert_index_equal(y.index, projected_trend.index)
         return projected_trend, projected_seasonality
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> STLDecomposer:
@@ -282,12 +285,12 @@ class STLDecomposer(Decomposer):
                 else y_t.index[-1] + 1 * y_t.index.freq
             )
             trend = (
-                self.trend[left_index:right_index].reset_index(drop=True)
+                self.trend.reset_index(drop=True)[left_index:right_index]
                 if isinstance(y_t.index, (Int64Index, pd.RangeIndex))
                 else self.trend[left_index:right_index]
             )
             seasonal = (
-                self.seasonal[left_index:right_index].reset_index(drop=True)
+                self.seasonal.reset_index(drop=True)[left_index:right_index]
                 if isinstance(y_t.index, (Int64Index, pd.RangeIndex))
                 else self.seasonal[left_index:right_index]
             )
