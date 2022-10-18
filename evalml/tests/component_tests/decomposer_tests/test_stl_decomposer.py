@@ -444,7 +444,6 @@ def test_unsupported_frequencies(
 
 
 def test_stl_decomposer_doesnt_modify_target_index(
-    index_type,
     generate_seasonal_data,
 ):
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
