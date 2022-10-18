@@ -44,6 +44,7 @@ class ProphetRegressor(Estimator):
         seasonality_mode="additive",
         random_seed=0,
         stan_backend="CMDSTANPY",
+        interval_width=0.95,
         **kwargs,
     ):
         parameters = {
@@ -52,6 +53,7 @@ class ProphetRegressor(Estimator):
             "holidays_prior_scale": holidays_prior_scale,
             "seasonality_mode": seasonality_mode,
             "stan_backend": stan_backend,
+            "interval_width": interval_width,
         }
 
         parameters.update(kwargs)
@@ -143,6 +145,27 @@ class ProphetRegressor(Estimator):
         predictions.index = X.index
 
         return predictions
+
+    def get_prediction_intervals(self, X, y=None, coverage=None):
+        if coverage is None:
+            coverage = 0.95
+        self._component_obj.interval_width = coverage
+        X = infer_feature_types(X)
+
+        prophet_df = ProphetRegressor.build_prophet_df(
+            X=X,
+            y=y,
+            time_index=self.time_index,
+        )
+        prediction_interval_result = {}
+        prophet_output = self._component_obj.predict(prophet_df)
+        prediction_interval_lower = prophet_output["yhat_lower"]
+        prediction_interval_upper = prophet_output["yhat_upper"]
+        prediction_interval_lower.index = X.index
+        prediction_interval_upper.index = X.index
+        prediction_interval_result[f"{coverage}_lower"] = prediction_interval_lower
+        prediction_interval_result[f"{coverage}_upper"] = prediction_interval_upper
+        return prediction_interval_result
 
     def get_params(self):
         """Get parameters for the Prophet regressor."""
