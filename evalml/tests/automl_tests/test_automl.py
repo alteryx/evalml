@@ -2295,38 +2295,6 @@ def test_time_series_regression_with_parameters(ts_data):
     )
 
 
-def test_time_series_regression_with_decomposer(ts_data):
-
-    target = "OlympicGames_pageviews"
-    time_index = "Date"
-
-    data = pd.read_csv("~/Downloads/OlympicGames_Daily_PageViews.csv")
-    # data.index = pd.DatetimeIndex(data[time_index], freq='D')
-    # data.index.name = None
-
-    X = data.drop(target, axis=1)
-    y = data[target]
-
-    X_train, X_holdout, y_train, y_holdout = split_data(
-        X,
-        y,
-        problem_type="time series regression",
-    )
-    problem_config = {
-        "time_index": time_index,
-        "gap": 0,
-        "max_delay": 50,
-        "forecast_horizon": 1,
-    }
-    automl = AutoMLSearch(
-        X_train,
-        y_train,
-        problem_type="time series regression",
-        problem_configuration=problem_config,
-    )
-    automl.search()
-
-
 @pytest.mark.parametrize("graph_type", ["dict", "cg"])
 def test_automl_accepts_component_graphs(graph_type, X_y_binary):
     X, y = X_y_binary
