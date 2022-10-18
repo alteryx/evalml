@@ -223,6 +223,13 @@ def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_nam
     return components
 
 
+def _get_decomposer(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+    if is_time_series(problem_type):
+        components.append(STLDecomposer)
+    return components
+
+
 def _get_drop_nan_rows_transformer(
     X,
     y,
@@ -270,6 +277,7 @@ def _get_preprocessing_components(
             _get_email,
             _get_natural_language,
             _get_imputer,
+            _get_decomposer,
             _get_time_series_featurizer,
             _get_datetime,
             _get_ohe,
