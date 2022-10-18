@@ -98,9 +98,6 @@ class STLDecomposer(Decomposer):
         elif isinstance(y.index, Int64Index):
             units_forward = int(y.index[-1] - index[-1])
 
-        # TODO: Need to have a datetime index on the series going into STLForecast.  Might have to
-        # recreate it on the fly.
-
         # Model the trend and project it forward
         stlf = STLForecast(
             self.trend,

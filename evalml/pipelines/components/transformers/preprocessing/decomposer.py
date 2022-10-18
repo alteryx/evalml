@@ -222,6 +222,7 @@ class Decomposer(Transformer):
         self.parameters["seasonal_period"] = self.seasonal_period
 
     def _choose_proper_index(self, y):
+        """Function that provides support for targets with integer and datetime indices."""
         # TODO: Need to update this after we upgrade to Pandas 1.5+ and Int64Index is deprecated.
         if isinstance(y.index, (Int64Index, pd.RangeIndex)):
             index = self.original_index
