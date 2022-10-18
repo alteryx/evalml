@@ -6,7 +6,7 @@ import logging
 import pandas as pd
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.forecasting.stl import STLForecast
-from statsmodels.tsa.seasonal import STL as STL
+from statsmodels.tsa.seasonal import STL
 
 from evalml.pipelines.components.transformers.preprocessing.decomposer import Decomposer
 from evalml.utils import infer_feature_types
