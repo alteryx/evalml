@@ -111,7 +111,6 @@ def test_partial_dependence_optimized_problem_types(
         features=0,
         grid_resolution=5,
         use_new=True,
-        y=y,
     )
 
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
@@ -144,7 +143,6 @@ def test_partial_dependence_string_feature_name(
         features="mean radius",
         grid_resolution=5,
         use_new=True,
-        y=y,
     )
 
     pd.testing.assert_frame_equal(part_dep, new_part_dep)
@@ -208,7 +206,6 @@ def test_partial_dependence_transform_X_fully_ahead_regression(
         X,
         features="also numeric",
         use_new=True,
-        y=y,
     )
 
     pd.testing.assert_frame_equal(old_pd_results, new_pd_results)
@@ -233,7 +230,6 @@ def test_partial_dependence_optimization_catboost(X_y_binary):
         features=0,
         grid_resolution=5,
         use_new=True,
-        y=y,
     )
 
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
@@ -258,7 +254,6 @@ def test_partial_dependence_optimization_catboost(X_y_binary):
         X,
         features="string",
         use_new=True,
-        y=y_small,
     )
 
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
@@ -307,7 +302,6 @@ def test_partial_dependence_with_ww_category_columns(
         X,
         features="store_id",
         use_new=True,
-        y=y,
     )
     pd.testing.assert_frame_equal(part_dep, new_part_dep)
 
@@ -344,7 +338,6 @@ def test_partial_dependence_with_ww_category_columns(
         X,
         features="region",
         use_new=True,
-        y=y,
     )
     pd.testing.assert_frame_equal(part_dep, new_part_dep)
 
@@ -501,7 +494,6 @@ def test_partial_dependence_xgboost_feature_names(
         features="<[0]",
         grid_resolution=5,
         use_new=True,
-        y=y,
     )
     pd.testing.assert_frame_equal(part_dep, new_part_dep)
 
@@ -515,7 +507,6 @@ def test_partial_dependence_xgboost_feature_names(
         features=1,
         grid_resolution=5,
         use_new=True,
-        y=y,
     )
     pd.testing.assert_frame_equal(part_dep, new_part_dep)
 
@@ -551,7 +542,6 @@ def test_partial_dependence_multiclass_ah(
         features="magnesium",
         grid_resolution=grid_resolution,
         use_new=True,
-        y=y,
     )
     pd.testing.assert_frame_equal(one_way_part_dep, new_part_dep)
 
@@ -573,7 +563,6 @@ def test_partial_dependence_multiclass_ah(
         features=("magnesium", "alcohol"),
         grid_resolution=grid_resolution,
         use_new=True,
-        y=y,
     )
     pd.testing.assert_frame_equal(two_way_part_dep, new_part_dep)
 
@@ -604,7 +593,6 @@ def test_partial_dependence_multiclass_ah(
         grid_resolution=grid_resolution,
         kind="both",
         use_new=True,
-        y=y,
     )
     pd.testing.assert_frame_equal(two_way_part_dep, new_part_dep)
     for i, ice_df in enumerate(two_way_ice_data):
@@ -868,7 +856,6 @@ def test_random_forests_optimized(
             features=0,
             grid_resolution=5,
             use_new=True,
-            y=y,
         )
 
         pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
@@ -2245,7 +2232,6 @@ def test_partial_dependence_after_dropped_feature(X_y_categorical_regression):
         X,
         features="day",
         use_new=True,
-        y=y,
     )
 
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)

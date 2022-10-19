@@ -35,7 +35,6 @@ def partial_dependence(
     grid_resolution=100,
     kind="average",
     use_new=False,
-    y=None,
 ):
     """Calculates one or two-way partial dependence.
 
@@ -205,7 +204,6 @@ def partial_dependence(
                 kind=kind,
                 custom_range=custom_range,
                 use_new=use_new,
-                y=y,
             )
         except ValueError as e:
             if "percentiles are too close to each other" in str(e):

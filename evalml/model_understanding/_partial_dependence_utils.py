@@ -12,7 +12,7 @@ import woodwork as ww
 from scipy.stats.mstats import mquantiles
 
 from evalml.exceptions import PartialDependenceError, PartialDependenceErrorCode
-from evalml.problem_types import is_regression
+from evalml.problem_types import is_binary, is_regression
 
 
 def _add_ice_plot(_go, fig, ice_data, label=None, row=None, col=None):
@@ -285,7 +285,7 @@ def _partial_dependence_calculation(pipeline, grid, features, X):
     return averaged_predictions, predictions
 
 
-def _partial_dependence_calculation_2(pipeline, grid, features, X, y):
+def _partial_dependence_calculation_2(pipeline, grid, features, X):
     """Do the partial dependence calculation once the grid is computed.
 
     Args:
@@ -306,16 +306,23 @@ def _partial_dependence_calculation_2(pipeline, grid, features, X, y):
     X_t = pipeline.transform_all_but_final(X_eval)
     estimator = pipeline.estimator
 
+    len_X = len(X)
     if is_regression(pipeline.problem_type):
         prediction_method = estimator.predict
+        # --> might want to use random seed here, though the mocked y shouldn't have an impact on PD
+        mock_y = pd.Series(np.random.randint(0, 10, len_X))
+    elif is_binary(pipeline.problem_type):
+        prediction_method = estimator.predict_proba
+        mock_y = pd.Series(np.random.choice([True, False], size=len_X))
     else:
         prediction_method = estimator.predict_proba
+        mock_y = pd.Series(np.random.choice([0, 1, 2], size=len_X))
 
     # Create a fit pipeline for each feature
     cloned_feature_pipelines = {}
     for variable in features:
         pipeline_copy = pipeline.clone()
-        pipeline_copy.fit(X.ww[[variable]], y)
+        pipeline_copy.fit(X.ww[[variable]], mock_y)
         cloned_feature_pipelines[variable] = pipeline_copy
 
     for _, new_values in grid.iterrows():
@@ -378,7 +385,6 @@ def _partial_dependence(
     kind="average",
     custom_range=None,
     use_new=False,
-    y=None,
 ):
     """Compute the partial dependence for features of X.
 
@@ -424,7 +430,6 @@ def _partial_dependence(
             grid,
             features,
             X,
-            y,
         )
     else:
         averaged_predictions, predictions = _partial_dependence_calculation(
