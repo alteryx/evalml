@@ -25,6 +25,7 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     ReplaceNullableTypes,
     StandardScaler,
+    STLDecomposer,
     TargetImputer,
     TimeSeriesFeaturizer,
     Transformer,
@@ -119,7 +120,7 @@ def test_make_pipeline(
                 ohe = [OneHotEncoder]
             else:
                 ohe = []
-
+            decomposer = [STLDecomposer]
             datetime = (
                 [DateTimeFeaturizer]
                 if estimator_class.model_family
@@ -159,6 +160,7 @@ def test_make_pipeline(
                     + natural_language_featurizer
                     + imputer
                     + delayed_features
+                    + decomposer
                     + datetime
                     + ohe
                     + drop_nan_rows_transformer
