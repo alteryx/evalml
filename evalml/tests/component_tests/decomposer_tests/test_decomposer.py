@@ -38,6 +38,21 @@ def test_set_time_index(decomposer_child_class):
     "decomposer_child_class",
     decomposer_list,
 )
+def test_decomposer_init_raises_error_if_degree_not_int(decomposer_child_class):
+
+    with pytest.raises(TypeError, match="Received str"):
+        decomposer_child_class(degree="1")
+
+    with pytest.raises(TypeError, match="Received float"):
+        decomposer_child_class(degree=3.4)
+
+    decomposer_child_class(degree=3.0)
+
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    decomposer_list,
+)
 @pytest.mark.parametrize(
     "y_has_time_index",
     ["y_has_time_index", "y_doesnt_have_time_index"],

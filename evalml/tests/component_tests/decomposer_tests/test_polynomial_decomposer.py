@@ -18,17 +18,6 @@ def test_polynomial_decomposer_init():
     }
 
 
-def test_polynomial_decomposer_init_raises_error_if_degree_not_int():
-
-    with pytest.raises(TypeError, match="Received str"):
-        PolynomialDecomposer(degree="1")
-
-    with pytest.raises(TypeError, match="Received float"):
-        PolynomialDecomposer(degree=3.4)
-
-    PolynomialDecomposer(degree=3.0)
-
-
 def test_polynomial_decomposer_transform_returns_same_when_y_none(
     ts_data,
 ):

@@ -18,17 +18,6 @@ def test_stl_decomposer_init():
     }
 
 
-def test_stl_decomposer_init_raises_error_if_degree_not_int():
-
-    with pytest.raises(TypeError, match="Received str"):
-        STLDecomposer(degree="1")
-
-    with pytest.raises(TypeError, match="Received float"):
-        STLDecomposer(degree=3.4)
-
-    STLDecomposer(degree=3.0)
-
-
 def test_stl_decomposer_auto_sets_seasonal_period_to_odd(ts_data):
     X, _, y = ts_data()
 
