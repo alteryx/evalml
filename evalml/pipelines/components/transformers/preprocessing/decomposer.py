@@ -254,17 +254,14 @@ class Decomposer(Transformer):
         index = self._choose_proper_index(y)
 
         # Determine where the seasonality starts
-        first_index_diff = y.index[0] - index[0]
-
         if isinstance(y.index, pd.DatetimeIndex):
-            delta = pd.to_timedelta(1, frequency)
-            period = pd.to_timedelta(periodicity, frequency)
+            transform_first_ind = (
+                len(pd.date_range(start=index[0], end=y.index[0], freq=frequency)) % 12
+                - 1
+            )
         elif isinstance(y.index, Int64Index):
-            delta = 1
-            period = periodicity
-
-        # Determine which index of the sample of seasonal data the transformed data starts at
-        transform_first_ind = int((first_index_diff % period) / delta)
+            first_index_diff = y.index[0] - index[0]
+            transform_first_ind = first_index_diff % periodicity
 
         # Cycle the sample of seasonal data so the transformed data's effective index is first
         rotated_seasonal_sample = np.roll(
