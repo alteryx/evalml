@@ -177,6 +177,7 @@ class STLDecomposer(Decomposer):
         stl = STL(y, seasonal=self.seasonal_period)
         res = stl.fit()
         self.seasonal = res.seasonal
+        self.seasonal_period = stl.period
         self.seasonality = self.seasonal[: self.seasonal_period]
         self.trend = res.trend
         self.residual = res.resid
