@@ -7,25 +7,9 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
 from evalml.pipelines.components import STLDecomposer
-
-
-def test_stl_decomposer_init():
-    delayed_features = STLDecomposer(degree=3, time_index="dates")
-    assert delayed_features.parameters == {
-        "degree": 3,
-        "seasonal_period": 7,
-        "time_index": "dates",
-    }
-
-
-def test_stl_decomposer_auto_sets_seasonal_period_to_odd(ts_data):
-    X, _, y = ts_data()
-
-    stl = STLDecomposer(seasonal_period=3)
-    assert stl.seasonal_period == 3
-
-    stl = STLDecomposer(seasonal_period=4)
-    assert stl.seasonal_period == 5
+from evalml.tests.component_tests.decomposer_tests.test_decomposer import (
+    get_trend_dataframe_format_correct,
+)
 
 
 def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_test):
@@ -76,6 +60,25 @@ def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_tes
             new_index,
         )
     return y_t_new
+
+
+def test_stl_decomposer_init():
+    delayed_features = STLDecomposer(degree=3, time_index="dates")
+    assert delayed_features.parameters == {
+        "degree": 3,
+        "seasonal_period": 7,
+        "time_index": "dates",
+    }
+
+
+def test_stl_decomposer_auto_sets_seasonal_period_to_odd(ts_data):
+    X, _, y = ts_data()
+
+    stl = STLDecomposer(seasonal_period=3)
+    assert stl.seasonal_period == 3
+
+    stl = STLDecomposer(seasonal_period=4)
+    assert stl.seasonal_period == 5
 
 
 @pytest.mark.parametrize(
@@ -306,8 +309,6 @@ def test_stl_decomposer_get_trend_dataframe(
     fit_before_decompose,
     variateness,
 ):
-    def get_trend_dataframe_format_correct(df):
-        return set(df.columns) == {"signal", "trend", "seasonality", "residual"}
 
     seasonal_period = 7
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
@@ -383,8 +384,6 @@ def test_stl_decomposer_get_trend_dataframe(
 def test_stl_decomposer_get_trend_dataframe_sets_time_index_internally(
     generate_seasonal_data,
 ):
-    def get_trend_dataframe_format_correct(df):
-        return set(df.columns) == {"signal", "trend", "seasonality", "residual"}
 
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
         period=7,

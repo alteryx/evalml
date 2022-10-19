@@ -7,6 +7,9 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
 from evalml.pipelines.components import PolynomialDecomposer
+from evalml.tests.component_tests.decomposer_tests.test_decomposer import (
+    get_trend_dataframe_format_correct,
+)
 
 
 def test_polynomial_decomposer_init():
@@ -16,16 +19,6 @@ def test_polynomial_decomposer_init():
         "seasonal_period": -1,
         "time_index": "dates",
     }
-
-
-def test_polynomial_decomposer_transform_returns_same_when_y_none(
-    ts_data,
-):
-    X, _, y = ts_data()
-    pdc = PolynomialDecomposer().fit(X, y)
-    X_t, y_t = pdc.transform(X, None)
-    pd.testing.assert_frame_equal(X, X_t)
-    assert y_t is None
 
 
 @pytest.mark.parametrize("index_type", ["datetime", "integer"])
@@ -70,6 +63,16 @@ def test_polynomial_decomposer_fit_transform(
 
     # Verify the X is not changed
     pd.testing.assert_frame_equal(X, output_X)
+
+
+@pytest.mark.parametrize("degree", [1, 2, 3])
+def test_polynomial_decomposer_inverse_transform(degree, ts_data):
+    X, _, y = ts_data()
+
+    decomposer = PolynomialDecomposer(degree=degree)
+    output_X, output_y = decomposer.fit_transform(X, y)
+    output_inverse_y = decomposer.inverse_transform(output_y)
+    pd.testing.assert_series_equal(y, output_inverse_y, check_dtype=False)
 
 
 @pytest.mark.parametrize(
@@ -121,9 +124,6 @@ def test_polynomial_decomposer_get_trend_dataframe(
         y = pd.concat([y, y], axis=1)
     result_dfs = pdt.get_trend_dataframe(X, y)
 
-    def get_trend_dataframe_format_correct(df):
-        return set(df.columns) == {"signal", "trend", "seasonality", "residual"}
-
     def get_trend_dataframe_values_correct(df, y):
         np.testing.assert_array_almost_equal(
             (df["trend"] + df["seasonality"] + df["residual"]).values,
@@ -142,16 +142,6 @@ def test_polynomial_decomposer_get_trend_dataframe(
             get_trend_dataframe_values_correct(x, y[idx])
             for idx, x in enumerate(result_dfs)
         ]
-
-
-@pytest.mark.parametrize("degree", [1, 2, 3])
-def test_polynomial_decomposer_inverse_transform(degree, ts_data):
-    X, _, y = ts_data()
-
-    decomposer = PolynomialDecomposer(degree=degree)
-    output_X, output_y = decomposer.fit_transform(X, y)
-    output_inverse_y = decomposer.inverse_transform(output_y)
-    pd.testing.assert_series_equal(y, output_inverse_y, check_dtype=False)
 
 
 def test_polynomial_decomposer_needs_monotonic_index(ts_data):

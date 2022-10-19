@@ -16,6 +16,10 @@ from evalml.pipelines.components.transformers.preprocessing import (
 decomposer_list = [STLDecomposer, PolynomialDecomposer]
 
 
+def get_trend_dataframe_format_correct(df):
+    return set(df.columns) == {"signal", "trend", "seasonality", "residual"}
+
+
 @pytest.mark.parametrize(
     "decomposer_child_class",
     decomposer_list,
