@@ -1,8 +1,7 @@
-import datetime
-
 import numpy as np
 import pandas as pd
 import pytest
+from component_tests.decomposer_tests.test_decomposer import build_test_target
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
@@ -10,56 +9,6 @@ from evalml.pipelines.components import STLDecomposer
 from evalml.tests.component_tests.decomposer_tests.test_decomposer import (
     get_trend_dataframe_format_correct,
 )
-
-
-def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_test):
-    """Function to build a sample target.  Based on subset_y being daily data containing 5 periods of a periodic signal."""
-    if transformer_fit_on_data == "in-sample-less-than-sample":
-        # Re-compose 14-days worth of data within, but not spanning the entire sample
-        delta = -3
-    if transformer_fit_on_data == "wholly-out-of-sample":
-        # Re-compose 14-days worth of data with a one period gap between end of
-        # fit data and start of data to inverse-transform
-        delta = seasonal_period
-    elif transformer_fit_on_data == "wholly-out-of-sample-no-gap":
-        # Re-compose 14-days worth of data with no gap between end of
-        # fit data and start of data to inverse-transform
-        delta = 1
-    elif transformer_fit_on_data == "partially-out-of-sample":
-        # Re-compose 14-days worth of data overlapping the in and out-of
-        # sample data.
-        delta = -1
-    elif transformer_fit_on_data == "out-of-sample-in-past":
-        # Re-compose 14-days worth of data both out of sample and in the
-        # past.
-        delta = -12
-    elif transformer_fit_on_data == "partially-out-of-sample-in-past":
-        # Re-compose 14-days worth of data partially out of sample and in the
-        # past.
-        delta = -6
-
-    if isinstance(subset_y.index, pd.DatetimeIndex):
-        delta = datetime.timedelta(days=delta * seasonal_period)
-
-        new_index = pd.date_range(
-            subset_y.index[-1] + delta,
-            periods=2 * seasonal_period,
-            freq="D",
-        )
-    else:
-        delta = delta * seasonal_period
-        new_index = np.arange(
-            subset_y.index[-1] + delta,
-            subset_y.index[-1] + delta + 2 * seasonal_period,
-        )
-
-    if to_test == "inverse_transform":
-        y_t_new = pd.Series(np.zeros(len(new_index))).set_axis(new_index)
-    elif to_test == "transform":
-        y_t_new = pd.Series(np.sin([x for x in range(len(new_index))])).set_axis(
-            new_index,
-        )
-    return y_t_new
 
 
 def test_stl_decomposer_init():

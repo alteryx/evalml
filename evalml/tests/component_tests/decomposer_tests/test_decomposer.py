@@ -1,5 +1,5 @@
 import itertools
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import matplotlib
 import numpy as np
@@ -527,3 +527,124 @@ def test_decomposer_bad_target_index(
         match="doesn't support target data with index of type",
     ):
         dec._choose_proper_index(y)
+
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    decomposer_list,
+)
+@pytest.mark.parametrize(
+    "transformer_fit_on_data",
+    [
+        "in-sample",
+        "in-sample-less-than-sample",
+        "wholly-out-of-sample",
+        "wholly-out-of-sample-no-gap",
+        "partially-out-of-sample",
+        "out-of-sample-in-past",
+        "partially-out-of-sample-in-past",
+    ],
+)
+def test_stl_decomposer_fit_transform_out_of_sample(
+    decomposer_child_class,
+    generate_seasonal_data,
+    transformer_fit_on_data,
+):
+    # Generate 10 periods (the default) of synthetic seasonal data
+    seasonal_period = 7
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+        period=seasonal_period,
+        freq_str="D",
+        set_time_index=True,
+    )
+    subset_X = X[2 * seasonal_period : 7 * seasonal_period]
+    subset_y = y[2 * seasonal_period : 7 * seasonal_period]
+
+    decomposer = decomposer_child_class(seasonal_period=seasonal_period)
+    decomposer.fit(subset_X, subset_y)
+
+    if transformer_fit_on_data == "in-sample":
+        output_X, output_y = decomposer.transform(subset_X, subset_y)
+        pd.testing.assert_series_equal(
+            pd.Series(np.zeros(len(output_y))).set_axis(subset_y.index),
+            output_y,
+            check_dtype=False,
+            check_names=False,
+            atol=0.2,
+        )
+
+    if transformer_fit_on_data != "in-sample":
+        y_new = build_test_target(
+            subset_y,
+            seasonal_period,
+            transformer_fit_on_data,
+            to_test="transform",
+        )
+        if transformer_fit_on_data in [
+            "out-of-sample-in-past",
+            "partially-out-of-sample-in-past",
+        ]:
+            with pytest.raises(
+                ValueError,
+                match="STLDecomposer cannot transform/inverse transform data out of sample",
+            ):
+                output_X, output_inverse_y = decomposer.transform(None, y_new)
+        else:
+            output_X, output_y_t = decomposer.transform(None, y[y_new.index])
+
+            pd.testing.assert_series_equal(
+                pd.Series(np.zeros(len(output_y_t))).set_axis(y_new.index),
+                output_y_t,
+                check_exact=False,
+                atol=5.0e-4,
+            )
+
+
+def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_test):
+    """Function to build a sample target.  Based on subset_y being daily data containing 5 periods of a periodic signal."""
+    if transformer_fit_on_data == "in-sample-less-than-sample":
+        # Re-compose 14-days worth of data within, but not spanning the entire sample
+        delta = -3
+    if transformer_fit_on_data == "wholly-out-of-sample":
+        # Re-compose 14-days worth of data with a one period gap between end of
+        # fit data and start of data to inverse-transform
+        delta = seasonal_period
+    elif transformer_fit_on_data == "wholly-out-of-sample-no-gap":
+        # Re-compose 14-days worth of data with no gap between end of
+        # fit data and start of data to inverse-transform
+        delta = 1
+    elif transformer_fit_on_data == "partially-out-of-sample":
+        # Re-compose 14-days worth of data overlapping the in and out-of
+        # sample data.
+        delta = -1
+    elif transformer_fit_on_data == "out-of-sample-in-past":
+        # Re-compose 14-days worth of data both out of sample and in the
+        # past.
+        delta = -12
+    elif transformer_fit_on_data == "partially-out-of-sample-in-past":
+        # Re-compose 14-days worth of data partially out of sample and in the
+        # past.
+        delta = -6
+
+    if isinstance(subset_y.index, pd.DatetimeIndex):
+        delta = timedelta(days=delta * seasonal_period)
+
+        new_index = pd.date_range(
+            subset_y.index[-1] + delta,
+            periods=2 * seasonal_period,
+            freq="D",
+        )
+    else:
+        delta = delta * seasonal_period
+        new_index = np.arange(
+            subset_y.index[-1] + delta,
+            subset_y.index[-1] + delta + 2 * seasonal_period,
+        )
+
+    if to_test == "inverse_transform":
+        y_t_new = pd.Series(np.zeros(len(new_index))).set_axis(new_index)
+    elif to_test == "transform":
+        y_t_new = pd.Series(np.sin([x for x in range(len(new_index))])).set_axis(
+            new_index,
+        )
+    return y_t_new
