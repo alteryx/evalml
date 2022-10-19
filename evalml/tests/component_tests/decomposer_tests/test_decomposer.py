@@ -335,6 +335,33 @@ def test_decomposer_get_trend_dataframe_raises_errors(
     "decomposer_child_class",
     decomposer_list,
 )
+@pytest.mark.parametrize(
+    "y_has_time_index",
+    ["y_has_time_index", "y_doesnt_have_time_index"],
+)
+def test_decomposer_plot_decomposition(
+    decomposer_child_class,
+    y_has_time_index,
+    generate_seasonal_data,
+):
+    step = 0.01
+    period = 9
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period, step)
+    if y_has_time_index == "y_has_time_index":
+        y = y.set_axis(X.index)
+
+    dec = decomposer_child_class(degree=1, seasonal_period=period)
+    dec.fit_transform(X, y)
+    fig, axs = dec.plot_decomposition(X, y, show=False)
+    assert isinstance(fig, matplotlib.pyplot.Figure)
+    assert isinstance(axs, np.ndarray)
+    assert all([isinstance(ax, matplotlib.pyplot.Axes) for ax in axs])
+
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    decomposer_list,
+)
 @pytest.mark.parametrize("period", [7, 30, 365])
 def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal_data):
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period)

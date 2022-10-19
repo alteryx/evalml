@@ -348,25 +348,3 @@ def test_polynomial_decomposer_uses_time_index(
             assert not isinstance(y.index, pd.DatetimeIndex)
         else:
             assert isinstance(y.index, pd.DatetimeIndex)
-
-
-@pytest.mark.parametrize(
-    "y_has_time_index",
-    ["y_has_time_index", "y_doesnt_have_time_index"],
-)
-def test_polynomial_decomposer_plot_decomposition(
-    y_has_time_index,
-    generate_seasonal_data,
-):
-    step = 0.01
-    period = 9
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period, step)
-    if y_has_time_index == "y_has_time_index":
-        y = y.set_axis(X.index)
-
-    pdc = PolynomialDecomposer(degree=1, seasonal_period=period)
-    pdc.fit_transform(X, y)
-    fig, axs = pdc.plot_decomposition(X, y, show=False)
-    assert isinstance(fig, matplotlib.pyplot.Figure)
-    assert isinstance(axs, np.ndarray)
-    assert all([isinstance(ax, matplotlib.pyplot.Axes) for ax in axs])
