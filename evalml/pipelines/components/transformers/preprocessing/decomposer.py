@@ -261,7 +261,8 @@ class Decomposer(Transformer):
         # Determine where the seasonality starts
         if isinstance(y.index, pd.DatetimeIndex):
             transform_first_ind = (
-                len(pd.date_range(start=index[0], end=y.index[0], freq=frequency)) % 12
+                len(pd.date_range(start=index[0], end=y.index[0], freq=frequency))
+                % periodicity
                 - 1
             )
         elif isinstance(y.index, (Int64Index, pd.RangeIndex)):
