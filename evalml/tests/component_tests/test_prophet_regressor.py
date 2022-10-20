@@ -140,11 +140,9 @@ def test_prophet_regressor_prediction_intervals(ts_data):
     assert (result_95["0.95_upper"] > y_pred).all()
     assert (y_pred > result_95["0.95_lower"]).all()
 
-    clf._component_obj.interval_width = 0.85
-
-    result_85 = clf.get_prediction_intervals(X_test)
+    result_85 = clf.get_prediction_intervals(X_test, coverage=0.85)
     assert clf._component_obj.interval_width == 0.85
     assert (result_95["0.95_upper"] > result_85["0.85_upper"]).all()
     assert (result_85["0.85_upper"] > y_pred).all()
-    assert (y_pred > result_95["0.85_lower"]).all()
-    assert (result_95["0.85_lower"] > result_95["0.95_lower"]).all()
+    assert (y_pred > result_85["0.85_lower"]).all()
+    assert (result_85["0.85_lower"] > result_95["0.95_lower"]).all()
