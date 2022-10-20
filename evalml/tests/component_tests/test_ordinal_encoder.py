@@ -3,7 +3,9 @@ import pandas as pd
 import pytest
 from woodwork.logical_types import Ordinal
 
+from evalml import AutoMLSearch
 from evalml.exceptions import ComponentNotYetFittedError
+from evalml.pipelines import RegressionPipeline
 from evalml.pipelines.components import OrdinalEncoder
 
 
@@ -764,3 +766,69 @@ def test_data_types(data_type):
             dtype="float64",
         )
         pd.testing.assert_frame_equal(X_t, expected_df)
+
+
+# --> I'm not sure where these should live - putting in ord encoder tests for now
+def test_ordinal_encoder_in_automl(X_y_ordinal_regression):
+    X, y = X_y_ordinal_regression
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="regression",
+        objective="R2",
+        random_seed=0,
+        n_jobs=1,
+    )
+    automl.search()
+    X_t = automl.best_pipeline.transform_all_but_final(X)
+    # compute_order = automl.best_pipeline.component_graph._compute_order
+    # --> doesnt work bc Numeric Pipeline - also OrdinalEncoder should be included in Categorical Pipeline???
+    # assert compute_order.index("Ordinal Encoder") < compute_order.index("Ordinal Encoder")
+    assert X_t.ww.columns["day_ordinal_encoding"].is_numeric
+    # --> going with this test for development purposes bc it has a good pipeline
+
+
+def test_add_ordinal_encoder_to_pipeline(X_y_ordinal_regression):
+    X, y = X_y_ordinal_regression
+
+    pipeline = RegressionPipeline(
+        component_graph=[
+            "Imputer",
+            "Ordinal Encoder",
+            "One Hot Encoder",
+            "DateTime Featurizer",
+            "Standard Scaler",
+            "Linear Regressor",
+        ],
+    )
+    pipeline.fit(X, y)
+    X_t = pipeline.transform_all_but_final(X)
+    # Confirm Ordinal Encoder is in the component graph
+    assert "Ordinal Encoder" in pipeline.component_graph.component_dict.keys()
+    # Confirm the ordinal feature actually gets encoded
+    assert X_t.ww.columns["day_ordinal_encoding"].is_numeric
+    assert "day" not in X_t.columns
+
+
+def test_ordinal_encoder_not_used_if_ohe_first(X_y_ordinal_regression):
+    X, y = X_y_ordinal_regression
+
+    pipeline = RegressionPipeline(
+        component_graph=[
+            "Imputer",
+            "One Hot Encoder",
+            "Ordinal Encoder",
+            "DateTime Featurizer",
+            "Standard Scaler",
+            "Linear Regressor",
+        ],
+    )
+    pipeline.fit(X, y)
+    X_t = pipeline.transform_all_but_final(X)
+    # Confirm Ordinal Encoder is in the component graph
+    assert "Ordinal Encoder" in pipeline.component_graph.component_dict.keys()
+    # Confirm the ordinal feature wasn't encoded by the ordinal encoder - OHE instead
+    assert "day_ordinal_encoding" not in X_t.columns
+    assert "day_Wed" in X_t.columns
+    assert "day" not in X_t.columns

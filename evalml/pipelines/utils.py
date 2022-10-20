@@ -28,6 +28,7 @@ from evalml.pipelines.components import (  # noqa: F401
     LogTransformer,
     NaturalLanguageFeaturizer,
     OneHotEncoder,
+    OrdinalEncoder,
     Oversampler,
     PerColumnImputer,
     RandomForestClassifier,
@@ -187,6 +188,8 @@ def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
 
     # The URL and EmailAddress Featurizers will create categorical columns
+    # --> do I need to specifically exclude ordinal cols? Or should that logic live elsewhere?
+    # --> Or should it be based off of the order
     categorical_cols = list(
         X.ww.select(
             ["category", "URL", "EmailAddress", "BooleanNullable"],
@@ -198,6 +201,25 @@ def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
         CatBoostRegressor,
     }:
         components.append(OneHotEncoder)
+    return components
+
+
+def _get_ordinal_encoder(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+
+    # The URL and EmailAddress Featurizers will create categorical columns
+    ordinal_cols = list(
+        X.ww.select(
+            ["Ordinal"],
+            return_schema=True,
+        ).columns,
+    )
+    # --> why cant ohe be used in catboost? Is that the same for the ordinal encoder
+    if len(ordinal_cols) > 0 and estimator_class not in {
+        CatBoostClassifier,
+        CatBoostRegressor,
+    }:
+        components.append(OrdinalEncoder)
     return components
 
 
@@ -284,6 +306,7 @@ def _get_preprocessing_components(
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
     if is_time_series(problem_type):
+        # --> add to ts and test for ts
         components_functions = [
             _get_label_encoder,
             _get_drop_all_null,
@@ -315,6 +338,8 @@ def _get_preprocessing_components(
             _get_datetime,
             _get_natural_language,
             _get_imputer,
+            # --> checking if the order here matters?? - it seems it might?? But OE gets added to numeric pipeline??
+            _get_ordinal_encoder,
             _get_ohe,
             _get_sampler,
             _get_standard_scaler,

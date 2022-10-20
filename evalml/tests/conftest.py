@@ -13,6 +13,7 @@ from sklearn import datasets
 from sklearn.preprocessing import minmax_scale
 from skopt.space import Integer, Real
 from woodwork import logical_types as ww_logical_types
+from woodwork.logical_types import Ordinal
 
 from evalml.demos import load_weather
 from evalml.model_family import ModelFamily
@@ -842,6 +843,17 @@ def X_y_categorical_regression():
         },
     )
     y.ww.init(logical_type="double")
+    return X, y
+
+
+@pytest.fixture
+def X_y_ordinal_regression(X_y_categorical_regression):
+    X, y = X_y_categorical_regression
+    X.ww.set_types(
+        logical_types={
+            "day": Ordinal(order=["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"]),
+        },
+    )
     return X, y
 
 
