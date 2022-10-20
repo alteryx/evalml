@@ -117,7 +117,6 @@ class PolynomialDecomposer(Decomposer):
             period=self.seasonal_period,
         ).seasonal
         self.seasonality = self.seasonal[0 : self.seasonal_period]
-        self.trend = y - (y_detrended_with_time_index - self.seasonal) - self.seasonal
         return self
 
     def transform(

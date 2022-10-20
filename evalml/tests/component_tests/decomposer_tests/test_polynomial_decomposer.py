@@ -235,11 +235,6 @@ def test_polynomial_decomposer_build_seasonal_signal(
     # and in the middle of a cycle
     y_test = y[test_first_index:]
 
-    # Set the decomposer's trend attribute since the function uses it to select the
-    # proper integer/datetime index.  The actual value doesn't matter, just that
-    # something with an index exists there.
-    decomposer.trend = full_seasonal_signal
-
     projected_seasonality = decomposer._project_seasonal(
         y_test,
         single_period_seasonal_signal,

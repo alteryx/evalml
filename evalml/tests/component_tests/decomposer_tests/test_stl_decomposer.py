@@ -43,43 +43,33 @@ def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_tes
     """Function to build a sample target.  Based on subset_y being daily data containing 5 periods of a periodic signal."""
     if transformer_fit_on_data == "in-sample-less-than-sample":
         # Re-compose 14-days worth of data within, but not spanning the entire sample
-        delta = -3
+        delta = datetime.timedelta(days=-3 * seasonal_period)
     if transformer_fit_on_data == "wholly-out-of-sample":
         # Re-compose 14-days worth of data with a one period gap between end of
         # fit data and start of data to inverse-transform
-        delta = seasonal_period
+        delta = datetime.timedelta(days=seasonal_period)
     elif transformer_fit_on_data == "wholly-out-of-sample-no-gap":
         # Re-compose 14-days worth of data with no gap between end of
         # fit data and start of data to inverse-transform
-        delta = 1
+        delta = datetime.timedelta(days=1)
     elif transformer_fit_on_data == "partially-out-of-sample":
         # Re-compose 14-days worth of data overlapping the in and out-of
         # sample data.
-        delta = -1
+        delta = datetime.timedelta(days=-1 * seasonal_period)
     elif transformer_fit_on_data == "out-of-sample-in-past":
         # Re-compose 14-days worth of data both out of sample and in the
         # past.
-        delta = -12
+        delta = datetime.timedelta(days=-12 * seasonal_period)
     elif transformer_fit_on_data == "partially-out-of-sample-in-past":
         # Re-compose 14-days worth of data partially out of sample and in the
         # past.
-        delta = -6
+        delta = datetime.timedelta(days=-6 * seasonal_period)
 
-    if isinstance(subset_y.index, pd.DatetimeIndex):
-        delta = datetime.timedelta(days=delta * seasonal_period)
-
-        new_index = pd.date_range(
-            subset_y.index[-1] + delta,
-            periods=2 * seasonal_period,
-            freq="D",
-        )
-    else:
-        delta = delta * seasonal_period
-        new_index = np.arange(
-            subset_y.index[-1] + delta,
-            subset_y.index[-1] + delta + 2 * seasonal_period,
-        )
-
+    new_index = pd.date_range(
+        subset_y.index[-1] + delta,
+        periods=2 * seasonal_period,
+        freq="D",
+    )
     if to_test == "inverse_transform":
         y_t_new = pd.Series(np.zeros(len(new_index))).set_axis(new_index)
     elif to_test == "transform":
@@ -228,7 +218,6 @@ def test_stl_decomposer_fit_transform_out_of_sample(
             )
 
 
-@pytest.mark.parametrize("index_type", ["integer_index", "datetime_index"])
 @pytest.mark.parametrize(
     "transformer_fit_on_data",
     [
@@ -242,7 +231,6 @@ def test_stl_decomposer_fit_transform_out_of_sample(
     ],
 )
 def test_stl_decomposer_inverse_transform(
-    index_type,
     generate_seasonal_data,
     transformer_fit_on_data,
 ):
@@ -253,8 +241,6 @@ def test_stl_decomposer_inverse_transform(
         freq_str="D",
         set_time_index=True,
     )
-    if index_type == "integer_index":
-        y = y.reset_index(drop=True)
     subset_X = X[: 5 * seasonal_period]
     subset_y = y[: 5 * seasonal_period]
 
@@ -287,7 +273,7 @@ def test_stl_decomposer_inverse_transform(
                 y[y_t_new.index],
                 output_inverse_y,
                 check_exact=False,
-                rtol=1.0e-2,
+                rtol=1.0e-3,
             )
 
 
@@ -441,26 +427,3 @@ def test_unsupported_frequencies(
 
     stl = STLDecomposer()
     X_t, y_t = stl.fit_transform(X, y)
-
-
-def test_stl_decomposer_doesnt_modify_target_index(
-    generate_seasonal_data,
-):
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=7,
-        set_time_index=False,
-    )
-    original_X_index = X.index
-    original_y_index = y.index
-
-    stl = STLDecomposer()
-    stl.fit(X, y)
-    pd.testing.assert_index_equal(X.index, original_X_index)
-    pd.testing.assert_index_equal(y.index, original_y_index)
-
-    X_t, y_t = stl.transform(X, y)
-    pd.testing.assert_index_equal(X_t.index, original_X_index)
-    pd.testing.assert_index_equal(y_t.index, original_y_index)
-
-    y_new = stl.inverse_transform(y_t)
-    pd.testing.assert_index_equal(y_new.index, original_y_index)
