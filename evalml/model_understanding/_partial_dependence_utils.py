@@ -325,8 +325,27 @@ def _partial_dependence_calculation_2(pipeline, grid, features, X):
         pipeline_copy.fit(X.ww[[variable]], mock_y)
         cloned_feature_pipelines[variable] = pipeline_copy
 
+    feature_provenance = pipeline._get_feature_provenance()
+    # --> maybe only create tjese of tjere's a feature selectior? avoid extra overhead
+
+    features_passed_to_estimator = {
+        variable: variable in feature_provenance or variable in X_t.columns
+        for variable in features
+    }
+    no_features_passed_to_estimator = not any(features_passed_to_estimator.values())
+
+    if no_features_passed_to_estimator:
+        original_predictions = prediction_method(X_t)
+        original_predictions_mean = np.mean(original_predictions, axis=0)
+
     for _, new_values in grid.iterrows():
+        # --> check if grid value is passed to estimator and add - is there a way to check this??
+        # --> idea: check if grid value is in any of the feature names in the values of feature prov?
         for i, variable in enumerate(features):
+            # If the feature doesn't have an impact on predictions, don't change it for PD
+            if not features_passed_to_estimator[variable]:
+                continue
+
             part_dep_column = pd.Series(
                 [new_values[i]] * X.shape[0],
                 index=X.index,
@@ -348,10 +367,15 @@ def _partial_dependence_calculation_2(pipeline, grid, features, X):
             # --> not keeping in woodwork - problematic?
             X_t[list(cols_to_replace)] = X_t_single_col
 
-        pred = prediction_method(X_t)
-        predictions.append(pred)
-        # average over samples
-        averaged_predictions.append(np.mean(pred, axis=0))
+        # If none of the features have an impact on predictions, just add original predictions
+        if no_features_passed_to_estimator:
+            predictions.append(original_predictions)
+            averaged_predictions.append(original_predictions_mean)
+        else:
+            pred = prediction_method(X_t)
+            predictions.append(pred)
+            # average over samples
+            averaged_predictions.append(np.mean(pred, axis=0))
 
     n_samples = X.shape[0]
 

@@ -2226,6 +2226,33 @@ def test_partial_dependence_after_dropped_feature(X_y_categorical_regression):
 
     # --> broken with "day" and "time" bc they're dropped or have dropped values
     # --> works with "total_bill" bc it's not dropped
+    old_part_dep = partial_dependence(pipeline, X, features="time")
+    new_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features="time",
+        use_new=True,
+    )
+
+    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+
+
+def test_partial_dependence_after_dropped_grid_value(X_y_categorical_regression):
+    X, y = X_y_categorical_regression
+
+    pipeline = RegressionPipeline(
+        [
+            "Imputer",
+            "One Hot Encoder",
+            "RF Regressor Select From Model",
+            "Random Forest Regressor",
+        ],
+    )
+    pipeline.fit(X, y)
+    # set_trace()
+
+    # --> broken with "day" and "time" bc they're dropped or have dropped values
+    # --> works with "total_bill" bc it's not dropped
     old_part_dep = partial_dependence(pipeline, X, features="day")
     new_part_dep = partial_dependence(
         pipeline,
