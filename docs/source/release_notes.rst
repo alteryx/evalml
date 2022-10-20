@@ -3,7 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Add forecast functions to time series regression pipeline :pr:`3742`
-        * Added the ability to retrieve prediction intervals from the ``ProphetRegressor`` :pr:`3757`
+        * Added the ability to retrieve prediction intervals from the ``ProphetRegressor`` :pr:`3766`
     * Fixes
         * Fix to allow ``IDColumnsDataCheck`` to work with ``IntegerNullable`` inputs :pr:`3740`
         * Fixed datasets name for main performance tests :pr:`3743`
