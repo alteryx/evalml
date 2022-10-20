@@ -53,9 +53,9 @@ def test_decomposer_plot_decomposition(
     if y_has_time_index == "y_has_time_index":
         y = y.set_axis(X.index)
 
-    pdc = decomposer_child_class(degree=1, seasonal_period=period)
-    pdc.fit_transform(X, y)
-    fig, axs = pdc.plot_decomposition(X, y, show=False)
+    dec = decomposer_child_class(degree=1, seasonal_period=period)
+    dec.fit_transform(X, y)
+    fig, axs = dec.plot_decomposition(X, y, show=False)
     assert isinstance(fig, matplotlib.pyplot.Figure)
     assert isinstance(axs, np.ndarray)
     assert all([isinstance(ax, matplotlib.pyplot.Axes) for ax in axs])
@@ -82,7 +82,7 @@ def test_decomposer_plot_decomposition(
         "time_index_is_specified_but_wrong",
     ],
 )
-def test_polynomial_decomposer_uses_time_index(
+def test_decomposer_uses_time_index(
     decomposer_child_class,
     ts_data,
     X_has_time_index,
@@ -202,7 +202,7 @@ def test_decomposer_prefers_users_time_index(
     if dataframe_has_datatime_index == "df_has_datetime_index":
         X.set_axis(pd.DatetimeIndex(dates_3))
 
-    pdc = decomposer_child_class(time_index="dates")
+    dec = decomposer_child_class(time_index="dates")
 
     err_msg = None
     if time_index_exists == "time_index_does_not_exist":
@@ -215,10 +215,10 @@ def test_decomposer_prefers_users_time_index(
 
     if err_msg:
         with pytest.raises(ValueError, match=err_msg):
-            X_t, y_t = pdc.fit_transform(X, y)
+            X_t, y_t = dec.fit_transform(X, y)
     else:
-        X_t, y_t = pdc.fit_transform(X, y)
-        assert all(y_t.index.values == expected_values)
+        X_t, y_t = dec.fit_transform(X, y)
+        assert all(dec.trend.index.values == expected_values)
 
 
 @pytest.mark.parametrize(
@@ -285,6 +285,11 @@ def test_decomposer_build_seasonal_signal(
     # and in the middle of a cycle
     y_test = y[test_first_index:]
 
+    # Set the decomposer's trend attribute since the function uses it to select the
+    # proper integer/datetime index.  The actual value doesn't matter, just that
+    # something with an index exists there.
+    decomposer.trend = full_seasonal_signal
+
     projected_seasonality = decomposer._project_seasonal(
         y_test,
         single_period_seasonal_signal,
@@ -303,7 +308,7 @@ def test_decomposer_build_seasonal_signal(
     "decomposer_child_class",
     decomposer_list,
 )
-def test_polynomial_decomposer_get_trend_dataframe_raises_errors(
+def test_decomposer_get_trend_dataframe_raises_errors(
     decomposer_child_class,
     ts_data,
 ):
@@ -412,15 +417,15 @@ def test_decomposer_get_trend_dataframe_error_not_fit(
 ):
     X, _, y = ts_data()
 
-    pdt = decomposer_child_class()
+    dec = decomposer_child_class()
     if fit_before_decompose:
-        pdt.fit_transform(X, y)
-        pdt.get_trend_dataframe(X, y)
+        dec.fit_transform(X, y)
+        dec.get_trend_dataframe(X, y)
     else:
         with pytest.raises(evalml.exceptions.ComponentNotYetFittedError):
-            pdt.transform(X, y)
+            dec.transform(X, y)
         with pytest.raises(evalml.exceptions.ComponentNotYetFittedError):
-            pdt.get_trend_dataframe(X, y)
+            dec.get_trend_dataframe(X, y)
 
 
 @pytest.mark.parametrize(
@@ -432,8 +437,8 @@ def test_decomposer_transform_returns_same_when_y_none(
     ts_data,
 ):
     X, _, y = ts_data()
-    stl = decomposer_child_class().fit(X, y)
-    X_t, y_t = stl.transform(X, None)
+    dec = decomposer_child_class().fit(X, y)
+    X_t, y_t = dec.transform(X, None)
     pd.testing.assert_frame_equal(X, X_t)
     assert y_t is None
 
@@ -442,7 +447,7 @@ def test_decomposer_transform_returns_same_when_y_none(
     "decomposer_child_class",
     decomposer_list,
 )
-def test_stl_decomposer_raises_value_error_target_is_none(
+def test_decomposer_raises_value_error_target_is_none(
     decomposer_child_class,
     ts_data,
 ):
@@ -458,3 +463,21 @@ def test_stl_decomposer_raises_value_error_target_is_none(
 
     with pytest.raises(ValueError, match="cannot be None for Decomposer!"):
         dec.inverse_transform(None)
+
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    decomposer_list,
+)
+def test_decomposer_bad_target_index(
+    decomposer_child_class,
+    ts_data,
+):
+    X, _, y = ts_data()
+    dec = decomposer_child_class()
+    y.index = pd.CategoricalIndex(["cat_index" for x in range(len(y))])
+    with pytest.raises(
+        ValueError,
+        match="doesn't support target data with index of type",
+    ):
+        dec._choose_proper_index(y)

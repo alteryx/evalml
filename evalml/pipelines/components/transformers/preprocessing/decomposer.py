@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+from pandas.core.index import Int64Index
 from scipy.signal import argrelextrema
 
 from evalml.pipelines.components.transformers.transformer import Transformer
@@ -80,7 +81,7 @@ class Decomposer(Transformer):
         # If user's provided time_index doesn't exist, log it and find some datetimes to use
         elif (self.time_index is None) or self.time_index not in dt_df.columns:
             self.logger.warning(
-                f"PolynomialDecomposer could not find requested time_index {self.time_index}",
+                f"Decomposer could not find requested time_index {self.time_index}",
             )
             # Use the feature data's index, preferentially
             num_datetime_features = dt_df.ww.select("Datetime").shape[1]
@@ -220,6 +221,19 @@ class Decomposer(Transformer):
         self.seasonal_period = self.determine_periodicity(X, y)
         self.parameters["seasonal_period"] = self.seasonal_period
 
+    def _choose_proper_index(self, y):
+        """Function that provides support for targets with integer and datetime indices."""
+        # TODO: Need to update this after we upgrade to Pandas 1.5+ and Int64Index is deprecated.
+        if isinstance(y.index, (Int64Index, pd.RangeIndex)):
+            index = self.original_index
+        elif isinstance(y.index, pd.DatetimeIndex):
+            index = self.trend.index
+        else:
+            raise ValueError(
+                f"Decomposer doesn't support target data with index of type ({type(y.index)})",
+            )
+        return index
+
     def _project_seasonal(
         self,
         y: pd.Series,
@@ -242,13 +256,18 @@ class Decomposer(Transformer):
         Returns:
             pandas.Series: the seasonal signal extended to cover the target data to be transformed
         """
-        # Determine where the seasonality starts
-        first_index_diff = y.index[0] - periodic_signal.index[0]
-        delta = pd.to_timedelta(1, frequency)
-        period = pd.to_timedelta(periodicity, frequency)
+        index = self._choose_proper_index(y)
 
-        # Determine which index of the sample of seasonal data the transformed data starts at
-        transform_first_ind = int((first_index_diff % period) / delta)
+        # Determine where the seasonality starts
+        if isinstance(y.index, pd.DatetimeIndex):
+            transform_first_ind = (
+                len(pd.date_range(start=index[0], end=y.index[0], freq=frequency))
+                % periodicity
+                - 1
+            )
+        elif isinstance(y.index, (Int64Index, pd.RangeIndex)):
+            first_index_diff = y.index[0] - index[0]
+            transform_first_ind = first_index_diff % periodicity
 
         # Cycle the sample of seasonal data so the transformed data's effective index is first
         rotated_seasonal_sample = np.roll(

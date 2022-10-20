@@ -2215,7 +2215,7 @@ def generate_seasonal_data():
     def generate_real_data(
         period,
         step=None,
-        num_periods=10,
+        num_periods=20,
         scale=1,
         trend_degree=1,
         freq_str="D",
@@ -2229,7 +2229,7 @@ def generate_seasonal_data():
     def generate_synthetic_data(
         period,
         step=None,
-        num_periods=10,
+        num_periods=20,
         scale=1,
         trend_degree=1,
         freq_str="D",
