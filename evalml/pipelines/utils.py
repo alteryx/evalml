@@ -188,8 +188,6 @@ def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
 
     # The URL and EmailAddress Featurizers will create categorical columns
-    # --> do I need to specifically exclude ordinal cols? Or should that logic live elsewhere?
-    # --> Or should it be based off of the order
     categorical_cols = list(
         X.ww.select(
             ["category", "URL", "EmailAddress", "BooleanNullable"],

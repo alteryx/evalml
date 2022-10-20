@@ -1,3 +1,5 @@
+from pdb import set_trace
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -832,3 +834,30 @@ def test_ordinal_encoder_not_used_if_ohe_first(X_y_ordinal_regression):
     assert "day_ordinal_encoding" not in X_t.columns
     assert "day_Wed" in X_t.columns
     assert "day" not in X_t.columns
+
+
+def test_ordinal_encoder_not_used_in_automl_if_no_ordinal_columns_present(
+    X_y_categorical_regression,
+):
+    X, y = X_y_categorical_regression
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="regression",
+        objective="R2",
+        random_seed=0,
+        n_jobs=1,
+    )
+    automl.search()
+    X_t = automl.best_pipeline.transform_all_but_final(X)
+    assert "day_ordinal_encoding" not in X_t.columns
+    # --> there's probably a better way to check this
+    assert (
+        "Ordinal Encoder"
+        not in automl.best_pipeline.component_graph.component_dict.keys()
+    )
+
+
+# --> test not used for catboost
+# --> compare with main with looking glass - but need a branch of looking glass that uses ordinal columns - can i specify on te dataset-col level?
