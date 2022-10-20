@@ -401,18 +401,31 @@ def test_arima_regressor_respects_use_covariates(mock_predict, mock_fit, ts_data
 
 def test_arima_regressor_prediction_intervals(ts_data):
     X_train, X_test, y_train = ts_data()
+    X_train_no_feat, X_test_no_feat, _ = ts_data(no_features=True)
+
     clf = ARIMARegressor(use_covariates=False)
 
     clf.fit(X_train, y_train)
     result = clf.predict(X_test)
     result_95 = clf.get_prediction_intervals(X_test)
 
+    clf.fit(X_train_no_feat, y_train)
+    result_no_feat = clf.predict(X_test)
+    result_95_no_feat = clf.get_prediction_intervals(X_test_no_feat)
+
     conf_ints = list(result_95.keys())
     data = list(result_95.values())
+    data_no_feat = list(result_95_no_feat.values())
 
     mean_preds = pd.concat((data[0], data[1]), axis=1).mean(axis=1)
+    mean_preds_no_feat = pd.concat((data_no_feat[0], data_no_feat[1]), axis=1).mean(
+        axis=1,
+    )
 
     pd.testing.assert_series_equal(result, mean_preds)
+    pd.testing.assert_series_equal(result_no_feat, mean_preds_no_feat)
+    pd.testing.assert_series_equal(clf.preds_95_lower, data_no_feat[0])
+    pd.testing.assert_series_equal(clf.preds_95_upper, data_no_feat[1])
     pd.testing.assert_series_equal(clf.preds_95_lower, data[0])
     pd.testing.assert_series_equal(clf.preds_95_upper, data[1])
     assert len(conf_ints) == 2
