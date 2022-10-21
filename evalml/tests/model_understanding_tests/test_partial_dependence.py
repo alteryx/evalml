@@ -1,5 +1,4 @@
 import re
-import timeit
 from pdb import set_trace
 from unittest.mock import patch
 
@@ -2222,10 +2221,7 @@ def test_partial_dependence_after_dropped_feature(X_y_categorical_regression):
         ],
     )
     pipeline.fit(X, y)
-    # set_trace()
 
-    # --> broken with "day" and "time" bc they're dropped or have dropped values
-    # --> works with "total_bill" bc it's not dropped
     old_part_dep = partial_dependence(pipeline, X, features="time")
     new_part_dep = partial_dependence(
         pipeline,
@@ -2237,7 +2233,9 @@ def test_partial_dependence_after_dropped_feature(X_y_categorical_regression):
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
 
 
-def test_partial_dependence_after_dropped_grid_value(X_y_categorical_regression):
+def test_partial_dependence_after_dropped_grid_value_regression(
+    X_y_categorical_regression,
+):
     X, y = X_y_categorical_regression
 
     pipeline = RegressionPipeline(
@@ -2249,15 +2247,39 @@ def test_partial_dependence_after_dropped_grid_value(X_y_categorical_regression)
         ],
     )
     pipeline.fit(X, y)
-    # set_trace()
 
-    # --> broken with "day" and "time" bc they're dropped or have dropped values
-    # --> works with "total_bill" bc it's not dropped
     old_part_dep = partial_dependence(pipeline, X, features="day")
     new_part_dep = partial_dependence(
         pipeline,
         X,
         features="day",
+        use_new=True,
+    )
+
+    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+
+
+def test_partial_dependence_after_dropped_grid_value_classification(
+    X_y_categorical_classification,
+):
+    # --> maybe this and test above should be one test with a fixture
+    X, y = X_y_categorical_classification
+
+    pipeline = BinaryClassificationPipeline(
+        [
+            "Imputer",
+            "One Hot Encoder",
+            "RF Classifier Select From Model",
+            "Random Forest Classifier",
+        ],
+    )
+    pipeline.fit(X, y)
+
+    old_part_dep = partial_dependence(pipeline, X, features="Cabin")
+    new_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features="Cabin",
         use_new=True,
     )
 

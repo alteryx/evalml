@@ -320,30 +320,48 @@ def _partial_dependence_calculation_2(pipeline, grid, features, X):
 
     # Create a fit pipeline for each feature
     cloned_feature_pipelines = {}
+    # --> idea instead of having a bunch of component-specific handlings for PD, have some sort of method available? probably not a good idea bc weird to have pd specific method on components
+    new_parameters = pipeline.parameters
+    selector = None
+    if "RF Regressor Select From Model" in pipeline.parameters:
+        # --> can I be more generic and just look for any selector? Are there others than these two?
+        selector = "RF Regressor Select From Model"
+    elif "RF Classifier Select From Model" in pipeline.parameters:
+        selector = "RF Classifier Select From Model"
+
+    if selector is not None:
+        # Feature selector's shouldn't drop any columns for the cloned pipeline
+        new_parameters[selector]["percent_features"] = 1.0
+        new_parameters[selector]["threshold"] = 0.0
+
     for variable in features:
-        pipeline_copy = pipeline.clone()
+        pipeline_copy = pipeline.new(
+            parameters=new_parameters,
+        )
+
         pipeline_copy.fit(X.ww[[variable]], mock_y)
         cloned_feature_pipelines[variable] = pipeline_copy
 
     feature_provenance = pipeline._get_feature_provenance()
-    # --> maybe only create tjese of tjere's a feature selectior? avoid extra overhead
 
-    features_passed_to_estimator = {
+    variable_has_features_passed_to_estimator = {
         variable: variable in feature_provenance or variable in X_t.columns
         for variable in features
     }
-    no_features_passed_to_estimator = not any(features_passed_to_estimator.values())
+    no_features_passed_to_estimator = not any(
+        variable_has_features_passed_to_estimator.values(),
+    )
 
     if no_features_passed_to_estimator:
+        # --> maybe we need to also confirm a selector was used bc i dont want this to
+        # silently set these values in any situation that doesn't look as expected - ex stacked ensembling
         original_predictions = prediction_method(X_t)
         original_predictions_mean = np.mean(original_predictions, axis=0)
 
     for _, new_values in grid.iterrows():
-        # --> check if grid value is passed to estimator and add - is there a way to check this??
-        # --> idea: check if grid value is in any of the feature names in the values of feature prov?
         for i, variable in enumerate(features):
             # If the feature doesn't have an impact on predictions, don't change it for PD
-            if not features_passed_to_estimator[variable]:
+            if not variable_has_features_passed_to_estimator[variable]:
                 continue
 
             part_dep_column = pd.Series(
@@ -358,13 +376,17 @@ def _partial_dependence_calculation_2(pipeline, grid, features, X):
 
             # Take the changed column and send it through transform by itself
             pipeline_copy = cloned_feature_pipelines[variable]
-
             X_t_single_col = pipeline_copy.transform_all_but_final(changed_col_df)
-
-            cols_to_replace = pipeline._get_feature_provenance().get(variable) or [
+            cols_to_replace = feature_provenance.get(variable) or [
                 variable,
             ]
             # --> not keeping in woodwork - problematic?
+
+            # If some categories get dropped, they won't be in X_t, so don't include them
+            # --> might want to also confirm that this is bc off a selector not some oter reason
+            if len(cols_to_replace) != len(X_t_single_col.columns):
+                X_t_single_col = X_t_single_col[list(cols_to_replace)]
+
             X_t[list(cols_to_replace)] = X_t_single_col
 
         # If none of the features have an impact on predictions, just add original predictions

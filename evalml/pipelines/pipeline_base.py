@@ -667,6 +667,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             A new instance of this pipeline with identical components.
         """
+        # --> why is there no sertting of the threshold for binary?
         return self.__class__(
             self.component_graph,
             parameters=parameters,
