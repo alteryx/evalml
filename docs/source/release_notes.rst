@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.60.0 Oct. 19, 2022**
+    * Enhancements
         * Add forecast functions to time series regression pipeline :pr:`3742`
         * Added the ability to retrieve prediction intervals from the ``ARIMARegressor`` :pr:`3756`
     * Fixes
