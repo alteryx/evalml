@@ -127,6 +127,7 @@ class TimeSeriesFeaturizer(Transformer):
         self.statistically_significant_lags = self._find_significant_lags(
             y,
             conf_level=self.conf_level,
+            start_delay=self.start_delay,
             max_delay=self.max_delay,
         )
         return self
@@ -150,8 +151,8 @@ class TimeSeriesFeaturizer(Transformer):
         )
 
     @staticmethod
-    def _find_significant_lags(y, conf_level, max_delay):
-        all_lags = np.arange(max_delay + 1)
+    def _find_significant_lags(y, conf_level, start_delay, max_delay):
+        all_lags = np.arange(start_delay, start_delay + max_delay + 1)
         if y is not None:
             # Compute the acf and find its peaks
             acf_values, ci_intervals = acf(
@@ -173,7 +174,9 @@ class TimeSeriesFeaturizer(Transformer):
                 set(index[significant]).intersection(peaks).union(first_significant_10)
             )
             # If no lags are significant get the first lag
-            significant_lags = sorted(significant_lags.intersection(all_lags)) or [1]
+            significant_lags = sorted(significant_lags.intersection(all_lags)) or [
+                start_delay,
+            ]
         else:
             significant_lags = all_lags
         return significant_lags
@@ -246,7 +249,7 @@ class TimeSeriesFeaturizer(Transformer):
                     feature_name = f"{col_name}_delay_{self.start_delay + t}"
                     lagged_features[
                         f"{col_name}_delay_{self.start_delay + t}"
-                    ] = col.shift(self.start_delay + t)
+                    ] = col.shift(t)
                     if col_name in categorical_columns:
                         cols_derived_from_categoricals.append(feature_name)
         # Handle cases where the target was passed in
@@ -256,7 +259,7 @@ class TimeSeriesFeaturizer(Transformer):
             for t in self.statistically_significant_lags:
                 lagged_features[
                     self.target_colname_prefix.format(t + self.start_delay)
-                ] = y.shift(self.start_delay + t)
+                ] = y.shift(t)
         # Features created from categorical columns should no longer be categorical
         lagged_features = pd.DataFrame(lagged_features)
         lagged_features.ww.init(
