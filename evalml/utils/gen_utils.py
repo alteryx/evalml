@@ -12,6 +12,7 @@ from pandas.tseries.frequencies import to_offset
 from sklearn.utils import check_random_state
 
 from evalml.exceptions import MissingComponentError, ValidationErrorCode
+from evalml.utils.woodwork_utils import infer_feature_types
 
 logger = logging.getLogger(__name__)
 
@@ -663,12 +664,12 @@ def get_time_index(X: pd.DataFrame, y: pd.Series, time_index_name: str):
     dt_df = infer_feature_types(X)
 
     # Prefer the user's provided time_index, if it exists
-    if time_index and time_index_name in dt_df.columns:
+    if time_index_name and time_index_name in dt_df.columns:
         dt_col = dt_df[time_index_name]
 
     # If user's provided time_index doesn't exist, log it and find some datetimes to use
     elif (time_index_name is None) or time_index_name not in dt_df.columns:
-        self.logger.warning(
+        logger.warning(
             f"Could not find requested time_index {time_index_name}",
         )
         # Use the feature data's index, preferentially
@@ -688,7 +689,7 @@ def get_time_index(X: pd.DataFrame, y: pd.Series, time_index_name: str):
                 raise ValueError(
                     "Too many Datetime features provided in data but no time_index column specified during __init__.",
                 )
-            elif not time_index_name in X:
+            elif time_index_name not in X:
                 raise ValueError(
                     f"Too many Datetime features provided in data and provided time_index column {time_index_name} not present in data.",
                 )
