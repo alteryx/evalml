@@ -11,7 +11,7 @@ from pandas.core.index import Int64Index
 from scipy.signal import argrelextrema
 
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils import get_time_index
+from evalml.utils import get_time_index, infer_feature_types
 
 
 class Decomposer(Transformer):
@@ -73,8 +73,9 @@ class Decomposer(Transformer):
 
     def _set_time_index(self, X: pd.DataFrame, y: pd.Series):
         """Ensures that target data has a pandas.DatetimeIndex that matches feature data."""
+        dt_df = infer_feature_types(X)
         time_index_name = self.time_index or self.parameters.get("time_index", None)
-        time_index = get_time_index(X, y, time_index_name)
+        time_index = get_time_index(dt_df, y, time_index_name)
         return y.set_axis(time_index)
 
     def fit_transform(

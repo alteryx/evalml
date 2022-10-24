@@ -12,7 +12,6 @@ from pandas.tseries.frequencies import to_offset
 from sklearn.utils import check_random_state
 
 from evalml.exceptions import MissingComponentError, ValidationErrorCode
-from evalml.utils.woodwork_utils import infer_feature_types
 
 logger = logging.getLogger(__name__)
 
@@ -661,7 +660,6 @@ def are_datasets_separated_by_gap_time_index(train, test, pipeline_params):
 
 def get_time_index(X: pd.DataFrame, y: pd.Series, time_index_name: str):
     """Determines the column in the given data that should be used as the time index."""
-    dt_df = infer_feature_types(X)
 
     # Prefer the user's provided time_index, if it exists
     if time_index_name and time_index_name in dt_df.columns:
