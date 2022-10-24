@@ -167,6 +167,8 @@ def get_test_data_from_configuration():
         nullable_target=False,
         scale=2,
     ):
+        if is_time_series(problem_type) and "dates" not in column_names:
+            column_names.append("dates")
         X_all = pd.DataFrame(
             {
                 "all_null": [

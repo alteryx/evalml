@@ -4208,6 +4208,7 @@ def test_data_splitter_gives_pipelines_same_data(
             "forecast_horizon": 10,
         }
         X, y = X_y_regression
+        X.index = pd.DatetimeIndex(pd.date_range("01-01-2022", periods=len(X)))
     else:
         problem_configuration = {
             "gap": 1,

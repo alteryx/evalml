@@ -46,6 +46,7 @@ from evalml.pipelines.utils import (
     generate_pipeline_code,
     get_estimators,
     is_classification,
+    is_regression,
     make_pipeline,
     make_pipeline_from_actions,
     rows_of_interest,
@@ -120,7 +121,7 @@ def test_make_pipeline(
                 ohe = [OneHotEncoder]
             else:
                 ohe = []
-            decomposer = [STLDecomposer]
+            decomposer = [STLDecomposer] if is_regression(problem_type) else []
             datetime = (
                 [DateTimeFeaturizer]
                 if estimator_class.model_family

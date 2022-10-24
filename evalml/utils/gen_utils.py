@@ -660,27 +660,29 @@ def are_datasets_separated_by_gap_time_index(train, test, pipeline_params):
 
 def get_time_index(X: pd.DataFrame, y: pd.Series, time_index_name: str):
     """Determines the column in the given data that should be used as the time index."""
+    if X.ww.schema is None:
+        X.ww.init()
 
     # Prefer the user's provided time_index, if it exists
-    if time_index_name and time_index_name in dt_df.columns:
-        dt_col = dt_df[time_index_name]
+    if time_index_name and time_index_name in X.columns:
+        dt_col = X[time_index_name]
 
     # If user's provided time_index doesn't exist, log it and find some datetimes to use
-    elif (time_index_name is None) or time_index_name not in dt_df.columns:
+    elif (time_index_name is None) or time_index_name not in X.columns:
         logger.warning(
             f"Could not find requested time_index {time_index_name}",
         )
         # Use the feature data's index, preferentially
-        num_datetime_features = dt_df.ww.select("Datetime").shape[1]
-        if isinstance(dt_df.index, pd.DatetimeIndex):
-            dt_col = pd.Series(dt_df.index)
+        num_datetime_features = X.ww.select("Datetime").shape[1]
+        if isinstance(X.index, pd.DatetimeIndex):
+            dt_col = pd.Series(X.index)
         elif num_datetime_features == 0:
             raise ValueError(
                 "There are no Datetime features in the feature data and neither the feature nor the target data have a DateTime index.",
             )
         # Use a datetime column of the features if there's only one
         elif num_datetime_features == 1:
-            dt_col = dt_df.ww.select("Datetime").squeeze()
+            dt_col = X.ww.select("Datetime").squeeze()
         # With more than one datetime column, use the time_index parameter, if provided.
         elif num_datetime_features > 1:
             if time_index_name is None:

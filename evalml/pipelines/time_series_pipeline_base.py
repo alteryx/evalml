@@ -100,6 +100,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             are_datasets_separated_by_gap_time_index(X_train, X, self.pipeline_params)
             and self.gap
         ):
+
             # The training data does not have the gap dates so don't need to include them
             last_row_of_training -= self.gap
 
@@ -115,6 +116,16 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 y_train.index[-self.gap :],
                 self.gap,
             )
+
+            # Properly fill in the dates in the gap
+            time_index = self.pipeline_params["time_index"]
+            freq = pd.infer_freq(X_train[time_index])
+            correct_range = pd.date_range(
+                start=X_train["date"].iloc[-1],
+                periods=self.gap + 1,
+                freq=freq,
+            )[1:]
+            gap_features[time_index] = correct_range
 
         features_to_concat = [
             X_train.iloc[-last_row_of_training:],
@@ -135,9 +146,11 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         )
         return padded_features, padded_target
 
-    def _drop_time_index(self, X):
+    def _drop_time_index(self, X, y):
         """Helper method to drop the time index column from the data if DateTime Featurizer is not present."""
         if self.should_drop_time_index and self.time_index in X.columns:
+            X = X.set_index(X[self.time_index])
+            y = y.set_axis(X[self.time_index])
             if X.ww.schema is not None:
                 X = X.ww.drop([self.time_index])
             else:
@@ -195,8 +208,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             raise ValueError(
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator.",
             )
-        X = self._drop_time_index(X)
-        X_train = self._drop_time_index(X_train)
+        X = self._drop_time_index(X, y)
+        X_train = self._drop_time_index(X_train, y_train)
         target = infer_feature_types(y)
         features = self.transform_all_but_final(X, target, X_train, y_train)
         predictions = self._estimator_predict(features)
@@ -234,8 +247,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             raise ValueError(
                 "Make sure to include an input for y_train when calling time series' predict",
             )
-        X = self._drop_time_index(X)
-        X_train = self._drop_time_index(X_train)
+        X = self._drop_time_index(X, y)
+        X_train = self._drop_time_index(X_train, y_train)
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         if self.estimator is None:
             raise ValueError(
