@@ -12,7 +12,11 @@ import woodwork as ww
 from scipy.stats.mstats import mquantiles
 
 from evalml.exceptions import PartialDependenceError, PartialDependenceErrorCode
-from evalml.problem_types import is_binary, is_regression
+from evalml.model_understanding._partial_dependence_fast_mode_utils import (
+    _get_cloned_feature_pipelines,
+    _transform_single_feature,
+)
+from evalml.problem_types import is_regression
 
 
 def _add_ice_plot(_go, fig, ice_data, label=None, row=None, col=None):
@@ -223,7 +227,7 @@ def _cartesian(arrays):
     return out
 
 
-def _partial_dependence_calculation(pipeline, grid, features, X):
+def _partial_dependence_calculation(pipeline, grid, features, X, fast_mode=False):
     """Do the partial dependence calculation once the grid is computed.
 
     Args:
@@ -232,175 +236,80 @@ def _partial_dependence_calculation(pipeline, grid, features, X):
         features (list(str)): Column names of input data
         X (pd.DataFrame): Input data.
 
-    Returns:
-        Tuple (np.ndarray, np.ndarray): averaged and individual predictions for
-            all points in the grid.
-    """
-    predictions = []
-    averaged_predictions = []
-
-    if is_regression(pipeline.problem_type):
-        prediction_method = pipeline.predict
-    else:
-        prediction_method = pipeline.predict_proba
-
-    X_eval = X.ww.copy()
-    for _, new_values in grid.iterrows():
-        for i, variable in enumerate(features):
-            part_dep_column = pd.Series(
-                [new_values[i]] * X_eval.shape[0],
-                index=X_eval.index,
-            )
-            X_eval.ww[variable] = ww.init_series(
-                part_dep_column,
-                logical_type=X_eval.ww.logical_types[variable],
-            )
-
-        pred = prediction_method(X_eval)
-
-        predictions.append(pred)
-        # average over samples
-        averaged_predictions.append(np.mean(pred, axis=0))
-
-    n_samples = X.shape[0]
-
-    # reshape to (n_instances, n_points) for binary/regression
-    # reshape to (n_classes, n_instances, n_points) for multiclass
-    predictions = np.array(predictions).T
-    if is_regression(pipeline.problem_type) and predictions.ndim == 2:
-        predictions = predictions.reshape(n_samples, -1)
-    elif predictions.shape[0] == 2:
-        predictions = predictions[1]
-        predictions = predictions.reshape(n_samples, -1)
-
-    # reshape averaged_predictions to (1, n_points) for binary/regression
-    # reshape averaged_predictions to (n_classes, n_points) for multiclass.
-    averaged_predictions = np.array(averaged_predictions).T
-    if is_regression(pipeline.problem_type) and averaged_predictions.ndim == 1:
-        averaged_predictions = averaged_predictions.reshape(1, -1)
-    elif averaged_predictions.shape[0] == 2:
-        averaged_predictions = averaged_predictions[1]
-        averaged_predictions = averaged_predictions.reshape(1, -1)
-
-    return averaged_predictions, predictions
-
-
-def _partial_dependence_calculation_2(pipeline, grid, features, X):
-    """Do the partial dependence calculation once the grid is computed.
-
-    Args:
-        pipeline (PipelineBase): pipeline.
-        grid (pd.DataFrame): Grid of features to compute the partial dependence on.
-        features (list(str)): Column names of input data
-        X (pd.DataFrame): Input data.
+        # --> update
 
     Returns:
         Tuple (np.ndarray, np.ndarray): averaged and individual predictions for
             all points in the grid.
     """
-    predictions = []
-    averaged_predictions = []
-
-    # --> sometimes transform all but final is mutating X :( - had to do ww copy
     X_eval = X.ww.copy()
-    X_t = pipeline.transform_all_but_final(X_eval)
-    estimator = pipeline.estimator
+    prediction_object = pipeline
+    if fast_mode:
+        # In fast mode, we alter the transformed X with our partial dependence values
+        # and then call predict directly with the estimator
+        X_eval = pipeline.transform_all_but_final(X_eval)
+        prediction_object = pipeline.estimator
 
-    len_X = len(X)
-    if is_regression(pipeline.problem_type):
-        prediction_method = estimator.predict
-        # --> might want to use random seed here, though the mocked y shouldn't have an impact on PD
-        mock_y = pd.Series(np.random.randint(0, 10, len_X))
-    elif is_binary(pipeline.problem_type):
-        prediction_method = estimator.predict_proba
-        mock_y = pd.Series(np.random.choice([True, False], size=len_X))
-    else:
-        prediction_method = estimator.predict_proba
-        mock_y = pd.Series(np.random.choice([0, 1, 2], size=len_X))
-
-    # Create a fit pipeline for each feature
-    cloned_feature_pipelines = {}
-    # --> idea instead of having a bunch of component-specific handlings for PD, have some sort of method available? probably not a good idea bc weird to have pd specific method on components
-    new_parameters = pipeline.parameters
-    selector = None
-    if "RF Regressor Select From Model" in pipeline.parameters:
-        # --> can I be more generic and just look for any selector? Are there others than these two?
-        selector = "RF Regressor Select From Model"
-    elif "RF Classifier Select From Model" in pipeline.parameters:
-        selector = "RF Classifier Select From Model"
-
-    if selector is not None:
-        # Feature selector's shouldn't drop any columns for the cloned pipeline
-        new_parameters[selector]["percent_features"] = 1.0
-        new_parameters[selector]["threshold"] = 0.0
-
+    # Some components may drop features, so we need to know whether the specified
+    # features actually have an impact on predictions
     feature_provenance = pipeline._get_feature_provenance()
-
     variable_has_features_passed_to_estimator = {
-        variable: variable in feature_provenance or variable in X_t.columns
+        variable: variable in feature_provenance or variable in X_eval.columns
         for variable in features
     }
     no_features_passed_to_estimator = not any(
         variable_has_features_passed_to_estimator.values(),
     )
 
-    for variable in features:
-        # Don't fit pipelines if the feature has no impact on predictions
-        if not variable_has_features_passed_to_estimator[variable]:
-            continue
-        pipeline_copy = pipeline.new(
-            parameters=new_parameters,
+    if fast_mode:
+        # Fit pipelines for each feature so that we can transform it with grid
+        # values later
+        cloned_feature_pipelines = _get_cloned_feature_pipelines(
+            features,
+            X,
+            pipeline,
+            variable_has_features_passed_to_estimator,
         )
-        # set_trace()
-        pipeline_copy.fit(X.ww[[variable]], mock_y)
-        cloned_feature_pipelines[variable] = pipeline_copy
+
+    if is_regression(pipeline.problem_type):
+        prediction_method = prediction_object.predict
+    else:
+        prediction_method = prediction_object.predict_proba
 
     if no_features_passed_to_estimator:
         # --> maybe we need to also confirm a selector was used bc i dont want this to
         # silently set these values in any situation that doesn't look as expected - ex stacked ensembling
-        original_predictions = prediction_method(X_t)
+        original_predictions = prediction_method(X_eval)
         original_predictions_mean = np.mean(original_predictions, axis=0)
 
-    for _, new_values in grid.iterrows():
-        for i, variable in enumerate(features):
-            # If the feature doesn't have an impact on predictions, don't change it for PD
-            if not variable_has_features_passed_to_estimator[variable]:
-                continue
+        predictions = [original_predictions for _, _ in grid.iterrows()]
+        averaged_predictions = [original_predictions_mean for _, _ in grid.iterrows()]
+    else:
+        predictions = []
+        averaged_predictions = []
+        for _, new_values in grid.iterrows():
+            for i, variable in enumerate(features):
+                part_dep_column = pd.Series(
+                    [new_values[i]] * X_eval.shape[0],
+                    index=X_eval.index,
+                )
 
-            part_dep_column = pd.Series(
-                [new_values[i]] * X.shape[0],
-                index=X.index,
-            )
+                if fast_mode:
+                    X_eval = _transform_single_feature(
+                        X,
+                        X_eval,
+                        feature_provenance,
+                        variable,
+                        part_dep_column,
+                        cloned_feature_pipelines[variable],
+                    )
+                else:
+                    X_eval.ww[variable] = ww.init_series(
+                        part_dep_column,
+                        logical_type=X_eval.ww.logical_types[variable],
+                    )
 
-            changed_col_df = pd.DataFrame({variable: part_dep_column})
-            changed_col_df.ww.init(
-                logical_types={variable: X.ww.logical_types[variable]},
-            )
-
-            # Take the changed column and send it through transform by itself
-            pipeline_copy = cloned_feature_pipelines[variable]
-            X_t_single_col = pipeline_copy.transform_all_but_final(changed_col_df)
-            cols_to_replace = [variable]
-            if feature_provenance.get(variable):
-                # cols to replace has to be in the same order as X_t
-                cols_to_replace = [
-                    col for col in X_t if col in feature_provenance.get(variable)
-                ]
-            # --> not keeping in woodwork - problematic?
-
-            # If some categories get dropped, they won't be in X_t, so don't include them
-            # --> might want to also confirm that this is bc off a selector not some oter reason
-            if len(cols_to_replace) != len(X_t_single_col.columns):
-                X_t_single_col = X_t_single_col[list(cols_to_replace)]
-
-            X_t[list(cols_to_replace)] = X_t_single_col
-
-        # If none of the features have an impact on predictions, just add original predictions
-        if no_features_passed_to_estimator:
-            predictions.append(original_predictions)
-            averaged_predictions.append(original_predictions_mean)
-        else:
-            pred = prediction_method(X_t)
+            pred = prediction_method(X_eval)
             predictions.append(pred)
             # average over samples
             averaged_predictions.append(np.mean(pred, axis=0))
@@ -476,20 +385,13 @@ def _partial_dependence(
         custom_range,
     )
 
-    if use_new:
-        averaged_predictions, predictions = _partial_dependence_calculation_2(
-            pipeline,
-            grid,
-            features,
-            X,
-        )
-    else:
-        averaged_predictions, predictions = _partial_dependence_calculation(
-            pipeline,
-            grid,
-            features,
-            X,
-        )
+    averaged_predictions, predictions = _partial_dependence_calculation(
+        pipeline,
+        grid,
+        features,
+        X,
+        fast_mode=use_new,
+    )
 
     # reshape predictions to
     # (n_outputs, n_instances, n_values_feature_0, n_values_feature_1, ...)

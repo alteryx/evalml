@@ -2266,9 +2266,6 @@ def test_partial_dependence_after_dropped_grid_value_classification(
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
 
 
-# --> test with Select Columns Transformer
-
-
 def test_pd_select_cols_transformer_specified_feature_not_selected():
     """Confirms that If a column isn't in the column selector but is the specified feature to
     calculate partial dependence for, that the results are as expected for the optimized implementation.
@@ -2384,3 +2381,5 @@ def test_pd_drop_cols_transformer_specified_feature_not_selected():
 #     # For each estimator, create a pipeline
 
 #     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+
+# --> test case when one of the specified features (mult feats) isn't present but the other is
