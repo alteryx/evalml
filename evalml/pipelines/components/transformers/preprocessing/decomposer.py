@@ -219,7 +219,7 @@ class Decomposer(Transformer):
 
         """
         self.seasonal_period = self.determine_periodicity(X, y)
-        self.parameters["seasonal_period"] = self.seasonal_period
+        self.parameters.update({"seasonal_period": self.seasonal_period})
 
     def _choose_proper_index(self, y):
         """Function that provides support for targets with integer and datetime indices."""
