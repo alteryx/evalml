@@ -11,7 +11,7 @@ from pandas.core.index import Int64Index
 from scipy.signal import argrelextrema
 
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils import get_time_index, infer_feature_types
+from evalml.utils import get_time_index
 
 
 class Decomposer(Transformer):
