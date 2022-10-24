@@ -59,10 +59,13 @@ from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
+    is_regression,
     is_time_series,
 )
-from evalml.utils import infer_feature_types
+from evalml.utils import get_time_index, infer_feature_types
 from evalml.utils.gen_utils import contains_all_ts_parameters
+
+_UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER = ["A", "T"]
 
 
 def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None):
@@ -226,8 +229,11 @@ def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_nam
 
 def _get_decomposer(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
-    if is_time_series(problem_type):
-        components.append(STLDecomposer)
+    if is_time_series(problem_type) and is_regression(problem_type):
+        time_index = get_time_index(X, y, None)
+        freq = time_index.freq
+        if freq not in _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER:
+            components.append(STLDecomposer)
     return components
 
 
