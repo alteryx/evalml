@@ -6,6 +6,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Updated dependency check to suppress dependency output on import :pr:`3774`
 
 .. warning::
 
