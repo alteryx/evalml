@@ -131,8 +131,6 @@ class STLDecomposer(Decomposer):
             self.seasonal_period,
             self.frequency,
         )
-        pd.testing.assert_index_equal(y.index, projected_seasonality.index)
-        pd.testing.assert_index_equal(y.index, projected_trend.index)
         return projected_trend, projected_seasonality
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> STLDecomposer:
