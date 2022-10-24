@@ -112,7 +112,7 @@ def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_tes
     ],
 )
 @pytest.mark.parametrize("trend_degree", [1, 2, 3])
-@pytest.mark.parametrize("synthetic_data", ["synthetic"])  # , "real"])
+@pytest.mark.parametrize("synthetic_data", ["synthetic"])
 def test_stl_fit_transform_in_sample(
     period,
     freq,
@@ -412,9 +412,38 @@ def test_stl_decomposer_get_trend_dataframe_sets_time_index_internally(
     assert all(get_trend_dataframe_format_correct(x) for x in result_dfs)
 
 
-@pytest.mark.parametrize("index_type", ["integer_index", "datetime_index"])
+@pytest.mark.parametrize(
+    "bad_frequency",
+    [
+        pytest.param(
+            "T",
+            marks=pytest.mark.xfail(
+                reason="statsmodels freq_to_period doesn't support this frequency",
+            ),
+        ),
+        pytest.param(
+            "A",
+            marks=pytest.mark.xfail(
+                reason="statsmodels freq_to_period doesn't support this frequency",
+            ),
+        ),
+    ],
+)
+def test_unsupported_frequencies(
+    bad_frequency,
+    generate_seasonal_data,
+):
+    """This test exists to highlight that the underlying statsmodels STL component won't work for minute or annual frequencies."""
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+        period=7,
+        freq_str=bad_frequency,
+    )
+
+    stl = STLDecomposer()
+    X_t, y_t = stl.fit_transform(X, y)
+
+
 def test_stl_decomposer_doesnt_modify_target_index(
-    index_type,
     generate_seasonal_data,
 ):
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(

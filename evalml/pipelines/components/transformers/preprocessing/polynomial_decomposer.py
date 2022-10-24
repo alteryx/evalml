@@ -93,6 +93,7 @@ class PolynomialDecomposer(Decomposer):
             ValueError: If y is None.
             ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
+        self.original_index = y.index if y is not None else None
         X, y = self._check_target(X, y)
 
         # Copying y as we might modify its index

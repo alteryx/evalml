@@ -7,7 +7,7 @@ import pandas as pd
 from pandas.core.index import Int64Index
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.forecasting.stl import STLForecast
-from statsmodels.tsa.seasonal import STL as STL
+from statsmodels.tsa.seasonal import STL
 
 from evalml.pipelines.components.transformers.preprocessing.decomposer import Decomposer
 from evalml.utils import infer_feature_types
@@ -72,8 +72,8 @@ class STLDecomposer(Decomposer):
             raise ValueError(
                 f"STLDecomposer cannot transform/inverse transform data out of sample and before the data used"
                 f"to fit the decomposer."
-                f"\nRequested date range: {str(y.index[0])}:{str(y.index[-1])}."
-                f"\nSample date range: {str(index[0])}:{str(index[-1])}.",
+                f"\nRequested range: {str(y.index[0])}:{str(y.index[-1])}."
+                f"\nSample range: {str(index[0])}:{str(index[-1])}.",
             )
 
     def _project_trend(self, y):
@@ -97,9 +97,6 @@ class STLDecomposer(Decomposer):
             )
         elif isinstance(y.index, Int64Index):
             units_forward = int(y.index[-1] - index[-1])
-
-        # TODO: Need to have a datetime index on the series going into STLForecast.  Might have to
-        # recreate it on the fly.
 
         # Model the trend and project it forward
         stlf = STLForecast(
@@ -139,7 +136,7 @@ class STLDecomposer(Decomposer):
         return projected_trend, projected_seasonality
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> STLDecomposer:
-        """Fits the PolynomialDecomposer and determine the seasonal signal.
+        """Fits the STLDecomposer and determine the seasonal signal.
 
         Instantiates a statsmodels STL decompose object with the component's stored
         parameters and fits it.  Since the statsmodels object does not fit the sklearn
@@ -199,7 +196,7 @@ class STLDecomposer(Decomposer):
         X: pd.DataFrame,
         y: pd.Series = None,
     ) -> tuple[pd.DataFrame, pd.Series]:
-        """Transforms the target data by removing the polynomial trend and rolling average seasonality.
+        """Transforms the target data by removing the STL trend and seasonality.
 
         Uses an ARIMA model to project forward the addititve trend and removes it. Then, utilizes the first period's
         worth of seasonal data determined in the .fit() function to extrapolate the seasonal signal of the data to be
@@ -328,9 +325,6 @@ class STLDecomposer(Decomposer):
 
     def get_trend_dataframe(self, X, y):
         """Return a list of dataframes with 4 columns: signal, trend, seasonality, residual.
-
-        Scikit-learn's PolynomialForecaster is used to generate the trend portion of the target data. statsmodel's
-        seasonal_decompose is used to generate the seasonality of the data.
 
         Args:
             X (pd.DataFrame): Input data with time series data in index.

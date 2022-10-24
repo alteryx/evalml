@@ -21,6 +21,10 @@ class Decomposer(Transformer):
         parameters (dict): Dictionary of parameters to pass to component object.
         component_obj (class) : Instance of a detrender/deseasonalizer class.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+        degree (int) : Currently the degree of the PolynomialDecomposer, not used for STLDecomposer.
+        seasonal_period (int) : The best guess, in units, for the period of the seasonal signal.
+        time_index (str) : The column name of the feature matrix (X) that the datetime information
+            should be pulled from.
     """
 
     name = "Decomposer"
@@ -57,7 +61,7 @@ class Decomposer(Transformer):
             **kwargs,
         )
 
-    def _raise_typeerror_if_not_int(self, var_name: str, var_value: str):
+    def _raise_typeerror_if_not_int(self, var_name: str, var_value):
         if not isinstance(var_value, int):
             if isinstance(var_value, float) and var_value.is_integer():
                 var_value = int(var_value)
@@ -77,7 +81,7 @@ class Decomposer(Transformer):
         # If user's provided time_index doesn't exist, log it and find some datetimes to use
         elif (self.time_index is None) or self.time_index not in dt_df.columns:
             self.logger.warning(
-                f"PolynomialDecomposer could not find requested time_index {self.time_index}",
+                f"Decomposer could not find requested time_index {self.time_index}",
             )
             # Use the feature data's index, preferentially
             num_datetime_features = dt_df.ww.select("Datetime").shape[1]
@@ -218,6 +222,7 @@ class Decomposer(Transformer):
         self.parameters["seasonal_period"] = self.seasonal_period
 
     def _choose_proper_index(self, y):
+        """Function that provides support for targets with integer and datetime indices."""
         # TODO: Need to update this after we upgrade to Pandas 1.5+ and Int64Index is deprecated.
         if isinstance(y.index, (Int64Index, pd.RangeIndex)):
             index = self.original_index
@@ -225,7 +230,7 @@ class Decomposer(Transformer):
             index = self.trend.index
         else:
             raise ValueError(
-                f"STLDecomposer doesn't support target data with index of type ({type(y.index)})",
+                f"Decomposer doesn't support target data with index of type ({type(y.index)})",
             )
         return index
 
@@ -260,7 +265,7 @@ class Decomposer(Transformer):
                 % periodicity
                 - 1
             )
-        elif isinstance(y.index, Int64Index):
+        elif isinstance(y.index, (Int64Index, pd.RangeIndex)):
             first_index_diff = y.index[0] - index[0]
             transform_first_ind = first_index_diff % periodicity
 
