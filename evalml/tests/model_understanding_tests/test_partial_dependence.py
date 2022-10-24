@@ -19,6 +19,13 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
+from evalml.pipelines.components.transformers.column_selectors import (
+    DropColumns,
+    SelectColumns,
+)
+from evalml.pipelines.components.transformers.preprocessing.featuretools import (
+    DFSTransformer,
+)
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import ProblemTypes
 
@@ -882,33 +889,6 @@ def test_partial_dependence_ensemble_pipeline(problem_type, X_y_binary, X_y_regr
     part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().all().all()
-
-
-# @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
-# def test_partial_dependence_optimized_ensemble_pipeline(problem_type, X_y_binary, X_y_regression):
-#     # --> BROKEN - stacked ensemble doesn't work for my initial implementation
-#     if problem_type == ProblemTypes.BINARY:
-#         X, y = X_y_binary
-#         input_pipelines = [
-#             BinaryClassificationPipeline(["Random Forest Classifier"]),
-#             BinaryClassificationPipeline(["Elastic Net Classifier"]),
-#         ]
-#     else:
-#         X, y = X_y_regression
-#         input_pipelines = [
-#             RegressionPipeline(["Random Forest Regressor"]),
-#             RegressionPipeline(["Elastic Net Regressor"]),
-#         ]
-#     pipeline = _make_stacked_ensemble_pipeline(
-#         input_pipelines=input_pipelines,
-#         problem_type=problem_type,
-#     )
-#     pipeline.fit(X, y)
-
-#     old_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
-#     new_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5, use_new=True, y=y)
-
-#     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
 
 
 def test_graph_partial_dependence(
@@ -2284,3 +2264,123 @@ def test_partial_dependence_after_dropped_grid_value_classification(
     )
 
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+
+
+# --> test with Select Columns Transformer
+
+
+def test_pd_select_cols_transformer_specified_feature_not_selected():
+    """Confirms that If a column isn't in the column selector but is the specified feature to
+    calculate partial dependence for, that the results are as expected for the optimized implementation.
+    """
+    y = pd.Series([1.3, 0.7, 1.2, 1.0] * 12)
+    X = pd.DataFrame(
+        {
+            "cats": ["a", "b", "c"] * 16,
+            "nums": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] * 4,
+        },
+    )
+    X.ww.init(logical_types={"cats": "categorical"})
+    pipeline = RegressionPipeline(
+        [SelectColumns(columns=["nums"]), "One Hot Encoder", "Linear Regressor"],
+    )
+
+    pipeline.fit(X, y)
+
+    old_part_dep = partial_dependence(pipeline, X, features="cats", grid_resolution=5)
+    new_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features="cats",
+        grid_resolution=5,
+        use_new=True,
+    )
+    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+
+
+def test_pd_drop_cols_transformer_specified_feature_not_selected():
+    """Confirms that If a column is dropped by the column dropper but is the specified feature to
+    calculate partial dependence for, that the results are as expected for the optimized implementation.
+    """
+    y = pd.Series([1.3, 0.7, 1.2, 1.0] * 12)
+    X = pd.DataFrame(
+        {
+            "cats": ["a", "b", "c"] * 16,
+            "nums": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] * 4,
+        },
+    )
+    X.ww.init(logical_types={"cats": "categorical"})
+    pipeline = RegressionPipeline(
+        [DropColumns(columns=["cats"]), "One Hot Encoder", "Linear Regressor"],
+    )
+
+    pipeline.fit(X, y)
+
+    old_part_dep = partial_dependence(pipeline, X, features="cats", grid_resolution=5)
+    new_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features="cats",
+        grid_resolution=5,
+        use_new=True,
+    )
+    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+
+
+# def test_pd_dfs_transformer_default_primitives():
+# # --> dfs transformer doesn't matter bc with aml, X will have all the features a;ready, so it's no op
+#     y = pd.Series([1.3, 0.7, 1.2, 1.0] * 10)
+#     X = pd.DataFrame({
+#         "cats": ["a", "b", "a", "c"] * 10,
+#         "dates": pd.Series(pd.date_range(start="2020-01-01", periods=40, freq="D")),
+#         "nums": [1, 2, 3, 4] * 10
+#     })
+#     X.ww.init(logical_types={"cats": "categorical", "dates": "datetime"})
+#     pipeline = RegressionPipeline(
+#         [DFSTransformer, "One Hot Encoder", "Linear Regressor"],
+#     )
+
+#     pipeline.fit(X, y)
+#     X_t = pipeline.transform_all_but_final(X)
+
+#     old_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
+#     new_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5, use_new=True)
+#     set_trace()
+#     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+
+
+# @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
+# def test_partial_dependence_optimized_ensemble_pipeline(problem_type, X_y_binary, X_y_regression):
+#     # --> BROKEN - stacked ensemble doesn't work for my initial implementation
+#     if problem_type == ProblemTypes.BINARY:
+#         X, y = X_y_binary
+#         input_pipelines = [
+#             BinaryClassificationPipeline(["Standard Scaler", "Random Forest Classifier"]),
+#             BinaryClassificationPipeline(["Standard Scaler", "Elastic Net Classifier"]),
+#         ]
+#     else:
+#         X, y = X_y_regression
+#         input_pipelines = [
+#             RegressionPipeline(["Random Forest Regressor"]),
+#             RegressionPipeline(["Elastic Net Regressor"]),
+#         ]
+#     pipeline = _make_stacked_ensemble_pipeline(
+#         input_pipelines=input_pipelines,
+#         problem_type=problem_type,
+#     )
+#     pipeline.fit(X, y)
+
+#     old_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
+#     new_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5, use_new=True)
+
+#     sub_pipeline_components = []
+
+#     sub_pipeline = pipeline.__class__(
+#         ["Standard Scaler", "Elastic Net Classifier"],
+#         parameters=parameters,
+#         custom_name="Sub Pipeline"
+#     )
+#     # Find all the non ensemble estimators via [e.model_family for e in pipeline.component_graph.get_estimators()] - check family not ENSEMBLE
+#     # For each estimator, create a pipeline
+
+#     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)

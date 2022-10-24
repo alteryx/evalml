@@ -334,14 +334,6 @@ def _partial_dependence_calculation_2(pipeline, grid, features, X):
         new_parameters[selector]["percent_features"] = 1.0
         new_parameters[selector]["threshold"] = 0.0
 
-    for variable in features:
-        pipeline_copy = pipeline.new(
-            parameters=new_parameters,
-        )
-
-        pipeline_copy.fit(X.ww[[variable]], mock_y)
-        cloned_feature_pipelines[variable] = pipeline_copy
-
     feature_provenance = pipeline._get_feature_provenance()
 
     variable_has_features_passed_to_estimator = {
@@ -351,6 +343,17 @@ def _partial_dependence_calculation_2(pipeline, grid, features, X):
     no_features_passed_to_estimator = not any(
         variable_has_features_passed_to_estimator.values(),
     )
+
+    for variable in features:
+        # Don't fit pipelines if the feature has no impact on predictions
+        if not variable_has_features_passed_to_estimator[variable]:
+            continue
+        pipeline_copy = pipeline.new(
+            parameters=new_parameters,
+        )
+        # set_trace()
+        pipeline_copy.fit(X.ww[[variable]], mock_y)
+        cloned_feature_pipelines[variable] = pipeline_copy
 
     if no_features_passed_to_estimator:
         # --> maybe we need to also confirm a selector was used bc i dont want this to
@@ -377,9 +380,12 @@ def _partial_dependence_calculation_2(pipeline, grid, features, X):
             # Take the changed column and send it through transform by itself
             pipeline_copy = cloned_feature_pipelines[variable]
             X_t_single_col = pipeline_copy.transform_all_but_final(changed_col_df)
-            cols_to_replace = feature_provenance.get(variable) or [
-                variable,
-            ]
+            cols_to_replace = [variable]
+            if feature_provenance.get(variable):
+                # cols to replace has to be in the same order as X_t
+                cols_to_replace = [
+                    col for col in X_t if col in feature_provenance.get(variable)
+                ]
             # --> not keeping in woodwork - problematic?
 
             # If some categories get dropped, they won't be in X_t, so don't include them
