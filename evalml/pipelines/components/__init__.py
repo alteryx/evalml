@@ -57,6 +57,7 @@ from evalml.pipelines.components.transformers import (
     Undersampler,
     TargetImputer,
     PolynomialDecomposer,
+    STLDecomposer,
     Oversampler,
     LogTransformer,
     EmailFeaturizer,

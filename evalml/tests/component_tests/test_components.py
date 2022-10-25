@@ -54,6 +54,7 @@ from evalml.pipelines.components import (
     SelectColumns,
     SimpleImputer,
     StandardScaler,
+    STLDecomposer,
     SVMClassifier,
     SVMRegressor,
     TargetImputer,
@@ -841,9 +842,10 @@ def test_transformer_transform_output_type(component_class, X_y_binary):
     ]
 
     if component_class in [
-        PolynomialDecomposer,
         LogTransformer,
         LabelEncoder,
+        PolynomialDecomposer,
+        STLDecomposer,
         TimeSeriesRegularizer,
     ]:
         pytest.skip(
@@ -1111,6 +1113,7 @@ def test_all_transformers_check_fit(component_class, X_y_binary, ts_data):
         TimeSeriesFeaturizer,
         TimeSeriesRegularizer,
         PolynomialDecomposer,
+        STLDecomposer,
     ]:
         X, _, y = ts_data(problem_type="time series binary")
         component = component_class(time_index="date")
@@ -1237,6 +1240,7 @@ def test_all_transformers_check_fit_input_type(
         TimeSeriesFeaturizer,
         TimeSeriesRegularizer,
         PolynomialDecomposer,
+        STLDecomposer,
     ]:
         X, _, y = ts_data(problem_type="time series binary")
         kwargs = {"time_index": "date"}
@@ -1277,6 +1281,7 @@ def test_serialization(
         TimeSeriesFeaturizer,
         TimeSeriesRegularizer,
         PolynomialDecomposer,
+        STLDecomposer,
     ]
 
     print("Testing serialization of component {}".format(component_class.name))
@@ -1577,10 +1582,10 @@ def test_transformer_fit_and_transform_respect_custom_indices(
         check_names = False
         if use_custom_index:
             pytest.skip("The DFSTransformer changes the index so we skip it.")
-    if transformer_class == PolynomialDecomposer:
+    if transformer_class in [PolynomialDecomposer, STLDecomposer]:
         pytest.skip(
-            "Skipping PolynomialDecomposer because we test that it respects custom indices in "
-            "test_polynomial_decomposer.py",
+            "Skipping Decomposer because we test that it respects custom indices in "
+            "test_decomposer.py",
         )
 
     X, y = X_y_binary
