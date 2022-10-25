@@ -36,6 +36,7 @@ def _get_cloned_feature_pipelines(
         # Feature selector's shouldn't drop any columns for the cloned pipeline
         new_parameters[selector]["percent_features"] = 1.0
         new_parameters[selector]["threshold"] = 0.0
+    # --> check if dfs transformer is present, and if all the features aren't in X, raise an error
 
     # Create a fit pipeline for each feature
     cloned_feature_pipelines = {}

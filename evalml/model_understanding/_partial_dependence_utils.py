@@ -250,18 +250,17 @@ def _partial_dependence_calculation(pipeline, grid, features, X, fast_mode=False
         X_eval = pipeline.transform_all_but_final(X_eval)
         prediction_object = pipeline.estimator
 
-    # Some components may drop features, so we need to know whether the specified
-    # features actually have an impact on predictions
-    feature_provenance = pipeline._get_feature_provenance()
-    variable_has_features_passed_to_estimator = {
-        variable: variable in feature_provenance or variable in X_eval.columns
-        for variable in features
-    }
-    no_features_passed_to_estimator = not any(
-        variable_has_features_passed_to_estimator.values(),
-    )
+        # Some components may drop features, so we need to know whether the specified
+        # features actually have an impact on predictions
+        feature_provenance = pipeline._get_feature_provenance()
+        variable_has_features_passed_to_estimator = {
+            variable: variable in feature_provenance or variable in X_eval.columns
+            for variable in features
+        }
+        no_features_passed_to_estimator = not any(
+            variable_has_features_passed_to_estimator.values(),
+        )
 
-    if fast_mode:
         # Fit pipelines for each feature so that we can transform it with grid
         # values later
         cloned_feature_pipelines = _get_cloned_feature_pipelines(
@@ -276,7 +275,7 @@ def _partial_dependence_calculation(pipeline, grid, features, X, fast_mode=False
     else:
         prediction_method = prediction_object.predict_proba
 
-    if no_features_passed_to_estimator:
+    if fast_mode and no_features_passed_to_estimator:
         # --> maybe we need to also confirm a selector was used bc i dont want this to
         # silently set these values in any situation that doesn't look as expected - ex stacked ensembling
         original_predictions = prediction_method(X_eval)

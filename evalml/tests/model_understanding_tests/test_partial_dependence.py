@@ -1,7 +1,7 @@
 import re
-from pdb import set_trace
 from unittest.mock import patch
 
+import featuretools as ft
 import numpy as np
 import pandas as pd
 import pytest
@@ -2324,27 +2324,59 @@ def test_pd_drop_cols_transformer_specified_feature_not_selected():
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
 
 
-# def test_pd_dfs_transformer_default_primitives():
-# # --> dfs transformer doesn't matter bc with aml, X will have all the features a;ready, so it's no op
-#     y = pd.Series([1.3, 0.7, 1.2, 1.0] * 10)
-#     X = pd.DataFrame({
-#         "cats": ["a", "b", "a", "c"] * 10,
-#         "dates": pd.Series(pd.date_range(start="2020-01-01", periods=40, freq="D")),
-#         "nums": [1, 2, 3, 4] * 10
-#     })
-#     X.ww.init(logical_types={"cats": "categorical", "dates": "datetime"})
-#     pipeline = RegressionPipeline(
-#         [DFSTransformer, "One Hot Encoder", "Linear Regressor"],
-#     )
+def test_pd_dfs_transformer_fast_mode_works_only_when_features_present(X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X.columns = X.columns.astype(str)
 
-#     pipeline.fit(X, y)
-#     X_t = pipeline.transform_all_but_final(X)
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X",
+        dataframe=X,
+        index="index",
+        make_index=True,
+    )
+    X_fm, features = ft.dfs(
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["absolute"],
+    )
 
-#     old_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
-#     new_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5, use_new=True)
-#     set_trace()
-#     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+    dfs_transformer = DFSTransformer(features=features)
+    pipeline = BinaryClassificationPipeline(
+        [dfs_transformer, "Standard Scaler", "Random Forest Classifier"],
+    )
 
+    # When fit on X, the features expected by the dfs transformer aren't present, so they're created via
+    # calculate feature matrix, and pd won't work with dfs transformer, for two reasons
+    # 1. It doesn't create a feature provenance, so only the base feature gets updated with new pd values - not any engineered features
+    # 2. Any multi input features wouldn't get created, because the other inputs wouldn't be present
+    pipeline.fit(X, y)
+    old_part_dep = partial_dependence(pipeline, X, features=1, grid_resolution=5)
+    new_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features=1,
+        grid_resolution=5,
+        use_new=True,
+    )
+    assert not old_part_dep.equals(new_part_dep)
+
+    # If we pass the feature matrix into the same pipeline, though, DFS transformer will be no op, so pd should match
+    pipeline = pipeline.clone()
+    pipeline.fit(X_fm, y)
+    old_part_dep = partial_dependence(pipeline, X_fm, features=1, grid_resolution=5)
+    new_part_dep = partial_dependence(
+        pipeline,
+        X_fm,
+        features=1,
+        grid_resolution=5,
+        use_new=True,
+    )
+    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+
+
+# --> test attempting pd on index?
 
 # @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
 # def test_partial_dependence_optimized_ensemble_pipeline(problem_type, X_y_binary, X_y_regression):
