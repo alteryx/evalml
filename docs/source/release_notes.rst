@@ -2,6 +2,8 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added the STL Decomposer :pr:`3741`
+        * Integrated STLDecomposer into AutoMLSearch for time series regression problems :pr:`3781`
     * Fixes
     * Changes
         * Cap Featuretools at < 1.15.0 :pr:`3775`
@@ -16,7 +18,6 @@ Release Notes
 **v0.60.0 Oct. 19, 2022**
     * Enhancements
         * Add forecast functions to time series regression pipeline :pr:`3742`
-        * Added the STL Decomposer :pr:`3741`
     * Fixes
         * Fix to allow ``IDColumnsDataCheck`` to work with ``IntegerNullable`` inputs :pr:`3740`
         * Fixed datasets name for main performance tests :pr:`3743`
