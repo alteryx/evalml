@@ -107,6 +107,13 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         return not cls.modifies_target
 
     def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters):
+        """Determines whether or not a component can be used with partial dependence's fast mode.
+
+        Args:
+            X (pd.DataFrame): Holdout data being used for partial dependence calculations.
+            pipeline_parameters (dict): Pipeline parameters that will be used to create the pipelines
+                used in partial dependence fast mode.
+        """
         if self._can_be_used_for_fast_partial_dependence:
             return pipeline_parameters
 

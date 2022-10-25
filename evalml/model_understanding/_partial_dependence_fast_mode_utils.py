@@ -13,6 +13,19 @@ def _get_cloned_feature_pipelines(
     pipeline,
     variable_has_features_passed_to_estimator,
 ):
+    """Clones and fits pipelines for partial dependence fast mode.
+
+    Args:
+        pipeline (PipelineBase or subclass): Fitted pipeline that will be cloned.
+        X (pd.DataFrame, np.ndarray): The input data used to fit the cloned pipelines.
+        features (string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
+            If features is a string, it must be a valid column name in X.
+            If features is a tuple of int/strings, it must contain valid column integers/names in X.
+
+    Returns:
+        dict[str, PipelineBase or subclass]: Dictionary mapping feature name to the pipeline pipeline
+            fit for it.
+    """
     # Make sure that only components that are capable of handling fast mode are in the pipeline
     new_parameters = pipeline.parameters
     for component in pipeline.component_graph.component_instances.values():
@@ -21,7 +34,6 @@ def _get_cloned_feature_pipelines(
             new_parameters,
         )
 
-    # --> add docstring - and maybe typehinting?
     # mock out y for pipeline fitting
     len_X = len(X)
     if is_regression(pipeline.problem_type):
@@ -56,6 +68,21 @@ def _transform_single_feature(
     part_dep_column,
     cloned_pipeline,
 ):
+    """Transforms single column using cloned pipeline and column that has been updated
+        for partial dependence calculations.
+
+    Args:
+        X_t (pd.DataFrame, np.ndarray): The transformed data into which we insert the transformed single column.
+        X (pd.DataFrame, np.ndarray): The original data used for calculating partial dependence.
+        feature_provenance (dict[str, set[str]]): Dictionary mapping base feature names to engineered feature names.
+        variable (str): The name of the single column we're transforming.
+        part_dep_column (pd.Series): The updated column that will be transformed by the fit pipeline.
+        cloned_pipeline (PipelineBase or subclass): Fitted pipeline that will be used to transform a single feature.
+
+    Returns:
+        dict[str, PipelineBase or subclass]: Dictionary mapping feature name to the pipeline pipeline
+            fit for it.
+    """
     changed_col_df = pd.DataFrame({variable: part_dep_column})
     changed_col_df.ww.init(
         logical_types={variable: X.ww.logical_types[variable]},
