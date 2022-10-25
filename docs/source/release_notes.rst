@@ -2,6 +2,8 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added the STLDecomposer :pr:`3741`
+        * Brought the PolynomialDecomposer up to parity with STLDecomposer :pr:`3768`
     * Fixes
     * Changes
         * Cap Featuretools at < 1.15.0 :pr:`3775`
@@ -17,7 +19,6 @@ Release Notes
 **v0.60.0 Oct. 19, 2022**
     * Enhancements
         * Add forecast functions to time series regression pipeline :pr:`3742`
-        * Added the STL Decomposer :pr:`3741`
     * Fixes
         * Fix to allow ``IDColumnsDataCheck`` to work with ``IntegerNullable`` inputs :pr:`3740`
         * Fixed datasets name for main performance tests :pr:`3743`

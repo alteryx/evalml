@@ -2217,6 +2217,7 @@ def generate_seasonal_data():
         step=None,
         num_periods=20,
         scale=1,
+        seasonal_scale=1,
         trend_degree=1,
         freq_str="D",
         set_time_index=False,
@@ -2231,10 +2232,35 @@ def generate_seasonal_data():
         step=None,
         num_periods=20,
         scale=1,
+        seasonal_scale=1,
         trend_degree=1,
         freq_str="D",
         set_time_index=False,
     ):
+        """Function to generate a sinusoidal signal with a polynomial trend.
+
+        Args:
+            period: The length, in units, of the seasonal signal.
+            step:
+            num_periods: How many periods of the seasonal signal to generate.
+            scale: The relative scale of the trend.  Setting it higher increases
+                the comparative strength of the trend.
+            seasonal_scale: The relative scale of the sinusoidal seasonality.
+                Setting it higher increases the comparative strength of the
+                trend.
+            trend_degree: The degree of the polynomial trend. 1 = linear, 2 =
+                quadratic, 3 = cubic.  Specific functional forms defined
+                below.
+            freq_str: The pandas frequency string used to define the unit of
+                time in the series time index.
+            set_time_index: Whether to set the time index with a pandas.
+                DatetimeIndex.
+
+        Returns:
+            X (pandas.DateFrame): A placeholder feature matrix.
+            y (pandas.Series): A synthetic, time series target Series.
+
+        """
         if period is None:
             x = np.arange(0, 1, 0.01)
         elif step is not None:
@@ -2254,7 +2280,7 @@ def generate_seasonal_data():
         elif trend_degree == 3:
             y_trend = pd.Series(scale * minmax_scale((x - 5) ** 3 + x**2))
         if period is not None:
-            y_seasonal = pd.Series(np.sin(freq * x))
+            y_seasonal = pd.Series(seasonal_scale * np.sin(freq * x))
         else:
             y_seasonal = pd.Series(np.zeros(len(x)))
         y = y_trend + y_seasonal

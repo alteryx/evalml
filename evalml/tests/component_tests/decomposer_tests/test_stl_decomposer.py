@@ -1,5 +1,3 @@
-import datetime
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -7,6 +5,10 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
 from evalml.pipelines.components import STLDecomposer
+from evalml.tests.component_tests.decomposer_tests.test_decomposer import (
+    build_test_target,
+    get_trend_dataframe_format_correct,
+)
 
 
 def test_stl_decomposer_init():
@@ -18,17 +20,6 @@ def test_stl_decomposer_init():
     }
 
 
-def test_stl_decomposer_init_raises_error_if_degree_not_int():
-
-    with pytest.raises(TypeError, match="Received str"):
-        STLDecomposer(degree="1")
-
-    with pytest.raises(TypeError, match="Received float"):
-        STLDecomposer(degree=3.4)
-
-    STLDecomposer(degree=3.0)
-
-
 def test_stl_decomposer_auto_sets_seasonal_period_to_odd(ts_data):
     X, _, y = ts_data()
 
@@ -37,56 +28,6 @@ def test_stl_decomposer_auto_sets_seasonal_period_to_odd(ts_data):
 
     stl = STLDecomposer(seasonal_period=4)
     assert stl.seasonal_period == 5
-
-
-def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_test):
-    """Function to build a sample target.  Based on subset_y being daily data containing 5 periods of a periodic signal."""
-    if transformer_fit_on_data == "in-sample-less-than-sample":
-        # Re-compose 14-days worth of data within, but not spanning the entire sample
-        delta = -3
-    if transformer_fit_on_data == "wholly-out-of-sample":
-        # Re-compose 14-days worth of data with a one period gap between end of
-        # fit data and start of data to inverse-transform
-        delta = seasonal_period
-    elif transformer_fit_on_data == "wholly-out-of-sample-no-gap":
-        # Re-compose 14-days worth of data with no gap between end of
-        # fit data and start of data to inverse-transform
-        delta = 1
-    elif transformer_fit_on_data == "partially-out-of-sample":
-        # Re-compose 14-days worth of data overlapping the in and out-of
-        # sample data.
-        delta = -1
-    elif transformer_fit_on_data == "out-of-sample-in-past":
-        # Re-compose 14-days worth of data both out of sample and in the
-        # past.
-        delta = -12
-    elif transformer_fit_on_data == "partially-out-of-sample-in-past":
-        # Re-compose 14-days worth of data partially out of sample and in the
-        # past.
-        delta = -6
-
-    if isinstance(subset_y.index, pd.DatetimeIndex):
-        delta = datetime.timedelta(days=delta * seasonal_period)
-
-        new_index = pd.date_range(
-            subset_y.index[-1] + delta,
-            periods=2 * seasonal_period,
-            freq="D",
-        )
-    else:
-        delta = delta * seasonal_period
-        new_index = np.arange(
-            subset_y.index[-1] + delta,
-            subset_y.index[-1] + delta + 2 * seasonal_period,
-        )
-
-    if to_test == "inverse_transform":
-        y_t_new = pd.Series(np.zeros(len(new_index))).set_axis(new_index)
-    elif to_test == "transform":
-        y_t_new = pd.Series(np.sin([x for x in range(len(new_index))])).set_axis(
-            new_index,
-        )
-    return y_t_new
 
 
 @pytest.mark.parametrize(
@@ -161,71 +102,6 @@ def test_stl_fit_transform_in_sample(
 
     # Verify the X is not changed
     pd.testing.assert_frame_equal(X, X_t)
-
-
-@pytest.mark.parametrize(
-    "transformer_fit_on_data",
-    [
-        "in-sample",
-        "in-sample-less-than-sample",
-        "wholly-out-of-sample",
-        "wholly-out-of-sample-no-gap",
-        "partially-out-of-sample",
-        "out-of-sample-in-past",
-        "partially-out-of-sample-in-past",
-    ],
-)
-def test_stl_decomposer_fit_transform_out_of_sample(
-    generate_seasonal_data,
-    transformer_fit_on_data,
-):
-    # Generate 10 periods (the default) of synthetic seasonal data
-    seasonal_period = 7
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=seasonal_period,
-        freq_str="D",
-        set_time_index=True,
-    )
-    subset_X = X[2 * seasonal_period : 7 * seasonal_period]
-    subset_y = y[2 * seasonal_period : 7 * seasonal_period]
-
-    decomposer = STLDecomposer(seasonal_period=seasonal_period)
-    decomposer.fit(subset_X, subset_y)
-
-    if transformer_fit_on_data == "in-sample":
-        output_X, output_y = decomposer.transform(subset_X, subset_y)
-        pd.testing.assert_series_equal(
-            pd.Series(np.zeros(len(output_y))).set_axis(subset_y.index),
-            output_y,
-            check_dtype=False,
-            check_names=False,
-        )
-
-    if transformer_fit_on_data != "in-sample":
-        y_new = build_test_target(
-            subset_y,
-            seasonal_period,
-            transformer_fit_on_data,
-            to_test="transform",
-        )
-        if transformer_fit_on_data in [
-            "out-of-sample-in-past",
-            "partially-out-of-sample-in-past",
-        ]:
-            with pytest.raises(
-                ValueError,
-                match="STLDecomposer cannot transform/inverse transform data out of sample",
-            ):
-                output_X, output_inverse_y = decomposer.transform(None, y_new)
-        else:
-            output_X, output_y_t = decomposer.transform(None, y[y_new.index])
-
-            pd.testing.assert_series_equal(
-                pd.Series(np.zeros(len(output_y_t))).set_axis(y_new.index),
-                output_y_t,
-                check_exact=False,
-                atol=5.0e-4,
-            )
 
 
 @pytest.mark.parametrize("index_type", ["integer_index", "datetime_index"])
@@ -317,8 +193,6 @@ def test_stl_decomposer_get_trend_dataframe(
     fit_before_decompose,
     variateness,
 ):
-    def get_trend_dataframe_format_correct(df):
-        return set(df.columns) == {"signal", "trend", "seasonality", "residual"}
 
     seasonal_period = 7
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
@@ -394,8 +268,6 @@ def test_stl_decomposer_get_trend_dataframe(
 def test_stl_decomposer_get_trend_dataframe_sets_time_index_internally(
     generate_seasonal_data,
 ):
-    def get_trend_dataframe_format_correct(df):
-        return set(df.columns) == {"signal", "trend", "seasonality", "residual"}
 
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
         period=7,
