@@ -13,6 +13,15 @@ def _get_cloned_feature_pipelines(
     pipeline,
     variable_has_features_passed_to_estimator,
 ):
+    # --> long term: put flag on the object
+
+    for component in pipeline.component_graph.component_instances.values():
+        X, pipeline_params = component._handle_partial_dependence_fast_mode(
+            X,
+            pipeline.parameters,
+        )
+        pass
+
     # --> add docstring - and maybe typehinting?
     # mock out y for pipeline fitting
     len_X = len(X)
@@ -30,7 +39,9 @@ def _get_cloned_feature_pipelines(
     if dfs_transformer is not None:
         dfs_features = dfs_transformer["features"]
         X_cols = set(X.columns)
-        if features is None or any(f.get_name() not in X_cols for f in dfs_features):
+        if dfs_features is None or any(
+            f.get_name() not in X_cols for f in dfs_features
+        ):
             # set_trace()
             raise ValueError(
                 "Cannot use fast mode with DFS Transformer when features are unspecified or not all present in X.",

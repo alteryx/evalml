@@ -2411,8 +2411,9 @@ def test_partial_dependence_fast_mode_ensemble_pipeline_blocked(
     )
     pipeline.fit(X, y)
 
-    # --> raise error or automatically fall back to slow mode?
-    error = "Cannot run fast mode with StackedEnsemble pipeline component."
+    error = re.escape(
+        f"cannot run partial dependence fast mode",
+    )
     with pytest.raises(
         PartialDependenceError,
         match=error,
@@ -2430,3 +2431,5 @@ def test_partial_dependence_with_invalid_components():
 
 
 # --> test case when one of the specified features (mult feats) isn't present but the other is
+# --> we need a test that will fail whenever a new component is added and it doesn't work with pd, so users have to handle it themselves or mark it incompatible with fast mode
+# --> test no features set for partial dependence

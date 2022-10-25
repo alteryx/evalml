@@ -20,6 +20,10 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     """
 
     _default_parameters = None
+    # --> this won't make custom components invalid for fast mode, but lets us opt into it
+    # given that fast mode isn't default behavior and we'll have proper warnings about not
+    # using it for custom components, (maybe we raise a warning if we find custom?), this makes the most sense
+    _can_be_used_for_fast_partial_dependence = True
 
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         """Base class for all components.
@@ -101,6 +105,14 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     @classproperty
     def _supported_by_list_API(cls):
         return not cls.modifies_target
+
+    def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters):
+        if self._can_be_used_for_fast_partial_dependence:
+            return X, pipeline_parameters
+
+        raise TypeError(
+            f"Component {self.name} cannot run partial dependence fast mode.",
+        )
 
     def clone(self):
         """Constructs a new component with the same parameters and random state.
