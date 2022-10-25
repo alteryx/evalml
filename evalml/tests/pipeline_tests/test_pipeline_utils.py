@@ -189,6 +189,48 @@ def test_make_pipeline(
 
 
 @pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ],
+)
+@pytest.mark.parametrize("frequency", ["D", "MS", "A", "T"])
+def test_make_pipeline_controls_decomposer(
+    problem_type,
+    frequency,
+    get_test_data_from_configuration,
+):
+    X, y = get_test_data_from_configuration(
+        "ww",
+        problem_type,
+        column_names=["dates", "numerical"],
+    )
+    X.ww["dates"] = pd.Series(pd.date_range("2000-02-03", periods=20, freq=frequency))
+    parameters = {
+        "pipeline": {
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 1,
+            "forecast_horizon": 3,
+        },
+    }
+    estimators = get_estimators(problem_type=problem_type)
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    for estimator_class in estimators:
+        if problem_type in estimator_class.supported_problem_types:
+
+            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
+            assert isinstance(pipeline, pipeline_class)
+
+            if is_regression(problem_type) and frequency in ["D", "MS"]:
+                assert "STL Decomposer" in pipeline.component_graph.compute_order
+            else:
+                assert "STL Decomposer" not in pipeline.component_graph.compute_order
+
+
+@pytest.mark.parametrize(
     "sampler",
     ["Oversampler", "Undersampler"],
 )
