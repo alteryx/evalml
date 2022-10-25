@@ -64,18 +64,6 @@ class STLDecomposer(Decomposer):
             **kwargs,
         )
 
-    def _check_oos_past(self, y):
-        """Function to check whether provided target data is out-of-sample and in the past."""
-        index = self._choose_proper_index(y)
-
-        if y.index[0] < index[0]:
-            raise ValueError(
-                f"STLDecomposer cannot transform/inverse transform data out of sample and before the data used"
-                f"to fit the decomposer."
-                f"\nRequested range: {str(y.index[0])}:{str(y.index[-1])}."
-                f"\nSample range: {str(index[0])}:{str(index[-1])}.",
-            )
-
     def _project_trend(self, y):
         """Function to project the in-sample trend into the future."""
         self._check_oos_past(y)
@@ -160,6 +148,7 @@ class STLDecomposer(Decomposer):
         """
         self.original_index = y.index if y is not None else None
         X, y = self._check_target(X, y)
+        self._map_dt_to_integer(self.original_index, y.index)
 
         # Warn for poor decomposition use with higher periods
         if self.seasonal_period > 14:

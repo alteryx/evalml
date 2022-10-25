@@ -221,13 +221,60 @@ class Decomposer(Transformer):
         self.seasonal_period = self.determine_periodicity(X, y)
         self.parameters.update({"seasonal_period": self.seasonal_period})
 
+    def _check_oos_past(self, y):
+        """Function to check whether provided target data is out-of-sample and in the past."""
+        index = self._choose_proper_index(y)
+
+        if y.index[0] < index[0]:
+            raise ValueError(
+                f"STLDecomposer cannot transform/inverse transform data out of sample and before the data used"
+                f"to fit the decomposer."
+                f"\nRequested range: {str(y.index[0])}:{str(y.index[-1])}."
+                f"\nSample range: {str(index[0])}:{str(index[-1])}.",
+            )
+
+    def _map_dt_to_integer(self, original_index, dt_index):
+        """Function to generate an initial mapping of integer indices to datetime indices."""
+        # Set an initial mapping of integers <-> datetimes at fit
+        if isinstance(original_index, pd.DatetimeIndex):
+            int_index = pd.RangeIndex(len(original_index))
+        # Standardize the integer index as a RangeIndex and use existing integer indices
+        elif isinstance(original_index, (pd.RangeIndex, Int64Index)):
+            int_index = pd.RangeIndex(original_index)
+
+        assert isinstance(dt_index, pd.DatetimeIndex)
+        assert len(original_index) == len(dt_index)
+
+        self.in_sample_integer_index = int_index
+        self.in_sample_datetime_index = dt_index
+
+    def _int_to_dt(self, integer_index_value):
+        """Function to convert an integer index value to a datetime value based on the mapping made during fit."""
+        try:
+            dt = self.in_sample_datetime_index[
+                self.in_sample_integer_index.get_loc(integer_index_value)
+            ]
+        except KeyError:
+            more_than = integer_index_value - self.in_sample_integer_index[-1]
+            dt = (
+                self.in_sample_datetime_index.freq * more_than
+                + self.in_sample_datetime_index[-1]
+            )
+        return dt
+
+    def _convert_int_index_to_dt_index(self, integer_index):
+        """Function to convert an entire index full of integers to datetimes."""
+        dts = [self._int_to_dt(integer) for integer in integer_index]
+        dt_index = pd.DatetimeIndex(dts, freq=self.frequency)
+        return dt_index
+
     def _choose_proper_index(self, y):
         """Function that provides support for targets with integer and datetime indices."""
         # TODO: Need to update this after we upgrade to Pandas 1.5+ and Int64Index is deprecated.
         if isinstance(y.index, (Int64Index, pd.RangeIndex)):
-            index = self.original_index
+            index = self.in_sample_integer_index
         elif isinstance(y.index, pd.DatetimeIndex):
-            index = self.trend.index
+            index = self.in_sample_datetime_index
         else:
             raise ValueError(
                 f"Decomposer doesn't support target data with index of type ({type(y.index)})",
