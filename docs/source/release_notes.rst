@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
         * Cap Featuretools at < 1.15.0 :pr:`3775`
+        * Remove Featuretools upper bound restriction and fix nlp-primitives import statements :pr:`3778`
     * Documentation Changes
     * Testing Changes
 
