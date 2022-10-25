@@ -70,3 +70,9 @@ class FeatureSelector(Transformer):
             pd.DataFrame: Transformed data.
         """
         return self.fit(X, y).transform(X, y)
+
+    def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters):
+        pipeline_parameters[self.name]["percent_features"] = 1.0
+        pipeline_parameters[self.name]["threshold"] = 0.0
+
+        return pipeline_parameters

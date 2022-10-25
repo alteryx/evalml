@@ -108,7 +108,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
 
     def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters):
         if self._can_be_used_for_fast_partial_dependence:
-            return X, pipeline_parameters
+            return pipeline_parameters
 
         raise TypeError(
             f"Component {self.name} cannot run partial dependence fast mode.",

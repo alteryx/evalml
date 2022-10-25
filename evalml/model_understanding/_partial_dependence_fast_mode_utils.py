@@ -13,14 +13,12 @@ def _get_cloned_feature_pipelines(
     pipeline,
     variable_has_features_passed_to_estimator,
 ):
-    # --> long term: put flag on the object
-
+    new_parameters = pipeline.parameters
     for component in pipeline.component_graph.component_instances.values():
-        X, pipeline_params = component._handle_partial_dependence_fast_mode(
+        new_parameters = component._handle_partial_dependence_fast_mode(
             X,
-            pipeline.parameters,
+            new_parameters,
         )
-        pass
 
     # --> add docstring - and maybe typehinting?
     # mock out y for pipeline fitting
@@ -33,34 +31,6 @@ def _get_cloned_feature_pipelines(
     else:
         mock_y = pd.Series(np.random.choice([0, 1, 2], size=len_X))
 
-    # If DFSTransformer is present, confirm features parameter is specified and all features are present
-    # in X
-    dfs_transformer = pipeline.parameters.get("DFS Transformer")
-    if dfs_transformer is not None:
-        dfs_features = dfs_transformer["features"]
-        X_cols = set(X.columns)
-        if dfs_features is None or any(
-            f.get_name() not in X_cols for f in dfs_features
-        ):
-            # set_trace()
-            raise ValueError(
-                "Cannot use fast mode with DFS Transformer when features are unspecified or not all present in X.",
-            )
-
-    # Handle components that use feature importance to remove some features before passing into estimator
-    new_parameters = pipeline.parameters
-    selector = None
-    if "RF Regressor Select From Model" in pipeline.parameters:
-        # --> can I be more generic and just look for any selector that does this kind of thing? Are there others than these two?
-        selector = "RF Regressor Select From Model"
-    elif "RF Classifier Select From Model" in pipeline.parameters:
-        selector = "RF Classifier Select From Model"
-    if selector is not None:
-        # Feature selector's shouldn't drop any columns for the cloned pipeline
-        new_parameters[selector]["percent_features"] = 1.0
-        new_parameters[selector]["threshold"] = 0.0
-    # --> check if dfs transformer is present, and if all the features aren't in X, raise an error
-
     # Create a fit pipeline for each feature
     cloned_feature_pipelines = {}
     for variable in features:
@@ -72,6 +42,7 @@ def _get_cloned_feature_pipelines(
         )
         pipeline_copy.fit(X.ww[[variable]], mock_y)
         cloned_feature_pipelines[variable] = pipeline_copy
+
     # --> maybe check if not passed to estimator earlier and return then
     return cloned_feature_pipelines
 
