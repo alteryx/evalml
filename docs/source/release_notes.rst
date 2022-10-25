@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Cap Featuretools at < 1.15.0 :pr:`3775`
     * Documentation Changes
     * Testing Changes
 
