@@ -676,6 +676,8 @@ def get_time_index(X: pd.DataFrame, y: pd.Series, time_index_name: str):
         num_datetime_features = X.ww.select("Datetime").shape[1]
         if isinstance(X.index, pd.DatetimeIndex):
             dt_col = pd.Series(X.index)
+        elif isinstance(y.index, pd.DatetimeIndex):
+            dt_col = pd.Series(y.index)
         elif num_datetime_features == 0:
             raise ValueError(
                 "There are no Datetime features in the feature data and neither the feature nor the target data have a DateTime index.",

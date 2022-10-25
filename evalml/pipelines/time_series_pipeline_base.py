@@ -149,8 +149,12 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
     def _drop_time_index(self, X, y):
         """Helper method to drop the time index column from the data if DateTime Featurizer is not present."""
         if self.should_drop_time_index and self.time_index in X.columns:
+            X_schema = X.ww.schema
+            y_schema = y.ww.schema
             X = X.set_index(X[self.time_index])
             y = y.set_axis(X[self.time_index])
+            X.ww.init(schema=X_schema)
+            y.ww.init(schema=y_schema)
             if X.ww.schema is not None:
                 X = X.ww.drop([self.time_index])
             else:
@@ -247,9 +251,6 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             raise ValueError(
                 "Make sure to include an input for y_train when calling time series' predict",
             )
-        X = self._drop_time_index(X, y)
-        X_train = self._drop_time_index(X_train, y_train)
-        X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         if self.estimator is None:
             raise ValueError(
                 "Cannot call predict() on a component graph because the final component is not an Estimator.",
@@ -259,6 +260,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             X_train.index[-X.shape[0] :],
             self.gap + X.shape[0],
         )
+        X = self._drop_time_index(X, pd.Series([0] * len(X)))
+        X_train = self._drop_time_index(X_train, y_train)
+        X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         y_holdout = self._create_empty_series(y_train, X.shape[0])
         y_holdout = infer_feature_types(y_holdout)
         y_holdout.index = X.index
