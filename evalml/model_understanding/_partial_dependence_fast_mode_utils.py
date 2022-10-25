@@ -24,6 +24,18 @@ def _get_cloned_feature_pipelines(
     else:
         mock_y = pd.Series(np.random.choice([0, 1, 2], size=len_X))
 
+    # If DFSTransformer is present, confirm features parameter is specified and all features are present
+    # in X
+    dfs_transformer = pipeline.parameters.get("DFS Transformer")
+    if dfs_transformer is not None:
+        dfs_features = dfs_transformer["features"]
+        X_cols = set(X.columns)
+        if features is None or any(f.get_name() not in X_cols for f in dfs_features):
+            # set_trace()
+            raise ValueError(
+                "Cannot use fast mode with DFS Transformer when features are unspecified or not all present in X.",
+            )
+
     # Handle components that use feature importance to remove some features before passing into estimator
     new_parameters = pipeline.parameters
     selector = None

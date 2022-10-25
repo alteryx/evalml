@@ -2352,15 +2352,18 @@ def test_pd_dfs_transformer_fast_mode_works_only_when_features_present(X_y_binar
     # 1. It doesn't create a feature provenance, so only the base feature gets updated with new pd values - not any engineered features
     # 2. Any multi input features wouldn't get created, because the other inputs wouldn't be present
     pipeline.fit(X, y)
-    old_part_dep = partial_dependence(pipeline, X, features=1, grid_resolution=5)
-    new_part_dep = partial_dependence(
-        pipeline,
-        X,
-        features=1,
-        grid_resolution=5,
-        use_new=True,
-    )
-    assert not old_part_dep.equals(new_part_dep)
+    error = "Cannot use fast mode with DFS Transformer when features are unspecified or not all present in X."
+    with pytest.raises(
+        PartialDependenceError,
+        match=error,
+    ):
+        partial_dependence(
+            pipeline,
+            X,
+            features=1,
+            grid_resolution=5,
+            use_new=True,
+        )
 
     # If we pass the feature matrix into the same pipeline, though, DFS transformer will be no op, so pd should match
     pipeline = pipeline.clone()
@@ -2377,41 +2380,53 @@ def test_pd_dfs_transformer_fast_mode_works_only_when_features_present(X_y_binar
 
 
 # --> test attempting pd on index?
+def test_pd_fast_mode_with_dfs_transformer_error():
+    pass
 
-# @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
-# def test_partial_dependence_optimized_ensemble_pipeline(problem_type, X_y_binary, X_y_regression):
-#     # --> BROKEN - stacked ensemble doesn't work for my initial implementation
-#     if problem_type == ProblemTypes.BINARY:
-#         X, y = X_y_binary
-#         input_pipelines = [
-#             BinaryClassificationPipeline(["Standard Scaler", "Random Forest Classifier"]),
-#             BinaryClassificationPipeline(["Standard Scaler", "Elastic Net Classifier"]),
-#         ]
-#     else:
-#         X, y = X_y_regression
-#         input_pipelines = [
-#             RegressionPipeline(["Random Forest Regressor"]),
-#             RegressionPipeline(["Elastic Net Regressor"]),
-#         ]
-#     pipeline = _make_stacked_ensemble_pipeline(
-#         input_pipelines=input_pipelines,
-#         problem_type=problem_type,
-#     )
-#     pipeline.fit(X, y)
 
-#     old_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
-#     new_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5, use_new=True)
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
+def test_partial_dependence_fast_mode_ensemble_pipeline_blocked(
+    problem_type,
+    X_y_binary,
+    X_y_regression,
+):
+    # --> BROKEN - stacked ensemble doesn't work for my initial implementation
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        input_pipelines = [
+            BinaryClassificationPipeline(
+                ["Standard Scaler", "Random Forest Classifier"],
+            ),
+            BinaryClassificationPipeline(["Standard Scaler", "Elastic Net Classifier"]),
+        ]
+    else:
+        X, y = X_y_regression
+        input_pipelines = [
+            RegressionPipeline(["Random Forest Regressor"]),
+            RegressionPipeline(["Elastic Net Regressor"]),
+        ]
+    pipeline = _make_stacked_ensemble_pipeline(
+        input_pipelines=input_pipelines,
+        problem_type=problem_type,
+    )
+    pipeline.fit(X, y)
 
-#     sub_pipeline_components = []
+    # --> raise error or automatically fall back to slow mode?
+    error = "Cannot run fast mode with StackedEnsemble pipeline component."
+    with pytest.raises(
+        PartialDependenceError,
+        match=error,
+    ):
+        partial_dependence(pipeline, X, features=0, grid_resolution=5, use_new=True)
 
-#     sub_pipeline = pipeline.__class__(
-#         ["Standard Scaler", "Elastic Net Classifier"],
-#         parameters=parameters,
-#         custom_name="Sub Pipeline"
-#     )
-#     # Find all the non ensemble estimators via [e.model_family for e in pipeline.component_graph.get_estimators()] - check family not ENSEMBLE
-#     # For each estimator, create a pipeline
 
-#     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+def test_partial_dependence_blocked_with_custom_component():
+    pass
+
+
+def test_partial_dependence_with_invalid_components():
+    # test with all evalml components and specifically marked blocked ones?
+    pass
+
 
 # --> test case when one of the specified features (mult feats) isn't present but the other is
