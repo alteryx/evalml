@@ -676,6 +676,30 @@ def test_decomposer_doesnt_modify_target_index(
     pd.testing.assert_index_equal(y_new.index, original_y_index)
 
 
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    decomposer_list,
+)
+def test_decomposer_monthly_begin_data(decomposer_child_class, ts_data):
+    X, _, y = ts_data()
+    dts = pd.date_range("01-01-2000", periods=len(X), freq="MS")
+    datetime_index = pd.DatetimeIndex(dts)
+    X.index = datetime_index
+    y.index = datetime_index
+    X["date"] = dts
+    assert (
+        X.index.freqstr == "MS"
+    ), "The frequency string that was causing this problem in statsmodels decompose has changed."
+
+    pdc = decomposer_child_class(degree=1, time_index="date")
+
+    if isinstance(pdc, PolynomialDecomposer):
+        with pytest.raises(NotImplementedError, match="statsmodels decompose"):
+            pdc.fit(X, y)
+    else:
+        pdc.fit(X, y)
+
+
 def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_test):
     """Function to build a sample target.  Based on subset_y being daily data containing 5 periods of a periodic signal."""
     if transformer_fit_on_data == "in-sample-less-than-sample":

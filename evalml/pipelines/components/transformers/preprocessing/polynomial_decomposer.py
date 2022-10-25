@@ -90,12 +90,20 @@ class PolynomialDecomposer(Decomposer):
             self
 
         Raises:
+            NotImplementedError: If the input data has a frequency of "month-begin".  This isn't supported by statsmodels decompose
+                as the freqstr "MS" is misinterpreted as milliseconds.
             ValueError: If y is None.
             ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
         self.original_index = y.index if y is not None else None
         X, y = self._check_target(X, y)
         self._map_dt_to_integer(self.original_index, y.index)
+
+        if y.index.freqstr == "MS":
+            raise NotImplementedError(
+                "statsmodels decompose does not handle datasets with month-begin (e.g. 10/01/2000, 11/01/2000)"
+                "datetime data.  These values are incorrectly interpreted as milliseconds.",
+            )
 
         # Copying y as we might modify its index
         y_orig = infer_feature_types(y).copy()
