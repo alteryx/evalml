@@ -1,5 +1,4 @@
 """Autoregressive Integrated Moving Average Model. The three parameters (p, d, q) are the AR order, the degree of differencing, and the MA order. More information here: https://www.statsmodels.org/devel/generated/statsmodels.tsa.arima.model.ARIMA.html."""
-from collections import namedtuple
 from typing import List
 
 import numpy as np

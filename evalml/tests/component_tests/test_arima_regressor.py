@@ -4,6 +4,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from woodwork.logical_types import Boolean
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ARIMARegressor
@@ -233,7 +234,7 @@ def test_fit_predict(
     m_clf.fit(X=X_train, y=y_train)
     y_pred = m_clf.predict(X=X_test)
 
-    assert (y_pred_sk.values == y_pred.values).all()
+    np.testing.assert_almost_equal(y_pred_sk.values, y_pred.values)
     assert y_pred.index.equals(X_test.index)
 
 
@@ -330,7 +331,7 @@ def test_different_time_units_out_of_sample(
     y_pred = m_clf.predict(X=X[15:])
     assert m_clf._component_obj.d is None
 
-    assert (y_pred_sk.values == y_pred.values).all()
+    np.testing.assert_almost_equal(y_pred_sk.values, y_pred.values)
     assert y_pred.index.equals(X[15:].index)
 
 
