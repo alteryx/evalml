@@ -235,8 +235,12 @@ def _partial_dependence_calculation(pipeline, grid, features, X, fast_mode=False
         grid (pd.DataFrame): Grid of features to compute the partial dependence on.
         features (list(str)): Column names of input data
         X (pd.DataFrame): Input data.
-
-        # --> update
+        fast_mode (bool, optional): Whether or not performance optimizations should be
+            used. Defaults to False. When True, copies of pipelines will be used to transform just the
+            column(s) we're calculating partial dependence for. This means that any pipeline
+            containing a component that relies on multiple columns for fit and transform should
+            not be used. See the ``_can_be_used_for_fast_partial_dependence`` property on components
+            to determine which components cannot be used for fast mode.
 
     Returns:
         Tuple (np.ndarray, np.ndarray): averaged and individual predictions for
@@ -344,7 +348,7 @@ def _partial_dependence(
     grid_resolution=100,
     kind="average",
     custom_range=None,
-    use_new=False,
+    fast_mode=False,
 ):
     """Compute the partial dependence for features of X.
 
@@ -361,6 +365,12 @@ def _partial_dependence(
             range of values to use in partial dependence. If custom_range is specified,
             the percentile + interpolation procedure is skipped and the values in custom_range
             are used.
+        fast_mode (bool, optional): Whether or not performance optimizations should be
+            used. Defaults to False. When True, copies of pipelines will be used to transform just the
+            column(s) we're calculating partial dependence for. This means that any pipeline
+            containing a component that relies on multiple columns for fit and transform should
+            not be used. See the ``_can_be_used_for_fast_partial_dependence`` property on components
+            to determine which components cannot be used for fast mode.
 
     Returns:
         dict with 'average', 'individual', 'values' keys. 'values' is a list of
@@ -389,7 +399,7 @@ def _partial_dependence(
         grid,
         features,
         X,
-        fast_mode=use_new,
+        fast_mode=fast_mode,
     )
 
     # reshape predictions to

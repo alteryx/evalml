@@ -13,6 +13,7 @@ def _get_cloned_feature_pipelines(
     pipeline,
     variable_has_features_passed_to_estimator,
 ):
+    # Make sure that only components that are capable of handling fast mode are in the pipeline
     new_parameters = pipeline.parameters
     for component in pipeline.component_graph.component_instances.values():
         new_parameters = component._handle_partial_dependence_fast_mode(

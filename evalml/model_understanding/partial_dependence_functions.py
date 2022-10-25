@@ -34,7 +34,7 @@ def partial_dependence(
     percentiles=(0.05, 0.95),
     grid_resolution=100,
     kind="average",
-    use_new=False,
+    fast_mode=False,
 ):
     """Calculates one or two-way partial dependence.
 
@@ -58,6 +58,11 @@ def partial_dependence(
         kind ({'average', 'individual', 'both'}): The type of predictions to return. 'individual' will return the predictions for
             all of the points in the grid for each sample in X. 'average' will return the predictions for all of the points in
             the grid but averaged over all of the samples in X.
+        fast_mode (bool, optional): Whether or not performance optimizations should be
+            used for partial dependence calculations. Defaults to False.
+            Note that user-specified components may not produce correct partial dependence results, so fast mode
+            should only be used with EvalML-native components. Additionally, some components are not compatible
+            with fast mode; in those cases, an error will be raised indicating that fast mode should not be used.
 
     Returns:
         pd.DataFrame, list(pd.DataFrame), or tuple(pd.DataFrame, list(pd.DataFrame)):
@@ -203,7 +208,7 @@ def partial_dependence(
                 grid_resolution=grid_resolution,
                 kind=kind,
                 custom_range=custom_range,
-                use_new=use_new,
+                fast_mode=fast_mode,
             )
         except ValueError as e:
             if "percentiles are too close to each other" in str(e):

@@ -116,7 +116,7 @@ def test_partial_dependence_optimized_problem_types(
         X,
         features=0,
         grid_resolution=5,
-        use_new=True,
+        fast_mode=True,
     )
 
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
@@ -148,7 +148,7 @@ def test_partial_dependence_string_feature_name(
         X,
         features="mean radius",
         grid_resolution=5,
-        use_new=True,
+        fast_mode=True,
     )
 
     pd.testing.assert_frame_equal(part_dep, new_part_dep)
@@ -205,13 +205,13 @@ def test_partial_dependence_transform_X_fully_ahead_regression(
         linear_regression_pipeline,
         X,
         features="also numeric",
-        use_new=False,
+        fast_mode=False,
     )
     new_pd_results = partial_dependence(
         linear_regression_pipeline,
         X,
         features="also numeric",
-        use_new=True,
+        fast_mode=True,
     )
 
     pd.testing.assert_frame_equal(old_pd_results, new_pd_results)
@@ -235,7 +235,7 @@ def test_partial_dependence_optimization_catboost(X_y_binary):
         X,
         features=0,
         grid_resolution=5,
-        use_new=True,
+        fast_mode=True,
     )
 
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
@@ -259,7 +259,7 @@ def test_partial_dependence_optimization_catboost(X_y_binary):
         pipeline,
         X,
         features="string",
-        use_new=True,
+        fast_mode=True,
     )
 
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
@@ -307,7 +307,7 @@ def test_partial_dependence_with_ww_category_columns(
         logistic_regression_binary_pipeline,
         X,
         features="store_id",
-        use_new=True,
+        fast_mode=True,
     )
     pd.testing.assert_frame_equal(part_dep, new_part_dep)
 
@@ -343,7 +343,7 @@ def test_partial_dependence_with_ww_category_columns(
         logistic_regression_binary_pipeline,
         X,
         features="region",
-        use_new=True,
+        fast_mode=True,
     )
     pd.testing.assert_frame_equal(part_dep, new_part_dep)
 
@@ -499,7 +499,7 @@ def test_partial_dependence_xgboost_feature_names(
         X,
         features="<[0]",
         grid_resolution=5,
-        use_new=True,
+        fast_mode=True,
     )
     pd.testing.assert_frame_equal(part_dep, new_part_dep)
 
@@ -512,7 +512,7 @@ def test_partial_dependence_xgboost_feature_names(
         X,
         features=1,
         grid_resolution=5,
-        use_new=True,
+        fast_mode=True,
     )
     pd.testing.assert_frame_equal(part_dep, new_part_dep)
 
@@ -547,7 +547,7 @@ def test_partial_dependence_multiclass_ah(
         X,
         features="magnesium",
         grid_resolution=grid_resolution,
-        use_new=True,
+        fast_mode=True,
     )
     pd.testing.assert_frame_equal(one_way_part_dep, new_part_dep)
 
@@ -568,7 +568,7 @@ def test_partial_dependence_multiclass_ah(
         X,
         features=("magnesium", "alcohol"),
         grid_resolution=grid_resolution,
-        use_new=True,
+        fast_mode=True,
     )
     pd.testing.assert_frame_equal(two_way_part_dep, new_part_dep)
 
@@ -598,7 +598,7 @@ def test_partial_dependence_multiclass_ah(
         features=("magnesium", "alcohol"),
         grid_resolution=grid_resolution,
         kind="both",
-        use_new=True,
+        fast_mode=True,
     )
     pd.testing.assert_frame_equal(two_way_part_dep, new_part_dep)
     for i, ice_df in enumerate(two_way_ice_data):
@@ -861,7 +861,7 @@ def test_random_forests_optimized(
             X,
             features=0,
             grid_resolution=5,
-            use_new=True,
+            fast_mode=True,
         )
 
         pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
@@ -2207,7 +2207,7 @@ def test_partial_dependence_after_dropped_feature(X_y_categorical_regression):
         pipeline,
         X,
         features="time",
-        use_new=True,
+        fast_mode=True,
     )
 
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
@@ -2233,7 +2233,7 @@ def test_partial_dependence_after_dropped_grid_value_regression(
         pipeline,
         X,
         features="day",
-        use_new=True,
+        fast_mode=True,
     )
 
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
@@ -2260,7 +2260,7 @@ def test_partial_dependence_after_dropped_grid_value_classification(
         pipeline,
         X,
         features="Cabin",
-        use_new=True,
+        fast_mode=True,
     )
 
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
@@ -2290,7 +2290,7 @@ def test_pd_select_cols_transformer_specified_feature_not_selected():
         X,
         features="cats",
         grid_resolution=5,
-        use_new=True,
+        fast_mode=True,
     )
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
 
@@ -2319,7 +2319,7 @@ def test_pd_drop_cols_transformer_specified_feature_not_selected():
         X,
         features="cats",
         grid_resolution=5,
-        use_new=True,
+        fast_mode=True,
     )
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
 
@@ -2362,7 +2362,7 @@ def test_pd_dfs_transformer_fast_mode_works_only_when_features_present(X_y_binar
             X,
             features=1,
             grid_resolution=5,
-            use_new=True,
+            fast_mode=True,
         )
 
     # If we pass the feature matrix into the same pipeline, though, DFS transformer will be no op, so pd should match
@@ -2374,7 +2374,7 @@ def test_pd_dfs_transformer_fast_mode_works_only_when_features_present(X_y_binar
         X_fm,
         features=1,
         grid_resolution=5,
-        use_new=True,
+        fast_mode=True,
     )
     pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
 
@@ -2418,7 +2418,7 @@ def test_partial_dependence_fast_mode_ensemble_pipeline_blocked(
         PartialDependenceError,
         match=error,
     ):
-        partial_dependence(pipeline, X, features=0, grid_resolution=5, use_new=True)
+        partial_dependence(pipeline, X, features=0, grid_resolution=5, fast_mode=True)
 
 
 def test_partial_dependence_blocked_with_custom_component():
