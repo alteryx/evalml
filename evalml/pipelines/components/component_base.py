@@ -20,8 +20,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     """
 
     _default_parameters = None
-    # --> this won't make custom components invalid for fast mode, but lets us opt into it
-    # given that fast mode isn't default behavior and we'll have proper warnings about not
+    # --> this won't make custom components invalid for fast mode, but lets us opt into it.
+    # Given that fast mode isn't default behavior and we'll have proper warnings about not
     # using it for custom components, (maybe we raise a warning if we find custom?), this makes the most sense
     _can_be_used_for_fast_partial_dependence = True
 

@@ -1,4 +1,5 @@
 import re
+from pdb import set_trace
 from unittest.mock import patch
 
 import featuretools as ft
@@ -80,6 +81,15 @@ def test_partial_dependence_problem_types(
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().any(axis=None)
 
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features=0,
+        grid_resolution=5,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
+
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 @pytest.mark.parametrize(
@@ -110,8 +120,8 @@ def test_partial_dependence_optimized_problem_types(
 
     X = make_data_type(data_type, X)
     pipeline.fit(X, y)
-    old_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
-    new_part_dep = partial_dependence(
+    part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
+    fast_part_dep = partial_dependence(
         pipeline,
         X,
         features=0,
@@ -119,7 +129,7 @@ def test_partial_dependence_optimized_problem_types(
         fast_mode=True,
     )
 
-    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 def test_partial_dependence_string_feature_name(
@@ -143,7 +153,7 @@ def test_partial_dependence_string_feature_name(
     assert len(part_dep["feature_values"]) == 5
     assert not part_dep.isnull().any(axis=None)
 
-    new_part_dep = partial_dependence(
+    fast_part_dep = partial_dependence(
         logistic_regression_binary_pipeline,
         X,
         features="mean radius",
@@ -151,7 +161,7 @@ def test_partial_dependence_string_feature_name(
         fast_mode=True,
     )
 
-    pd.testing.assert_frame_equal(part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
@@ -178,11 +188,27 @@ def test_partial_dependence_with_non_numeric_columns(
     assert len(part_dep["feature_values"]) == 4
     assert not part_dep.isnull().any(axis=None)
 
+    fast_part_dep = partial_dependence(
+        linear_regression_pipeline,
+        X,
+        features="numeric",
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
+
     part_dep = partial_dependence(linear_regression_pipeline, X, features="string")
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 3
     assert len(part_dep["feature_values"]) == 3
     assert not part_dep.isnull().any(axis=None)
+
+    fast_part_dep = partial_dependence(
+        linear_regression_pipeline,
+        X,
+        features="string",
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 def test_partial_dependence_transform_X_fully_ahead_regression(
@@ -216,8 +242,6 @@ def test_partial_dependence_transform_X_fully_ahead_regression(
 
     pd.testing.assert_frame_equal(old_pd_results, new_pd_results)
 
-    # in outer fn, we just define the grid values to us as our partial dependence permutation values
-
 
 def test_partial_dependence_optimization_catboost(X_y_binary):
     X, y = X_y_binary
@@ -229,8 +253,8 @@ def test_partial_dependence_optimization_catboost(X_y_binary):
         parameters={"CatBoost Classifier": {"thread_count": 1}},
     )
     pipeline.fit(X, y)
-    old_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
-    new_part_dep = partial_dependence(
+    part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
+    fast_part_dep = partial_dependence(
         pipeline,
         X,
         features=0,
@@ -238,7 +262,7 @@ def test_partial_dependence_optimization_catboost(X_y_binary):
         fast_mode=True,
     )
 
-    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
     # test that CatBoost can natively handle non-numerical columns as feature passed to partial_dependence
     X = pd.DataFrame(
@@ -254,15 +278,15 @@ def test_partial_dependence_optimization_catboost(X_y_binary):
         parameters={"CatBoost Classifier": {"thread_count": 1}},
     )
     pipeline.fit(X, y_small)
-    old_part_dep = partial_dependence(pipeline, X, features="string")
-    new_part_dep = partial_dependence(
+    part_dep = partial_dependence(pipeline, X, features="string")
+    fast_part_dep = partial_dependence(
         pipeline,
         X,
         features="string",
         fast_mode=True,
     )
 
-    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 @patch(
@@ -303,13 +327,13 @@ def test_partial_dependence_with_ww_category_columns(
     assert len(part_dep["feature_values"]) == 11
     assert not part_dep.isnull().any(axis=None)
 
-    new_part_dep = partial_dependence(
+    fast_part_dep = partial_dependence(
         logistic_regression_binary_pipeline,
         X,
         features="store_id",
         fast_mode=True,
     )
-    pd.testing.assert_frame_equal(part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
     part_dep = partial_dependence(
         logistic_regression_binary_pipeline,
@@ -339,21 +363,26 @@ def test_partial_dependence_with_ww_category_columns(
     assert len(part_dep["feature_values"]) == 11
     assert not part_dep.isnull().any(axis=None)
 
-    new_part_dep = partial_dependence(
+    fast_part_dep = partial_dependence(
         logistic_regression_binary_pipeline,
         X,
         features="region",
         fast_mode=True,
     )
-    pd.testing.assert_frame_equal(part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 @patch(
     "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
+@patch(
+    "evalml.pipelines.components.estimators.Estimator.predict_proba",
+    side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
+)
 def test_two_way_partial_dependence_with_ww_category_columns(
     mock_predict_proba,
+    mock_estimator_predict_proba,
     fraud_100,
     logistic_regression_binary_pipeline,
 ):
@@ -378,6 +407,14 @@ def test_two_way_partial_dependence_with_ww_category_columns(
     assert len(part_dep.index) == len(set(X["store_id"]))
     assert len(part_dep.columns) == len(set(X["country"])) + 1
 
+    fast_part_dep = partial_dependence(
+        logistic_regression_binary_pipeline,
+        X,
+        features=("store_id", "country"),
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
+
     grid_resolution = 5
     part_dep = partial_dependence(
         logistic_regression_binary_pipeline,
@@ -390,6 +427,15 @@ def test_two_way_partial_dependence_with_ww_category_columns(
     assert len(part_dep.index) == len(set(X["store_id"]))
     assert len(part_dep.columns) == grid_resolution + 1
 
+    fast_part_dep = partial_dependence(
+        logistic_regression_binary_pipeline,
+        X,
+        features=("store_id", "amount"),
+        grid_resolution=grid_resolution,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
+
     grid_resolution = 5
     part_dep = partial_dependence(
         logistic_regression_binary_pipeline,
@@ -401,6 +447,15 @@ def test_two_way_partial_dependence_with_ww_category_columns(
     assert part_dep["class_label"].nunique() == 1
     assert len(part_dep.columns) == len(set(X["store_id"])) + 1
     assert len(part_dep.index) == grid_resolution
+
+    fast_part_dep = partial_dependence(
+        logistic_regression_binary_pipeline,
+        X,
+        features=("amount", "store_id"),
+        grid_resolution=grid_resolution,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 def test_partial_dependence_baseline():
@@ -439,6 +494,15 @@ def test_partial_dependence_catboost(problem_type, X_y_binary, X_y_multi):
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().all().all()
 
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features=0,
+        grid_resolution=5,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
+
     # test that CatBoost can natively handle non-numerical columns as feature passed to partial_dependence
     X = pd.DataFrame(
         {
@@ -456,6 +520,9 @@ def test_partial_dependence_catboost(problem_type, X_y_binary, X_y_multi):
     part_dep = partial_dependence(pipeline, X, features="string")
     check_partial_dependence_dataframe(pipeline, part_dep, grid_size=3)
     assert not part_dep.isnull().all().all()
+
+    fast_part_dep = partial_dependence(pipeline, X, features="string", fast_mode=True)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 @pytest.mark.parametrize(
@@ -494,30 +561,30 @@ def test_partial_dependence_xgboost_feature_names(
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().all().all()
 
-    new_part_dep = partial_dependence(
+    fast_part_dep = partial_dependence(
         pipeline,
         X,
         features="<[0]",
         grid_resolution=5,
         fast_mode=True,
     )
-    pd.testing.assert_frame_equal(part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
     part_dep = partial_dependence(pipeline, X, features=1, grid_resolution=5)
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().all().all()
 
-    new_part_dep = partial_dependence(
+    fast_part_dep = partial_dependence(
         pipeline,
         X,
         features=1,
         grid_resolution=5,
         fast_mode=True,
     )
-    pd.testing.assert_frame_equal(part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
-def test_partial_dependence_multiclass_ah(
+def test_partial_dependence_multiclass(
     wine_local,
     logistic_regression_multiclass_pipeline,
 ):
@@ -542,14 +609,14 @@ def test_partial_dependence_multiclass_ah(
         "class_label",
     ]
 
-    new_part_dep = partial_dependence(
+    fast_part_dep = partial_dependence(
         logistic_regression_multiclass_pipeline,
         X,
         features="magnesium",
         grid_resolution=grid_resolution,
         fast_mode=True,
     )
-    pd.testing.assert_frame_equal(one_way_part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(one_way_part_dep, fast_part_dep)
 
     two_way_part_dep = partial_dependence(
         pipeline=logistic_regression_multiclass_pipeline,
@@ -563,14 +630,14 @@ def test_partial_dependence_multiclass_ah(
     assert len(two_way_part_dep.index) == num_classes * grid_resolution
     assert len(two_way_part_dep.columns) == grid_resolution + 1
 
-    new_part_dep = partial_dependence(
+    fast_part_dep = partial_dependence(
         logistic_regression_multiclass_pipeline,
         X,
         features=("magnesium", "alcohol"),
         grid_resolution=grid_resolution,
         fast_mode=True,
     )
-    pd.testing.assert_frame_equal(two_way_part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(two_way_part_dep, fast_part_dep)
 
     two_way_part_dep, two_way_ice_data = partial_dependence(
         pipeline=logistic_regression_multiclass_pipeline,
@@ -592,7 +659,7 @@ def test_partial_dependence_multiclass_ah(
         assert len(two_way_part_dep.index) == num_classes * grid_resolution
         assert len(two_way_part_dep.columns) == grid_resolution + 1
 
-    new_part_dep, new_ice_data = partial_dependence(
+    fast_part_dep, new_ice_data = partial_dependence(
         logistic_regression_multiclass_pipeline,
         X,
         features=("magnesium", "alcohol"),
@@ -600,7 +667,7 @@ def test_partial_dependence_multiclass_ah(
         kind="both",
         fast_mode=True,
     )
-    pd.testing.assert_frame_equal(two_way_part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(two_way_part_dep, fast_part_dep)
     for i, ice_df in enumerate(two_way_ice_data):
         new_ice_df = new_ice_data[i]
         pd.testing.assert_frame_equal(ice_df, new_ice_df)
@@ -632,6 +699,14 @@ def test_partial_dependence_multiclass_numeric_labels(
         "partial_dependence",
         "class_label",
     ]
+    fast_part_dep = partial_dependence(
+        logistic_regression_multiclass_pipeline,
+        X,
+        features=1,
+        grid_resolution=grid_resolution,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(one_way_part_dep, fast_part_dep)
 
     two_way_part_dep = partial_dependence(
         pipeline=logistic_regression_multiclass_pipeline,
@@ -644,6 +719,15 @@ def test_partial_dependence_multiclass_numeric_labels(
     assert two_way_part_dep["class_label"].nunique() == num_classes
     assert len(two_way_part_dep.index) == num_classes * grid_resolution
     assert len(two_way_part_dep.columns) == grid_resolution + 1
+
+    fast_part_dep = partial_dependence(
+        logistic_regression_multiclass_pipeline,
+        X,
+        features=(1, 2),
+        grid_resolution=grid_resolution,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(two_way_part_dep, fast_part_dep)
 
 
 def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pipeline):
@@ -750,6 +834,15 @@ def test_partial_dependence_more_categories_than_grid_resolution(
     part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
     assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
 
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X,
+        "currency",
+        grid_resolution=round(num_cat_features / 2),
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
+
     # Check the case where grid_resolution == number of categorical features
     part_dep = partial_dependence(
         pipeline,
@@ -760,6 +853,15 @@ def test_partial_dependence_more_categories_than_grid_resolution(
     part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
     assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
 
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X,
+        "currency",
+        grid_resolution=round(num_cat_features),
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
+
     # Check the case where grid_resolution > number of categorical features
     part_dep = partial_dependence(
         pipeline,
@@ -769,6 +871,15 @@ def test_partial_dependence_more_categories_than_grid_resolution(
     )
     part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
     assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
+
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X,
+        "currency",
+        grid_resolution=round(num_cat_features * 2),
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 def test_partial_dependence_ice_plot(logistic_regression_binary_pipeline):
@@ -784,10 +895,29 @@ def test_partial_dependence_ice_plot(logistic_regression_binary_pipeline):
     assert avg_pred.shape == (2, 3)
     assert ind_preds.shape == (2, 7)
 
+    fast_avg_pred, fast_ind_preds = partial_dependence(
+        pipeline,
+        X,
+        features="a",
+        kind="both",
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(avg_pred, fast_avg_pred)
+    pd.testing.assert_frame_equal(ind_preds, fast_ind_preds)
+
     ind_preds = partial_dependence(pipeline, X, features="b", kind="individual")
     assert isinstance(ind_preds, pd.DataFrame)
 
     assert ind_preds.shape == (2, 7)
+
+    fast_ind_preds = partial_dependence(
+        pipeline,
+        X,
+        features="b",
+        kind="individual",
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(ind_preds, fast_ind_preds)
 
 
 def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline):
@@ -812,6 +942,19 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
     for ind_df in ind_preds:
         assert ind_df.shape == (2, 3)
 
+    fast_avg_pred, fast_ind_preds = partial_dependence(
+        pipeline,
+        X,
+        features=["a", "b"],
+        grid_resolution=5,
+        kind="both",
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(avg_pred, fast_avg_pred)
+    for i, ice_df in enumerate(ind_preds):
+        new_ice_df = fast_ind_preds[i]
+        pd.testing.assert_frame_equal(ice_df, new_ice_df)
+
     ind_preds = partial_dependence(
         pipeline,
         X,
@@ -825,6 +968,18 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
     assert len(ind_preds) == 5
     for ind_df in ind_preds:
         assert ind_df.shape == (2, 3)
+
+    fast_ind_preds = partial_dependence(
+        pipeline,
+        X,
+        features=["a", "b"],
+        grid_resolution=5,
+        kind="individual",
+        fast_mode=True,
+    )
+    for i, ice_df in enumerate(ind_preds):
+        new_ice_df = fast_ind_preds[i]
+        pd.testing.assert_frame_equal(ice_df, new_ice_df)
 
 
 @pytest.mark.parametrize(
@@ -855,8 +1010,8 @@ def test_random_forests_optimized(
         X, y = X_y_multi
 
         pipeline.fit(X, y)
-        old_part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
-        new_part_dep = partial_dependence(
+        part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
+        fast_part_dep = partial_dependence(
             pipeline,
             X,
             features=0,
@@ -864,7 +1019,7 @@ def test_random_forests_optimized(
             fast_mode=True,
         )
 
-        pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+        pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
@@ -923,6 +1078,15 @@ def test_graph_partial_dependence(
         part_dep_data["partial_dependence"].values,
     )
 
+    fast_part_dep_data = partial_dependence(
+        logistic_regression_binary_pipeline,
+        X,
+        features="mean radius",
+        grid_resolution=5,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep_data, fast_part_dep_data)
+
 
 @patch(
     "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
@@ -970,7 +1134,6 @@ def test_graph_two_way_partial_dependence(
     logistic_regression_binary_pipeline,
     go,
 ):
-
     X, y = breast_cancer_local
     logistic_regression_binary_pipeline.fit(X, y)
     fig = graph_partial_dependence(
@@ -999,18 +1162,32 @@ def test_graph_two_way_partial_dependence(
     assert np.array_equal(fig_dict["data"][0]["y"], part_dep_data.index)
     assert np.array_equal(fig_dict["data"][0]["z"], part_dep_data.values)
 
+    fast_part_dep_data = partial_dependence(
+        logistic_regression_binary_pipeline,
+        X,
+        features=("mean radius", "mean area"),
+        grid_resolution=5,
+        fast_mode=True,
+    )
+    fast_part_dep_data.drop(columns=["class_label"], inplace=True)
+    pd.testing.assert_frame_equal(part_dep_data, fast_part_dep_data)
+
 
 @patch(
     "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
+@patch(
+    "evalml.pipelines.components.estimators.Estimator.predict_proba",
+    side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
+)
 def test_graph_two_way_partial_dependence_ww_categories(
     mock_predict_proba,
+    mock_estimator_predict_proba,
     fraud_100,
     logistic_regression_binary_pipeline,
     go,
 ):
-
     X, y = fraud_100
     X.ww.set_types(
         logical_types={
@@ -1037,6 +1214,15 @@ def test_graph_two_way_partial_dependence_ww_categories(
     part_dep_data.drop(columns=["class_label"], inplace=True)
     assert np.array_equal(fig_dict["data"][0]["z"], part_dep_data.values)
 
+    fast_part_dep_data = partial_dependence(
+        pipeline,
+        X,
+        features=("country", "region"),
+        fast_mode=True,
+    )
+    fast_part_dep_data.drop(columns=["class_label"], inplace=True)
+    pd.testing.assert_frame_equal(part_dep_data, fast_part_dep_data)
+
     # One categorical column, entered first
     fig = graph_partial_dependence(pipeline, X, features=("country", "lat"))
     assert isinstance(fig, go.Figure)
@@ -1053,6 +1239,15 @@ def test_graph_two_way_partial_dependence_ww_categories(
     assert np.array_equal(fig_dict["data"][0]["x"], part_dep_data.columns)
     assert np.array_equal(fig_dict["data"][0]["z"], part_dep_data.values)
 
+    fast_part_dep_data = partial_dependence(
+        pipeline,
+        X,
+        features=("country", "lat"),
+        fast_mode=True,
+    )
+    fast_part_dep_data.drop(columns=["class_label"], inplace=True)
+    pd.testing.assert_frame_equal(part_dep_data, fast_part_dep_data)
+
     # One categorical column, entered second
     fig = graph_partial_dependence(pipeline, X, features=("lat", "country"))
     assert isinstance(fig, go.Figure)
@@ -1068,6 +1263,15 @@ def test_graph_two_way_partial_dependence_ww_categories(
     part_dep_data.drop(columns=["class_label"], inplace=True)
     assert np.array_equal(fig_dict["data"][0]["x"], part_dep_data.columns)
     assert np.array_equal(fig_dict["data"][0]["z"], part_dep_data.values)
+
+    fast_part_dep_data = partial_dependence(
+        pipeline,
+        X,
+        features=("country", "lat"),
+        fast_mode=True,
+    )
+    fast_part_dep_data.drop(columns=["class_label"], inplace=True)
+    pd.testing.assert_frame_equal(part_dep_data, fast_part_dep_data)
 
 
 def test_graph_partial_dependence_multiclass(
@@ -1287,6 +1491,16 @@ def test_partial_dependence_percentile_errors(
     assert len(part_dep["partial_dependence"]) == 2
     assert len(part_dep["feature_values"]) == 2
     assert not part_dep.isnull().any(axis=None)
+
+    fast_part_dep = partial_dependence(
+        logistic_regression_binary_pipeline,
+        X,
+        features="random_col",
+        percentiles=(0.01, 0.96),
+        grid_resolution=5,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "regression"])
@@ -1562,6 +1776,16 @@ def test_partial_dependence_datetime(
         assert len(part_dep["partial_dependence"]) == expected_size
         assert len(part_dep["feature_values"]) == expected_size
     assert not part_dep.isnull().any(axis=None)
+
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features="dt_column",
+        grid_resolution=grid,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
+
     # keeps the test from running too long. The part below still runs for 3 other tests
     if grid == 100 or size == 100:
         return
@@ -1575,6 +1799,15 @@ def test_partial_dependence_datetime(
         assert len(part_dep["partial_dependence"]) == expected_size
         assert len(part_dep["feature_values"]) == expected_size
     assert not part_dep.isnull().any(axis=None)
+
+    part_dep = partial_dependence(
+        pipeline,
+        X,
+        features=20,
+        grid_resolution=grid,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
     with pytest.raises(
         PartialDependenceError,
@@ -1683,9 +1916,27 @@ def test_partial_dependence_respect_grid_resolution(fraud_100):
     assert dep.shape[0] == 5
     assert dep.shape[0] != max(X.ww.select("categorical").describe().loc["unique"]) + 1
 
+    fast_dep = partial_dependence(
+        pl,
+        X,
+        features="amount",
+        grid_resolution=5,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(dep, fast_dep)
+
     dep = partial_dependence(pl, X, features="provider", grid_resolution=5)
     assert dep.shape[0] == X["provider"].nunique()
     assert dep.shape[0] != max(X.ww.select("categorical").describe().loc["unique"]) + 1
+
+    fast_dep = partial_dependence(
+        pl,
+        X,
+        features="provider",
+        grid_resolution=5,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(dep, fast_dep)
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
@@ -1775,6 +2026,16 @@ def test_graph_partial_dependence_ice_plot(
                 fig_dict["data"][i]["y"],
                 ind_dep_data[f"Sample {i}"].values,
             )
+    fast_avg_dep_data, fast_ind_dep_data = partial_dependence(
+        clf,
+        X,
+        features=feature,
+        grid_resolution=5,
+        kind="both",
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(avg_dep_data, fast_avg_dep_data)
+    pd.testing.assert_frame_equal(ind_dep_data, fast_ind_dep_data)
 
     fig = graph_partial_dependence(
         clf,
@@ -1824,6 +2085,16 @@ def test_graph_partial_dependence_ice_plot(
                 fig_dict["data"][i]["y"],
                 ind_dep_data[f"Sample {i}"].values,
             )
+
+    fast_ind_dep_data = partial_dependence(
+        clf,
+        X,
+        features=feature,
+        grid_resolution=5,
+        kind="individual",
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(ind_dep_data, fast_ind_dep_data)
 
 
 def test_graph_partial_dependence_ice_plot_two_way_error(
@@ -2006,6 +2277,15 @@ def test_partial_dependence_datetime_extra(
         assert len(part_dep["feature_values"]) == 10
     assert not part_dep.isnull().any(axis=None)
 
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features="date_column",
+        grid_resolution=10,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
+
     part_dep = partial_dependence(pipeline, X, features=20, grid_resolution=10)
     if problem_type == "multiclass":
         assert len(part_dep["partial_dependence"]) == num_classes * 10
@@ -2014,6 +2294,15 @@ def test_partial_dependence_datetime_extra(
         assert len(part_dep["partial_dependence"]) == 10
         assert len(part_dep["feature_values"]) == 10
     assert not part_dep.isnull().any(axis=None)
+
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features=20,
+        grid_resolution=10,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 @pytest.mark.parametrize(
@@ -2053,6 +2342,9 @@ def test_partial_dependence_not_allowed_types(types, cols, expected_cols):
     s = partial_dependence(pl, X, cols, grid_resolution=2)
     assert not s.isnull().any().any()
 
+    fast_s = partial_dependence(pl, X, cols, grid_resolution=2, fast_mode=True)
+    pd.testing.assert_frame_equal(s, fast_s)
+
 
 def test_partial_dependence_categorical_nan(fraud_100):
     X, y = fraud_100
@@ -2079,6 +2371,15 @@ def test_partial_dependence_categorical_nan(fraud_100):
     assert not dep["feature_values"].isna().any()
     assert not dep["partial_dependence"].isna().any()
 
+    fast_dep = partial_dependence(
+        pl,
+        X,
+        features="provider",
+        grid_resolution=GRID_RESOLUTION,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(dep, fast_dep)
+
     dep2way = partial_dependence(
         pl,
         X,
@@ -2088,6 +2389,15 @@ def test_partial_dependence_categorical_nan(fraud_100):
     assert not dep2way.isna().any().any()
     # Plus 1 in the columns because there is `class_label`
     assert dep2way.shape == (GRID_RESOLUTION, X["provider"].dropna().nunique() + 1)
+
+    fast_dep2way = partial_dependence(
+        pl,
+        X,
+        features=("amount", "provider"),
+        grid_resolution=GRID_RESOLUTION,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(dep2way, fast_dep2way)
 
 
 @patch(
@@ -2134,6 +2444,12 @@ def test_partial_dependence_preserves_woodwork_schema(mock_predict_proba, fraud_
         for call_args in mock_predict_proba.call_args_list
     )
 
+    _ = partial_dependence(pl, X_test, "card_id", grid_resolution=5, fast_mode=True)
+    assert all(
+        call_args[0][0].ww.schema == X_test.ww.schema
+        for call_args in mock_predict_proba.call_args_list
+    )
+
 
 def test_partial_dependence_does_not_return_all_nan_grid():
     # In this case, the 95th percentile of "a" if we included all values
@@ -2161,6 +2477,15 @@ def test_partial_dependence_does_not_return_all_nan_grid():
     dep = partial_dependence(pipeline, X_holdout, "a", grid_resolution=4)
     assert not dep.feature_values.isna().any()
     assert not dep.partial_dependence.isna().any()
+
+    fast_dep = partial_dependence(
+        pipeline,
+        X_holdout,
+        "a",
+        grid_resolution=4,
+        fast_mode=True,
+    )
+    pd.testing.assert_frame_equal(dep, fast_dep)
 
 
 @patch("evalml.model_understanding.partial_dependence_functions.jupyter_check")
@@ -2202,15 +2527,15 @@ def test_partial_dependence_after_dropped_feature(X_y_categorical_regression):
     )
     pipeline.fit(X, y)
 
-    old_part_dep = partial_dependence(pipeline, X, features="time")
-    new_part_dep = partial_dependence(
+    part_dep = partial_dependence(pipeline, X, features="time")
+    fast_part_dep = partial_dependence(
         pipeline,
         X,
         features="time",
         fast_mode=True,
     )
 
-    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 def test_partial_dependence_after_dropped_grid_value_regression(
@@ -2228,15 +2553,15 @@ def test_partial_dependence_after_dropped_grid_value_regression(
     )
     pipeline.fit(X, y)
 
-    old_part_dep = partial_dependence(pipeline, X, features="day")
-    new_part_dep = partial_dependence(
+    part_dep = partial_dependence(pipeline, X, features="day")
+    fast_part_dep = partial_dependence(
         pipeline,
         X,
         features="day",
         fast_mode=True,
     )
 
-    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 def test_partial_dependence_after_dropped_grid_value_classification(
@@ -2255,15 +2580,15 @@ def test_partial_dependence_after_dropped_grid_value_classification(
     )
     pipeline.fit(X, y)
 
-    old_part_dep = partial_dependence(pipeline, X, features="Cabin")
-    new_part_dep = partial_dependence(
+    part_dep = partial_dependence(pipeline, X, features="Cabin")
+    fast_part_dep = partial_dependence(
         pipeline,
         X,
         features="Cabin",
         fast_mode=True,
     )
 
-    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 def test_pd_select_cols_transformer_specified_feature_not_selected():
@@ -2284,15 +2609,15 @@ def test_pd_select_cols_transformer_specified_feature_not_selected():
 
     pipeline.fit(X, y)
 
-    old_part_dep = partial_dependence(pipeline, X, features="cats", grid_resolution=5)
-    new_part_dep = partial_dependence(
+    part_dep = partial_dependence(pipeline, X, features="cats", grid_resolution=5)
+    fast_part_dep = partial_dependence(
         pipeline,
         X,
         features="cats",
         grid_resolution=5,
         fast_mode=True,
     )
-    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 def test_pd_drop_cols_transformer_specified_feature_not_selected():
@@ -2313,15 +2638,15 @@ def test_pd_drop_cols_transformer_specified_feature_not_selected():
 
     pipeline.fit(X, y)
 
-    old_part_dep = partial_dependence(pipeline, X, features="cats", grid_resolution=5)
-    new_part_dep = partial_dependence(
+    part_dep = partial_dependence(pipeline, X, features="cats", grid_resolution=5)
+    fast_part_dep = partial_dependence(
         pipeline,
         X,
         features="cats",
         grid_resolution=5,
         fast_mode=True,
     )
-    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 def test_pd_dfs_transformer_fast_mode_works_only_when_features_present(X_y_binary):
@@ -2368,20 +2693,18 @@ def test_pd_dfs_transformer_fast_mode_works_only_when_features_present(X_y_binar
     # If we pass the feature matrix into the same pipeline, though, DFS transformer will be no op, so pd should match
     pipeline = pipeline.clone()
     pipeline.fit(X_fm, y)
-    old_part_dep = partial_dependence(pipeline, X_fm, features=1, grid_resolution=5)
-    new_part_dep = partial_dependence(
+    part_dep = partial_dependence(pipeline, X_fm, features=1, grid_resolution=5)
+    fast_part_dep = partial_dependence(
         pipeline,
         X_fm,
         features=1,
         grid_resolution=5,
         fast_mode=True,
     )
-    pd.testing.assert_frame_equal(old_part_dep, new_part_dep)
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 # --> test attempting pd on index?
-def test_pd_fast_mode_with_dfs_transformer_error():
-    pass
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
@@ -2390,7 +2713,6 @@ def test_partial_dependence_fast_mode_ensemble_pipeline_blocked(
     X_y_binary,
     X_y_regression,
 ):
-    # --> BROKEN - stacked ensemble doesn't work for my initial implementation
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         input_pipelines = [

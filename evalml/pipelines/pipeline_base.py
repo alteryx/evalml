@@ -667,7 +667,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             A new instance of this pipeline with identical components.
         """
-        # --> why is there no sertting of the threshold for binary?
+        # --> why is there no setting of the threshold for binary like there is in clone?
         return self.__class__(
             self.component_graph,
             parameters=parameters,

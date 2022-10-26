@@ -280,8 +280,6 @@ def _partial_dependence_calculation(pipeline, grid, features, X, fast_mode=False
         prediction_method = prediction_object.predict_proba
 
     if fast_mode and no_features_passed_to_estimator:
-        # --> maybe we need to also confirm a selector was used bc i dont want this to
-        # silently set these values in any situation that doesn't look as expected - ex stacked ensembling
         original_predictions = prediction_method(X_eval)
         original_predictions_mean = np.mean(original_predictions, axis=0)
 
@@ -316,6 +314,7 @@ def _partial_dependence_calculation(pipeline, grid, features, X, fast_mode=False
             predictions.append(pred)
             # average over samples
             averaged_predictions.append(np.mean(pred, axis=0))
+        # set_trace()
 
     n_samples = X.shape[0]
 

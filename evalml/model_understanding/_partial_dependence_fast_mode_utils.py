@@ -56,7 +56,6 @@ def _get_cloned_feature_pipelines(
         pipeline_copy.fit(X.ww[[variable]], mock_y)
         cloned_feature_pipelines[variable] = pipeline_copy
 
-    # --> maybe check if not passed to estimator earlier and return then
     return cloned_feature_pipelines
 
 
@@ -90,18 +89,19 @@ def _transform_single_feature(
 
     # Take the changed column and send it through transform by itself
     X_t_single_col = cloned_pipeline.transform_all_but_final(changed_col_df)
+
+    # Determine which columns in X_t we're replacing with the transform output
     cols_to_replace = [variable]
     if feature_provenance.get(variable):
         # cols to replace has to be in the same order as X_t
         cols_to_replace = [
             col for col in X_t if col in feature_provenance.get(variable)
         ]
-    # --> not keeping in woodwork - problematic?
-
-    # If some categories get dropped, they won't be in X_t, so don't include them
-    # --> might want to also confirm that this is bc off a selector not some oter reason
+    # If some categories got dropped during transform of the original X_t,
+    # they won't be in X_t_single_col, so don't include them
     if len(cols_to_replace) != len(X_t_single_col.columns):
-        X_t_single_col = X_t_single_col[list(cols_to_replace)]
+        X_t_single_col = X_t_single_col[cols_to_replace]
 
-    X_t[list(cols_to_replace)] = X_t_single_col
+    # --> not keeping in woodwork - problematic?
+    X_t[cols_to_replace] = X_t_single_col
     return X_t
