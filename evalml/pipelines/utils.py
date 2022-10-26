@@ -36,6 +36,7 @@ from evalml.pipelines.components import (  # noqa: F401
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
+    STLDecomposer,
     TargetImputer,
     TimeSeriesFeaturizer,
     TimeSeriesImputer,
