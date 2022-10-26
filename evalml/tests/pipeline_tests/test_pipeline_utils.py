@@ -40,6 +40,7 @@ from evalml.pipelines.components.utils import (
     handle_component_class,
 )
 from evalml.pipelines.utils import (
+    _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER,
     _get_pipeline_base_class,
     _get_preprocessing_components,
     _make_pipeline_from_multiple_graphs,
@@ -224,7 +225,10 @@ def test_make_pipeline_controls_decomposer(
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
 
-            if is_regression(problem_type) and frequency in ["D", "MS"]:
+            if (
+                is_regression(problem_type)
+                and frequency not in _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER
+            ):
                 assert "STL Decomposer" in pipeline.component_graph.compute_order
             else:
                 assert "STL Decomposer" not in pipeline.component_graph.compute_order
