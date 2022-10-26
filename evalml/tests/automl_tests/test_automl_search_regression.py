@@ -265,6 +265,9 @@ def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, ts_data):
             assert (
                 result["parameters"]["pipeline"][param_key] == configuration[param_key]
             )
+        assert "STL Decomposer" in result["parameters"]
+        dt_ = result["parameters"]["STL Decomposer"].pop("time_index")
+        assert dt == dt_
 
 
 @pytest.mark.parametrize(
