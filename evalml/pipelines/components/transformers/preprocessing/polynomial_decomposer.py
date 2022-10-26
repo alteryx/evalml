@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import logging
 
+import numpy as np
 import pandas as pd
-from pandas.core.index import Int64Index
 from skopt.space import Integer
 from sktime.forecasting.base._fh import ForecastingHorizon
 from statsmodels.tsa.seasonal import seasonal_decompose
@@ -90,20 +90,11 @@ class PolynomialDecomposer(Decomposer):
             self
 
         Raises:
-            NotImplementedError: If the input data has a frequency of "month-begin".  This isn't supported by statsmodels decompose
-                as the freqstr "MS" is misinterpreted as milliseconds.
             ValueError: If y is None.
             ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
         self.original_index = y.index if y is not None else None
         X, y = self._check_target(X, y)
-        self._map_dt_to_integer(self.original_index, y.index)
-
-        if y.index.freqstr == "MS":
-            raise NotImplementedError(
-                "statsmodels decompose does not handle datasets with month-begin (e.g. 10/01/2000, 11/01/2000)"
-                "datetime data.  These values are incorrectly interpreted as milliseconds.",
-            )
 
         # Copying y as we might modify its index
         y_orig = infer_feature_types(y).copy()
@@ -153,10 +144,7 @@ class PolynomialDecomposer(Decomposer):
         """
         if y is None:
             return X, y
-        original_index = y.index
         X, y = self._check_target(X, y)
-
-        self._check_oos_past(y)
 
         # Give the internal target signal a datetime index built from X
         y = y.copy()
@@ -165,16 +153,15 @@ class PolynomialDecomposer(Decomposer):
         y_ww = infer_feature_types(y)
         y_detrended = self._component_obj.transform(y_ww)
 
-        seasonal = self._project_seasonal(
-            y,
-            self.seasonality,
-            self.seasonal_period,
-            self.frequency,
-        )
+        if isinstance(y.index, pd.DatetimeIndex):
+            # Repeat the seasonal signal over the target data
+            seasonal = np.tile(
+                self.seasonality.T,
+                len(y_detrended) // self.seasonal_period + 1,
+            ).T[: len(y_detrended)]
 
         y_t = pd.Series(y_detrended - seasonal)
         y_t.ww.init(logical_type="double")
-        y_t.index = original_index
         return X, y_t
 
     def inverse_transform(self, y_t: pd.Series) -> tuple[pd.DataFrame, pd.Series]:
@@ -193,80 +180,20 @@ class PolynomialDecomposer(Decomposer):
         Raises:
             ValueError: If y is None.
         """
-        if y_t is None:
-            raise ValueError("y_t cannot be None for Decomposer!")
-        original_index = y_t.index
+        _, y_t = self._check_target(None, y_t)
 
-        y_t = infer_feature_types(y_t).copy()
-        self._check_oos_past(y_t)
+        y_t = infer_feature_types(y_t)
 
-        index = self._choose_proper_index(y_t)
+        # Add polynomial trend back to signal
+        y_retrended = self._component_obj.inverse_transform(y_t)
 
-        y_in_sample = pd.Series([])
-        y_out_of_sample = pd.Series([])
-
-        # For partially and wholly in-sample data, retrieve stored results.
-        if index[0] <= y_t.index[0] <= index[-1]:
-            left_index = y_t.index[0]
-            right_index = min(y_t.index[-1], index[-1])
-
-            if isinstance(y_t.index, (pd.RangeIndex, Int64Index)):
-                y_t_ind = pd.RangeIndex(
-                    start=left_index,
-                    stop=right_index + 1,
-                )  # stop value is not inclusive
-            elif isinstance(y_t.index, pd.DatetimeIndex):
-                y_t_ind = pd.DatetimeIndex(
-                    pd.date_range(left_index, end=right_index),
-                )  # end value is inclusive
-
-            # Build index
-            y_t_in_sample = y_t[y_t_ind]
-
-            # Convert y_t to datetime index to use the built in component
-            if isinstance(y_t.index, (pd.RangeIndex, Int64Index)):
-                y_t_dt_ind = self._convert_int_index_to_dt_index(y_t_in_sample.index)
-            elif isinstance(y_t.index, pd.DatetimeIndex):
-                y_t_dt_ind = y_t_ind
-            trend = self._component_obj.inverse_transform(
-                y_t_in_sample.set_axis(y_t_dt_ind),
-            )
-
-            # self.seasonal will always have a datetime index
-            seasonal = self.seasonal[y_t_dt_ind].set_axis(y_t_dt_ind)
-            y_in_sample = trend + seasonal
-            y_in_sample = y_in_sample.dropna()
-
-        # For out of sample data....
-        if y_t.index[-1] > index[-1]:
-            try:
-                # ...that is partially out of sample and partially in sample.
-                truncated_y_t = y_t[y_t.index.get_loc(index[-1]) + 1 :]
-            except KeyError:
-                # ...that is entirely out of sample.
-                truncated_y_t = y_t
-
-            projected_seasonality = self._project_seasonal(
-                truncated_y_t,
-                self.seasonality,
-                self.seasonal_period,
-                self.frequency,
-            )
-
-            if isinstance(truncated_y_t.index, (pd.RangeIndex, Int64Index)):
-                dt_index = self._convert_int_index_to_dt_index(truncated_y_t.index)
-                truncated_y_t.index = dt_index
-                projected_seasonality.index = dt_index
-            retrended_y = self._component_obj.inverse_transform(truncated_y_t)
-
-            y_out_of_sample = infer_feature_types(
-                pd.Series(
-                    retrended_y + projected_seasonality,
-                    index=truncated_y_t.index,
-                ),
-            )
-        y = y_in_sample.append(y_out_of_sample)
-        y.index = original_index
+        seasonal = self._project_seasonal(
+            y_t,
+            self.seasonality,
+            self.seasonal_period,
+            self.frequency,
+        )
+        y = infer_feature_types(pd.Series(y_retrended + seasonal, index=y_t.index))
         return y
 
     def get_trend_dataframe(self, X: pd.DataFrame, y: pd.Series) -> list[pd.DataFrame]:
