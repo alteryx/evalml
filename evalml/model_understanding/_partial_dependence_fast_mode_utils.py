@@ -35,7 +35,6 @@ def _get_cloned_feature_pipelines(
     # mock out y for pipeline fitting
     len_X = len(X)
     if is_regression(pipeline.problem_type):
-        # --> might want to use random seed here, though the mocked y shouldn't have an impact on PD
         mock_y = pd.Series(np.random.randint(0, 10, len_X))
     elif is_binary(pipeline.problem_type):
         mock_y = pd.Series(np.random.choice([True, False], size=len_X))
@@ -100,6 +99,5 @@ def _transform_single_feature(
     if len(cols_to_replace) != len(X_t_single_col.columns):
         X_t_single_col = X_t_single_col[cols_to_replace]
 
-    # --> not keeping in woodwork - problematic?
     X_t[cols_to_replace] = X_t_single_col
     return X_t
