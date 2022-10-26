@@ -1,5 +1,4 @@
 import re
-from pdb import set_trace
 from unittest.mock import patch
 
 import featuretools as ft
@@ -20,12 +19,10 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
-from evalml.pipelines.components.transformers.column_selectors import (
+from evalml.pipelines.components.transformers import (
+    DFSTransformer,
     DropColumns,
     SelectColumns,
-)
-from evalml.pipelines.components.transformers.preprocessing.featuretools import (
-    DFSTransformer,
 )
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import ProblemTypes
@@ -88,47 +85,6 @@ def test_partial_dependence_problem_types(
         grid_resolution=5,
         fast_mode=True,
     )
-    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
-
-
-@pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-@pytest.mark.parametrize(
-    "problem_type",
-    [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
-)
-def test_partial_dependence_optimized_problem_types(
-    data_type,
-    problem_type,
-    X_y_binary,
-    X_y_multi,
-    X_y_regression,
-    logistic_regression_binary_pipeline,
-    logistic_regression_multiclass_pipeline,
-    linear_regression_pipeline,
-    make_data_type,
-):
-    if problem_type == ProblemTypes.BINARY:
-        X, y = X_y_binary
-        pipeline = logistic_regression_binary_pipeline
-    elif problem_type == ProblemTypes.MULTICLASS:
-        X, y = X_y_multi
-        pipeline = logistic_regression_multiclass_pipeline
-
-    elif problem_type == ProblemTypes.REGRESSION:
-        X, y = X_y_regression
-        pipeline = linear_regression_pipeline
-
-    X = make_data_type(data_type, X)
-    pipeline.fit(X, y)
-    part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
-    fast_part_dep = partial_dependence(
-        pipeline,
-        X,
-        features=0,
-        grid_resolution=5,
-        fast_mode=True,
-    )
-
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
@@ -208,84 +164,6 @@ def test_partial_dependence_with_non_numeric_columns(
         features="string",
         fast_mode=True,
     )
-    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
-
-
-def test_partial_dependence_transform_X_fully_ahead_regression(
-    linear_regression_pipeline,
-):
-    X = pd.DataFrame(
-        {
-            "numeric": [1, 2, 3, 0] * 4,
-            "also numeric": [2, 3, 4, 1] * 4,
-            "string": ["a", "b", "a", "c"] * 4,
-            "also string": ["c", "b", "a", "c"] * 4,
-        },
-    )
-    X.ww.init()
-    y = [0, 0.2, 1.4, 1] * 4
-
-    linear_regression_pipeline.fit(X, y)
-
-    old_pd_results = partial_dependence(
-        linear_regression_pipeline,
-        X,
-        features="also numeric",
-        fast_mode=False,
-    )
-    new_pd_results = partial_dependence(
-        linear_regression_pipeline,
-        X,
-        features="also numeric",
-        fast_mode=True,
-    )
-
-    pd.testing.assert_frame_equal(old_pd_results, new_pd_results)
-
-
-def test_partial_dependence_optimization_catboost(X_y_binary):
-    X, y = X_y_binary
-    y_small = ["a", "b", "a"] * 5
-    pipeline_class = BinaryClassificationPipeline
-
-    pipeline = pipeline_class(
-        component_graph=["CatBoost Classifier"],
-        parameters={"CatBoost Classifier": {"thread_count": 1}},
-    )
-    pipeline.fit(X, y)
-    part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
-    fast_part_dep = partial_dependence(
-        pipeline,
-        X,
-        features=0,
-        grid_resolution=5,
-        fast_mode=True,
-    )
-
-    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
-
-    # test that CatBoost can natively handle non-numerical columns as feature passed to partial_dependence
-    X = pd.DataFrame(
-        {
-            "numeric": [1, 2, 3] * 5,
-            "also numeric": [2, 3, 4] * 5,
-            "string": ["a", "b", "c"] * 5,
-            "also string": ["c", "b", "a"] * 5,
-        },
-    )
-    pipeline = pipeline_class(
-        component_graph=["CatBoost Classifier"],
-        parameters={"CatBoost Classifier": {"thread_count": 1}},
-    )
-    pipeline.fit(X, y_small)
-    part_dep = partial_dependence(pipeline, X, features="string")
-    fast_part_dep = partial_dependence(
-        pipeline,
-        X,
-        features="string",
-        fast_mode=True,
-    )
-
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
@@ -980,46 +858,6 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
     for i, ice_df in enumerate(ind_preds):
         new_ice_df = fast_ind_preds[i]
         pd.testing.assert_frame_equal(ice_df, new_ice_df)
-
-
-@pytest.mark.parametrize(
-    "problem_type",
-    [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
-)
-def test_random_forests_optimized(
-    problem_type,
-    X_y_binary,
-    X_y_multi,
-    X_y_regression,
-):
-    component_graph = ["Imputer", "One Hot Encoder", "Random Forest Classifier"]
-    if problem_type == ProblemTypes.REGRESSION:
-        pipeline = RegressionPipeline(
-            component_graph=["Imputer", "One Hot Encoder", "Random Forest Regressor"],
-        )
-        X, y = X_y_regression
-    elif problem_type == ProblemTypes.BINARY:
-        pipeline = BinaryClassificationPipeline(
-            component_graph=["Imputer", "One Hot Encoder", "Random Forest Classifier"],
-        )
-        X, y = X_y_binary
-    elif problem_type == ProblemTypes.MULTICLASS:
-        pipeline = MulticlassClassificationPipeline(
-            component_graph=["Imputer", "One Hot Encoder", "Random Forest Classifier"],
-        )
-        X, y = X_y_multi
-
-        pipeline.fit(X, y)
-        part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
-        fast_part_dep = partial_dependence(
-            pipeline,
-            X,
-            features=0,
-            grid_resolution=5,
-            fast_mode=True,
-        )
-
-        pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
@@ -2514,7 +2352,10 @@ def test_partial_dependence_jupyter_graph_check(
         import_check.assert_called_with("ipywidgets", warning=True)
 
 
-def test_partial_dependence_after_dropped_feature(X_y_categorical_regression):
+def test_partial_dependence_fast_mode_after_dropped_feature(X_y_categorical_regression):
+    """The feature selector component in this test will drop the 'time' feature, so confirm
+    that fast mode handles the dropping of this feature correctly--namely that the feature
+    has no impact on predictions"""
     X, y = X_y_categorical_regression
 
     pipeline = RegressionPipeline(
@@ -2527,7 +2368,15 @@ def test_partial_dependence_after_dropped_feature(X_y_categorical_regression):
     )
     pipeline.fit(X, y)
 
+    original_predictions = pipeline.predict(X)
+    average_original_predictions = np.mean(original_predictions, axis=0)
+
     part_dep = partial_dependence(pipeline, X, features="time")
+    assert all(
+        np.isclose(average_original_predictions, dependence)
+        for dependence in list(part_dep["partial_dependence"])
+    )
+
     fast_part_dep = partial_dependence(
         pipeline,
         X,
@@ -2538,60 +2387,60 @@ def test_partial_dependence_after_dropped_feature(X_y_categorical_regression):
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
-def test_partial_dependence_after_dropped_grid_value_regression(
+@pytest.mark.parametrize(
+    "problem_type",
+    [ProblemTypes.BINARY, ProblemTypes.REGRESSION],
+)
+def test_partial_dependence_fast_mode_after_dropped_grid_value(
+    problem_type,
     X_y_categorical_regression,
-):
-    X, y = X_y_categorical_regression
-
-    pipeline = RegressionPipeline(
-        [
-            "Imputer",
-            "One Hot Encoder",
-            "RF Regressor Select From Model",
-            "Random Forest Regressor",
-        ],
-    )
-    pipeline.fit(X, y)
-
-    part_dep = partial_dependence(pipeline, X, features="day")
-    fast_part_dep = partial_dependence(
-        pipeline,
-        X,
-        features="day",
-        fast_mode=True,
-    )
-
-    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
-
-
-def test_partial_dependence_after_dropped_grid_value_classification(
     X_y_categorical_classification,
 ):
-    # --> maybe this and test above should be one test with a fixture
-    X, y = X_y_categorical_classification
+    """The feature selector component in this test will drop some of the categories in the 'day'
+    column after they are one-hot encoded. This means that we lose some grid values based on their
+    feature importance, which is problematic when we fit a pipeline on just the single 'day' feature
+    for fast mode. This test confirms that fast mode isn't improperly dropping categories based
+    off of the single column."""
+    if problem_type == ProblemTypes.REGRESSION:
+        feature = "day"
+        pipeline = RegressionPipeline(
+            [
+                "Imputer",
+                "One Hot Encoder",
+                "RF Regressor Select From Model",
+                "Random Forest Regressor",
+            ],
+        )
+        X, y = X_y_categorical_regression
+    elif problem_type == ProblemTypes.BINARY:
+        feature = "Cabin"
+        pipeline = BinaryClassificationPipeline(
+            [
+                "Imputer",
+                "One Hot Encoder",
+                "RF Classifier Select From Model",
+                "Random Forest Classifier",
+            ],
+        )
+        X, y = X_y_categorical_classification
 
-    pipeline = BinaryClassificationPipeline(
-        [
-            "Imputer",
-            "One Hot Encoder",
-            "RF Classifier Select From Model",
-            "Random Forest Classifier",
-        ],
-    )
     pipeline.fit(X, y)
 
-    part_dep = partial_dependence(pipeline, X, features="Cabin")
+    # Confirm some categories are dropped from the day column
+    assert len(pipeline._get_feature_provenance()[feature]) != len(X[feature].unique())
+
+    part_dep = partial_dependence(pipeline, X, features=feature)
     fast_part_dep = partial_dependence(
         pipeline,
         X,
-        features="Cabin",
+        features=feature,
         fast_mode=True,
     )
 
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
-def test_pd_select_cols_transformer_specified_feature_not_selected():
+def test_pd_fast_mode_select_cols_transformer_specified_feature_not_selected():
     """Confirms that If a column isn't in the column selector but is the specified feature to
     calculate partial dependence for, that the results are as expected for the optimized implementation.
     """
@@ -2610,6 +2459,15 @@ def test_pd_select_cols_transformer_specified_feature_not_selected():
     pipeline.fit(X, y)
 
     part_dep = partial_dependence(pipeline, X, features="cats", grid_resolution=5)
+
+    original_predictions = pipeline.predict(X)
+    average_original_predictions = np.mean(original_predictions, axis=0)
+
+    assert all(
+        np.isclose(average_original_predictions, dependence)
+        for dependence in list(part_dep["partial_dependence"])
+    )
+
     fast_part_dep = partial_dependence(
         pipeline,
         X,
@@ -2620,8 +2478,8 @@ def test_pd_select_cols_transformer_specified_feature_not_selected():
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
-def test_pd_drop_cols_transformer_specified_feature_not_selected():
-    """Confirms that If a column is dropped by the column dropper but is the specified feature to
+def test_pd_fast_mode_drop_cols_transformer_specified_feature_not_selected():
+    """Confirms that if a column is dropped by the column dropper but is the specified feature to
     calculate partial dependence for, that the results are as expected for the optimized implementation.
     """
     y = pd.Series([1.3, 0.7, 1.2, 1.0] * 12)
@@ -2639,6 +2497,15 @@ def test_pd_drop_cols_transformer_specified_feature_not_selected():
     pipeline.fit(X, y)
 
     part_dep = partial_dependence(pipeline, X, features="cats", grid_resolution=5)
+
+    original_predictions = pipeline.predict(X)
+    average_original_predictions = np.mean(original_predictions, axis=0)
+
+    assert all(
+        np.isclose(average_original_predictions, dependence)
+        for dependence in list(part_dep["partial_dependence"])
+    )
+
     fast_part_dep = partial_dependence(
         pipeline,
         X,
@@ -2704,9 +2571,6 @@ def test_pd_dfs_transformer_fast_mode_works_only_when_features_present(X_y_binar
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
-# --> test attempting pd on index?
-
-
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
 def test_partial_dependence_fast_mode_ensemble_pipeline_blocked(
     problem_type,
@@ -2741,17 +2605,3 @@ def test_partial_dependence_fast_mode_ensemble_pipeline_blocked(
         match=error,
     ):
         partial_dependence(pipeline, X, features=0, grid_resolution=5, fast_mode=True)
-
-
-def test_partial_dependence_blocked_with_custom_component():
-    pass
-
-
-def test_partial_dependence_with_invalid_components():
-    # test with all evalml components and specifically marked blocked ones?
-    pass
-
-
-# --> test case when one of the specified features (mult feats) isn't present but the other is
-# --> we need a test that will fail whenever a new component is added and it doesn't work with pd, so users have to handle it themselves or mark it incompatible with fast mode
-# --> test no features set for partial dependence

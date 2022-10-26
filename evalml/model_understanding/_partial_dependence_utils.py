@@ -4,8 +4,6 @@ Implementation borrows from sklearn "brute" calculation but with our
 own modification to better handle mixed data types in the grid
 as well as EvalML pipelines.
 """
-from pdb import set_trace
-
 import numpy as np
 import pandas as pd
 import woodwork as ww
@@ -314,7 +312,6 @@ def _partial_dependence_calculation(pipeline, grid, features, X, fast_mode=False
             predictions.append(pred)
             # average over samples
             averaged_predictions.append(np.mean(pred, axis=0))
-        # set_trace()
 
     n_samples = X.shape[0]
 
