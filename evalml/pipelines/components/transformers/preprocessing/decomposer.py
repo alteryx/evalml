@@ -207,7 +207,10 @@ class Decomposer(Transformer):
             int_index = pd.RangeIndex(len(original_index))
         # Standardize the integer index as a RangeIndex and use existing integer indices
         elif isinstance(original_index, (pd.RangeIndex, Int64Index)):
-            int_index = pd.RangeIndex(original_index)
+            int_index = pd.RangeIndex(
+                start=original_index[0],
+                stop=original_index[-1] + 1,
+            )
 
         assert isinstance(dt_index, pd.DatetimeIndex)
         assert len(original_index) == len(dt_index)
