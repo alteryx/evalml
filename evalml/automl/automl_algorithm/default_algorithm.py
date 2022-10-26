@@ -244,7 +244,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return pipelines
 
     def _add_without_pipelines(self, pipelines, estimators, feature_selector=[]):
-        if "STL Decomposer" in pipelines[-1].component_graph.compute_order:
+        if (
+            len(pipelines)
+            and "STL Decomposer" in pipelines[-1].component_graph.compute_order
+        ):
             without_pipelines = [
                 make_pipeline(
                     X=self.X,

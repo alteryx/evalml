@@ -83,7 +83,7 @@ class STLDecomposer(Decomposer):
                 )
                 - 1
             )
-        elif isinstance(y.index, Int64Index) or isinstance(y.index, RangeIndex):
+        elif isinstance(y.index, (RangeIndex, Int64Index)):
             units_forward = int(y.index[-1] - index[-1])
 
         # Model the trend and project it forward
