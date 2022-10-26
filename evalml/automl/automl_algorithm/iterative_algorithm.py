@@ -183,6 +183,26 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     )
                     for estimator in allowed_estimators
                 ]
+                if "STL Decomposer" in pipelines[-1].component_graph.compute_order:
+                    without_pipelines = [
+                        make_pipeline(
+                            self.X,
+                            self.y,
+                            estimator,
+                            self.problem_type,
+                            parameters=self._pipeline_parameters,
+                            sampler_name=self.sampler_name,
+                            known_in_advance=self._pipeline_parameters.get(
+                                "pipeline",
+                                {},
+                            ).get("known_in_advance", None),
+                            features=self.features,
+                            exclude_featurizers=self.exclude_featurizers,
+                            include_decomposer=False,
+                        )
+                        for estimator in allowed_estimators
+                    ]
+                    self.allowed_pipelines = self.allowed_pipelines + without_pipelines
             self._catch_warnings(w)
         else:
             with warnings.catch_warnings(record=True) as w:
