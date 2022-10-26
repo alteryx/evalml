@@ -285,6 +285,7 @@ def _get_preprocessing_components(
             _get_natural_language,
             _get_imputer,
             _get_time_series_featurizer,
+            _get_decomposer,
             _get_datetime,
             _get_ohe,
             _get_drop_nan_rows_transformer,
