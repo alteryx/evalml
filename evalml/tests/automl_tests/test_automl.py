@@ -4844,7 +4844,7 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
         X,
         y,
         problem_type="time series regression",
-        max_iterations=5,
+        max_iterations=9,
         problem_configuration={
             "max_delay": 2,
             "gap": 0,
@@ -4866,16 +4866,24 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
         expected_order = [
             "Time Series Baseline Estimator",
             "ARIMA Regressor",
+            "ARIMA Regressor",
+            "Exponential Smoothing Regressor",
             "Exponential Smoothing Regressor",
             "Elastic Net Regressor",
+            "Elastic Net Regressor",
+            "XGBoost Regressor",
             "XGBoost Regressor",
         ]
     else:
         expected_order = [
             "Time Series Baseline Estimator",
             "ARIMA Regressor",
+            "ARIMA Regressor",
+            "Prophet Regressor",
             "Prophet Regressor",
             "Exponential Smoothing Regressor",
+            "Exponential Smoothing Regressor",
+            "Elastic Net Regressor",
             "Elastic Net Regressor",
         ]
     assert estimator_order == expected_order

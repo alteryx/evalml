@@ -229,6 +229,17 @@ def test_make_pipeline_controls_decomposer(
             else:
                 assert "STL Decomposer" not in pipeline.component_graph.compute_order
 
+            pipeline = make_pipeline(
+                X,
+                y,
+                estimator_class,
+                problem_type,
+                parameters,
+                include_decomposer=False,
+            )
+            assert isinstance(pipeline, pipeline_class)
+            assert "STL Decomposer" not in pipeline.component_graph.compute_order
+
 
 @pytest.mark.parametrize(
     "sampler",
