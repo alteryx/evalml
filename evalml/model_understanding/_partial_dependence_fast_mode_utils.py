@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import woodwork as ww
 
 from evalml.problem_types import is_binary, is_regression
 
