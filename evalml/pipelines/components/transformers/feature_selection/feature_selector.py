@@ -73,8 +73,10 @@ class FeatureSelector(Transformer):
 
     def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters):
         """Updates pipeline parameters to not drop any features based off of feature importance.
+
+        Note:
             This is needed, because fast mode refits cloned pipelines on single columns,
-            so for categorical columns that have one-hot encoding applied may lose some
+            so categorical columns that have one-hot encoding applied may lose some
             of their encoded columns with the default parameters.
 
         Args:

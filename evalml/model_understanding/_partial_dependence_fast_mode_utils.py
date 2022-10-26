@@ -64,8 +64,7 @@ def _transform_single_feature(
     part_dep_column,
     cloned_pipeline,
 ):
-    """Transforms single column using cloned pipeline and column that has been updated
-        for partial dependence calculations.
+    """Transforms single column using cloned pipeline and column that has been updated for partial dependence calculations.
 
     Args:
         X_t (pd.DataFrame, np.ndarray): The transformed data into which we insert the transformed single column.

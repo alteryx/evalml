@@ -131,7 +131,10 @@ class DFSTransformer(Transformer):
 
     def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters):
         """Determines whether or not a DFSTransformer component can be used with partial dependence's fast mode.
-            It can be used only when all of the features present in the ``features`` parameter are present
+
+        Note:
+            This component can be used with partial dependence fast mode only when
+            all of the features present in the ``features`` parameter are present
             in the DataFrame.
 
         Args:
