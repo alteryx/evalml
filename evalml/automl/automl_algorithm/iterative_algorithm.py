@@ -183,7 +183,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     )
                     for estimator in allowed_estimators
                 ]
-                if "STL Decomposer" in pipelines[-1].component_graph.compute_order:
+                if (
+                    "STL Decomposer"
+                    in self.allowed_pipelines[-1].component_graph.compute_order
+                ):
                     without_pipelines = [
                         make_pipeline(
                             self.X,
