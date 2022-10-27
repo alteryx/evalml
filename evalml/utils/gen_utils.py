@@ -694,7 +694,7 @@ def get_time_index(X: pd.DataFrame, y: pd.Series, time_index_name: str):
                 )
 
     if not isinstance(dt_col, pd.DatetimeIndex):
-        dt_col = pd.DatetimeIndex(dt_col, freq=pd.infer_freq(dt_col))
+        dt_col = pd.DatetimeIndex(dt_col, freq="infer")
     time_index = dt_col.rename(y.index.name)
     return time_index
 
