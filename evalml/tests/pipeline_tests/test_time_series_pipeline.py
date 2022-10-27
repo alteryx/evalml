@@ -242,7 +242,7 @@ def test_fit_drop_nans_before_estimator(
             ],
         }
     else:
-        train_index = pd.date_range("2021-01-01", periods=40, name="date")
+        train_index = pd.date_range("2021-01-01", periods=40)
         expected_target = y
         component_graph = [estimator_name]
 
