@@ -225,7 +225,14 @@ def _cartesian(arrays):
     return out
 
 
-def _partial_dependence_calculation(pipeline, grid, features, X, fast_mode=False):
+def _partial_dependence_calculation(
+    pipeline,
+    grid,
+    features,
+    X,
+    X_training,
+    fast_mode=False,
+):
     """Do the partial dependence calculation once the grid is computed.
 
     Args:
@@ -270,6 +277,7 @@ def _partial_dependence_calculation(pipeline, grid, features, X, fast_mode=False
             X,
             pipeline,
             variable_has_features_passed_to_estimator,
+            X_training,
         )
 
     if is_regression(pipeline.problem_type):
@@ -345,6 +353,7 @@ def _partial_dependence(
     kind="average",
     custom_range=None,
     fast_mode=False,
+    X_training=None,
 ):
     """Compute the partial dependence for features of X.
 
@@ -396,6 +405,7 @@ def _partial_dependence(
         features,
         X,
         fast_mode=fast_mode,
+        X_training=X_training,
     )
 
     # reshape predictions to

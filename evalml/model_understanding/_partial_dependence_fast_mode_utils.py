@@ -9,6 +9,7 @@ def _get_cloned_feature_pipelines(
     X,
     pipeline,
     variable_has_features_passed_to_estimator,
+    X_training,
 ):
     """Clones and fits pipelines for partial dependence fast mode.
 
@@ -23,6 +24,8 @@ def _get_cloned_feature_pipelines(
         dict[str, PipelineBase or subclass]: Dictionary mapping feature name to the pipeline pipeline
             fit for it.
     """
+    if X_training is not None:
+        X = X_training
     # Make sure that only components that are capable of handling fast mode are in the pipeline
     new_parameters = pipeline.parameters
     for component in pipeline.component_graph.component_instances.values():
