@@ -1001,3 +1001,9 @@ def test_get_time_index_maintains_freq():
     time_idx = get_time_index(X, y, None)
     assert X.index.equals(time_idx)
     assert y.index.equals(time_idx)
+
+    X = pd.DataFrame({"date": idx})
+    y = pd.Series(range(len(idx)))
+    X.ww.init()
+    y.ww.init()
+    time_idx = get_time_index(X, y, None)

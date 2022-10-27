@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed bug with datetime conversion in ``get_time_index`` :pr:`3792`
     * Changes
     * Documentation Changes
     * Testing Changes
