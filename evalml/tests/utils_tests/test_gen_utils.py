@@ -973,3 +973,31 @@ def test_get_time_index(
     else:
         idx = get_time_index(X, y, time_index)
         assert isinstance(idx, pd.DatetimeIndex)
+
+
+def test_get_time_index_maintains_freq():
+    idx = pd.DatetimeIndex(
+        [
+            "1992-01-01T00:00:00Z",
+            "1992-02-01T00:00:00Z",
+            "1992-03-01T00:00:00Z",
+            "1992-04-01T00:00:00Z",
+            "1992-05-01T00:00:00Z",
+            "1992-06-01T00:00:00Z",
+            "1992-07-01T00:00:00Z",
+            "1992-08-01T00:00:00Z",
+            "1992-09-01T00:00:00Z",
+            "1992-10-01T00:00:00Z",
+            "1992-11-01T00:00:00Z",
+            "1992-12-01T00:00:00Z",
+            "1993-01-01T00:00:00Z",
+            "1993-02-01T00:00:00Z",
+        ],
+    )
+    X = pd.DataFrame(index=idx)
+    y = pd.Series(range(len(idx)), idx)
+    X.ww.init()
+    y.ww.init()
+    time_idx = get_time_index(X, y, None)
+    assert X.index.equals(time_idx)
+    assert y.index.equals(time_idx)
