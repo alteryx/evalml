@@ -4,7 +4,6 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Fixed bug where ``TimeSeriesBaselinePipeline`` wouldn't preserve index name of input features :pr:`3788`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -12,6 +11,14 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+
+
+**v0.61.1 Oct. 27, 2022**
+    * Fixes
+        * Fixed bug where ``TimeSeriesBaselinePipeline`` wouldn't preserve index name of input features :pr:`3788`
+        * Fixed bug in ``TimeSeriesBaselinePipeline`` referencing a static string instead of time index var :pr:`3788`
+    * Documentation Changes
+        * Updated Release Notes :pr:`3788`
 
 
 **v0.61.0 Oct. 25, 2022**
