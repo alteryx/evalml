@@ -121,7 +121,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             time_index = self.pipeline_params["time_index"]
             freq = pd.infer_freq(X_train[time_index])
             correct_range = pd.date_range(
-                start=X_train["date"].iloc[-1],
+                start=X_train[time_index].iloc[-1],
                 periods=self.gap + 1,
                 freq=freq,
             )[1:]
@@ -151,7 +151,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         if self.should_drop_time_index and self.time_index in X.columns:
             X_schema = X.ww.schema
             y_schema = y.ww.schema
+            index_name = X.index.name
             X = X.set_index(X[self.time_index])
+            X.index.name = index_name
             y = y.set_axis(X[self.time_index])
             X.ww.init(schema=X_schema)
             y.ww.init(schema=y_schema)
