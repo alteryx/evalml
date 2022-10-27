@@ -3,9 +3,8 @@ Release Notes
 
 **Future Releases**
     * Enhancements
-        * Added the STL Decomposer :pr:`3741`
-        * Integrated STLDecomposer into AutoMLSearch for time series regression problems :pr:`3781`
     * Fixes
+        * Fixed bug where ``TimeSeriesBaselinePipeline`` wouldn't preserve index name of input features :pr:`9999`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -17,6 +16,8 @@ Release Notes
 
 **v0.61.0 Oct. 25, 2022**
     * Enhancements
+        * Added the STL Decomposer :pr:`3741`
+        * Integrated STLDecomposer into AutoMLSearch for time series regression problems :pr:`3781`
         * Brought the PolynomialDecomposer up to parity with STLDecomposer :pr:`3768`
     * Changes
         * Cap Featuretools at < 1.15.0 :pr:`3775`

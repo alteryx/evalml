@@ -151,7 +151,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         if self.should_drop_time_index and self.time_index in X.columns:
             X_schema = X.ww.schema
             y_schema = y.ww.schema
+            index_name = X.index.name
             X = X.set_index(X[self.time_index])
+            X.index.name = index_name
             y = y.set_axis(X[self.time_index])
             X.ww.init(schema=X_schema)
             y.ww.init(schema=y_schema)
