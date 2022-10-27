@@ -4,7 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Fixed bug where ``TimeSeriesBaselinePipeline`` wouldn't preserve index name of input features :pr:`9999`
+        * Fixed bug where ``TimeSeriesBaselinePipeline`` wouldn't preserve index name of input features :pr:`3788`
     * Changes
     * Documentation Changes
     * Testing Changes
