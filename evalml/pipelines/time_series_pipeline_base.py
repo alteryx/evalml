@@ -121,7 +121,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             time_index = self.pipeline_params["time_index"]
             freq = pd.infer_freq(X_train[time_index])
             correct_range = pd.date_range(
-                start=X_train["date"].iloc[-1],
+                start=X_train[time_index].iloc[-1],
                 periods=self.gap + 1,
                 freq=freq,
             )[1:]
