@@ -3,6 +3,8 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added the STL Decomposer :pr:`3741`
+        * Integrated STLDecomposer into AutoMLSearch for time series regression problems :pr:`3781`
     * Fixes
     * Changes
     * Documentation Changes
@@ -15,7 +17,6 @@ Release Notes
 
 **v0.61.0 Oct. 25, 2022**
     * Enhancements
-        * Added the STLDecomposer :pr:`3741`
         * Brought the PolynomialDecomposer up to parity with STLDecomposer :pr:`3768`
     * Changes
         * Cap Featuretools at < 1.15.0 :pr:`3775`

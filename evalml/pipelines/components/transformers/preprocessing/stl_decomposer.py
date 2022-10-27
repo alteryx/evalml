@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 
 import pandas as pd
-from pandas.core.index import Int64Index
+from pandas.core.index import Int64Index, RangeIndex
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.forecasting.stl import STLForecast
 from statsmodels.tsa.seasonal import STL
@@ -83,7 +83,7 @@ class STLDecomposer(Decomposer):
                 )
                 - 1
             )
-        elif isinstance(y.index, Int64Index):
+        elif isinstance(y.index, (RangeIndex, Int64Index)):
             units_forward = int(y.index[-1] - index[-1])
 
         # Model the trend and project it forward
