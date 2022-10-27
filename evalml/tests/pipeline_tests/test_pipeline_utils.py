@@ -25,6 +25,7 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     ReplaceNullableTypes,
     StandardScaler,
+    STLDecomposer,
     TargetImputer,
     TimeSeriesFeaturizer,
     Transformer,
@@ -39,12 +40,14 @@ from evalml.pipelines.components.utils import (
     handle_component_class,
 )
 from evalml.pipelines.utils import (
+    _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER,
     _get_pipeline_base_class,
     _get_preprocessing_components,
     _make_pipeline_from_multiple_graphs,
     generate_pipeline_code,
     get_estimators,
     is_classification,
+    is_regression,
     make_pipeline,
     make_pipeline_from_actions,
     rows_of_interest,
@@ -119,7 +122,7 @@ def test_make_pipeline(
                 ohe = [OneHotEncoder]
             else:
                 ohe = []
-
+            decomposer = [STLDecomposer] if is_regression(problem_type) else []
             datetime = (
                 [DateTimeFeaturizer]
                 if estimator_class.model_family
@@ -159,6 +162,7 @@ def test_make_pipeline(
                     + natural_language_featurizer
                     + imputer
                     + delayed_features
+                    + decomposer
                     + datetime
                     + ohe
                     + drop_nan_rows_transformer
@@ -183,6 +187,62 @@ def test_make_pipeline(
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ], test_description
+
+
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ],
+)
+@pytest.mark.parametrize("frequency", ["D", "MS", "A", "T"])
+def test_make_pipeline_controls_decomposer(
+    problem_type,
+    frequency,
+    get_test_data_from_configuration,
+):
+    X, y = get_test_data_from_configuration(
+        "ww",
+        problem_type,
+        column_names=["dates", "numerical"],
+    )
+    X.ww["dates"] = pd.Series(pd.date_range("2000-02-03", periods=20, freq=frequency))
+    parameters = {
+        "pipeline": {
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 1,
+            "forecast_horizon": 3,
+        },
+    }
+    estimators = get_estimators(problem_type=problem_type)
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    for estimator_class in estimators:
+        if problem_type in estimator_class.supported_problem_types:
+
+            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
+            assert isinstance(pipeline, pipeline_class)
+
+            if (
+                is_regression(problem_type)
+                and frequency not in _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER
+            ):
+                assert "STL Decomposer" in pipeline.component_graph.compute_order
+            else:
+                assert "STL Decomposer" not in pipeline.component_graph.compute_order
+
+            pipeline = make_pipeline(
+                X,
+                y,
+                estimator_class,
+                problem_type,
+                parameters,
+                include_decomposer=False,
+            )
+            assert isinstance(pipeline, pipeline_class)
+            assert "STL Decomposer" not in pipeline.component_graph.compute_order
 
 
 @pytest.mark.parametrize(

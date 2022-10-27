@@ -17,6 +17,7 @@ from evalml.utils.gen_utils import (
     get_importable_subclasses,
     _rename_column_names_to_numeric,
     deprecate_arg,
+    get_time_index,
 )
 from evalml.utils.cli_utils import (
     get_evalml_pip_requirements,

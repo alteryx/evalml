@@ -239,8 +239,35 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             )
             for estimator in estimators
         ]
-
+        pipelines = self._add_without_pipelines(pipelines, estimators, feature_selector)
         pipelines = self._init_pipelines_with_starter_params(pipelines)
+        return pipelines
+
+    def _add_without_pipelines(self, pipelines, estimators, feature_selector=[]):
+        if (
+            len(pipelines)
+            and "STL Decomposer" in pipelines[-1].component_graph.compute_order
+        ):
+            without_pipelines = [
+                make_pipeline(
+                    X=self.X,
+                    y=self.y,
+                    estimator=estimator,
+                    problem_type=self.problem_type,
+                    sampler_name=self.sampler_name,
+                    extra_components_after=feature_selector,
+                    parameters=self._pipeline_parameters,
+                    known_in_advance=self._pipeline_parameters.get("pipeline", {}).get(
+                        "known_in_advance",
+                        None,
+                    ),
+                    features=self.features,
+                    exclude_featurizers=self.exclude_featurizers,
+                    include_decomposer=False,
+                )
+                for estimator in estimators
+            ]
+            pipelines = pipelines + without_pipelines
         return pipelines
 
     def _find_component_names(self, original_name, pipeline):
@@ -378,6 +405,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 )
                 for estimator in estimators
             ]
+            pipelines = self._add_without_pipelines(pipelines, estimators)
         else:
             pipelines = [
                 self._make_split_pipeline(estimator) for estimator in estimators
