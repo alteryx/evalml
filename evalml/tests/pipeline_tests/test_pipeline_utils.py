@@ -208,7 +208,7 @@ def test_make_pipeline(
         ("YS", False),
     ],
 )
-def test_make_pipeline_controls_decomposer(
+def test_make_pipeline_controls_decomposer_time_series(
     problem_type,
     frequency,
     should_decomp,
