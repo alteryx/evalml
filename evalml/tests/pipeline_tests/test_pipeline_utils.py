@@ -197,10 +197,22 @@ def test_make_pipeline(
         ProblemTypes.TIME_SERIES_REGRESSION,
     ],
 )
-@pytest.mark.parametrize("frequency", ["D", "MS", "A", "T", "10T"])
+@pytest.mark.parametrize(
+    "frequency, should_decomp",
+    [
+        ("D", True),
+        ("MS", True),
+        ("A", False),
+        ("T", False),
+        ("10T", False),
+        ("AS-JAN", False),
+        ("YS", False),
+    ],
+)
 def test_make_pipeline_controls_decomposer(
     problem_type,
     frequency,
+    should_decomp,
     get_test_data_from_configuration,
 ):
     X, y = get_test_data_from_configuration(
@@ -224,10 +236,7 @@ def test_make_pipeline_controls_decomposer(
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
 
-            if (
-                is_regression(problem_type)
-                and frequency[-1] not in _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER
-            ):
+            if is_regression(problem_type) and should_decomp:
                 assert "STL Decomposer" in pipeline.component_graph.compute_order
             else:
                 assert "STL Decomposer" not in pipeline.component_graph.compute_order
