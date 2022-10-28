@@ -231,6 +231,7 @@ def _partial_dependence_calculation(
     features,
     X,
     X_training,
+    y_training,
     fast_mode=False,
 ):
     """Do the partial dependence calculation once the grid is computed.
@@ -278,13 +279,13 @@ def _partial_dependence_calculation(
             pipeline,
             variable_has_features_passed_to_estimator,
             X_training,
+            y_training,
         )
 
     if is_regression(pipeline.problem_type):
         prediction_method = prediction_object.predict
     else:
         prediction_method = prediction_object.predict_proba
-
     if fast_mode and no_features_passed_to_estimator:
         original_predictions = prediction_method(X_eval)
         original_predictions_mean = np.mean(original_predictions, axis=0)
@@ -320,7 +321,6 @@ def _partial_dependence_calculation(
             predictions.append(pred)
             # average over samples
             averaged_predictions.append(np.mean(pred, axis=0))
-
     n_samples = X.shape[0]
 
     # reshape to (n_instances, n_points) for binary/regression
@@ -354,6 +354,7 @@ def _partial_dependence(
     custom_range=None,
     fast_mode=False,
     X_training=None,
+    y_training=None,
 ):
     """Compute the partial dependence for features of X.
 
@@ -404,8 +405,9 @@ def _partial_dependence(
         grid,
         features,
         X,
-        fast_mode=fast_mode,
         X_training=X_training,
+        y_training=y_training,
+        fast_mode=fast_mode,
     )
 
     # reshape predictions to

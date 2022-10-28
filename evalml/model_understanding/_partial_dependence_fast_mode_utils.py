@@ -10,6 +10,7 @@ def _get_cloned_feature_pipelines(
     pipeline,
     variable_has_features_passed_to_estimator,
     X_training,
+    y_training,
 ):
     """Clones and fits pipelines for partial dependence fast mode.
 
@@ -35,13 +36,14 @@ def _get_cloned_feature_pipelines(
         )
 
     # mock out y for pipeline fitting
-    len_X = len(X)
-    if is_regression(pipeline.problem_type):
-        mock_y = pd.Series(np.random.randint(0, 10, len_X))
-    elif is_binary(pipeline.problem_type):
-        mock_y = pd.Series(np.random.choice([True, False], size=len_X))
-    else:
-        mock_y = pd.Series(np.random.choice([0, 1, 2], size=len_X))
+    if y_training is None:
+        len_X = len(X)
+        if is_regression(pipeline.problem_type):
+            y_training = pd.Series(np.random.randint(0, 10, len_X))
+        elif is_binary(pipeline.problem_type):
+            y_training = pd.Series(np.random.choice([True, False], size=len_X))
+        else:
+            y_training = pd.Series(np.random.choice([0, 1, 2], size=len_X))
 
     # Create a fit pipeline for each feature
     cloned_feature_pipelines = {}
@@ -52,7 +54,7 @@ def _get_cloned_feature_pipelines(
         pipeline_copy = pipeline.new(
             parameters=new_parameters,
         )
-        pipeline_copy.fit(X.ww[[variable]], mock_y)
+        pipeline_copy.fit(X.ww[[variable]], y_training)
         cloned_feature_pipelines[variable] = pipeline_copy
 
     return cloned_feature_pipelines
