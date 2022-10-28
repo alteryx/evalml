@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed bug where invalid anchored or offset frequencies were including the ``STLDecomposer`` in pipelines :pr:`3794`
     * Changes
     * Documentation Changes
     * Testing Changes
