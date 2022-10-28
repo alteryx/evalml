@@ -231,8 +231,11 @@ def _get_decomposer(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
     if is_time_series(problem_type) and is_regression(problem_type):
         time_index = get_time_index(X, y, None)
-        freq = time_index.freq
-        if freq not in _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER:
+        if time_index.freq.is_anchored:
+            freq = time_index.freq.name.split("-")[0]
+        else:
+            freq = time_index.freq.name
+        if freq[-1] not in _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER:
             components.append(STLDecomposer)
     return components
 
