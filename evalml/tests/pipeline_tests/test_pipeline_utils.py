@@ -40,7 +40,6 @@ from evalml.pipelines.components.utils import (
     handle_component_class,
 )
 from evalml.pipelines.utils import (
-    _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER,
     _get_pipeline_base_class,
     _get_preprocessing_components,
     _make_pipeline_from_multiple_graphs,
