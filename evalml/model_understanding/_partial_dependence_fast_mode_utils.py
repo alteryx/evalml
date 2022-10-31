@@ -11,7 +11,6 @@ def _get_cloned_feature_pipelines(
     variable_has_features_passed_to_estimator,
     X_training,
     y_training,
-    # --> maybe these should be required for fast mode? So error if they aren't there - also update docstring
 ):
     """Clones and fits pipelines for partial dependence fast mode.
 
@@ -30,25 +29,17 @@ def _get_cloned_feature_pipelines(
         dict[str, PipelineBase or subclass]: Dictionary mapping feature name to the pipeline pipeline
             fit for it.
     """
-    if X_training is not None:
-        X = X_training
+    if X_training is None or y_training is None:
+        raise ValueError("Training data is required for partial dependence fast mode.")
+
     # Make sure that only components that are capable of handling fast mode are in the pipeline
     new_parameters = pipeline.parameters
     for component in pipeline.component_graph.component_instances.values():
+        # --> why did it work before with X_training set here? Seems like it's only a problem with the tests
         new_parameters = component._handle_partial_dependence_fast_mode(
             X,
             new_parameters,
         )
-
-    # mock out y for pipeline fitting
-    if y_training is None:
-        len_X = len(X)
-        if is_regression(pipeline.problem_type):
-            y_training = pd.Series(np.random.randint(0, 10, len_X))
-        elif is_binary(pipeline.problem_type):
-            y_training = pd.Series(np.random.choice([True, False], size=len_X))
-        else:
-            y_training = pd.Series(np.random.choice([0, 1, 2], size=len_X))
 
     # Create a fit pipeline for each feature
     cloned_feature_pipelines = {}

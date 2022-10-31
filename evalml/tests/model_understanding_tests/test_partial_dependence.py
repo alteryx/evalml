@@ -84,6 +84,8 @@ def test_partial_dependence_problem_types(
         features=0,
         grid_resolution=5,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -115,6 +117,8 @@ def test_partial_dependence_string_feature_name(
         features="mean radius",
         grid_resolution=5,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
 
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
@@ -149,6 +153,8 @@ def test_partial_dependence_with_non_numeric_columns(
         X,
         features="numeric",
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -163,6 +169,8 @@ def test_partial_dependence_with_non_numeric_columns(
         X,
         features="string",
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -210,6 +218,8 @@ def test_partial_dependence_with_ww_category_columns(
         X,
         features="store_id",
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -246,6 +256,8 @@ def test_partial_dependence_with_ww_category_columns(
         X,
         features="region",
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -290,6 +302,8 @@ def test_two_way_partial_dependence_with_ww_category_columns(
         X,
         features=("store_id", "country"),
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -311,6 +325,8 @@ def test_two_way_partial_dependence_with_ww_category_columns(
         features=("store_id", "amount"),
         grid_resolution=grid_resolution,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -332,6 +348,8 @@ def test_two_way_partial_dependence_with_ww_category_columns(
         features=("amount", "store_id"),
         grid_resolution=grid_resolution,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -378,6 +396,8 @@ def test_partial_dependence_catboost(problem_type, X_y_binary, X_y_multi):
         features=0,
         grid_resolution=5,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -399,7 +419,14 @@ def test_partial_dependence_catboost(problem_type, X_y_binary, X_y_multi):
     check_partial_dependence_dataframe(pipeline, part_dep, grid_size=3)
     assert not part_dep.isnull().all().all()
 
-    fast_part_dep = partial_dependence(pipeline, X, features="string", fast_mode=True)
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features="string",
+        fast_mode=True,
+        X_training=X,
+        y_training=y_small,
+    )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
@@ -445,6 +472,8 @@ def test_partial_dependence_xgboost_feature_names(
         features="<[0]",
         grid_resolution=5,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -458,6 +487,8 @@ def test_partial_dependence_xgboost_feature_names(
         features=1,
         grid_resolution=5,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -493,6 +524,8 @@ def test_partial_dependence_multiclass(
         features="magnesium",
         grid_resolution=grid_resolution,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(one_way_part_dep, fast_part_dep)
 
@@ -514,6 +547,8 @@ def test_partial_dependence_multiclass(
         features=("magnesium", "alcohol"),
         grid_resolution=grid_resolution,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(two_way_part_dep, fast_part_dep)
 
@@ -544,6 +579,8 @@ def test_partial_dependence_multiclass(
         grid_resolution=grid_resolution,
         kind="both",
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(two_way_part_dep, fast_part_dep)
     for i, ice_df in enumerate(two_way_ice_data):
@@ -583,6 +620,8 @@ def test_partial_dependence_multiclass_numeric_labels(
         features=1,
         grid_resolution=grid_resolution,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(one_way_part_dep, fast_part_dep)
 
@@ -604,6 +643,8 @@ def test_partial_dependence_multiclass_numeric_labels(
         features=(1, 2),
         grid_resolution=grid_resolution,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(two_way_part_dep, fast_part_dep)
 
@@ -718,6 +759,8 @@ def test_partial_dependence_more_categories_than_grid_resolution(
         "currency",
         grid_resolution=round(num_cat_features / 2),
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -737,6 +780,8 @@ def test_partial_dependence_more_categories_than_grid_resolution(
         "currency",
         grid_resolution=round(num_cat_features),
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -756,6 +801,8 @@ def test_partial_dependence_more_categories_than_grid_resolution(
         "currency",
         grid_resolution=round(num_cat_features * 2),
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -779,6 +826,8 @@ def test_partial_dependence_ice_plot(logistic_regression_binary_pipeline):
         features="a",
         kind="both",
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(avg_pred, fast_avg_pred)
     pd.testing.assert_frame_equal(ind_preds, fast_ind_preds)
@@ -794,6 +843,8 @@ def test_partial_dependence_ice_plot(logistic_regression_binary_pipeline):
         features="b",
         kind="individual",
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(ind_preds, fast_ind_preds)
 
@@ -827,6 +878,8 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
         grid_resolution=5,
         kind="both",
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(avg_pred, fast_avg_pred)
     for i, ice_df in enumerate(ind_preds):
@@ -854,6 +907,8 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
         grid_resolution=5,
         kind="individual",
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     for i, ice_df in enumerate(ind_preds):
         new_ice_df = fast_ind_preds[i]
@@ -922,6 +977,8 @@ def test_graph_partial_dependence(
         features="mean radius",
         grid_resolution=5,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep_data, fast_part_dep_data)
 
@@ -1006,6 +1063,8 @@ def test_graph_two_way_partial_dependence(
         features=("mean radius", "mean area"),
         grid_resolution=5,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     fast_part_dep_data.drop(columns=["class_label"], inplace=True)
     pd.testing.assert_frame_equal(part_dep_data, fast_part_dep_data)
@@ -1057,6 +1116,8 @@ def test_graph_two_way_partial_dependence_ww_categories(
         X,
         features=("country", "region"),
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     fast_part_dep_data.drop(columns=["class_label"], inplace=True)
     pd.testing.assert_frame_equal(part_dep_data, fast_part_dep_data)
@@ -1082,6 +1143,8 @@ def test_graph_two_way_partial_dependence_ww_categories(
         X,
         features=("country", "lat"),
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     fast_part_dep_data.drop(columns=["class_label"], inplace=True)
     pd.testing.assert_frame_equal(part_dep_data, fast_part_dep_data)
@@ -1107,6 +1170,8 @@ def test_graph_two_way_partial_dependence_ww_categories(
         X,
         features=("country", "lat"),
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     fast_part_dep_data.drop(columns=["class_label"], inplace=True)
     pd.testing.assert_frame_equal(part_dep_data, fast_part_dep_data)
@@ -1337,6 +1402,8 @@ def test_partial_dependence_percentile_errors(
         percentiles=(0.01, 0.96),
         grid_resolution=5,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -1621,6 +1688,8 @@ def test_partial_dependence_datetime(
         features="dt_column",
         grid_resolution=grid,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -1644,6 +1713,8 @@ def test_partial_dependence_datetime(
         features=20,
         grid_resolution=grid,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -1760,6 +1831,8 @@ def test_partial_dependence_respect_grid_resolution(fraud_100):
         features="amount",
         grid_resolution=5,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(dep, fast_dep)
 
@@ -1773,6 +1846,8 @@ def test_partial_dependence_respect_grid_resolution(fraud_100):
         features="provider",
         grid_resolution=5,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(dep, fast_dep)
 
@@ -1871,6 +1946,8 @@ def test_graph_partial_dependence_ice_plot(
         grid_resolution=5,
         kind="both",
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(avg_dep_data, fast_avg_dep_data)
     pd.testing.assert_frame_equal(ind_dep_data, fast_ind_dep_data)
@@ -1931,6 +2008,8 @@ def test_graph_partial_dependence_ice_plot(
         grid_resolution=5,
         kind="individual",
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(ind_dep_data, fast_ind_dep_data)
 
@@ -2121,6 +2200,8 @@ def test_partial_dependence_datetime_extra(
         features="date_column",
         grid_resolution=10,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -2139,6 +2220,8 @@ def test_partial_dependence_datetime_extra(
         features=20,
         grid_resolution=10,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -2180,7 +2263,16 @@ def test_partial_dependence_not_allowed_types(types, cols, expected_cols):
     s = partial_dependence(pl, X, cols, grid_resolution=2)
     assert not s.isnull().any().any()
 
-    fast_s = partial_dependence(pl, X, cols, grid_resolution=2, fast_mode=True)
+    fast_s = partial_dependence(
+        pl,
+        X,
+        cols,
+        grid_resolution=2,
+        fast_mode=True,
+        X_training=X,
+        y_training=y,
+    )
+
     pd.testing.assert_frame_equal(s, fast_s)
 
 
@@ -2215,6 +2307,8 @@ def test_partial_dependence_categorical_nan(fraud_100):
         features="provider",
         grid_resolution=GRID_RESOLUTION,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(dep, fast_dep)
 
@@ -2234,6 +2328,8 @@ def test_partial_dependence_categorical_nan(fraud_100):
         features=("amount", "provider"),
         grid_resolution=GRID_RESOLUTION,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(dep2way, fast_dep2way)
 
@@ -2282,7 +2378,16 @@ def test_partial_dependence_preserves_woodwork_schema(mock_predict_proba, fraud_
         for call_args in mock_predict_proba.call_args_list
     )
 
-    _ = partial_dependence(pl, X_test, "card_id", grid_resolution=5, fast_mode=True)
+    _ = partial_dependence(
+        pl,
+        X_test,
+        "card_id",
+        grid_resolution=5,
+        fast_mode=True,
+        X_training=X,
+        y_training=y,
+    )
+
     assert all(
         call_args[0][0].ww.schema == X_test.ww.schema
         for call_args in mock_predict_proba.call_args_list
@@ -2322,6 +2427,8 @@ def test_partial_dependence_does_not_return_all_nan_grid():
         "a",
         grid_resolution=4,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(dep, fast_dep)
 
@@ -2382,6 +2489,8 @@ def test_partial_dependence_fast_mode_after_dropped_feature(X_y_categorical_regr
         X,
         features="time",
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
 
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
@@ -2435,6 +2544,8 @@ def test_partial_dependence_fast_mode_after_dropped_grid_value(
         X,
         features=feature,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
 
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
@@ -2474,6 +2585,8 @@ def test_pd_fast_mode_select_cols_transformer_specified_feature_not_selected():
         features="cats",
         grid_resolution=5,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -2512,6 +2625,8 @@ def test_pd_fast_mode_drop_cols_transformer_specified_feature_not_selected():
         features="cats",
         grid_resolution=5,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -2555,6 +2670,8 @@ def test_pd_dfs_transformer_fast_mode_works_only_when_features_present(X_y_binar
             features=1,
             grid_resolution=5,
             fast_mode=True,
+            X_training=X,
+            y_training=y,
         )
 
     # If we pass the feature matrix into the same pipeline, though, DFS transformer will be no op, so pd should match
@@ -2567,6 +2684,8 @@ def test_pd_dfs_transformer_fast_mode_works_only_when_features_present(X_y_binar
         features=1,
         grid_resolution=5,
         fast_mode=True,
+        X_training=X,
+        y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
@@ -2604,7 +2723,15 @@ def test_partial_dependence_fast_mode_ensemble_pipeline_blocked(
         PartialDependenceError,
         match=error,
     ):
-        partial_dependence(pipeline, X, features=0, grid_resolution=5, fast_mode=True)
+        partial_dependence(
+            pipeline,
+            X,
+            features=0,
+            grid_resolution=5,
+            fast_mode=True,
+            X_training=X,
+            y_training=y,
+        )
 
 
 def test_partial_dependence_fast_mode_oversampler_blocked(X_y_binary):
@@ -2630,4 +2757,45 @@ def test_partial_dependence_fast_mode_oversampler_blocked(X_y_binary):
         PartialDependenceError,
         match=error,
     ):
-        partial_dependence(pipeline, X, features=0, grid_resolution=5, fast_mode=True)
+        partial_dependence(
+            pipeline,
+            X,
+            features=0,
+            grid_resolution=5,
+            fast_mode=True,
+            X_training=X,
+            y_training=y,
+        )
+
+
+def test_partial_dependence_fast_mode_errors_if_training_data_not_passed(
+    X_y_regression,
+    linear_regression_pipeline,
+):
+    X, y = X_y_regression
+
+    linear_regression_pipeline.fit(X, y)
+    error = "Training data is required for partial dependence fast mode."
+    with pytest.raises(
+        PartialDependenceError,
+        match=error,
+    ):
+        partial_dependence(
+            linear_regression_pipeline,
+            X,
+            features=0,
+            fast_mode=True,
+            X_training=X,
+        )
+
+    with pytest.raises(
+        PartialDependenceError,
+        match=error,
+    ):
+        partial_dependence(
+            linear_regression_pipeline,
+            X,
+            features=0,
+            fast_mode=True,
+            y_training=y,
+        )
