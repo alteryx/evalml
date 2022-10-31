@@ -7,7 +7,6 @@ Release Notes
         * Fixed bug with datetime conversion in ``get_time_index`` :pr:`3792`
         * Fixed bug where invalid anchored or offset frequencies were including the ``STLDecomposer`` in pipelines :pr:`3794`
     * Changes
-        * Capped dask at < 2022.10.1 :pr:`3797`
     * Documentation Changes
     * Testing Changes
 
