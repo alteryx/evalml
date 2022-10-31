@@ -8,6 +8,7 @@ Release Notes
         * Fixed bug where invalid anchored or offset frequencies were including the ``STLDecomposer`` in pipelines :pr:`3794`
     * Changes
         * Capped dask at < 2022.10.1 :pr:`3797`
+        * Uncapped dask and excluded 2022.10.1 from viable versions :pr:`3803`
     * Documentation Changes
     * Testing Changes
 
