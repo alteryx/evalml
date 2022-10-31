@@ -9,6 +9,7 @@ Release Notes
         * Fixed bug where irregular datetime frequencies were causing errors in ``make_pipeline`` :pr:`3800`
     * Changes
         * Capped dask at < 2022.10.1 :pr:`3797`
+        * Uncapped dask and excluded 2022.10.1 from viable versions :pr:`3803`
     * Documentation Changes
     * Testing Changes
 

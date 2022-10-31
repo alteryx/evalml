@@ -12,7 +12,7 @@ shap>=0.40.0
 statsmodels>=0.12.2
 texttable>=1.6.2
 woodwork>=0.19.0
-dask>=2021.10.0,<2022.10.1
+dask>=2021.10.0, !=2022.10.1
 nlp-primitives>=2.2.0,!=2.6.0
 featuretools>=1.7.0
 networkx>=2.5,<2.6
