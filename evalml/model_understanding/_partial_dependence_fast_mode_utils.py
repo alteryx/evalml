@@ -11,15 +11,20 @@ def _get_cloned_feature_pipelines(
     variable_has_features_passed_to_estimator,
     X_training,
     y_training,
+    # --> maybe these should be required for fast mode? So error if they aren't there - also update docstring
 ):
     """Clones and fits pipelines for partial dependence fast mode.
 
     Args:
         pipeline (PipelineBase or subclass): Fitted pipeline that will be cloned.
-        X (pd.DataFrame, np.ndarray): The input data used to fit the cloned pipelines.
+        X (pd.DataFrame, np.ndarray): The input data that will be transformed by the cloned pipelines.
         features (string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
             If features is a string, it must be a valid column name in X.
             If features is a tuple of int/strings, it must contain valid column integers/names in X.
+        X_training (pd.DataFrame, np.ndarray): The data that was used to train the original pipeline. Will
+            be used to train the cloned pipelines.
+        y_training (pd.Series, np.ndarray): The target data that was used to train the original pipeline. Will
+            be used to train the cloned pipelines.
 
     Returns:
         dict[str, PipelineBase or subclass]: Dictionary mapping feature name to the pipeline pipeline

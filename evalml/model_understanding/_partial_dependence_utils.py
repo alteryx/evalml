@@ -241,6 +241,10 @@ def _partial_dependence_calculation(
         grid (pd.DataFrame): Grid of features to compute the partial dependence on.
         features (list(str)): Column names of input data
         X (pd.DataFrame): Input data.
+        X_training (pd.DataFrame, np.ndarray): The data that was used to train the original pipeline. Will
+            be used in fast mode to train the cloned pipelines.
+        y_training (pd.Series, np.ndarray): The target data that was used to train the original pipeline. Will
+            be used in fast mode to train the cloned pipelines.
         fast_mode (bool, optional): Whether or not performance optimizations should be
             used. Defaults to False. When True, copies of pipelines will be used to transform just the
             column(s) we're calculating partial dependence for. This means that any pipeline
@@ -377,6 +381,10 @@ def _partial_dependence(
             containing a component that relies on multiple columns for fit and transform should
             not be used. See the ``_can_be_used_for_fast_partial_dependence`` property on components
             to determine which components cannot be used for fast mode.
+        X_training (pd.DataFrame, np.ndarray): The data that was used to train the original pipeline. Will
+            be used in fast mode to train the cloned pipelines.
+        y_training (pd.Series, np.ndarray): The target data that was used to train the original pipeline. Will
+            be used in fast mode to train the cloned pipelines.
 
     Returns:
         dict with 'average', 'individual', 'values' keys. 'values' is a list of
