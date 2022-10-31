@@ -6,6 +6,7 @@ Release Notes
     * Fixes
         * Fixed bug with datetime conversion in ``get_time_index`` :pr:`3792`
         * Fixed bug where invalid anchored or offset frequencies were including the ``STLDecomposer`` in pipelines :pr:`3794`
+        * Fixed bug where irregular datetime frequencies were causing errors in ``make_pipeline`` :pr:`3800`
     * Changes
     * Documentation Changes
     * Testing Changes
