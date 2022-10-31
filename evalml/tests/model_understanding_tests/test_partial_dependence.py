@@ -2605,3 +2605,29 @@ def test_partial_dependence_fast_mode_ensemble_pipeline_blocked(
         match=error,
     ):
         partial_dependence(pipeline, X, features=0, grid_resolution=5, fast_mode=True)
+
+
+def test_partial_dependence_fast_mode_oversampler_blocked(X_y_binary):
+    # --> confirm oversampling isn't a thing with regression pipelines
+    X, y = X_y_binary
+    pipeline = BinaryClassificationPipeline(
+        component_graph={
+            "Oversampler": ["Oversampler", "X", "y"],
+            "Standard Scaler": ["Standard Scaler", "Oversampler.x", "Oversampler.y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Standard Scaler.x",
+                "Oversampler.y",
+            ],
+        },
+    )
+
+    pipeline.fit(X, y)
+    error = re.escape(
+        f"cannot run partial dependence fast mode",
+    )
+    with pytest.raises(
+        PartialDependenceError,
+        match=error,
+    ):
+        partial_dependence(pipeline, X, features=0, grid_resolution=5, fast_mode=True)
