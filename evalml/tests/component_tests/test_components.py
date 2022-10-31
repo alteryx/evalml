@@ -982,11 +982,12 @@ def test_components_can_be_used_for_partial_dependence_fast_mode():
     assert invalid_for_pd_fast_mode == [
         "Stacked Ensemble Regressor",
         "Stacked Ensemble Classifier",
+        "Oversampler",
     ]
 
     # Expected number is hardcoded so that this test will fail when new components are added
     # It should be len(all_native_components) - len(invalid_for_pd_fast_mode)
-    assert num_valid_for_pd_fast_mode == 62
+    assert num_valid_for_pd_fast_mode == 61
 
 
 def test_estimator_check_for_fit(X_y_binary):
