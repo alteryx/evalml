@@ -137,3 +137,20 @@ class Oversampler(BaseSampler):
         self._parameters["k_neighbors"] = neighbors
         sampler = sampler_class(**sampler_params, random_state=self.random_seed)
         self._component_obj = sampler
+
+    def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters):
+        """Updates pipeline parameters to not have categorical_features parameter set.
+
+        Note:
+            This is needed, because fast mode refits cloned pipelines on single columns,
+            and the `categorical_features` parameter should not be present when fitting the Oversampler,
+            as it is added as a parameter during fit.
+
+        Args:
+            X (pd.DataFrame): Holdout data being used for partial dependence calculations.
+            pipeline_parameters (dict): Pipeline parameters that will be used to create the pipelines
+                used in partial dependence fast mode.
+        """
+        pipeline_parameters[self.name].pop("categorical_features", None)
+
+        return pipeline_parameters
