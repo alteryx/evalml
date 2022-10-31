@@ -8,6 +8,7 @@ Release Notes
         * Fixed bug where invalid anchored or offset frequencies were including the ``STLDecomposer`` in pipelines :pr:`3794`
         * Fixed bug where irregular datetime frequencies were causing errors in ``make_pipeline`` :pr:`3800`
     * Changes
+        * Capped dask at < 2022.10.1 :pr:`3797`
     * Documentation Changes
     * Testing Changes
 
