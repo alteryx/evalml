@@ -986,7 +986,7 @@ def test_components_can_be_used_for_partial_dependence_fast_mode():
     ]
 
     # Expected number is hardcoded so that this test will fail when new components are added
-    # It should be len(all_native_components) - len(invalid_for_pd_fast_mode)
+    # It should be len(all_native_components) - num_invalid_for_pd_fast_mode
     assert num_valid_for_pd_fast_mode == 61
 
 
