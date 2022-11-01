@@ -167,6 +167,8 @@ def get_test_data_from_configuration():
         nullable_target=False,
         scale=2,
     ):
+        if is_time_series(problem_type) and "dates" not in column_names:
+            column_names.append("dates")
         X_all = pd.DataFrame(
             {
                 "all_null": [
@@ -2212,7 +2214,16 @@ def imputer_test_data():
 def generate_seasonal_data():
     """Function that returns data with a linear trend and a seasonal signal with specified period."""
 
-    def generate_real_data(period, step=None, num_periods=10, scale=1, trend_degree=1):
+    def generate_real_data(
+        period,
+        step=None,
+        num_periods=20,
+        scale=1,
+        seasonal_scale=1,
+        trend_degree=1,
+        freq_str="D",
+        set_time_index=False,
+    ):
         X, y = load_weather()
         y = y.set_axis(X["Date"]).asfreq(pd.infer_freq(X["Date"]))
         X = X.set_index("Date").asfreq(pd.infer_freq(X["Date"]))
@@ -2221,10 +2232,37 @@ def generate_seasonal_data():
     def generate_synthetic_data(
         period,
         step=None,
-        num_periods=10,
+        num_periods=20,
         scale=1,
+        seasonal_scale=1,
         trend_degree=1,
+        freq_str="D",
+        set_time_index=False,
     ):
+        """Function to generate a sinusoidal signal with a polynomial trend.
+
+        Args:
+            period: The length, in units, of the seasonal signal.
+            step:
+            num_periods: How many periods of the seasonal signal to generate.
+            scale: The relative scale of the trend.  Setting it higher increases
+                the comparative strength of the trend.
+            seasonal_scale: The relative scale of the sinusoidal seasonality.
+                Setting it higher increases the comparative strength of the
+                trend.
+            trend_degree: The degree of the polynomial trend. 1 = linear, 2 =
+                quadratic, 3 = cubic.  Specific functional forms defined
+                below.
+            freq_str: The pandas frequency string used to define the unit of
+                time in the series time index.
+            set_time_index: Whether to set the time index with a pandas.
+                DatetimeIndex.
+
+        Returns:
+            X (pandas.DateFrame): A placeholder feature matrix.
+            y (pandas.Series): A synthetic, time series target Series.
+
+        """
         if period is None:
             x = np.arange(0, 1, 0.01)
         elif step is not None:
@@ -2233,7 +2271,7 @@ def generate_seasonal_data():
         else:
             freq = 2 * np.pi / period
             x = np.arange(0, period * num_periods, 1)
-        dts = pd.date_range(datetime.today(), periods=len(x))
+        dts = pd.date_range(datetime.today(), periods=len(x), freq=freq_str)
         X = pd.DataFrame({"x": x})
         X = X.set_index(dts)
 
@@ -2244,10 +2282,12 @@ def generate_seasonal_data():
         elif trend_degree == 3:
             y_trend = pd.Series(scale * minmax_scale((x - 5) ** 3 + x**2))
         if period is not None:
-            y_seasonal = pd.Series(np.sin(freq * x))
+            y_seasonal = pd.Series(seasonal_scale * np.sin(freq * x))
         else:
             y_seasonal = pd.Series(np.zeros(len(x)))
         y = y_trend + y_seasonal
+        if set_time_index:
+            y = y.set_axis(dts)
         return X, y
 
     def _return_proper_func(real_or_synthetic):

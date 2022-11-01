@@ -89,6 +89,7 @@ all_requirements_set = set(
         "Oversampler",
         "Ordinal Encoder",
         "Polynomial Decomposer",
+        "STL Decomposer",
         "Prophet Regressor",
         "Target Encoder",
         "Vowpal Wabbit Binary Classifier",

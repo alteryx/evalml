@@ -11,7 +11,7 @@ from pandas.core.index import Int64Index
 from scipy.signal import argrelextrema
 
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils import infer_feature_types
+from evalml.utils import get_time_index, infer_feature_types
 
 
 class Decomposer(Transformer):
@@ -74,41 +74,8 @@ class Decomposer(Transformer):
     def _set_time_index(self, X: pd.DataFrame, y: pd.Series):
         """Ensures that target data has a pandas.DatetimeIndex that matches feature data."""
         dt_df = infer_feature_types(X)
-
-        # Prefer the user's provided time_index, if it exists
-        if self.time_index and self.time_index in dt_df.columns:
-            dt_col = dt_df[self.time_index]
-        # If user's provided time_index doesn't exist, log it and find some datetimes to use
-        elif (self.time_index is None) or self.time_index not in dt_df.columns:
-            self.logger.warning(
-                f"Decomposer could not find requested time_index {self.time_index}",
-            )
-            # Use the feature data's index, preferentially
-            num_datetime_features = dt_df.ww.select("Datetime").shape[1]
-            if isinstance(dt_df.index, pd.DatetimeIndex):
-                dt_col = pd.Series(dt_df.index)
-            elif num_datetime_features == 0:
-                raise ValueError(
-                    "There are no Datetime features in the feature data and neither the feature nor the target data have a DateTime index.",
-                )
-            # Use a datetime column of the features if there's only one
-            elif num_datetime_features == 1:
-                dt_col = dt_df.ww.select("Datetime").squeeze()
-            # With more than one datetime column, use the time_index parameter, if provided.
-            elif num_datetime_features > 1:
-                if self.parameters.get("time_index", None) is None:
-                    raise ValueError(
-                        "Too many Datetime features provided in data but no time_index column specified during __init__.",
-                    )
-                elif not self.parameters["time_index"] in X:
-                    time_index_col = self.parameters["time_index"]
-                    raise ValueError(
-                        f"Too many Datetime features provided in data and provided time_index column {time_index_col} not present in data.",
-                    )
-
-        time_index = pd.DatetimeIndex(dt_col, freq=pd.infer_freq(dt_col)).rename(
-            y.index.name,
-        )
+        time_index_name = self.time_index or self.parameters.get("time_index", None)
+        time_index = get_time_index(dt_df, y, time_index_name)
         return y.set_axis(time_index)
 
     def fit_transform(
@@ -219,15 +186,65 @@ class Decomposer(Transformer):
 
         """
         self.seasonal_period = self.determine_periodicity(X, y)
-        self.parameters["seasonal_period"] = self.seasonal_period
+        self.parameters.update({"seasonal_period": self.seasonal_period})
+
+    def _check_oos_past(self, y):
+        """Function to check whether provided target data is out-of-sample and in the past."""
+        index = self._choose_proper_index(y)
+
+        if y.index[0] < index[0]:
+            raise ValueError(
+                f"STLDecomposer cannot transform/inverse transform data out of sample and before the data used"
+                f"to fit the decomposer."
+                f"\nRequested range: {str(y.index[0])}:{str(y.index[-1])}."
+                f"\nSample range: {str(index[0])}:{str(index[-1])}.",
+            )
+
+    def _map_dt_to_integer(self, original_index, dt_index):
+        """Function to generate an initial mapping of integer indices to datetime indices."""
+        # Set an initial mapping of integers <-> datetimes at fit
+        if isinstance(original_index, pd.DatetimeIndex):
+            int_index = pd.RangeIndex(len(original_index))
+        # Standardize the integer index as a RangeIndex and use existing integer indices
+        elif isinstance(original_index, (pd.RangeIndex, Int64Index)):
+            int_index = pd.RangeIndex(
+                start=original_index[0],
+                stop=original_index[-1] + 1,
+            )
+
+        assert isinstance(dt_index, pd.DatetimeIndex)
+        assert len(original_index) == len(dt_index)
+
+        self.in_sample_integer_index = int_index
+        self.in_sample_datetime_index = dt_index
+
+    def _int_to_dt(self, integer_index_value):
+        """Function to convert an integer index value to a datetime value based on the mapping made during fit."""
+        try:
+            dt = self.in_sample_datetime_index[
+                self.in_sample_integer_index.get_loc(integer_index_value)
+            ]
+        except KeyError:
+            more_than = integer_index_value - self.in_sample_integer_index[-1]
+            dt = (
+                self.in_sample_datetime_index.freq * more_than
+                + self.in_sample_datetime_index[-1]
+            )
+        return dt
+
+    def _convert_int_index_to_dt_index(self, integer_index):
+        """Function to convert an entire index full of integers to datetimes."""
+        dts = [self._int_to_dt(integer) for integer in integer_index]
+        dt_index = pd.DatetimeIndex(dts, freq=self.frequency)
+        return dt_index
 
     def _choose_proper_index(self, y):
         """Function that provides support for targets with integer and datetime indices."""
         # TODO: Need to update this after we upgrade to Pandas 1.5+ and Int64Index is deprecated.
         if isinstance(y.index, (Int64Index, pd.RangeIndex)):
-            index = self.original_index
+            index = self.in_sample_integer_index
         elif isinstance(y.index, pd.DatetimeIndex):
-            index = self.trend.index
+            index = self.in_sample_datetime_index
         else:
             raise ValueError(
                 f"Decomposer doesn't support target data with index of type ({type(y.index)})",

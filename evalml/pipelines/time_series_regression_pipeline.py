@@ -65,7 +65,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
                 "Time Series Regression pipeline can only handle numeric target data!",
             )
 
-        X = self._drop_time_index(X)
+        X = self._drop_time_index(X, y)
         self._fit(X, y)
         return self
 

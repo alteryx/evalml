@@ -36,6 +36,7 @@ from evalml.pipelines.components import (  # noqa: F401
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
+    STLDecomposer,
     TargetImputer,
     TimeSeriesFeaturizer,
     TimeSeriesImputer,
@@ -58,10 +59,13 @@ from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
+    is_regression,
     is_time_series,
 )
-from evalml.utils import infer_feature_types
+from evalml.utils import get_time_index, infer_feature_types
 from evalml.utils.gen_utils import contains_all_ts_parameters
+
+_UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER = ["A", "Y", "T", "AS", "YS"]
 
 
 def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None):
@@ -223,6 +227,19 @@ def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_nam
     return components
 
 
+def _get_decomposer(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+    if is_time_series(problem_type) and is_regression(problem_type):
+        time_index = get_time_index(X, y, None)
+        freq = time_index.freq.name.split("-")[0]
+        if (
+            freq[-1] not in _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER
+            and freq not in _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER
+        ):
+            components.append(STLDecomposer)
+    return components
+
+
 def _get_drop_nan_rows_transformer(
     X,
     y,
@@ -245,6 +262,7 @@ def _get_preprocessing_components(
     estimator_class,
     sampler_name=None,
     exclude_featurizers=None,
+    include_decomposer=True,
 ):
     """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
@@ -256,6 +274,8 @@ def _get_preprocessing_components(
         sampler_name (str): The name of the sampler component to add to the pipeline. Defaults to None.
         exclude_featurizers (list[str]): A list of featurizer components to exclude from the returned components.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
+        include_decomposer (bool): For time series regression problems, whether or not to include a decomposer in the generated pipeline.
+            Defaults to True.
 
     Returns:
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
@@ -271,6 +291,10 @@ def _get_preprocessing_components(
             _get_natural_language,
             _get_imputer,
             _get_time_series_featurizer,
+        ]
+        if include_decomposer:
+            components_functions.append(_get_decomposer)
+        components_functions = components_functions + [
             _get_datetime,
             _get_ohe,
             _get_drop_nan_rows_transformer,
@@ -341,6 +365,7 @@ def _make_pipeline_time_series(
     sampler_name=None,
     known_in_advance=None,
     exclude_featurizers=None,
+    include_decomposer=True,
 ):
     """Make a pipeline for time series problems.
 
@@ -360,9 +385,11 @@ def _make_pipeline_time_series(
         known_in_advance (list[str], None): List of features that are known in advance.
         exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipeline.
            Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
+        include_decomposer (bool): For time series regression problems, whether or not to include a decomposer in the generated pipeline.
+            Defaults to True.
 
     Returns:
-        PipelineBase: TimeSeriesPipeline''
+        PipelineBase: TimeSeriesPipeline
     """
     if known_in_advance:
         not_known_in_advance = [c for c in X.columns if c not in known_in_advance]
@@ -379,6 +406,7 @@ def _make_pipeline_time_series(
         estimator,
         sampler_name,
         exclude_featurizers,
+        include_decomposer,
     )
 
     if known_in_advance:
@@ -411,6 +439,7 @@ def _make_pipeline_time_series(
             estimator,
             sampler_name,
             exclude_featurizers,
+            include_decomposer,
         )
         kina_component_graph = PipelineBase._make_component_dict_from_component_list(
             kina_preprocessing,
@@ -458,6 +487,7 @@ def make_pipeline(
     known_in_advance=None,
     features=False,
     exclude_featurizers=None,
+    include_decomposer=True,
 ):
     """Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
@@ -477,7 +507,8 @@ def make_pipeline(
         features (bool): Whether to add a DFSTransformer component to this pipeline.
         exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipeline.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
-
+        include_decomposer (bool): For time series regression problems, whether or not to include a decomposer in the generated pipeline.
+            Defaults to True.
 
     Returns:
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator.
@@ -509,6 +540,7 @@ def make_pipeline(
             sampler_name,
             known_in_advance,
             exclude_featurizers,
+            include_decomposer,
         )
     else:
         preprocessing_components = _get_preprocessing_components(

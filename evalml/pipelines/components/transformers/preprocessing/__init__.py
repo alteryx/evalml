@@ -22,6 +22,9 @@ from evalml.pipelines.components.transformers.preprocessing.decomposer import De
 from evalml.pipelines.components.transformers.preprocessing.polynomial_decomposer import (
     PolynomialDecomposer,
 )
+from evalml.pipelines.components.transformers.preprocessing.stl_decomposer import (
+    STLDecomposer,
+)
 from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
     LogTransformer,
 )

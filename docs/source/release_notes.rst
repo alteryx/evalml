@@ -1,16 +1,38 @@
 Release Notes
 -------------
+
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed bug with datetime conversion in ``get_time_index`` :pr:`3792`
+        * Fixed bug where invalid anchored or offset frequencies were including the ``STLDecomposer`` in pipelines :pr:`3794`
     * Changes
-        * Cap Featuretools at < 1.15.0 :pr:`3775`
+        * Capped dask at < 2022.10.1 :pr:`3797`
+        * Uncapped dask and excluded 2022.10.1 from viable versions :pr:`3803`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+
+
+**v0.61.1 Oct. 27, 2022**
+    * Fixes
+        * Fixed bug where ``TimeSeriesBaselinePipeline`` wouldn't preserve index name of input features :pr:`3788`
+        * Fixed bug in ``TimeSeriesBaselinePipeline`` referencing a static string instead of time index var :pr:`3788`
+    * Documentation Changes
+        * Updated Release Notes :pr:`3788`
+
+
+**v0.61.0 Oct. 25, 2022**
+    * Enhancements
+        * Added the STL Decomposer :pr:`3741`
+        * Integrated STLDecomposer into AutoMLSearch for time series regression problems :pr:`3781`
+        * Brought the PolynomialDecomposer up to parity with STLDecomposer :pr:`3768`
+    * Changes
+        * Cap Featuretools at < 1.15.0 :pr:`3775`
+        * Remove Featuretools upper bound restriction and fix nlp-primitives import statements :pr:`3778`
 
 
 **v0.60.0 Oct. 19, 2022**
