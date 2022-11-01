@@ -279,7 +279,6 @@ def _partial_dependence_calculation(
         # values later
         cloned_feature_pipelines = _get_cloned_feature_pipelines(
             features,
-            X,
             pipeline,
             variable_has_features_passed_to_estimator,
             X_training,

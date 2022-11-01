@@ -2684,7 +2684,7 @@ def test_pd_dfs_transformer_fast_mode_works_only_when_features_present(X_y_binar
         features=1,
         grid_resolution=5,
         fast_mode=True,
-        X_training=X,
+        X_training=X_fm,
         y_training=y,
     )
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
@@ -2735,7 +2735,6 @@ def test_partial_dependence_fast_mode_ensemble_pipeline_blocked(
 
 
 def test_partial_dependence_fast_mode_oversampler_blocked(X_y_binary):
-    # --> confirm oversampling isn't a thing with regression pipelines
     X, y = X_y_binary
     pipeline = BinaryClassificationPipeline(
         component_graph={

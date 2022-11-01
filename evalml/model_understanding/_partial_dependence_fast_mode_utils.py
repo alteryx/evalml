@@ -1,12 +1,10 @@
-import numpy as np
 import pandas as pd
 
-from evalml.problem_types import is_binary, is_regression
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 def _get_cloned_feature_pipelines(
     features,
-    X,
     pipeline,
     variable_has_features_passed_to_estimator,
     X_training,
@@ -16,7 +14,6 @@ def _get_cloned_feature_pipelines(
 
     Args:
         pipeline (PipelineBase or subclass): Fitted pipeline that will be cloned.
-        X (pd.DataFrame, np.ndarray): The input data that will be transformed by the cloned pipelines.
         features (string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
             If features is a string, it must be a valid column name in X.
             If features is a tuple of int/strings, it must contain valid column integers/names in X.
@@ -32,12 +29,13 @@ def _get_cloned_feature_pipelines(
     if X_training is None or y_training is None:
         raise ValueError("Training data is required for partial dependence fast mode.")
 
+    X_training = infer_feature_types(X_training)
+
     # Make sure that only components that are capable of handling fast mode are in the pipeline
     new_parameters = pipeline.parameters
     for component in pipeline.component_graph.component_instances.values():
-        # --> why did it work before with X_training set here? Seems like it's only a problem with the tests
         new_parameters = component._handle_partial_dependence_fast_mode(
-            X,
+            X_training,
             new_parameters,
         )
 
@@ -50,7 +48,7 @@ def _get_cloned_feature_pipelines(
         pipeline_copy = pipeline.new(
             parameters=new_parameters,
         )
-        pipeline_copy.fit(X.ww[[variable]], y_training)
+        pipeline_copy.fit(X_training.ww[[variable]], y_training)
         cloned_feature_pipelines[variable] = pipeline_copy
 
     return cloned_feature_pipelines
