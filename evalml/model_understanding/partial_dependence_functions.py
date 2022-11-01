@@ -69,6 +69,7 @@ def partial_dependence(
             be used in fast mode to train the cloned pipelines.
         y_training (pd.Series, np.ndarray): The target data that was used to train the original pipeline. Will
             be used in fast mode to train the cloned pipelines.
+
     Returns:
         pd.DataFrame, list(pd.DataFrame), or tuple(pd.DataFrame, list(pd.DataFrame)):
             When `kind='average'`: DataFrame with averaged predictions for all points in the grid averaged
