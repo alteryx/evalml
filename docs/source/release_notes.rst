@@ -5,9 +5,15 @@ Release Notes
     * Fixes
         * Allowed the DFS Transformer to calculate feature values for Features with a ``dataframe_name`` that is not ``"X"`` :pr:`3873`
     * Changes
+<<<<<<< HEAD
         * Reduced the threshold for setting ``use_covariates`` to False for ARIMA models in AutoMLSearch :pr:`3868`
         * Pinned woodwork version at <=0.19.0 :pr:`3871`
         * Updated minimum Pandas version to 1.5.0 :pr:`3808`
+=======
+        * Remove Featuretools version upper bound and prevent Woodwork 0.20.0 from being installed :pr:`3813`
+        * Update min Featuretools version to 0.16.0, min nlp-primitives version to 2.9.0 and min Dask version to 2022.2.0 :pr:`3823`
+        * Update minimum Pandas version to 1.5.0 :pr:`3808`
+>>>>>>> 532d121a0... Fixed dirty commit
     * Documentation Changes
     * Testing Changes
 
