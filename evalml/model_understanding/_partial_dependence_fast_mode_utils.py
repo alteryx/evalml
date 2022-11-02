@@ -17,6 +17,9 @@ def _get_cloned_feature_pipelines(
         features (string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
             If features is a string, it must be a valid column name in X.
             If features is a tuple of int/strings, it must contain valid column integers/names in X.
+        variable_has_features_passed_to_estimator (dict[str, bool]): Dictionary mapping variable names to whether or not
+            the variable has an impact on predictions. Variables that do not have features passed to the estimator
+            will not have an impact on predictions and therefore do not need to have pipelines fitted for them.
         X_train (pd.DataFrame, np.ndarray): The data that was used to train the original pipeline. Will
             be used to train the cloned pipelines.
         y_train (pd.Series, np.ndarray): The target data that was used to train the original pipeline. Will

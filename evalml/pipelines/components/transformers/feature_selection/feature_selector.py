@@ -83,6 +83,12 @@ class FeatureSelector(Transformer):
             X (pd.DataFrame): Holdout data being used for partial dependence calculations.
             pipeline_parameters (dict): Pipeline parameters that will be used to create the pipelines
                 used in partial dependence fast mode.
+
+        Return:
+            pipeline_parameters (dict): Pipeline parameters updated to allow the FeatureSelector component
+                to not drop any features. This is needed because the cloned pipeline that uses these features
+                will be fit on a single column, and we do not want to drop that column. We can use the original
+                pipeline to determine if that feature gets dropped or not.
         """
         # Raise the percent of features we want to keep to not lose any
         pipeline_parameters[self.name]["percent_features"] = 1.0
