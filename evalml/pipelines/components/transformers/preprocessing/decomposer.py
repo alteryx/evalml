@@ -32,6 +32,7 @@ class Decomposer(Transformer):
     modifies_features = False
     modifies_target = True
     needs_fitting = True
+    invalid_frequencies = []
 
     def __init__(
         self,
@@ -94,6 +95,13 @@ class Decomposer(Transformer):
                 The second element is the target variable y with the fitted trend removed.
         """
         return self.fit(X, y).transform(X, y)
+
+    @classmethod
+    def is_freq_valid(self, freq: str):
+        freq = freq.split("-")[0]
+        return (
+            freq[-1] not in self.invalid_frequencies if freq[0].isdigit() else True
+        ) and freq not in self.invalid_frequencies
 
     @abstractmethod
     def get_trend_dataframe(self, y: pd.Series):

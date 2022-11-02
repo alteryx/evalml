@@ -231,11 +231,8 @@ def _get_decomposer(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
     if is_time_series(problem_type) and is_regression(problem_type):
         time_index = get_time_index(X, y, None)
-        freq = time_index.freq.name.split("-")[0]
-        if (
-            freq[-1] not in _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER
-            and freq not in _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER
-        ):
+        freq = time_index.freq.name
+        if STLDecomposer.is_freq_valid(freq):
             components.append(STLDecomposer)
     return components
 

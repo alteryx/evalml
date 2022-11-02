@@ -206,6 +206,7 @@ def test_make_pipeline(
         ("10T", False),
         ("AS-JAN", False),
         ("YS", False),
+        ("S", False),
     ],
 )
 def test_make_pipeline_controls_decomposer_time_series(
