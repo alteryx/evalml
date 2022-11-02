@@ -10,6 +10,8 @@ Release Notes
     * Changes
         * Capped dask at < 2022.10.1 :pr:`3797`
         * Uncapped dask and excluded 2022.10.1 from viable versions :pr:`3803`
+        * Removed all references to XGBoost's deprecated ``_use_label_encoder`` argument :pr:`3805`
+        * Capped featuretools at < 1.17.0 :pr:`3805`
     * Documentation Changes
     * Testing Changes
 

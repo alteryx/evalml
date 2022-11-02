@@ -76,15 +76,11 @@ class XGBoostClassifier(Estimator):
             "eval_metric": eval_metric,
         }
         parameters.update(kwargs)
-        if "use_label_encoder" in parameters:
-            parameters.pop("use_label_encoder")
         xgb_error_msg = (
             "XGBoost is not installed. Please install using `pip install xgboost.`"
         )
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
-        xgb_classifier = xgb.XGBClassifier(
-            use_label_encoder=False, random_state=random_seed, **parameters
-        )
+        xgb_classifier = xgb.XGBClassifier(random_state=random_seed, **parameters)
         self._label_encoder = None
         super().__init__(
             parameters=parameters,
