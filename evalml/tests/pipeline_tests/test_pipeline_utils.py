@@ -207,6 +207,7 @@ def test_make_pipeline(
         ("AS-JAN", False),
         ("YS", False),
         ("S", False),
+        (None, False),
     ],
 )
 def test_make_pipeline_controls_decomposer_time_series(
@@ -220,7 +221,16 @@ def test_make_pipeline_controls_decomposer_time_series(
         problem_type,
         column_names=["dates", "numerical"],
     )
-    X.ww["dates"] = pd.Series(pd.date_range("2000-02-03", periods=20, freq=frequency))
+    if frequency is None:
+        X.ww["dates"] = pd.Series(
+            pd.date_range("2000-02-03", periods=10, freq=frequency).append(
+                pd.date_range("2000-02-15", periods=10, freq=frequency),
+            ),
+        )
+    else:
+        X.ww["dates"] = pd.Series(
+            pd.date_range("2000-02-03", periods=20, freq=frequency),
+        )
     parameters = {
         "pipeline": {
             "time_index": "date",

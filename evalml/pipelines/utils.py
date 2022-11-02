@@ -232,6 +232,9 @@ def _get_decomposer(X, y, problem_type, estimator_class, sampler_name=None):
     if is_time_series(problem_type) and is_regression(problem_type):
         time_index = get_time_index(X, y, None)
         freq = time_index.freq.name
+        # If the time index frequency is uninferrable, STL will fail
+        if time_index.freq is None:
+            return components
         if STLDecomposer.is_freq_valid(freq):
             components.append(STLDecomposer)
     return components
