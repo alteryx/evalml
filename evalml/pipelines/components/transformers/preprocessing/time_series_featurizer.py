@@ -246,9 +246,9 @@ class TimeSeriesFeaturizer(Transformer):
                 if col_name in categorical_columns:
                     col = X_categorical[col_name]
                 for t in self.statistically_significant_lags:
-                    feature_name = f"{col_name}_delay_{self.start_delay + t}"
+                    feature_name = f"{col_name}_delay_{self.start_delay + t - 1}"
                     lagged_features[
-                        f"{col_name}_delay_{self.start_delay + t}"
+                        f"{col_name}_delay_{self.start_delay + t - 1}"
                     ] = col.shift(t)
                     if col_name in categorical_columns:
                         cols_derived_from_categoricals.append(feature_name)
@@ -258,7 +258,7 @@ class TimeSeriesFeaturizer(Transformer):
                 y = self._encode_y_while_preserving_index(y)
             for t in self.statistically_significant_lags:
                 lagged_features[
-                    self.target_colname_prefix.format(t + self.start_delay)
+                    self.target_colname_prefix.format(t + self.start_delay - 1)
                 ] = y.shift(t)
         # Features created from categorical columns should no longer be categorical
         lagged_features = pd.DataFrame(lagged_features)
