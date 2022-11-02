@@ -4,6 +4,17 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.62.0 Nov. 01, 2022**
+    * Fixes
         * Fixed bug with datetime conversion in ``get_time_index`` :pr:`3792`
         * Fixed bug where invalid anchored or offset frequencies were including the ``STLDecomposer`` in pipelines :pr:`3794`
         * Fixed bug where irregular datetime frequencies were causing errors in ``make_pipeline`` :pr:`3800`
@@ -12,12 +23,7 @@ Release Notes
         * Uncapped dask and excluded 2022.10.1 from viable versions :pr:`3803`
         * Removed all references to XGBoost's deprecated ``_use_label_encoder`` argument :pr:`3805`
         * Capped featuretools at < 1.17.0 :pr:`3805`
-    * Documentation Changes
-    * Testing Changes
-
-.. warning::
-
-    **Breaking Changes**
+        * Capped woodwork at < 0.21.0 :pr:`3805`
 
 
 **v0.61.1 Oct. 27, 2022**
