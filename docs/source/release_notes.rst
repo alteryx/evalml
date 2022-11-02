@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Remove Featuretools version upper bound and prevent Woodwork 0.20.0 from being installed :pr:`3813`
     * Documentation Changes
     * Testing Changes
 
