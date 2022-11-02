@@ -35,8 +35,8 @@ def partial_dependence(
     grid_resolution=100,
     kind="average",
     fast_mode=False,
-    X_training=None,
-    y_training=None,
+    X_train=None,
+    y_train=None,
 ):
     """Calculates one or two-way partial dependence.
 
@@ -65,9 +65,9 @@ def partial_dependence(
             Note that user-specified components may not produce correct partial dependence results, so fast mode
             should only be used with EvalML-native components. Additionally, some components are not compatible
             with fast mode; in those cases, an error will be raised indicating that fast mode should not be used.
-        X_training (pd.DataFrame, np.ndarray): The data that was used to train the original pipeline. Will
+        X_train (pd.DataFrame, np.ndarray): The data that was used to train the original pipeline. Will
             be used in fast mode to train the cloned pipelines.
-        y_training (pd.Series, np.ndarray): The target data that was used to train the original pipeline. Will
+        y_train (pd.Series, np.ndarray): The target data that was used to train the original pipeline. Will
             be used in fast mode to train the cloned pipelines.
 
     Returns:
@@ -215,8 +215,8 @@ def partial_dependence(
                 kind=kind,
                 custom_range=custom_range,
                 fast_mode=fast_mode,
-                X_training=X_training,
-                y_training=y_training,
+                X_train=X_train,
+                y_train=y_train,
             )
         except ValueError as e:
             if "percentiles are too close to each other" in str(e):

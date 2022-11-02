@@ -7,8 +7,8 @@ def _get_cloned_feature_pipelines(
     features,
     pipeline,
     variable_has_features_passed_to_estimator,
-    X_training,
-    y_training,
+    X_train,
+    y_train,
 ):
     """Clones and fits pipelines for partial dependence fast mode.
 
@@ -17,25 +17,25 @@ def _get_cloned_feature_pipelines(
         features (string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
             If features is a string, it must be a valid column name in X.
             If features is a tuple of int/strings, it must contain valid column integers/names in X.
-        X_training (pd.DataFrame, np.ndarray): The data that was used to train the original pipeline. Will
+        X_train (pd.DataFrame, np.ndarray): The data that was used to train the original pipeline. Will
             be used to train the cloned pipelines.
-        y_training (pd.Series, np.ndarray): The target data that was used to train the original pipeline. Will
+        y_train (pd.Series, np.ndarray): The target data that was used to train the original pipeline. Will
             be used to train the cloned pipelines.
 
     Returns:
         dict[str, PipelineBase or subclass]: Dictionary mapping feature name to the pipeline pipeline
             fit for it.
     """
-    if X_training is None or y_training is None:
+    if X_train is None or y_train is None:
         raise ValueError("Training data is required for partial dependence fast mode.")
 
-    X_training = infer_feature_types(X_training)
+    X_train = infer_feature_types(X_train)
 
     # Make sure that only components that are capable of handling fast mode are in the pipeline
     new_parameters = pipeline.parameters
     for component in pipeline.component_graph.component_instances.values():
         new_parameters = component._handle_partial_dependence_fast_mode(
-            X_training,
+            X_train,
             new_parameters,
         )
 
@@ -48,7 +48,7 @@ def _get_cloned_feature_pipelines(
         pipeline_copy = pipeline.new(
             parameters=new_parameters,
         )
-        pipeline_copy.fit(X_training.ww[[variable]], y_training)
+        pipeline_copy.fit(X_train.ww[[variable]], y_train)
         cloned_feature_pipelines[variable] = pipeline_copy
 
     return cloned_feature_pipelines
