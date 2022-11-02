@@ -2,8 +2,13 @@
 import string
 
 import featuretools as ft
-from featuretools.primitives import NumCharacters, NumWords
-from nlp_primitives import DiversityScore, MeanCharactersPerWord, PolarityScore
+from featuretools.primitives import (
+    DiversityScore,
+    MeanCharactersPerWord,
+    NumCharacters,
+    NumWords,
+    PolarityScore,
+)
 
 from evalml.pipelines.components.transformers.preprocessing import LSA, TextTransformer
 from evalml.utils import infer_feature_types

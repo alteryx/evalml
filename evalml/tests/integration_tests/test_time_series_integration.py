@@ -57,7 +57,10 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
         },
         optimize_thresholds=False,
         data_splitter=TimeSeriesSplit(
-            forecast_horizon=3, gap=3, max_delay=3, n_splits=3
+            forecast_horizon=3,
+            gap=3,
+            max_delay=3,
+            n_splits=3,
         ),
     )
     automl.search()
@@ -131,7 +134,10 @@ def test_can_run_automl_for_time_series_known_in_advance(
         optimize_thresholds=False,
         sampler_method=sampler,
         data_splitter=TimeSeriesSplit(
-            forecast_horizon=3, gap=3, max_delay=3, n_splits=3
+            forecast_horizon=3,
+            gap=3,
+            max_delay=3,
+            n_splits=3,
         ),
     )
     automl.search()
@@ -181,7 +187,10 @@ def test_can_run_automl_for_time_series_with_exclude_featurizers(
     es = EntitySet()
     es.add_dataframe(dataframe_name="X", dataframe=X, index="id", make_index=True)
     features = dfs(
-        entityset=es, target_dataframe_name="X", max_depth=1, features_only=True
+        entityset=es,
+        target_dataframe_name="X",
+        max_depth=1,
+        features_only=True,
     )
     # time index must be included in input data
     features.append(Feature(es["X"].ww["date"]))
