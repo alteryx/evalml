@@ -98,6 +98,14 @@ class Decomposer(Transformer):
 
     @classmethod
     def is_freq_valid(self, freq: str):
+        """Determines if the given string represents a valid frequency for this decomposer.
+
+        Args:
+            freq (str): A frequency to validate. See the pandas docs at https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases for options.
+
+        Returns:
+            boolean representing whether the frequency is valid or not.
+        """
         freq = freq.split("-")[0]
         return (
             freq[-1] not in self.invalid_frequencies if freq[0].isdigit() else True

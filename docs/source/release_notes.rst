@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Consolidated decomposition frequency validation logic to ``Decomposer`` class :pr:`3811`
     * Documentation Changes
     * Testing Changes
 
