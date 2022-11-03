@@ -618,7 +618,7 @@ def test_default_algorithm_time_series(
     naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
 
     first_batch = algo.next_batch()
-    assert len(first_batch) == 2
+    assert len(first_batch) == 2 if problem_type != "time series regression" else 4
     assert {p.model_family for p in first_batch} == naive_model_families
     for pipeline in first_batch:
         assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
@@ -626,7 +626,7 @@ def test_default_algorithm_time_series(
     add_result(algo, first_batch)
 
     second_batch = algo.next_batch()
-    assert len(second_batch) == 2
+    assert len(second_batch) == 2 if problem_type != "time series regression" else 4
     assert {p.model_family for p in second_batch} == naive_model_families
     for pipeline in second_batch:
         assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
@@ -648,17 +648,17 @@ def test_default_algorithm_time_series(
 
     long_explore = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long_explore])
-    assert len(long_explore) == 150
+    assert len(long_explore) == 150 if problem_type != "time series regression" else 300
     assert len(long_estimators) == 3
 
     long = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long])
-    assert len(long) == 30
+    assert len(long) == 30 if problem_type != "time series regression" else 60
     assert len(long_estimators) == 3
 
     long_2 = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long_2])
-    assert len(long_2) == 30
+    assert len(long_2) == 30 if problem_type != "time series regression" else 60
     assert len(long_estimators) == 3
 
 
@@ -757,17 +757,17 @@ def test_default_algorithm_time_series_known_in_advance(
 
     long_explore = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long_explore])
-    assert len(long_explore) == 150
+    assert len(long_explore) == 150 if problem_type != "time series regression" else 300
     assert len(long_estimators) == 3
 
     long = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long])
-    assert len(long) == 30
+    assert len(long) == 30 if problem_type != "time series regression" else 60
     assert len(long_estimators) == 3
 
     long_2 = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long_2])
-    assert len(long_2) == 30
+    assert len(long_2) == 30 if problem_type != "time series regression" else 60
     assert len(long_estimators) == 3
 
 

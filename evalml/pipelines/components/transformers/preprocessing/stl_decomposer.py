@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 
 import pandas as pd
-from pandas.core.index import Int64Index
+from pandas.core.index import Int64Index, RangeIndex
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.forecasting.stl import STLForecast
 from statsmodels.tsa.seasonal import STL
@@ -64,18 +64,6 @@ class STLDecomposer(Decomposer):
             **kwargs,
         )
 
-    def _check_oos_past(self, y):
-        """Function to check whether provided target data is out-of-sample and in the past."""
-        index = self._choose_proper_index(y)
-
-        if y.index[0] < index[0]:
-            raise ValueError(
-                f"STLDecomposer cannot transform/inverse transform data out of sample and before the data used"
-                f"to fit the decomposer."
-                f"\nRequested range: {str(y.index[0])}:{str(y.index[-1])}."
-                f"\nSample range: {str(index[0])}:{str(index[-1])}.",
-            )
-
     def _project_trend(self, y):
         """Function to project the in-sample trend into the future."""
         self._check_oos_past(y)
@@ -95,7 +83,7 @@ class STLDecomposer(Decomposer):
                 )
                 - 1
             )
-        elif isinstance(y.index, Int64Index):
+        elif isinstance(y.index, (RangeIndex, Int64Index)):
             units_forward = int(y.index[-1] - index[-1])
 
         # Model the trend and project it forward
@@ -160,6 +148,7 @@ class STLDecomposer(Decomposer):
         """
         self.original_index = y.index if y is not None else None
         X, y = self._check_target(X, y)
+        self._map_dt_to_integer(self.original_index, y.index)
 
         # Warn for poor decomposition use with higher periods
         if self.seasonal_period > 14:
