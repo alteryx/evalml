@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added fast mode to partial dependence :pr:`3753`
+        * Integrated ``OrdinalEncoder`` into AutoMLSearch :pr:`3765`
     * Fixes
         * Fixed bug where ``TimeSeriesFeaturizer`` could not encode Ordinal columns with non numeric categories :pr:`3812`
         * Update demo dataset links to point to new endpoint :pr:`3826`
