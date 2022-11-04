@@ -205,18 +205,14 @@ def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
 def _get_ordinal_encoder(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
 
-    # The URL and EmailAddress Featurizers will create categorical columns
     ordinal_cols = list(
         X.ww.select(
             ["Ordinal"],
             return_schema=True,
         ).columns,
     )
-    # --> why cant ohe be used in catboost? Is that the same for the ordinal encoder
-    if len(ordinal_cols) > 0 and estimator_class not in {
-        CatBoostClassifier,
-        CatBoostRegressor,
-    }:
+
+    if len(ordinal_cols) > 0:
         components.append(OrdinalEncoder)
     return components
 
@@ -304,7 +300,6 @@ def _get_preprocessing_components(
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
     if is_time_series(problem_type):
-        # --> add to ts and test for ts
         components_functions = [
             _get_label_encoder,
             _get_drop_all_null,
@@ -320,6 +315,7 @@ def _get_preprocessing_components(
             components_functions.append(_get_decomposer)
         components_functions = components_functions + [
             _get_datetime,
+            _get_ordinal_encoder,
             _get_ohe,
             _get_drop_nan_rows_transformer,
             _get_sampler,

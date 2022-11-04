@@ -17,6 +17,7 @@ from pandas.testing import assert_frame_equal, assert_series_equal
 from sklearn import datasets
 from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
+from woodwork.logical_types import Ordinal
 
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
@@ -5333,26 +5334,21 @@ def test_ordinal_encoder_in_automl(X_y_ordinal_regression):
         n_jobs=1,
     )
     automl.search()
-    # Confirm that at least one pipeline uses the ordinal encoder and
-    # has the ordinally encoded column in X_t
-    pipelines_using_ordinal_encoder = [
-        automl.get_pipeline(i)
-        for i in range(1, len(automl.rankings))
-        if "Ordinal Encoder" in automl.get_pipeline(i).name
-    ]
-    # Confirm OrdinalEncoder was present
-    assert pipelines_using_ordinal_encoder
 
-    # Fit all those pipelines
-    for pipeline in pipelines_using_ordinal_encoder:
+    num_features_in_X_t = 0
+    for i in range(1, len(automl.rankings)):
+        pipeline = automl.get_pipeline(i)
+        if pipeline.model_family == ModelFamily.BASELINE:
+            continue
         if not pipeline._is_fitted:
             pipeline.fit(X, y)
+        X_t = pipeline.transform_all_but_final(X)
 
-    # Confirm Ordinal Encoder was used to make a feature
-    assert any(
-        "day_ordinal_encoding" in pipeline.transform_all_but_final(X).columns
-        for pipeline in pipelines_using_ordinal_encoder
-    )
+        assert "Ordinal Encoder" in pipeline.name
+        if "day" in pipeline._get_feature_provenance():
+            assert "day_ordinal_encoding" in X_t.columns
+            num_features_in_X_t += 1
+    assert num_features_in_X_t
 
 
 def test_ordinal_encoder_not_used_in_automl_if_no_ordinal_columns_present(
@@ -5425,5 +5421,27 @@ def test_ordinal_encoder_not_used_if_ohe_first(X_y_ordinal_regression):
     assert "day" not in X_t.columns
 
 
-# --> test not used for catboost
-# --> compare with main with looking glass - but need a branch of looking glass that uses ordinal columns - can i specify on te dataset-col level?
+def test_ordinal_encoder_in_time_series(ts_data):
+    # --> this will error till https://github.com/alteryx/evalml/pull/3812 is merged
+    X, _, y = ts_data()
+    cats = pd.Series(np.random.choice(["a", "b", "c"], size=len(X)), index=X.index)
+    cats = ww.init_series(cats, logical_type=Ordinal(order=["a", "b", "c"]))
+    X.ww["cats"] = cats
+
+    problem_configuration = {
+        "time_index": "date",
+        "gap": 1,
+        "max_delay": 0,
+        "forecast_horizon": 2,
+    }
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="time series regression",
+        objective="auto",
+        problem_configuration=problem_configuration,
+        max_batches=3,
+    )
+    automl.search()
+    # Confirm that the Ordinal Encoder is in the pipeline
+    assert "Ordinal Encoder" in automl.best_pipeline.name
