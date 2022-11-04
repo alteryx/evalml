@@ -163,6 +163,11 @@ def partial_dependence(
                 code=PartialDependenceErrorCode.INVALID_FEATURE_TYPE,
             )
 
+        if fast_mode and (X_train is None or y_train is None):
+            raise ValueError(
+                "Training data is required for partial dependence fast mode.",
+            )
+
         X_cats = X_features.ww.select("category")
         X_dt = X_features.ww.select("datetime")
 

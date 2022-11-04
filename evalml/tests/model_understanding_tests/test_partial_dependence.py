@@ -2716,9 +2716,7 @@ def test_partial_dependence_fast_mode_ensemble_pipeline_blocked(
     )
     pipeline.fit(X, y)
 
-    error = re.escape(
-        f"cannot run partial dependence fast mode",
-    )
+    error = "cannot run partial dependence fast mode"
     with pytest.raises(
         PartialDependenceError,
         match=error,
@@ -2749,9 +2747,7 @@ def test_partial_dependence_fast_mode_oversampler_blocked(X_y_binary):
     )
 
     pipeline.fit(X, y)
-    error = re.escape(
-        f"cannot run partial dependence fast mode",
-    )
+    error = "cannot run partial dependence fast mode"
     with pytest.raises(
         PartialDependenceError,
         match=error,

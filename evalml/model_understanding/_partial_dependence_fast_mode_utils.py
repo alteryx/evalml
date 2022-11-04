@@ -29,9 +29,6 @@ def _get_cloned_feature_pipelines(
         dict[str, PipelineBase or subclass]: Dictionary mapping feature name to the pipeline
             fit for it.
     """
-    if X_train is None or y_train is None:
-        raise ValueError("Training data is required for partial dependence fast mode.")
-
     X_train = infer_feature_types(X_train)
 
     # Make sure that only components that are capable of handling fast mode are in the pipeline
