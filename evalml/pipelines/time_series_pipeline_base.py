@@ -153,6 +153,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             y = y.set_axis(X[self.time_index])
             y.ww.init(schema=y_schema)
             X.ww.set_index(self.time_index)
+            X = X.ww.drop(self.time_index)
         return X
 
     def transform_all_but_final(self, X, y=None, X_train=None, y_train=None):
