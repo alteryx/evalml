@@ -74,10 +74,11 @@ class FeatureSelector(Transformer):
     def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters):
         """Updates pipeline parameters to not drop any features based off of feature importance.
 
-        Note:
             This is needed, because fast mode refits cloned pipelines on single columns,
             so categorical columns that have one-hot encoding applied may lose some
-            of their encoded columns with the default parameters.
+            of their encoded columns with the default parameters. Therefore, we update the
+            parameters here to not drop any columns, and use the original
+            pipeline to determine if that feature gets dropped or not.
 
         Args:
             X (pd.DataFrame): Holdout data being used for partial dependence calculations.
@@ -86,9 +87,7 @@ class FeatureSelector(Transformer):
 
         Return:
             pipeline_parameters (dict): Pipeline parameters updated to allow the FeatureSelector component
-                to not drop any features. This is needed because the cloned pipeline that uses these features
-                will be fit on a single column, and we do not want to drop that column. We can use the original
-                pipeline to determine if that feature gets dropped or not.
+                to not drop any features.
         """
         # Raise the percent of features we want to keep to not lose any
         pipeline_parameters[self.name]["percent_features"] = 1.0

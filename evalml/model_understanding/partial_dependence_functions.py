@@ -66,9 +66,9 @@ def partial_dependence(
             should only be used with EvalML-native components. Additionally, some components are not compatible
             with fast mode; in those cases, an error will be raised indicating that fast mode should not be used.
         X_train (pd.DataFrame, np.ndarray): The data that was used to train the original pipeline. Will
-            be used in fast mode to train the cloned pipelines.
+            be used in fast mode to train the cloned pipelines. Defaults to None.
         y_train (pd.Series, np.ndarray): The target data that was used to train the original pipeline. Will
-            be used in fast mode to train the cloned pipelines.
+            be used in fast mode to train the cloned pipelines. Defaults to None.
 
     Returns:
         pd.DataFrame, list(pd.DataFrame), or tuple(pd.DataFrame, list(pd.DataFrame)):
