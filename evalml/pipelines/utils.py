@@ -336,7 +336,6 @@ def _get_preprocessing_components(
             _get_datetime,
             _get_natural_language,
             _get_imputer,
-            # --> checking if the order here matters?? - it seems it might?? But OE gets added to numeric pipeline??
             _get_ordinal_encoder,
             _get_ohe,
             _get_sampler,

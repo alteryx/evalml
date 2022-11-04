@@ -49,7 +49,6 @@ class OrdinalEncoder(Transformer, metaclass=OrdinalEncoderMeta):
     name = "Ordinal Encoder"
     hyperparameter_ranges = {}
     """{}"""
-    # --> should I add a fit_transform method?
 
     def __init__(
         self,

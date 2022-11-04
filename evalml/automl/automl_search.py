@@ -1069,6 +1069,8 @@ class AutoMLSearch:
             computations = []
             try:
                 if not loop_interrupted:
+                    # bn 0 - no cat cols or other cols
+                    # 1 -
                     current_batch_pipelines = self.automl_algorithm.next_batch()
             except StopIteration:
                 self.logger.info("AutoML Algorithm out of recommendations, ending")

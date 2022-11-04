@@ -5319,3 +5319,111 @@ def test_init_create_holdout_set(caplog):
             problem_type="binary",
             holdout_set_size=-0.1,
         )
+
+
+def test_ordinal_encoder_in_automl(X_y_ordinal_regression):
+    X, y = X_y_ordinal_regression
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="regression",
+        objective="R2",
+        random_seed=0,
+        n_jobs=1,
+    )
+    automl.search()
+    # Confirm that at least one pipeline uses the ordinal encoder and
+    # has the ordinally encoded column in X_t
+    pipelines_using_ordinal_encoder = [
+        automl.get_pipeline(i)
+        for i in range(1, len(automl.rankings))
+        if "Ordinal Encoder" in automl.get_pipeline(i).name
+    ]
+    # Confirm OrdinalEncoder was present
+    assert pipelines_using_ordinal_encoder
+
+    # Fit all those pipelines
+    for pipeline in pipelines_using_ordinal_encoder:
+        if not pipeline._is_fitted:
+            pipeline.fit(X, y)
+
+    # Confirm Ordinal Encoder was used to make a feature
+    assert any(
+        "day_ordinal_encoding" in pipeline.transform_all_but_final(X).columns
+        for pipeline in pipelines_using_ordinal_encoder
+    )
+
+
+def test_ordinal_encoder_not_used_in_automl_if_no_ordinal_columns_present(
+    X_y_categorical_regression,
+):
+    X, y = X_y_categorical_regression
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="regression",
+        objective="R2",
+        random_seed=0,
+        n_jobs=1,
+    )
+    automl.search()
+
+    for i in range(1, len(automl.rankings)):
+        pipeline = automl.get_pipeline(i)
+        if not pipeline._is_fitted:
+            pipeline.fit(X, y)
+        X_t = pipeline.transform_all_but_final(X)
+
+        assert "Ordinal Encoder" not in pipeline.name
+        assert "day_ordinal_encoding" not in X_t.columns
+
+
+def test_add_ordinal_encoder_to_pipeline(X_y_ordinal_regression):
+    X, y = X_y_ordinal_regression
+
+    pipeline = RegressionPipeline(
+        component_graph=[
+            "Imputer",
+            "Ordinal Encoder",
+            "One Hot Encoder",
+            "DateTime Featurizer",
+            "Standard Scaler",
+            "Linear Regressor",
+        ],
+    )
+    pipeline.fit(X, y)
+    X_t = pipeline.transform_all_but_final(X)
+    # Confirm Ordinal Encoder is in the component graph
+    assert "Ordinal Encoder" in pipeline.component_graph.component_dict.keys()
+    # Confirm the ordinal feature actually gets encoded
+    assert X_t.ww.columns["day_ordinal_encoding"].is_numeric
+    assert "day" not in X_t.columns
+
+
+def test_ordinal_encoder_not_used_if_ohe_first(X_y_ordinal_regression):
+    X, y = X_y_ordinal_regression
+
+    pipeline = RegressionPipeline(
+        component_graph=[
+            "Imputer",
+            "One Hot Encoder",
+            "Ordinal Encoder",
+            "DateTime Featurizer",
+            "Standard Scaler",
+            "Linear Regressor",
+        ],
+    )
+    pipeline.fit(X, y)
+    X_t = pipeline.transform_all_but_final(X)
+    # Confirm Ordinal Encoder is in the component graph
+    assert "Ordinal Encoder" in pipeline.component_graph.component_dict.keys()
+    # Confirm the ordinal feature wasn't encoded by the ordinal encoder - OHE instead
+    assert "day_ordinal_encoding" not in X_t.columns
+    assert "day_Wed" in X_t.columns
+    assert "day" not in X_t.columns
+
+
+# --> test not used for catboost
+# --> compare with main with looking glass - but need a branch of looking glass that uses ordinal columns - can i specify on te dataset-col level?
