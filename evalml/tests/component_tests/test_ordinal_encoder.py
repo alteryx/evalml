@@ -3,9 +3,7 @@ import pandas as pd
 import pytest
 from woodwork.logical_types import Ordinal
 
-from evalml import AutoMLSearch
 from evalml.exceptions import ComponentNotYetFittedError
-from evalml.pipelines import RegressionPipeline
 from evalml.pipelines.components import OrdinalEncoder
 
 
