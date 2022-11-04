@@ -7,7 +7,7 @@ cloudpickle==1.5.0
 codecov==2.1.11
 colorama==0.4.4
 coverage[toml]==6.4
-dask==2021.10.0
+dask==2022.2.0
 featuretools==1.16.0
 graphviz==0.13
 imbalanced-learn==0.9.1
