@@ -838,22 +838,23 @@ def test_delayed_feature_transformer_conf_level(
 
     first_significant_10 = [l for l in significant_lags if l < 10]
     expected_lags = set(peaks).union(first_significant_10)
-    expected_lags = sorted(expected_lags.intersection(np.arange(MAX_DELAY + 1)))
+    expected_lags = sorted(
+        expected_lags.intersection(
+            np.arange(FORECAST_HORIZON, FORECAST_HORIZON + MAX_DELAY + 1),
+        ),
+    )
     answer = pd.DataFrame({"date": X["date"]})
     answer = answer.assign(
         **{
-            f"feature_delay_{t + FORECAST_HORIZON}": X["feature"].shift(
-                t + FORECAST_HORIZON,
+            f"feature_delay_{t}": X["feature"].shift(
+                t,
             )
             for t in expected_lags
         }
     )
-    answer = answer.assign(
-        **{
-            f"target_delay_{t + FORECAST_HORIZON}": y.shift(t + FORECAST_HORIZON)
-            for t in expected_lags
-        }
-    )
+    answer = answer.assign(**{f"target_delay_{t}": y.shift(t) for t in expected_lags})
+    print(f"new_X: {new_X.columns}")
+    print(f"Answer: {answer.columns}")
     # Sort columns in alphabetical order
     answer = answer.sort_index(axis=1)
     logical_types = _all_featurized_cols_double(answer)

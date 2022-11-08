@@ -179,6 +179,7 @@ class TimeSeriesFeaturizer(Transformer):
             ]
         else:
             significant_lags = all_lags
+        print(f"Significant lags {len(significant_lags)}: {significant_lags}")
         return significant_lags
 
     def _compute_rolling_transforms(self, X, y, original_features):
