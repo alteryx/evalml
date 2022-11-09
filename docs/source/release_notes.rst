@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Fixed bug where ``TimeSeriesFeaturizer`` could not encode Ordinal columns with non numeric categories :pr:`3812`
+        * Update demo dataset links to point to new endpoint :pr:`3826`
     * Changes
         * Remove Featuretools version upper bound and prevent Woodwork 0.20.0 from being installed :pr:`3813`
         * Update min Featuretools version to 0.16.0, min nlp-primitives version to 2.9.0 and min Dask version to 2022.2.0 :pr:`3823`
