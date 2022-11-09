@@ -154,7 +154,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             y.ww.init(schema=y_schema)
             X.ww.set_index(self.time_index)
             X = X.ww.drop(self.time_index)
-        return X
+        return X, y
 
     def transform_all_but_final(self, X, y=None, X_train=None, y_train=None):
         """Transforms the data by applying all pre-processing components.
@@ -207,8 +207,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             raise ValueError(
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator.",
             )
-        X = self._drop_time_index(X, y)
-        X_train = self._drop_time_index(X_train, y_train)
+        X, y = self._drop_time_index(X, y)
+        X_train, y_train = self._drop_time_index(X_train, y_train)
         target = infer_feature_types(y)
         features = self.transform_all_but_final(X, target, X_train, y_train)
         predictions = self._estimator_predict(features)
@@ -255,8 +255,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             X_train.index[-X.shape[0] :],
             self.gap + X.shape[0],
         )
-        X = self._drop_time_index(X, pd.Series([0] * len(X)))
-        X_train = self._drop_time_index(X_train, y_train)
+        X, y = self._drop_time_index(X, pd.Series([0] * len(X)))
+        X_train, y_train = self._drop_time_index(X_train, y_train)
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         y_holdout = self._create_empty_series(y_train, X.shape[0])
         y_holdout = infer_feature_types(y_holdout)
