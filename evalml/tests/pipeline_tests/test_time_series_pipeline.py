@@ -1072,7 +1072,7 @@ def test_binary_predict_pipeline_objective_mismatch(
         ValueError,
         match="Objective Precision Micro is not defined for time series binary classification.",
     ):
-        binary_pipeline.predict(X[30:32], "precision micro", X[:30], y[:30])
+        binary_pipeline.predict(X[30:35], "precision micro", X[:30], y[:30])
 
 
 @pytest.fixture
