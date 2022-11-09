@@ -5338,8 +5338,6 @@ def test_ordinal_encoder_in_automl(X_y_ordinal_regression):
     num_features_in_X_t = 0
     for i in range(1, len(automl.rankings)):
         pipeline = automl.get_pipeline(i)
-        if pipeline.model_family == ModelFamily.BASELINE:
-            continue
         if not pipeline._is_fitted:
             pipeline.fit(X, y)
         X_t = pipeline.transform_all_but_final(X)
