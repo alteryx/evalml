@@ -162,11 +162,10 @@ class TimeSeriesFeaturizer(Transformer):
                 alpha=conf_level,
             )
             peaks, _ = find_peaks(acf_values)
-
             # Significant lags are the union of:
             # 1. the peaks (local maxima) that are significant
             # 2. The significant lags among the first 10 lags.
-            # We then filter the list to be in the range [0, max_delay]
+            # We then filter the list to be in the range [start_delay, start_delay + max_delay]
             index = np.arange(len(acf_values))
             significant = np.logical_or(ci_intervals[:, 0] > 0, ci_intervals[:, 1] < 0)
             first_significant_10 = index[:10][significant[:10]]
@@ -179,7 +178,6 @@ class TimeSeriesFeaturizer(Transformer):
             ]
         else:
             significant_lags = all_lags
-        print(f"Significant lags {len(significant_lags)}: {significant_lags}")
         return significant_lags
 
     def _compute_rolling_transforms(self, X, y, original_features):

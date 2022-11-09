@@ -1036,10 +1036,9 @@ def test_explain_predictions_time_series(ts_data):
         training_data=X_train,
         training_target=y_train,
     )
-
     # Check that the computed features to be explained aren't NaN.
     for exp_idx in range(len(exp["explanations"])):
-        assert not np.isnan(
+        assert not pd.isnull(
             np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"]),
         ).any()
 
