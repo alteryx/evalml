@@ -139,7 +139,7 @@ class TimeSeriesFeaturizer(Transformer):
 
     @staticmethod
     def _get_categorical_columns(X):
-        return list(X.ww.select(["categorical", "boolean"], return_schema=True).columns)
+        return list(X.ww.select(["category", "boolean"], return_schema=True).columns)
 
     @staticmethod
     def _encode_X_while_preserving_index(X_categorical):

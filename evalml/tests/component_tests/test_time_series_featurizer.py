@@ -5,7 +5,14 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
-from woodwork.logical_types import Boolean, Categorical, Datetime, Double, Integer
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    Ordinal,
+)
 
 from evalml.pipelines import TimeSeriesFeaturizer
 
@@ -964,3 +971,24 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
                 "target_delay_1": Double,
                 "target_delay_2": Double,
             }
+
+
+def test_delay_feature_transformer_works_for_non_numeric_ordinal_categories(ts_data):
+    X, _, y = ts_data()
+    X.ww.set_time_index("date")
+    X.ww["cats"] = pd.Series(
+        np.random.choice(["a", "b", "c"], size=len(X)),
+        index=X.index,
+    )
+    X.ww.set_types(logical_types={"cats": Ordinal(order=["a", "b", "c"])})
+
+    output = TimeSeriesFeaturizer(
+        max_delay=3,
+        forecast_horizon=1,
+        gap=0,
+        conf_level=1,
+        time_index="date",
+    )
+    output.fit(X, y)
+    X_t = output.transform(X, y)
+    assert set(X_t["cats_delay_1"].value_counts().to_dict().keys()) == {2.0, 0.0, 1.0}

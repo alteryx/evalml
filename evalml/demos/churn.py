@@ -14,7 +14,7 @@ def load_churn(n_rows=None, verbose=True):
         (pd.Dataframe, pd.Series): X and y
     """
     churn_data_path = (
-        "https://api.featurelabs.com/datasets/churn.csv?library=evalml&version="
+        "https://oss.alteryx.com/datasets/churn.csv?library=evalml&version="
         + evalml.__version__
     )
 
