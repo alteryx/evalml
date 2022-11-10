@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
         * Added fast mode to partial dependence :pr:`3753`
     * Fixes
+        * Fixed ``TimeSeriesFeaturizer`` potentially selecting lags outside of feature engineering window :pr:`3773`
         * Fixed bug where ``TimeSeriesFeaturizer`` could not encode Ordinal columns with non numeric categories :pr:`3812`
         * Update demo dataset links to point to new endpoint :pr:`3826`
     * Changes
