@@ -75,7 +75,6 @@ from evalml.pipelines.utils import (
     _make_stacked_ensemble_pipeline,
 )
 from evalml.preprocessing import TimeSeriesSplit, TrainingValidationSplit, split_data
-from evalml.preprocessing.utils import number_of_features
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
