@@ -77,9 +77,7 @@ def _transform_single_feature(
             fit for it.
     """
     changed_col_df = pd.DataFrame({variable: part_dep_column})
-    changed_col_df.ww.init(
-        logical_types={variable: X.ww.logical_types[variable]},
-    )
+    changed_col_df.ww.init(schema=X.ww.schema.get_subset_schema([variable]))
 
     # Take the changed column and send it through transform by itself
     X_t_single_col = cloned_pipeline.transform_all_but_final(changed_col_df)
