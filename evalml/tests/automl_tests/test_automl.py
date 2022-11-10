@@ -5331,6 +5331,7 @@ def test_ordinal_encoder_in_automl(
     X_y_ordinal_regression,
     ts_data,
     X_y_categorical_regression,
+    AutoMLTestEnv,
 ):
     if problem_type == "regression":
         problem_configuration = None
@@ -5365,25 +5366,13 @@ def test_ordinal_encoder_in_automl(
         problem_configuration=problem_configuration,
         n_jobs=1,
     )
-    automl.search()
+    env = AutoMLTestEnv(problem_type)
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
 
-    number_of_features_in_X_t = 0
     for i in range(1, len(automl.rankings)):
         pipeline = automl.get_pipeline(i)
-        if not pipeline._is_fitted:
-            pipeline.fit(X, y)
-
         if use_ordinal:
             assert "Ordinal Encoder" in pipeline.name
         else:
             assert "Ordinal Encoder" not in pipeline.name
-
-        # Confirm we actually see an encoded column
-        if use_ordinal and problem_type == "regression":
-            X_t = pipeline.transform_all_but_final(X)
-            if ordinal_col in pipeline._get_feature_provenance():
-                assert f"{ordinal_col}_ordinal_encoding" in X_t.columns
-                number_of_features_in_X_t += 1
-
-    if use_ordinal and problem_type == "regression":
-        assert number_of_features_in_X_t
