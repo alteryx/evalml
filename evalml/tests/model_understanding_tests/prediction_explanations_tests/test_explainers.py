@@ -1109,8 +1109,8 @@ def test_explain_predictions_best_worst_time_series(
     if output_format == "dict":
         # Check that the computed features to be explained aren't NaN.
         for exp_idx in range(len(exp["explanations"])):
-            assert not np.isnan(
-                np.array(
+            assert not pd.isnull(
+                pd.Series(
                     exp["explanations"][exp_idx]["explanations"][0]["feature_values"],
                 ),
             ).any()
