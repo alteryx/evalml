@@ -23,6 +23,7 @@ class Oversampler(BaseSampler):
 
     name = "Oversampler"
     hyperparameter_ranges = {}
+    _can_be_used_for_fast_partial_dependence = False
     """{}"""
 
     def __init__(
