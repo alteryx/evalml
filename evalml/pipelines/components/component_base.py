@@ -20,6 +20,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     """
 
     _default_parameters = None
+    _can_be_used_for_fast_partial_dependence = True
 
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         """Base class for all components.
@@ -101,6 +102,21 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     @classproperty
     def _supported_by_list_API(cls):
         return not cls.modifies_target
+
+    def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters):
+        """Determines whether or not a component can be used with partial dependence's fast mode.
+
+        Args:
+            X (pd.DataFrame): Holdout data being used for partial dependence calculations.
+            pipeline_parameters (dict): Pipeline parameters that will be used to create the pipelines
+                used in partial dependence fast mode.
+        """
+        if self._can_be_used_for_fast_partial_dependence:
+            return pipeline_parameters
+
+        raise TypeError(
+            f"Component {self.name} cannot run partial dependence fast mode.",
+        )
 
     def clone(self):
         """Constructs a new component with the same parameters and random state.
