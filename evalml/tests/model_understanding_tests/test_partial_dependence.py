@@ -2841,3 +2841,11 @@ def test_partial_dependence_on_engineered_feature_with_dfs_transformer_and_engin
 
     assert not part_dep.feature_values.isna().any()
     assert not part_dep.partial_dependence.isna().any()
+
+
+def test_partial_dependence_dfs_transformer_handling_with_multi_output_primitive():
+    pass
+
+
+def test_partial_dependence_dfs_transformer_target_in_features():
+    pass

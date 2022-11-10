@@ -59,6 +59,9 @@ class DFSTransformer(Transformer):
             ):
                 continue
 
+            # an identity feature whose cols are in X
+            # an engineered feature whose inputs are in X
+
             # If feature's required columns doesn't exist, skip feature
             input_cols = [f.get_name() for f in feature.base_features]
             if not isinstance(feature, IdentityFeature) and not set(
@@ -129,7 +132,7 @@ class DFSTransformer(Transformer):
         feature_matrix.ww.init(schema=partial_schema)
         return feature_matrix
 
-    def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters):
+    def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters, target):
         """Determines whether or not a DFSTransformer component can be used with partial dependence's fast mode.
 
         Note:
@@ -146,9 +149,17 @@ class DFSTransformer(Transformer):
         dfs_transformer = pipeline_parameters.get("DFS Transformer")
         if dfs_transformer is not None:
             dfs_features = dfs_transformer["features"]
+            # remove the target if it's there
+            dfs_feature_names = [
+                name
+                for feature in dfs_features
+                for name in feature.get_feature_names()
+                if name != target
+            ]
             X_cols = set(X.columns)
+
             if dfs_features is None or any(
-                f.get_name() not in X_cols for f in dfs_features
+                name not in X_cols for name in dfs_feature_names
             ):
                 raise ValueError(
                     "Cannot use fast mode with DFS Transformer when features are unspecified or not all present in X.",
