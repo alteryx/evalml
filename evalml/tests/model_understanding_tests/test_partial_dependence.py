@@ -1,4 +1,5 @@
 import re
+from pdb import set_trace
 from unittest.mock import patch
 
 import featuretools as ft
@@ -2794,3 +2795,51 @@ def test_partial_dependence_fast_mode_errors_if_train(
             fast_mode=True,
             y_train=y,
         )
+
+
+@pytest.mark.parametrize("fast_mode", [True, False])
+def test_partial_dependence_on_engineered_feature_with_dfs_transformer_and_engineered_feature(
+    fast_mode,
+    X_y_binary,
+):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X.columns = X.columns.astype(str)
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X",
+        dataframe=X,
+        index="index",
+        make_index=True,
+    )
+    X_fm, features = ft.dfs(
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["absolute"],
+    )
+
+    dfs_transformer = DFSTransformer(features=features)
+    pipeline = BinaryClassificationPipeline(
+        [dfs_transformer, "Standard Scaler", "Random Forest Classifier"],
+    )
+
+    # Engineered features have the their origins specified as either "base" or "engineered"
+    # it has to remain set for partial dependence to be able to predict on the updated data
+    engineered_feature = "ABSOLUTE(1)"
+    assert X_fm.ww.columns[engineered_feature].origin == "engineered"
+
+    pipeline = pipeline.clone()
+    pipeline.fit(X_fm, y)
+    part_dep = partial_dependence(
+        pipeline,
+        X_fm,
+        features=engineered_feature,
+        grid_resolution=5,
+        fast_mode=fast_mode,
+        X_train=X_fm,
+        y_train=y,
+    )
+
+    assert not part_dep.feature_values.isna().any()
+    assert not part_dep.partial_dependence.isna().any()
