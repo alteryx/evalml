@@ -75,6 +75,7 @@ from evalml.pipelines.utils import (
     _make_stacked_ensemble_pipeline,
 )
 from evalml.preprocessing import TimeSeriesSplit, TrainingValidationSplit, split_data
+from evalml.preprocessing.utils import number_of_features
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -5322,124 +5323,67 @@ def test_init_create_holdout_set(caplog):
         )
 
 
-def test_ordinal_encoder_in_automl(X_y_ordinal_regression):
-    X, y = X_y_ordinal_regression
-
-    automl = AutoMLSearch(
-        X_train=X,
-        y_train=y,
-        problem_type="regression",
-        objective="R2",
-        random_seed=0,
-        n_jobs=1,
-    )
-    automl.search()
-
-    num_features_in_X_t = 0
-    for i in range(1, len(automl.rankings)):
-        pipeline = automl.get_pipeline(i)
-        if not pipeline._is_fitted:
-            pipeline.fit(X, y)
-        X_t = pipeline.transform_all_but_final(X)
-
-        assert "Ordinal Encoder" in pipeline.name
-        if "day" in pipeline._get_feature_provenance():
-            assert "day_ordinal_encoding" in X_t.columns
-            num_features_in_X_t += 1
-    assert num_features_in_X_t
-
-
-def test_ordinal_encoder_not_used_in_automl_if_no_ordinal_columns_present(
+@pytest.mark.parametrize("use_ordinal", [False, True])
+@pytest.mark.parametrize("problem_type", ["regression", "time series regression"])
+def test_ordinal_encoder_in_automl(
+    use_ordinal,
+    problem_type,
+    X_y_ordinal_regression,
+    ts_data,
     X_y_categorical_regression,
 ):
-    X, y = X_y_categorical_regression
+    if problem_type == "regression":
+        problem_configuration = None
+        ordinal_col = "day"
+        if use_ordinal:
+            X, y = X_y_ordinal_regression
+        else:
+            X, y = X_y_categorical_regression
+    else:
+        ordinal_col = "cats"
+        problem_configuration = {
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 0,
+            "forecast_horizon": 2,
+        }
+        X, _, y = ts_data()
+        if use_ordinal:
+            cats = pd.Series(
+                np.random.choice(["a", "b", "c"], size=len(X)),
+                index=X.index,
+            )
+            cats = ww.init_series(cats, logical_type=Ordinal(order=["a", "b", "c"]))
+            X.ww[ordinal_col] = cats
 
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
-        problem_type="regression",
-        objective="R2",
+        problem_type=problem_type,
+        objective="auto",
         random_seed=0,
+        problem_configuration=problem_configuration,
         n_jobs=1,
     )
     automl.search()
 
+    number_of_features_in_X_t = 0
     for i in range(1, len(automl.rankings)):
         pipeline = automl.get_pipeline(i)
         if not pipeline._is_fitted:
             pipeline.fit(X, y)
-        X_t = pipeline.transform_all_but_final(X)
 
-        assert "Ordinal Encoder" not in pipeline.name
-        assert "day_ordinal_encoding" not in X_t.columns
+        if use_ordinal:
+            assert "Ordinal Encoder" in pipeline.name
+        else:
+            assert "Ordinal Encoder" not in pipeline.name
 
+        # Confirm we actually see an encoded column
+        if use_ordinal and problem_type == "regression":
+            X_t = pipeline.transform_all_but_final(X)
+            if ordinal_col in pipeline._get_feature_provenance():
+                assert f"{ordinal_col}_ordinal_encoding" in X_t.columns
+                number_of_features_in_X_t += 1
 
-def test_add_ordinal_encoder_to_pipeline(X_y_ordinal_regression):
-    X, y = X_y_ordinal_regression
-
-    pipeline = RegressionPipeline(
-        component_graph=[
-            "Imputer",
-            "Ordinal Encoder",
-            "One Hot Encoder",
-            "DateTime Featurizer",
-            "Standard Scaler",
-            "Linear Regressor",
-        ],
-    )
-    pipeline.fit(X, y)
-    X_t = pipeline.transform_all_but_final(X)
-    # Confirm Ordinal Encoder is in the component graph
-    assert "Ordinal Encoder" in pipeline.component_graph.component_dict.keys()
-    # Confirm the ordinal feature actually gets encoded
-    assert X_t.ww.columns["day_ordinal_encoding"].is_numeric
-    assert "day" not in X_t.columns
-
-
-def test_ordinal_encoder_not_used_if_ohe_first(X_y_ordinal_regression):
-    X, y = X_y_ordinal_regression
-
-    pipeline = RegressionPipeline(
-        component_graph=[
-            "Imputer",
-            "One Hot Encoder",
-            "Ordinal Encoder",
-            "DateTime Featurizer",
-            "Standard Scaler",
-            "Linear Regressor",
-        ],
-    )
-    pipeline.fit(X, y)
-    X_t = pipeline.transform_all_but_final(X)
-    # Confirm Ordinal Encoder is in the component graph
-    assert "Ordinal Encoder" in pipeline.component_graph.component_dict.keys()
-    # Confirm the ordinal feature wasn't encoded by the ordinal encoder - OHE instead
-    assert "day_ordinal_encoding" not in X_t.columns
-    assert "day_Wed" in X_t.columns
-    assert "day" not in X_t.columns
-
-
-def test_ordinal_encoder_in_time_series(ts_data):
-    # --> this will error till https://github.com/alteryx/evalml/pull/3812 is merged
-    X, _, y = ts_data()
-    cats = pd.Series(np.random.choice(["a", "b", "c"], size=len(X)), index=X.index)
-    cats = ww.init_series(cats, logical_type=Ordinal(order=["a", "b", "c"]))
-    X.ww["cats"] = cats
-
-    problem_configuration = {
-        "time_index": "date",
-        "gap": 1,
-        "max_delay": 0,
-        "forecast_horizon": 2,
-    }
-    automl = AutoMLSearch(
-        X_train=X,
-        y_train=y,
-        problem_type="time series regression",
-        objective="auto",
-        problem_configuration=problem_configuration,
-        max_batches=3,
-    )
-    automl.search()
-    # Confirm that the Ordinal Encoder is in the pipeline
-    assert "Ordinal Encoder" in automl.best_pipeline.name
+    if use_ordinal and problem_type == "regression":
+        assert number_of_features_in_X_t

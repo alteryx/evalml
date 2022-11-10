@@ -849,6 +849,8 @@ def X_y_categorical_regression():
 @pytest.fixture
 def X_y_ordinal_regression(X_y_categorical_regression):
     X, y = X_y_categorical_regression
+    X = X.ww.copy()
+    y = y.ww.copy()
     X.ww.set_types(
         logical_types={
             "day": Ordinal(order=["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"]),
