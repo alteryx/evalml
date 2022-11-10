@@ -150,16 +150,14 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         """Helper method to drop the time index column from the data if DateTime Featurizer is not present."""
         if self.should_drop_time_index and self.time_index in X.columns:
             index_name = X.index.name
-            time_index = pd.DatetimeIndex(
-                X[self.time_index],
-                freq=pd.infer_freq(X[self.time_index]),
-            )
+            time_index = X[self.time_index]
 
             y_schema = y.ww.schema
             y = y.set_axis(time_index)
             y.ww.init(schema=y_schema)
 
             if X.ww.schema is not None:
+                X.ww.set_time_index(None)
                 X.ww.set_index(self.time_index)
                 X = X.ww.drop(self.time_index)
             else:
