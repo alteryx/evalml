@@ -2828,13 +2828,12 @@ def test_partial_dependence_on_engineered_feature_with_dfs_transformer_and_engin
     engineered_feature = "ABSOLUTE(1)"
     assert X_fm.ww.columns[engineered_feature].origin == "engineered"
 
-    pipeline = pipeline.clone()
     pipeline.fit(X_fm, y)
     part_dep = partial_dependence(
         pipeline,
         X_fm,
         features=engineered_feature,
-        grid_resolution=5,
+        grid_resolution=2,
         fast_mode=fast_mode,
         X_train=X_fm,
         y_train=y,
