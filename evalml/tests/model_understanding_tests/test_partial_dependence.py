@@ -1,5 +1,4 @@
 import re
-from pdb import set_trace
 from unittest.mock import patch
 
 import featuretools as ft
