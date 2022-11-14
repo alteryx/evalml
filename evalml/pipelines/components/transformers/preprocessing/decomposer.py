@@ -1,6 +1,7 @@
 """Component that removes trends from time series and returns the decomposed components."""
 from __future__ import annotations
 
+import re
 from abc import abstractmethod
 
 import matplotlib.pyplot as plt
@@ -106,10 +107,9 @@ class Decomposer(Transformer):
         Returns:
             boolean representing whether the frequency is valid or not.
         """
-        freq = freq.split("-")[0]
-        return (
-            freq[-1] not in self.invalid_frequencies if freq[0].isdigit() else True
-        ) and freq not in self.invalid_frequencies
+        match = re.match(r"(^\d+)?([A-Z]+)-?([A-Z]+)?", freq)
+        _, freq, _ = match.groups()
+        return freq not in self.invalid_frequencies
 
     @abstractmethod
     def get_trend_dataframe(self, y: pd.Series):
