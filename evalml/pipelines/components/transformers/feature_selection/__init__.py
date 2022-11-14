@@ -8,3 +8,6 @@ from evalml.pipelines.components.transformers.feature_selection.rf_classifier_fe
 from evalml.pipelines.components.transformers.feature_selection.rf_regressor_feature_selector import (
     RFRegressorSelectFromModel,
 )
+from evalml.pipelines.components.transformers.feature_selection.boruta_selector import (
+    BorutaSelector,
+)

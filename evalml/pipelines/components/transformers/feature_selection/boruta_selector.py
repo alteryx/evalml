@@ -1,0 +1,157 @@
+"""Component that selects top features based on importance weights using a Random Forest classifier."""
+import pandas as pd
+from boruta import BorutaPy
+from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
+from sklearn.feature_selection import SelectFromModel as SkSelect
+from skopt.space import Integer, Real
+
+from evalml.exceptions import MethodPropertyNotFoundError
+from evalml.pipelines.components.transformers.feature_selection.feature_selector import (
+    FeatureSelector,
+)
+from evalml.utils import infer_feature_types
+
+
+class BorutaSelector(FeatureSelector):
+    """Selects relevant features using Boruta
+
+    Args:
+        estimator (Estimator): The maximum number of features to select.
+            If both percent_features and number_features are specified, take the greater number of features. Defaults to 0.5.
+            Defaults to None.
+        n_estimators (int or string): The number of estimators.
+        perc (int): percentile used as our threshold for copmarison between shadow and real features
+        alpha (float): Level at which the corrected p-values will get rejected in both
+            correction steps.
+        two_step (boolean): if False, will use Bonferroni correction only
+        max_iter (int): maximum number of iterations to perfrom
+        n_jobs (int or None): Number of jobs to run in parallel. -1 uses all processes. Defaults to -1.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+        early_stopping (boolean): whether to use early stopping
+        n_iter_no_change (int): Maximum number of itertaions to do without confriming a tenative feature
+    """
+
+    name = "Boruta Selector"
+    hyperparameter_ranges = {
+        "perc": Integer(0, 100),
+    }
+    """{
+        "percent_features": Real(0.01, 1),
+        "threshold": ["mean", "median"],
+    }"""
+
+    def __init__(
+        self,
+        number_features=None,
+        n_estimators=10,
+        max_depth=None,
+        perc=100,
+        alpha=0.05,
+        two_step=False,
+        max_iter=100,
+        n_jobs=-1,
+        random_seed=0,
+        **kwargs,
+    ):
+        parameters = {
+            "perc": perc,
+            "n_estimators": n_estimators,
+            "max_depth": max_depth,
+            "alpha": alpha,
+            "two_step": two_step,
+            "n_jobs": n_jobs,
+        }
+        parameters.update(kwargs)
+
+        estimator = SKRandomForestClassifier(
+            random_state=random_seed,
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            n_jobs=n_jobs,
+        )
+        max_features = (
+            max(1, int(percent_features * number_features)) if number_features else None
+        )
+        feature_selection = BorutaPy(
+            estimator=estimator,
+            n_estimators=n_estimators,
+            perc=perc,
+            alpha=alpha,
+            two_step=two_step,
+            max_iter=max_iter,
+            random_state=random_seed,
+            **kwargs,
+        )
+        super().__init__(
+            parameters=parameters,
+            component_obj=feature_selection,
+            random_seed=random_seed,
+        )
+
+    def fit(self, X, y=None):
+        """Fits component to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): The target training data of length [n_samples]
+
+        Returns:
+            self
+
+        Raises:
+            MethodPropertyNotFoundError: If component does not have a fit method or a component_obj that implements fit.
+        """
+        X = infer_feature_types(X)
+        if y is not None:
+            y = infer_feature_types(y)
+        try:
+            self._component_obj.fit(X.values, y.values)
+            return self
+        except AttributeError:
+            raise MethodPropertyNotFoundError(
+                "Component requires a fit method or a component_obj that implements fit",
+            )
+
+    def transform(self, X, y=None):
+        """Transforms input data by selecting features. If the component_obj does not have a transform method, will raise an MethodPropertyNotFoundError exception.
+
+        Args:
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, optional): Target data. Ignored.
+
+        Returns:
+            pd.DataFrame: Transformed X
+
+        Raises:
+            MethodPropertyNotFoundError: If feature selector does not have a transform method or a component_obj that implements transform
+        """
+        X_ww = infer_feature_types(X)
+        self.input_feature_names = list(X_ww.columns.values)
+
+        try:
+            X_t = self._component_obj.transform(X.values)
+        except AttributeError:
+            raise MethodPropertyNotFoundError(
+                "Feature selector requires a transform method or a component_obj that implements transform",
+            )
+
+        selected_col_names = self.get_names()
+        features = pd.DataFrame(X_t, columns=selected_col_names, index=X_ww.index)
+        features.ww.init(schema=X_ww.ww.schema.get_subset_schema(selected_col_names))
+        return features
+
+    def get_names(self):
+        """Get names of selected features.
+
+        Returns:
+            list[str]: List of the names of features selected.
+        """
+        selected_masks = self._component_obj.support_
+        return [
+            feature_name
+            for (selected, feature_name) in zip(
+                selected_masks,
+                self.input_feature_names,
+            )
+            if selected
+        ]

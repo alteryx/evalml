@@ -7,6 +7,7 @@ from evalml.pipelines.components.transformers.encoders import (
     OrdinalEncoder,
 )
 from evalml.pipelines.components.transformers.feature_selection import (
+    BorutaSelector,
     FeatureSelector,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
