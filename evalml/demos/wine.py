@@ -12,7 +12,7 @@ def load_wine():
         (pd.Dataframe, pd.Series): X and y
     """
     filepath = (
-        "https://api.featurelabs.com/datasets/wine.csv?library=evalml&version="
+        "https://oss.alteryx.com/datasets/wine.csv?library=evalml&version="
         + evalml.__version__
     )
     X, y = load_data(filepath, index=None, target="target")

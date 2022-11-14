@@ -16,7 +16,7 @@ def load_fraud(n_rows=None, verbose=True):
         (pd.Dataframe, pd.Series): X and y
     """
     fraud_data_path = (
-        "https://api.featurelabs.com/datasets/fraud_transactions.csv.gz?library=evalml&version="
+        "https://oss.alteryx.com/datasets/fraud_transactions.csv.gz?library=evalml&version="
         + evalml.__version__
     )
 

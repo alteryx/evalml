@@ -10,6 +10,10 @@ import woodwork as ww
 from scipy.stats.mstats import mquantiles
 
 from evalml.exceptions import PartialDependenceError, PartialDependenceErrorCode
+from evalml.model_understanding._partial_dependence_fast_mode_utils import (
+    _get_cloned_feature_pipelines,
+    _transform_single_feature,
+)
 from evalml.problem_types import is_regression
 
 
@@ -221,7 +225,15 @@ def _cartesian(arrays):
     return out
 
 
-def _partial_dependence_calculation(pipeline, grid, features, X):
+def _partial_dependence_calculation(
+    pipeline,
+    grid,
+    features,
+    X,
+    X_train,
+    y_train,
+    fast_mode=False,
+):
     """Do the partial dependence calculation once the grid is computed.
 
     Args:
@@ -229,37 +241,89 @@ def _partial_dependence_calculation(pipeline, grid, features, X):
         grid (pd.DataFrame): Grid of features to compute the partial dependence on.
         features (list(str)): Column names of input data
         X (pd.DataFrame): Input data.
+        fast_mode (bool, optional): Whether or not performance optimizations should be
+            used. Defaults to False. When True, copies of pipelines will be used to transform just the
+            column(s) we're calculating partial dependence for. This means that any pipeline
+            containing a component that relies on multiple columns for fit and transform should
+            not be used. See the ``_can_be_used_for_fast_partial_dependence`` property on components
+            to determine which components cannot be used for fast mode.
+        X_train (pd.DataFrame, np.ndarray): The data that was used to train the original pipeline. Will
+            be used in fast mode to train the cloned pipelines.
+        y_train (pd.Series, np.ndarray): The target data that was used to train the original pipeline. Will
+            be used in fast mode to train the cloned pipelines.
 
     Returns:
         Tuple (np.ndarray, np.ndarray): averaged and individual predictions for
             all points in the grid.
     """
-    predictions = []
-    averaged_predictions = []
+    X_eval = X.ww.copy()
+    prediction_object = pipeline
+    if fast_mode:
+        # In fast mode, we alter the transformed X with our partial dependence values
+        # and then call predict directly with the estimator
+        X_eval = pipeline.transform_all_but_final(X_eval)
+        prediction_object = pipeline.estimator
+
+        # Some components may drop features, so we need to know whether the specified
+        # features actually have an impact on predictions
+        feature_provenance = pipeline._get_feature_provenance()
+        variable_has_features_passed_to_estimator = {
+            variable: variable in feature_provenance or variable in X_eval.columns
+            for variable in features
+        }
+        no_features_passed_to_estimator = not any(
+            variable_has_features_passed_to_estimator.values(),
+        )
+
+        # Fit pipelines for each feature so that we can transform it with grid
+        # values later
+        cloned_feature_pipelines = _get_cloned_feature_pipelines(
+            features,
+            pipeline,
+            variable_has_features_passed_to_estimator,
+            X_train,
+            y_train,
+        )
 
     if is_regression(pipeline.problem_type):
-        prediction_method = pipeline.predict
+        prediction_method = prediction_object.predict
     else:
-        prediction_method = pipeline.predict_proba
+        prediction_method = prediction_object.predict_proba
+    if fast_mode and no_features_passed_to_estimator:
+        original_predictions = prediction_method(X_eval)
+        original_predictions_mean = np.mean(original_predictions, axis=0)
 
-    X_eval = X.ww.copy()
-    for _, new_values in grid.iterrows():
-        for i, variable in enumerate(features):
-            part_dep_column = pd.Series(
-                [new_values[i]] * X_eval.shape[0],
-                index=X_eval.index,
-            )
-            X_eval.ww[variable] = ww.init_series(
-                part_dep_column,
-                logical_type=X_eval.ww.logical_types[variable],
-            )
+        predictions = [original_predictions for _, _ in grid.iterrows()]
+        averaged_predictions = [original_predictions_mean for _, _ in grid.iterrows()]
+    else:
+        predictions = []
+        averaged_predictions = []
+        for _, new_values in grid.iterrows():
+            for i, variable in enumerate(features):
+                part_dep_column = pd.Series(
+                    [new_values[i]] * X_eval.shape[0],
+                    index=X_eval.index,
+                )
 
-        pred = prediction_method(X_eval)
+                if fast_mode:
+                    X_eval = _transform_single_feature(
+                        X,
+                        X_eval,
+                        feature_provenance,
+                        variable,
+                        part_dep_column,
+                        cloned_feature_pipelines[variable],
+                    )
+                else:
+                    X_eval.ww[variable] = ww.init_series(
+                        part_dep_column,
+                        logical_type=X_eval.ww.logical_types[variable],
+                    )
 
-        predictions.append(pred)
-        # average over samples
-        averaged_predictions.append(np.mean(pred, axis=0))
-
+            pred = prediction_method(X_eval)
+            predictions.append(pred)
+            # average over samples
+            averaged_predictions.append(np.mean(pred, axis=0))
     n_samples = X.shape[0]
 
     # reshape to (n_instances, n_points) for binary/regression
@@ -291,6 +355,9 @@ def _partial_dependence(
     grid_resolution=100,
     kind="average",
     custom_range=None,
+    fast_mode=False,
+    X_train=None,
+    y_train=None,
 ):
     """Compute the partial dependence for features of X.
 
@@ -307,6 +374,16 @@ def _partial_dependence(
             range of values to use in partial dependence. If custom_range is specified,
             the percentile + interpolation procedure is skipped and the values in custom_range
             are used.
+        fast_mode (bool, optional): Whether or not performance optimizations should be
+            used. Defaults to False. When True, copies of pipelines will be used to transform just the
+            column(s) we're calculating partial dependence for. This means that any pipeline
+            containing a component that relies on multiple columns for fit and transform should
+            not be used. See the ``_can_be_used_for_fast_partial_dependence`` property on components
+            to determine which components cannot be used for fast mode.
+        X_train (pd.DataFrame, np.ndarray): The data that was used to train the original pipeline. Will
+            be used in fast mode to train the cloned pipelines. Defaults to None.
+        y_train (pd.Series, np.ndarray): The target data that was used to train the original pipeline. Will
+            be used in fast mode to train the cloned pipelines. Defaults to None.
 
     Returns:
         dict with 'average', 'individual', 'values' keys. 'values' is a list of
@@ -329,11 +406,15 @@ def _partial_dependence(
         grid_resolution,
         custom_range,
     )
+
     averaged_predictions, predictions = _partial_dependence_calculation(
         pipeline,
         grid,
         features,
         X,
+        X_train=X_train,
+        y_train=y_train,
+        fast_mode=fast_mode,
     )
 
     # reshape predictions to

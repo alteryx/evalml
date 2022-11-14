@@ -14,7 +14,7 @@ def load_weather():
 
     """
     filename = (
-        "https://api.featurelabs.com/datasets/daily-min-temperatures.csv?library=evalml&version="
+        "https://oss.alteryx.com/datasets/daily-min-temperatures.csv?library=evalml&version="
         + evalml.__version__
     )
     X, y = load_data(filename, index=None, target="Temp")
