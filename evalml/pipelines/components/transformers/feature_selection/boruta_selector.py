@@ -2,6 +2,7 @@
 import pandas as pd
 from boruta import BorutaPy
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
+from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from sklearn.feature_selection import SelectFromModel as SkSelect
 from skopt.space import Integer, Real
 
@@ -9,6 +10,7 @@ from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.transformers.feature_selection.feature_selector import (
     FeatureSelector,
 )
+from evalml.problem_types import is_regression
 from evalml.utils import infer_feature_types
 
 
@@ -42,6 +44,7 @@ class BorutaSelector(FeatureSelector):
 
     def __init__(
         self,
+        problem_type,
         number_features=None,
         n_estimators=10,
         max_depth=None,
@@ -63,12 +66,20 @@ class BorutaSelector(FeatureSelector):
         }
         parameters.update(kwargs)
 
-        estimator = SKRandomForestClassifier(
-            random_state=random_seed,
-            n_estimators=n_estimators,
-            max_depth=max_depth,
-            n_jobs=n_jobs,
-        )
+        if is_regression(problem_type):
+            estimator = SKRandomForestRegressor(
+                random_state=random_seed,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
+                n_jobs=n_jobs,
+            )
+        else:
+            estimator = SKRandomForestClassifier(
+                random_state=random_seed,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
+                n_jobs=n_jobs,
+            )
         max_features = (
             max(1, int(percent_features * number_features)) if number_features else None
         )

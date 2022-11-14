@@ -6,6 +6,7 @@ import numpy as np
 from evalml.automl.automl_algorithm.automl_algorithm import AutoMLAlgorithm
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
+    BorutaSelector,
     EmailFeaturizer,
     OneHotEncoder,
     RFClassifierSelectFromModel,
@@ -213,13 +214,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         feature_selector = None
 
         if use_features:
-            feature_selector = [
-                (
-                    RFRegressorSelectFromModel
-                    if is_regression(self.problem_type)
-                    else RFClassifierSelectFromModel
-                ),
-            ]
+            feature_selector = self._get_feature_selectors()
         else:
             feature_selector = []
 
@@ -245,6 +240,18 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         pipelines = self._add_without_pipelines(pipelines, estimators, feature_selector)
         pipelines = self._init_pipelines_with_starter_params(pipelines)
         return pipelines
+
+    def _get_feature_selectors(self):
+        if self.search_parameters.get("feature_selector") == "Boruta Selector":
+            return [(BorutaSelector(self.problem_type),)]
+        else:
+            return [
+                (
+                    RFRegressorSelectFromModel
+                    if is_regression(self.problem_type)
+                    else RFClassifierSelectFromModel
+                ),
+            ]
 
     def _add_without_pipelines(self, pipelines, estimators, feature_selector=[]):
         if (
