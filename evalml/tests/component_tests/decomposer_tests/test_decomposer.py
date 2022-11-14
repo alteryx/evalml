@@ -327,6 +327,7 @@ def test_decomposer_build_seasonal_signal(
     )
 
 
+@pytest.mark.parametrize("has_freq", [True, False])
 @pytest.mark.parametrize(
     "test_first_index",
     ["on period", "before period", "just after period", "mid period"],
@@ -334,6 +335,7 @@ def test_decomposer_build_seasonal_signal(
 def test_decomposer_projected_seasonality_integer_and_datetime(
     ts_data,
     test_first_index,
+    has_freq,
 ):
     period = 10
     test_first_index = {
@@ -345,7 +347,8 @@ def test_decomposer_projected_seasonality_integer_and_datetime(
 
     X, _, y = ts_data()
     datetime_index = pd.date_range(start="01-01-2002", periods=len(X), freq="M")
-    datetime_index.freq = None
+    if not has_freq:
+        datetime_index.freq = None
 
     y_integer = y.set_axis(pd.RangeIndex(len(X)))
     y_datetime = y.set_axis(datetime_index)
