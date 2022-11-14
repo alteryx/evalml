@@ -144,6 +144,8 @@ class DFSTransformer(Transformer):
             X (pd.DataFrame): Holdout data being used for partial dependence calculations.
             pipeline_parameters (dict): Pipeline parameters that will be used to create the pipelines
                 used in partial dependence fast mode.
+            target (str): The target whose values we are trying to predict. May be present in the
+                list of features in the DFS Transformer's parameters, in which case we should ignore it.
 
         """
         dfs_transformer = pipeline_parameters.get("DFS Transformer")

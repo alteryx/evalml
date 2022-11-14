@@ -37,6 +37,7 @@ def _get_cloned_feature_pipelines(
         new_parameters = component._handle_partial_dependence_fast_mode(
             X_train,
             new_parameters,
+            target=pipeline.input_target_name,
         )
 
     # Create a fit pipeline for each feature

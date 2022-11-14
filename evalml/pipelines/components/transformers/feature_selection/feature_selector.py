@@ -71,7 +71,7 @@ class FeatureSelector(Transformer):
         """
         return self.fit(X, y).transform(X, y)
 
-    def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters):
+    def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters, target):
         """Updates pipeline parameters to not drop any features based off of feature importance.
 
             This is needed, because fast mode refits cloned pipelines on single columns,
@@ -84,6 +84,7 @@ class FeatureSelector(Transformer):
             X (pd.DataFrame): Holdout data being used for partial dependence calculations.
             pipeline_parameters (dict): Pipeline parameters that will be used to create the pipelines
                 used in partial dependence fast mode.
+            target (str): The target whose values we are trying to predict.
 
         Return:
             pipeline_parameters (dict): Pipeline parameters updated to allow the FeatureSelector component
