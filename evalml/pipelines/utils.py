@@ -549,6 +549,7 @@ def make_pipeline(
             known_in_advance,
             exclude_featurizers,
             include_decomposer,
+            features,
         )
     else:
         preprocessing_components = _get_preprocessing_components(
