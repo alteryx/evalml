@@ -1,6 +1,7 @@
 """Component that removes trends from time series and returns the decomposed components."""
 from __future__ import annotations
 
+import re
 from abc import abstractmethod
 
 import matplotlib.pyplot as plt
@@ -32,6 +33,7 @@ class Decomposer(Transformer):
     modifies_features = False
     modifies_target = True
     needs_fitting = True
+    invalid_frequencies = []
 
     def __init__(
         self,
@@ -94,6 +96,20 @@ class Decomposer(Transformer):
                 The second element is the target variable y with the fitted trend removed.
         """
         return self.fit(X, y).transform(X, y)
+
+    @classmethod
+    def is_freq_valid(self, freq: str):
+        """Determines if the given string represents a valid frequency for this decomposer.
+
+        Args:
+            freq (str): A frequency to validate. See the pandas docs at https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases for options.
+
+        Returns:
+            boolean representing whether the frequency is valid or not.
+        """
+        match = re.match(r"(^\d+)?([A-Z]+)-?([A-Z]+)?", freq)
+        _, freq, _ = match.groups()
+        return freq not in self.invalid_frequencies
 
     @abstractmethod
     def get_trend_dataframe(self, y: pd.Series):
