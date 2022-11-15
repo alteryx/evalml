@@ -2850,11 +2850,9 @@ def test_partial_dependence_dfs_transformer_handling_with_multi_output_primitive
 ):
     X = df_with_url_and_email
     y = pd.Series(range(len(X)))
-    X.columns = X.columns.astype(str)
     X.ww.name = "X"
     X.ww.set_index("numeric")
-    # --> failing for somereason with this col, so dropping it
-    X.ww.pop("categorical")
+    X.ww.set_types(logical_types={"categorical": "NaturalLanguage"})
 
     es = ft.EntitySet()
     es = es.add_dataframe(

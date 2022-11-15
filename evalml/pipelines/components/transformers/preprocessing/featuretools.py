@@ -59,9 +59,6 @@ class DFSTransformer(Transformer):
             ):
                 continue
 
-            # an identity feature whose cols are in X
-            # an engineered feature whose inputs are in X
-
             # If feature's required columns doesn't exist, skip feature
             input_cols = [f.get_name() for f in feature.base_features]
             if not isinstance(feature, IdentityFeature) and not set(
