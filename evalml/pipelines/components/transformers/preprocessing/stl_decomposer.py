@@ -35,6 +35,24 @@ class STLDecomposer(Decomposer):
 
     modifies_features = False
     modifies_target = True
+    invalid_frequencies = [
+        "SM",
+        "BM",
+        "SMS",
+        "BMS",
+        "BQ",
+        "BQS",
+        "T",
+        "S",
+        "L",
+        "U",
+        "N",
+        "A",
+        "BA",
+        "AS",
+        "BAS",
+        "BH",
+    ]
 
     def __init__(
         self,
