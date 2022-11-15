@@ -252,7 +252,7 @@ def test_delayed_feature_extractor_maxdelay5_forecasthorizon1_gap0(
     f"evalml.pipelines.TimeSeriesFeaturizer.{ROLLING_TRANSFORM_METHOD_NAME}",
     return_value=pd.DataFrame(),
 )
-def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
+def test_delayed_feature_extractor_maxdelay2_forecasthorizon7_gap1(
     mock_roll,
     encode_X_as_str,
     encode_y_as_str,
@@ -271,11 +271,9 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
             "feature_delay_8": X_answer.feature.shift(8),
             "feature_delay_9": X_answer.feature.shift(9),
             "feature_delay_10": X_answer.feature.shift(10),
-            "feature_delay_11": X_answer.feature.shift(11),
             "target_delay_8": y_answer.shift(8),
             "target_delay_9": y_answer.shift(9),
             "target_delay_10": y_answer.shift(10),
-            "target_delay_11": y_answer.shift(11),
         },
     )
     logical_types = _all_featurized_cols_double(answer)
@@ -283,7 +281,7 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
     assert_frame_equal(
         answer,
         TimeSeriesFeaturizer(
-            max_delay=3,
+            max_delay=2,
             forecast_horizon=7,
             gap=1,
             conf_level=1.0,
@@ -297,7 +295,6 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
             "target_delay_8": y_answer.shift(8),
             "target_delay_9": y_answer.shift(9),
             "target_delay_10": y_answer.shift(10),
-            "target_delay_11": y_answer.shift(11),
         },
     )
     logical_types = _all_featurized_cols_double(answer_only_y)
@@ -305,7 +302,7 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
     assert_frame_equal(
         answer_only_y,
         TimeSeriesFeaturizer(
-            max_delay=3,
+            max_delay=2,
             forecast_horizon=7,
             gap=1,
             conf_level=1.0,
@@ -332,14 +329,12 @@ def test_delayed_feature_extractor_numpy(mock_roll):
             1: X["date"],
             "target_delay_8": y_answer.shift(8),
             "target_delay_9": y_answer.shift(9),
-            "target_delay_10": y_answer.shift(10),
-            "target_delay_11": y_answer.shift(11),
         },
     )
     logical_types = _all_featurized_cols_double(answer)
     answer.ww.init(logical_types=logical_types)
     res = TimeSeriesFeaturizer(
-        max_delay=3,
+        max_delay=2,
         forecast_horizon=7,
         gap=1,
         conf_level=1.0,
@@ -355,8 +350,6 @@ def test_delayed_feature_extractor_numpy(mock_roll):
             "date": X["date"],
             "target_delay_8": y_answer.shift(8),
             "target_delay_9": y_answer.shift(9),
-            "target_delay_10": y_answer.shift(10),
-            "target_delay_11": y_answer.shift(11),
         },
     )
     logical_types = _all_featurized_cols_double(answer_only_y)
@@ -364,7 +357,7 @@ def test_delayed_feature_extractor_numpy(mock_roll):
     assert_frame_equal(
         answer_only_y,
         TimeSeriesFeaturizer(
-            max_delay=3,
+            max_delay=2,
             forecast_horizon=7,
             gap=1,
             conf_level=1.0,
@@ -639,11 +632,8 @@ def test_delay_feature_transformer_multiple_categorical_columns(ts_data):
         {
             "date": X["date"],
             "feature_delay_11": X_answer.feature.shift(11),
-            "feature_delay_12": X_answer.feature.shift(12),
             "feature_2_delay_11": X_answer.feature_2.shift(11),
-            "feature_2_delay_12": X_answer.feature_2.shift(12),
             "target_delay_11": y_answer.shift(11),
-            "target_delay_12": y_answer.shift(12),
         },
     )
     logical_types = _all_featurized_cols_double(answer)
@@ -838,22 +828,21 @@ def test_delayed_feature_transformer_conf_level(
 
     first_significant_10 = [l for l in significant_lags if l < 10]
     expected_lags = set(peaks).union(first_significant_10)
-    expected_lags = sorted(expected_lags.intersection(np.arange(MAX_DELAY + 1)))
+    expected_lags = sorted(
+        expected_lags.intersection(
+            np.arange(FORECAST_HORIZON, FORECAST_HORIZON + MAX_DELAY + 1),
+        ),
+    )
     answer = pd.DataFrame({"date": X["date"]})
     answer = answer.assign(
         **{
-            f"feature_delay_{t + FORECAST_HORIZON}": X["feature"].shift(
-                t + FORECAST_HORIZON,
+            f"feature_delay_{t}": X["feature"].shift(
+                t,
             )
             for t in expected_lags
         }
     )
-    answer = answer.assign(
-        **{
-            f"target_delay_{t + FORECAST_HORIZON}": y.shift(t + FORECAST_HORIZON)
-            for t in expected_lags
-        }
-    )
+    answer = answer.assign(**{f"target_delay_{t}": y.shift(t) for t in expected_lags})
     # Sort columns in alphabetical order
     answer = answer.sort_index(axis=1)
     logical_types = _all_featurized_cols_double(answer)
@@ -906,10 +895,10 @@ def test_delayed_feature_transformer_selects_first_lag_if_none_significant(
     answer = pd.DataFrame(
         {
             "date": X["date"],
-            f"feature_delay_{1 + FORECAST_HORIZON}": X["feature"].shift(
-                1 + FORECAST_HORIZON,
+            f"feature_delay_{FORECAST_HORIZON}": X["feature"].shift(
+                FORECAST_HORIZON,
             ),
-            f"target_delay_{1 + FORECAST_HORIZON}": y.shift(1 + FORECAST_HORIZON),
+            f"target_delay_{FORECAST_HORIZON}": y.shift(FORECAST_HORIZON),
         },
     )
     logical_types = _all_featurized_cols_double(answer)
