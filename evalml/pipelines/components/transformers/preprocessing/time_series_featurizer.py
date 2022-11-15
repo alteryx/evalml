@@ -127,6 +127,7 @@ class TimeSeriesFeaturizer(Transformer):
         self.statistically_significant_lags = self._find_significant_lags(
             y,
             conf_level=self.conf_level,
+            start_delay=self.start_delay,
             max_delay=self.max_delay,
         )
         return self
@@ -150,8 +151,8 @@ class TimeSeriesFeaturizer(Transformer):
         )
 
     @staticmethod
-    def _find_significant_lags(y, conf_level, max_delay):
-        all_lags = np.arange(max_delay + 1)
+    def _find_significant_lags(y, conf_level, start_delay, max_delay):
+        all_lags = np.arange(start_delay, start_delay + max_delay + 1)
         if y is not None:
             # Compute the acf and find its peaks
             acf_values, ci_intervals = acf(
@@ -161,11 +162,10 @@ class TimeSeriesFeaturizer(Transformer):
                 alpha=conf_level,
             )
             peaks, _ = find_peaks(acf_values)
-
             # Significant lags are the union of:
             # 1. the peaks (local maxima) that are significant
             # 2. The significant lags among the first 10 lags.
-            # We then filter the list to be in the range [0, max_delay]
+            # We then filter the list to be in the range [start_delay, start_delay + max_delay]
             index = np.arange(len(acf_values))
             significant = np.logical_or(ci_intervals[:, 0] > 0, ci_intervals[:, 1] < 0)
             first_significant_10 = index[:10][significant[:10]]
@@ -173,7 +173,9 @@ class TimeSeriesFeaturizer(Transformer):
                 set(index[significant]).intersection(peaks).union(first_significant_10)
             )
             # If no lags are significant get the first lag
-            significant_lags = sorted(significant_lags.intersection(all_lags)) or [1]
+            significant_lags = sorted(significant_lags.intersection(all_lags)) or [
+                start_delay,
+            ]
         else:
             significant_lags = all_lags
         return significant_lags
@@ -243,10 +245,8 @@ class TimeSeriesFeaturizer(Transformer):
                 if col_name in categorical_columns:
                     col = X_categorical[col_name]
                 for t in self.statistically_significant_lags:
-                    feature_name = f"{col_name}_delay_{self.start_delay + t}"
-                    lagged_features[
-                        f"{col_name}_delay_{self.start_delay + t}"
-                    ] = col.shift(self.start_delay + t)
+                    feature_name = f"{col_name}_delay_{t}"
+                    lagged_features[f"{col_name}_delay_{t}"] = col.shift(t)
                     if col_name in categorical_columns:
                         cols_derived_from_categoricals.append(feature_name)
         # Handle cases where the target was passed in
@@ -254,9 +254,7 @@ class TimeSeriesFeaturizer(Transformer):
             if type(y.ww.logical_type) == logical_types.Categorical:
                 y = self._encode_y_while_preserving_index(y)
             for t in self.statistically_significant_lags:
-                lagged_features[
-                    self.target_colname_prefix.format(t + self.start_delay)
-                ] = y.shift(self.start_delay + t)
+                lagged_features[self.target_colname_prefix.format(t)] = y.shift(t)
         # Features created from categorical columns should no longer be categorical
         lagged_features = pd.DataFrame(lagged_features)
         lagged_features.ww.init(
