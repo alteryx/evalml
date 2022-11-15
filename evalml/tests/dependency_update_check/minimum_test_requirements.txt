@@ -7,8 +7,8 @@ cloudpickle==1.5.0
 codecov==2.1.11
 colorama==0.4.4
 coverage[toml]==6.4
-dask==2021.10.0
-featuretools==1.7.0
+dask==2022.2.0
+featuretools==1.16.0
 graphviz==0.13
 imbalanced-learn==0.9.1
 ipywidgets==7.5
@@ -18,7 +18,7 @@ lime==0.2.0.1
 matplotlib==3.3.3
 nbval==0.9.3
 networkx==2.5
-nlp-primitives==2.2.0
+nlp-primitives==2.9.0
 numpy==1.21.0
 pandas==1.4.0
 plotly==5.0.0
