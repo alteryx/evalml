@@ -327,6 +327,69 @@ def test_decomposer_build_seasonal_signal(
     )
 
 
+@pytest.mark.parametrize("has_freq", [True, False])
+@pytest.mark.parametrize(
+    "test_first_index",
+    ["on period", "before period", "just after period", "mid period"],
+)
+def test_decomposer_projected_seasonality_integer_and_datetime(
+    ts_data,
+    test_first_index,
+    has_freq,
+):
+    period = 10
+    test_first_index = {
+        "on period": 3 * period,
+        "before period": 3 * period - 1,
+        "just after period": 3 * period + 1,
+        "mid period": 3 * period + 4,
+    }[test_first_index]
+
+    X, _, y = ts_data()
+    datetime_index = pd.date_range(start="01-01-2002", periods=len(X), freq="M")
+    if not has_freq:
+        datetime_index.freq = None
+
+    y_integer = y.set_axis(pd.RangeIndex(len(X)))
+    y_datetime = y.set_axis(datetime_index)
+
+    int_decomposer = STLDecomposer()
+    int_decomposer.fit(X, y_integer)
+
+    date_decomposer = STLDecomposer()
+    date_decomposer.fit(X, y_datetime)
+
+    # Synthesize a one-week long cyclic signal
+    single_period_seasonal_signal = np.sin(y[0:period] * 2 * np.pi / len(y[0:period]))
+
+    # Split the target data.  Since the period of this data is 7 days, we'll test
+    # when the cycle begins, an index before it begins, an index after it begins
+    # and in the middle of a cycle
+    y_int_test = y_integer[test_first_index:]
+    y_date_test = y_datetime[test_first_index:]
+
+    integer_projected_seasonality = int_decomposer._project_seasonal(
+        y_int_test,
+        single_period_seasonal_signal,
+        period,
+        int_decomposer.frequency,
+    )
+    datetime_projected_seasonality = date_decomposer._project_seasonal(
+        y_date_test,
+        single_period_seasonal_signal,
+        period,
+        date_decomposer.frequency,
+    )
+
+    # Make sure that the function extracted the correct portion of the repeating, full seasonal signal
+
+    pd.testing.assert_series_equal(
+        integer_projected_seasonality,
+        datetime_projected_seasonality,
+        check_index=False,
+    )
+
+
 @pytest.mark.parametrize(
     "decomposer_child_class",
     decomposer_list,

@@ -35,6 +35,24 @@ class STLDecomposer(Decomposer):
 
     modifies_features = False
     modifies_target = True
+    invalid_frequencies = [
+        "SM",
+        "BM",
+        "SMS",
+        "BMS",
+        "BQ",
+        "BQS",
+        "T",
+        "S",
+        "L",
+        "U",
+        "N",
+        "A",
+        "BA",
+        "AS",
+        "BAS",
+        "BH",
+    ]
 
     def __init__(
         self,
@@ -161,7 +179,7 @@ class STLDecomposer(Decomposer):
             )
 
         # Save the frequency of the fitted series for checking against transform data.
-        self.frequency = y.index.freqstr
+        self.frequency = y.index.freqstr or pd.infer_freq(y.index)
 
         stl = STL(y, seasonal=self.seasonal_period)
         res = stl.fit()
