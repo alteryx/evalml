@@ -179,7 +179,7 @@ class STLDecomposer(Decomposer):
             )
 
         # Save the frequency of the fitted series for checking against transform data.
-        self.frequency = y.index.freqstr
+        self.frequency = y.index.freqstr or pd.infer_freq(y.index)
 
         stl = STL(y, seasonal=self.seasonal_period)
         res = stl.fit()

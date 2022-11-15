@@ -149,19 +149,23 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
     def _drop_time_index(self, X, y):
         """Helper method to drop the time index column from the data if DateTime Featurizer is not present."""
         if self.should_drop_time_index and self.time_index in X.columns:
-            X_schema = X.ww.schema
-            y_schema = y.ww.schema
             index_name = X.index.name
-            X = X.set_index(X[self.time_index])
-            X.index.name = index_name
-            y = y.set_axis(X[self.time_index])
-            X.ww.init(schema=X_schema)
+            time_index = pd.DatetimeIndex(X[self.time_index], freq=self.frequency)
+
+            y_schema = y.ww.schema
+            y = y.set_axis(time_index)
             y.ww.init(schema=y_schema)
+
             if X.ww.schema is not None:
-                X = X.ww.drop([self.time_index])
+                X.ww.set_time_index(None)
+                X.ww.set_index(self.time_index)
+                X = X.ww.drop(self.time_index)
             else:
-                X = X.drop(columns=[self.time_index])
-        return X
+                X.set_index(time_index)
+                X = X.drop(self.time_index, axis=1)
+            X.index.name = index_name
+            y.index.name = index_name
+        return X, y
 
     def transform_all_but_final(self, X, y=None, X_train=None, y_train=None):
         """Transforms the data by applying all pre-processing components.
@@ -214,8 +218,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             raise ValueError(
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator.",
             )
-        X = self._drop_time_index(X, y)
-        X_train = self._drop_time_index(X_train, y_train)
+        X, y = self._drop_time_index(X, y)
+        X_train, y_train = self._drop_time_index(X_train, y_train)
         target = infer_feature_types(y)
         features = self.transform_all_but_final(X, target, X_train, y_train)
         predictions = self._estimator_predict(features)
@@ -262,8 +266,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             X_train.index[-X.shape[0] :],
             self.gap + X.shape[0],
         )
-        X = self._drop_time_index(X, pd.Series([0] * len(X)))
-        X_train = self._drop_time_index(X_train, y_train)
+        X, y = self._drop_time_index(X, pd.Series([0] * len(X)))
+        X_train, y_train = self._drop_time_index(X_train, y_train)
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         y_holdout = self._create_empty_series(y_train, X.shape[0])
         y_holdout = infer_feature_types(y_holdout)
