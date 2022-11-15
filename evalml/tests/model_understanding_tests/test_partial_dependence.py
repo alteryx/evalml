@@ -2843,9 +2843,94 @@ def test_partial_dependence_on_engineered_feature_with_dfs_transformer_and_engin
     assert not part_dep.partial_dependence.isna().any()
 
 
-def test_partial_dependence_dfs_transformer_handling_with_multi_output_primitive():
-    pass
+@pytest.mark.parametrize("fast_mode", [True, False])
+def test_partial_dependence_dfs_transformer_handling_with_multi_output_primitive(
+    fast_mode,
+    df_with_url_and_email,
+):
+    X = df_with_url_and_email
+    y = pd.Series(range(len(X)))
+    X.columns = X.columns.astype(str)
+    X.ww.name = "X"
+    X.ww.set_index("numeric")
+    # --> failing for somereason with this col, so dropping it
+    X.ww.pop("categorical")
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X",
+        dataframe=X,
+        index="index",
+        make_index=True,
+    )
+    X_fm, features = ft.dfs(
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["LSA"],
+    )
+
+    dfs_transformer = DFSTransformer(features=features)
+    pipeline = RegressionPipeline(
+        [dfs_transformer, "Standard Scaler", "Random Forest Regressor"],
+    )
+    # Confirm that the LSA primitive was actually used
+    assert any(len(f.get_feature_names()) > 1 for f in features)
+
+    pipeline.fit(X_fm, y)
+    part_dep = partial_dependence(pipeline, X_fm, features=1, grid_resolution=5)
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X_fm,
+        features=1,
+        grid_resolution=5,
+        fast_mode=fast_mode,
+        X_train=X_fm,
+        y_train=y,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
 
 
-def test_partial_dependence_dfs_transformer_target_in_features():
-    pass
+@pytest.mark.parametrize("fast_mode", [True, False])
+def test_partial_dependence_dfs_transformer_target_in_features(fast_mode, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X.columns = X.columns.astype(str)
+
+    # Insert y into X so that it's part of the EntitySet
+    # and then ignore in DFS later on so it's not in X_fm
+    X["target"] = y
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X",
+        dataframe=X,
+        index="index",
+        make_index=True,
+    )
+    seed_features = [ft.Feature(es["X"].ww["target"])]
+    X_fm, features = ft.dfs(
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["absolute"],
+        ignore_columns={"X": ["target"]},
+        seed_features=seed_features,
+    )
+    assert any(f.get_name() == "target" for f in features)
+
+    dfs_transformer = DFSTransformer(features=features)
+    pipeline = BinaryClassificationPipeline(
+        [dfs_transformer, "Standard Scaler", "Random Forest Classifier"],
+    )
+
+    pipeline.fit(X_fm, y)
+    part_dep = partial_dependence(pipeline, X_fm, features=1, grid_resolution=5)
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X_fm,
+        features=1,
+        grid_resolution=5,
+        fast_mode=fast_mode,
+        X_train=X_fm,
+        y_train=y,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
