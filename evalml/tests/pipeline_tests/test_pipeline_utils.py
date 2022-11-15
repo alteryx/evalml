@@ -189,8 +189,8 @@ def test_make_pipeline(
                     + url_featurizer
                     + drop_null
                     + delayed_features
-                    + natural_language_featurizer
                     + datetime
+                    + natural_language_featurizer
                     + imputer
                     + ohe
                     + standard_scaler
