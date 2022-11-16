@@ -4,7 +4,6 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-from woodwork.logical_types import Boolean
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ARIMARegressor
