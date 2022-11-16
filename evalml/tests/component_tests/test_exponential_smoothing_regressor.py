@@ -196,3 +196,21 @@ def test_predict_no_X_in_fit(
     y_pred = m_clf.predict(X=X_test)
 
     assert (y_pred_sk.values == y_pred.values).all()
+
+
+def test_prediction_intervals(ts_data):
+    X_train, X_test, y_train = ts_data()
+
+    clf = ExponentialSmoothingRegressor()
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+    result_95 = clf.get_prediction_intervals(X_test)
+
+    assert (result_95["0.95_upper"] > y_pred).all()
+    assert (y_pred > result_95["0.95_lower"]).all()
+
+    result_85 = clf.get_prediction_intervals(X_test, coverage=0.85)
+    assert (result_95["0.95_upper"] > result_85["0.85_upper"]).all()
+    assert (result_85["0.85_upper"] > y_pred).all()
+    assert (y_pred > result_85["0.85_lower"]).all()
+    assert (result_85["0.85_lower"] > result_95["0.95_lower"]).all()
