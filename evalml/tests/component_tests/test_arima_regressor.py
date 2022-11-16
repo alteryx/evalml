@@ -386,10 +386,15 @@ def test_arima_boolean_features_no_error():
 
 
 @patch("sktime.forecasting.arima.AutoARIMA.fit")
-@patch("sktime.forecasting.arima.AutoARIMA.predict")
+@patch("sktime.forecasting.arima.AutoARIMA.predict_interval")
 def test_arima_regressor_respects_use_covariates(mock_predict, mock_fit, ts_data):
     X_train, X_test, y_train = ts_data()
     clf = ARIMARegressor(use_covariates=False)
+
+    mock_returned = pd.DataFrame({"lower": [1] * 10, "upper": [2] * 10})
+    mock_returned = pd.concat({0.95: mock_returned}, axis=1)
+    mock_returned = pd.concat({"Coverage": mock_returned}, axis=1)
+    mock_predict.return_value = mock_returned
 
     clf.fit(X_train, y_train)
     clf.predict(X_test)
@@ -402,31 +407,19 @@ def test_arima_regressor_respects_use_covariates(mock_predict, mock_fit, ts_data
 
 def test_arima_regressor_prediction_intervals(ts_data):
     X_train, X_test, y_train = ts_data()
-    X_train_no_feat, X_test_no_feat, _ = ts_data(no_features=True)
 
-    clf = ARIMARegressor(use_covariates=False)
+    clf = ARIMARegressor(use_covariates=True)
 
     clf.fit(X_train, y_train)
     result = clf.predict(X_test)
     result_95 = clf.get_prediction_intervals(X_test)
 
-    clf.fit(X_train_no_feat, y_train)
-    result_no_feat = clf.predict(X_test)
-    result_95_no_feat = clf.get_prediction_intervals(X_test_no_feat)
-
     conf_ints = list(result_95.keys())
     data = list(result_95.values())
-    data_no_feat = list(result_95_no_feat.values())
 
     mean_preds = pd.concat((data[0], data[1]), axis=1).mean(axis=1)
-    mean_preds_no_feat = pd.concat((data_no_feat[0], data_no_feat[1]), axis=1).mean(
-        axis=1,
-    )
 
     pd.testing.assert_series_equal(result, mean_preds)
-    pd.testing.assert_series_equal(result_no_feat, mean_preds_no_feat)
-    pd.testing.assert_series_equal(clf.preds_95_lower, data_no_feat[0])
-    pd.testing.assert_series_equal(clf.preds_95_upper, data_no_feat[1])
     pd.testing.assert_series_equal(clf.preds_95_lower, data[0])
     pd.testing.assert_series_equal(clf.preds_95_upper, data[1])
     assert len(conf_ints) == 2
@@ -455,3 +448,57 @@ def test_arima_regressor_prediction_intervals(ts_data):
             axis=1,
         ).mean(axis=1)
         pd.testing.assert_series_equal(mean_preds, predictions)
+
+
+def test_arima_regressor_prediction_intervals_no_features(ts_data):
+    X_train_no_feat, X_test_no_feat, y_train = ts_data(no_features=True)
+
+    clf_no_feat = ARIMARegressor(use_covariates=False)
+
+    clf_no_feat.fit(X_train_no_feat, y_train)
+    result_no_feat = clf_no_feat.predict(X_test_no_feat)
+    result_95_no_feat = clf_no_feat.get_prediction_intervals(X_test_no_feat)
+
+    conf_ints = list(result_95_no_feat.keys())
+    data_no_feat = list(result_95_no_feat.values())
+
+    mean_preds_no_feat = pd.concat((data_no_feat[0], data_no_feat[1]), axis=1).mean(
+        axis=1,
+    )
+
+    pd.testing.assert_series_equal(result_no_feat, mean_preds_no_feat)
+    pd.testing.assert_series_equal(clf_no_feat.preds_95_lower, data_no_feat[0])
+    pd.testing.assert_series_equal(clf_no_feat.preds_95_upper, data_no_feat[1])
+    assert len(conf_ints) == 2
+    assert len(data_no_feat) == 2
+    assert conf_ints[0] == "0.95_lower"
+    assert conf_ints[1] == "0.95_upper"
+
+    coverages = [0.95, 0.90, 0.85]
+    results_coverage_no_feat = clf_no_feat.get_prediction_intervals(
+        X_test_no_feat,
+        None,
+        coverages,
+    )
+    predictions_no_feat = clf_no_feat.predict(X_test_no_feat)
+
+    conf_ints = list(results_coverage_no_feat.keys())
+    data_no_feat = list(results_coverage_no_feat.values())
+
+    assert len(conf_ints) == 6
+    assert len(data_no_feat) == 6
+
+    for interval in coverages:
+        conf_int_lower = f"{interval}_lower"
+        conf_int_upper = f"{interval}_upper"
+
+        assert (results_coverage_no_feat[conf_int_upper] > predictions_no_feat).all()
+        assert (predictions_no_feat > results_coverage_no_feat[conf_int_lower]).all()
+        mean_preds_no_feat = pd.concat(
+            (
+                results_coverage_no_feat[conf_int_lower],
+                results_coverage_no_feat[conf_int_upper],
+            ),
+            axis=1,
+        ).mean(axis=1)
+        pd.testing.assert_series_equal(mean_preds_no_feat, predictions_no_feat)
