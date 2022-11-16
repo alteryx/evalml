@@ -60,6 +60,7 @@ class BorutaSelector(FeatureSelector):
             "perc": perc,
             "n_estimators": n_estimators,
             "max_depth": max_depth,
+            "max_iter": max_iter,
             "alpha": alpha,
             "two_step": two_step,
             "n_jobs": n_jobs,
@@ -73,9 +74,6 @@ class BorutaSelector(FeatureSelector):
             n_jobs=n_jobs,
         )
 
-        max_features = (
-            max(1, int(percent_features * number_features)) if number_features else None
-        )
         feature_selection = BorutaPy(
             estimator=estimator,
             n_estimators=n_estimators,
