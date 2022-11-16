@@ -510,6 +510,7 @@ def test_describe_component():
                 "changepoint_prior_scale": 0.05,
                 "time_index": None,
                 "holidays_prior_scale": 10,
+                "interval_width": 0.95,
                 "seasonality_mode": "additive",
                 "seasonality_prior_scale": 10,
                 "stan_backend": "CMDSTANPY",

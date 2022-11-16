@@ -72,6 +72,7 @@ def test_get_params():
         "changepoint_prior_scale": 0.05,
         "time_index": None,
         "seasonality_prior_scale": 10,
+        "interval_width": 0.95,
         "holidays_prior_scale": 10,
         "seasonality_mode": "additive",
         "stan_backend": "CMDSTANPY",
