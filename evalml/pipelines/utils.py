@@ -65,8 +65,6 @@ from evalml.problem_types import (
 from evalml.utils import get_time_index, infer_feature_types
 from evalml.utils.gen_utils import contains_all_ts_parameters
 
-_UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER = ["A", "Y", "T", "AS", "YS"]
-
 
 def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None):
     component = []
@@ -231,11 +229,11 @@ def _get_decomposer(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
     if is_time_series(problem_type) and is_regression(problem_type):
         time_index = get_time_index(X, y, None)
-        freq = time_index.freq.name.split("-")[0]
-        if (
-            freq[-1] not in _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER
-            and freq not in _UNSUPPORTED_FREQUENCIES_STL_DECOMPOSER
-        ):
+        # If the time index frequency is uninferrable, STL will fail
+        if time_index.freq is None:
+            return components
+        freq = time_index.freq.name
+        if STLDecomposer.is_freq_valid(freq):
             components.append(STLDecomposer)
     return components
 

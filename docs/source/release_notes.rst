@@ -3,18 +3,36 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added fast mode to partial dependence :pr:`3753`
     * Fixes
-        * Fixed bug with datetime conversion in ``get_time_index`` :pr:`3792`
-        * Fixed bug where invalid anchored or offset frequencies were including the ``STLDecomposer`` in pipelines :pr:`3794`
+        * Fixed ``TimeSeriesFeaturizer`` potentially selecting lags outside of feature engineering window :pr:`3773`
+        * Fixed bug where ``TimeSeriesFeaturizer`` could not encode Ordinal columns with non numeric categories :pr:`3812`
+        * Updated demo dataset links to point to new endpoint :pr:`3826`
+        * Updated ``STLDecomposer`` to infer the time index frequency if it's not present :pr:`3829`
+        * Updated ``_drop_time_index`` to move the time index from X to both ``X.index`` and ``y.index`` :pr:`3829`
     * Changes
-        * Capped dask at < 2022.10.1 :pr:`3797`
-        * Uncapped dask and excluded 2022.10.1 from viable versions :pr:`3803`
+        * Consolidated decomposition frequency validation logic to ``Decomposer`` class :pr:`3811`
+        * Removed Featuretools version upper bound and prevent Woodwork 0.20.0 from being installed :pr:`3813`
+        * Updated min Featuretools version to 0.16.0, min nlp-primitives version to 2.9.0 and min Dask version to 2022.2.0 :pr:`3823`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+
+
+**v0.62.0 Nov. 01, 2022**
+    * Fixes
+        * Fixed bug with datetime conversion in ``get_time_index`` :pr:`3792`
+        * Fixed bug where invalid anchored or offset frequencies were including the ``STLDecomposer`` in pipelines :pr:`3794`
+        * Fixed bug where irregular datetime frequencies were causing errors in ``make_pipeline`` :pr:`3800`
+    * Changes
+        * Capped dask at < 2022.10.1 :pr:`3797`
+        * Uncapped dask and excluded 2022.10.1 from viable versions :pr:`3803`
+        * Removed all references to XGBoost's deprecated ``_use_label_encoder`` argument :pr:`3805`
+        * Capped featuretools at < 1.17.0 :pr:`3805`
+        * Capped woodwork at < 0.21.0 :pr:`3805`
 
 
 **v0.61.1 Oct. 27, 2022**

@@ -24,6 +24,7 @@ class StackedEnsembleBase(Estimator):
     model_family = ModelFamily.ENSEMBLE
     """ModelFamily.ENSEMBLE"""
     _default_final_estimator = None
+    _can_be_used_for_fast_partial_dependence = False
 
     def __init__(
         self,

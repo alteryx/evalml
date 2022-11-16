@@ -51,7 +51,7 @@ from evalml.utils import infer_feature_types
 def pytest_configure(config):
     config.addinivalue_line(
         "markers",
-        "skip_offline: mark test to be skipped if offline (https://api.featurelabs.com cannot be reached)",
+        "skip_offline: mark test to be skipped if offline (https://oss.alteryx.com cannot be reached)",
     )
     config.addinivalue_line(
         "markers",
