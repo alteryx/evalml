@@ -129,8 +129,8 @@ class DFSTransformer(Transformer):
         feature_matrix.ww.init(schema=partial_schema)
         return feature_matrix
 
-    def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters, target):
-        """Determines whether or not a DFSTransformer component can be used with partial dependence's fast mode.
+    def _handle_partial_dependence_fast_mode(self, pipeline_parameters, X, target):
+        """Determines whether or not a DFS Transformer component can be used with partial dependence's fast mode.
 
         Note:
             This component can be used with partial dependence fast mode only when
@@ -138,12 +138,12 @@ class DFSTransformer(Transformer):
             in the DataFrame.
 
         Args:
-            X (pd.DataFrame): Holdout data being used for partial dependence calculations.
             pipeline_parameters (dict): Pipeline parameters that will be used to create the pipelines
                 used in partial dependence fast mode.
-            target (str): The target whose values we are trying to predict. May be present in the
-                list of features in the DFS Transformer's parameters, in which case we should ignore it.
-
+            X (pd.DataFrame): Holdout data being used for partial dependence calculations.
+            target (str): The target whose values we are trying to predict. This is used
+                to know which column to ignore if the target column is present in the list of features
+                in the DFS Transformer's parameters
         """
         dfs_transformer = pipeline_parameters.get("DFS Transformer")
         if dfs_transformer is not None:
