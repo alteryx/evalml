@@ -666,9 +666,10 @@ def get_time_index(X: pd.DataFrame, y: pd.Series, time_index_name: str):
 
     # If user's provided time_index doesn't exist, log it and find some datetimes to use
     elif (time_index_name is None) or time_index_name not in X.columns:
-        logger.warning(
-            f"Could not find requested time_index {time_index_name}",
-        )
+        if time_index_name is not None:
+            logger.warning(
+                f"Could not find requested time_index {time_index_name}",
+            )
         # Use the feature data's index, preferentially
         num_datetime_features = X.ww.select("Datetime").shape[1]
         if isinstance(X.index, pd.DatetimeIndex):
