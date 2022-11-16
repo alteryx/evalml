@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added fast mode to partial dependence :pr:`3753`
+        * Added the ability to retrieve prediction intervals from the ``ARIMARegressor`` :pr:`3756`
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` potentially selecting lags outside of feature engineering window :pr:`3773`
         * Fixed bug where ``TimeSeriesFeaturizer`` could not encode Ordinal columns with non numeric categories :pr:`3812`
@@ -55,8 +56,7 @@ Release Notes
 
 **v0.60.0 Oct. 19, 2022**
     * Enhancements
-        * Add forecast functions to time series regression pipeline :pr:`3742`
-        * Added the ability to retrieve prediction intervals from the ``ARIMARegressor`` :pr:`3756`
+        * Add forecast functions to time series regression pipeline :pr:`3742
     * Fixes
         * Fix to allow ``IDColumnsDataCheck`` to work with ``IntegerNullable`` inputs :pr:`3740`
         * Fixed datasets name for main performance tests :pr:`3743`
