@@ -2871,7 +2871,7 @@ def test_partial_dependence_dfs_transformer_handling_with_multi_output_primitive
     pipeline = RegressionPipeline(
         [dfs_transformer, "Standard Scaler", "Random Forest Regressor"],
     )
-    # Confirm that the LSA primitive was actually used
+    # Confirm that a multi-output feature is present
     assert any(len(f.get_feature_names()) > 1 for f in features)
 
     pipeline.fit(X_fm, y)
