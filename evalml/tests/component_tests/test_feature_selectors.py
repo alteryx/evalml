@@ -5,7 +5,7 @@ from woodwork.logical_types import Boolean, Double, Integer
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components import (
-    BorutaSelector,
+    RFClassifierBorutaSelector,
     ComponentBase,
     FeatureSelector,
     RFClassifierSelectFromModel,
@@ -28,7 +28,7 @@ def make_rf_feature_selectors():
         percent_features=0.5,
         threshold=0,
     )
-    boruta_selector = BorutaSelector()
+    boruta_selector = RFClassifierBorutaSelector()
     return rf_classifier, rf_regressor, boruta_selector
 
 

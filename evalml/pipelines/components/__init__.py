@@ -68,7 +68,8 @@ from evalml.pipelines.components.transformers import (
     DropNaNRowsTransformer,
     TimeSeriesRegularizer,
     OrdinalEncoder,
-    BorutaSelector,
+    RFClassifierBorutaSelector,
+    RFRegressorBorutaSelector,
 )
 from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
