@@ -54,6 +54,7 @@ from evalml.pipelines.components import (
     SelectColumns,
     SimpleImputer,
     StandardScaler,
+    STLDecomposer,
     SVMClassifier,
     SVMRegressor,
     TargetImputer,
@@ -841,9 +842,10 @@ def test_transformer_transform_output_type(component_class, X_y_binary):
     ]
 
     if component_class in [
-        PolynomialDecomposer,
         LogTransformer,
         LabelEncoder,
+        PolynomialDecomposer,
+        STLDecomposer,
         TimeSeriesRegularizer,
     ]:
         pytest.skip(
@@ -957,6 +959,39 @@ def test_default_parameters_raise_no_warnings(cls):
         warnings.simplefilter("always")
         cls()
         assert len(w) == 0
+
+
+def test_components_can_be_used_for_partial_dependence_fast_mode():
+    """This test is intended to fail when new components are added to remind developers
+    to decide whether or not partial dependence fast mode should be allowed for the new component."""
+    all_native_components = all_components()
+
+    invalid_for_pd_fast_mode = [
+        cls.name
+        for cls in all_native_components
+        if not cls._can_be_used_for_fast_partial_dependence
+    ]
+    num_valid_for_pd_fast_mode = len(
+        [
+            cls.name
+            for cls in all_native_components
+            if cls._can_be_used_for_fast_partial_dependence
+        ],
+    )
+
+    assert invalid_for_pd_fast_mode == [
+        "Stacked Ensemble Regressor",
+        "Stacked Ensemble Classifier",
+        "Oversampler",
+    ]
+
+    # Expected number is hardcoded so that this test will fail when new components are added
+    # It should be len(all_native_components) - num_invalid_for_pd_fast_mode
+    if ProphetRegressor not in all_native_components:
+        expected_num_valid_for_pd_fast_mode = 61
+    else:
+        expected_num_valid_for_pd_fast_mode = 62
+    assert num_valid_for_pd_fast_mode == expected_num_valid_for_pd_fast_mode
 
 
 def test_estimator_check_for_fit(X_y_binary):
@@ -1111,6 +1146,7 @@ def test_all_transformers_check_fit(component_class, X_y_binary, ts_data):
         TimeSeriesFeaturizer,
         TimeSeriesRegularizer,
         PolynomialDecomposer,
+        STLDecomposer,
     ]:
         X, _, y = ts_data(problem_type="time series binary")
         component = component_class(time_index="date")
@@ -1237,6 +1273,7 @@ def test_all_transformers_check_fit_input_type(
         TimeSeriesFeaturizer,
         TimeSeriesRegularizer,
         PolynomialDecomposer,
+        STLDecomposer,
     ]:
         X, _, y = ts_data(problem_type="time series binary")
         kwargs = {"time_index": "date"}
@@ -1277,6 +1314,7 @@ def test_serialization(
         TimeSeriesFeaturizer,
         TimeSeriesRegularizer,
         PolynomialDecomposer,
+        STLDecomposer,
     ]
 
     print("Testing serialization of component {}".format(component_class.name))
@@ -1577,10 +1615,10 @@ def test_transformer_fit_and_transform_respect_custom_indices(
         check_names = False
         if use_custom_index:
             pytest.skip("The DFSTransformer changes the index so we skip it.")
-    if transformer_class == PolynomialDecomposer:
+    if transformer_class in [PolynomialDecomposer, STLDecomposer]:
         pytest.skip(
-            "Skipping PolynomialDecomposer because we test that it respects custom indices in "
-            "test_polynomial_decomposer.py",
+            "Skipping Decomposer because we test that it respects custom indices in "
+            "test_decomposer.py",
         )
 
     X, y = X_y_binary

@@ -16,7 +16,7 @@ def set_testing_headers():
 @pytest.fixture(autouse=True, scope="session")
 def check_online(set_testing_headers):
     try:
-        urllib.request.urlopen("https://api.featurelabs.com/update_check/")
+        urllib.request.urlopen("https://oss.alteryx.com/update_check/")
         return True
     except urllib.error.URLError:  # pragma: no cover
         return False

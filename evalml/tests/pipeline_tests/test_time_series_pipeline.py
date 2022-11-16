@@ -1693,3 +1693,34 @@ def test_time_series_random_forest_transform_all_but_final(
         "z_features_rolling_mean",
         "target_rolling_mean",
     ]
+
+
+def test_drop_time_index_woodwork(ts_data, time_series_regression_pipeline_class):
+    X, _, y = ts_data()
+    X.ww.set_time_index("date")
+
+    pipeline = time_series_regression_pipeline_class(
+        parameters={
+            "pipeline": {
+                "gap": 0,
+                "max_delay": 1,
+                "time_index": "date",
+                "forecast_horizon": 1,
+            },
+            "Time Series Featurizer": {
+                "gap": 0,
+                "max_delay": 1,
+                "time_index": "date",
+                "forecast_horizon": 1,
+            },
+        },
+    )
+    pipeline.should_drop_time_index = True
+
+    X_t, y_t = pipeline._drop_time_index(X, y)
+    assert "date" not in X_t.columns
+    assert X_t.ww.schema is not None
+    assert y_t.ww.schema is not None
+
+    assert isinstance(X_t.index, pd.DatetimeIndex)
+    assert isinstance(y_t.index, pd.DatetimeIndex)

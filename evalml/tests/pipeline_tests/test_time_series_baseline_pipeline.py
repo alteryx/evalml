@@ -66,6 +66,12 @@ def test_time_series_baseline(
         time_index="date",
     )
     clf.fit(X_train, y_train)
+
+    # TODO: Replace this with a better test that reproduces the issue with bike_sharing
+    # causing the name of the internal X to shift.
+    X_train_t, _ = clf._drop_time_index(X_train, y_train)
+    assert X_train_t.index.name == X_train.index.name
+
     np.testing.assert_allclose(
         y[15 - forecast_horizon : 15],
         clf.predict(X_validation, None, X_train, y_train).values,

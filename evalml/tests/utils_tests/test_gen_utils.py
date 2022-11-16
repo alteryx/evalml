@@ -21,6 +21,7 @@ from evalml.utils.gen_utils import (
     deprecate_arg,
     get_importable_subclasses,
     get_random_seed,
+    get_time_index,
     import_or_raise,
     is_categorical_actually_boolean,
     jupyter_check,
@@ -889,3 +890,122 @@ def test_is_categorical_actually_boolean():
     assert not is_categorical_actually_boolean(X, "categorical")
     assert is_categorical_actually_boolean(X, "boolean_categorical")
     assert not is_categorical_actually_boolean(X, "boolean")
+
+
+@pytest.mark.parametrize("X_num_time_columns", [0, 1, 2, 3])
+@pytest.mark.parametrize(
+    "X_has_time_index",
+    ["X_has_time_index", "X_doesnt_have_time_index"],
+)
+@pytest.mark.parametrize(
+    "y_has_time_index",
+    ["y_has_time_index", "y_doesnt_have_time_index"],
+)
+@pytest.mark.parametrize(
+    "time_index_specified",
+    [
+        "time_index_is_specified",
+        "time_index_not_specified",
+        "time_index_is_specified_but_wrong",
+    ],
+)
+def test_get_time_index(
+    ts_data,
+    X_num_time_columns,
+    X_has_time_index,
+    y_has_time_index,
+    time_index_specified,
+):
+    X, _, y = ts_data()
+    time_index_col_name = "date"
+    assert isinstance(X.index, pd.DatetimeIndex)
+    assert isinstance(y.index, pd.DatetimeIndex)
+
+    # Modify time series data to match testing conditions
+    if X_has_time_index == "X_doesnt_have_time_index":
+        X = X.ww.reset_index(drop=True)
+    if y_has_time_index == "y_doesnt_have_time_index":
+        y = y.reset_index(drop=True)
+    if X_num_time_columns == 0:
+        X = X.ww.drop(columns=[time_index_col_name])
+    elif X_num_time_columns > 1:
+        for addn_col in range(X_num_time_columns - 1):
+            X.ww[time_index_col_name + str(addn_col + 1)] = X.ww[time_index_col_name]
+    time_index = {
+        "time_index_is_specified": "date",
+        "time_index_not_specified": None,
+        "time_index_is_specified_but_wrong": "d4t3s",
+    }[time_index_specified]
+
+    err_msg = None
+    # The time series data has no time data
+    if (
+        X_num_time_columns == 0
+        and X_has_time_index == "X_doesnt_have_time_index"
+        and y_has_time_index == "y_doesnt_have_time_index"
+    ):
+        err_msg = "There are no Datetime features in the feature data and neither the feature nor the target data have a DateTime index."
+
+    # The time series data has too much time data
+    elif (
+        X_num_time_columns > 1
+        and time_index_specified == "time_index_not_specified"
+        and y_has_time_index == "y_doesnt_have_time_index"
+        and X_has_time_index != "X_has_time_index"
+    ):
+        err_msg = "Too many Datetime features provided in data but no time_index column specified during __init__."
+
+    # If the wrong time_index column is specified with multiple datetime columns
+    elif (
+        time_index_specified == "time_index_is_specified_but_wrong"
+        and X_num_time_columns > 1
+        and X_has_time_index != "X_has_time_index"
+        and y_has_time_index != "y_has_time_index"
+    ):
+        err_msg = "Too many Datetime features provided in data and provided time_index column d4t3s not present in data."
+
+    if err_msg is not None:
+        with pytest.raises(
+            ValueError,
+            match=err_msg,
+        ):
+            get_time_index(X, y, time_index)
+    else:
+        idx = get_time_index(X, y, time_index)
+        assert isinstance(idx, pd.DatetimeIndex)
+
+
+def test_get_time_index_maintains_freq():
+    idx = pd.DatetimeIndex(
+        [
+            "1992-01-01T00:00:00Z",
+            "1992-02-01T00:00:00Z",
+            "1992-03-01T00:00:00Z",
+            "1992-04-01T00:00:00Z",
+            "1992-05-01T00:00:00Z",
+            "1992-06-01T00:00:00Z",
+            "1992-07-01T00:00:00Z",
+            "1992-08-01T00:00:00Z",
+            "1992-09-01T00:00:00Z",
+            "1992-10-01T00:00:00Z",
+            "1992-11-01T00:00:00Z",
+            "1992-12-01T00:00:00Z",
+            "1993-01-01T00:00:00Z",
+            "1993-02-01T00:00:00Z",
+        ],
+    )
+    X = pd.DataFrame(index=idx)
+    y = pd.Series(range(len(idx)), idx)
+    X.ww.init()
+    y.ww.init()
+    time_idx = get_time_index(X, y, None)
+    assert X.index.equals(time_idx)
+    assert y.index.equals(time_idx)
+    assert time_idx.freq is not None
+
+    X = pd.DataFrame({"date": idx})
+    y = pd.Series(range(len(idx)))
+    X.ww.init()
+    y.ww.init()
+    time_idx = get_time_index(X, y, None)
+    assert time_idx.freq is not None

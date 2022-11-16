@@ -658,6 +658,47 @@ def are_datasets_separated_by_gap_time_index(train, test, pipeline_params):
     return (to_offset(freq) * gap_difference) + last_training_date == first_testing_date
 
 
+def get_time_index(X: pd.DataFrame, y: pd.Series, time_index_name: str):
+    """Determines the column in the given data that should be used as the time index."""
+    # Prefer the user's provided time_index, if it exists
+    if time_index_name and time_index_name in X.columns:
+        dt_col = X[time_index_name]
+
+    # If user's provided time_index doesn't exist, log it and find some datetimes to use
+    elif (time_index_name is None) or time_index_name not in X.columns:
+        logger.warning(
+            f"Could not find requested time_index {time_index_name}",
+        )
+        # Use the feature data's index, preferentially
+        num_datetime_features = X.ww.select("Datetime").shape[1]
+        if isinstance(X.index, pd.DatetimeIndex):
+            dt_col = X.index
+        elif isinstance(y.index, pd.DatetimeIndex):
+            dt_col = y.index
+        elif num_datetime_features == 0:
+            raise ValueError(
+                "There are no Datetime features in the feature data and neither the feature nor the target data have a DateTime index.",
+            )
+        # Use a datetime column of the features if there's only one
+        elif num_datetime_features == 1:
+            dt_col = X.ww.select("Datetime").squeeze()
+        # With more than one datetime column, use the time_index parameter, if provided.
+        elif num_datetime_features > 1:
+            if time_index_name is None:
+                raise ValueError(
+                    "Too many Datetime features provided in data but no time_index column specified during __init__.",
+                )
+            elif time_index_name not in X:
+                raise ValueError(
+                    f"Too many Datetime features provided in data and provided time_index column {time_index_name} not present in data.",
+                )
+
+    if not isinstance(dt_col, pd.DatetimeIndex) or dt_col.freq is None:
+        dt_col = pd.DatetimeIndex(dt_col, freq="infer")
+    time_index = dt_col.rename(y.index.name)
+    return time_index
+
+
 _holdout_validation_result = namedtuple(
     "TSHoldoutValidationResult",
     ("is_valid", "error_messages", "error_codes"),
