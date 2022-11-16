@@ -69,7 +69,7 @@ def test_time_series_baseline(
 
     # TODO: Replace this with a better test that reproduces the issue with bike_sharing
     # causing the name of the internal X to shift.
-    X_train_t = clf._drop_time_index(X_train, y_train)
+    X_train_t, _ = clf._drop_time_index(X_train, y_train)
     assert X_train_t.index.name == X_train.index.name
 
     np.testing.assert_allclose(

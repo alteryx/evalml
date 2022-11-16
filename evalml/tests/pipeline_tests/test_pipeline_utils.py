@@ -206,6 +206,8 @@ def test_make_pipeline(
         ("10T", False),
         ("AS-JAN", False),
         ("YS", False),
+        ("S", False),
+        ("2BQ", False),
         (None, False),
     ],
 )
