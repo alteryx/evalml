@@ -153,7 +153,7 @@ class ProphetRegressor(Estimator):
             X (pd.DataFrame): Data of shape [n_samples, n_features].
             y (pd.Series): Target data. Ignored.
             coverage (float): A float between the values 0 and 1 that the upper and lower bounds of the
-            prediction interval should be calculated for.
+                prediction interval should be calculated for.
 
         Returns:
             dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
