@@ -14,6 +14,7 @@ Release Notes
         * Consolidated decomposition frequency validation logic to ``Decomposer`` class :pr:`3811`
         * Removed Featuretools version upper bound and prevent Woodwork 0.20.0 from being installed :pr:`3813`
         * Updated min Featuretools version to 0.16.0, min nlp-primitives version to 2.9.0 and min Dask version to 2022.2.0 :pr:`3823`
+        * Rename issue templates config.yaml to config.yml :pr:`3844`
     * Documentation Changes
         * Added information about STL Decomposition to the time series docs :pr:`3835`
     * Testing Changes
