@@ -141,9 +141,20 @@ def test_prophet_regressor_prediction_intervals(ts_data):
     assert (result_95["0.95_upper"] > y_pred).all()
     assert (y_pred > result_95["0.95_lower"]).all()
 
-    result_85 = clf.get_prediction_intervals(X_test, coverage=0.85)
+    result_75_85 = clf.get_prediction_intervals(X_test, coverage=[0.75, 0.85])
+
+    assert list(result_75_85.keys()) == [
+        "0.75_lower",
+        "0.75_upper",
+        "0.85_lower",
+        "0.85_upper",
+    ]
     assert clf._component_obj.interval_width == 0.85
-    assert (result_95["0.95_upper"] > result_85["0.85_upper"]).all()
-    assert (result_85["0.85_upper"] > y_pred).all()
-    assert (y_pred > result_85["0.85_lower"]).all()
-    assert (result_85["0.85_lower"] > result_95["0.95_lower"]).all()
+    assert (result_95["0.95_upper"] > result_75_85["0.85_upper"]).all()
+    assert (result_75_85["0.85_upper"] > result_75_85["0.75_upper"]).all()
+    assert (result_75_85["0.85_upper"] > y_pred).all()
+    assert (result_75_85["0.75_upper"] > y_pred).all()
+    assert (y_pred > result_75_85["0.85_lower"]).all()
+    assert (y_pred > result_75_85["0.75_lower"]).all()
+    assert (result_75_85["0.85_lower"] > result_95["0.95_lower"]).all()
+    assert (result_75_85["0.75_lower"] > result_75_85["0.85_lower"]).all()

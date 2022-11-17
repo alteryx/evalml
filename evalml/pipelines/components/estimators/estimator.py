@@ -1,5 +1,6 @@
 """A component that fits and predicts given data."""
 from abc import abstractmethod
+from typing import List
 
 import pandas as pd
 
@@ -122,6 +123,20 @@ class Estimator(ComponentBase):
         pred_proba = infer_feature_types(pred_proba)
         pred_proba.index = X.index
         return pred_proba
+
+    @abstractmethod
+    def get_prediction_intervals(self, X, y=None, coverage: List[float] = None):
+        """Find the prediction intervals using the fitted regressor.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data. Ignored.
+            coverage (float): A float between the values 0 and 1 that the upper and lower bounds of the
+                prediction interval should be calculated for.
+
+        Returns:
+            dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+        """
 
     @property
     def feature_importance(self):

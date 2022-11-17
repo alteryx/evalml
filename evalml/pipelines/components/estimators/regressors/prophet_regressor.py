@@ -1,5 +1,6 @@
 """Prophet is a procedure for forecasting time series data based on an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects. It works best with time series that have strong seasonal effects and several seasons of historical data. Prophet is robust to missing data and shifts in the trend, and typically handles outliers well."""
 import copy
+from typing import List
 
 import numpy as np
 from skopt.space import Real
@@ -146,36 +147,38 @@ class ProphetRegressor(Estimator):
 
         return predictions
 
-    def get_prediction_intervals(self, X, y=None, coverage=None):
+    def get_prediction_intervals(self, X, y=None, coverage: List[float] = None):
         """Find the prediction intervals using the fitted ProphetRegressor.
 
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
             y (pd.Series): Target data. Ignored.
-            coverage (float): A float between the values 0 and 1 that the upper and lower bounds of the
+            coverage (List[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
                 prediction interval should be calculated for.
 
         Returns:
             dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
         """
         if coverage is None:
-            coverage = 0.95
-        self._component_obj.interval_width = coverage
-        X = infer_feature_types(X)
+            coverage = [0.95]
 
-        prophet_df = ProphetRegressor.build_prophet_df(
-            X=X,
-            y=y,
-            time_index=self.time_index,
-        )
         prediction_interval_result = {}
-        prophet_output = self._component_obj.predict(prophet_df)
-        prediction_interval_lower = prophet_output["yhat_lower"]
-        prediction_interval_upper = prophet_output["yhat_upper"]
-        prediction_interval_lower.index = X.index
-        prediction_interval_upper.index = X.index
-        prediction_interval_result[f"{coverage}_lower"] = prediction_interval_lower
-        prediction_interval_result[f"{coverage}_upper"] = prediction_interval_upper
+        for conf_int in coverage:
+            self._component_obj.interval_width = conf_int
+            X = infer_feature_types(X)
+
+            prophet_df = ProphetRegressor.build_prophet_df(
+                X=X,
+                y=y,
+                time_index=self.time_index,
+            )
+            prophet_output = self._component_obj.predict(prophet_df)
+            prediction_interval_lower = prophet_output["yhat_lower"]
+            prediction_interval_upper = prophet_output["yhat_upper"]
+            prediction_interval_lower.index = X.index
+            prediction_interval_upper.index = X.index
+            prediction_interval_result[f"{conf_int}_lower"] = prediction_interval_lower
+            prediction_interval_result[f"{conf_int}_upper"] = prediction_interval_upper
         return prediction_interval_result
 
     def get_params(self):
