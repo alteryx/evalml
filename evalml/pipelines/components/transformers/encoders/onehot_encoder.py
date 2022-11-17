@@ -1,4 +1,6 @@
 """A transformer that encodes categorical features in a one-hot numeric array."""
+from pdb import set_trace
+
 import numpy as np
 import pandas as pd
 import woodwork as ww
@@ -320,3 +322,18 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
     def _get_feature_provenance(self):
         return self._provenance
+
+    def _handle_partial_dependence_fast_mode(
+        self,
+        pipeline_parameters,
+        X=None,
+        target=None,
+    ):
+        cat_cols = X.ww.select(["category"], return_schema=True).columns.keys()
+        # --> potential issue if not all category dtype or categories not set :/
+        # --> test with nan
+        max_cats = max(len(X[col].dtype.categories) for col in cat_cols)
+        # The plus one is to account for potential nans
+        pipeline_parameters[self.name]["top_n"] = max_cats + 1
+
+        return pipeline_parameters
