@@ -10,6 +10,7 @@ Release Notes
         * Updated demo dataset links to point to new endpoint :pr:`3826`
         * Updated ``STLDecomposer`` to infer the time index frequency if it's not present :pr:`3829`
         * Updated ``_drop_time_index`` to move the time index from X to both ``X.index`` and ``y.index`` :pr:`3829`
+        * Added ``TimeSeriesPipeline.should_skip_featurization`` to fix bug where data would get featurized unnecessarily :pr:`3849`
     * Changes
         * Consolidated decomposition frequency validation logic to ``Decomposer`` class :pr:`3811`
         * Removed Featuretools version upper bound and prevent Woodwork 0.20.0 from being installed :pr:`3813`
