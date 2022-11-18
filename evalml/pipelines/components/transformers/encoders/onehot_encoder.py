@@ -333,7 +333,14 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         # --> potential issue if not all category dtype or categories not set :/
         # --> test with nan
         max_cats = max(len(X[col].dtype.categories) for col in cat_cols)
-        # The plus one is to account for potential nans
-        pipeline_parameters[self.name]["top_n"] = max_cats + 1
+
+        # Since the pipeline may be split, we cannot just use self.name
+        ohe_components = [
+            param for param in pipeline_parameters.keys() if self.name in param
+        ]
+
+        for component_name in ohe_components:
+            # The plus one is to account for potential nans
+            pipeline_parameters[component_name]["top_n"] = max_cats + 1
 
         return pipeline_parameters
