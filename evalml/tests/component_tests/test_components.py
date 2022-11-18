@@ -1249,7 +1249,23 @@ def test_all_estimators_check_fit(
                     or ProblemTypes.MULTICLASS in component.supported_problem_types
                 ):
                     component.predict_proba(X)
-                component.predict(X)
+
+                if "ARIMA" in component.name:
+                    with patch.object(
+                        mock_component_obj,
+                        "predict_interval",
+                    ) as mock_component_obj_predict_intervals:
+                        mock_returned = pd.DataFrame(
+                            {"lower": [1] * len(y), "upper": [2] * len(y)},
+                        )
+                        mock_returned = pd.concat({0.95: mock_returned}, axis=1)
+                        mock_returned = pd.concat({"Coverage": mock_returned}, axis=1)
+                        mock_component_obj_predict_intervals.return_value = (
+                            mock_returned
+                        )
+                        component.predict(X)
+                else:
+                    component.predict(X)
                 component.feature_importance
 
 

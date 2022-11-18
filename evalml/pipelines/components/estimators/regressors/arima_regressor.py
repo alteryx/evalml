@@ -1,4 +1,6 @@
 """Autoregressive Integrated Moving Average Model. The three parameters (p, d, q) are the AR order, the degree of differencing, and the MA order. More information here: https://www.statsmodels.org/devel/generated/statsmodels.tsa.arima.model.ARIMA.html."""
+from typing import List
+
 import numpy as np
 import pandas as pd
 from skopt.space import Integer
@@ -79,6 +81,8 @@ class ARIMARegressor(Estimator):
         use_covariates=True,
         **kwargs,
     ):
+        self.preds_95_upper = None
+        self.preds_95_lower = None
         parameters = {
             "trend": trend,
             "start_p": start_p,
@@ -200,6 +204,17 @@ class ARIMARegressor(Estimator):
             self._component_obj.fit(y=y)
         return self
 
+    def _manage_types_and_forecast(self, X):
+        fh_ = self._set_forecast(X)
+        X = X.ww.select(exclude=["Datetime"])
+        X.ww.set_types(
+            {
+                col: "Double"
+                for col in X.ww.select(["Boolean"], return_schema=True).columns
+            },
+        )
+        return X, fh_
+
     def predict(self, X, y=None):
         """Make predictions using fitted ARIMA regressor.
 
@@ -214,21 +229,80 @@ class ARIMARegressor(Estimator):
             ValueError: If X was passed to `fit` but not passed in `predict`.
         """
         X, y = self._manage_woodwork(X, y)
-        fh_ = self._set_forecast(X)
-        X = X.ww.select(exclude=["Datetime"])
-        X.ww.set_types(
-            {
-                col: "Double"
-                for col in X.ww.select(["Boolean"], return_schema=True).columns
-            },
-        )
+        X, fh_ = self._manage_types_and_forecast(X=X)
+
         if not X.empty and self.use_covariates:
-            y_pred = self._component_obj.predict(fh=fh_, X=X)
+            y_pred_intervals = self._component_obj.predict_interval(
+                fh=fh_,
+                X=X,
+                coverage=[0.95],
+            )
         else:
-            y_pred = self._component_obj.predict(fh=fh_)
+            y_pred_intervals = self._component_obj.predict_interval(
+                fh=fh_,
+                coverage=[0.95],
+            )
+
+        self.preds_95_lower = y_pred_intervals.loc(axis=1)[("Coverage", 0.95, "lower")]
+        self.preds_95_upper = y_pred_intervals.loc(axis=1)[("Coverage", 0.95, "upper")]
+        self.preds_95_lower.index = X.index
+        self.preds_95_upper.index = X.index
+        self.preds_95_lower.name = None
+        self.preds_95_upper.name = None
+
+        y_pred = pd.concat((self.preds_95_lower, self.preds_95_upper), axis=1).mean(
+            axis=1,
+        )
         y_pred.index = X.index
 
         return infer_feature_types(y_pred)
+
+    def get_prediction_intervals(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series = None,
+        coverage: List[float] = None,
+    ):
+        """Find the prediction intervals using the fitted ARIMARegressor.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data. Optional.
+            coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
+                prediction interval should be calculated for.
+
+        Returns:
+            dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+        """
+        if coverage is None:
+            coverage = [0.95]
+        X, y = self._manage_woodwork(X, y)
+        X, fh_ = self._manage_types_and_forecast(X=X)
+
+        prediction_interval_result = {}
+
+        if not X.empty and self.use_covariates:
+            y_pred_interval = self._component_obj.predict_interval(
+                fh=fh_,
+                X=X,
+                coverage=coverage,
+            )
+        else:
+            y_pred_interval = self._component_obj.predict_interval(
+                fh=fh_,
+                coverage=coverage,
+            )
+        y_pred_interval.index = X.index
+
+        for conf_int in coverage:
+            preds_lower = y_pred_interval.loc(axis=1)[("Coverage", conf_int, "lower")]
+            preds_upper = y_pred_interval.loc(axis=1)[("Coverage", conf_int, "upper")]
+            preds_lower.name = None
+            preds_upper.name = None
+            prediction_interval_result[f"{conf_int}_lower"] = preds_lower
+            prediction_interval_result[f"{conf_int}_upper"] = preds_upper
+
+        return prediction_interval_result
 
     @property
     def feature_importance(self):
