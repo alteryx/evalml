@@ -6,6 +6,7 @@ Release Notes
         * Added fast mode to partial dependence :pr:`3753`
         * Added the ability to retrieve prediction intervals from the ``ARIMARegressor`` :pr:`3756`
         * Added the ability to retrieve prediction intervals from the ``ProphetRegressor`` :pr:`3766`
+        * Added the ability to retrieve prediction intervals from the ``ExponentialSmoothingRegressor`` :pr:`3845`
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` potentially selecting lags outside of feature engineering window :pr:`3773`
         * Fixed bug where ``TimeSeriesFeaturizer`` could not encode Ordinal columns with non numeric categories :pr:`3812`

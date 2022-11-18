@@ -1,4 +1,6 @@
 """Holt-Winters Exponential Smoothing Forecaster."""
+from typing import List
+
 import numpy as np
 import pandas as pd
 from skopt.space import Integer
@@ -132,6 +134,48 @@ class ExponentialSmoothingRegressor(Estimator):
         y_pred.index = X.index
         y_pred.name = None
         return infer_feature_types(y_pred)
+
+    def get_prediction_intervals(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series = None,
+        coverage: List[float] = None,
+    ):
+        """Find the prediction intervals using the fitted ExponentialSmoothingRegressor.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data. Optional.
+            coverage (List[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
+                prediction interval should be calculated for.
+
+        Returns:
+            dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+        """
+        if coverage is None:
+            coverage = [0.95]
+        X, y = self._manage_woodwork(X, y)
+
+        y_pred = self._component_obj._fitted_forecaster.simulate(
+            nsimulations=X.shape[0],
+            repetitions=400,
+            anchor="end",
+        )
+        prediction_interval_result = {}
+        for conf_int in coverage:
+            prediction_interval_lower = y_pred.quantile(
+                q=round((1 - conf_int) / 2, 3),
+                axis="columns",
+            )
+            prediction_interval_upper = y_pred.quantile(
+                q=round((1 + conf_int) / 2, 3),
+                axis="columns",
+            )
+            prediction_interval_lower.index = X.index
+            prediction_interval_upper.index = X.index
+            prediction_interval_result[f"{conf_int}_lower"] = prediction_interval_lower
+            prediction_interval_result[f"{conf_int}_upper"] = prediction_interval_upper
+        return prediction_interval_result
 
     @property
     def feature_importance(self):
