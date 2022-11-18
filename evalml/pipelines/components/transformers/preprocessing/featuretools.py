@@ -129,8 +129,8 @@ class DFSTransformer(Transformer):
         feature_matrix.ww.init(schema=partial_schema)
         return feature_matrix
 
-    def _handle_partial_dependence_fast_mode(self, X, pipeline_parameters):
-        """Determines whether or not a DFSTransformer component can be used with partial dependence's fast mode.
+    def _handle_partial_dependence_fast_mode(self, pipeline_parameters, X, target):
+        """Determines whether or not a DFS Transformer component can be used with partial dependence's fast mode.
 
         Note:
             This component can be used with partial dependence fast mode only when
@@ -138,17 +138,27 @@ class DFSTransformer(Transformer):
             in the DataFrame.
 
         Args:
-            X (pd.DataFrame): Holdout data being used for partial dependence calculations.
             pipeline_parameters (dict): Pipeline parameters that will be used to create the pipelines
                 used in partial dependence fast mode.
-
+            X (pd.DataFrame): Holdout data being used for partial dependence calculations.
+            target (str): The target whose values we are trying to predict. This is used
+                to know which column to ignore if the target column is present in the list of features
+                in the DFS Transformer's parameters
         """
         dfs_transformer = pipeline_parameters.get("DFS Transformer")
         if dfs_transformer is not None:
             dfs_features = dfs_transformer["features"]
+            # remove the target if it's there
+            dfs_feature_names = [
+                name
+                for feature in dfs_features
+                for name in feature.get_feature_names()
+                if name != target
+            ]
             X_cols = set(X.columns)
+
             if dfs_features is None or any(
-                f.get_name() not in X_cols for f in dfs_features
+                name not in X_cols for name in dfs_feature_names
             ):
                 raise ValueError(
                     "Cannot use fast mode with DFS Transformer when features are unspecified or not all present in X.",

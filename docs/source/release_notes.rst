@@ -4,15 +4,17 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added fast mode to partial dependence :pr:`3753`
-        * Added the ability to retrieve prediction intervals from the ``ARIMARegressor`` :pr:`3756`
-        * Added the ability to retrieve prediction intervals from the ``ProphetRegressor`` :pr:`3766`
-        * Added the ability to retrieve prediction intervals from the ``ExponentialSmoothingRegressor`` :pr:`3845`
+        * Added the ability to serialize featuretools features into time series pipelines :pr:`3836`
+        * Added the ability to retrieve prediction intervals for various estimators :pr:`3850`
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` potentially selecting lags outside of feature engineering window :pr:`3773`
         * Fixed bug where ``TimeSeriesFeaturizer`` could not encode Ordinal columns with non numeric categories :pr:`3812`
         * Updated demo dataset links to point to new endpoint :pr:`3826`
         * Updated ``STLDecomposer`` to infer the time index frequency if it's not present :pr:`3829`
         * Updated ``_drop_time_index`` to move the time index from X to both ``X.index`` and ``y.index`` :pr:`3829`
+        * Fixed bug where engineered features lost their origin attribute in partial dependence, causing it to fail :pr:`3830`
+        * Fixed bug where partial dependence's fast mode handling for the DFS Transformer wouldn't work with multi output features :pr:`3830`
+        * Allowed target to be present and ignored in partial dependence's DFS Transformer fast mode handling  :pr:`3830`
     * Changes
         * Consolidated decomposition frequency validation logic to ``Decomposer`` class :pr:`3811`
         * Removed Featuretools version upper bound and prevent Woodwork 0.20.0 from being installed :pr:`3813`

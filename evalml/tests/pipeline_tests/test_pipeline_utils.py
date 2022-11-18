@@ -13,6 +13,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
+    DFSTransformer,
     DropColumns,
     DropNaNRowsTransformer,
     DropRowsTransformer,
@@ -56,6 +57,7 @@ from evalml.problem_types import ProblemTypes, is_time_series
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+@pytest.mark.parametrize("features", [True, False])
 @pytest.mark.parametrize(
     "test_description, column_names",
     [
@@ -82,6 +84,7 @@ from evalml.problem_types import ProblemTypes, is_time_series
 def test_make_pipeline(
     problem_type,
     input_type,
+    features,
     test_description,
     column_names,
     get_test_data_from_configuration,
@@ -107,7 +110,14 @@ def test_make_pipeline(
                     },
                 }
 
-            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
+            pipeline = make_pipeline(
+                X,
+                y,
+                estimator_class,
+                problem_type,
+                parameters,
+                features=features,
+            )
             assert isinstance(pipeline, pipeline_class)
             label_encoder = [LabelEncoder] if is_classification(problem_type) else []
             delayed_features = (
@@ -121,6 +131,7 @@ def test_make_pipeline(
                 ohe = [OneHotEncoder]
             else:
                 ohe = []
+            dfs = [DFSTransformer] if features else []
             decomposer = [STLDecomposer] if is_regression(problem_type) else []
             datetime = (
                 [DateTimeFeaturizer]
@@ -153,7 +164,8 @@ def test_make_pipeline(
 
             if is_time_series(problem_type):
                 expected_components = (
-                    label_encoder
+                    dfs
+                    + label_encoder
                     + replace_null
                     + email_featurizer
                     + url_featurizer
@@ -170,14 +182,15 @@ def test_make_pipeline(
                 )
             else:
                 expected_components = (
-                    label_encoder
+                    dfs
+                    + label_encoder
                     + replace_null
                     + email_featurizer
                     + url_featurizer
                     + drop_null
                     + delayed_features
-                    + natural_language_featurizer
                     + datetime
+                    + natural_language_featurizer
                     + imputer
                     + ohe
                     + standard_scaler

@@ -318,8 +318,8 @@ def _partial_dependence_calculation(
                     X_eval.ww[variable] = ww.init_series(
                         part_dep_column,
                         logical_type=X_eval.ww.logical_types[variable],
+                        origin=X_eval.ww.columns[variable].origin,
                     )
-
             pred = prediction_method(X_eval)
             predictions.append(pred)
             # average over samples
