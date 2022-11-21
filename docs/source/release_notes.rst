@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added fast mode to partial dependence :pr:`3753`
+        * Added the ability to serialize featuretools features into time series pipelines :pr:`3836`
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` potentially selecting lags outside of feature engineering window :pr:`3773`
         * Fixed bug where ``TimeSeriesFeaturizer`` could not encode Ordinal columns with non numeric categories :pr:`3812`
@@ -11,10 +12,14 @@ Release Notes
         * Updated ``STLDecomposer`` to infer the time index frequency if it's not present :pr:`3829`
         * Updated ``_drop_time_index`` to move the time index from X to both ``X.index`` and ``y.index`` :pr:`3829`
         * Added ``TimeSeriesPipeline.should_skip_featurization`` to fix bug where data would get featurized unnecessarily :pr:`3849`
+        * Fixed bug where engineered features lost their origin attribute in partial dependence, causing it to fail :pr:`3830`
+        * Fixed bug where partial dependence's fast mode handling for the DFS Transformer wouldn't work with multi output features :pr:`3830`
+        * Allowed target to be present and ignored in partial dependence's DFS Transformer fast mode handling  :pr:`3830`
     * Changes
         * Consolidated decomposition frequency validation logic to ``Decomposer`` class :pr:`3811`
         * Removed Featuretools version upper bound and prevent Woodwork 0.20.0 from being installed :pr:`3813`
         * Updated min Featuretools version to 0.16.0, min nlp-primitives version to 2.9.0 and min Dask version to 2022.2.0 :pr:`3823`
+        * Rename issue templates config.yaml to config.yml :pr:`3844`
     * Documentation Changes
         * Added information about STL Decomposition to the time series docs :pr:`3835`
     * Testing Changes
