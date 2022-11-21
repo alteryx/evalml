@@ -326,7 +326,7 @@ def test_time_series_transform_all_but_final_uses_correct_features(mock_add_X_y)
     )
 
     ts_native_pipeline.fit(X_train, y_train)
-    native_features = ts_native_pipeline.transform_all_but_final(
+    ts_native_pipeline.transform_all_but_final(
         X_holdout,
         y_holdout,
         X_train,
@@ -337,7 +337,7 @@ def test_time_series_transform_all_but_final_uses_correct_features(mock_add_X_y)
     non_ts_native_pipeline.fit(X_train, y_train)
     X_train, y_train = non_ts_native_pipeline._drop_time_index(X_train, y_train)
     X_holdout, y_holdout = non_ts_native_pipeline._drop_time_index(X_holdout, y_holdout)
-    non_native_features = non_ts_native_pipeline.transform_all_but_final(
+    non_ts_native_pipeline.transform_all_but_final(
         X_holdout,
         y_holdout,
         X_train,
