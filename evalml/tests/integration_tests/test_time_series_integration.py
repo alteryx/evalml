@@ -158,6 +158,9 @@ def test_can_run_automl_for_time_series_known_in_advance(
     automl.best_pipeline.predict(X_valid, X_train=X, y_train=y)
 
 
+@patch(
+    "evalml.pipelines.time_series_pipeline_base.TimeSeriesPipelineBase._add_training_data_to_X_Y",
+)
 @pytest.mark.parametrize(
     "problem_type",
     [
@@ -167,6 +170,7 @@ def test_can_run_automl_for_time_series_known_in_advance(
     ],
 )
 def test_can_run_automl_for_time_series_with_exclude_featurizers(
+    mock_add_X_y,
     problem_type,
 ):
 
@@ -215,6 +219,7 @@ def test_can_run_automl_for_time_series_with_exclude_featurizers(
         exclude_featurizers=["DatetimeFeaturizer", "TimeSeriesFeaturizer"],
     )
     automl.search()
+    assert mock_add_X_y.call_count == 0
 
     rankings = automl.rankings
     for score in rankings["validation_score"].values:
@@ -228,119 +233,3 @@ def test_can_run_automl_for_time_series_with_exclude_featurizers(
         else:
             assert pipeline.should_drop_time_index
         assert pipeline.should_skip_featurization
-
-
-@patch(
-    "evalml.pipelines.time_series_pipeline_base.TimeSeriesPipelineBase._add_training_data_to_X_Y",
-)
-def test_time_series_transform_all_but_final_uses_correct_features(mock_add_X_y):
-    problem_type = ProblemTypes.TIME_SERIES_REGRESSION
-    parameters = {
-        "pipeline": {
-            "time_index": "date",
-            "gap": 0,
-            "max_delay": 30,
-            "forecast_horizon": 7,
-        },
-    }
-    X = pd.DataFrame(
-        {
-            "features": range(101, 101 + PERIODS),
-            "date": pd.date_range("2010-10-01", periods=PERIODS),
-        },
-    )
-    y = pd.Series(range(PERIODS))
-    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        y = y % 2
-    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        y = y % 3
-
-    es = EntitySet()
-    es.add_dataframe(dataframe_name="X", dataframe=X, index="id", make_index=True)
-    features = dfs(
-        entityset=es,
-        target_dataframe_name="X",
-        max_depth=1,
-        features_only=True,
-    )
-    features.append(Feature(es["X"].ww["date"]))
-    feature_matrix = calculate_feature_matrix(entityset=es, features=features)
-    feature_matrix.ww["target_delay_6"] = y.shift(6)
-    X_train, X_holdout, y_train, y_holdout = split_data(feature_matrix, y, problem_type)
-
-    non_ts_native_pipeline = TimeSeriesRegressionPipeline(
-        component_graph={
-            "Replace Nullable Types Transformer": [
-                "Replace Nullable Types Transformer",
-                "X",
-                "y",
-            ],
-            "Imputer": [
-                "Imputer",
-                "Replace Nullable Types Transformer.x",
-                "Replace Nullable Types Transformer.y",
-            ],
-            "One Hot Encoder": [
-                "One Hot Encoder",
-                "Imputer.x",
-                "Replace Nullable Types Transformer.y",
-            ],
-            "Drop NaN Rows Transformer": [
-                "Drop NaN Rows Transformer",
-                "One Hot Encoder.x",
-                "Replace Nullable Types Transformer.y",
-            ],
-            "Random Forest Regressor": [
-                "Random Forest Regressor",
-                "Drop NaN Rows Transformer.x",
-                "Replace Nullable Types Transformer.y",
-            ],
-        },
-        parameters=parameters,
-    )
-    ts_native_pipeline = TimeSeriesRegressionPipeline(
-        component_graph={
-            "Replace Nullable Types Transformer": [
-                "Replace Nullable Types Transformer",
-                "X",
-                "y",
-            ],
-            "Imputer": [
-                "Imputer",
-                "Replace Nullable Types Transformer.x",
-                "Replace Nullable Types Transformer.y",
-            ],
-            "STL Decomposer": [
-                "STL Decomposer",
-                "Imputer.x",
-                "Replace Nullable Types Transformer.y",
-            ],
-            "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "STL Decomposer.y"],
-            "ARIMA Regressor": [
-                "ARIMA Regressor",
-                "One Hot Encoder.x",
-                "STL Decomposer.y",
-            ],
-        },
-        parameters=parameters,
-    )
-
-    ts_native_pipeline.fit(X_train, y_train)
-    ts_native_pipeline.transform_all_but_final(
-        X_holdout,
-        y_holdout,
-        X_train,
-        y_train,
-    )
-    assert mock_add_X_y.call_count == 0
-
-    non_ts_native_pipeline.fit(X_train, y_train)
-    X_train, y_train = non_ts_native_pipeline._drop_time_index(X_train, y_train)
-    X_holdout, y_holdout = non_ts_native_pipeline._drop_time_index(X_holdout, y_holdout)
-    non_ts_native_pipeline.transform_all_but_final(
-        X_holdout,
-        y_holdout,
-        X_train,
-        y_train,
-    )
-    assert mock_add_X_y.call_count == 0
