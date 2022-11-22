@@ -5,8 +5,7 @@ import pytest
 from featuretools import EntitySet, Feature, calculate_feature_matrix, dfs
 
 from evalml.automl import AutoMLSearch
-from evalml.pipelines import TimeSeriesRegressionPipeline
-from evalml.preprocessing import TimeSeriesSplit, split_data
+from evalml.preprocessing import TimeSeriesSplit
 from evalml.problem_types import ProblemTypes
 
 PERIODS = 500
