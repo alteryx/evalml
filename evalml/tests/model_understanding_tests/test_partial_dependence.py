@@ -2794,3 +2794,143 @@ def test_partial_dependence_fast_mode_errors_if_train(
             fast_mode=True,
             y_train=y,
         )
+
+
+@pytest.mark.parametrize("fast_mode", [True, False])
+def test_partial_dependence_on_engineered_feature_with_dfs_transformer(
+    fast_mode,
+    X_y_binary,
+):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X.columns = X.columns.astype(str)
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X",
+        dataframe=X,
+        index="index",
+        make_index=True,
+    )
+    X_fm, features = ft.dfs(
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["absolute"],
+    )
+
+    dfs_transformer = DFSTransformer(features=features)
+    pipeline = BinaryClassificationPipeline(
+        [dfs_transformer, "Standard Scaler", "Random Forest Classifier"],
+    )
+
+    # Engineered features have the their origins specified as either "base" or "engineered"
+    # it has to remain set for partial dependence to be able to predict on the updated data
+    engineered_feature = "ABSOLUTE(1)"
+    assert X_fm.ww.columns[engineered_feature].origin == "engineered"
+
+    pipeline.fit(X_fm, y)
+    part_dep = partial_dependence(
+        pipeline,
+        X_fm,
+        features=engineered_feature,
+        grid_resolution=2,
+        fast_mode=fast_mode,
+        X_train=X_fm,
+        y_train=y,
+    )
+
+    assert part_dep.feature_values.notnull().all()
+    assert part_dep.partial_dependence.notnull().all()
+
+
+@pytest.mark.parametrize("fast_mode", [True, False])
+def test_partial_dependence_dfs_transformer_handling_with_multi_output_primitive(
+    fast_mode,
+    df_with_url_and_email,
+):
+    X = df_with_url_and_email
+    y = pd.Series(range(len(X)))
+    X.ww.name = "X"
+    X.ww.set_index("numeric")
+    X.ww.set_types(logical_types={"categorical": "NaturalLanguage"})
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X",
+        dataframe=X,
+        index="index",
+        make_index=True,
+    )
+    X_fm, features = ft.dfs(
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["LSA"],
+    )
+
+    dfs_transformer = DFSTransformer(features=features)
+    pipeline = RegressionPipeline(
+        [dfs_transformer, "Standard Scaler", "Random Forest Regressor"],
+    )
+    # Confirm that a multi-output feature is present
+    assert any(f.number_output_features > 1 for f in features)
+
+    pipeline.fit(X_fm, y)
+    part_dep = partial_dependence(
+        pipeline,
+        X_fm,
+        features=0,
+        grid_resolution=2,
+        fast_mode=fast_mode,
+        X_train=X_fm,
+        y_train=y,
+    )
+
+    assert part_dep.feature_values.notnull().all()
+    assert part_dep.partial_dependence.notnull().all()
+
+
+@pytest.mark.parametrize("fast_mode", [True, False])
+def test_partial_dependence_dfs_transformer_target_in_features(fast_mode, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X.columns = X.columns.astype(str)
+
+    # Insert y into X so that it's part of the EntitySet
+    # and then ignore in DFS later on so it's not in X_fm
+    X["target"] = y
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X",
+        dataframe=X,
+        index="index",
+        make_index=True,
+    )
+    seed_features = [ft.Feature(es["X"].ww["target"])]
+    X_fm, features = ft.dfs(
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["absolute"],
+        ignore_columns={"X": ["target"]},
+        seed_features=seed_features,
+    )
+    assert any(f.get_name() == "target" for f in features)
+
+    dfs_transformer = DFSTransformer(features=features)
+    pipeline = BinaryClassificationPipeline(
+        [dfs_transformer, "Standard Scaler", "Random Forest Classifier"],
+    )
+
+    pipeline.fit(X_fm, y)
+    part_dep = partial_dependence(
+        pipeline,
+        X_fm,
+        features=0,
+        grid_resolution=2,
+        fast_mode=fast_mode,
+        X_train=X_fm,
+        y_train=y,
+    )
+
+    assert part_dep.feature_values.notnull().all()
+    assert part_dep.partial_dependence.notnull().all()

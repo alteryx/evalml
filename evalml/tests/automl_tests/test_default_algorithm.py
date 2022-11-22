@@ -794,9 +794,20 @@ def test_default_algorithm_time_series_ensembling(
 
 
 @pytest.mark.parametrize("split", ["split", "numeric-only", "categorical-only"])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
-def test_default_algorithm_accept_features(mock_get_names, X_y_binary, split):
-    X, y = X_y_binary
+def test_default_algorithm_accept_features(
+    mock_get_names,
+    ts_data,
+    X_y_binary,
+    problem_type,
+    split,
+):
+    if is_time_series(problem_type):
+        X, _, y = ts_data()
+    else:
+        X, y = X_y_binary
+
     X = pd.DataFrame(X)
     X["A"] = "a"
     X["B"] = "b"
@@ -827,15 +838,23 @@ def test_default_algorithm_accept_features(mock_get_names, X_y_binary, split):
         trans_primitives=["absolute"],
     )
 
-    problem_type = ProblemTypes.BINARY
     sampler_name = None
+    search_parameters = {"DFS Transformer": {"features": features}}
+    if is_time_series(problem_type):
+        search_parameters["pipeline"] = {
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 3,
+            "delay_features": False,
+            "forecast_horizon": 10,
+        }
 
     algo = DefaultAlgorithm(
         X,
         y,
         problem_type,
         sampler_name,
-        search_parameters={"DFS Transformer": {"features": features}},
+        search_parameters=search_parameters,
         num_long_explore_pipelines=1,
         num_long_pipelines_per_batch=1,
         features=features,
@@ -849,11 +868,14 @@ def test_default_algorithm_accept_features(mock_get_names, X_y_binary, split):
                 assert "DFS Transformer" in pipeline.component_graph.compute_order
                 assert pipeline.parameters["DFS Transformer"]["features"] == features
 
-    if split == "split" or split == "numeric-only":
-        assert algo._selected_cols == non_categorical_columns
-    if split == "split" or split == "categorical-only":
-        algo._selected_cat_cols = categorical_columns
-        assert algo._selected_cat_cols == categorical_columns
+    if not is_time_series(
+        problem_type,
+    ):  # DefaultAlgorithm doesn't generate split pipelines for time series problems
+        if split == "split" or split == "numeric-only":
+            assert algo._selected_cols == non_categorical_columns
+        if split == "split" or split == "categorical-only":
+            algo._selected_cat_cols = categorical_columns
+            assert algo._selected_cat_cols == categorical_columns
 
     for _ in range(2):
         batch = algo.next_batch()

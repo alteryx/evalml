@@ -382,6 +382,7 @@ def _make_pipeline_time_series(
     known_in_advance=None,
     exclude_featurizers=None,
     include_decomposer=True,
+    features=False,
 ):
     """Make a pipeline for time series problems.
 
@@ -403,6 +404,7 @@ def _make_pipeline_time_series(
            Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
         include_decomposer (bool): For time series regression problems, whether or not to include a decomposer in the generated pipeline.
             Defaults to True.
+        features (bool): Whether to add a DFSTransformer component to this pipeline.
 
     Returns:
         PipelineBase: TimeSeriesPipeline
@@ -425,6 +427,8 @@ def _make_pipeline_time_series(
         include_decomposer,
     )
 
+    dfs_transformer = [DFSTransformer] if features else []
+
     if known_in_advance:
         preprocessing_components = [SelectColumns] + preprocessing_components
         if (
@@ -433,7 +437,9 @@ def _make_pipeline_time_series(
         ):
             preprocessing_components.remove(DropNaNRowsTransformer)
     else:
-        preprocessing_components += [estimator]
+        preprocessing_components = (
+            dfs_transformer + preprocessing_components + [estimator]
+        )
 
     component_graph = PipelineBase._make_component_dict_from_component_list(
         preprocessing_components,
@@ -469,11 +475,15 @@ def _make_pipeline_time_series(
             parameters=parameters,
             custom_name="Pipeline",
         )
+        pre_pipeline_components = (
+            {"DFS Transformer": ["DFS Transformer", "X", "y"]} if features else None
+        )
         pipeline = _make_pipeline_from_multiple_graphs(
             [pipeline, kina_pipeline],
             DropNaNRowsTransformer if need_drop_nan else estimator,
             problem_type,
             parameters=parameters,
+            pre_pipeline_components=pre_pipeline_components,
             sub_pipeline_names={
                 kina_pipeline.name: "Known In Advance",
                 pipeline.name: "Not Known In Advance",
@@ -557,6 +567,7 @@ def make_pipeline(
             known_in_advance,
             exclude_featurizers,
             include_decomposer,
+            features,
         )
     else:
         preprocessing_components = _get_preprocessing_components(
