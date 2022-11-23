@@ -5,7 +5,7 @@ import pytest
 from featuretools import EntitySet, Feature, calculate_feature_matrix, dfs
 
 from evalml.automl import AutoMLSearch
-from evalml.preprocessing import TimeSeriesSplit
+from evalml.preprocessing import TimeSeriesSplit, split_data
 from evalml.problem_types import ProblemTypes
 
 PERIODS = 500
@@ -204,9 +204,15 @@ def test_can_run_automl_for_time_series_with_exclude_featurizers(
     # target lagged features must be present with correct start delay (gap + forecast horizon)
     feature_matrix.ww["target_delay_6"] = y.shift(6)
 
-    automl = AutoMLSearch(
+    X_train, X_holdout, y_train, y_holdout = split_data(
         feature_matrix,
         y,
+        problem_type="time series regression",
+    )
+
+    automl = AutoMLSearch(
+        X_train,
+        y_train,
         problem_type=problem_type,
         problem_configuration={
             "max_delay": 5,
@@ -232,3 +238,6 @@ def test_can_run_automl_for_time_series_with_exclude_featurizers(
         else:
             assert pipeline.should_drop_time_index
         assert pipeline.should_skip_featurization
+
+        pipeline.fit(X_train, y_train)
+        pipeline.predict_in_sample(X_holdout, y_holdout, X_train, y_train)

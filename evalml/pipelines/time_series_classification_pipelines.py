@@ -106,6 +106,9 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             raise ValueError(
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator.",
             )
+        X, y = self._drop_time_index(X, y)
+        X_train, y_train = self._drop_time_index(X_train, y_train)
+        target = infer_feature_types(y)
         features = self.transform_all_but_final(X, y, X_train, y_train)
         predictions = self._estimator_predict(features)
         predictions.index = y.index
