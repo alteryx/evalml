@@ -15,4 +15,6 @@ woodwork>=0.19.0,!=0.20.0
 dask>=2022.2.0, !=2022.10.1
 nlp-primitives>=2.9.0
 featuretools>=1.16.0
+# woodwork>=0.19.0
+-e git+git@github.com:alteryx/woodwork.git@main
 networkx>=2.5,<2.6
