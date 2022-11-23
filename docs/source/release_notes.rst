@@ -1,7 +1,18 @@
 Release Notes
 -------------
-
 **Future Releases**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.63.0 Nov.23, 2022**
     * Enhancements
         * Added fast mode to partial dependence :pr:`3753`
         * Added the ability to serialize featuretools features into time series pipelines :pr:`3836`
@@ -22,11 +33,6 @@ Release Notes
         * Reverted change adding a ``should_skip_featurization`` flag to time series pipelines :pr:`3862`
     * Documentation Changes
         * Added information about STL Decomposition to the time series docs :pr:`3835`
-    * Testing Changes
-
-.. warning::
-
-    **Breaking Changes**
 
 
 **v0.62.0 Nov. 01, 2022**
