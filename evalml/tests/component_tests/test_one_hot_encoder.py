@@ -826,7 +826,7 @@ def test_ohe_output_bools():
     )
     X.ww.init()
     y = pd.Series([i % 2 for i in range(100)])
-    y.ww.init()
+    y = infer_feature_types(y)
     ohe = OneHotEncoder()
     output = ohe.fit_transform(X, y)
     for name, types in output.ww.types["Logical Type"].items():

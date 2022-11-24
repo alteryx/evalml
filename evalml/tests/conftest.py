@@ -1614,7 +1614,7 @@ def make_data_type():
                 data = pd.DataFrame(data)
         if data_type == "ww":
             if len(data.shape) == 1:
-                data = ww.init_series(data)
+                data = infer_feature_types(data)
                 if nullable and isinstance(
                     data.ww.logical_type,
                     ww_logical_types.Integer,
@@ -1632,7 +1632,7 @@ def make_data_type():
                         logical_type=ww_logical_types.BooleanNullable,
                     )
             else:
-                data.ww.init()
+                data = infer_feature_types(data)
         return data
 
     return _make_data_type
@@ -1749,13 +1749,13 @@ def mock_imbalanced_data_X_y():
                 },
             )
         else:
-            X.ww.init()
+            X = infer_feature_types(X)
         if problem_type == "binary":
             targets = [0] * 3500 + [1] * 700
         else:
             targets = [0] * 3000 + [1] * 600 + [2] * 600
         targets *= multiplier
-        y = ww.init_series(pd.Series(targets))
+        y = infer_feature_types(pd.Series(targets))
         return X, y
 
     return _imbalanced_data_X_y
