@@ -145,8 +145,6 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         return self.predict_proba_in_sample(X, y_holdout, X_train, y_train)
 
     def _compute_predictions(self, X, y, X_train, y_train, objectives):
-        print("COMPUTE PREDICTIONS")
-        print(objectives)
         y_predicted = None
         y_predicted_proba = None
         if any(o.score_needs_proba for o in objectives):
@@ -156,7 +154,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             # ERROR OCCURS HERE
             # y_predicted returns the encoded target, attempting to re-encode converts
             # all predictions to nan
-            # y_predicted = self._encode_targets(y_predicted)
+            y_predicted = self._encode_targets(y_predicted)
         return y_predicted, y_predicted_proba
 
     def score(self, X, y, objectives, X_train=None, y_train=None):
