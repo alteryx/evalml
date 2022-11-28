@@ -4,7 +4,6 @@ import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_index_equal, assert_series_equal
 
 from evalml.pipelines.components import LabelEncoder
-from evalml.utils import infer_feature_types
 
 
 def test_label_encoder_init():
@@ -192,7 +191,7 @@ def test_label_encoder_with_positive_label(y, positive_label, y_encoded_expected
     assert_series_equal(y_encoded_expected, y_fit_transformed)
 
     y_inverse_transformed = encoder.inverse_transform(y_fit_transformed)
-    assert_series_equal(infer_feature_types(y), y_inverse_transformed)
+    assert_series_equal(ww.init_series(y), y_inverse_transformed)
 
 
 def test_label_encoder_with_positive_label_fit_different_from_transform():

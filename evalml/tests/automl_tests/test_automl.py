@@ -4047,14 +4047,11 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
         )
 
     preds = baseline.predict(X_validation, None, X_train, y_train)
-    if problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
-        expected_predictions = expected_predictions.astype("int64")
     pd.testing.assert_series_equal(expected_predictions, preds)
     if is_classification(problem_type):
-        preds = baseline.predict_proba(X_validation, X_train, y_train)
         pd.testing.assert_frame_equal(
             expected_predictions_proba,
-            preds,
+            baseline.predict_proba(X_validation, X_train, y_train),
         )
     transformed = baseline.transform_all_but_final(X_train, y_train)
     importance = np.array([0] * transformed.shape[1])

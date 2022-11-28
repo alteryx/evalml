@@ -469,7 +469,8 @@ def test_simple_imputer_woodwork_custom_overrides_returned_by_components(
     y = pd.Series([1, 2, 1])
 
     # Categorical -> Boolean fails in infer_feature_types
-    if data == "categorical col" and logical_type == Boolean:
+    # null values -> Boolean fails in infer_feature_types
+    if (data == "categorical col" or has_nan == "has_nan") and logical_type == Boolean:
         return
     try:
         X = X_df.copy()

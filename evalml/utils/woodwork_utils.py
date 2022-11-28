@@ -2,6 +2,8 @@
 import numpy as np
 import pandas as pd
 import woodwork as ww
+from pandas.api import types as pdtypes
+from woodwork.logical_types import LogicalType
 
 from evalml.utils.gen_utils import is_all_numeric
 
@@ -25,6 +27,32 @@ def _numpy_to_pandas(array):
 
 def _list_to_pandas(list):
     return _numpy_to_pandas(np.array(list))
+
+
+def _new_infer_boolean_nullable_func(series):
+    if pdtypes.is_bool_dtype(series.dtype) and not pdtypes.is_categorical_dtype(
+        series.dtype,
+    ):
+        return True
+    elif pdtypes.is_object_dtype(series.dtype):
+        series_no_null = series.dropna()
+        try:
+            series_no_null_unq = set(series_no_null)
+            if series_no_null_unq in [
+                {False, True},
+                {True},
+                {False},
+            ]:
+                return True
+        except TypeError:  # Necessary to check for non-hashable values because of object dtype consideration
+            return False
+    return False
+
+
+ww.type_system.update_inference_function(
+    "BooleanNullable",
+    inference_function=_new_infer_boolean_nullable_func,
+)
 
 
 def infer_feature_types(data, feature_types=None):
@@ -62,38 +90,16 @@ def infer_feature_types(data, feature_types=None):
             else:
                 ww_error = f"{ww_error}. Please initialize ww with df.ww.init() to get rid of this message."
             raise ValueError(ww_error)
-        if feature_types is None:
-            return data
+        return data
 
     if isinstance(data, pd.Series):
         if all(data.isna()):
             data = data.replace(pd.NA, np.nan)
             feature_types = "Double"
-        elif all(
-            type(value) not in [bool, np.bool_] and (value == 1 or value == 0)
-            for value in set(data.values)
-        ):
-            feature_types = "Integer"
         return ww.init_series(data, logical_type=feature_types)
     else:
         ww_data = data.copy()
-        ww_data.ww.init(
-            schema=ww_data.ww.schema if ww_data.ww.schema else None,
-            logical_types=feature_types,
-        )
-        bool_columns = list(ww_data.ww.select(include="Boolean").columns)
-        ltypes_to_force = {}
-        if feature_types:
-            bool_columns = set(bool_columns) - set(feature_types.keys())
-        if bool_columns:
-            for col in data[bool_columns]:
-                unique_vals = set(data[col])
-                for unique_val in unique_vals:
-                    if type(unique_val) not in [bool, np.bool_] and (
-                        unique_val == 1 or unique_val == 0
-                    ):
-                        ltypes_to_force[col] = "Integer"
-            ww_data.ww.set_types(logical_types=ltypes_to_force)
+        ww_data.ww.set_types(logical_types=feature_types)
         return ww_data
 
 

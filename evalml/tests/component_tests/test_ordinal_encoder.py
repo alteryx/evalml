@@ -5,7 +5,6 @@ from woodwork.logical_types import Ordinal
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import OrdinalEncoder
-from evalml.utils import infer_feature_types
 
 
 def set_first_three_columns_to_ordinal_with_categories(X, categories):
@@ -716,7 +715,7 @@ def test_ordinal_encoder_output_doubles():
         },
     )
     y = pd.Series([i % 2 for i in range(100)])
-    y = infer_feature_types(y)
+    y.ww.init()
     ordinal_encoder = OrdinalEncoder()
     output = ordinal_encoder.fit_transform(X, y)
     for name, types in output.ww.types["Logical Type"].items():

@@ -151,9 +151,6 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             y_predicted_proba = self.predict_proba_in_sample(X, y, X_train, y_train)
         if any(not o.score_needs_proba for o in objectives):
             y_predicted = self.predict_in_sample(X, y, X_train, y_train)
-            # ERROR OCCURS HERE
-            # y_predicted returns the encoded target, attempting to re-encode converts
-            # all predictions to nan
             y_predicted = self._encode_targets(y_predicted)
         return y_predicted, y_predicted_proba
 

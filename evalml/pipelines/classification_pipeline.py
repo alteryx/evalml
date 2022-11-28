@@ -1,6 +1,7 @@
 """Pipeline subclass for all classification pipelines."""
 import numpy as np
 import pandas as pd
+import woodwork as ww
 
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import is_binary, is_multiclass
@@ -70,7 +71,7 @@ class ClassificationPipeline(PipelineBase):
 
         # TODO: Added this in because numpy's unique() does not support pandas.NA
         try:
-            self._classes_ = list(np.unique(y))
+            self._classes_ = list(ww.init_series(np.unique(y)))
         except TypeError as e:
             if "boolean value of NA is ambiguous" in str(e):
                 self._classes_ = y.unique()
