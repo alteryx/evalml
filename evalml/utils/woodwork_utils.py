@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import woodwork as ww
 from pandas.api import types as pdtypes
-from woodwork.logical_types import LogicalType
 
 from evalml.utils.gen_utils import is_all_numeric
 
