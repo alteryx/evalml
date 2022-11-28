@@ -287,7 +287,15 @@ def test_schema_is_equal_column_names():
         logical_types={"first": Categorical(), "second": Integer()},
         semantic_tags={"first": [], "second": ["numeric"]},
     )
-    assert not _schema_is_equal(schema, schema2)
+    assert _schema_is_equal(schema, schema2)
+
+    df = pd.DataFrame({"first": [1, 2, 3], "second": ["a", "b", "c"]})
+    df2 = pd.DataFrame({"second": ["a", "b", "c"], "first": [1, 2, 3]})
+
+    df.ww.init()
+    df2.ww.init()
+
+    assert _schema_is_equal(df.ww.schema, df2.ww.schema)
 
 
 def test_schema_is_equal_fraud(fraud_100):
