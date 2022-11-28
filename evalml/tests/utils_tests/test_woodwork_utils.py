@@ -297,6 +297,13 @@ def test_schema_is_equal_column_names():
 
     assert _schema_is_equal(df.ww.schema, df2.ww.schema)
 
+    df3 = pd.DataFrame(
+        {"second": ["a", "b", "c"], "first": [1, 2, 3], "third": [2, 3, 4]},
+    )
+    df3.ww.init()
+
+    assert not _schema_is_equal(df2.ww.schema, df3.ww.schema)
+
 
 def test_schema_is_equal_fraud(fraud_100):
     X, y = fraud_100
