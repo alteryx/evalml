@@ -1614,7 +1614,7 @@ def make_data_type():
                 data = pd.DataFrame(data)
         if data_type == "ww":
             if len(data.shape) == 1:
-                ww.init_series(data)
+                data = ww.init_series(data)
                 if nullable and isinstance(
                     data.ww.logical_type,
                     ww_logical_types.Integer,

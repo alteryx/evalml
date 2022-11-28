@@ -99,7 +99,7 @@ def infer_feature_types(data, feature_types=None):
         return ww.init_series(data, logical_type=feature_types)
     else:
         ww_data = data.copy()
-        ww_data.ww.set_types(logical_types=feature_types)
+        ww_data.ww.init(logical_types=feature_types)
         return ww_data
 
 
