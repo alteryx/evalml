@@ -108,7 +108,6 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             )
         X, y = self._drop_time_index(X, y)
         X_train, y_train = self._drop_time_index(X_train, y_train)
-        target = infer_feature_types(y)
         features = self.transform_all_but_final(X, y, X_train, y_train)
         predictions = self._estimator_predict(features)
         predictions.index = y.index

@@ -207,7 +207,7 @@ def test_can_run_automl_for_time_series_with_exclude_featurizers(
     X_train, X_holdout, y_train, y_holdout = split_data(
         feature_matrix,
         y,
-        problem_type="time series regression",
+        problem_type=problem_type,
     )
 
     automl = AutoMLSearch(
