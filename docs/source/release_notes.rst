@@ -33,6 +33,7 @@ Release Notes
         * Reverted change adding a ``should_skip_featurization`` flag to time series pipelines :pr:`3862`
     * Documentation Changes
         * Added information about STL Decomposition to the time series docs :pr:`3835`
+        * Removed RTD failure on warnings :pr:`3864`
 
 
 **v0.62.0 Nov. 01, 2022**
