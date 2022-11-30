@@ -4899,15 +4899,23 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
         {"ARIMA Regressor": {"seasonal": Categorical([True])}},
     ],
 )
+@pytest.mark.parametrize("n_cols", [3, 9])
+@pytest.mark.parametrize("n_rows", [100, 1100])
 def test_automl_restricts_use_covariates_for_arima(
+    n_rows,
+    n_cols,
     hyperparams,
     automl_algo,
     AutoMLTestEnv,
     is_using_windows,
-    X_y_binary,
 ):
-
-    X, y = X_y_binary
+    X, y = datasets.make_classification(
+        n_samples=n_rows,
+        n_features=n_cols,
+        n_informative=2,
+        n_redundant=1,
+        random_state=0,
+    )
     X = pd.DataFrame(X)
     X["Date"] = pd.date_range("2010-01-01", periods=X.shape[0])
 
@@ -4935,7 +4943,10 @@ def test_automl_restricts_use_covariates_for_arima(
     ).tolist()
     arima_params = [p for p in params if p is not None]
     assert arima_params
-    assert all(not p for p in arima_params)
+    if n_rows > 1000 or n_cols > 7:
+        assert all(not p for p in arima_params)
+    else:
+        assert all(p for p in arima_params)
 
 
 @pytest.mark.skip_during_conda
