@@ -711,7 +711,8 @@ class AutoMLSearch:
         self.search_parameters = search_parameters or {}
         # Fitting takes a long time if the data is too wide or long.
         if is_time_series(problem_type) and (
-            self.X_train.shape[1] >= 10 or self.X_train.shape[0] >= 10000
+            self.X_train.shape[1] >= ARIMARegressor.max_cols
+            or self.X_train.shape[0] >= ARIMARegressor.max_rows
         ):
             user_arima_hyperparams = ARIMARegressor.name in self.search_parameters
             if user_arima_hyperparams and not self.search_parameters[

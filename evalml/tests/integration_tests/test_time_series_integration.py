@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 import pandas as pd
 import pytest
 from featuretools import EntitySet, Feature, calculate_feature_matrix, dfs
@@ -157,9 +155,6 @@ def test_can_run_automl_for_time_series_known_in_advance(
     automl.best_pipeline.predict(X_valid, X_train=X, y_train=y)
 
 
-@patch(
-    "evalml.pipelines.time_series_pipeline_base.TimeSeriesPipelineBase._add_training_data_to_X_Y",
-)
 @pytest.mark.parametrize(
     "problem_type",
     [
@@ -169,7 +164,6 @@ def test_can_run_automl_for_time_series_known_in_advance(
     ],
 )
 def test_can_run_automl_for_time_series_with_exclude_featurizers(
-    mock_add_X_y,
     problem_type,
 ):
 
@@ -218,7 +212,6 @@ def test_can_run_automl_for_time_series_with_exclude_featurizers(
         exclude_featurizers=["DatetimeFeaturizer", "TimeSeriesFeaturizer"],
     )
     automl.search()
-    assert mock_add_X_y.call_count == 0
 
     rankings = automl.rankings
     for score in rankings["validation_score"].values:
@@ -231,4 +224,3 @@ def test_can_run_automl_for_time_series_with_exclude_featurizers(
             assert not pipeline.should_drop_time_index
         else:
             assert pipeline.should_drop_time_index
-        assert pipeline.should_skip_featurization
