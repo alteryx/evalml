@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Reduced the threshold for setting ``use_covariates`` to False for ARIMA models in AutoMLSearch :pr:`3868`
     * Documentation Changes
     * Testing Changes
 
