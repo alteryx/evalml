@@ -62,6 +62,7 @@ from evalml.pipelines import (
     StackedEnsembleClassifier,
 )
 from evalml.pipelines.components import (
+    ARIMARegressor,
     DateTimeFeaturizer,
     DecisionTreeClassifier,
     EmailFeaturizer,
@@ -4943,7 +4944,7 @@ def test_automl_restricts_use_covariates_for_arima(
     ).tolist()
     arima_params = [p for p in params if p is not None]
     assert arima_params
-    if n_rows > 1000 or n_cols > 7:
+    if n_rows > ARIMARegressor.max_rows or n_cols > ARIMARegressor.max_cols:
         assert all(not p for p in arima_params)
     else:
         assert all(p for p in arima_params)
