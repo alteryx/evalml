@@ -29,5 +29,5 @@ sktime==0.13.0
 statsmodels==0.13.5
 texttable==1.6.7
 vowpalwabbit==9.6.0
-woodwork==0.19.0
+woodwork==0.21.0
 xgboost==1.7.1
