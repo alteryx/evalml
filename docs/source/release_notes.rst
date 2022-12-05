@@ -5,6 +5,7 @@ Release Notes
     * Fixes
     * Changes
         * Reduced the threshold for setting ``use_covariates`` to False for ARIMA models in AutoMLSearch :pr:`3868`
+        * Pinned woodwork version at <=0.19.0 :pr:`3871`
     * Documentation Changes
     * Testing Changes
 
