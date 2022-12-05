@@ -61,6 +61,9 @@ class ARIMARegressor(Estimator):
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
     """[ProblemTypes.TIME_SERIES_REGRESSION]"""
 
+    max_rows = 1000
+    max_cols = 7
+
     def __init__(
         self,
         time_index=None,
