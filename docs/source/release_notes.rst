@@ -6,6 +6,7 @@ Release Notes
     * Changes
         * Reduced the threshold for setting ``use_covariates`` to False for ARIMA models in AutoMLSearch :pr:`3868`
         * Pinned woodwork version at <=0.19.0 :pr:`3871`
+        * Updated minimum Pandas version to 1.5.0 :pr:`3808`
     * Documentation Changes
     * Testing Changes
 
