@@ -38,6 +38,7 @@ class DFSTransformer(Transformer):
         ft_es = EntitySet()
         # TODO: This delete was introduced for compatibility with Featuretools 1.0.0.  This should
         # be removed after Featuretools handles unnamed dataframes being passed to this function.
+        # But even then, we should still use any dataframe name that might be available from input features.
         del X.ww
         if self.index not in X.columns:
             es = ft_es.add_dataframe(
