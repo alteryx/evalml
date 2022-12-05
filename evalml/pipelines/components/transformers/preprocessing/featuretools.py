@@ -28,8 +28,8 @@ class DFSTransformer(Transformer):
         self.index = index
         self.features = features
         self._passed_in_features = True if features else None
-        # If features are passed in, they'll have a dataframe_name we should utilize
-        # assumes all features were created from the same dataframe, which may not be true
+        # If features are passed in, they'll have a dataframe_name we should utilize.
+        # Assumes all features were created from the same dataframe, which may not be true
         # if the EntitySet used to create them had multiple dataframes.
         self._dataframe_name = self.features[0].dataframe_name if self.features else "X"
         parameters.update(kwargs)
