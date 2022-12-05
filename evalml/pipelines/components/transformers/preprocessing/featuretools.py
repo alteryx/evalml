@@ -28,6 +28,8 @@ class DFSTransformer(Transformer):
         self.index = index
         self.features = features
         self._passed_in_features = True if features else None
+        # If features are passed in, they'll have a dataframe_name we should utilize
+        self._dataframe_name = self.features[0].dataframe_name if self.features else "X"
         parameters.update(kwargs)
         super().__init__(parameters=parameters, random_seed=random_seed)
 
@@ -40,12 +42,16 @@ class DFSTransformer(Transformer):
         if self.index not in X.columns:
             es = ft_es.add_dataframe(
                 dataframe=X,
-                dataframe_name="X",
+                dataframe_name=self._dataframe_name,
                 index=self.index,
                 make_index=True,
             )
         else:
-            es = ft_es.add_dataframe(dataframe=X, dataframe_name="X", index=self.index)
+            es = ft_es.add_dataframe(
+                dataframe=X,
+                dataframe_name=self._dataframe_name,
+                index=self.index,
+            )
         return es
 
     def _filter_features(self, X):
@@ -92,7 +98,7 @@ class DFSTransformer(Transformer):
             es = self._make_entity_set(X_ww)
             self.features = dfs(
                 entityset=es,
-                target_dataframe_name="X",
+                target_dataframe_name=self._dataframe_name,
                 features_only=True,
                 max_depth=1,
             )
