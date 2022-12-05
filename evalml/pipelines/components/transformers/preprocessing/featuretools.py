@@ -27,7 +27,7 @@ class DFSTransformer(Transformer):
 
         self.index = index
         self.features = features
-        self._passed_in_features = True if features else None
+        self._passed_in_features = True if features is not None else None
         # If features are passed in, they'll have a dataframe_name we should utilize.
         # Assumes all features were created from the same dataframe, which may not be true
         # if the EntitySet used to create them had multiple dataframes.
@@ -166,4 +166,8 @@ class DFSTransformer(Transformer):
                 raise ValueError(
                     "Cannot use fast mode with DFS Transformer when features are unspecified or not all present in X.",
                 )
+            # Pass in empty list of features so we don't run calculate feature matrix
+            # which would happen with the full set of features for a single column at refit
+            dfs_transformer["features"] = []
+            pipeline_parameters["DFS Transformer"] = dfs_transformer
         return pipeline_parameters

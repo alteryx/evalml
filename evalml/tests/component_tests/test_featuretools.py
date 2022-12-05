@@ -245,6 +245,31 @@ def test_dfs_with_serialized_features_dataframe_name(
 @patch(
     "evalml.pipelines.components.transformers.preprocessing.featuretools.calculate_feature_matrix",
 )
+def test_dfs_with_empty_input_features(
+    mock_calculate_feature_matrix,
+    mock_dfs,
+    X_y_binary,
+):
+    """Confirms that the features arg being an empty list is not treated the same as
+    it being unspecified."""
+    X, y = X_y_binary
+    X_pd = pd.DataFrame(X)
+    X_pd.columns = X_pd.columns.astype(str)
+
+    dfs = DFSTransformer(features=[])
+    dfs.fit(X_pd)  # no-op
+    assert not mock_dfs.called
+
+    X_t = dfs.transform(X_pd)
+    assert not mock_calculate_feature_matrix.called
+    assert_frame_equal(X_pd, X_t)
+    assert not dfs.features
+
+
+@patch("evalml.pipelines.components.transformers.preprocessing.featuretools.dfs")
+@patch(
+    "evalml.pipelines.components.transformers.preprocessing.featuretools.calculate_feature_matrix",
+)
 def test_dfs_skip_transform(mock_calculate_feature_matrix, mock_dfs, X_y_binary):
     X, y = X_y_binary
     X_pd = pd.DataFrame(X)
