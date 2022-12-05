@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Allowed the DFS Transformer to calculate feature values for Features with a ``dataframe_name`` that is not ``"X"`` :pr:`3873`
+        * Stopped passing full list of DFS Transformer features into cloned pipeline in partial dependence fast mode :pr:`3875`
     * Changes
         * Reduced the threshold for setting ``use_covariates`` to False for ARIMA models in AutoMLSearch :pr:`3868`
         * Pinned woodwork version at <=0.19.0 :pr:`3871`
