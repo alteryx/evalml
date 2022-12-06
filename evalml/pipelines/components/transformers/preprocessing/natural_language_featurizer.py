@@ -59,7 +59,7 @@ class NaturalLanguageFeaturizer(TextTransformer):
         return X
 
     def _make_entity_set(self, X, text_columns):
-        X_text = X[text_columns]
+        X_text = X[text_columns].copy()
         X_text = self._clean_text(X_text)
 
         # featuretools expects str-type column names
