@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Allowed the DFS Transformer to calculate feature values for Features with a ``dataframe_name`` that is not ``"X"`` :pr:`3873`
     * Changes
         * Reduced the threshold for setting ``use_covariates`` to False for ARIMA models in AutoMLSearch :pr:`3868`
         * Pinned woodwork version at <=0.19.0 :pr:`3871`
