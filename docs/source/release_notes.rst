@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added the ability to retrieve prediction intervals for various estimators :pr:`3876`
     * Fixes
     * Changes
         * Reduced the threshold for setting ``use_covariates`` to False for ARIMA models in AutoMLSearch :pr:`3868`
@@ -19,7 +20,6 @@ Release Notes
     * Enhancements
         * Added fast mode to partial dependence :pr:`3753`
         * Added the ability to serialize featuretools features into time series pipelines :pr:`3836`
-        * Added the ability to retrieve prediction intervals for various estimators :pr:`3850`
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` potentially selecting lags outside of feature engineering window :pr:`3773`
         * Fixed bug where ``TimeSeriesFeaturizer`` could not encode Ordinal columns with non numeric categories :pr:`3812`
