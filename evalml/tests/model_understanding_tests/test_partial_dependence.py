@@ -2977,8 +2977,6 @@ def test_partial_dependence_dfs_transformer_does_not_calculate_feature_matrix(
     automl.search()
 
     assert not mock_calculate_feature_matrix.called
-    # --> Going through automl, because we have to instantiate the DFSTransformer to make a pipeline directly,
-    # which means we don't get the updated parameters applied, causing this test to fail
     pipeline = automl.get_pipeline(1)
     pipeline.fit(X_fm, y)
     part_dep = partial_dependence(
