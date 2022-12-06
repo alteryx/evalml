@@ -20,7 +20,7 @@ nbval==0.9.3
 networkx==2.5
 nlp-primitives==2.9.0
 numpy==1.21.0
-pandas==1.4.1
+pandas==1.5.0
 plotly==5.0.0
 pmdarima==1.8.1
 pytest-cov==2.10.1
@@ -34,7 +34,7 @@ scikit-optimize==0.9.0
 scipy==1.5.0
 seaborn==0.11.1
 shap==0.40.0
-sktime==0.12.0
+sktime==0.13.3
 statsmodels==0.12.2
 texttable==1.6.2
 vowpalwabbit==8.11.0
