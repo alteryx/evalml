@@ -42,19 +42,13 @@ class DFSTransformer(Transformer):
         # be removed after Featuretools handles unnamed dataframes being passed to this function.
         # But even then, we should still use any dataframe name that might be available from input features.
         del X.ww
-        if self.index not in X.columns:
-            es = ft_es.add_dataframe(
-                dataframe=X,
-                dataframe_name=self._dataframe_name,
-                index=self.index,
-                make_index=True,
-            )
-        else:
-            es = ft_es.add_dataframe(
-                dataframe=X,
-                dataframe_name=self._dataframe_name,
-                index=self.index,
-            )
+        should_make_index = self.index not in X.columns
+        es = ft_es.add_dataframe(
+            dataframe=X,
+            dataframe_name=self._dataframe_name,
+            index=self.index,
+            make_index=should_make_index,
+        )
         return es
 
     def _filter_features(self, X):
