@@ -1,4 +1,6 @@
 """XGBoost Regressor."""
+from typing import Dict, List
+
 import pandas as pd
 from skopt.space import Integer, Real
 
@@ -107,6 +109,31 @@ class XGBoostRegressor(Estimator):
         X, _ = super()._manage_woodwork(X)
         X = _rename_column_names_to_numeric(X)
         return super().predict(X)
+
+    def get_prediction_intervals(
+        self,
+        X,
+        y=None,
+        coverage: List[float] = None,
+    ) -> Dict[str, pd.Series]:
+        """Find the prediction intervals using the fitted ProphetRegressor.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data. Ignored.
+            coverage (List[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
+                prediction interval should be calculated for.
+
+        Returns:
+            dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+        """
+        X = _rename_column_names_to_numeric(X)
+        prediction_interval_result = super().get_prediction_intervals(
+            X=X,
+            y=y,
+            coverage=coverage,
+        )
+        return prediction_interval_result
 
     @property
     def feature_importance(self):

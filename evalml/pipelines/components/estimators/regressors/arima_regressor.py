@@ -1,5 +1,5 @@
 """Autoregressive Integrated Moving Average Model. The three parameters (p, d, q) are the AR order, the degree of differencing, and the MA order. More information here: https://www.statsmodels.org/devel/generated/statsmodels.tsa.arima.model.ARIMA.html."""
-from typing import List
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -265,7 +265,7 @@ class ARIMARegressor(Estimator):
         X: pd.DataFrame,
         y: pd.Series = None,
         coverage: List[float] = None,
-    ):
+    ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted ARIMARegressor.
 
         Args:

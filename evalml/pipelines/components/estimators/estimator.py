@@ -1,8 +1,9 @@
 """A component that fits and predicts given data."""
 from abc import abstractmethod
-from typing import List
+from typing import Dict, List
 
 import pandas as pd
+import scipy.stats as st
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
@@ -124,8 +125,12 @@ class Estimator(ComponentBase):
         pred_proba.index = X.index
         return pred_proba
 
-    @abstractmethod
-    def get_prediction_intervals(self, X, y=None, coverage: List[float] = None):
+    def get_prediction_intervals(
+        self,
+        X,
+        y=None,
+        coverage: List[float] = None,
+    ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted regressor.
 
         Args:
@@ -137,6 +142,27 @@ class Estimator(ComponentBase):
         Returns:
             dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
         """
+        if coverage is None:
+            coverage = [0.95]
+        X, _ = self._manage_woodwork(X, y)
+        predictions = self._component_obj.predict(X)
+
+        prediction_interval_result = {}
+        for conf_int in coverage:
+            rolling_std = pd.Series(predictions).rolling(5).std().bfill()
+            preds_lower = (
+                predictions + st.norm.ppf(round((1 - conf_int) / 2, 3)) * rolling_std
+            )
+            preds_upper = (
+                predictions + st.norm.ppf(round((1 + conf_int) / 2, 3)) * rolling_std
+            )
+
+            preds_lower = pd.Series(preds_lower.values, index=X.index, name=None)
+            preds_upper = pd.Series(preds_upper.values, index=X.index, name=None)
+            prediction_interval_result[f"{conf_int}_lower"] = preds_lower
+            prediction_interval_result[f"{conf_int}_upper"] = preds_upper
+
+        return prediction_interval_result
 
     @property
     def feature_importance(self):

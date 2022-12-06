@@ -381,3 +381,50 @@ def test_estimator_feature_importance(
 
     assert not estimator.feature_importance.isna().any()
     assert len(X.columns) == len(estimator.feature_importance)
+
+
+@pytest.mark.parametrize("estimator_class", _all_estimators())
+def test_estimator_prediction_intervals(
+    estimator_class,
+    ts_data,
+):
+    if estimator_class not in get_estimators(ProblemTypes.TIME_SERIES_REGRESSION):
+        return
+
+    if estimator_class.model_family in [ModelFamily.PROPHET, ModelFamily.ARIMA]:
+        X_train, X_test, y_train = ts_data()
+        estimator = estimator_class(time_index="date")
+    else:
+        X_train, X_test, y_train = ts_data(datetime_feature=False)
+        X_train = pd.concat([X_train] * 2, ignore_index=True)
+        X_train = X_train * 1.12  # Just to add some variance in the training
+        y_train = y_train.repeat(2)
+        estimator = estimator_class()
+
+    estimator.fit(X_train, y_train)
+    predictions = estimator.predict(X_test)
+    result_95 = estimator.get_prediction_intervals(X_test)
+
+    if estimator.model_family == ModelFamily.PROPHET:
+        assert estimator._component_obj.interval_width == 0.95
+    assert (result_95["0.95_upper"] > predictions).all()
+    assert (predictions > result_95["0.95_lower"]).all()
+
+    result_75_85 = estimator.get_prediction_intervals(X_test, coverage=[0.75, 0.85])
+
+    assert list(result_75_85.keys()) == [
+        "0.75_lower",
+        "0.75_upper",
+        "0.85_lower",
+        "0.85_upper",
+    ]
+    if estimator.model_family == ModelFamily.PROPHET:
+        assert estimator._component_obj.interval_width == 0.85
+    assert (result_95["0.95_upper"] > result_75_85["0.85_upper"]).all()
+    assert (result_75_85["0.85_upper"] > result_75_85["0.75_upper"]).all()
+    assert (result_75_85["0.85_upper"] > predictions).all()
+    assert (result_75_85["0.75_upper"] > predictions).all()
+    assert (predictions > result_75_85["0.85_lower"]).all()
+    assert (predictions > result_75_85["0.75_lower"]).all()
+    assert (result_75_85["0.85_lower"] > result_95["0.95_lower"]).all()
+    assert (result_75_85["0.75_lower"] > result_75_85["0.85_lower"]).all()

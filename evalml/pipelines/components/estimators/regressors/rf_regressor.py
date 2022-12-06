@@ -1,4 +1,9 @@
 """Random Forest Regressor."""
+from typing import Dict, List
+
+import numpy as np
+import pandas as pd
+import scipy.stats as st
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from skopt.space import Integer
 
@@ -53,3 +58,49 @@ class RandomForestRegressor(Estimator):
             component_obj=rf_regressor,
             random_seed=random_seed,
         )
+
+    def get_prediction_intervals(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series = None,
+        coverage: List[float] = None,
+    ) -> Dict[str, pd.Series]:
+        """Find the prediction intervals using the fitted RandomForestRegressor.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data. Optional.
+            coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
+                prediction interval should be calculated for.
+
+        Returns:
+            dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+        """
+        if coverage is None:
+            coverage = [0.95]
+        X, _ = self._manage_woodwork(X, y)
+        X = X.ww.select(exclude="Datetime")
+
+        predictions = self._component_obj.predict(X)
+
+        estimators = self._component_obj.estimators_
+
+        prediction_interval_result = {}
+        for conf_int in coverage:
+            preds = np.zeros((len(X), len(estimators)))
+            for ind, estimator_ in enumerate(estimators):
+                preds[:, ind] = estimator_.predict(X)
+            std_preds = np.std(preds, axis=1)
+            preds_lower = (
+                predictions + st.norm.ppf(round((1 - conf_int) / 2, 3)) * std_preds
+            )
+            preds_upper = (
+                predictions + st.norm.ppf(round((1 + conf_int) / 2, 3)) * std_preds
+            )
+
+            preds_lower = pd.Series(preds_lower, index=X.index, name=None)
+            preds_upper = pd.Series(preds_upper, index=X.index, name=None)
+            prediction_interval_result[f"{conf_int}_lower"] = preds_lower
+            prediction_interval_result[f"{conf_int}_upper"] = preds_upper
+
+        return prediction_interval_result

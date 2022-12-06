@@ -1,5 +1,5 @@
 """Holt-Winters Exponential Smoothing Forecaster."""
-from typing import List
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -140,7 +140,7 @@ class ExponentialSmoothingRegressor(Estimator):
         X: pd.DataFrame,
         y: pd.Series = None,
         coverage: List[float] = None,
-    ):
+    ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted ExponentialSmoothingRegressor.
 
         Args:
