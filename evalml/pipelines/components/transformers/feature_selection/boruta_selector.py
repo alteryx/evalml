@@ -48,7 +48,7 @@ class BorutaSelector(FeatureSelector):
         number_features=None,
         n_estimators=10,
         max_depth=None,
-        perc=100,
+        perc=50,
         alpha=0.05,
         two_step=False,
         max_iter=100,
