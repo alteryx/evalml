@@ -195,6 +195,52 @@ def test_dfs_with_serialized_features(mock_dfs, X_y_binary):
     assert features == dfs.features
 
 
+@pytest.mark.parametrize("pass_features", [True, False])
+@patch(
+    "evalml.pipelines.components.transformers.preprocessing.featuretools.calculate_feature_matrix",
+)
+def test_dfs_with_serialized_features_dataframe_name(
+    mock_calculate_feature_matrix,
+    pass_features,
+    X_y_binary,
+):
+    X, y = X_y_binary
+    X_pd = pd.DataFrame(X)
+    X_pd.columns = X_pd.columns.astype(str)
+
+    features = None
+    if pass_features:
+        es = ft.EntitySet()
+        es = es.add_dataframe(
+            dataframe_name="data",
+            dataframe=X_pd,
+            index="index",
+            make_index=True,
+        )
+        features = ft.dfs(
+            entityset=es,
+            target_dataframe_name="data",
+            trans_primitives=["absolute"],
+            features_only=True,
+        )
+
+    dfs = DFSTransformer(features=features)
+    # Fit on X_pd instead of feature matrix so that we actually call calculate feature matrix
+    # with these features, confirming that we can use whatever name we want in the Feature objects
+    assert not mock_calculate_feature_matrix.called
+    dfs.fit(X_pd)
+    dfs.transform(X_pd)
+    assert mock_calculate_feature_matrix.called
+
+    expected_dataframe_name = "X" if not pass_features else "data"
+    assert all(f.dataframe_name == expected_dataframe_name for f in dfs.features)
+
+    es_df_name = (
+        mock_calculate_feature_matrix.call_args[1]["entityset"].dataframes[0].ww.name
+    )
+    assert es_df_name == expected_dataframe_name
+
+
 @patch("evalml.pipelines.components.transformers.preprocessing.featuretools.dfs")
 @patch(
     "evalml.pipelines.components.transformers.preprocessing.featuretools.calculate_feature_matrix",
