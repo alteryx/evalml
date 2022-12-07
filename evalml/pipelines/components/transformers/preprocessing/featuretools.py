@@ -13,7 +13,7 @@ class DFSTransformer(Transformer):
         index (string): The name of the column that contains the indices. If no column with this name exists,
             then featuretools.EntitySet() creates a column with this name to serve as the index column. Defaults to 'index'.
         random_seed (int): Seed for the random number generator. Defaults to 0.
-        features (list)[FeatureBase]: List of features to run DFS on. Defaults to None. Features will only be computed if the columns used by the feature exist in the input and if the feature itself is not in input.
+        features (list)[FeatureBase]: List of features to run DFS on. Defaults to None. Features will only be computed if the columns used by the feature exist in the input and if the feature itself is not in input. If features is an empty list, no transformation will occur to inputted data.
     """
 
     name = "DFS Transformer"
@@ -27,7 +27,7 @@ class DFSTransformer(Transformer):
 
         self.index = index
         self.features = features
-        self._passed_in_features = True if features else None
+        self._passed_in_features = True if features is not None else None
         # If features are passed in, they'll have a dataframe_name we should utilize.
         # Assumes all features were created from the same dataframe, which may not be true
         # if the EntitySet used to create them had multiple dataframes.
@@ -166,4 +166,7 @@ class DFSTransformer(Transformer):
                 raise ValueError(
                     "Cannot use fast mode with DFS Transformer when features are unspecified or not all present in X.",
                 )
+            # Pass in empty list of features so we don't run calculate feature matrix
+            # which would happen with the full set of features for a single column at refit
+            pipeline_parameters["DFS Transformer"]["features"] = []
         return pipeline_parameters
