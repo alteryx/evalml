@@ -256,14 +256,24 @@ def test_dfs_with_empty_input_features(
     X_pd = pd.DataFrame(X)
     X_pd.columns = X_pd.columns.astype(str)
 
-    dfs = DFSTransformer(features=[])
-    dfs.fit(X_pd)  # no-op
+    # Check DFS Transformer with empty features list
+    dfs_empty_features = DFSTransformer(features=[])
+    dfs_empty_features.fit(X_pd)  # no-op
     assert not mock_dfs.called
 
-    X_t = dfs.transform(X_pd)
+    X_t_empty_features = dfs_empty_features.transform(X_pd)
     assert not mock_calculate_feature_matrix.called
-    assert_frame_equal(X_pd, X_t)
-    assert not dfs.features
+    assert_frame_equal(X_pd, X_t_empty_features)
+    assert not dfs_empty_features.features
+
+    # Check DFS Transformer with features list set to None
+    dfs_unspecified_features = DFSTransformer(features=None)
+    dfs_unspecified_features.fit(X_pd)
+    assert mock_dfs.called
+
+    dfs_unspecified_features.transform(X_pd)
+    assert mock_calculate_feature_matrix.called
+    assert dfs_unspecified_features.features
 
 
 @patch("evalml.pipelines.components.transformers.preprocessing.featuretools.dfs")

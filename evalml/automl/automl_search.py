@@ -353,7 +353,9 @@ class AutoMLSearch:
             to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
             this parameter will be ignored.
 
-        features (list)[FeatureBase]: List of features to run DFS on AutoML pipelines. Defaults to None. Features will only be computed if the columns used by the feature exist in the search input and if the feature itself is not in search input.
+        features (list)[FeatureBase]: List of features to run DFS on AutoML pipelines. Defaults to None.
+            Features will only be computed if the columns used by the feature exist in the search input
+            and if the feature itself is not in search input. If features is an empty list, the DFS Transformer will not be included in pipelines.
 
         data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
 
