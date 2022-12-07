@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 
 import pandas as pd
-from pandas.core.index import Int64Index, RangeIndex
+from pandas import RangeIndex
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.forecasting.stl import STLForecast
 from statsmodels.tsa.seasonal import STL
@@ -101,7 +101,7 @@ class STLDecomposer(Decomposer):
                 )
                 - 1
             )
-        elif isinstance(y.index, (RangeIndex, Int64Index)):
+        elif isinstance(y.index, RangeIndex) or y.index.is_numeric():
             units_forward = int(y.index[-1] - index[-1])
 
         # Model the trend and project it forward
@@ -289,17 +289,17 @@ class STLDecomposer(Decomposer):
             left_index = y_t.index[0]
             right_index = (
                 y_t.index[-1] + 1
-                if isinstance(y_t.index, (Int64Index, pd.RangeIndex))
+                if isinstance(y_t.index, pd.RangeIndex) or y_t.index.is_numeric()
                 else y_t.index[-1] + 1 * y_t.index.freq
             )
             trend = (
                 self.trend.reset_index(drop=True)[left_index:right_index]
-                if isinstance(y_t.index, (Int64Index, pd.RangeIndex))
+                if isinstance(y_t.index, pd.RangeIndex) or y_t.index.is_numeric()
                 else self.trend[left_index:right_index]
             )
             seasonal = (
                 self.seasonal.reset_index(drop=True)[left_index:right_index]
-                if isinstance(y_t.index, (Int64Index, pd.RangeIndex))
+                if isinstance(y_t.index, pd.RangeIndex) or y_t.index.is_numeric()
                 else self.seasonal[left_index:right_index]
             )
             y_in_sample = y_t + trend + seasonal
