@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
-from pandas.core.index import Int64Index
 from scipy.signal import argrelextrema
 
 from evalml.pipelines.components.transformers.transformer import Transformer
@@ -222,7 +221,7 @@ class Decomposer(Transformer):
         if isinstance(original_index, pd.DatetimeIndex):
             int_index = pd.RangeIndex(len(original_index))
         # Standardize the integer index as a RangeIndex and use existing integer indices
-        elif isinstance(original_index, (pd.RangeIndex, Int64Index)):
+        elif isinstance(original_index, pd.RangeIndex) or original_index.is_numeric():
             int_index = pd.RangeIndex(
                 start=original_index[0],
                 stop=original_index[-1] + 1,
@@ -256,8 +255,7 @@ class Decomposer(Transformer):
 
     def _choose_proper_index(self, y):
         """Function that provides support for targets with integer and datetime indices."""
-        # TODO: Need to update this after we upgrade to Pandas 1.5+ and Int64Index is deprecated.
-        if isinstance(y.index, (Int64Index, pd.RangeIndex)):
+        if isinstance(y.index, pd.RangeIndex) or y.index.is_numeric():
             index = self.in_sample_integer_index
         elif isinstance(y.index, pd.DatetimeIndex):
             index = self.in_sample_datetime_index
@@ -298,7 +296,7 @@ class Decomposer(Transformer):
                 % periodicity
                 - 1
             )
-        elif isinstance(y.index, (Int64Index, pd.RangeIndex)):
+        elif isinstance(y.index, pd.RangeIndex) or y.index.is_numeric():
             first_index_diff = y.index[0] - index[0]
             transform_first_ind = first_index_diff % periodicity
 

@@ -4,7 +4,6 @@ from __future__ import annotations
 import logging
 
 import pandas as pd
-from pandas.core.index import Int64Index
 from skopt.space import Integer
 from sktime.forecasting.base._fh import ForecastingHorizon
 from statsmodels.tsa.seasonal import seasonal_decompose
@@ -210,7 +209,7 @@ class PolynomialDecomposer(Decomposer):
             left_index = y_t.index[0]
             right_index = min(y_t.index[-1], index[-1])
 
-            if isinstance(y_t.index, (pd.RangeIndex, Int64Index)):
+            if isinstance(y_t.index, pd.RangeIndex) or y_t.index.is_numeric():
                 y_t_ind = pd.RangeIndex(
                     start=left_index,
                     stop=right_index + 1,
@@ -224,7 +223,7 @@ class PolynomialDecomposer(Decomposer):
             y_t_in_sample = y_t[y_t_ind]
 
             # Convert y_t to datetime index to use the built in component
-            if isinstance(y_t.index, (pd.RangeIndex, Int64Index)):
+            if isinstance(y_t.index, pd.RangeIndex) or y_t.index.is_numeric():
                 y_t_dt_ind = self._convert_int_index_to_dt_index(y_t_in_sample.index)
             elif isinstance(y_t.index, pd.DatetimeIndex):
                 y_t_dt_ind = y_t_ind
@@ -253,7 +252,10 @@ class PolynomialDecomposer(Decomposer):
                 self.frequency,
             )
 
-            if isinstance(truncated_y_t.index, (pd.RangeIndex, Int64Index)):
+            if (
+                isinstance(truncated_y_t.index, pd.RangeIndex)
+                or truncated_y_t.index.is_numeric()
+            ):
                 dt_index = self._convert_int_index_to_dt_index(truncated_y_t.index)
                 truncated_y_t.index = dt_index
                 projected_seasonality.index = dt_index
