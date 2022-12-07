@@ -4831,6 +4831,39 @@ def test_automl_accepts_features(
         )
 
 
+@pytest.mark.parametrize(
+    "automl_algorithm",
+    ["iterative", "default"],
+)
+def test_automl_with_empty_features_list(
+    automl_algorithm,
+    X_y_binary,
+    AutoMLTestEnv,
+):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)  # Drop ww information since setting column types fails
+    X.columns = X.columns.astype(str)
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        optimize_thresholds=False,
+        max_batches=3,
+        features=[],
+        automl_algorithm=automl_algorithm,
+    )
+
+    assert automl.automl_algorithm.features == []
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+
+    assert all(
+        ["DFS Transformer" not in p for p in automl.full_rankings["parameters"][1:]],
+    )
+
+
 @pytest.mark.skip_during_conda
 def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
     ts_data,
