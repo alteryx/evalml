@@ -61,4 +61,4 @@ jobs:
           branch-suffix: short-commit-hash
           base: main
           assignees: machineFL
-          reviewers: machineAYX, jeremyliweishih, bchen1116, chukarsten, ParthivNaresh, eccabay, christopherbunn, fjlanasa, MichaelFu512
+          reviewers: machineAYX, jeremyliweishih, bchen1116, chukarsten, ParthivNaresh, eccabay, christopherbunn, fjlanasa, MichaelFu512, tamargrey
