@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 
+from evalml.automl.automl_search import AutoMLSearch
 from evalml.exceptions import (
     NullsInColumnWarning,
     PartialDependenceError,
@@ -2934,3 +2935,69 @@ def test_partial_dependence_dfs_transformer_target_in_features(fast_mode, X_y_bi
 
     assert part_dep.feature_values.notnull().all()
     assert part_dep.partial_dependence.notnull().all()
+
+
+@patch(
+    "evalml.pipelines.components.transformers.preprocessing.featuretools.calculate_feature_matrix",
+)
+def test_partial_dependence_dfs_transformer_does_not_calculate_feature_matrix(
+    mock_calculate_feature_matrix,
+    X_y_binary,
+    AutoMLTestEnv,
+):
+    """Tests that the DFS Transformer doesn't ever have to call calculate feature matrix
+    in partial dependence fast mode. This is important, because it ensures that we are doing
+    the exact same calculations as slow mode."""
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X.columns = X.columns.astype(str)
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="data",
+        dataframe=X,
+        index="index",
+        make_index=True,
+    )
+    X_fm, features = ft.dfs(
+        entityset=es,
+        target_dataframe_name="data",
+        trans_primitives=["absolute", "add_numeric"],
+    )
+    env = AutoMLTestEnv("binary")
+    automl = AutoMLSearch(
+        X_train=X_fm,
+        y_train=y,
+        problem_type="binary",
+        optimize_thresholds=False,
+        max_iterations=2,
+        features=features,
+        automl_algorithm="default",
+    )
+
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+
+    assert not mock_calculate_feature_matrix.called
+    pipeline = automl.get_pipeline(1)
+    pipeline.fit(X_fm, y)
+    part_dep = partial_dependence(
+        pipeline,
+        X_fm,
+        features=0,
+        grid_resolution=2,
+    )
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X_fm,
+        features=0,
+        grid_resolution=2,
+        fast_mode=True,
+        X_train=X_fm,
+        y_train=y,
+    )
+    assert not mock_calculate_feature_matrix.called
+
+    assert part_dep.feature_values.notnull().all()
+    assert part_dep.partial_dependence.notnull().all()
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
