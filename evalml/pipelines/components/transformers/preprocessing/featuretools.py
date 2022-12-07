@@ -168,6 +168,5 @@ class DFSTransformer(Transformer):
                 )
             # Pass in empty list of features so we don't run calculate feature matrix
             # which would happen with the full set of features for a single column at refit
-            dfs_transformer["features"] = []
-            pipeline_parameters["DFS Transformer"] = dfs_transformer
+            pipeline_parameters["DFS Transformer"]["features"] = []
         return pipeline_parameters
