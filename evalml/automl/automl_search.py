@@ -1149,7 +1149,7 @@ class AutoMLSearch:
             full_rankings = self.full_rankings
             current_batch_idx = full_rankings["id"].isin(new_pipeline_ids)
             current_batch_pipeline_scores = full_rankings[current_batch_idx][
-                "validation_score"
+                "ranking_score"
             ]
 
             if (
@@ -1181,7 +1181,7 @@ class AutoMLSearch:
             best_pipeline_name = best_pipeline["pipeline_name"]
             self.logger.info(f"Best pipeline: {best_pipeline_name}")
             self.logger.info(
-                f"Best pipeline {self.objective.name}: {best_pipeline['validation_score']:3f}",
+                f"Best pipeline {self.objective.name}: {best_pipeline['ranking_score']:3f}",
             )
         self._searched = True
         if self.search_iteration_plot is not None:
@@ -1331,11 +1331,11 @@ class AutoMLSearch:
         is_baseline = pipeline.model_family == ModelFamily.BASELINE
         mean_cv_score = np.nan if len(cv_scores) == 1 else cv_scores.mean()
         if len(cv_scores) == 1 and evaluation_results["holdout_score"] is None:
-            validation_score = cv_scores[0]
+            ranking_score = cv_scores[0]
         elif evaluation_results["holdout_score"] is None:
-            validation_score = mean_cv_score
+            ranking_score = mean_cv_score
         else:
-            validation_score = evaluation_results["holdout_score"]
+            ranking_score = evaluation_results["holdout_score"]
         cv_sd = cv_scores.std()
 
         percent_better_than_baseline = {}
@@ -1374,7 +1374,7 @@ class AutoMLSearch:
             "percent_better_than_baseline": percent_better_than_baseline[
                 self.objective.name
             ],
-            "validation_score": validation_score,
+            "ranking_score": ranking_score,
         }
         self._pipelines_searched.update({pipeline_id: pipeline.clone()})
 
@@ -1391,9 +1391,7 @@ class AutoMLSearch:
 
         if not is_baseline:
             score_to_minimize = (
-                -validation_score
-                if self.objective.greater_is_better
-                else validation_score
+                -ranking_score if self.objective.greater_is_better else ranking_score
             )
             try:
                 self.automl_algorithm.add_result(
@@ -1599,7 +1597,7 @@ class AutoMLSearch:
         pipeline_results_cols = [
             "id",
             "pipeline_name",
-            "validation_score",
+            "ranking_score",
             "mean_cv_score",
             "standard_deviation_cv_score",
             "percent_better_than_baseline",
@@ -1623,7 +1621,7 @@ class AutoMLSearch:
             "search_order",
             pd.Series(self._results["search_order"]),
         )  # place search_order after pipeline_name
-        rankings_df.sort_values("validation_score", ascending=ascending, inplace=True)
+        rankings_df.sort_values("ranking_score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df
 

@@ -161,7 +161,7 @@ def test_describe_pipeline_with_ensembling(
                 dict,
             )
             assert isinstance(automl_dict["percent_better_than_baseline"], float)
-            assert isinstance(automl_dict["validation_score"], float)
+            assert isinstance(automl_dict["ranking_score"], float)
             assert len(automl_dict["input_pipeline_ids"]) == len(
                 allowed_model_families("binary"),
             )
