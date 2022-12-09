@@ -353,7 +353,9 @@ class AutoMLSearch:
             to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
             this parameter will be ignored.
 
-        features (list)[FeatureBase]: List of features to run DFS on AutoML pipelines. Defaults to None. Features will only be computed if the columns used by the feature exist in the search input and if the feature itself is not in search input.
+        features (list)[FeatureBase]: List of features to run DFS on AutoML pipelines. Defaults to None.
+            Features will only be computed if the columns used by the feature exist in the search input
+            and if the feature itself is not in search input. If features is an empty list, the DFS Transformer will not be included in pipelines.
 
         data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
 
@@ -711,7 +713,8 @@ class AutoMLSearch:
         self.search_parameters = search_parameters or {}
         # Fitting takes a long time if the data is too wide or long.
         if is_time_series(problem_type) and (
-            self.X_train.shape[1] >= 10 or self.X_train.shape[0] >= 10000
+            self.X_train.shape[1] >= ARIMARegressor.max_cols
+            or self.X_train.shape[0] >= ARIMARegressor.max_rows
         ):
             user_arima_hyperparams = ARIMARegressor.name in self.search_parameters
             if user_arima_hyperparams and not self.search_parameters[

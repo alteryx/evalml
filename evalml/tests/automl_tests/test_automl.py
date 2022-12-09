@@ -63,6 +63,7 @@ from evalml.pipelines import (
     StackedEnsembleClassifier,
 )
 from evalml.pipelines.components import (
+    ARIMARegressor,
     DateTimeFeaturizer,
     DecisionTreeClassifier,
     EmailFeaturizer,
@@ -4831,6 +4832,39 @@ def test_automl_accepts_features(
         )
 
 
+@pytest.mark.parametrize(
+    "automl_algorithm",
+    ["iterative", "default"],
+)
+def test_automl_with_empty_features_list(
+    automl_algorithm,
+    X_y_binary,
+    AutoMLTestEnv,
+):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)  # Drop ww information since setting column types fails
+    X.columns = X.columns.astype(str)
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        optimize_thresholds=False,
+        max_batches=3,
+        features=[],
+        automl_algorithm=automl_algorithm,
+    )
+
+    assert automl.automl_algorithm.features == []
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+
+    assert all(
+        ["DFS Transformer" not in p for p in automl.full_rankings["parameters"][1:]],
+    )
+
+
 @pytest.mark.skip_during_conda
 def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
     ts_data,
@@ -4900,15 +4934,23 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
         {"ARIMA Regressor": {"seasonal": Categorical([True])}},
     ],
 )
+@pytest.mark.parametrize("n_cols", [3, 9])
+@pytest.mark.parametrize("n_rows", [100, 1100])
 def test_automl_restricts_use_covariates_for_arima(
+    n_rows,
+    n_cols,
     hyperparams,
     automl_algo,
     AutoMLTestEnv,
     is_using_windows,
-    X_y_binary,
 ):
-
-    X, y = X_y_binary
+    X, y = datasets.make_classification(
+        n_samples=n_rows,
+        n_features=n_cols,
+        n_informative=2,
+        n_redundant=1,
+        random_state=0,
+    )
     X = pd.DataFrame(X)
     X["Date"] = pd.date_range("2010-01-01", periods=X.shape[0])
 
@@ -4936,7 +4978,10 @@ def test_automl_restricts_use_covariates_for_arima(
     ).tolist()
     arima_params = [p for p in params if p is not None]
     assert arima_params
-    assert all(not p for p in arima_params)
+    if n_rows > ARIMARegressor.max_rows or n_cols > ARIMARegressor.max_cols:
+        assert all(not p for p in arima_params)
+    else:
+        assert all(p for p in arima_params)
 
 
 @pytest.mark.skip_during_conda
