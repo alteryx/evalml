@@ -535,3 +535,19 @@ def test_datetime_many_duplicates_and_nans():
     result = dc.validate(X, y)
 
     assert result[2]["code"] == "DATETIME_NO_FREQUENCY_INFERRED"
+
+
+def test_aml():
+    X = pd.DataFrame(
+        pd.date_range("2015-01-01", periods=2).append(
+            pd.date_range("2015-01-08", periods=2, freq="H").append(
+                pd.date_range("2016-03-02", periods=2, freq="M"),
+            ),
+        ),
+        columns=["dates"],
+    )
+    y = pd.Series([0, 1, 0, 1, 1, 0])
+    datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
+    from pprint import pprint
+
+    pprint(datetime_format_dc.validate(X, y))

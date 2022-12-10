@@ -47,7 +47,7 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
-            ...         "message": "No frequency could be detected in column 'dates', possibly due to uneven intervals, possibly due to uneven intervals or too many duplicate/missing values.",
+            ...         "message": "No frequency could be detected in column 'dates', possibly due to uneven intervals or too many duplicate/missing values.",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
             ...         "code": "DATETIME_NO_FREQUENCY_INFERRED",
