@@ -4,6 +4,18 @@ Release Notes
     * Enhancements
         * Added the ability to retrieve prediction intervals for various estimators :pr:`3876`
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.64.0 Dec. 8, 2022**
+    * Enhancements
+    * Fixes
         * Allowed the DFS Transformer to calculate feature values for Features with a ``dataframe_name`` that is not ``"X"`` :pr:`3873`
         * Stopped passing full list of DFS Transformer features into cloned pipeline in partial dependence fast mode :pr:`3875`
     * Changes
@@ -14,12 +26,8 @@ Release Notes
     * Documentation Changes
     * Testing Changes
 
-.. warning::
 
-    **Breaking Changes**
-
-
-**v0.63.0 Nov.23, 2022**
+**v0.63.0 Nov. 23, 2022**
     * Enhancements
         * Added fast mode to partial dependence :pr:`3753`
         * Added the ability to serialize featuretools features into time series pipelines :pr:`3836`
