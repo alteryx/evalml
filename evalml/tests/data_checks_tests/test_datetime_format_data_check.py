@@ -150,7 +150,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
         else:
             assert datetime_format_check.validate(X, y) == [
                 DataCheckError(
-                    message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
+                    message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals or too many duplicate/missing values.",
                     data_check_name=datetime_format_check_name,
                     message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_INFERRED,
                 ).to_dict(),
@@ -186,7 +186,7 @@ def test_datetime_format_data_check_monotonic(datetime_loc, sort_order):
             datetime_loc if datetime_loc == "datetime_feature" else "either index"
         )
         freq_error = DataCheckError(
-            message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
+            message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals or too many duplicate/missing values.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_INFERRED,
         ).to_dict()
@@ -514,3 +514,24 @@ def test_datetime_nan_check_ww():
     ]
 
     assert dt_nan_check.validate(ww_input, y) == expected
+
+
+def test_datetime_many_duplicates_and_nans():
+    dates = pd.Series(pd.date_range(start="1/1/2021", periods=76))
+    nans = pd.Series([None] * 12)
+    duplicates = pd.Series(pd.date_range(start="1/1/2021", periods=12))
+    dates = dates.append(nans).append(duplicates)
+
+    X = pd.DataFrame({"date": dates}, columns=["date"])
+    y = pd.Series(range(len(dates)))
+
+    dc = DateTimeFormatDataCheck(datetime_column="date")
+    result = dc.validate(X, y)
+
+    assert result[2]["code"] == "DATETIME_HAS_UNEVEN_INTERVALS"
+
+    X.iloc[0, -1] = None
+    dc = DateTimeFormatDataCheck(datetime_column="date")
+    result = dc.validate(X, y)
+
+    assert result[2]["code"] == "DATETIME_NO_FREQUENCY_INFERRED"

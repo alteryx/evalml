@@ -47,7 +47,7 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
-            ...         "message": "No frequency could be detected in column 'dates', possibly due to uneven intervals.",
+            ...         "message": "No frequency could be detected in column 'dates', possibly due to uneven intervals, possibly due to uneven intervals or too many duplicate/missing values.",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
             ...         "code": "DATETIME_NO_FREQUENCY_INFERRED",
@@ -441,11 +441,14 @@ class DateTimeFormatDataCheck(DataCheck):
                 ).to_dict(),
             )
 
+        datetime_values_no_nans_duplicates = no_nan_datetime_values.drop_duplicates()
         # Give a generic uneven interval error no frequency can be estimated by woodwork
-        if debug_object["estimated_freq"] is None:
+        if debug_object["estimated_freq"] is None or len(
+            datetime_values_no_nans_duplicates,
+        ) < 0.75 * len(datetime_values):
             messages.append(
                 DataCheckError(
-                    message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
+                    message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals or too many duplicate/missing values.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_INFERRED,
                 ).to_dict(),
