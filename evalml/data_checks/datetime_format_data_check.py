@@ -18,10 +18,13 @@ class DateTimeFormatDataCheck(DataCheck):
 
     Args:
         datetime_column (str, int): The name of the datetime column. If the datetime values are in the index, then pass "index".
+        nan_duplicate_threshold (float): The percentage of values in the `datetime_column` that must not be duplicate or nan before `DATETIME_NO_FREQUENCY_INFERRED` is returned instead of `DATETIME_HAS_UNEVEN_INTERVALS`.
+            For example, if this is set to 0.80, then only 20% of the values in `datetime_column` can be duplicate or nan. Defaults to 0.75.
     """
 
-    def __init__(self, datetime_column="index"):
+    def __init__(self, datetime_column="index", nan_duplicate_threshold=0.75):
         self.datetime_column = datetime_column
+        self.nan_duplicate_threshold = nan_duplicate_threshold
 
     def validate(self, X, y):
         """Checks if the target data has equal intervals and is monotonically increasing.
@@ -348,6 +351,8 @@ class DateTimeFormatDataCheck(DataCheck):
 
         X = infer_feature_types(X)
         y = infer_feature_types(y)
+        print(X)
+        print(X.ww)
 
         no_dt_found = False
 
@@ -396,6 +401,9 @@ class DateTimeFormatDataCheck(DataCheck):
             window_length=4,
             threshold=0.4,
         )
+        from pprint import pprint
+
+        pprint(ww_payload)
         inferred_freq = ww_payload[0]
         debug_object = ww_payload[1]
         if inferred_freq is not None:
@@ -445,7 +453,7 @@ class DateTimeFormatDataCheck(DataCheck):
         # Give a generic uneven interval error no frequency can be estimated by woodwork
         if debug_object["estimated_freq"] is None or len(
             datetime_values_no_nans_duplicates,
-        ) < 0.75 * len(datetime_values):
+        ) <= self.nan_duplicate_threshold * len(datetime_values):
             messages.append(
                 DataCheckError(
                     message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals or too many duplicate/missing values.",

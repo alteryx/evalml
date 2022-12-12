@@ -523,6 +523,7 @@ def test_datetime_many_duplicates_and_nans():
     dates = dates.append(nans).append(duplicates)
 
     X = pd.DataFrame({"date": dates}, columns=["date"])
+    X = X.reset_index(drop=True)
     y = pd.Series(range(len(dates)))
 
     dc = DateTimeFormatDataCheck(datetime_column="date")
@@ -530,7 +531,12 @@ def test_datetime_many_duplicates_and_nans():
 
     assert result[2]["code"] == "DATETIME_HAS_UNEVEN_INTERVALS"
 
-    X.iloc[0, -1] = None
+    X.iloc[-25, 0] = None
+    dc = DateTimeFormatDataCheck(datetime_column="date", nan_duplicate_threshold=0.70)
+    result = dc.validate(X, y)
+
+    assert result[2]["code"] == "DATETIME_HAS_UNEVEN_INTERVALS"
+
     dc = DateTimeFormatDataCheck(datetime_column="date")
     result = dc.validate(X, y)
 
