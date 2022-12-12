@@ -1,18 +1,17 @@
 """Base class for Boruta Selectors"""
 from abc import ABC, abstractmethod
 
+import numpy as np
 import pandas as pd
 from boruta import BorutaPy
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
-from sklearn.feature_selection import SelectFromModel as SkSelect
-from skopt.space import Integer, Real
+from skopt.space import Integer
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.transformers.feature_selection.feature_selector import (
     FeatureSelector,
 )
-from evalml.problem_types import is_regression
 from evalml.utils import infer_feature_types
 
 
@@ -54,6 +53,7 @@ class BorutaSelector(FeatureSelector):
         max_iter=100,
         n_jobs=-1,
         random_seed=0,
+        use_weak=True,
         **kwargs,
     ):
         parameters = {
@@ -64,9 +64,10 @@ class BorutaSelector(FeatureSelector):
             "alpha": alpha,
             "two_step": two_step,
             "n_jobs": n_jobs,
+            "use_weak": use_weak,
         }
         parameters.update(kwargs)
-
+        self.use_weak = use_weak
         estimator = self._get_estimator(
             random_seed=random_seed,
             n_estimators=n_estimators,
@@ -130,12 +131,7 @@ class BorutaSelector(FeatureSelector):
         X_ww = infer_feature_types(X)
         self.input_feature_names = list(X_ww.columns.values)
 
-        try:
-            X_t = self._component_obj.transform(X.values)
-        except AttributeError:
-            raise MethodPropertyNotFoundError(
-                "Feature selector requires a transform method or a component_obj that implements transform",
-            )
+        X_t = self._component_obj.transform(X.values, weak=self.use_weak)
 
         selected_col_names = self.get_names()
         features = pd.DataFrame(X_t, columns=selected_col_names, index=X_ww.index)
@@ -149,6 +145,8 @@ class BorutaSelector(FeatureSelector):
             list[str]: List of the names of features selected.
         """
         selected_masks = self._component_obj.support_
+        if self.use_weak:
+            selected_masks = np.logical_or(self._component_obj.support_, self._component_obj.support_weak_)
         return [
             feature_name
             for (selected, feature_name) in zip(
