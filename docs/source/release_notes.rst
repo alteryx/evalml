@@ -4,6 +4,8 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Changed ``BooleanNullable`` inference logic :pr:`3858`
+        * Updated woodwork version to >=0.19.0, != 0.20.0 :pr:`3858`
     * Documentation Changes
     * Testing Changes
 
@@ -20,7 +22,6 @@ Release Notes
     * Changes
         * Remove Int64Index after Pandas 1.5 Upgrade :pr:`3825`
         * Reduced the threshold for setting ``use_covariates`` to False for ARIMA models in AutoMLSearch :pr:`3868`
-        * Changed ``BooleanNullable`` inference logic :pr:`3858`
         * Pinned woodwork version at <=0.19.0 :pr:`3871`
         * Updated minimum Pandas version to 1.5.0 :pr:`3808`
         * Remove dsherry from automated dependency update reviews and added tamargrey :pr:`3870`

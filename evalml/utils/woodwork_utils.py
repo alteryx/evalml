@@ -29,6 +29,14 @@ def _list_to_pandas(list):
 
 
 def _new_infer_boolean_nullable_func(series):
+    """Overrides the default `BooleanNullable` inference function in Woodwork until EvalML can be made compatible with these inference changes.
+
+    Args:
+        series (pd.Series): The series to check for compatibility with this inference function.
+
+    Returns:
+        bool: True if this series matches the requirements for inference as a `BooleanNullable` logical type, else False.
+    """
     if pdtypes.is_bool_dtype(series.dtype) and not pdtypes.is_categorical_dtype(
         series.dtype,
     ):
