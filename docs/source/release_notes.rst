@@ -23,6 +23,7 @@ Release Notes
         * Changed ``BooleanNullable`` inference logic :pr:`3858`
         * Pinned woodwork version at <=0.19.0 :pr:`3871`
         * Updated minimum Pandas version to 1.5.0 :pr:`3808`
+        * Remove dsherry from automated dependency update reviews and added tamargrey :pr:`3870`
     * Documentation Changes
     * Testing Changes
 
