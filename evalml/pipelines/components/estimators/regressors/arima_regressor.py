@@ -143,7 +143,8 @@ class ARIMARegressor(Estimator):
         from sktime.forecasting.base import ForecastingHorizon
 
         units_diff = X.index[0] - self.last_X_index
-        units_diff = int(units_diff / np.timedelta64(1, X.index.freqstr))
+        if isinstance(X.index, pd.DatetimeIndex):
+            units_diff = int(units_diff / np.timedelta64(1, X.index.freqstr))
         fh_ = ForecastingHorizon(
             [units_diff + i for i in range(len(X))],
             is_relative=True,
