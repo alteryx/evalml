@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fix ARIMA not accounting for gap in prediction from end of training data :pr:`3884`
     * Changes
     * Documentation Changes
     * Testing Changes
