@@ -351,8 +351,6 @@ class DateTimeFormatDataCheck(DataCheck):
 
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        print(X)
-        print(X.ww)
 
         no_dt_found = False
 
@@ -401,9 +399,6 @@ class DateTimeFormatDataCheck(DataCheck):
             window_length=4,
             threshold=0.4,
         )
-        from pprint import pprint
-
-        pprint(ww_payload)
         inferred_freq = ww_payload[0]
         debug_object = ww_payload[1]
         if inferred_freq is not None:
