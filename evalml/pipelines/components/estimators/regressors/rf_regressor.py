@@ -1,14 +1,15 @@
 """Random Forest Regressor."""
 from typing import Dict, List
 
-import numpy as np
 import pandas as pd
-import scipy.stats as st
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from skopt.space import Integer
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.utils import (
+    get_prediction_intevals_for_tree_regressors,
+)
 from evalml.problem_types import ProblemTypes
 
 
@@ -82,25 +83,10 @@ class RandomForestRegressor(Estimator):
         X = X.ww.select(exclude="Datetime")
 
         predictions = self._component_obj.predict(X)
-
         estimators = self._component_obj.estimators_
-
-        prediction_interval_result = {}
-        for conf_int in coverage:
-            preds = np.zeros((len(X), len(estimators)))
-            for ind, estimator_ in enumerate(estimators):
-                preds[:, ind] = estimator_.predict(X)
-            std_preds = np.std(preds, axis=1)
-            preds_lower = (
-                predictions + st.norm.ppf(round((1 - conf_int) / 2, 3)) * std_preds
-            )
-            preds_upper = (
-                predictions + st.norm.ppf(round((1 + conf_int) / 2, 3)) * std_preds
-            )
-
-            preds_lower = pd.Series(preds_lower, index=X.index, name=None)
-            preds_upper = pd.Series(preds_upper, index=X.index, name=None)
-            prediction_interval_result[f"{conf_int}_lower"] = preds_lower
-            prediction_interval_result[f"{conf_int}_upper"] = preds_upper
-
-        return prediction_interval_result
+        return get_prediction_intevals_for_tree_regressors(
+            X,
+            predictions,
+            coverage,
+            estimators,
+        )
