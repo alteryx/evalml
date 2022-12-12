@@ -130,7 +130,7 @@ def test_match_indices(ts_data):
 def test_set_forecast(ts_data):
     from sktime.forecasting.base import ForecastingHorizon
 
-    _, X_test, _ = ts_data(
+    X, X_test, _ = ts_data(
         train_features_index_dt=False,
         train_target_index_dt=False,
         train_none=False,
@@ -140,6 +140,7 @@ def test_set_forecast(ts_data):
     )
 
     clf = ARIMARegressor()
+    clf.last_X_index = X.index[-1]
     fh_ = clf._set_forecast(X_test)
     assert isinstance(fh_, ForecastingHorizon)
     assert len(fh_) == len(X_test)

@@ -142,13 +142,25 @@ class ARIMARegressor(Estimator):
     def _set_forecast(self, X):
         from sktime.forecasting.base import ForecastingHorizon
 
-        units_diff = X.index[0] - self.last_X_index
-        if isinstance(X.index, pd.DatetimeIndex):
-            units_diff = int(units_diff / np.timedelta64(1, X.index.freqstr))
-        fh_ = ForecastingHorizon(
-            [units_diff + i for i in range(len(X))],
-            is_relative=True,
-        )
+        # we can only calculate the difference if the indices are of the same type
+        if isinstance(X.index[0], type(self.last_X_index)):
+            units_diff = X.index[0] - self.last_X_index
+            if isinstance(X.index, pd.DatetimeIndex):
+                dates_diff = pd.date_range(
+                    start=self.last_X_index,
+                    end=X.index[0],
+                    freq=X.index.freq,
+                )
+                units_diff = len(dates_diff) - 1
+            fh_ = ForecastingHorizon(
+                [units_diff + i for i in range(len(X))],
+                is_relative=True,
+            )
+        else:
+            fh_ = ForecastingHorizon(
+                [i + 1 for i in range(len(X))],
+                is_relative=True,
+            )
         return fh_
 
     def _get_sp(self, X):
@@ -191,7 +203,7 @@ class ARIMARegressor(Estimator):
 
         sp = self._get_sp(X)
         self._component_obj.sp = sp
-        self.last_X_index = X.index[-1]
+        self.last_X_index = X.index[-1] if X is not None else y.index
 
         X = self._remove_datetime(X, features=True)
 
