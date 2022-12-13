@@ -5403,4 +5403,5 @@ def test_holdout_set_rankings(caplog, AutoMLTestEnv):
     assert_series_equal(
         automl.rankings["holdout_score"],
         automl.rankings["ranking_score"],
+        check_names=False,
     )
