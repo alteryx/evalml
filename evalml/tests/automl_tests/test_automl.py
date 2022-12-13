@@ -170,6 +170,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
         )
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
+    assert "holdout_score" not in automl.rankings.columns
     assert np.all(
         automl.rankings.dtypes
         == pd.Series(
@@ -1495,6 +1496,7 @@ def test_describe_pipeline(return_dict, verbose, caplog, X_y_binary, AutoMLTestE
         }
         assert automl_dict["percent_better_than_baseline"] == 0
         assert automl_dict["ranking_score"] == 1.0
+        assert automl_dict["holdout_score"] is None
     else:
         assert automl_dict is None
 
@@ -5358,3 +5360,46 @@ def test_init_create_holdout_set(caplog):
             problem_type="binary",
             holdout_set_size=-0.1,
         )
+
+
+def test_holdout_set_rankings(caplog, AutoMLTestEnv):
+    caplog.clear()
+    X, y = datasets.make_classification(
+        n_samples=AutoMLSearch._HOLDOUT_SET_MIN_ROWS,
+        random_state=0,
+    )
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_batches=3,
+        automl_algorithm="default",
+        verbose=True,
+        holdout_set_size=0.1,
+        n_jobs=2,
+    )
+
+    out = caplog.text
+
+    expected_holdout_size = int(automl.holdout_set_size * len(X))
+    expected_train_size = int((1 - automl.holdout_set_size) * len(X))
+    match_text = f"Created a holdout dataset with {expected_holdout_size} rows. Training dataset has {expected_train_size} rows."
+    assert match_text in out
+    assert "AutoMLSearch will use the holdout set to score and rank pipelines." in out
+    assert len(automl.X_train) == expected_train_size
+    assert len(automl.y_train) == expected_train_size
+    assert len(automl.X_holdout) == expected_holdout_size
+    assert len(automl.y_holdout) == expected_holdout_size
+    assert automl.passed_holdout_set is False
+
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+
+    assert "holdout_score" in automl.rankings
+    assert "holdout_score" in automl.full_rankings
+    assert_series_equal(
+        automl.rankings["holdout_score"],
+        automl.rankings["ranking_score"],
+    )

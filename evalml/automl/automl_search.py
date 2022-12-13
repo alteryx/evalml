@@ -1330,12 +1330,13 @@ class AutoMLSearch:
         cv_scores = evaluation_results["cv_scores"]
         is_baseline = pipeline.model_family == ModelFamily.BASELINE
         mean_cv_score = np.nan if len(cv_scores) == 1 else cv_scores.mean()
-        if len(cv_scores) == 1 and evaluation_results["holdout_score"] is None:
+        holdout_score = evaluation_results["holdout_score"]
+        if len(cv_scores) == 1 and holdout_score is None:
             ranking_score = cv_scores[0]
-        elif evaluation_results["holdout_score"] is None:
+        elif holdout_score is None:
             ranking_score = mean_cv_score
         else:
-            ranking_score = evaluation_results["holdout_score"]
+            ranking_score = holdout_score
         cv_sd = cv_scores.std()
 
         percent_better_than_baseline = {}
@@ -1375,6 +1376,7 @@ class AutoMLSearch:
                 self.objective.name
             ],
             "ranking_score": ranking_score,
+            "holdout_score": holdout_score,
         }
         self._pipelines_searched.update({pipeline_id: pipeline.clone()})
 
@@ -1598,6 +1600,10 @@ class AutoMLSearch:
             "id",
             "pipeline_name",
             "ranking_score",
+        ]
+        if self.X_holdout is not None:
+            pipeline_results_cols += ["holdout_score"]
+        pipeline_results_cols += [
             "mean_cv_score",
             "standard_deviation_cv_score",
             "percent_better_than_baseline",
