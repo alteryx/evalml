@@ -295,7 +295,6 @@ def get_threshold_tuning_info(automl_config, pipeline):
 
 
 def resplit_training_data(pipeline, X_train, y_train):
-    # --> I put these utils in automl utils bc that's the context we might want to use these in - in looking at searched automl obj
     """Further split the training data for a given pipeline. This is needed for binary pipelines
     in order to properly tune the threshold. Can be used after automl search has been performed
     to recreate the data that was used to train a pipeline.
