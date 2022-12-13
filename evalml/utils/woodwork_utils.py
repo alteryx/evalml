@@ -14,15 +14,16 @@ numeric_and_boolean_ww = [
     ww.logical_types.AgeNullable.type_string,
 ]
 
-
 inferrable_as_bool = ww.config.get_option("boolean_inference_strings")
-if len(inferrable_as_bool) == 5:
+if len(inferrable_as_bool) == 6:
     inferrable_as_bool = [
         inferrable_as_bool[0],
-        inferrable_as_bool[3],
+        inferrable_as_bool[1],
         inferrable_as_bool[4],
+        inferrable_as_bool[5],
     ]
 ww.config.set_option("boolean_inference_strings", inferrable_as_bool)
+ww.config.set_option("boolean_inference_ints", [None, np.inf])
 
 
 def _numpy_to_pandas(array):
