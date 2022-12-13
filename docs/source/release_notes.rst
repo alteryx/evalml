@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Make utils to handle the logic for threshold tuning objective and resplitting data :pr:`3888`
     * Fixes
         * Fix ARIMA not accounting for gap in prediction from end of training data :pr:`3884`
     * Changes
