@@ -265,14 +265,13 @@ def get_pipelines_from_component_graphs(
 
 
 def get_threshold_tuning_info(automl_config, pipeline):
-    """Determine for a given automl config and pipeline what the threshold tuning objective
-    should be and whether or not training data should be further split to achieve proper
-    threshold tuning. Can be used after automl search has been performed to determine whether
-    the full training data was used to train the pipeline.
+    """Determine for a given automl config and pipeline what the threshold tuning objective should be and whether or not training data should be further split to achieve proper threshold tuning.
+
+    Can also be used after automl search has been performed to determine whether the full training data was used to train the pipeline.
 
     Args:
-        automl_config (AutoMLConfig): The AutoMLSearch's config object,
-        used to determine threshold tuning objective and whether data needs resplitting.
+        automl_config (AutoMLConfig): The AutoMLSearch's config object.
+            Used to determine threshold tuning objective and whether data needs resplitting.
         pipeline (Pipeline): The pipeline instance to Threshold.
 
     Returns:
@@ -295,9 +294,9 @@ def get_threshold_tuning_info(automl_config, pipeline):
 
 
 def resplit_training_data(pipeline, X_train, y_train):
-    """Further split the training data for a given pipeline. This is needed for binary pipelines
-    in order to properly tune the threshold. Can be used after automl search has been performed
-    to recreate the data that was used to train a pipeline.
+    """Further split the training data for a given pipeline. This is needed for binary pipelines in order to properly tune the threshold.
+
+    Can be used after automl search has been performed to recreate the data that was used to train a pipeline.
 
     Args:
         pipeline (PipelineBase): the pipeline whose training data we are splitting
