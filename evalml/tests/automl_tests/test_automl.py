@@ -145,6 +145,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
             "percent_better_than_baseline_all_objectives",
             "percent_better_than_baseline",
             "ranking_score",
+            "holdout_score",
         }
         assert results["id"] == pipeline_id
         assert isinstance(results["pipeline_name"], str)
