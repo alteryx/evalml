@@ -10,7 +10,7 @@ import pandas as pd
 import woodwork as ww
 
 from evalml.automl.utils import (
-    get_threshold_tuning_objective_and_data_resplit,
+    get_threshold_tuning_info,
     resplit_training_data,
     tune_binary_threshold,
 )
@@ -152,7 +152,7 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False)
     (
         threshold_tuning_objective,
         data_needs_resplitting,
-    ) = get_threshold_tuning_objective_and_data_resplit(automl_config, pipeline)
+    ) = get_threshold_tuning_info(automl_config, pipeline)
 
     if data_needs_resplitting:
         X, X_threshold_tuning, y, y_threshold_tuning = resplit_training_data(

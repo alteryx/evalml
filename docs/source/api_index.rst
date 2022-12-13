@@ -65,7 +65,7 @@ AutoML Utils
     evalml.automl.search
     evalml.automl.get_default_primary_search_objective
     evalml.automl.make_data_splitter
-    evalml.automl.get_threshold_tuning_objective_and_data_resplit
+    evalml.automl.get_threshold_tuning_info
     evalml.automl.resplit_training_data
 
 

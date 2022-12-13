@@ -264,11 +264,19 @@ def get_pipelines_from_component_graphs(
     return created_pipelines
 
 
-# --> want better name
-def get_threshold_tuning_objective_and_data_resplit(automl_config, pipeline):
-    """Determines if the training data needs to be split prior to training the pipeline. Also returns
-    threshold tuning objective
-    # --> update docstring to be more thorough
+def get_threshold_tuning_info(automl_config, pipeline):
+    """Determine for a given automl config and pipeline what the threshold tuning objective
+    should be and whether or not training data should be further split to achieve proper
+    threshold tuning. Can be used after automl search has been performed to determine whether
+    the full training data was used to train the pipeline.
+
+    Args:
+        automl_config (AutoMLConfig): The AutoMLSearch's config object,
+        used to determine threshold tuning objective and whether data needs resplitting.
+        pipeline (Pipeline): The pipeline instance to Threshold.
+
+    Returns:
+        threshold_tuning_objective, data_needs_resplitting (str, bool)
     """
     threshold_tuning_objective = automl_config.objective
     if (
@@ -288,17 +296,29 @@ def get_threshold_tuning_objective_and_data_resplit(automl_config, pipeline):
 
 def resplit_training_data(pipeline, X_train, y_train):
     # --> I put these utils in automl utils bc that's the context we might want to use these in - in looking at searched automl obj
-    """Splits training data to match the data the pipeline was trained on."""
+    """Further split the training data for a given pipeline. This is needed for binary pipelines
+    in order to properly tune the threshold. Can be used after automl search has been performed
+    to recreate the data that was used to train a pipeline.
+
+    Args:
+        pipeline (PipelineBase): the pipeline whose training data we are splitting
+        X_train (pd.DataFrame or np.ndarray): training data of shape [n_samples, n_features]
+        y_train (pd.Series, or np.ndarray): training target data of length [n_samples]
+
+    Returns:
+        pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and threshold tuning sets.
+
+    """
     test_size_ = (
         pipeline.forecast_horizon / len(X_train)
         if is_time_series(pipeline.problem_type)
         else 0.2
     )
-    split_training_data = split_data(
+    train_and_tuning_data = split_data(
         X_train,
         y_train,
         pipeline.problem_type,
         test_size=test_size_,
         random_seed=pipeline.random_seed,
     )
-    return split_training_data
+    return train_and_tuning_data
