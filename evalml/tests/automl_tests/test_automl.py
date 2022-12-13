@@ -1864,7 +1864,7 @@ def test_pipelines_in_batch_return_none(
     assert len(automl.errors) > 0
 
 
-@patch("evalml.automl.engine.engine_base.split_data")
+@patch("evalml.automl.utils.split_data")
 def test_error_during_train_test_split(mock_split_data, X_y_binary, AutoMLTestEnv):
     X, y = X_y_binary
     # this method is called during pipeline eval for binary classification and will cause scores to be set to nan
