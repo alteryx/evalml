@@ -3,13 +3,9 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Allowed the DFS Transformer to calculate feature values for Features with a ``dataframe_name`` that is not ``"X"`` :pr:`3873`
-        * Stopped passing full list of DFS Transformer features into cloned pipeline in partial dependence fast mode :pr:`3875`
+        * Fix ARIMA not accounting for gap in prediction from end of training data :pr:`3884`
     * Changes
-        * Remove Int64Index after Pandas 1.5 Upgrade :pr:`3825`
-        * Reduced the threshold for setting ``use_covariates`` to False for ARIMA models in AutoMLSearch :pr:`3868`
-        * Pinned woodwork version at <=0.19.0 :pr:`3871`
-        * Updated minimum Pandas version to 1.5.0 :pr:`3808`
+        * Added a threshold to ``DateTimeFormatDataCheck`` to account for too many duplicate or nan values :pr:`3883`
     * Documentation Changes
     * Testing Changes
 
@@ -18,7 +14,22 @@ Release Notes
     **Breaking Changes**
 
 
-**v0.63.0 Nov.23, 2022**
+**v0.64.0 Dec. 8, 2022**
+    * Enhancements
+    * Fixes
+        * Allowed the DFS Transformer to calculate feature values for Features with a ``dataframe_name`` that is not ``"X"`` :pr:`3873`
+        * Stopped passing full list of DFS Transformer features into cloned pipeline in partial dependence fast mode :pr:`3875`
+    * Changes
+        * Remove Int64Index after Pandas 1.5 Upgrade :pr:`3825`
+        * Reduced the threshold for setting ``use_covariates`` to False for ARIMA models in AutoMLSearch :pr:`3868`
+        * Pinned woodwork version at <=0.19.0 :pr:`3871`
+        * Updated minimum Pandas version to 1.5.0 :pr:`3808`
+        * Remove dsherry from automated dependency update reviews and added tamargrey :pr:`3870`
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.63.0 Nov. 23, 2022**
     * Enhancements
         * Added fast mode to partial dependence :pr:`3753`
         * Integrated ``OrdinalEncoder`` into AutoMLSearch :pr:`3765`
