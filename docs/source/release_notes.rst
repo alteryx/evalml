@@ -5,6 +5,7 @@ Release Notes
     * Fixes
         * Fix ARIMA not accounting for gap in prediction from end of training data :pr:`3884`
     * Changes
+        * Added a threshold to ``DateTimeFormatDataCheck`` to account for too many duplicate or nan values :pr:`3883`
     * Documentation Changes
     * Testing Changes
 
@@ -23,6 +24,7 @@ Release Notes
         * Reduced the threshold for setting ``use_covariates`` to False for ARIMA models in AutoMLSearch :pr:`3868`
         * Pinned woodwork version at <=0.19.0 :pr:`3871`
         * Updated minimum Pandas version to 1.5.0 :pr:`3808`
+        * Remove dsherry from automated dependency update reviews and added tamargrey :pr:`3870`
     * Documentation Changes
     * Testing Changes
 

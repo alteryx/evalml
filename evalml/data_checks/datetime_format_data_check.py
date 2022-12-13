@@ -18,10 +18,13 @@ class DateTimeFormatDataCheck(DataCheck):
 
     Args:
         datetime_column (str, int): The name of the datetime column. If the datetime values are in the index, then pass "index".
+        nan_duplicate_threshold (float): The percentage of values in the `datetime_column` that must not be duplicate or nan before `DATETIME_NO_FREQUENCY_INFERRED` is returned instead of `DATETIME_HAS_UNEVEN_INTERVALS`.
+            For example, if this is set to 0.80, then only 20% of the values in `datetime_column` can be duplicate or nan. Defaults to 0.75.
     """
 
-    def __init__(self, datetime_column="index"):
+    def __init__(self, datetime_column="index", nan_duplicate_threshold=0.75):
         self.datetime_column = datetime_column
+        self.nan_duplicate_threshold = nan_duplicate_threshold
 
     def validate(self, X, y):
         """Checks if the target data has equal intervals and is monotonically increasing.
@@ -47,7 +50,7 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
-            ...         "message": "No frequency could be detected in column 'dates', possibly due to uneven intervals.",
+            ...         "message": "No frequency could be detected in column 'dates', possibly due to uneven intervals or too many duplicate/missing values.",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
             ...         "code": "DATETIME_NO_FREQUENCY_INFERRED",
@@ -441,11 +444,14 @@ class DateTimeFormatDataCheck(DataCheck):
                 ).to_dict(),
             )
 
+        datetime_values_no_nans_duplicates = no_nan_datetime_values.drop_duplicates()
         # Give a generic uneven interval error no frequency can be estimated by woodwork
-        if debug_object["estimated_freq"] is None:
+        if debug_object["estimated_freq"] is None or len(
+            datetime_values_no_nans_duplicates,
+        ) <= self.nan_duplicate_threshold * len(datetime_values):
             messages.append(
                 DataCheckError(
-                    message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
+                    message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals or too many duplicate/missing values.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_INFERRED,
                 ).to_dict(),
