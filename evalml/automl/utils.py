@@ -18,6 +18,7 @@ from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit,
 )
+from evalml.preprocessing.utils import split_data
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -261,3 +262,43 @@ def get_pipelines_from_component_graphs(
             ),
         )
     return created_pipelines
+
+
+# --> want better name
+def get_threshold_tuning_objective_and_data_resplit(automl_config, pipeline):
+    """Determines if the training data needs to be split prior to training the pipeline. Also returns
+    threshold tuning objective
+    # --> update docstring to be more thorough
+    """
+    threshold_tuning_objective = automl_config.objective
+    if (
+        is_binary(automl_config.problem_type)
+        and automl_config.optimize_thresholds
+        and automl_config.objective.score_needs_proba
+        and automl_config.alternate_thresholding_objective is not None
+    ):
+        # use the alternate_thresholding_objective
+        threshold_tuning_objective = automl_config.alternate_thresholding_objective
+
+    return threshold_tuning_objective, (
+        automl_config.optimize_thresholds
+        and pipeline.can_tune_threshold_with_objective(threshold_tuning_objective)
+    )
+
+
+def resplit_training_data(pipeline, X_train, y_train):
+    # --> I put these utils in automl utils bc that's the context we might want to use these in - in looking at searched automl obj
+    """Splits training data to match the data the pipeline was trained on."""
+    test_size_ = (
+        pipeline.forecast_horizon / len(X_train)
+        if is_time_series(pipeline.problem_type)
+        else 0.2
+    )
+    split_training_data = split_data(
+        X_train,
+        y_train,
+        pipeline.problem_type,
+        test_size=test_size_,
+        random_seed=pipeline.random_seed,
+    )
+    return split_training_data
