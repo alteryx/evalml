@@ -15,6 +15,16 @@ numeric_and_boolean_ww = [
 ]
 
 
+inferrable_as_bool = ww.config.get_option("boolean_inference_strings")
+if len(inferrable_as_bool) == 5:
+    inferrable_as_bool = [
+        inferrable_as_bool[0],
+        inferrable_as_bool[3],
+        inferrable_as_bool[4],
+    ]
+ww.config.set_option("boolean_inference_strings", inferrable_as_bool)
+
+
 def _numpy_to_pandas(array):
     if len(array.shape) == 1:
         data = pd.Series(array)
