@@ -146,14 +146,14 @@ class ClassImbalanceDataCheck(DataCheck):
             >>> assert class_imb_dc.validate(X, y) == []
         """
         messages = []
-        if isinstance(y, np.ndarray):
-            y = pd.Series(y)
-        original_vc = y.value_counts(sort=True)
+        original_vc = pd.Series(y).value_counts(sort=True)
         y = infer_feature_types(y)
         new_vc = y.value_counts(sort=True)
         reverse_mapping = {
             new: old for old, new in zip(original_vc.keys(), new_vc.keys())
         }
+        if str(y.ww.logical_type) not in ["Boolean", "BooleanNullable"]:
+            reverse_mapping = {old: old for old, _ in reverse_mapping.items()}
 
         fold_counts = y.value_counts(normalize=False, sort=True)
         fold_counts = np.floor(fold_counts * self.test_size).astype(int)
