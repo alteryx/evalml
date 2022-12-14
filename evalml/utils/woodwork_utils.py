@@ -23,7 +23,7 @@ if len(inferrable_as_bool) == 6:
         inferrable_as_bool[5],
     ]
 ww.config.set_option("boolean_inference_strings", inferrable_as_bool)
-ww.config.set_option("boolean_inference_ints", [None, np.inf])
+ww.config.set_option("boolean_inference_ints", ["elephant", "pineapple"])
 
 
 def _numpy_to_pandas(array):
