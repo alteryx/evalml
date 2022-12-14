@@ -67,8 +67,8 @@ def test_automl(
         np.array(par_results["mean_cv_score"]),
     )
     assert np.allclose(
-        np.array(seq_results["validation_score"]),
-        np.array(par_results["validation_score"]),
+        np.array(seq_results["ranking_score"]),
+        np.array(par_results["ranking_score"]),
     )
     assert np.allclose(
         np.array(seq_results["percent_better_than_baseline"]),

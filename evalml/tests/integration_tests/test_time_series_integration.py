@@ -214,7 +214,7 @@ def test_can_run_automl_for_time_series_with_exclude_featurizers(
     automl.search()
 
     rankings = automl.rankings
-    for score in rankings["validation_score"].values:
+    for score in rankings["ranking_score"].values:
         assert pd.notnull(score)
 
     num_pipelines = automl._num_pipelines()
