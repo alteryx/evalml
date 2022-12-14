@@ -14,16 +14,15 @@ numeric_and_boolean_ww = [
     ww.logical_types.AgeNullable.type_string,
 ]
 
-inferrable_as_bool = ww.config.get_option("boolean_inference_strings")
-if len(inferrable_as_bool) == 6:
-    inferrable_as_bool = [
-        inferrable_as_bool[0],
-        inferrable_as_bool[1],
-        inferrable_as_bool[4],
-        inferrable_as_bool[5],
-    ]
-    ww.config.set_option("boolean_inference_strings", inferrable_as_bool)
-ww.config.set_option("boolean_inference_ints", ["elephant", "pineapple"])
+dtype_to_ltype_mapping = {
+    "int64": "Integer",
+    "Int64": "IntegerNullable",
+    "float64": "Double",
+    "object": "Categorical",
+    "bool": "Boolean",
+    "boolean": "BooleanNullable",
+    "datetime64[ns]": "Datetime",
+}
 
 
 def _numpy_to_pandas(array):

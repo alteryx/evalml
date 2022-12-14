@@ -152,6 +152,7 @@ class ClassImbalanceDataCheck(DataCheck):
         reverse_mapping = {
             new: old for old, new in zip(original_vc.keys(), new_vc.keys())
         }
+        normal_mapping = {old: new for new, old in reverse_mapping.items()}
         if str(y.ww.logical_type) not in ["Boolean", "BooleanNullable"]:
             reverse_mapping = {old: old for old, _ in reverse_mapping.items()}
 
@@ -203,7 +204,11 @@ class ClassImbalanceDataCheck(DataCheck):
             sample_count_values = [
                 reverse_mapping.get(each) for each in sample_counts.index.tolist()
             ]
-            severe_imbalance = [v for v in sample_count_values if v in below_threshold]
+            severe_imbalance = [
+                v
+                for v in sample_count_values
+                if normal_mapping.get(v) in below_threshold
+            ]
             warning_msg = "The following labels in the target have severe class imbalance because they fall under {:.0f}% of the target and have less than {} samples: {}"
             messages.append(
                 DataCheckWarning(

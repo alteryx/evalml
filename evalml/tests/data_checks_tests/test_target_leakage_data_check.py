@@ -431,7 +431,7 @@ def test_target_leakage_data_check_input_formats_pearson():
     # test X, y with ww
     X_ww = X.copy()
     X_ww.ww.init()
-    y_ww = ww.init_series(y)
+    y_ww = ww.init_series(y, logical_type="Integer")
     assert leakage_check.validate(X_ww, y_ww) == expected
 
     #  test y as list

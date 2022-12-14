@@ -1,4 +1,6 @@
 """Data check that checks if any of the features are highly correlated with the target by using mutual information or Pearson correlation."""
+import pandas as pd
+from pandas.api import types as pdtypes
 from woodwork.config import CONFIG_DEFAULTS
 
 from evalml.data_checks import (
@@ -8,7 +10,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning,
 )
-from evalml.utils.woodwork_utils import infer_feature_types
+from evalml.utils.woodwork_utils import dtype_to_ltype_mapping, infer_feature_types
 
 
 class TargetLeakageDataCheck(DataCheck):
@@ -41,13 +43,21 @@ class TargetLeakageDataCheck(DataCheck):
         self.pct_corr_threshold = pct_corr_threshold
         self.method = method
 
-    def _calculate_dependence(self, X, y):
+    def _calculate_dependence(self, X, y, original_dtype=None):
         highly_corr_cols = []
         X2 = X.ww.copy()
         target_str = "target_y"
         while target_str in list(X2.columns):
             target_str += "_y"
-        X2.ww[target_str] = y
+        if original_dtype is None:
+            X2.ww[target_str] = y
+        else:
+            X2[target_str] = y
+            X2.ww.init(
+                logical_types={
+                    target_str: dtype_to_ltype_mapping.get(original_dtype, "Unknown"),
+                },
+            )
         try:
             dep_corr = X2.ww.dependence_dict(
                 measures=self.method,
@@ -137,10 +147,25 @@ class TargetLeakageDataCheck(DataCheck):
         """
         messages = []
 
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
+        originally_boolean = False
+        original_dtype = str(y.dtype)
+        if pdtypes.is_bool_dtype(original_dtype):
+            originally_boolean = True
+
         X = infer_feature_types(X)
+        y_original = y.copy()
         y = infer_feature_types(y)
 
-        highly_corr_cols = self._calculate_dependence(X, y)
+        # Implies that inference changed y into a boolean, so we should use the original
+        if pdtypes.is_bool_dtype(y.dtype) and not originally_boolean:
+            y = y_original
+        else:
+            original_dtype = None
+
+        highly_corr_cols = self._calculate_dependence(X, y, original_dtype)
         warning_msg_singular = "Column {} is {}% or more correlated with the target"
         warning_msg_plural = "Columns {} are {}% or more correlated with the target"
 
