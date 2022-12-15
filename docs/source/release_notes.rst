@@ -8,7 +8,7 @@ Release Notes
     * Changes
         * Added a threshold to ``DateTimeFormatDataCheck`` to account for too many duplicate or nan values :pr:`3883`
     * Documentation Changes
-        * Hide non-essential warning messages in time series docs :pr:`3890`
+        * Hid non-essential warning messages in time series docs :pr:`3890`
     * Testing Changes
 
 .. warning::
