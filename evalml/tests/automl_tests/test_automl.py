@@ -145,7 +145,8 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
             "cv_data",
             "percent_better_than_baseline_all_objectives",
             "percent_better_than_baseline",
-            "validation_score",
+            "ranking_score",
+            "holdout_score",
         }
         assert results["id"] == pipeline_id
         assert isinstance(results["pipeline_name"], str)
@@ -166,11 +167,12 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
                 assert score is not None
         assert automl.get_pipeline(pipeline_id).parameters == results["parameters"]
         assert (
-            results["validation_score"]
+            results["ranking_score"]
             == pd.Series([fold["mean_cv_score"] for fold in results["cv_data"]]).mean()
         )
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
+    assert "holdout_score" not in automl.rankings.columns
     assert np.all(
         automl.rankings.dtypes
         == pd.Series(
@@ -189,7 +191,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
                 "id",
                 "pipeline_name",
                 "search_order",
-                "validation_score",
+                "ranking_score",
                 "mean_cv_score",
                 "standard_deviation_cv_score",
                 "percent_better_than_baseline",
@@ -216,7 +218,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
                 "id",
                 "pipeline_name",
                 "search_order",
-                "validation_score",
+                "ranking_score",
                 "mean_cv_score",
                 "standard_deviation_cv_score",
                 "percent_better_than_baseline",
@@ -794,9 +796,7 @@ def test_large_dataset_binary(AutoMLTestEnv):
             ]
             == 1.234
         )
-        assert (
-            automl.results["pipeline_results"][pipeline_id]["validation_score"] == 1.234
-        )
+        assert automl.results["pipeline_results"][pipeline_id]["ranking_score"] == 1.234
         assert np.isnan(
             automl.results["pipeline_results"][pipeline_id]["mean_cv_score"],
         )
@@ -830,9 +830,7 @@ def test_large_dataset_multiclass(AutoMLTestEnv):
             ]
             == 1.234
         )
-        assert (
-            automl.results["pipeline_results"][pipeline_id]["validation_score"] == 1.234
-        )
+        assert automl.results["pipeline_results"][pipeline_id]["ranking_score"] == 1.234
         assert np.isnan(
             automl.results["pipeline_results"][pipeline_id]["mean_cv_score"],
         )
@@ -866,9 +864,7 @@ def test_large_dataset_regression(AutoMLTestEnv):
             ]
             == 1.234
         )
-        assert (
-            automl.results["pipeline_results"][pipeline_id]["validation_score"] == 1.234
-        )
+        assert automl.results["pipeline_results"][pipeline_id]["ranking_score"] == 1.234
         assert np.isnan(
             automl.results["pipeline_results"][pipeline_id]["mean_cv_score"],
         )
@@ -969,7 +965,7 @@ def test_data_splitter_shuffle():
         decimal=4,
     )
     np.testing.assert_almost_equal(
-        automl.results["pipeline_results"][0]["validation_score"],
+        automl.results["pipeline_results"][0]["ranking_score"],
         0.0,
         decimal=4,
     )
@@ -1158,7 +1154,7 @@ def test_add_to_rankings_no_search(
         assert isinstance(automl.data_splitter, StratifiedKFold)
         assert len(automl.rankings) == 1
         assert 0.5234 in automl.rankings["mean_cv_score"].values
-        assert 0.5234 in automl.rankings["validation_score"].values
+        assert 0.5234 in automl.rankings["ranking_score"].values
         assert np.isnan(
             automl.results["pipeline_results"][0]["percent_better_than_baseline"],
         )
@@ -1322,7 +1318,7 @@ def test_no_search(X_y_binary):
         "id",
         "pipeline_name",
         "search_order",
-        "validation_score",
+        "ranking_score",
         "mean_cv_score",
         "standard_deviation_cv_score",
         "percent_better_than_baseline",
@@ -1501,7 +1497,8 @@ def test_describe_pipeline(return_dict, verbose, caplog, X_y_binary, AutoMLTestE
             "Log Loss Binary": 0,
         }
         assert automl_dict["percent_better_than_baseline"] == 0
-        assert automl_dict["validation_score"] == 1.0
+        assert automl_dict["ranking_score"] == 1.0
+        assert automl_dict["holdout_score"] is None
     else:
         assert automl_dict is None
 
@@ -1759,7 +1756,7 @@ def make_mock_rankings(scores):
         {
             "id": range(len(scores)),
             "mean_cv_score": scores,
-            "validation_score": scores,
+            "ranking_score": scores,
             "pipeline_name": [f"Mock name {i}" for i in range(len(scores))],
         },
     )
@@ -4596,7 +4593,7 @@ def test_automl_passes_known_in_advance_pipeline_parameters_to_all_pipelines(
     "data_splitter,mean_cv_is_none",
     [(TrainingValidationSplit, True), (StratifiedKFold, False)],
 )
-def test_cv_validation_scores(
+def test_cv_ranking_scores(
     data_splitter,
     mean_cv_is_none,
     dummy_classifier_estimator_class,
@@ -4623,7 +4620,7 @@ def test_cv_validation_scores(
     with env.test_context(score_return_value={"Log Loss Binary": 0.5}):
         automl.search()
     cv_vals = list(set(automl.full_rankings["mean_cv_score"].values))
-    validation_vals = list(set(automl.full_rankings["validation_score"].values))
+    validation_vals = list(set(automl.full_rankings["ranking_score"].values))
     assert len(validation_vals) == 1
     assert validation_vals[0] == 0.5
     if mean_cv_is_none:
@@ -4632,7 +4629,7 @@ def test_cv_validation_scores(
         assert cv_vals[0] == validation_vals[0]
 
 
-def test_cv_validation_scores_time_series(
+def test_cv_ranking_scores_time_series(
     ts_data,
     AutoMLTestEnv,
 ):
@@ -4656,7 +4653,7 @@ def test_cv_validation_scores_time_series(
     with env.test_context(score_return_value={"Log Loss Binary": 0.5}):
         automl.search()
     cv_vals = list(set(automl.full_rankings["mean_cv_score"].values))
-    validation_vals = list(set(automl.full_rankings["validation_score"].values))
+    validation_vals = list(set(automl.full_rankings["ranking_score"].values))
     assert len(validation_vals) == 1
     assert validation_vals[0] == 0.5
     assert cv_vals[0] == validation_vals[0]
@@ -5436,3 +5433,47 @@ def test_ordinal_encoder_in_automl(
             assert "Ordinal Encoder" in pipeline.name
         else:
             assert "Ordinal Encoder" not in pipeline.name
+
+
+def test_holdout_set_rankings(caplog, AutoMLTestEnv):
+    caplog.clear()
+    X, y = datasets.make_classification(
+        n_samples=AutoMLSearch._HOLDOUT_SET_MIN_ROWS,
+        random_state=0,
+    )
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_batches=3,
+        automl_algorithm="default",
+        verbose=True,
+        holdout_set_size=0.1,
+        n_jobs=2,
+    )
+
+    out = caplog.text
+
+    expected_holdout_size = int(automl.holdout_set_size * len(X))
+    expected_train_size = int((1 - automl.holdout_set_size) * len(X))
+    match_text = f"Created a holdout dataset with {expected_holdout_size} rows. Training dataset has {expected_train_size} rows."
+    assert match_text in out
+    assert "AutoMLSearch will use the holdout set to score and rank pipelines." in out
+    assert len(automl.X_train) == expected_train_size
+    assert len(automl.y_train) == expected_train_size
+    assert len(automl.X_holdout) == expected_holdout_size
+    assert len(automl.y_holdout) == expected_holdout_size
+    assert automl.passed_holdout_set is False
+
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+
+    assert "holdout_score" in automl.rankings
+    assert "holdout_score" in automl.full_rankings
+    assert_series_equal(
+        automl.rankings["holdout_score"],
+        automl.rankings["ranking_score"],
+        check_names=False,
+    )
