@@ -18,6 +18,7 @@ from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit,
 )
+from evalml.preprocessing.utils import split_data
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -261,3 +262,61 @@ def get_pipelines_from_component_graphs(
             ),
         )
     return created_pipelines
+
+
+def get_threshold_tuning_info(automl_config, pipeline):
+    """Determine for a given automl config and pipeline what the threshold tuning objective should be and whether or not training data should be further split to achieve proper threshold tuning.
+
+    Can also be used after automl search has been performed to determine whether the full training data was used to train the pipeline.
+
+    Args:
+        automl_config (AutoMLConfig): The AutoMLSearch's config object.
+            Used to determine threshold tuning objective and whether data needs resplitting.
+        pipeline (Pipeline): The pipeline instance to Threshold.
+
+    Returns:
+        threshold_tuning_objective, data_needs_resplitting (str, bool)
+    """
+    threshold_tuning_objective = automl_config.objective
+    if (
+        is_binary(automl_config.problem_type)
+        and automl_config.optimize_thresholds
+        and automl_config.objective.score_needs_proba
+        and automl_config.alternate_thresholding_objective is not None
+    ):
+        # use the alternate_thresholding_objective
+        threshold_tuning_objective = automl_config.alternate_thresholding_objective
+
+    return threshold_tuning_objective, (
+        automl_config.optimize_thresholds
+        and pipeline.can_tune_threshold_with_objective(threshold_tuning_objective)
+    )
+
+
+def resplit_training_data(pipeline, X_train, y_train):
+    """Further split the training data for a given pipeline. This is needed for binary pipelines in order to properly tune the threshold.
+
+    Can be used after automl search has been performed to recreate the data that was used to train a pipeline.
+
+    Args:
+        pipeline (PipelineBase): the pipeline whose training data we are splitting
+        X_train (pd.DataFrame or np.ndarray): training data of shape [n_samples, n_features]
+        y_train (pd.Series, or np.ndarray): training target data of length [n_samples]
+
+    Returns:
+        pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and threshold tuning sets.
+
+    """
+    test_size_ = (
+        pipeline.forecast_horizon / len(X_train)
+        if is_time_series(pipeline.problem_type)
+        else 0.2
+    )
+    train_and_tuning_data = split_data(
+        X_train,
+        y_train,
+        pipeline.problem_type,
+        test_size=test_size_,
+        random_seed=pipeline.random_seed,
+    )
+    return train_and_tuning_data

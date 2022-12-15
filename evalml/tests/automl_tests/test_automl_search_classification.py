@@ -810,7 +810,7 @@ def test_automl_supports_time_series_classification(
 
 @pytest.mark.parametrize("objective", ["F1", "Log Loss Binary"])
 @pytest.mark.parametrize("optimize", [True, False])
-@patch("evalml.automl.engine.engine_base.split_data")
+@patch("evalml.automl.utils.split_data")
 def test_automl_time_series_classification_threshold(
     mock_split_data,
     optimize,

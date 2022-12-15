@@ -103,7 +103,7 @@ def test_train_and_score_pipelines_error(
     assert "yeet" in caplog.text
 
 
-@patch("evalml.automl.engine.engine_base.split_data")
+@patch("evalml.automl.utils.split_data")
 def test_train_pipeline_trains_and_tunes_threshold(
     mock_split_data,
     X_y_binary,
