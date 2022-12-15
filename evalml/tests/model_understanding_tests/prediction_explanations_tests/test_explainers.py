@@ -1129,10 +1129,6 @@ def test_json_serialization(
     X_y_multi,
     logistic_regression_multiclass_pipeline,
 ):
-    import sys
-
-    print(ww.config.get_option("boolean_inference_strings"), file=sys.stderr)
-    print(ww.config.get_option("boolean_inference_ints"), file=sys.stderr)
 
     if problem_type == problem_type.REGRESSION:
         X, y = X_y_regression
