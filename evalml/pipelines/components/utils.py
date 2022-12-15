@@ -194,9 +194,9 @@ def set_boolean_columns_to_categorical(X):
     X = X.ww.copy()
     X_schema = X.ww.schema
     original_X_schema = X_schema.get_subset_schema(
-        subset_cols=X_schema._filter_cols(exclude=["Boolean"]),
+        subset_cols=X_schema._filter_cols(exclude=["Boolean", "BooleanNullable"]),
     )
-    X_boolean_cols = X_schema._filter_cols(include=["Boolean"])
+    X_boolean_cols = X_schema._filter_cols(include=["Boolean", "BooleanNullable"])
     new_ltypes_for_boolean_cols = {col: "Categorical" for col in X_boolean_cols}
     X.ww.init(schema=original_X_schema, logical_types=new_ltypes_for_boolean_cols)
     return X
