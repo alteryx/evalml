@@ -284,12 +284,17 @@ def test_set_boolean_columns_to_categorical():
     )
     X_e = pd.DataFrame(
         {
+            "bool with nan": pd.Series(
+                [True, pd.NA, False, pd.NA, False],
+                dtype="boolean",
+            ),
             "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
         },
     )
     X_e = infer_feature_types(X_e)
     X_e.ww.set_types(
         logical_types={
+            "bool with nan": "Categorical",
             "bool no nan": "Categorical",
         },
     )
@@ -298,7 +303,7 @@ def test_set_boolean_columns_to_categorical():
 
     X = set_boolean_columns_to_categorical(X)
 
-    assert len(X.ww.select(["Categorical"]).columns) == 1
+    assert len(X.ww.select(["Categorical"]).columns) == 2
     assert len(X.ww.select(["Categorical"]) == 5)
 
     assert_frame_equal(
