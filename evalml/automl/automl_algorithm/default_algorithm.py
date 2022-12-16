@@ -16,6 +16,9 @@ from evalml.pipelines.components.transformers.column_selectors import (
     SelectByType,
     SelectColumns,
 )
+from evalml.pipelines.components.transformers.encoders.ordinal_encoder import (
+    OrdinalEncoder,
+)
 from evalml.pipelines.components.utils import get_estimators, handle_component_class
 from evalml.pipelines.utils import (
     _get_sampler,
@@ -285,7 +288,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 "columns": self._selected_cat_cols,
             },
             "Numeric Pipeline - Select Columns By Type Transformer": {
-                "column_types": ["Categorical", "EmailAddress", "URL"],
+                "column_types": ["category", "EmailAddress", "URL"],
                 "exclude": True,
             },
             "Numeric Pipeline - Select Columns Transformer": {
@@ -478,13 +481,22 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 to_be_added.append(original_col)
 
     def _parse_selected_categorical_features(self, pipeline):
-        if list(self.X.ww.select("categorical", return_schema=True).columns):
+        # Ordinal will always be categorical in nature, but it won't have OneHotEncoded features made for it
+        if list(self.X.ww.select("Ordinal", return_schema=True).columns):
+            self._get_feature_provenance_and_remove_engineered_features(
+                pipeline,
+                OrdinalEncoder.name,
+                self._selected_cols,
+                self._selected_cat_cols,
+            )
+        elif list(self.X.ww.select("category", return_schema=True).columns):
             self._get_feature_provenance_and_remove_engineered_features(
                 pipeline,
                 OneHotEncoder.name,
                 self._selected_cols,
                 self._selected_cat_cols,
             )
+
         if (
             list(self.X.ww.select("URL", return_schema=True).columns)
             and "URLFeaturizer" not in self.exclude_featurizers
@@ -583,7 +595,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             numeric_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cols},
                 "Select Columns By Type Transformer": {
-                    "column_types": ["Categorical", "EmailAddress", "URL"],
+                    # Should be category, not categorical so that we make sure to exclude
+                    # all logical types with the "category" tag
+                    "column_types": ["category", "EmailAddress", "URL"],
                     "exclude": True,
                 },
             }

@@ -17,6 +17,7 @@ from pandas.testing import assert_frame_equal, assert_series_equal
 from sklearn import datasets
 from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
+from woodwork.logical_types import Ordinal
 
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
@@ -5361,6 +5362,77 @@ def test_init_create_holdout_set(caplog):
             problem_type="binary",
             holdout_set_size=-0.1,
         )
+
+
+@pytest.mark.parametrize("use_ordinal", [False, True])
+@pytest.mark.parametrize(
+    "problem_type",
+    ["regression", "time series regression", "multiclass", "binary"],
+)
+def test_ordinal_encoder_in_automl(
+    use_ordinal,
+    problem_type,
+    X_y_ordinal_regression,
+    ts_data,
+    X_y_categorical_regression,
+    X_y_categorical_classification,
+    X_y_binary,
+    AutoMLTestEnv,
+):
+    problem_configuration = None
+    if problem_type == "regression":
+        ordinal_col = "day"
+        if use_ordinal:
+            X, y = X_y_ordinal_regression
+        else:
+            X, y = X_y_categorical_regression
+    elif problem_type == "binary":
+        X, y = X_y_categorical_classification
+        if use_ordinal:
+            X.ww.set_types(logical_types={"Embarked": Ordinal(order=["C", "Q", "S"])})
+    elif problem_type == "multiclass":
+        # Create a binary categorical classification problem
+        X, _ = X_y_categorical_classification
+        _, y = X_y_binary
+        X = X.ww.iloc[: len(y), :]
+        if use_ordinal:
+            X.ww.set_types(logical_types={"Embarked": Ordinal(order=["C", "Q", "S"])})
+    elif problem_type == "time series regression":
+        ordinal_col = "cats"
+        problem_configuration = {
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 0,
+            "forecast_horizon": 2,
+        }
+        X, _, y = ts_data()
+        if use_ordinal:
+            cats = pd.Series(
+                np.random.choice(["a", "b", "c"], size=len(X)),
+                index=X.index,
+            )
+            cats = ww.init_series(cats, logical_type=Ordinal(order=["a", "b", "c"]))
+            X.ww[ordinal_col] = cats
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type=problem_type,
+        objective="auto",
+        random_seed=0,
+        problem_configuration=problem_configuration,
+        n_jobs=1,
+    )
+    env = AutoMLTestEnv(problem_type)
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+
+    for i in range(1, len(automl.rankings)):
+        pipeline = automl.get_pipeline(i)
+        if use_ordinal:
+            assert "Ordinal Encoder" in pipeline.name
+        else:
+            assert "Ordinal Encoder" not in pipeline.name
 
 
 def test_holdout_set_rankings(caplog, AutoMLTestEnv):
