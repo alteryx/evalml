@@ -2,11 +2,13 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added utils to handle the logic for threshold tuning objective and resplitting data :pr:`3888`
     * Fixes
         * Fix ARIMA not accounting for gap in prediction from end of training data :pr:`3884`
     * Changes
         * Added a threshold to ``DateTimeFormatDataCheck`` to account for too many duplicate or nan values :pr:`3883`
     * Documentation Changes
+        * Hid non-essential warning messages in time series docs :pr:`3890`
     * Testing Changes
 
 .. warning::
