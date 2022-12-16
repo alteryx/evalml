@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added utils to handle the logic for threshold tuning objective and resplitting data :pr:`3888`
+        * Integrated ``OrdinalEncoder`` into AutoMLSearch :pr:`3765`
     * Fixes
         * Fix ARIMA not accounting for gap in prediction from end of training data :pr:`3884`
     * Changes
@@ -35,7 +36,6 @@ Release Notes
 **v0.63.0 Nov. 23, 2022**
     * Enhancements
         * Added fast mode to partial dependence :pr:`3753`
-        * Integrated ``OrdinalEncoder`` into AutoMLSearch :pr:`3765`
         * Added the ability to serialize featuretools features into time series pipelines :pr:`3836`
     * Fixes
         * Fixed ``TimeSeriesFeaturizer`` potentially selecting lags outside of feature engineering window :pr:`3773`
