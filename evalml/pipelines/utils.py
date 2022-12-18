@@ -28,6 +28,7 @@ from evalml.pipelines.components import (  # noqa: F401
     LogTransformer,
     NaturalLanguageFeaturizer,
     OneHotEncoder,
+    OrdinalEncoder,
     Oversampler,
     PerColumnImputer,
     RandomForestClassifier,
@@ -199,6 +200,21 @@ def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
     return components
 
 
+def _get_ordinal_encoder(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+
+    ordinal_cols = list(
+        X.ww.select(
+            ["Ordinal"],
+            return_schema=True,
+        ).columns,
+    )
+
+    if len(ordinal_cols) > 0:
+        components.append(OrdinalEncoder)
+    return components
+
+
 def _get_sampler(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
 
@@ -294,6 +310,7 @@ def _get_preprocessing_components(
             components_functions.append(_get_decomposer)
         components_functions = components_functions + [
             _get_datetime,
+            _get_ordinal_encoder,
             _get_ohe,
             _get_drop_nan_rows_transformer,
             _get_sampler,
@@ -310,6 +327,7 @@ def _get_preprocessing_components(
             _get_datetime,
             _get_natural_language,
             _get_imputer,
+            _get_ordinal_encoder,
             _get_ohe,
             _get_sampler,
             _get_standard_scaler,

@@ -146,7 +146,25 @@ class ARIMARegressor(Estimator):
     def _set_forecast(self, X):
         from sktime.forecasting.base import ForecastingHorizon
 
-        fh_ = ForecastingHorizon([i + 1 for i in range(len(X))], is_relative=True)
+        # we can only calculate the difference if the indices are of the same type
+        if isinstance(X.index[0], type(self.last_X_index)):
+            units_diff = X.index[0] - self.last_X_index
+            if isinstance(X.index, pd.DatetimeIndex):
+                dates_diff = pd.date_range(
+                    start=self.last_X_index,
+                    end=X.index[0],
+                    freq=X.index.freq,
+                )
+                units_diff = len(dates_diff) - 1
+            fh_ = ForecastingHorizon(
+                [units_diff + i for i in range(len(X))],
+                is_relative=True,
+            )
+        else:
+            fh_ = ForecastingHorizon(
+                [i + 1 for i in range(len(X))],
+                is_relative=True,
+            )
         return fh_
 
     def _get_sp(self, X):
@@ -189,8 +207,10 @@ class ARIMARegressor(Estimator):
 
         sp = self._get_sp(X)
         self._component_obj.sp = sp
+        self.last_X_index = X.index[-1] if X is not None else y.index
 
         X = self._remove_datetime(X, features=True)
+
         if X is not None:
             X.ww.set_types(
                 {
@@ -235,6 +255,16 @@ class ARIMARegressor(Estimator):
         X, fh_ = self._manage_types_and_forecast(X=X)
 
         if not X.empty and self.use_covariates:
+            if fh_[0] != 1:
+                # pmdarima (which sktime uses under the hood) only forecasts off the training data
+                # but sktime circumvents this by predicting everything from the end of training data to the date / periods requested
+                # and only returning the values for dates / periods given to sktime. Because of this,
+                # pmdarima requires the number of covariate rows to equal the length of the total number of periods (X.shape[0] == fh_[-1]) if covariates are used.
+                # We circument this by adding arbitrary rows to the start of X since sktime discards these values when predicting.
+                num_rows_diff = fh_[-1] - X.shape[0]
+                X_ = pd.concat([X.head(num_rows_diff), X], ignore_index=True)
+            else:
+                X_ = X
             y_pred_intervals = self._component_obj.predict_interval(
                 fh=fh_,
                 X=X,

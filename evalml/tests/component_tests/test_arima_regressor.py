@@ -7,6 +7,7 @@ import pytest
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ARIMARegressor
+from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes
 
 pytestmark = [
@@ -34,9 +35,7 @@ def test_model_family():
 
 def test_problem_types():
     assert set(ARIMARegressor.supported_problem_types) == {
-        ProblemTypes.TIME_SERIES_REGRESSION,
-    }
-
+        ProblemTypes.TIME_SERIES_REGRESSION
 
 def test_model_instance(ts_data):
     X, _, y = ts_data()
@@ -129,7 +128,7 @@ def test_match_indices(ts_data):
 def test_set_forecast(ts_data):
     from sktime.forecasting.base import ForecastingHorizon
 
-    _, X_test, _ = ts_data(
+    X, X_test, _ = ts_data(
         train_features_index_dt=False,
         train_target_index_dt=False,
         train_none=False,
@@ -139,6 +138,7 @@ def test_set_forecast(ts_data):
     )
 
     clf = ARIMARegressor()
+    clf.last_X_index = X.index[-1]
     fh_ = clf._set_forecast(X_test)
     assert isinstance(fh_, ForecastingHorizon)
     assert len(fh_) == len(X_test)
@@ -501,3 +501,25 @@ def test_arima_regressor_prediction_intervals_no_features(ts_data):
             axis=1,
         ).mean(axis=1)
         pd.testing.assert_series_equal(mean_preds_no_feat, predictions_no_feat)
+
+
+@pytest.mark.parametrize("use_covariates", [True, False])
+def test_arima_regressor_can_forecast_arbitrary_dates(use_covariates, ts_data):
+    X, _, y = ts_data()
+
+    X_train, X_test, y_train, y_test = split_data(
+        X,
+        y,
+        problem_type="time series regression",
+        test_size=0.2,
+        random_seed=0,
+    )
+
+    X_test_last_5 = X_test.tail(5)
+
+    arima = ARIMARegressor(use_covariates=use_covariates)
+    arima.fit(X_train, y_train)
+
+    assert (
+        arima.predict(X_test).tail(5).tolist() == arima.predict(X_test_last_5).tolist()
+    )

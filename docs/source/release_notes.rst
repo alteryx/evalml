@@ -3,9 +3,14 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added the ability to retrieve prediction intervals for various estimators :pr:`3876`
+        * Added utils to handle the logic for threshold tuning objective and resplitting data :pr:`3888`
+        * Integrated ``OrdinalEncoder`` into AutoMLSearch :pr:`3765`
     * Fixes
+        * Fix ARIMA not accounting for gap in prediction from end of training data :pr:`3884`
     * Changes
+        * Added a threshold to ``DateTimeFormatDataCheck`` to account for too many duplicate or nan values :pr:`3883`
     * Documentation Changes
+        * Hid non-essential warning messages in time series docs :pr:`3890`
     * Testing Changes
 
 .. warning::
@@ -19,6 +24,7 @@ Release Notes
         * Allowed the DFS Transformer to calculate feature values for Features with a ``dataframe_name`` that is not ``"X"`` :pr:`3873`
         * Stopped passing full list of DFS Transformer features into cloned pipeline in partial dependence fast mode :pr:`3875`
     * Changes
+        * Update leaderboard names to show `ranking_score` instead of `validation_score` :pr:`3878`
         * Remove Int64Index after Pandas 1.5 Upgrade :pr:`3825`
         * Reduced the threshold for setting ``use_covariates`` to False for ARIMA models in AutoMLSearch :pr:`3868`
         * Pinned woodwork version at <=0.19.0 :pr:`3871`
