@@ -17,6 +17,20 @@ class ProphetRegressor(Estimator):
     """Prophet is a procedure for forecasting time series data based on an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects. It works best with time series that have strong seasonal effects and several seasons of historical data. Prophet is robust to missing data and shifts in the trend, and typically handles outliers well.
 
     More information here: https://facebook.github.io/prophet/
+
+    Args:
+        time_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
+        changepoint_prior_scale (float): Determines the strength of the sparse prior for fitting on rate changes. Increasing
+            this value increases the flexibility of the trend. Defaults to 0.05.
+        seasonality_prior_scale (int): Similar to changepoint_prior_scale. Adjusts the extent to which the seasonality model will fit the data.
+            Defaults to 10.
+        holidays_prior_scale (int): Similar to changepoint_prior_scale. Adjusts the extent to which holidays will fit the data.
+            Defaults to 10.
+        seasonality_mode (str): Determines how this component fits the seasonality. Options are "additive" and "multiplicative". Defaults to "additive".
+        stan_backend (str): Determines the backend that should be used to run Prophet. Options are "CMDSTANPY" and "PYSTAN". Defaults to "CMDSTANPY".
+        interval_width (float): Determines the confidence of the prediction interval range when calling `get_prediction_intervals`.
+            Accepts values in the range (0,1). Defaults to 0.95.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "Prophet Regressor"
@@ -44,9 +58,9 @@ class ProphetRegressor(Estimator):
         seasonality_prior_scale=10,
         holidays_prior_scale=10,
         seasonality_mode="additive",
-        random_seed=0,
         stan_backend="CMDSTANPY",
         interval_width=0.95,
+        random_seed=0,
         **kwargs,
     ):
         parameters = {
@@ -170,7 +184,8 @@ class ProphetRegressor(Estimator):
 
         prediction_interval_result = {}
         for conf_int in coverage:
-            self._component_obj.interval_width = conf_int
+            if self._component_obj.interval_width != conf_int:
+                self._component_obj.interval_width = conf_int
             X = infer_feature_types(X)
 
             prophet_df = ProphetRegressor.build_prophet_df(
@@ -179,10 +194,9 @@ class ProphetRegressor(Estimator):
                 time_index=self.time_index,
             )
             prophet_output = self._component_obj.predict(prophet_df)
+            prophet_output.index = X.index
             prediction_interval_lower = prophet_output["yhat_lower"]
             prediction_interval_upper = prophet_output["yhat_upper"]
-            prediction_interval_lower.index = X.index
-            prediction_interval_upper.index = X.index
             prediction_interval_result[f"{conf_int}_lower"] = prediction_interval_lower
             prediction_interval_result[f"{conf_int}_upper"] = prediction_interval_upper
         return prediction_interval_result

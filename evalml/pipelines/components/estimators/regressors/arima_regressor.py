@@ -238,6 +238,14 @@ class ARIMARegressor(Estimator):
         )
         return X, fh_
 
+    @staticmethod
+    def _parse_prediction_intervals(y_pred_intervals, conf_int):
+        preds_lower = y_pred_intervals.loc(axis=1)[("Coverage", conf_int, "lower")]
+        preds_upper = y_pred_intervals.loc(axis=1)[("Coverage", conf_int, "upper")]
+        preds_lower.name = None
+        preds_upper.name = None
+        return preds_lower, preds_upper
+
     def predict(self, X, y=None):
         """Make predictions using fitted ARIMA regressor.
 
@@ -267,7 +275,7 @@ class ARIMARegressor(Estimator):
                 X_ = X
             y_pred_intervals = self._component_obj.predict_interval(
                 fh=fh_,
-                X=X,
+                X=X_,
                 coverage=[0.95],
             )
         else:
@@ -275,18 +283,16 @@ class ARIMARegressor(Estimator):
                 fh=fh_,
                 coverage=[0.95],
             )
+        y_pred_intervals.index = X.index
 
-        self.preds_95_lower = y_pred_intervals.loc(axis=1)[("Coverage", 0.95, "lower")]
-        self.preds_95_upper = y_pred_intervals.loc(axis=1)[("Coverage", 0.95, "upper")]
-        self.preds_95_lower.index = X.index
-        self.preds_95_upper.index = X.index
-        self.preds_95_lower.name = None
-        self.preds_95_upper.name = None
+        (
+            self.preds_95_lower,
+            self.preds_95_upper,
+        ) = ARIMARegressor._parse_prediction_intervals(y_pred_intervals, 0.95)
 
         y_pred = pd.concat((self.preds_95_lower, self.preds_95_upper), axis=1).mean(
             axis=1,
         )
-        y_pred.index = X.index
 
         return infer_feature_types(y_pred)
 
@@ -315,23 +321,31 @@ class ARIMARegressor(Estimator):
         prediction_interval_result = {}
 
         if not X.empty and self.use_covariates:
-            y_pred_interval = self._component_obj.predict_interval(
+            y_pred_intervals = self._component_obj.predict_interval(
                 fh=fh_,
                 X=X,
                 coverage=coverage,
             )
         else:
-            y_pred_interval = self._component_obj.predict_interval(
+            y_pred_intervals = self._component_obj.predict_interval(
                 fh=fh_,
                 coverage=coverage,
             )
-        y_pred_interval.index = X.index
+        y_pred_intervals.index = X.index
 
         for conf_int in coverage:
-            preds_lower = y_pred_interval.loc(axis=1)[("Coverage", conf_int, "lower")]
-            preds_upper = y_pred_interval.loc(axis=1)[("Coverage", conf_int, "upper")]
-            preds_lower.name = None
-            preds_upper.name = None
+            if (
+                conf_int == 0.95
+                and self.preds_95_lower is not None
+                and self.preds_95_upper is not None
+            ):
+                prediction_interval_result[f"{conf_int}_lower"] = self.preds_95_lower
+                prediction_interval_result[f"{conf_int}_upper"] = self.preds_95_upper
+                continue
+            preds_lower, preds_upper = ARIMARegressor._parse_prediction_intervals(
+                y_pred_intervals,
+                conf_int,
+            )
             prediction_interval_result[f"{conf_int}_lower"] = preds_lower
             prediction_interval_result[f"{conf_int}_upper"] = preds_upper
 

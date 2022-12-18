@@ -143,6 +143,8 @@ class ExponentialSmoothingRegressor(Estimator):
     ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted ExponentialSmoothingRegressor.
 
+        Calculates the prediction intervals by using a simulation of the time series following a specified state space model.
+
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
             y (pd.Series): Target data. Optional.

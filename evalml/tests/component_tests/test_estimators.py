@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 
-from evalml.exceptions import ComponentNotYetFittedError
+from evalml.exceptions import ComponentNotYetFittedError, MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.utils import (
@@ -381,6 +381,23 @@ def test_estimator_feature_importance(
 
     assert not estimator.feature_importance.isna().any()
     assert len(X.columns) == len(estimator.feature_importance)
+
+
+def test_estimator_non_ts_regression_prediction_intervals_error(ts_data):
+    _, X_test, _ = ts_data()
+
+    class MockEstimator(Estimator):
+        name = "Mock Estimator"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ["binary"]
+
+    mock_estimator = MockEstimator()
+
+    with pytest.raises(
+        MethodPropertyNotFoundError,
+        match="Estimator must support Time Series Regression",
+    ):
+        mock_estimator.get_prediction_intervals(X_test)
 
 
 @pytest.mark.parametrize(

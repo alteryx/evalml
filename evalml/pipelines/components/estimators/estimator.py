@@ -8,6 +8,7 @@ import scipy.stats as st
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
+from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
 
@@ -133,15 +134,26 @@ class Estimator(ComponentBase):
     ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted regressor.
 
+        This function takes the predictions of the fitted estimator and calculates the rolling standard deviation across
+        all predictions using a window size of 5. The lower and upper predictions are determined by taking the percent
+        point (quantile) function of the lower tail probability at each bound multiplied by the rolling standard deviation.
+
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
             y (pd.Series): Target data. Ignored.
-            coverage (float): A float between the values 0 and 1 that the upper and lower bounds of the
+            coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
                 prediction interval should be calculated for.
 
         Returns:
             dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+
+        Raises:
+            MethodPropertyNotFoundError: If the estimator does not support Time Series Regression as a problem type.
         """
+        if ProblemTypes.TIME_SERIES_REGRESSION not in self.supported_problem_types:
+            raise MethodPropertyNotFoundError(
+                "Estimator must support Time Series Regression",
+            )
         if coverage is None:
             coverage = [0.95]
         X, _ = self._manage_woodwork(X, y)
@@ -157,8 +169,8 @@ class Estimator(ComponentBase):
                 predictions + st.norm.ppf(round((1 + conf_int) / 2, 3)) * rolling_std
             )
 
-            preds_lower = pd.Series(preds_lower.values, index=X.index, name=None)
-            preds_upper = pd.Series(preds_upper.values, index=X.index, name=None)
+            preds_lower = pd.Series(preds_lower.values, index=X.index)
+            preds_upper = pd.Series(preds_upper.values, index=X.index)
             prediction_interval_result[f"{conf_int}_lower"] = preds_lower
             prediction_interval_result[f"{conf_int}_upper"] = preds_upper
 
