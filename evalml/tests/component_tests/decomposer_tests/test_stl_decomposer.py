@@ -12,22 +12,23 @@ from evalml.tests.component_tests.decomposer_tests.test_decomposer import (
 
 
 def test_stl_decomposer_init():
-    delayed_features = STLDecomposer(degree=3, time_index="dates")
-    assert delayed_features.parameters == {
+    decomp = STLDecomposer(degree=3, time_index="dates")
+    assert decomp.parameters == {
         "degree": 3,
-        "seasonal_period": 7,
+        "period": None,
+        "seasonal_smoother": 7,
         "time_index": "dates",
     }
 
 
-def test_stl_decomposer_auto_sets_seasonal_period_to_odd(ts_data):
+def test_stl_decomposer_auto_sets_seasonal_smoother_to_odd(ts_data):
     X, _, y = ts_data()
 
-    stl = STLDecomposer(seasonal_period=3)
-    assert stl.seasonal_period == 3
+    stl = STLDecomposer(seasonal_smoother=3)
+    assert stl.seasonal_smoother == 3
 
-    stl = STLDecomposer(seasonal_period=4)
-    assert stl.seasonal_period == 5
+    stl = STLDecomposer(seasonal_smoother=4)
+    assert stl.seasonal_smoother == 5
 
 
 @pytest.mark.parametrize(
@@ -76,7 +77,7 @@ def test_stl_fit_transform_in_sample(
     lin_reg.fit(features, y)
     expected_trend = lin_reg.predict(features)
 
-    stl = STLDecomposer(seasonal_period=period)
+    stl = STLDecomposer(period=period)
 
     X_t, y_t = stl.fit_transform(X, y)
 
@@ -123,18 +124,18 @@ def test_stl_decomposer_inverse_transform(
     transformer_fit_on_data,
 ):
     # Generate 10 periods (the default) of synthetic seasonal data
-    seasonal_period = 7
+    period = 7
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=seasonal_period,
+        period=period,
         freq_str="D",
         set_time_index=True,
     )
     if index_type == "integer_index":
         y = y.reset_index(drop=True)
-    subset_X = X[: 5 * seasonal_period]
-    subset_y = y[: 5 * seasonal_period]
+    subset_X = X[: 5 * period]
+    subset_y = y[: 5 * period]
 
-    decomposer = STLDecomposer(seasonal_period=seasonal_period)
+    decomposer = STLDecomposer(period=period)
     output_X, output_y = decomposer.fit_transform(subset_X, subset_y)
 
     if transformer_fit_on_data == "in-sample":
@@ -144,7 +145,7 @@ def test_stl_decomposer_inverse_transform(
     if transformer_fit_on_data != "in-sample":
         y_t_new = build_test_target(
             subset_y,
-            seasonal_period,
+            period,
             transformer_fit_on_data,
             to_test="inverse_transform",
         )
@@ -194,14 +195,14 @@ def test_stl_decomposer_get_trend_dataframe(
     variateness,
 ):
 
-    seasonal_period = 7
+    period = 7
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=seasonal_period,
+        period=period,
         freq_str="D",
         set_time_index=True,
     )
-    subset_X = X[: 5 * seasonal_period]
-    subset_y = y[: 5 * seasonal_period]
+    subset_X = X[: 5 * period]
+    subset_y = y[: 5 * period]
 
     if transformer_fit_on_data == "in-sample":
         dec = STLDecomposer()
@@ -227,7 +228,7 @@ def test_stl_decomposer_get_trend_dataframe(
 
         y_t_new = build_test_target(
             subset_y,
-            seasonal_period,
+            period,
             transformer_fit_on_data,
             to_test="transform",
         )
