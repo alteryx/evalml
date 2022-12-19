@@ -158,7 +158,7 @@ class ClassImbalanceDataCheck(DataCheck):
         }
         if str(y.ww.logical_type) not in ["Boolean", "BooleanNullable"]:
             after_to_before_inference_mapping = {
-                old: old for old, _ in after_to_before_inference_mapping.items()
+                old: old for old in after_to_before_inference_mapping.keys()
             }
 
         fold_counts = y.value_counts(normalize=False, sort=True)
