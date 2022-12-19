@@ -1,6 +1,6 @@
 """A component that fits and predicts given data."""
 from abc import abstractmethod
-from typing import Dict, List, Optional, Self, Tuple, Type, Union
+from typing import Dict, List, Optional, Tuple, Type, Union
 
 import pandas as pd
 import scipy.stats as st
@@ -75,7 +75,7 @@ class Estimator(ComponentBase):
             y = infer_feature_types(y)
         return X, y
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> Self:
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """Fits estimator to data.
 
         Args:

@@ -1,5 +1,5 @@
 """Autoregressive Integrated Moving Average Model. The three parameters (p, d, q) are the AR order, the degree of differencing, and the MA order. More information here: https://www.statsmodels.org/devel/generated/statsmodels.tsa.arima.model.ARIMA.html."""
-from typing import Dict, Hashable, List, Optional, Self, Tuple, Union
+from typing import Dict, Hashable, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -193,7 +193,7 @@ class ARIMARegressor(Estimator):
                 sp = freq_mappings.get(freq[:1], 1)
         return sp
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> Self:
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """Fits ARIMA regressor to data.
 
         Args:

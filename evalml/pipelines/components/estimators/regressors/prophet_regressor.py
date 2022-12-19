@@ -1,6 +1,6 @@
 """Prophet is a procedure for forecasting time series data based on an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects. It works best with time series that have strong seasonal effects and several seasons of historical data. Prophet is robust to missing data and shifts in the trend, and typically handles outliers well."""
 import copy
-from typing import Dict, Hashable, List, Optional, Self, Union
+from typing import Dict, Hashable, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -119,7 +119,7 @@ class ProphetRegressor(Estimator):
 
         return prophet_df
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> Self:
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """Fits Prophet regressor component to data.
 
         Args:

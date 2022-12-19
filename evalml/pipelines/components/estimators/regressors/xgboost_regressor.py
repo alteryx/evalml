@@ -1,5 +1,5 @@
 """XGBoost Regressor."""
-from typing import Dict, List, Optional, Self, Union
+from typing import Dict, List, Optional, Union
 
 import pandas as pd
 from skopt.space import Integer, Real
@@ -81,7 +81,7 @@ class XGBoostRegressor(Estimator):
             random_seed=random_seed,
         )
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> Self:
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """Fits XGBoost regressor component to data.
 
         Args:

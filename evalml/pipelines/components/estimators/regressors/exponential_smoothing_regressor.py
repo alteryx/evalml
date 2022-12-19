@@ -1,5 +1,6 @@
 """Holt-Winters Exponential Smoothing Forecaster."""
-from typing import Dict, List, Optional, Self, Union
+
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -95,7 +96,7 @@ class ExponentialSmoothingRegressor(Estimator):
         fh_ = ForecastingHorizon([i + 1 for i in range(len(X))], is_relative=True)
         return fh_
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> Self:
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """Fits Exponential Smoothing Regressor to data.
 
         Args:
