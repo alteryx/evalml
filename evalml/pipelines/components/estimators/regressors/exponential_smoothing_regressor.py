@@ -1,5 +1,5 @@
 """Holt-Winters Exponential Smoothing Forecaster."""
-from typing import Dict, List
+from typing import Dict, List, Optional, Self, Union
 
 import numpy as np
 import pandas as pd
@@ -46,12 +46,12 @@ class ExponentialSmoothingRegressor(Estimator):
 
     def __init__(
         self,
-        trend=None,
-        damped_trend=False,
-        seasonal=None,
-        sp=2,
-        n_jobs=-1,
-        random_seed=0,
+        trend: Optional[str] = None,
+        damped_trend: bool = False,
+        seasonal: Optional[str] = None,
+        sp: int = 2,
+        n_jobs: int = -1,
+        random_seed: Union[int, float] = 0,
         **kwargs,
     ):
         if trend is None:
@@ -79,7 +79,7 @@ class ExponentialSmoothingRegressor(Estimator):
             random_seed=random_seed,
         )
 
-    def _remove_datetime(self, data):
+    def _remove_datetime(self, data: pd.DataFrame) -> pd.DataFrame:
         data_no_dt = data.copy()
         if isinstance(
             data_no_dt.index,
@@ -89,13 +89,13 @@ class ExponentialSmoothingRegressor(Estimator):
 
         return data_no_dt
 
-    def _set_forecast(self, X):
+    def _set_forecast(self, X: pd.DataFrame):
         from sktime.forecasting.base import ForecastingHorizon
 
         fh_ = ForecastingHorizon([i + 1 for i in range(len(X))], is_relative=True)
         return fh_
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> Self:
         """Fits Exponential Smoothing Regressor to data.
 
         Args:
@@ -117,7 +117,7 @@ class ExponentialSmoothingRegressor(Estimator):
         self._component_obj.fit(y=y)
         return self
 
-    def predict(self, X, y=None):
+    def predict(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.Series:
         """Make predictions using fitted Exponential Smoothing regressor.
 
         Args:
@@ -138,7 +138,7 @@ class ExponentialSmoothingRegressor(Estimator):
     def get_prediction_intervals(
         self,
         X: pd.DataFrame,
-        y: pd.Series = None,
+        y: Optional[pd.Series] = None,
         coverage: List[float] = None,
     ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted ExponentialSmoothingRegressor.
@@ -180,6 +180,6 @@ class ExponentialSmoothingRegressor(Estimator):
         return prediction_interval_result
 
     @property
-    def feature_importance(self):
+    def feature_importance(self) -> pd.Series:
         """Returns array of 0's with a length of 1 as feature_importance is not defined for Exponential Smoothing regressor."""
         return pd.Series(np.zeros(1))

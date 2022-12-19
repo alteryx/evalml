@@ -1,5 +1,5 @@
 """Random Forest Regressor."""
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
 
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
@@ -44,7 +44,12 @@ class RandomForestRegressor(Estimator):
     ]"""
 
     def __init__(
-        self, n_estimators=100, max_depth=6, n_jobs=-1, random_seed=0, **kwargs
+        self,
+        n_estimators: int = 100,
+        max_depth: int = 6,
+        n_jobs: int = -1,
+        random_seed: Union[int, float] = 0,
+        **kwargs,
     ):
         parameters = {
             "n_estimators": n_estimators,
@@ -63,7 +68,7 @@ class RandomForestRegressor(Estimator):
     def get_prediction_intervals(
         self,
         X: pd.DataFrame,
-        y: pd.Series = None,
+        y: Optional[pd.Series] = None,
         coverage: List[float] = None,
     ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted RandomForestRegressor.

@@ -1,6 +1,6 @@
 """A component that fits and predicts given data."""
 from abc import abstractmethod
-from typing import Dict, List
+from typing import Dict, List, Optional, Self, Tuple, Type, Union
 
 import pandas as pd
 import scipy.stats as st
@@ -48,7 +48,13 @@ class Estimator(ComponentBase):
     def supported_problem_types(cls):
         """Problem types this estimator supports."""
 
-    def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
+    def __init__(
+        self,
+        parameters: dict = None,
+        component_obj: Type[ComponentBase] = None,
+        random_seed: Union[int, float] = 0,
+        **kwargs,
+    ):
         self.input_feature_names = None
         super().__init__(
             parameters=parameters,
@@ -57,7 +63,11 @@ class Estimator(ComponentBase):
             **kwargs,
         )
 
-    def _manage_woodwork(self, X, y=None):
+    def _manage_woodwork(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series = None,
+    ) -> Tuple[pd.DataFrame, pd.Series]:
         """Function to convert the input and target data to Pandas data structures."""
         if X is not None:
             X = infer_feature_types(X)
@@ -65,7 +75,7 @@ class Estimator(ComponentBase):
             y = infer_feature_types(y)
         return X, y
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> Self:
         """Fits estimator to data.
 
         Args:
@@ -80,7 +90,7 @@ class Estimator(ComponentBase):
         self._component_obj.fit(X, y)
         return self
 
-    def predict(self, X):
+    def predict(self, X: pd.DataFrame) -> pd.Series:
         """Make predictions using selected features.
 
         Args:
@@ -103,7 +113,7 @@ class Estimator(ComponentBase):
         predictions.index = X.index
         return predictions
 
-    def predict_proba(self, X):
+    def predict_proba(self, X: pd.DataFrame) -> pd.Series:
         """Make probability estimates for labels.
 
         Args:
@@ -128,8 +138,8 @@ class Estimator(ComponentBase):
 
     def get_prediction_intervals(
         self,
-        X,
-        y=None,
+        X: pd.DataFrame,
+        y: Optional[pd.Series] = None,
         coverage: List[float] = None,
     ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted regressor.
@@ -177,7 +187,7 @@ class Estimator(ComponentBase):
         return prediction_interval_result
 
     @property
-    def feature_importance(self):
+    def feature_importance(self) -> pd.Series:
         """Returns importance associated with each feature.
 
         Returns:

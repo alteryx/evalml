@@ -1,5 +1,6 @@
 """Utility methods for EvalML components."""
 import inspect
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -205,7 +206,12 @@ def set_boolean_columns_to_categorical(X):
     return X
 
 
-def get_prediction_intevals_for_tree_regressors(X, predictions, coverage, estimators):
+def get_prediction_intevals_for_tree_regressors(
+    X: pd.DataFrame,
+    predictions: pd.Series,
+    coverage: List[float],
+    estimators: List[Estimator],
+) -> Dict[str, pd.Series]:
     """Find the prediction intervals for tree-based regressors.
 
     Args:

@@ -1,5 +1,5 @@
 """Extra Trees Regressor."""
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
 
 import pandas as pd
 from sklearn.ensemble import ExtraTreesRegressor as SKExtraTreesRegressor
@@ -66,13 +66,13 @@ class ExtraTreesRegressor(Estimator):
 
     def __init__(
         self,
-        n_estimators=100,
-        max_features="auto",
-        max_depth=6,
-        min_samples_split=2,
-        min_weight_fraction_leaf=0.0,
-        n_jobs=-1,
-        random_seed=0,
+        n_estimators: int = 100,
+        max_features: str = "auto",
+        max_depth: int = 6,
+        min_samples_split: int = 2,
+        min_weight_fraction_leaf: float = 0.0,
+        n_jobs: int = -1,
+        random_seed: Union[int, float] = 0,
         **kwargs,
     ):
         parameters = {
@@ -95,7 +95,7 @@ class ExtraTreesRegressor(Estimator):
     def get_prediction_intervals(
         self,
         X: pd.DataFrame,
-        y: pd.Series = None,
+        y: Optional[pd.Series] = None,
         coverage: List[float] = None,
     ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted ExtraTreesRegressor.

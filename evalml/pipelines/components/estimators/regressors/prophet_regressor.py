@@ -1,6 +1,6 @@
 """Prophet is a procedure for forecasting time series data based on an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects. It works best with time series that have strong seasonal effects and several seasons of historical data. Prophet is robust to missing data and shifts in the trend, and typically handles outliers well."""
 import copy
-from typing import Dict, List
+from typing import Dict, Hashable, List, Optional, Self, Union
 
 import numpy as np
 import pandas as pd
@@ -53,14 +53,14 @@ class ProphetRegressor(Estimator):
 
     def __init__(
         self,
-        time_index=None,
-        changepoint_prior_scale=0.05,
-        seasonality_prior_scale=10,
-        holidays_prior_scale=10,
-        seasonality_mode="additive",
-        stan_backend="CMDSTANPY",
-        interval_width=0.95,
-        random_seed=0,
+        time_index: Optional[Hashable] = None,
+        changepoint_prior_scale: float = 0.05,
+        seasonality_prior_scale: int = 10,
+        holidays_prior_scale: int = 10,
+        seasonality_mode: str = "additive",
+        stan_backend: str = "CMDSTANPY",
+        interval_width: float = 0.95,
+        random_seed: Union[int, float] = 0,
         **kwargs,
     ):
         parameters = {
@@ -95,7 +95,11 @@ class ProphetRegressor(Estimator):
         )
 
     @staticmethod
-    def build_prophet_df(X, y=None, time_index="ds"):
+    def build_prophet_df(
+        X: pd.DataFrame,
+        y: Optional[pd.Series] = None,
+        time_index: str = "ds",
+    ) -> pd.DataFrame:
         """Build the Prophet data to pass fit and predict on."""
         X = copy.deepcopy(X)
         y = copy.deepcopy(y)
@@ -115,7 +119,7 @@ class ProphetRegressor(Estimator):
 
         return prophet_df
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> Self:
         """Fits Prophet regressor component to data.
 
         Args:
@@ -136,7 +140,7 @@ class ProphetRegressor(Estimator):
         self._component_obj.fit(prophet_df)
         return self
 
-    def predict(self, X, y=None):
+    def predict(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.Series:
         """Make predictions using fitted Prophet regressor.
 
         Args:
@@ -164,8 +168,8 @@ class ProphetRegressor(Estimator):
 
     def get_prediction_intervals(
         self,
-        X,
-        y=None,
+        X: pd.DataFrame,
+        y: Optional[pd.Series] = None,
         coverage: List[float] = None,
     ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted ProphetRegressor.
@@ -201,17 +205,17 @@ class ProphetRegressor(Estimator):
             prediction_interval_result[f"{conf_int}_upper"] = prediction_interval_upper
         return prediction_interval_result
 
-    def get_params(self):
+    def get_params(self) -> dict:
         """Get parameters for the Prophet regressor."""
         return self.__dict__["_parameters"]
 
     @property
-    def feature_importance(self):
+    def feature_importance(self) -> np.ndarray:
         """Returns array of 0's with len(1) as feature_importance is not defined for Prophet regressor."""
         return np.zeros(1)
 
     @classproperty
-    def default_parameters(cls):
+    def default_parameters(cls) -> dict:
         """Returns the default parameters for this component.
 
         Returns:

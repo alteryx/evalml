@@ -1,5 +1,5 @@
 """Autoregressive Integrated Moving Average Model. The three parameters (p, d, q) are the AR order, the degree of differencing, and the MA order. More information here: https://www.statsmodels.org/devel/generated/statsmodels.tsa.arima.model.ARIMA.html."""
-from typing import Dict, List
+from typing import Dict, Hashable, List, Optional, Self, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -68,20 +68,20 @@ class ARIMARegressor(Estimator):
 
     def __init__(
         self,
-        time_index=None,
-        trend=None,
-        start_p=2,
-        d=0,
-        start_q=2,
-        max_p=5,
-        max_d=2,
-        max_q=5,
-        seasonal=True,
-        sp=1,
-        n_jobs=-1,
-        random_seed=0,
-        maxiter=10,
-        use_covariates=True,
+        time_index: Optional[Hashable] = None,
+        trend: Optional[str] = None,
+        start_p: int = 2,
+        d: int = 0,
+        start_q: int = 2,
+        max_p: int = 5,
+        max_d: int = 2,
+        max_q: int = 5,
+        seasonal: bool = True,
+        sp: int = 1,
+        n_jobs: int = -1,
+        random_seed: Union[int, float] = 0,
+        maxiter: int = 10,
+        use_covariates: bool = True,
         **kwargs,
     ):
         self.preds_95_upper = None
@@ -121,7 +121,11 @@ class ARIMARegressor(Estimator):
             random_seed=random_seed,
         )
 
-    def _remove_datetime(self, data, features=False):
+    def _remove_datetime(
+        self,
+        data: pd.DataFrame,
+        features: bool = False,
+    ) -> pd.DataFrame:
         if data is None:
             return None
         data_no_dt = data.ww.copy()
@@ -135,7 +139,11 @@ class ARIMARegressor(Estimator):
 
         return data_no_dt
 
-    def _match_indices(self, X, y):
+    def _match_indices(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series,
+    ) -> Tuple[pd.DataFrame, pd.Series]:
         if X is not None:
             if X.index.equals(y.index):
                 return X, y
@@ -143,7 +151,7 @@ class ARIMARegressor(Estimator):
                 y.index = X.index
         return X, y
 
-    def _set_forecast(self, X):
+    def _set_forecast(self, X: pd.DataFrame):
         from sktime.forecasting.base import ForecastingHorizon
 
         # we can only calculate the difference if the indices are of the same type
@@ -167,7 +175,7 @@ class ARIMARegressor(Estimator):
             )
         return fh_
 
-    def _get_sp(self, X):
+    def _get_sp(self, X: pd.DataFrame) -> int:
         if X is None:
             return 1
         freq_mappings = {
@@ -185,7 +193,7 @@ class ARIMARegressor(Estimator):
                 sp = freq_mappings.get(freq[:1], 1)
         return sp
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> Self:
         """Fits ARIMA regressor to data.
 
         Args:
@@ -227,7 +235,7 @@ class ARIMARegressor(Estimator):
             self._component_obj.fit(y=y)
         return self
 
-    def _manage_types_and_forecast(self, X):
+    def _manage_types_and_forecast(self, X: pd.DataFrame) -> tuple:
         fh_ = self._set_forecast(X)
         X = X.ww.select(exclude=["Datetime"])
         X.ww.set_types(
@@ -239,14 +247,17 @@ class ARIMARegressor(Estimator):
         return X, fh_
 
     @staticmethod
-    def _parse_prediction_intervals(y_pred_intervals, conf_int):
+    def _parse_prediction_intervals(
+        y_pred_intervals: pd.DataFrame,
+        conf_int: int,
+    ) -> Tuple[pd.Series, pd.Series]:
         preds_lower = y_pred_intervals.loc(axis=1)[("Coverage", conf_int, "lower")]
         preds_upper = y_pred_intervals.loc(axis=1)[("Coverage", conf_int, "upper")]
         preds_lower.name = None
         preds_upper.name = None
         return preds_lower, preds_upper
 
-    def predict(self, X, y=None):
+    def predict(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.Series:
         """Make predictions using fitted ARIMA regressor.
 
         Args:
@@ -352,6 +363,6 @@ class ARIMARegressor(Estimator):
         return prediction_interval_result
 
     @property
-    def feature_importance(self):
+    def feature_importance(self) -> np.ndarray:
         """Returns array of 0's with a length of 1 as feature_importance is not defined for ARIMA regressor."""
         return np.zeros(1)
