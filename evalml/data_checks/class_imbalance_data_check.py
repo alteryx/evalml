@@ -150,16 +150,20 @@ class ClassImbalanceDataCheck(DataCheck):
         original_vc = pd.Series(y).value_counts(sort=True)
         y = infer_feature_types(y)
         new_vc = y.value_counts(sort=True)
-        after_to_before_inference_mapping = {
-            new: old for old, new in zip(original_vc.keys(), new_vc.keys())
-        }
+        if str(y.ww.logical_type) not in ["Boolean", "BooleanNullable"]:
+            # If the inferred logical type is not in Boolean/BooleanNullable, then a
+            # mapping to the original values is not necessary.
+            after_to_before_inference_mapping = {new: new for new in new_vc.keys()}
+        else:
+            # If the inferred logical type is in Boolean/BooleanNullable, then a
+            # mapping to the original values will be needed for the data check messages
+            after_to_before_inference_mapping = {
+                new: old for old, new in zip(original_vc.keys(), new_vc.keys())
+            }
+        # Needed for checking severe imbalance to verify values present below threshold
         before_to_after_inference_mapping = {
             old: new for new, old in after_to_before_inference_mapping.items()
         }
-        if str(y.ww.logical_type) not in ["Boolean", "BooleanNullable"]:
-            after_to_before_inference_mapping = {
-                old: old for old in after_to_before_inference_mapping.keys()
-            }
 
         fold_counts = y.value_counts(normalize=False, sort=True)
         fold_counts = np.floor(fold_counts * self.test_size).astype(int)

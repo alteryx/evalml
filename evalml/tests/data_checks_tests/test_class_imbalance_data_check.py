@@ -454,6 +454,24 @@ def test_class_imbalance_severe(test_size, min_samples, input_type):
         * 50
         * int(1 / test_size),
     )
+    y_values_binary_str = pd.Series(
+        [
+            "no",
+            "yes",
+            "yes",
+            "yes",
+            "yes",
+            "yes",
+            "yes",
+            "yes",
+            "yes",
+            "yes",
+            "yes",
+            "yes",
+        ]
+        * 50
+        * int(1 / test_size),
+    )
     if input_type == "ww":
         X.ww.init()
         y_values_binary = ww.init_series(y_values_binary, logical_type="integer")
@@ -486,6 +504,26 @@ def test_class_imbalance_severe(test_size, min_samples, input_type):
         )
     assert class_imbalance_check.validate(X, y_values_binary) == warnings
     assert class_imbalance_check.validate(X, y_values_multiclass) == warnings
+
+    warnings = [
+        DataCheckWarning(
+            message="The following labels fall below 10% of the target: ['no']",
+            data_check_name=class_imbalance_data_check_name,
+            message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
+            details={"target_values": ["no"]},
+        ).to_dict(),
+    ]
+    if min_samples > 50:
+        warnings.append(
+            DataCheckWarning(
+                message=f"The following labels in the target have severe class imbalance because they fall under 10% of the target and have less than {min_samples} samples: ['no']",
+                data_check_name=class_imbalance_data_check_name,
+                message_code=DataCheckMessageCode.CLASS_IMBALANCE_SEVERE,
+                details={"target_values": ["no"]},
+            ).to_dict(),
+        )
+
+    assert class_imbalance_check.validate(X, y_values_binary_str) == warnings
 
 
 @pytest.mark.parametrize("test_size", [1, 0.5, 0.2])
