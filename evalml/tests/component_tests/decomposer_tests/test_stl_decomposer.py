@@ -21,14 +21,19 @@ def test_stl_decomposer_init():
     }
 
 
-def test_stl_decomposer_auto_sets_seasonal_smoother_to_odd(ts_data):
-    X, _, y = ts_data()
-
+def test_stl_decomposer_auto_sets_seasonal_smoother_to_odd():
     stl = STLDecomposer(seasonal_smoother=3)
     assert stl.seasonal_smoother == 3
 
     stl = STLDecomposer(seasonal_smoother=4)
     assert stl.seasonal_smoother == 5
+
+
+def test_stl_raises_warning_high_smoother(caplog, ts_data):
+    X, _, y = ts_data()
+    stl = STLDecomposer(seasonal_smoother=101)
+    stl.fit(X, y)
+    assert "STLDecomposer may perform poorly" in caplog.text
 
 
 @pytest.mark.parametrize(
