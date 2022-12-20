@@ -249,7 +249,7 @@ class ARIMARegressor(Estimator):
     @staticmethod
     def _parse_prediction_intervals(
         y_pred_intervals: pd.DataFrame,
-        conf_int: int,
+        conf_int: float,
     ) -> Tuple[pd.Series, pd.Series]:
         preds_lower = y_pred_intervals.loc(axis=1)[("Coverage", conf_int, "lower")]
         preds_upper = y_pred_intervals.loc(axis=1)[("Coverage", conf_int, "upper")]
