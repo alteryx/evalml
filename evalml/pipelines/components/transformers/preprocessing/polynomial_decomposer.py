@@ -30,9 +30,9 @@ class PolynomialDecomposer(Decomposer):
         time_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
         degree (int): Degree for the polynomial. If 1, linear model is fit to the data.
             If 2, quadratic model is fit, etc. Defaults to 1.
-        seasonal_period (int): The number of entries in the time series data that corresponds to one period of a
+        period (int): The number of entries in the time series data that corresponds to one period of a
             cyclic signal.  For instance, if data is known to possess a weekly seasonal signal, and if the data
-            is daily data, seasonal_period should be 7.  For daily data with a yearly seasonal signal, seasonal_period
+            is daily data, period should be 7.  For daily data with a yearly seasonal signal, period
             should be 365.  Defaults to -1, which uses the statsmodels libarary's freq_to_period function.
             https://github.com/statsmodels/statsmodels/blob/main/statsmodels/tsa/tsatools.py
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -50,7 +50,7 @@ class PolynomialDecomposer(Decomposer):
         self,
         time_index: str = None,
         degree: int = 1,
-        seasonal_period: int = -1,
+        period: int = -1,
         random_seed: int = 0,
         **kwargs,
     ):
@@ -69,7 +69,7 @@ class PolynomialDecomposer(Decomposer):
             component_obj=decomposer,
             random_seed=random_seed,
             degree=degree,
-            seasonal_period=seasonal_period,
+            period=period,
             time_index=time_index,
             **kwargs,
         )
@@ -116,14 +116,14 @@ class PolynomialDecomposer(Decomposer):
         # statsmodel's seasonal_decompose() repeats the seasonal signal over the length of
         # the given array.  We'll extract the first iteration and save it for use in .transform()
         # TODO: Resolve with https://github.com/alteryx/evalml/issues/3708
-        if self.seasonal_period == -1:
-            self.seasonal_period = freq_to_period(self.frequency)
+        if self.period == -1:
+            self.period = freq_to_period(self.frequency)
 
         self.seasonal = seasonal_decompose(
             y_detrended_with_time_index,
-            period=self.seasonal_period,
+            period=self.period,
         ).seasonal
-        self.seasonality = self.seasonal[0 : self.seasonal_period]
+        self.seasonality = self.seasonal[0 : self.period]
         self.trend = y - (y_detrended_with_time_index - self.seasonal) - self.seasonal
         return self
 
@@ -167,7 +167,7 @@ class PolynomialDecomposer(Decomposer):
         seasonal = self._project_seasonal(
             y,
             self.seasonality,
-            self.seasonal_period,
+            self.period,
             self.frequency,
         )
 
@@ -248,7 +248,7 @@ class PolynomialDecomposer(Decomposer):
             projected_seasonality = self._project_seasonal(
                 truncated_y_t,
                 self.seasonality,
-                self.seasonal_period,
+                self.period,
                 self.frequency,
             )
 
@@ -320,7 +320,7 @@ class PolynomialDecomposer(Decomposer):
 
             seasonality = seasonal_decompose(
                 y - trend,
-                period=self.seasonal_period,
+                period=self.period,
             ).seasonal
             residual = y - trend - seasonality
             return pd.DataFrame(

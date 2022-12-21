@@ -22,7 +22,8 @@ class Decomposer(Transformer):
         component_obj (class) : Instance of a detrender/deseasonalizer class.
         random_seed (int): Seed for the random number generator. Defaults to 0.
         degree (int) : Currently the degree of the PolynomialDecomposer, not used for STLDecomposer.
-        seasonal_period (int) : The best guess, in units, for the period of the seasonal signal.
+        period (int) : The best guess, in units, for the period of the seasonal signal.
+        seasonal_smoother (int): The seasonal smoothing parameter for STLDecomposer, not used for PolynomialDecomposer.
         time_index (str) : The column name of the feature matrix (X) that the datetime information
             should be pulled from.
     """
@@ -39,19 +40,22 @@ class Decomposer(Transformer):
         component_obj=None,
         random_seed: int = 0,
         degree: int = 1,
-        seasonal_period: int = -1,
+        period: int = -1,
+        seasonal_smoother: int = 7,
         time_index: str = None,
         **kwargs,
     ):
         degree = self._raise_typeerror_if_not_int("degree", degree)
-        self.seasonal_period = self._raise_typeerror_if_not_int(
-            "seasonal_period",
-            seasonal_period,
+        self.seasonal_smoother = self._raise_typeerror_if_not_int(
+            "seasonal_smoother",
+            seasonal_smoother,
         )
+        self.period = period
         self.time_index = time_index
         parameters = {
             "degree": degree,
-            "seasonal_period": self.seasonal_period,
+            "period": period,
+            "seasonal_smoother": self.seasonal_smoother,
             "time_index": time_index,
         }
         parameters.update(kwargs)
@@ -192,7 +196,7 @@ class Decomposer(Transformer):
             relative_maxima = [None]
         return relative_maxima[0]
 
-    def set_seasonal_period(self, X: pd.DataFrame, y: pd.Series):
+    def set_period(self, X: pd.DataFrame, y: pd.Series):
         """Function to set the component's seasonal period based on the target's seasonality.
 
         Args:
@@ -200,8 +204,8 @@ class Decomposer(Transformer):
             y (pandas.Series): The target data of a time series problem.
 
         """
-        self.seasonal_period = self.determine_periodicity(X, y)
-        self.parameters.update({"seasonal_period": self.seasonal_period})
+        self.period = self.determine_periodicity(X, y)
+        self.parameters.update({"period": self.period})
 
     def _check_oos_past(self, y):
         """Function to check whether provided target data is out-of-sample and in the past."""
