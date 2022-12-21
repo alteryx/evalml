@@ -12,6 +12,8 @@ from evalml.pipelines.components.transformers.feature_selection import (
     RFClassifierSelectFromModel,
     RFRegressorBorutaSelector,
     RFRegressorSelectFromModel,
+    RFClassifierRFESelector,
+    RFRegressorRFESelector,
 )
 from evalml.pipelines.components.transformers.imputers import (
     PerColumnImputer,

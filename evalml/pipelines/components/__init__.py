@@ -70,6 +70,8 @@ from evalml.pipelines.components.transformers import (
     OrdinalEncoder,
     RFClassifierBorutaSelector,
     RFRegressorBorutaSelector,
+    RFClassifierRFESelector,
+    RFRegressorRFESelector,
 )
 from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
