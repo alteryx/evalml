@@ -1,4 +1,6 @@
 """Autoregressive Integrated Moving Average Model. The three parameters (p, d, q) are the AR order, the degree of differencing, and the MA order. More information here: https://www.statsmodels.org/devel/generated/statsmodels.tsa.arima.model.ARIMA.html."""
+from typing import Dict, Hashable, List, Optional, Tuple, Union
+
 import numpy as np
 import pandas as pd
 from skopt.space import Integer
@@ -66,22 +68,24 @@ class ARIMARegressor(Estimator):
 
     def __init__(
         self,
-        time_index=None,
-        trend=None,
-        start_p=2,
-        d=0,
-        start_q=2,
-        max_p=5,
-        max_d=2,
-        max_q=5,
-        seasonal=True,
-        sp=1,
-        n_jobs=-1,
-        random_seed=0,
-        maxiter=10,
-        use_covariates=True,
+        time_index: Optional[Hashable] = None,
+        trend: Optional[str] = None,
+        start_p: int = 2,
+        d: int = 0,
+        start_q: int = 2,
+        max_p: int = 5,
+        max_d: int = 2,
+        max_q: int = 5,
+        seasonal: bool = True,
+        sp: int = 1,
+        n_jobs: int = -1,
+        random_seed: Union[int, float] = 0,
+        maxiter: int = 10,
+        use_covariates: bool = True,
         **kwargs,
     ):
+        self.preds_95_upper = None
+        self.preds_95_lower = None
         parameters = {
             "trend": trend,
             "start_p": start_p,
@@ -117,7 +121,11 @@ class ARIMARegressor(Estimator):
             random_seed=random_seed,
         )
 
-    def _remove_datetime(self, data, features=False):
+    def _remove_datetime(
+        self,
+        data: pd.DataFrame,
+        features: bool = False,
+    ) -> pd.DataFrame:
         if data is None:
             return None
         data_no_dt = data.ww.copy()
@@ -131,7 +139,11 @@ class ARIMARegressor(Estimator):
 
         return data_no_dt
 
-    def _match_indices(self, X, y):
+    def _match_indices(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series,
+    ) -> Tuple[pd.DataFrame, pd.Series]:
         if X is not None:
             if X.index.equals(y.index):
                 return X, y
@@ -139,7 +151,7 @@ class ARIMARegressor(Estimator):
                 y.index = X.index
         return X, y
 
-    def _set_forecast(self, X):
+    def _set_forecast(self, X: pd.DataFrame):
         from sktime.forecasting.base import ForecastingHorizon
 
         # we can only calculate the difference if the indices are of the same type
@@ -163,7 +175,7 @@ class ARIMARegressor(Estimator):
             )
         return fh_
 
-    def _get_sp(self, X):
+    def _get_sp(self, X: pd.DataFrame) -> int:
         if X is None:
             return 1
         freq_mappings = {
@@ -181,7 +193,7 @@ class ARIMARegressor(Estimator):
                 sp = freq_mappings.get(freq[:1], 1)
         return sp
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """Fits ARIMA regressor to data.
 
         Args:
@@ -223,7 +235,29 @@ class ARIMARegressor(Estimator):
             self._component_obj.fit(y=y)
         return self
 
-    def predict(self, X, y=None):
+    def _manage_types_and_forecast(self, X: pd.DataFrame) -> tuple:
+        fh_ = self._set_forecast(X)
+        X = X.ww.select(exclude=["Datetime"])
+        X.ww.set_types(
+            {
+                col: "Double"
+                for col in X.ww.select(["Boolean"], return_schema=True).columns
+            },
+        )
+        return X, fh_
+
+    @staticmethod
+    def _parse_prediction_intervals(
+        y_pred_intervals: pd.DataFrame,
+        conf_int: float,
+    ) -> Tuple[pd.Series, pd.Series]:
+        preds_lower = y_pred_intervals.loc(axis=1)[("Coverage", conf_int, "lower")]
+        preds_upper = y_pred_intervals.loc(axis=1)[("Coverage", conf_int, "upper")]
+        preds_lower.name = None
+        preds_upper.name = None
+        return preds_lower, preds_upper
+
+    def predict(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.Series:
         """Make predictions using fitted ARIMA regressor.
 
         Args:
@@ -237,14 +271,8 @@ class ARIMARegressor(Estimator):
             ValueError: If X was passed to `fit` but not passed in `predict`.
         """
         X, y = self._manage_woodwork(X, y)
-        fh_ = self._set_forecast(X)
-        X = X.ww.select(exclude=["Datetime"])
-        X.ww.set_types(
-            {
-                col: "Double"
-                for col in X.ww.select(["Boolean"], return_schema=True).columns
-            },
-        )
+        X, fh_ = self._manage_types_and_forecast(X=X)
+
         if not X.empty and self.use_covariates:
             if fh_[0] != 1:
                 # pmdarima (which sktime uses under the hood) only forecasts off the training data
@@ -256,14 +284,85 @@ class ARIMARegressor(Estimator):
                 X_ = pd.concat([X.head(num_rows_diff), X], ignore_index=True)
             else:
                 X_ = X
-            y_pred = self._component_obj.predict(fh=fh_, X=X_)
+            y_pred_intervals = self._component_obj.predict_interval(
+                fh=fh_,
+                X=X_,
+                coverage=[0.95],
+            )
         else:
-            y_pred = self._component_obj.predict(fh=fh_)
-        y_pred.index = X.index
+            y_pred_intervals = self._component_obj.predict_interval(
+                fh=fh_,
+                coverage=[0.95],
+            )
+        y_pred_intervals.index = X.index
+
+        (
+            self.preds_95_lower,
+            self.preds_95_upper,
+        ) = ARIMARegressor._parse_prediction_intervals(y_pred_intervals, 0.95)
+
+        y_pred = pd.concat((self.preds_95_lower, self.preds_95_upper), axis=1).mean(
+            axis=1,
+        )
 
         return infer_feature_types(y_pred)
 
+    def get_prediction_intervals(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series = None,
+        coverage: List[float] = None,
+    ) -> Dict[str, pd.Series]:
+        """Find the prediction intervals using the fitted ARIMARegressor.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data. Optional.
+            coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
+                prediction interval should be calculated for.
+
+        Returns:
+            dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+        """
+        if coverage is None:
+            coverage = [0.95]
+        X, y = self._manage_woodwork(X, y)
+        X, fh_ = self._manage_types_and_forecast(X=X)
+
+        prediction_interval_result = {}
+
+        if not X.empty and self.use_covariates:
+            y_pred_intervals = self._component_obj.predict_interval(
+                fh=fh_,
+                X=X,
+                coverage=coverage,
+            )
+        else:
+            y_pred_intervals = self._component_obj.predict_interval(
+                fh=fh_,
+                coverage=coverage,
+            )
+        y_pred_intervals.index = X.index
+
+        for conf_int in coverage:
+            if (
+                conf_int == 0.95
+                and self.preds_95_lower is not None
+                and self.preds_95_upper is not None
+            ):
+                prediction_interval_result[f"{conf_int}_lower"] = self.preds_95_lower
+                prediction_interval_result[f"{conf_int}_upper"] = self.preds_95_upper
+                continue
+            preds_lower, preds_upper = ARIMARegressor._parse_prediction_intervals(
+                y_pred_intervals,
+                conf_int,
+            )
+            prediction_interval_result[f"{conf_int}_lower"] = preds_lower
+            prediction_interval_result[f"{conf_int}_upper"] = preds_upper
+
+        return prediction_interval_result
+
     @property
-    def feature_importance(self):
+    def feature_importance(self) -> np.ndarray:
         """Returns array of 0's with a length of 1 as feature_importance is not defined for ARIMA regressor."""
         return np.zeros(1)

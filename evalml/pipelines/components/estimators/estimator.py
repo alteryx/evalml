@@ -1,11 +1,14 @@
 """A component that fits and predicts given data."""
 from abc import abstractmethod
+from typing import Dict, List, Optional, Tuple, Type, Union
 
 import pandas as pd
+import scipy.stats as st
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
+from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
 
@@ -45,7 +48,13 @@ class Estimator(ComponentBase):
     def supported_problem_types(cls):
         """Problem types this estimator supports."""
 
-    def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
+    def __init__(
+        self,
+        parameters: dict = None,
+        component_obj: Type[ComponentBase] = None,
+        random_seed: Union[int, float] = 0,
+        **kwargs,
+    ):
         self.input_feature_names = None
         super().__init__(
             parameters=parameters,
@@ -54,7 +63,11 @@ class Estimator(ComponentBase):
             **kwargs,
         )
 
-    def _manage_woodwork(self, X, y=None):
+    def _manage_woodwork(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series = None,
+    ) -> Tuple[pd.DataFrame, pd.Series]:
         """Function to convert the input and target data to Pandas data structures."""
         if X is not None:
             X = infer_feature_types(X)
@@ -62,7 +75,7 @@ class Estimator(ComponentBase):
             y = infer_feature_types(y)
         return X, y
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """Fits estimator to data.
 
         Args:
@@ -77,7 +90,7 @@ class Estimator(ComponentBase):
         self._component_obj.fit(X, y)
         return self
 
-    def predict(self, X):
+    def predict(self, X: pd.DataFrame) -> pd.Series:
         """Make predictions using selected features.
 
         Args:
@@ -100,7 +113,7 @@ class Estimator(ComponentBase):
         predictions.index = X.index
         return predictions
 
-    def predict_proba(self, X):
+    def predict_proba(self, X: pd.DataFrame) -> pd.Series:
         """Make probability estimates for labels.
 
         Args:
@@ -123,8 +136,58 @@ class Estimator(ComponentBase):
         pred_proba.index = X.index
         return pred_proba
 
+    def get_prediction_intervals(
+        self,
+        X: pd.DataFrame,
+        y: Optional[pd.Series] = None,
+        coverage: List[float] = None,
+    ) -> Dict[str, pd.Series]:
+        """Find the prediction intervals using the fitted regressor.
+
+        This function takes the predictions of the fitted estimator and calculates the rolling standard deviation across
+        all predictions using a window size of 5. The lower and upper predictions are determined by taking the percent
+        point (quantile) function of the lower tail probability at each bound multiplied by the rolling standard deviation.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data. Ignored.
+            coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
+                prediction interval should be calculated for.
+
+        Returns:
+            dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+
+        Raises:
+            MethodPropertyNotFoundError: If the estimator does not support Time Series Regression as a problem type.
+        """
+        if ProblemTypes.TIME_SERIES_REGRESSION not in self.supported_problem_types:
+            raise MethodPropertyNotFoundError(
+                "Estimator must support Time Series Regression",
+            )
+        if coverage is None:
+            coverage = [0.95]
+        X, _ = self._manage_woodwork(X, y)
+        predictions = self._component_obj.predict(X)
+
+        prediction_interval_result = {}
+        for conf_int in coverage:
+            rolling_std = pd.Series(predictions).rolling(5).std().bfill()
+            preds_lower = (
+                predictions + st.norm.ppf(round((1 - conf_int) / 2, 3)) * rolling_std
+            )
+            preds_upper = (
+                predictions + st.norm.ppf(round((1 + conf_int) / 2, 3)) * rolling_std
+            )
+
+            preds_lower = pd.Series(preds_lower.values, index=X.index)
+            preds_upper = pd.Series(preds_upper.values, index=X.index)
+            prediction_interval_result[f"{conf_int}_lower"] = preds_lower
+            prediction_interval_result[f"{conf_int}_upper"] = preds_upper
+
+        return prediction_interval_result
+
     @property
-    def feature_importance(self):
+    def feature_importance(self) -> pd.Series:
         """Returns importance associated with each feature.
 
         Returns:

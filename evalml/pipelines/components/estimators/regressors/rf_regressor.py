@@ -1,9 +1,15 @@
 """Random Forest Regressor."""
+from typing import Dict, List, Optional, Union
+
+import pandas as pd
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from skopt.space import Integer
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.utils import (
+    get_prediction_intevals_for_tree_regressors,
+)
 from evalml.problem_types import ProblemTypes
 
 
@@ -38,7 +44,12 @@ class RandomForestRegressor(Estimator):
     ]"""
 
     def __init__(
-        self, n_estimators=100, max_depth=6, n_jobs=-1, random_seed=0, **kwargs
+        self,
+        n_estimators: int = 100,
+        max_depth: int = 6,
+        n_jobs: int = -1,
+        random_seed: Union[int, float] = 0,
+        **kwargs,
     ):
         parameters = {
             "n_estimators": n_estimators,
@@ -52,4 +63,35 @@ class RandomForestRegressor(Estimator):
             parameters=parameters,
             component_obj=rf_regressor,
             random_seed=random_seed,
+        )
+
+    def get_prediction_intervals(
+        self,
+        X: pd.DataFrame,
+        y: Optional[pd.Series] = None,
+        coverage: List[float] = None,
+    ) -> Dict[str, pd.Series]:
+        """Find the prediction intervals using the fitted RandomForestRegressor.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data. Optional.
+            coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
+                prediction interval should be calculated for.
+
+        Returns:
+            dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+        """
+        if coverage is None:
+            coverage = [0.95]
+        X, _ = self._manage_woodwork(X, y)
+        X = X.ww.select(exclude="Datetime")
+
+        predictions = self._component_obj.predict(X)
+        estimators = self._component_obj.estimators_
+        return get_prediction_intevals_for_tree_regressors(
+            X,
+            predictions,
+            coverage,
+            estimators,
         )
