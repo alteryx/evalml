@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 
-from evalml.exceptions import ComponentNotYetFittedError
+from evalml.exceptions import ComponentNotYetFittedError, MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.utils import (
@@ -381,3 +381,63 @@ def test_estimator_feature_importance(
 
     assert not estimator.feature_importance.isna().any()
     assert len(X.columns) == len(estimator.feature_importance)
+
+
+def test_estimator_non_ts_regression_prediction_intervals_error(ts_data):
+    _, X_test, _ = ts_data()
+
+    class MockEstimator(Estimator):
+        name = "Mock Estimator"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ["binary"]
+
+    mock_estimator = MockEstimator()
+
+    with pytest.raises(
+        MethodPropertyNotFoundError,
+        match="Estimator must support Time Series Regression",
+    ):
+        mock_estimator.get_prediction_intervals(X_test)
+
+
+@pytest.mark.parametrize(
+    "estimator_class",
+    get_estimators(ProblemTypes.TIME_SERIES_REGRESSION),
+)
+def test_estimator_prediction_intervals(
+    estimator_class,
+    ts_data,
+):
+    if estimator_class.model_family in [ModelFamily.PROPHET, ModelFamily.ARIMA]:
+        X_train, X_test, y_train = ts_data()
+        estimator = estimator_class(time_index="date")
+    else:
+        X_train, X_test, y_train = ts_data(datetime_feature=False)
+        X_train = pd.concat([X_train] * 2, ignore_index=True)
+        X_train = X_train * 1.12  # Just to add some variance in the training
+        y_train = y_train.repeat(2)
+        estimator = estimator_class()
+
+    estimator.fit(X_train, y_train)
+    predictions = estimator.predict(X_test)
+    result_95 = estimator.get_prediction_intervals(X_test)
+
+    assert (result_95["0.95_upper"] > predictions).all()
+    assert (predictions > result_95["0.95_lower"]).all()
+
+    result_75_85 = estimator.get_prediction_intervals(X_test, coverage=[0.75, 0.85])
+
+    assert list(result_75_85.keys()) == [
+        "0.75_lower",
+        "0.75_upper",
+        "0.85_lower",
+        "0.85_upper",
+    ]
+    assert (result_95["0.95_upper"] > result_75_85["0.85_upper"]).all()
+    assert (result_75_85["0.85_upper"] > result_75_85["0.75_upper"]).all()
+    assert (result_75_85["0.85_upper"] > predictions).all()
+    assert (result_75_85["0.75_upper"] > predictions).all()
+    assert (predictions > result_75_85["0.85_lower"]).all()
+    assert (predictions > result_75_85["0.75_lower"]).all()
+    assert (result_75_85["0.85_lower"] > result_95["0.95_lower"]).all()
+    assert (result_75_85["0.75_lower"] > result_75_85["0.85_lower"]).all()

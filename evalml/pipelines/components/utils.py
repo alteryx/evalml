@@ -1,6 +1,10 @@
 """Utility methods for EvalML components."""
 import inspect
+from typing import Dict, List
 
+import numpy as np
+import pandas as pd
+import scipy.stats as st
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
@@ -200,6 +204,45 @@ def set_boolean_columns_to_categorical(X):
     new_ltypes_for_boolean_cols = {col: "Categorical" for col in X_boolean_cols}
     X.ww.init(schema=original_X_schema, logical_types=new_ltypes_for_boolean_cols)
     return X
+
+
+def get_prediction_intevals_for_tree_regressors(
+    X: pd.DataFrame,
+    predictions: pd.Series,
+    coverage: List[float],
+    estimators: List[Estimator],
+) -> Dict[str, pd.Series]:
+    """Find the prediction intervals for tree-based regressors.
+
+    Args:
+        X (pd.DataFrame): Data of shape [n_samples, n_features].
+        predictions (pd.Series): Predictions from the regressor.
+        coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
+            prediction interval should be calculated for.
+        estimators (list): Collection of fitted sub-estimators.
+
+    Returns:
+        dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+    """
+    prediction_interval_result = {}
+    for conf_int in coverage:
+        preds = np.zeros((len(X), len(estimators)))
+        for ind, estimator_ in enumerate(estimators):
+            preds[:, ind] = estimator_.predict(X)
+        std_preds = np.std(preds, axis=1)
+        preds_lower = (
+            predictions + st.norm.ppf(round((1 - conf_int) / 2, 3)) * std_preds
+        )
+        preds_upper = (
+            predictions + st.norm.ppf(round((1 + conf_int) / 2, 3)) * std_preds
+        )
+
+        preds_lower = pd.Series(preds_lower, index=X.index, name=None)
+        preds_upper = pd.Series(preds_upper, index=X.index, name=None)
+        prediction_interval_result[f"{conf_int}_lower"] = preds_lower
+        prediction_interval_result[f"{conf_int}_upper"] = preds_upper
+
+    return prediction_interval_result
 
 
 class WrappedSKClassifier(BaseEstimator, ClassifierMixin):

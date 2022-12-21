@@ -1,7 +1,9 @@
 """Prophet is a procedure for forecasting time series data based on an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects. It works best with time series that have strong seasonal effects and several seasons of historical data. Prophet is robust to missing data and shifts in the trend, and typically handles outliers well."""
 import copy
+from typing import Dict, Hashable, List, Optional, Union
 
 import numpy as np
+import pandas as pd
 from skopt.space import Real
 
 from evalml.model_family import ModelFamily
@@ -15,6 +17,20 @@ class ProphetRegressor(Estimator):
     """Prophet is a procedure for forecasting time series data based on an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects. It works best with time series that have strong seasonal effects and several seasons of historical data. Prophet is robust to missing data and shifts in the trend, and typically handles outliers well.
 
     More information here: https://facebook.github.io/prophet/
+
+    Args:
+        time_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
+        changepoint_prior_scale (float): Determines the strength of the sparse prior for fitting on rate changes. Increasing
+            this value increases the flexibility of the trend. Defaults to 0.05.
+        seasonality_prior_scale (int): Similar to changepoint_prior_scale. Adjusts the extent to which the seasonality model will fit the data.
+            Defaults to 10.
+        holidays_prior_scale (int): Similar to changepoint_prior_scale. Adjusts the extent to which holidays will fit the data.
+            Defaults to 10.
+        seasonality_mode (str): Determines how this component fits the seasonality. Options are "additive" and "multiplicative". Defaults to "additive".
+        stan_backend (str): Determines the backend that should be used to run Prophet. Options are "CMDSTANPY" and "PYSTAN". Defaults to "CMDSTANPY".
+        interval_width (float): Determines the confidence of the prediction interval range when calling `get_prediction_intervals`.
+            Accepts values in the range (0,1). Defaults to 0.95.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "Prophet Regressor"
@@ -37,13 +53,14 @@ class ProphetRegressor(Estimator):
 
     def __init__(
         self,
-        time_index=None,
-        changepoint_prior_scale=0.05,
-        seasonality_prior_scale=10,
-        holidays_prior_scale=10,
-        seasonality_mode="additive",
-        random_seed=0,
-        stan_backend="CMDSTANPY",
+        time_index: Optional[Hashable] = None,
+        changepoint_prior_scale: float = 0.05,
+        seasonality_prior_scale: int = 10,
+        holidays_prior_scale: int = 10,
+        seasonality_mode: str = "additive",
+        stan_backend: str = "CMDSTANPY",
+        interval_width: float = 0.95,
+        random_seed: Union[int, float] = 0,
         **kwargs,
     ):
         parameters = {
@@ -52,6 +69,7 @@ class ProphetRegressor(Estimator):
             "holidays_prior_scale": holidays_prior_scale,
             "seasonality_mode": seasonality_mode,
             "stan_backend": stan_backend,
+            "interval_width": interval_width,
         }
 
         parameters.update(kwargs)
@@ -77,7 +95,11 @@ class ProphetRegressor(Estimator):
         )
 
     @staticmethod
-    def build_prophet_df(X, y=None, time_index="ds"):
+    def build_prophet_df(
+        X: pd.DataFrame,
+        y: Optional[pd.Series] = None,
+        time_index: str = "ds",
+    ) -> pd.DataFrame:
         """Build the Prophet data to pass fit and predict on."""
         X = copy.deepcopy(X)
         y = copy.deepcopy(y)
@@ -97,7 +119,7 @@ class ProphetRegressor(Estimator):
 
         return prophet_df
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """Fits Prophet regressor component to data.
 
         Args:
@@ -118,7 +140,7 @@ class ProphetRegressor(Estimator):
         self._component_obj.fit(prophet_df)
         return self
 
-    def predict(self, X, y=None):
+    def predict(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.Series:
         """Make predictions using fitted Prophet regressor.
 
         Args:
@@ -144,17 +166,56 @@ class ProphetRegressor(Estimator):
 
         return predictions
 
-    def get_params(self):
+    def get_prediction_intervals(
+        self,
+        X: pd.DataFrame,
+        y: Optional[pd.Series] = None,
+        coverage: List[float] = None,
+    ) -> Dict[str, pd.Series]:
+        """Find the prediction intervals using the fitted ProphetRegressor.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data. Ignored.
+            coverage (List[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
+                prediction interval should be calculated for.
+
+        Returns:
+            dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+        """
+        if coverage is None:
+            coverage = [0.95]
+
+        prophet_df = ProphetRegressor.build_prophet_df(
+            X=X,
+            y=y,
+            time_index=self.time_index,
+        )
+
+        prediction_interval_result = {}
+        for conf_int in coverage:
+            self._component_obj.interval_width = conf_int
+            X = infer_feature_types(X)
+
+            prophet_output = self._component_obj.predict(prophet_df)
+            prophet_output.index = X.index
+            prediction_interval_lower = prophet_output["yhat_lower"]
+            prediction_interval_upper = prophet_output["yhat_upper"]
+            prediction_interval_result[f"{conf_int}_lower"] = prediction_interval_lower
+            prediction_interval_result[f"{conf_int}_upper"] = prediction_interval_upper
+        return prediction_interval_result
+
+    def get_params(self) -> dict:
         """Get parameters for the Prophet regressor."""
         return self.__dict__["_parameters"]
 
     @property
-    def feature_importance(self):
+    def feature_importance(self) -> np.ndarray:
         """Returns array of 0's with len(1) as feature_importance is not defined for Prophet regressor."""
         return np.zeros(1)
 
     @classproperty
-    def default_parameters(cls):
+    def default_parameters(cls) -> dict:
         """Returns the default parameters for this component.
 
         Returns:
@@ -165,6 +226,7 @@ class ProphetRegressor(Estimator):
             "time_index": None,
             "seasonality_prior_scale": 10,
             "holidays_prior_scale": 10,
+            "interval_width": 0.95,
             "seasonality_mode": "additive",
             "stan_backend": "CMDSTANPY",
         }
