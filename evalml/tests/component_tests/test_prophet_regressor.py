@@ -72,6 +72,7 @@ def test_get_params():
         "changepoint_prior_scale": 0.05,
         "time_index": None,
         "seasonality_prior_scale": 10,
+        "interval_width": 0.95,
         "holidays_prior_scale": 10,
         "seasonality_mode": "additive",
         "stan_backend": "CMDSTANPY",
@@ -126,3 +127,34 @@ def test_fit_predict_ts(ts_data, drop_index, prophet):
     clf.fit(X, y)
     y_pred = clf.predict(X)
     np.array_equal(y_pred_p.values, y_pred.values)
+
+
+def test_prophet_regressor_prediction_intervals(ts_data):
+    X_train, X_test, y_train = ts_data()
+    clf = ProphetRegressor(time_index="date")
+
+    clf.fit(X_train, y_train)
+    predictions = clf.predict(X_test)
+    result_95 = clf.get_prediction_intervals(X_test)
+
+    assert clf._component_obj.interval_width == 0.95
+    assert (result_95["0.95_upper"] > predictions).all()
+    assert (predictions > result_95["0.95_lower"]).all()
+
+    result_75_85 = clf.get_prediction_intervals(X_test, coverage=[0.75, 0.85])
+
+    assert list(result_75_85.keys()) == [
+        "0.75_lower",
+        "0.75_upper",
+        "0.85_lower",
+        "0.85_upper",
+    ]
+    assert clf._component_obj.interval_width == 0.85
+    assert (result_95["0.95_upper"] > result_75_85["0.85_upper"]).all()
+    assert (result_75_85["0.85_upper"] > result_75_85["0.75_upper"]).all()
+    assert (result_75_85["0.85_upper"] > predictions).all()
+    assert (result_75_85["0.75_upper"] > predictions).all()
+    assert (predictions > result_75_85["0.85_lower"]).all()
+    assert (predictions > result_75_85["0.75_lower"]).all()
+    assert (result_75_85["0.85_lower"] > result_95["0.95_lower"]).all()
+    assert (result_75_85["0.75_lower"] > result_75_85["0.85_lower"]).all()

@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added the ability to retrieve prediction intervals for estimators that support time series regression :pr:`3876`
         * Added utils to handle the logic for threshold tuning objective and resplitting data :pr:`3888`
         * Integrated ``OrdinalEncoder`` into AutoMLSearch :pr:`3765`
     * Fixes

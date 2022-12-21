@@ -1,4 +1,6 @@
 """XGBoost Regressor."""
+from typing import Dict, List, Optional, Union
+
 import pandas as pd
 from skopt.space import Integer, Real
 
@@ -51,12 +53,12 @@ class XGBoostRegressor(Estimator):
 
     def __init__(
         self,
-        eta=0.1,
-        max_depth=6,
-        min_child_weight=1,
-        n_estimators=100,
-        random_seed=0,
-        n_jobs=12,
+        eta: float = 0.1,
+        max_depth: int = 6,
+        min_child_weight: int = 1,
+        n_estimators: int = 100,
+        random_seed: Union[int, float] = 0,
+        n_jobs: int = 12,
         **kwargs,
     ):
         parameters = {
@@ -79,7 +81,7 @@ class XGBoostRegressor(Estimator):
             random_seed=random_seed,
         )
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """Fits XGBoost regressor component to data.
 
         Args:
@@ -95,7 +97,7 @@ class XGBoostRegressor(Estimator):
         self._component_obj.fit(X, y)
         return self
 
-    def predict(self, X):
+    def predict(self, X: pd.DataFrame) -> pd.Series:
         """Make predictions using fitted XGBoost regressor.
 
         Args:
@@ -108,7 +110,32 @@ class XGBoostRegressor(Estimator):
         X = _rename_column_names_to_numeric(X)
         return super().predict(X)
 
+    def get_prediction_intervals(
+        self,
+        X: pd.DataFrame,
+        y: Optional[pd.Series] = None,
+        coverage: List[float] = None,
+    ) -> Dict[str, pd.Series]:
+        """Find the prediction intervals using the fitted ProphetRegressor.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data. Ignored.
+            coverage (List[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
+                prediction interval should be calculated for.
+
+        Returns:
+            dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+        """
+        X = _rename_column_names_to_numeric(X)
+        prediction_interval_result = super().get_prediction_intervals(
+            X=X,
+            y=y,
+            coverage=coverage,
+        )
+        return prediction_interval_result
+
     @property
-    def feature_importance(self):
+    def feature_importance(self) -> pd.Series:
         """Feature importance of fitted XGBoost regressor."""
         return pd.Series(self._component_obj.feature_importances_)
