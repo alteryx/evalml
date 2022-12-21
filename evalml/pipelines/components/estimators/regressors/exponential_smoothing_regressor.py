@@ -159,6 +159,10 @@ class ExponentialSmoothingRegressor(Estimator):
             coverage = [0.95]
         X, y = self._manage_woodwork(X, y)
 
+        # Accesses the fitted statsmodels model within sktime
+        # nsimulations represents how many steps should be simulated
+        # repetitions represents the number of simulations that should be run (confusing, I know)
+        # anchor represents where the simulations should start from (forecasting is done from the "end")
         y_pred = self._component_obj._fitted_forecaster.simulate(
             nsimulations=X.shape[0],
             repetitions=400,

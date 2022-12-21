@@ -186,17 +186,17 @@ class ProphetRegressor(Estimator):
         if coverage is None:
             coverage = [0.95]
 
+        prophet_df = ProphetRegressor.build_prophet_df(
+            X=X,
+            y=y,
+            time_index=self.time_index,
+        )
+
         prediction_interval_result = {}
         for conf_int in coverage:
-            if self._component_obj.interval_width != conf_int:
-                self._component_obj.interval_width = conf_int
+            self._component_obj.interval_width = conf_int
             X = infer_feature_types(X)
 
-            prophet_df = ProphetRegressor.build_prophet_df(
-                X=X,
-                y=y,
-                time_index=self.time_index,
-            )
             prophet_output = self._component_obj.predict(prophet_df)
             prophet_output.index = X.index
             prediction_interval_lower = prophet_output["yhat_lower"]
