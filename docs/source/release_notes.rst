@@ -10,6 +10,7 @@ Release Notes
     * Changes
         * Added a threshold to ``DateTimeFormatDataCheck`` to account for too many duplicate or nan values :pr:`3883`
         * Changed treatment of ``Boolean`` columns for ``SimpleImputer`` and ``ClassImbalanceDataCheck`` to be compatible with new Woodwork inference :pr:`3892`
+        * Split decomposer ``seasonal_period`` parameter into ``seasonal_smoother`` and ``period`` parameters :pr:`3896`
     * Documentation Changes
         * Hid non-essential warning messages in time series docs :pr:`3890`
     * Testing Changes

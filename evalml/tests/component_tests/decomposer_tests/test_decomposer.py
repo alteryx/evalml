@@ -72,7 +72,7 @@ def test_decomposer_plot_decomposition(
     if y_has_time_index == "y_has_time_index":
         y = y.set_axis(X.index)
 
-    dec = decomposer_child_class(degree=1, seasonal_period=period)
+    dec = decomposer_child_class(degree=1, period=period)
     dec.fit_transform(X, y)
     fig, axs = dec.plot_decomposition(X, y, show=False)
     assert isinstance(fig, matplotlib.pyplot.Figure)
@@ -427,17 +427,17 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
     dec = decomposer_child_class()
 
     if isinstance(dec, STLDecomposer):
-        assert dec.seasonal_period == 7
-        assert dec.parameters["seasonal_period"] == 7
+        assert dec.period is None
+        assert dec.parameters["period"] is None
     elif isinstance(dec, PolynomialDecomposer):
-        assert dec.seasonal_period == -1
-        assert dec.parameters["seasonal_period"] == -1
+        assert dec.period == -1
+        assert dec.parameters["period"] == -1
 
-    dec.set_seasonal_period(X, y)
+    dec.set_period(X, y)
 
-    assert 0.95 * period <= dec.seasonal_period <= 1.05 * period
+    assert 0.95 * period <= dec.period <= 1.05 * period
     # TODO: Fix this with https://github.com/alteryx/evalml/issues/3771
-    # assert dec.parameters["seasonal_period"] == dec.seasonal_period
+    # assert dec.parameters["period"] == dec.period
 
 
 @pytest.mark.parametrize(
@@ -478,7 +478,7 @@ def test_decomposer_determine_periodicity(
     if not decomposer_picked_correct_degree:
         trend_degree = 1 if trend_degree in [2, 3] else 2
 
-    dec = decomposer_child_class(degree=trend_degree, seasonal_period=period)
+    dec = decomposer_child_class(degree=trend_degree, period=period)
     ac = dec.determine_periodicity(X, y, method=periodicity_determination_method)
 
     # There's one flaky test case, but only in GitHub CI.
@@ -592,17 +592,17 @@ def test_decomposer_fit_transform_out_of_sample(
     transformer_fit_on_data,
 ):
     # Generate 10 periods (the default) of synthetic seasonal data
-    seasonal_period = 7
+    period = 7
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=seasonal_period,
+        period=period,
         freq_str="D",
         set_time_index=True,
         seasonal_scale=0.05,  # Increasing this value causes the decomposer to miscalculate trend
     )
-    subset_X = X[2 * seasonal_period : 7 * seasonal_period]
-    subset_y = y[2 * seasonal_period : 7 * seasonal_period]
+    subset_X = X[2 * period : 7 * period]
+    subset_y = y[2 * period : 7 * period]
 
-    decomposer = decomposer_child_class(seasonal_period=seasonal_period)
+    decomposer = decomposer_child_class(period=period)
     decomposer.fit(subset_X, subset_y)
 
     if transformer_fit_on_data == "in-sample":
@@ -618,7 +618,7 @@ def test_decomposer_fit_transform_out_of_sample(
     if transformer_fit_on_data != "in-sample":
         y_new = build_test_target(
             subset_y,
-            seasonal_period,
+            period,
             transformer_fit_on_data,
             to_test="transform",
         )
@@ -666,19 +666,19 @@ def test_decomposer_inverse_transform(
     transformer_fit_on_data,
 ):
     # Generate 10 periods (the default) of synthetic seasonal data
-    seasonal_period = 7
+    period = 7
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=seasonal_period,
+        period=period,
         freq_str="D",
         set_time_index=True,
         seasonal_scale=0.05,
     )
     if index_type == "integer_index":
         y = y.reset_index(drop=True)
-    subset_X = X[: 5 * seasonal_period]
-    subset_y = y[: 5 * seasonal_period]
+    subset_X = X[: 5 * period]
+    subset_y = y[: 5 * period]
 
-    decomposer = decomposer_child_class(seasonal_period=seasonal_period)
+    decomposer = decomposer_child_class(period=period)
     output_X, output_y = decomposer.fit_transform(subset_X, subset_y)
 
     if transformer_fit_on_data == "in-sample":
@@ -688,7 +688,7 @@ def test_decomposer_inverse_transform(
     if transformer_fit_on_data != "in-sample":
         y_t_new = build_test_target(
             subset_y,
-            seasonal_period,
+            period,
             transformer_fit_on_data,
             to_test="inverse_transform",
         )
@@ -763,7 +763,7 @@ def test_decomposer_monthly_begin_data(decomposer_child_class, ts_data):
         pdc.fit(X, y)
 
 
-def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_test):
+def build_test_target(subset_y, period, transformer_fit_on_data, to_test):
     """Function to build a sample target.  Based on subset_y being daily data containing 5 periods of a periodic signal."""
     if transformer_fit_on_data == "in-sample-less-than-sample":
         # Re-compose 14-days worth of data within, but not spanning the entire sample
@@ -771,7 +771,7 @@ def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_tes
     if transformer_fit_on_data == "wholly-out-of-sample":
         # Re-compose 14-days worth of data with a one period gap between end of
         # fit data and start of data to inverse-transform
-        delta = seasonal_period
+        delta = period
     elif transformer_fit_on_data == "wholly-out-of-sample-no-gap":
         # Re-compose 14-days worth of data with no gap between end of
         # fit data and start of data to inverse-transform
@@ -790,18 +790,18 @@ def build_test_target(subset_y, seasonal_period, transformer_fit_on_data, to_tes
         delta = -6
 
     if isinstance(subset_y.index, pd.DatetimeIndex):
-        delta = timedelta(days=delta * seasonal_period)
+        delta = timedelta(days=delta * period)
 
         new_index = pd.date_range(
             subset_y.index[-1] + delta,
-            periods=2 * seasonal_period,
+            periods=2 * period,
             freq="D",
         )
     else:
-        delta = delta * seasonal_period
+        delta = delta * period
         new_index = np.arange(
             subset_y.index[-1] + delta,
-            subset_y.index[-1] + delta + 2 * seasonal_period,
+            subset_y.index[-1] + delta + 2 * period,
         )
 
     if to_test == "inverse_transform":

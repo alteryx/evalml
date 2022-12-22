@@ -22,11 +22,12 @@ class STLDecomposer(Decomposer):
         time_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
         degree (int): Not currently used.  STL 3x "degree-like" values.  None are able to be set at
             this time. Defaults to 1.
-        seasonal_period (int): The number of entries in the time series data that corresponds to one period of a
+        period (int): The number of entries in the time series data that corresponds to one period of a
             cyclic signal.  For instance, if data is known to possess a weekly seasonal signal, and if the data
-            is daily data, seasonal_period should be 7.  For daily data with a yearly seasonal signal, seasonal_period
-            should be 365.  For compatibility with the underlying STL algorithm, must be odd. If an even number
-            is provided, the next, highest odd number will be used. Defaults to 7.
+            is daily data, the period should likely be 7.  For daily data with a yearly seasonal signal, the period
+            should likely be 365. If None, statsmodels will infer the period based on the frequency. Defaults to None.
+        seasonal_smoother (int): The length of the seasonal smoother used by the underlying STL algorithm. For compatibility,
+            must be odd. If an even number is provided, the next, highest odd number will be used. Defaults to 7.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -58,26 +59,28 @@ class STLDecomposer(Decomposer):
         self,
         time_index: str = None,
         degree: int = 1,  # Currently unused.
-        seasonal_period: int = 7,
+        period: int = None,
+        seasonal_smoother: int = 7,
         random_seed: int = 0,
         **kwargs,
     ):
         self.logger = logging.getLogger(__name__)
 
-        # Programmatically adjust seasonal_period to fit underlying STL requirements,
-        # that seasonal_period must be odd.
-        if seasonal_period % 2 == 0:
+        # Programmatically adjust seasonal_smoother to fit underlying STL requirements,
+        # that seasonal_smoother must be odd.
+        if seasonal_smoother % 2 == 0:
             self.logger.warning(
-                f"STLDecomposer provided with an even period of {seasonal_period}"
-                f"Changing seasonal period to {seasonal_period+1}",
+                f"STLDecomposer provided with an even period of {seasonal_smoother}"
+                f"Changing seasonal period to {seasonal_smoother+1}",
             )
-            seasonal_period += 1
+            seasonal_smoother += 1
 
         super().__init__(
             component_obj=None,
             random_seed=random_seed,
             degree=degree,
-            seasonal_period=seasonal_period,
+            period=period,
+            seasonal_smoother=seasonal_smoother,
             time_index=time_index,
             **kwargs,
         )
@@ -134,7 +137,7 @@ class STLDecomposer(Decomposer):
         projected_seasonality = self._project_seasonal(
             y,
             self.seasonality,
-            self.seasonal_period,
+            self.period,
             self.frequency,
         )
         return projected_trend, projected_seasonality
@@ -168,28 +171,24 @@ class STLDecomposer(Decomposer):
         X, y = self._check_target(X, y)
         self._map_dt_to_integer(self.original_index, y.index)
 
-        # Warn for poor decomposition use with higher periods
-        if self.seasonal_period > 14:
-            str_dict = {"D": "daily", "M": "monthly"}
-            data_str = ""
-            if y.index.freqstr in str_dict:
-                data_str = str_dict[y.index.freqstr]
+        # Warn for poor decomposition use with higher seasonal smoothers
+        if self.seasonal_smoother > 14:
             self.logger.warning(
-                f"STLDecomposer may perform poorly on {data_str} data with a high seasonal period ({self.seasonal_period}).",
+                f"STLDecomposer may perform poorly on data with a high seasonal smoother ({self.seasonal_smoother}).",
             )
 
         # Save the frequency of the fitted series for checking against transform data.
         self.frequency = y.index.freqstr or pd.infer_freq(y.index)
 
-        stl = STL(y, seasonal=self.seasonal_period)
+        stl = STL(y, seasonal=self.seasonal_smoother, period=self.period)
         res = stl.fit()
         self.seasonal = res.seasonal
-        self.seasonal_period = stl.period
-        dist = len(y) % self.seasonal_period
+        self.period = stl.period
+        dist = len(y) % self.period
         self.seasonality = (
-            self.seasonal[-(dist + self.seasonal_period) : -dist]
+            self.seasonal[-(dist + self.period) : -dist]
             if dist > 0
-            else self.seasonal[-self.seasonal_period :]
+            else self.seasonal[-self.period :]
         )
         self.trend = res.trend
         self.residual = res.resid
@@ -374,7 +373,10 @@ class STLDecomposer(Decomposer):
                 residual = self.residual
             else:
                 # TODO: Do a better job cloning.
-                decomposer = STLDecomposer(seasonal_period=self.seasonal_period)
+                decomposer = STLDecomposer(
+                    seasonal_smoother=self.seasonal_smoother,
+                    period=self.period,
+                )
                 decomposer.fit(X, y)
                 trend = decomposer.trend
                 seasonal = decomposer.seasonal

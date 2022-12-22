@@ -15,7 +15,8 @@ def test_polynomial_decomposer_init():
     delayed_features = PolynomialDecomposer(degree=3, time_index="dates")
     assert delayed_features.parameters == {
         "degree": 3,
-        "seasonal_period": -1,
+        "period": -1,
+        "seasonal_smoother": 7,
         "time_index": "dates",
     }
 
