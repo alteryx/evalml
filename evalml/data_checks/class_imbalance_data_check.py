@@ -3,6 +3,7 @@
 Use for classification problems.
 """
 import numpy as np
+import pandas as pd
 
 from evalml.data_checks import (
     DataCheck,
@@ -146,7 +147,23 @@ class ClassImbalanceDataCheck(DataCheck):
         """
         messages = []
 
+        original_vc = pd.Series(y).value_counts(sort=True)
         y = infer_feature_types(y)
+        new_vc = y.value_counts(sort=True)
+        if str(y.ww.logical_type) not in ["Boolean", "BooleanNullable"]:
+            # If the inferred logical type is not in Boolean/BooleanNullable, then a
+            # mapping to the original values is not necessary.
+            after_to_before_inference_mapping = {new: new for new in new_vc.keys()}
+        else:
+            # If the inferred logical type is in Boolean/BooleanNullable, then a
+            # mapping to the original values will be needed for the data check messages
+            after_to_before_inference_mapping = {
+                new: old for old, new in zip(original_vc.keys(), new_vc.keys())
+            }
+        # Needed for checking severe imbalance to verify values present below threshold
+        before_to_after_inference_mapping = {
+            old: new for new, old in after_to_before_inference_mapping.items()
+        }
 
         fold_counts = y.value_counts(normalize=False, sort=True)
         fold_counts = np.floor(fold_counts * self.test_size).astype(int)
@@ -155,7 +172,10 @@ class ClassImbalanceDataCheck(DataCheck):
         # search for targets that occur less than twice the number of cv folds first
         below_threshold_folds = fold_counts.where(fold_counts < self.cv_folds).dropna()
         if len(below_threshold_folds):
-            below_threshold_values = below_threshold_folds.index.tolist()
+            below_threshold_values = [
+                after_to_before_inference_mapping.get(each)
+                for each in below_threshold_folds.index.tolist()
+            ]
             error_msg = "The number of instances of these targets is less than 2 * the number of cross folds = {} instances: {}"
             messages.append(
                 DataCheckError(
@@ -173,7 +193,10 @@ class ClassImbalanceDataCheck(DataCheck):
         below_threshold = counts.where(counts < self.threshold).dropna()
         # if there are items that occur less than the threshold, add them to the list of results
         if len(below_threshold):
-            below_threshold_values = below_threshold.index.tolist()
+            below_threshold_values = [
+                after_to_before_inference_mapping.get(each)
+                for each in below_threshold.index.tolist()
+            ]
             warning_msg = "The following labels fall below {:.0f}% of the target: {}"
             messages.append(
                 DataCheckWarning(
@@ -188,8 +211,15 @@ class ClassImbalanceDataCheck(DataCheck):
             )
         sample_counts = fold_counts.where(fold_counts < self.min_samples).dropna()
         if len(below_threshold) and len(sample_counts):
-            sample_count_values = sample_counts.index.tolist()
-            severe_imbalance = [v for v in sample_count_values if v in below_threshold]
+            sample_count_values = [
+                after_to_before_inference_mapping.get(each)
+                for each in sample_counts.index.tolist()
+            ]
+            severe_imbalance = [
+                v
+                for v in sample_count_values
+                if before_to_after_inference_mapping.get(v) in below_threshold
+            ]
             warning_msg = "The following labels in the target have severe class imbalance because they fall under {:.0f}% of the target and have less than {} samples: {}"
             messages.append(
                 DataCheckWarning(

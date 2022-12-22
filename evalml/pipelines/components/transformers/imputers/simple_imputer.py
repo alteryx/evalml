@@ -102,6 +102,7 @@ class SimpleImputer(Transformer):
         """
         X = infer_feature_types(X)
         original_schema = X.ww.schema
+        X = set_boolean_columns_to_categorical(X)
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X.dtypes == bool).all():

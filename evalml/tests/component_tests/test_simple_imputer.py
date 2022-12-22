@@ -7,9 +7,11 @@ import woodwork.exceptions
 from pandas.testing import assert_frame_equal
 from woodwork.logical_types import (
     Boolean,
+    BooleanNullable,
     Categorical,
     Double,
     Integer,
+    IntegerNullable,
     NaturalLanguage,
 )
 
@@ -459,12 +461,18 @@ def test_simple_imputer_woodwork_custom_overrides_returned_by_components(
         "categorical col": imputer_test_data[["categorical col"]],
         "bool col": imputer_test_data[["bool col"]],
     }[data]
+    if str(logical_type) == "Boolean" and has_nan == "has_nan":
+        logical_type = "BooleanNullable"
+    if str(logical_type) == "Integer" and has_nan == "has_nan":
+        logical_type = "IntegerNullable"
     logical_type = {
         "Integer": Integer,
+        "IntegerNullable": IntegerNullable,
         "Double": Double,
         "Categorical": Categorical,
         "NaturalLanguage": NaturalLanguage,
         "Boolean": Boolean,
+        "BooleanNullable": BooleanNullable,
     }[logical_type]
     y = pd.Series([1, 2, 1])
 
@@ -486,6 +494,8 @@ def test_simple_imputer_woodwork_custom_overrides_returned_by_components(
     imputer = SimpleImputer(impute_strategy=impute_strategy_to_use)
     transformed = imputer.fit_transform(X, y)
     assert isinstance(transformed, pd.DataFrame)
+    if str(logical_type) == "IntegerNullable":
+        logical_type = Double
     assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
         data: logical_type,
     }

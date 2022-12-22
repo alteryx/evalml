@@ -84,22 +84,36 @@ def test_infer_feature_types_dataframe():
 
 
 def test_infer_feature_types_series():
-    X_pd = pd.Series([1, 2, 3, 4])
-    X_expected = X_pd.astype("int64")
-    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd))
+    y_pd = pd.Series([1, 2, 3, 4])
+    y_expected = y_pd.astype("int64")
+    pd.testing.assert_series_equal(y_expected, infer_feature_types(y_pd))
 
-    X_pd = pd.Series([1, 2, 3, 4], dtype="int64")
-    pd.testing.assert_series_equal(X_pd, infer_feature_types(X_pd))
+    y_pd = pd.Series([1, 2, 3, 4], dtype="int64")
+    pd.testing.assert_series_equal(y_pd, infer_feature_types(y_pd))
 
-    X_pd = pd.Series([1, 2, 3, 4], dtype="int64")
-    X_expected = X_pd.astype("category")
-    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd, "categorical"))
+    y_pd = pd.Series([1, 2, 3, 4], dtype="int64")
+    y_expected = y_pd.astype("category")
+    pd.testing.assert_series_equal(y_expected, infer_feature_types(y_pd, "categorical"))
 
-    X_pd = pd.Series([1, 2, 3, 4], dtype="int64")
-    X_expected = X_pd.astype("category")
+    y_pd = pd.Series([1, 2, 3, 4], dtype="int64")
+    y_expected = y_pd.astype("category")
     pd.testing.assert_series_equal(
-        X_expected,
-        infer_feature_types(X_pd, ww.logical_types.Categorical),
+        y_expected,
+        infer_feature_types(y_pd, ww.logical_types.Categorical),
+    )
+
+    y_pd = pd.Series([1, 0, 1, 0], dtype="int64")
+    y_expected = y_pd.astype("bool")
+    pd.testing.assert_series_equal(
+        y_expected,
+        infer_feature_types(y_pd, ww.logical_types.Boolean),
+    )
+
+    y_pd = pd.Series([1, 0, 1, None], dtype="object")
+    y_expected = y_pd.astype("boolean")
+    pd.testing.assert_series_equal(
+        y_expected,
+        infer_feature_types(y_pd, ww.logical_types.BooleanNullable),
     )
 
 
