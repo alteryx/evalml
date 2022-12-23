@@ -14,7 +14,7 @@ matplotlib==3.6.2
 matplotlib-inline==0.1.6
 networkx==2.5.1
 nlp-primitives==2.9.0
-numpy==1.22.4
+numpy==1.23.5
 pandas==1.5.2
 plotly==5.11.0
 pmdarima==1.8.5
@@ -25,7 +25,7 @@ scikit-optimize==0.9.0
 scipy==1.9.3
 seaborn==0.12.1
 shap==0.41.0
-sktime==0.14.1
+sktime==0.15.0
 statsmodels==0.13.5
 texttable==1.6.7
 vowpalwabbit==9.6.0
