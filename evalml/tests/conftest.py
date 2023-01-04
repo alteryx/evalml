@@ -187,6 +187,7 @@ def get_test_data_from_configuration():
                 * scale,
                 "int_null": [0, 1, 2, np.nan, 4, np.nan, 6, 7, 8, 9] * scale,
                 "age_null": [0, 1, 2, np.nan, 4, np.nan, 6, 7, 8, 9] * scale,
+                # --> this doesnt have any nulls?
                 "bool_null": [
                     True,
                     None,

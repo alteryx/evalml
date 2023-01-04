@@ -9,6 +9,7 @@ from evalml.problem_types import ProblemTypes
 def test_standard_scaler_applies_to_numeric_columns_only(
     get_test_data_from_configuration,
 ):
+    # --> this is just getting overwritten??
     X = pd.DataFrame(
         {
             "bool": [True, False, True],
@@ -20,6 +21,7 @@ def test_standard_scaler_applies_to_numeric_columns_only(
         },
     )
 
+    # --> is testing nullables
     X, y = get_test_data_from_configuration(
         "ww",
         ProblemTypes.BINARY,

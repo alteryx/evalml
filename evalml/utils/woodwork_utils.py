@@ -1,7 +1,10 @@
 """Woodwork utility methods."""
+from pdb import set_trace
+
 import numpy as np
 import pandas as pd
 import woodwork as ww
+from woodwork.logical_types import Age, Boolean, Integer
 
 from evalml.utils.gen_utils import is_all_numeric
 
@@ -47,6 +50,7 @@ def infer_feature_types(data, feature_types=None):
     elif isinstance(data, np.ndarray):
         data = _numpy_to_pandas(data)
 
+    existing_schema = None
     if data.ww.schema is not None:
         if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(
             data,
@@ -62,17 +66,53 @@ def infer_feature_types(data, feature_types=None):
             else:
                 ww_error = f"{ww_error}. Please initialize ww with df.ww.init() to get rid of this message."
             raise ValueError(ww_error)
-        return data
+        existing_schema = data.ww.schema
+
+    # --> Set any non nullable types to be nullable:
+    # --> this will break an absurd amount of things because we have a lot of dependencies that
+    # dont support nullable types, but my goal here is to break everything and try and
+    # group those failures into:
+    # dependencies vs evalml's mishandling of nullable types vs things that already support nullables
+
+    nullable_to_not_ltypes = {
+        "integer": "IntegerNullable",
+        "boolean": "BooleanNullable",
+        "age": "AgeNullable",
+    }
 
     if isinstance(data, pd.Series):
+        if existing_schema is not None:
+            feature_types = data.ww.logical_type.type_string
         if all(data.isna()):
             data = data.replace(pd.NA, np.nan)
             feature_types = "Double"
-        return ww.init_series(data, logical_type=feature_types)
+        if feature_types in nullable_to_not_ltypes:
+            feature_types = nullable_to_not_ltypes.get(feature_types)
+
+        data = ww.init_series(data, logical_type=feature_types)
+        return data
     else:
+        if existing_schema is not None:
+            feature_types = {
+                col: ltype.type_string for col, ltype in data.ww.logical_types.items()
+            }
         ww_data = data.copy()
         ww_data.ww.init(logical_types=feature_types)
-        return ww_data
+        data = ww_data
+
+        updated_ltypes = {
+            col_name: nullable_to_not_ltypes.get(ltype.type_string)
+            for col_name, ltype in data.ww.logical_types.items()
+            if ltype.type_string in nullable_to_not_ltypes
+        }
+
+        if not feature_types:
+            feature_types = {}
+        feature_types = {**feature_types, **updated_ltypes}
+        # set_trace()
+        if feature_types:
+            data.ww.set_types(logical_types=feature_types)
+        return data
 
 
 def _convert_numeric_dataset_pandas(X, y):
