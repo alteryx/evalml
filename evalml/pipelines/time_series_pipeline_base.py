@@ -98,7 +98,12 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         gap_features = pd.DataFrame()
         gap_target = pd.Series()
         if (
-            are_datasets_separated_by_gap_time_index(X_train, X, self.pipeline_params)
+            are_datasets_separated_by_gap_time_index(
+                X_train,
+                X,
+                self.pipeline_params,
+                self.frequency,
+            )
             and self.gap
         ):
 
@@ -263,10 +268,11 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 "Cannot call predict() on a component graph because the final component is not an Estimator.",
             )
         X = infer_feature_types(X)
-        X.index = self._move_index_forward(
-            X_train.index[-X.shape[0] :],
-            self.gap + X.shape[0],
-        )
+        if len(X) > 1:
+            X.index = self._move_index_forward(
+                X_train.index[-X.shape[0] :],
+                self.gap + X.shape[0],
+            )
         X, y = self._drop_time_index(X, pd.Series([0] * len(X)))
         X_train, y_train = self._drop_time_index(X_train, y_train)
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)

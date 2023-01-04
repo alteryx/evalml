@@ -1727,7 +1727,7 @@ def test_drop_time_index_woodwork(ts_data, time_series_regression_pipeline_class
 
 
 def test_dates_needed_for_prediction(ts_data, time_series_regression_pipeline_class):
-    X, _, y = ts_data()
+    X, X_t, y = ts_data()
     X.ww.set_time_index("date")
 
     pipeline = time_series_regression_pipeline_class(
@@ -1746,8 +1746,7 @@ def test_dates_needed_for_prediction(ts_data, time_series_regression_pipeline_cl
             },
         },
     )
-    pipeline.should_drop_time_index = True
-    pipeline.frequency = X.index.freqstr  # this is set in the `fit` method
+    pipeline.fit(X, y)
 
     prediction_date = np.datetime64("2022-01-01")
     beginning_date, end_date = pipeline.dates_needed_for_prediction(prediction_date)
@@ -1757,3 +1756,18 @@ def test_dates_needed_for_prediction(ts_data, time_series_regression_pipeline_cl
         pipeline.max_delay,
         pipeline.frequency,
     )
+
+    X_train = pd.DataFrame(index=[i + 1 for i in range(pipeline.max_delay + 1)])
+    dates = pd.date_range(beginning_date, end_date, freq="D")
+    feature = pd.Series([1, 2], index=X_train.index)
+    X_train["feature"] = pd.Series(feature.values, index=X_train.index)
+    X_train["date"] = pd.Series(dates.values, index=X_train.index)
+    X_train.ww.init()
+    X_train.ww.set_time_index("date")
+    y_train = pd.Series(X_train["feature"].values, index=X_train.index)
+
+    X_test = pd.DataFrame(index=[0])
+    X_test["feature"] = 54
+    X_test["date"] = prediction_date
+
+    assert pipeline.predict(X_test, X_train=X_train, y_train=y_train).all()

@@ -624,7 +624,7 @@ def are_ts_parameters_valid_for_split(
     return _validation_result(not msg, msg, train_size, window_size, n_obs, n_splits)
 
 
-def are_datasets_separated_by_gap_time_index(train, test, pipeline_params):
+def are_datasets_separated_by_gap_time_index(train, test, pipeline_params, freq):
     """Determine if the train and test datasets are separated by gap number of units using the time_index.
 
     This will be true when users are predicting on unseen data but not during cross
@@ -640,18 +640,18 @@ def are_datasets_separated_by_gap_time_index(train, test, pipeline_params):
 
     """
     gap_difference = pipeline_params["gap"] + 1
-
     train_copy = train.copy()
     test_copy = test.copy()
     train_copy.ww.init(time_index=pipeline_params["time_index"])
     test_copy.ww.init(time_index=pipeline_params["time_index"])
 
-    X_frequency_dict = train_copy.ww.infer_temporal_frequencies(
-        temporal_columns=[train_copy.ww.time_index],
-    )
-    freq = X_frequency_dict[test_copy.ww.time_index]
-    if freq is None:
-        return True
+    if not freq:
+        X_frequency_dict = train_copy.ww.infer_temporal_frequencies(
+            temporal_columns=[train_copy.ww.time_index],
+        )
+        freq = X_frequency_dict[test_copy.ww.time_index]
+        if freq is None:
+            return True
 
     first_testing_date = test_copy[test_copy.ww.time_index].iloc[0]
     last_training_date = train_copy[train_copy.ww.time_index].iloc[-1]
