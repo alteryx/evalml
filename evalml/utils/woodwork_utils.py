@@ -47,6 +47,7 @@ def infer_feature_types(data, feature_types=None):
     elif isinstance(data, np.ndarray):
         data = _numpy_to_pandas(data)
 
+    # set_trace()
     if data.ww.schema is not None:
         if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(
             data,
@@ -157,8 +158,8 @@ def downcast_nullable_types(data, ignore_null_cols=True):
         {col: "Double" for col in int_nullable_cols if col in non_null_columns},
     )
 
-    if new_ltypes:
-        data.ww.set_types(logical_types=new_ltypes)
+    # if new_ltypes:
+    #     data.ww.set_types(logical_types=new_ltypes)
     return data
 
 
@@ -176,6 +177,6 @@ def downcast_int_nullable_to_double(X):
 
     X_int_nullable_cols = X.ww.select(["IntegerNullable", "AgeNullable"])
     new_ltypes = {col: "Double" for col in X_int_nullable_cols}
-    if new_ltypes:
-        X.ww.set_types(logical_types=new_ltypes)
+    # if new_ltypes:
+    #     X.ww.set_types(logical_types=new_ltypes)
     return X
