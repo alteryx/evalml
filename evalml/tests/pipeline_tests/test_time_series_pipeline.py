@@ -1724,3 +1724,36 @@ def test_drop_time_index_woodwork(ts_data, time_series_regression_pipeline_class
 
     assert isinstance(X_t.index, pd.DatetimeIndex)
     assert isinstance(y_t.index, pd.DatetimeIndex)
+
+
+def test_dates_needed_for_prediction(ts_data, time_series_regression_pipeline_class):
+    X, _, y = ts_data()
+    X.ww.set_time_index("date")
+
+    pipeline = time_series_regression_pipeline_class(
+        parameters={
+            "pipeline": {
+                "gap": 0,
+                "max_delay": 1,
+                "time_index": "date",
+                "forecast_horizon": 1,
+            },
+            "Time Series Featurizer": {
+                "gap": 0,
+                "max_delay": 1,
+                "time_index": "date",
+                "forecast_horizon": 1,
+            },
+        },
+    )
+    pipeline.should_drop_time_index = True
+    pipeline.frequency = X.index.freqstr  # this is set in the `fit` method
+
+    prediction_date = np.datetime64("2022-01-01")
+    beginning_date, end_date = pipeline.dates_needed_for_prediction(prediction_date)
+    assert beginning_date < end_date
+    assert end_date < prediction_date
+    assert end_date == beginning_date + np.timedelta64(
+        pipeline.max_delay,
+        pipeline.frequency,
+    )

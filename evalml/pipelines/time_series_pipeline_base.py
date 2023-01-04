@@ -1,4 +1,5 @@
 """Pipeline base class for time-series problems."""
+import numpy as np
 import pandas as pd
 import woodwork as ww
 
@@ -286,3 +287,21 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         This helper passes y as an argument if needed by the estimator.
         """
         return self.estimator.predict(features)
+
+    def dates_needed_for_prediction(self, date):
+        """Return dates needed to forecast the given date in the future
+
+        Args:
+            date (np.datetime64,): Date to forecast in the future
+        Returns:
+            dates_needed (tuple(np.datetime64)): Range of dates needed to forecast the given date
+        """
+        beginning_date = date - np.timedelta64(
+            self.forecast_horizon + self.gap + self.max_delay,
+            self.frequency,
+        )
+        end_date = date - np.timedelta64(
+            self.forecast_horizon + self.gap,
+            self.frequency,
+        )
+        return (beginning_date, end_date)
