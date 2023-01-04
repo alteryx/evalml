@@ -82,7 +82,6 @@ from evalml.problem_types import ProblemTypes, is_time_series
     ],
 )
 def test_make_pipeline(
-    # --> is testing nullables
     problem_type,
     input_type,
     features,
@@ -313,7 +312,6 @@ def test_make_pipeline_controls_decomposer_time_series(
         ("other numerical", []),
     ],
 )
-# --> is testing nullables
 def test_make_pipeline_known_in_advance(
     test_description,
     known_in_advance,
