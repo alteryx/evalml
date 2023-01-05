@@ -125,11 +125,10 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
             # Properly fill in the dates in the gap
             time_index = self.pipeline_params["time_index"]
-            freq = pd.infer_freq(X_train[time_index])
             correct_range = pd.date_range(
                 start=X_train[time_index].iloc[-1],
                 periods=self.gap + 1,
-                freq=freq,
+                freq=self.frequency,
             )[1:]
             gap_features[time_index] = correct_range
 
@@ -268,11 +267,10 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 "Cannot call predict() on a component graph because the final component is not an Estimator.",
             )
         X = infer_feature_types(X)
-        if len(X) > 1:
-            X.index = self._move_index_forward(
-                X_train.index[-X.shape[0] :],
-                self.gap + X.shape[0],
-            )
+        X.index = self._move_index_forward(
+            X_train.index[-X.shape[0] :],
+            self.gap + X.shape[0],
+        )
         X, y = self._drop_time_index(X, pd.Series([0] * len(X)))
         X_train, y_train = self._drop_time_index(X_train, y_train)
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
@@ -303,11 +301,11 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             dates_needed (tuple(np.datetime64)): Range of dates needed to forecast the given date
         """
         beginning_date = date - np.timedelta64(
-            self.forecast_horizon + self.gap + self.max_delay,
+            self.gap + self.max_delay,
             self.frequency,
         )
         end_date = date - np.timedelta64(
-            self.forecast_horizon + self.gap,
+            1 + self.gap,
             self.frequency,
         )
         return (beginning_date, end_date)

@@ -1726,48 +1726,78 @@ def test_drop_time_index_woodwork(ts_data, time_series_regression_pipeline_class
     assert isinstance(y_t.index, pd.DatetimeIndex)
 
 
-def test_dates_needed_for_prediction(ts_data, time_series_regression_pipeline_class):
+@pytest.mark.parametrize(
+    "forecast_horizon,gap,max_delay",
+    [(1, 0, 1), (1, 1, 2), (2, 0, 2), (3, 1, 2), (1, 2, 2), (2, 7, 3), (3, 2, 4)],
+)
+@patch("evalml.pipelines.components.RandomForestRegressor.predict")
+def test_dates_needed_for_prediction(
+    mock_predict,
+    forecast_horizon,
+    gap,
+    max_delay,
+    ts_data,
+    time_series_regression_pipeline_class,
+):
     X, X_t, y = ts_data()
     X.ww.set_time_index("date")
+
+    print(f"FH: {forecast_horizon}")
+    print(f"GAP: {gap}")
+    print(f"delay: {max_delay}")
 
     pipeline = time_series_regression_pipeline_class(
         parameters={
             "pipeline": {
-                "gap": 0,
-                "max_delay": 1,
+                "gap": gap,
+                "max_delay": max_delay,
                 "time_index": "date",
-                "forecast_horizon": 1,
+                "forecast_horizon": forecast_horizon,
             },
             "Time Series Featurizer": {
-                "gap": 0,
-                "max_delay": 1,
+                "gap": gap,
+                "max_delay": max_delay,
                 "time_index": "date",
-                "forecast_horizon": 1,
+                "forecast_horizon": forecast_horizon,
             },
         },
     )
     pipeline.fit(X, y)
 
-    prediction_date = np.datetime64("2022-01-01")
+    prediction_date = np.datetime64("2022-01-31")
     beginning_date, end_date = pipeline.dates_needed_for_prediction(prediction_date)
-    assert beginning_date < end_date
+    assert beginning_date <= end_date
     assert end_date < prediction_date
     assert end_date == beginning_date + np.timedelta64(
-        pipeline.max_delay,
+        pipeline.max_delay - 1,
         pipeline.frequency,
     )
 
-    X_train = pd.DataFrame(index=[i + 1 for i in range(pipeline.max_delay + 1)])
+    X_train = pd.DataFrame(index=[i + 1 for i in range(pipeline.max_delay)])
     dates = pd.date_range(beginning_date, end_date, freq="D")
-    feature = pd.Series([1, 2], index=X_train.index)
+    feature = pd.Series([i + 1 for i in range(pipeline.max_delay)], index=X_train.index)
+
+    assert len(dates) == max_delay
+
     X_train["feature"] = pd.Series(feature.values, index=X_train.index)
     X_train["date"] = pd.Series(dates.values, index=X_train.index)
-    X_train.ww.init()
-    X_train.ww.set_time_index("date")
     y_train = pd.Series(X_train["feature"].values, index=X_train.index)
 
-    X_test = pd.DataFrame(index=[0])
-    X_test["feature"] = 54
-    X_test["date"] = prediction_date
+    X_test = pd.DataFrame({"feature": [54], "date": [prediction_date]})
 
-    assert pipeline.predict(X_test, X_train=X_train, y_train=y_train).all()
+    assert X_train.shape[0] == len(dates)
+    assert not X_train.isnull().any().any()
+    assert len(y_train) == X_train.shape[0]
+    assert X_test.shape[0] == 1
+
+    X_train.ww.init()
+    X_test.ww.init()
+
+    X_train.ww.set_time_index("date")
+    X_test.ww.set_time_index("date")
+
+    print(X_train)
+    print(X_test)
+
+    preds = pipeline.predict(X_test, X_train=X_train, y_train=y_train).all()
+    assert not mock_predict.call_args[0][0].empty

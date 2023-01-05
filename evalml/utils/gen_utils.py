@@ -624,7 +624,7 @@ def are_ts_parameters_valid_for_split(
     return _validation_result(not msg, msg, train_size, window_size, n_obs, n_splits)
 
 
-def are_datasets_separated_by_gap_time_index(train, test, pipeline_params, freq):
+def are_datasets_separated_by_gap_time_index(train, test, pipeline_params, freq=None):
     """Determine if the train and test datasets are separated by gap number of units using the time_index.
 
     This will be true when users are predicting on unseen data but not during cross
