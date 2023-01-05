@@ -330,7 +330,7 @@ def ts_data():
         if not no_features:
             X_train["feature"] = pd.Series(feature[:40].values, index=X_train.index)
             X_test["feature"] = pd.Series(feature[40:].values, index=X_test.index)
-            logical_types["feature"] = "integer"
+            logical_types["feature"] = "IntegerNullable"
         if datetime_feature:
             X_train["date"] = pd.Series(dates[:40].values, index=X_train.index)
             X_test["date"] = pd.Series(dates[40:].values, index=X_test.index)
@@ -345,7 +345,7 @@ def ts_data():
         if X_train is not None:
             X_train.ww.init(logical_types=logical_types)
         X_test.ww.init(logical_types=logical_types)
-        y_train.ww.init(logical_type="integer")
+        y_train.ww.init(logical_type="IntegerNullable")
 
         return X_train, X_test, y_train
 
@@ -775,7 +775,7 @@ def X_y_binary():
     )
     X = pd.DataFrame(X)
     X.ww.init(logical_types={col: "double" for col in X.columns})
-    y = ww.init_series(pd.Series(y), logical_type="integer")
+    y = ww.init_series(pd.Series(y), logical_type="IntegerNullable")
     return X, y
 
 
@@ -817,7 +817,7 @@ def X_y_multi():
     )
     X = pd.DataFrame(X)
     X.ww.init(logical_types={col: "double" for col in X.columns})
-    y = ww.init_series(pd.Series(y), logical_type="integer")
+    y = ww.init_series(pd.Series(y), logical_type="IntegerNullable")
     return X, y
 
 
@@ -839,7 +839,7 @@ def X_y_categorical_regression():
             "smoker": "categorical",
             "day": "categorical",
             "time": "categorical",
-            "size": "integer",
+            "size": "IntegerNullable",
         },
     )
     y.ww.init(logical_type="double")
@@ -868,19 +868,19 @@ def X_y_categorical_classification():
     X = titanic.drop(["Survived", "Name"], axis=1)
     X.ww.init(
         logical_types={
-            "PassengerId": "integer",
-            "Pclass": "integer",
+            "PassengerId": "IntegerNullable",
+            "Pclass": "IntegerNullable",
             "Sex": "categorical",
             "Age": "double",
-            "SibSp": "integer",
-            "Parch": "integer",
+            "SibSp": "IntegerNullable",
+            "Parch": "IntegerNullable",
             "Ticket": "categorical",
             "Fare": "double",
             "Cabin": "categorical",
             "Embarked": "categorical",
         },
     )
-    y.ww.init(logical_type="integer")
+    y.ww.init(logical_type="IntegerNullable")
     return X, y
 
 
@@ -1577,6 +1577,7 @@ def fitted_tree_estimators(tree_estimators, X_y_binary, X_y_regression):
     b_cols = [f"Testing_{col}" for col in X_b.columns]
     X_b = pd.DataFrame(X_b)
     X_b.columns = b_cols
+    # --> might be worth converting to int nulable for valid cols
     X_b.ww.init(logical_types={col: "double" for col in X_b.columns})
 
     r_cols = [f"Testing_{col}" for col in X_r.columns]
@@ -1615,7 +1616,7 @@ def helper_functions():
 def make_data_type():
     """Helper function to convert numpy or pandas input to the appropriate type for tests."""
 
-    def _make_data_type(data_type, data, nullable=False):
+    def _make_data_type(data_type, data, nullable=True):
         if data_type == "li":
             if isinstance(data, pd.DataFrame):
                 data = data.to_numpy()
@@ -2052,9 +2053,9 @@ def df_with_url_and_email():
             "categorical": "Categorical",
             "numeric": "Double",
             "email": "EmailAddress",
-            "boolean": "Boolean",
+            "boolean": "BooleanNullable",
             "nat_lang": "NaturalLanguage",
-            "integer": "Integer",
+            "integer": "IntegerNullable",
             "url": "URL",
         },
     )
@@ -2207,10 +2208,10 @@ def imputer_test_data():
         logical_types={
             "dates": "datetime",
             "categorical col": "categorical",
-            "int col": "integer",
+            "int col": "IntegerNullable",
             "object col": "categorical",
             "float col": "double",
-            "bool col": "boolean",
+            "bool col": "BooleanNullable",
             "categorical with nan": "categorical",
             "int with nan": "IntegerNullable",
             "float with nan": "double",
