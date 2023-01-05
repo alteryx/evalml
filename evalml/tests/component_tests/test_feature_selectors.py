@@ -127,6 +127,7 @@ def test_feature_selectors_drop_columns_maintains_woodwork():
     ],
 )
 def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df):
+    X_df.columns = X_df.columns.astype(str)
     rf_classifier, rf_regressor = make_rf_feature_selectors()
     y = pd.Series([1, 2, 1])
     X_df["another column"] = pd.Series([1.0, 2.0, 3.0], dtype="float")
@@ -134,7 +135,7 @@ def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df
     for logical_type in override_types:
         try:
             X = X_df.copy()
-            X.ww.init(logical_types={0: logical_type})
+            X.ww.init(logical_types={"0": logical_type})
         except ww.exceptions.TypeConversionError:
             continue
 
@@ -142,7 +143,7 @@ def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df
         transformed = rf_classifier.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            0: logical_type,
+            "0": logical_type,
             "another column": Double,
         }
 
@@ -150,6 +151,6 @@ def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df
         transformed = rf_regressor.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            0: logical_type,
+            "0": logical_type,
             "another column": Double,
         }

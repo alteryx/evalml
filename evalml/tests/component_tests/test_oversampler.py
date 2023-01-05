@@ -299,12 +299,17 @@ def test_smotenc_category_features(X_y_binary):
     X[2] = [i % 2 for i in range(X.shape[0])]
 
     # Replace postal and country features with plausible postal/country codes
+    X.columns = X.columns.astype(str)
     X["postal"] = np.arange(10001, 10001 + X.shape[0])
     X["country"] = np.arange(20001, 20001 + X.shape[0])
 
     X_ww = infer_feature_types(
         X,
-        feature_types={"postal": "PostalCode", "country": "CountryCode", 2: "Boolean"},
+        feature_types={
+            "postal": "PostalCode",
+            "country": "CountryCode",
+            "2": "Boolean",
+        },
     )
     snc = Oversampler()
     _ = snc.fit_transform(X_ww, y)
