@@ -53,7 +53,7 @@ class BorutaSelector(FeatureSelector):
         max_iter=100,
         n_jobs=-1,
         random_seed=0,
-        use_weak=True,
+        use_weak=False,
         **kwargs,
     ):
         parameters = {
