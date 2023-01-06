@@ -312,6 +312,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
         Args:
             date (np.datetime64,): Date to forecast in the future.
+
         Returns:
             dates_needed (tuple(np.datetime64)): Range of dates needed to forecast the given date.
         """
