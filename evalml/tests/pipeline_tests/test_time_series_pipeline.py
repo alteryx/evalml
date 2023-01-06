@@ -1795,5 +1795,5 @@ def test_dates_needed_for_prediction(
     X_train.ww.set_time_index("date")
     X_test.ww.set_time_index("date")
 
-    preds = pipeline.predict(X_test, X_train=X_train, y_train=y_train).all()
+    _ = pipeline.predict(X_test, X_train=X_train, y_train=y_train).all()
     assert not mock_predict.call_args[0][0].empty

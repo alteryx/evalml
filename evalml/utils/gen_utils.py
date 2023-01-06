@@ -634,6 +634,7 @@ def are_datasets_separated_by_gap_time_index(train, test, pipeline_params, freq=
         train (pd.DataFrame): Training data.
         test (pd.DataFrame): Data of shape [n_samples, n_features].
         pipeline_params (dict): Dictionary of time series parameters.
+        freq (str): Frequency of time index.
 
     Returns:
         bool: True if the difference in time units is equal to gap + 1.
