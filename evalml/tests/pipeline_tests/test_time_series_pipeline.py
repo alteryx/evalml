@@ -1729,10 +1729,13 @@ def test_drop_time_index_woodwork(ts_data, time_series_regression_pipeline_class
 @pytest.mark.parametrize(
     "forecast_horizon,gap,max_delay",
     [(1, 0, 1), (1, 1, 2), (2, 0, 2), (3, 1, 2), (1, 2, 2), (2, 7, 3), (3, 2, 4)],
+    # [(1, 0, 1)],
 )
+@patch("evalml.pipelines.components.RandomForestRegressor.fit")
 @patch("evalml.pipelines.components.RandomForestRegressor.predict")
 def test_dates_needed_for_prediction(
     mock_predict,
+    mock_fit,
     forecast_horizon,
     gap,
     max_delay,
@@ -1741,10 +1744,6 @@ def test_dates_needed_for_prediction(
 ):
     X, X_t, y = ts_data()
     X.ww.set_time_index("date")
-
-    print(f"FH: {forecast_horizon}")
-    print(f"GAP: {gap}")
-    print(f"delay: {max_delay}")
 
     pipeline = time_series_regression_pipeline_class(
         parameters={
@@ -1769,15 +1768,15 @@ def test_dates_needed_for_prediction(
     assert beginning_date <= end_date
     assert end_date < prediction_date
     assert end_date == beginning_date + np.timedelta64(
-        pipeline.max_delay - 1,
+        pipeline.forecast_horizon + pipeline.max_delay + pipeline.gap - 1,
         pipeline.frequency,
     )
 
-    X_train = pd.DataFrame(index=[i + 1 for i in range(pipeline.max_delay)])
     dates = pd.date_range(beginning_date, end_date, freq="D")
-    feature = pd.Series([i + 1 for i in range(pipeline.max_delay)], index=X_train.index)
+    X_train = pd.DataFrame(index=[i + 1 for i in range(len(dates))])
+    feature = pd.Series([i + 1 for i in range(len(dates))], index=X_train.index)
 
-    assert len(dates) == max_delay
+    assert len(dates) == forecast_horizon + max_delay + gap
 
     X_train["feature"] = pd.Series(feature.values, index=X_train.index)
     X_train["date"] = pd.Series(dates.values, index=X_train.index)
@@ -1795,9 +1794,6 @@ def test_dates_needed_for_prediction(
 
     X_train.ww.set_time_index("date")
     X_test.ww.set_time_index("date")
-
-    print(X_train)
-    print(X_test)
 
     preds = pipeline.predict(X_test, X_train=X_train, y_train=y_train).all()
     assert not mock_predict.call_args[0][0].empty

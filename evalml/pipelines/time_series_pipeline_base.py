@@ -113,6 +113,21 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             # Instead, we'll create some dummy data to represent the missing gap dates
             # These do not show up in the features used for prediction
             gap_features = X_train.iloc[[-1] * self.gap]
+            print("X")
+            print(X)
+            print("X_train")
+            print(X_train)
+            print("gap_features")
+            print(gap_features)
+            print("-----------")
+            print(X_train.index[-self.gap :])
+            print(self.gap)
+            print(
+                self._move_index_forward(
+                    X_train.index[-self.gap :],
+                    self.gap,
+                ),
+            )
             gap_features.index = self._move_index_forward(
                 X_train.index[-self.gap :],
                 self.gap,
@@ -293,15 +308,18 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         return self.estimator.predict(features)
 
     def dates_needed_for_prediction(self, date):
-        """Return dates needed to forecast the given date in the future
+        """Return dates needed to forecast the given date in the future.
 
         Args:
-            date (np.datetime64,): Date to forecast in the future
+            date (np.datetime64,): Date to forecast in the future.
         Returns:
-            dates_needed (tuple(np.datetime64)): Range of dates needed to forecast the given date
+            dates_needed (tuple(np.datetime64)): Range of dates needed to forecast the given date.
         """
         beginning_date = date - np.timedelta64(
-            self.gap + self.max_delay,
+            self.forecast_horizon
+            + self.max_delay,  # include start delay for featurization
+            +self.gap,  # add first gap for the actual gap from the end date
+            +self.gap,  # add another gap to ensure training data is greater than gap
             self.frequency,
         )
         end_date = date - np.timedelta64(
