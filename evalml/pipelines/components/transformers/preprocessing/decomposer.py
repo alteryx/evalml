@@ -126,23 +126,20 @@ class Decomposer(Transformer):
         self,
         X: pd.DataFrame,
         y: pd.Series,
-        method: str = "autocorrelation",
     ):
-        """Function that uses autocorrelative methods to determine the first, signficant period of the seasonal signal.
+        """Function that uses autocorrelative methods to determine the likely most signficant period of the seasonal signal.
 
         Args:
             X (pandas.DataFrame): The feature data of the time series problem.
             y (pandas.Series): The target data of a time series problem.
-            method (str): Either "autocorrelation" or "partial-autocorrelation".  The method by which to determine the
-                first period of the seasonal part of the target signal.  "partial-autocorrelation" should currently not
-                be used.  Defaults to "autocorrelation".
 
         Returns:
-            (list[int]): The integer numbers of entries in time series data over which the seasonal part of the target data
+            int: The integer number of entries in time series data over which the seasonal part of the target data
                 repeats.  If the time series data is in days, then this is the number of days that it takes the target's
                 seasonal signal to repeat. Note: the target data can contain multiple seasonal signals.  This function
-                will only return the first, and thus, shortest period.  E.g. if the target has both weekly and yearly
-                seasonality, the function will only return "7" and not return "365".  If no period is detected, returns [None].
+                will only return the stronger.  E.g. if the target has both weekly and yearly seasonality, the function
+                may return either "7" or "365", depending on which seasonality is more strongly autocorrelated.  If no
+                period is detected, returns None.
 
         """
 
@@ -155,17 +152,10 @@ class Decomposer(Transformer):
                 np.greater,
                 order=5,  # considers 5 points on either side to determine rel max
             )[0]
+            if len(rel_max) == 0:
+                return None
             max_acfs = [acf[i] for i in rel_max]
-            if len(max_acfs) > 0:
-                rel_max = np.array([filter_acf.index(max(max_acfs))])
-            else:
-                rel_max = []
-            return rel_max
-
-        def _get_rel_max_from_pacf(y):
-            """Determines the relative maxima of the target's partial autocorrelation."""
-            pacf = sm.tsa.pacf(y)
-            return argrelextrema(pacf, np.greater)[0]
+            return rel_max[np.argmax(max_acfs)]
 
         def _detrend_on_fly(X, y):
             """Uses the underlying decomposer to determine the target's trend and remove it."""
@@ -175,26 +165,13 @@ class Decomposer(Transformer):
             y_detrended = y_time_index - y_trend_estimate
             return y_detrended.dropna()
 
-        if method == "autocorrelation":
-            _get_rel_max = _get_rel_max_from_acf
-        elif method == "partial-autocorrelation":
-            self.logger.warning(
-                "Partial autocorrelations are not currently guaranteed to be accurate due to the need for continuing "
-                "algorithmic work and should not be used at this time.",
-            )
-            _get_rel_max = _get_rel_max_from_pacf
-
         # Make the data more stationary by detrending
         y_detrended = _detrend_on_fly(X, y)
-        relative_maxima = _get_rel_max(y_detrended)
-        self.logger.info(
-            f"Decomposer discovered {len(relative_maxima)} possible periods.",
-        )
+        relative_maxima = _get_rel_max_from_acf(y_detrended)
 
-        if len(relative_maxima) == 0:
+        if relative_maxima is None:
             self.logger.warning("No periodic signal could be detected in target data.")
-            relative_maxima = [None]
-        return relative_maxima[0]
+        return relative_maxima
 
     def set_period(self, X: pd.DataFrame, y: pd.Series):
         """Function to set the component's seasonal period based on the target's seasonality.
