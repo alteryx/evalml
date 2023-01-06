@@ -113,21 +113,6 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             # Instead, we'll create some dummy data to represent the missing gap dates
             # These do not show up in the features used for prediction
             gap_features = X_train.iloc[[-1] * self.gap]
-            print("X")
-            print(X)
-            print("X_train")
-            print(X_train)
-            print("gap_features")
-            print(gap_features)
-            print("-----------")
-            print(X_train.index[-self.gap :])
-            print(self.gap)
-            print(
-                self._move_index_forward(
-                    X_train.index[-self.gap :],
-                    self.gap,
-                ),
-            )
             gap_features.index = self._move_index_forward(
                 X_train.index[-self.gap :],
                 self.gap,
