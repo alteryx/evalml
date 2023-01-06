@@ -317,9 +317,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         """
         beginning_date = date - np.timedelta64(
             self.forecast_horizon
-            + self.max_delay,  # include start delay for featurization
-            +self.gap,  # add first gap for the actual gap from the end date
-            +self.gap,  # add another gap to ensure training data is greater than gap
+            + self.max_delay  # include start delay for featurization
+            + self.gap  # add first gap for the actual gap from the end date
+            + self.gap,  # add another gap to ensure training data is greater than gap
             self.frequency,
         )
         end_date = date - np.timedelta64(
