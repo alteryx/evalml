@@ -169,11 +169,11 @@ class Decomposer(Transformer):
 
         def _detrend_on_fly(X, y):
             """Uses the underlying decomposer to determine the target's trend and remove it."""
-            self.fit(X, y)
-            res = self.get_trend_dataframe(X, y)
             y_time_index = self._set_time_index(X, y)
-            y_detrended = y_time_index - res[0]["trend"]
-            return y_detrended
+            moving_avg = min(51, len(y_time_index) // 3)
+            y_trend_estimate = y.rolling(moving_avg).mean().dropna()
+            y_detrended = y_time_index - y_trend_estimate
+            return y_detrended.dropna()
 
         if method == "autocorrelation":
             _get_rel_max = _get_rel_max_from_acf
