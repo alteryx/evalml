@@ -45,8 +45,8 @@ class RecursiveFeatureEliminationSelector(FeatureSelector):
 
     def __init__(
         self,
-        step=1,
-        min_features_to_select=1,
+        step=5,
+        min_features_to_select=10,
         cv=None,
         scoring=None,
         n_jobs=-1,
