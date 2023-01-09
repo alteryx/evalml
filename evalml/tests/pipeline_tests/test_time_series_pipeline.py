@@ -1763,7 +1763,7 @@ def test_dates_needed_for_prediction(
     )
     pipeline.fit(X, y)
 
-    prediction_date = np.datetime64("2022-01-31")
+    prediction_date = pd.Timestamp("2022-01-31")
     beginning_date, end_date = pipeline.dates_needed_for_prediction(prediction_date)
     assert beginning_date <= end_date
     assert end_date < prediction_date

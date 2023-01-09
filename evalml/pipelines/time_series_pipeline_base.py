@@ -1,5 +1,4 @@
 """Pipeline base class for time-series problems."""
-import numpy as np
 import pandas as pd
 import woodwork as ww
 
@@ -296,19 +295,20 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         """Return dates needed to forecast the given date in the future.
 
         Args:
-            date (np.datetime64,): Date to forecast in the future.
+            date (pd.Timestamp,): Date to forecast in the future.
 
         Returns:
-            dates_needed (tuple(np.datetime64)): Range of dates needed to forecast the given date.
+            dates_needed (tuple(pd.Timestamp)): Range of dates needed to forecast the given date.
         """
-        beginning_date = date - np.timedelta64(
+        print(self.frequency)
+        beginning_date = date - pd.Timedelta(
             self.forecast_horizon
             + self.max_delay  # include start delay for featurization
             + self.gap  # add first gap for the actual gap from the end date
             + self.gap,  # add another gap to ensure training data is greater than gap
             self.frequency,
         )
-        end_date = date - np.timedelta64(
+        end_date = date - pd.Timedelta(
             1 + self.gap,
             self.frequency,
         )
