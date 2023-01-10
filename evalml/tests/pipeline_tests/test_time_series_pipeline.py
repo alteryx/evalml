@@ -1746,7 +1746,6 @@ def test_dates_needed_for_prediction(
     ts_data,
     time_series_regression_pipeline_class,
 ):
-    print(freq)
     X, X_t, y = ts_data(freq=freq)
     X.ww.set_time_index("date")
 
@@ -1772,7 +1771,7 @@ def test_dates_needed_for_prediction(
     beginning_date, end_date = pipeline.dates_needed_for_prediction(prediction_date)
     assert beginning_date <= end_date
     assert end_date < prediction_date
-    date_diff = pipeline.forecast_horizon + pipeline.max_delay + pipeline.gap - 1
+    date_diff = pipeline.forecast_horizon + pipeline.max_delay + pipeline.gap
     assert end_date == beginning_date + pd.tseries.frequencies.to_offset(
         f"{date_diff}{pipeline.frequency}",
     )

@@ -305,6 +305,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             + self.max_delay  # include start delay for featurization
             + self.gap  # add first gap for the actual gap from the end date
             + self.gap
+            + 1  # for the + 1 in the time series featurizer
         )
 
         beginning_date = date - pd.tseries.frequencies.to_offset(
