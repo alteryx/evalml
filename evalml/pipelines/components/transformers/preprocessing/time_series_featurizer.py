@@ -152,7 +152,7 @@ class TimeSeriesFeaturizer(Transformer):
 
     @staticmethod
     def _find_significant_lags(y, conf_level, start_delay, max_delay):
-        all_lags = np.arange(start_delay, start_delay + max_delay + 1)
+        all_lags = np.arange(start_delay, start_delay + max_delay)
         if y is not None:
             # Compute the acf and find its peaks
             acf_values, ci_intervals = acf(

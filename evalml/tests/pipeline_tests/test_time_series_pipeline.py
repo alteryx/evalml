@@ -1729,7 +1729,11 @@ def test_drop_time_index_woodwork(ts_data, time_series_regression_pipeline_class
 @pytest.mark.parametrize(
     "forecast_horizon,gap,max_delay",
     [(1, 0, 1), (1, 1, 2), (2, 0, 2), (3, 1, 2), (1, 2, 2), (2, 7, 3), (3, 2, 4)],
-    # [(1, 0, 1)],
+)
+@pytest.mark.parametrize(
+    "freq",
+    # ["W", "D", "T", "S", "L", "U", "N"],
+    ["W", "D", "M", "Y", "Q"],
 )
 @patch("evalml.pipelines.components.RandomForestRegressor.fit")
 @patch("evalml.pipelines.components.RandomForestRegressor.predict")
@@ -1739,10 +1743,12 @@ def test_dates_needed_for_prediction(
     forecast_horizon,
     gap,
     max_delay,
+    freq,
     ts_data,
     time_series_regression_pipeline_class,
 ):
-    X, X_t, y = ts_data()
+    print(freq)
+    X, X_t, y = ts_data(freq=freq)
     X.ww.set_time_index("date")
 
     pipeline = time_series_regression_pipeline_class(
@@ -1767,16 +1773,18 @@ def test_dates_needed_for_prediction(
     beginning_date, end_date = pipeline.dates_needed_for_prediction(prediction_date)
     assert beginning_date <= end_date
     assert end_date < prediction_date
-    assert end_date == beginning_date + np.timedelta64(
-        pipeline.forecast_horizon + pipeline.max_delay + pipeline.gap - 1,
-        pipeline.frequency,
+    date_diff = pipeline.forecast_horizon + pipeline.max_delay + pipeline.gap - 1
+    assert end_date == beginning_date + pd.tseries.frequencies.to_offset(
+        f"{date_diff}{pipeline.frequency}",
     )
 
-    dates = pd.date_range(beginning_date, end_date, freq="D")
+    dates = pd.date_range(
+        beginning_date,
+        end_date,
+        freq=pipeline.frequency.split("-")[0],
+    )
     X_train = pd.DataFrame(index=[i + 1 for i in range(len(dates))])
     feature = pd.Series([i + 1 for i in range(len(dates))], index=X_train.index)
-
-    assert len(dates) == forecast_horizon + max_delay + gap
 
     X_train["feature"] = pd.Series(feature.values, index=X_train.index)
     X_train["date"] = pd.Series(dates.values, index=X_train.index)

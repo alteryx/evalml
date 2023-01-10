@@ -301,15 +301,27 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             dates_needed (tuple(pd.Timestamp)): Range of dates needed to forecast the given date.
         """
         print(self.frequency)
-        beginning_date = date - pd.Timedelta(
+        # freq_split = self.frequency.split("-")[0]
+        # beginning_date = date - pd.Timedelta(
+        #     self.forecast_horizon
+        #     + self.max_delay  # include start delay for featurization
+        #     + self.gap  # add first gap for the actual gap from the end date
+        #     + self.gap,  # add another gap to ensure training data is greater than gap
+        #     freq_split,
+        # )
+        beginning_date_num = (
             self.forecast_horizon
             + self.max_delay  # include start delay for featurization
             + self.gap  # add first gap for the actual gap from the end date
-            + self.gap,  # add another gap to ensure training data is greater than gap
-            self.frequency,
+            + self.gap
         )
-        end_date = date - pd.Timedelta(
-            1 + self.gap,
-            self.frequency,
+
+        beginning_date = date - pd.tseries.frequencies.to_offset(
+            f"{beginning_date_num}{self.frequency}",
+        )
+
+        end_date_num = 1 + self.gap
+        end_date = date - pd.tseries.frequencies.to_offset(
+            f"{end_date_num}{self.frequency}",
         )
         return (beginning_date, end_date)
