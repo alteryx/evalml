@@ -583,9 +583,13 @@ class DefaultAlgorithm(AutoMLAlgorithm):
 
     def _make_split_pipeline(self, estimator, pipeline_name=None):
         if self._X_with_cat_cols is None or self._X_without_cat_cols is None:
+            # Should be category, not categorical so that we make sure to exclude
+            # all logical types with the "category" tag
+            numeric_exclude_types = ["category", "EmailAddress", "URL"]
             self._X_without_cat_cols = self.X.ww.select(
-                exclude=["category", "EmailAddress", "URL"],
+                exclude=numeric_exclude_types,
             )
+
             self._X_with_cat_cols = self.X.ww[self._selected_cat_cols]
 
         if self._selected_cat_cols and self._selected_cols:
@@ -597,9 +601,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             numeric_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cols},
                 "Select Columns By Type Transformer": {
-                    # Should be category, not categorical so that we make sure to exclude
-                    # all logical types with the "category" tag
-                    "column_types": ["category", "EmailAddress", "URL"],
+                    "column_types": numeric_exclude_types,
                     "exclude": True,
                 },
             }
