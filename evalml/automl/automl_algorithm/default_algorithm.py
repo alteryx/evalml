@@ -583,9 +583,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
 
     def _make_split_pipeline(self, estimator, pipeline_name=None):
         if self._X_with_cat_cols is None or self._X_without_cat_cols is None:
-            self._X_without_cat_cols = self.X.ww.drop(self._selected_cat_cols)
-            self._X_without_cat_cols = self._X_without_cat_cols.ww.select(
-                self._selected_cols,
+            self._X_without_cat_cols = self.X.ww.select(
+                exclude=["category", "EmailAddress", "URL"],
             )
             self._X_with_cat_cols = self.X.ww[self._selected_cat_cols]
 
