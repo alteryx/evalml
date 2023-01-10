@@ -14,6 +14,7 @@ Release Notes
         * Split decomposer ``seasonal_period`` parameter into ``seasonal_smoother`` and ``period`` parameters :pr:`3896`
         * Excluded catboost from the broken link checking workflow due to 403 errors :pr:`3899`
         * Pinned scikit-learn version below 1.2.0 :pr:`3901`
+        * Cast newly created one hot encoded columns as ``bool`` dtype :pr:`3913`
     * Documentation Changes
         * Hid non-essential warning messages in time series docs :pr:`3890`
     * Testing Changes
