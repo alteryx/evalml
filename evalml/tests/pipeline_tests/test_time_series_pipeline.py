@@ -1732,7 +1732,6 @@ def test_drop_time_index_woodwork(ts_data, time_series_regression_pipeline_class
 )
 @pytest.mark.parametrize(
     "freq",
-    # ["W", "D", "T", "S", "L", "U", "N"],
     ["W", "D", "M", "Y", "Q"],
 )
 @patch("evalml.pipelines.components.RandomForestRegressor.fit")
