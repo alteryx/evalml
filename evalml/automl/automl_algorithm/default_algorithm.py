@@ -582,10 +582,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             )
 
     def _make_split_pipeline(self, estimator, pipeline_name=None):
+        # Should be category, not categorical so that we make sure to exclude
+        # all logical types with the "category" tag
+        numeric_exclude_types = ["category", "EmailAddress", "URL"]
         if self._X_with_cat_cols is None or self._X_without_cat_cols is None:
-            # Should be category, not categorical so that we make sure to exclude
-            # all logical types with the "category" tag
-            numeric_exclude_types = ["category", "EmailAddress", "URL"]
             self._X_without_cat_cols = self.X.ww.select(
                 exclude=numeric_exclude_types,
             )
