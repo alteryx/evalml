@@ -444,16 +444,6 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
     "decomposer_child_class",
     decomposer_list,
 )
-@pytest.mark.parametrize(
-    "periodicity_determination_method",
-    [
-        "autocorrelation",
-        pytest.param(
-            "partial-autocorrelation",
-            marks=pytest.mark.xfail(reason="Partial Autocorrelation not working yet."),
-        ),
-    ],
-)
 @pytest.mark.parametrize("decomposer_picked_correct_degree", [True, False])
 @pytest.mark.parametrize(
     "synthetic_data,trend_degree,period",
@@ -464,7 +454,6 @@ def test_decomposer_determine_periodicity(
     period,
     trend_degree,
     decomposer_picked_correct_degree,
-    periodicity_determination_method,
     synthetic_data,
     generate_seasonal_data,
 ):
@@ -479,7 +468,7 @@ def test_decomposer_determine_periodicity(
         trend_degree = 1 if trend_degree in [2, 3] else 2
 
     dec = decomposer_child_class(degree=trend_degree, period=period)
-    ac = dec.determine_periodicity(X, y, method=periodicity_determination_method)
+    ac = dec.determine_periodicity(X, y)
 
     # There's one flaky test case, but only in GitHub CI.
     # Will file an issue to investigate why it's different in CI.

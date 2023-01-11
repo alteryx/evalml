@@ -159,10 +159,9 @@ class Decomposer(Transformer):
 
         def _detrend_on_fly(X, y):
             """Uses the underlying decomposer to determine the target's trend and remove it."""
-            y_time_index = self._set_time_index(X, y)
-            moving_avg = min(51, len(y_time_index) // 3)
+            moving_avg = min(51, len(y) // 3)
             y_trend_estimate = y.rolling(moving_avg).mean().dropna()
-            y_detrended = y_time_index - y_trend_estimate
+            y_detrended = y - y_trend_estimate
             return y_detrended.dropna()
 
         # Make the data more stationary by detrending
