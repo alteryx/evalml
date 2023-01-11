@@ -345,7 +345,7 @@ def ts_data():
         if X_train is not None:
             X_train.ww.init(logical_types=logical_types)
         X_test.ww.init(logical_types=logical_types)
-        y_train.ww.init(logical_type="IntegerNullable")
+        y_train = ww.init_series(y_train, logical_type="IntegerNullable")
 
         return X_train, X_test, y_train
 
@@ -880,7 +880,7 @@ def X_y_categorical_classification():
             "Embarked": "categorical",
         },
     )
-    y.ww.init(logical_type="IntegerNullable")
+    y = ww.init_series(y, logical_type="IntegerNullable")
     return X, y
 
 
