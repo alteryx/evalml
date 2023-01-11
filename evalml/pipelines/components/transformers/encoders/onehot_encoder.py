@@ -197,6 +197,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             )
             X_cat.columns = self._get_feature_names()
             X_cat.drop(columns=self._features_to_drop, inplace=True)
+            for col in X_cat:
+                X_cat[col] = X_cat[col].astype("bool")
             X_cat.ww.init(logical_types={c: "Boolean" for c in X_cat.columns})
             self._feature_names = X_cat.columns
 
