@@ -295,7 +295,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         """Return dates needed to forecast the given date in the future.
 
         Args:
-            date (pd.Timestamp,): Date to forecast in the future.
+            date (pd.Timestamp): Date to forecast in the future.
 
         Returns:
             dates_needed (tuple(pd.Timestamp)): Range of dates needed to forecast the given date.
@@ -304,7 +304,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             self.forecast_horizon
             + self.max_delay  # include start delay for featurization
             + self.gap  # add first gap for the actual gap from the end date
-            + self.gap
+            + self.gap  # add another gap to ensure training data is greater than gap
             + 1  # for the + 1 in the time series featurizer
         )
 
