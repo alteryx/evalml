@@ -146,7 +146,7 @@ class Decomposer(Transformer):
         def _get_rel_max_from_acf(y):
             """Determines the relative maxima of the target's autocorrelation."""
             acf = sm.tsa.acf(y, nlags=np.maximum(400, len(y)))
-            filter_acf = [acf[i] if (acf[i] > 0) else 0 for i in range(len(acf))]
+            filter_acf = [acf[i] if (acf[i] > 0.01) else 0 for i in range(len(acf))]
             rel_max = argrelextrema(
                 np.array(filter_acf),
                 np.greater,
