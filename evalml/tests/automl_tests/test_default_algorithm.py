@@ -377,6 +377,7 @@ def test_make_split_pipeline(sampler, features, X_y_binary):
     X["A"] = "a"
     X["B"] = "b"
     X["C"] = "c"
+    X["D"] = "d"
 
     algo = DefaultAlgorithm(
         X,
