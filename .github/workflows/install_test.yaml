@@ -19,11 +19,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Set up python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install EvalML and update checker
         run: |
           pip config --site set global.progress_bar off

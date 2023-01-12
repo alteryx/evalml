@@ -8,13 +8,14 @@ jobs:
   check-dependencies-updated:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-python@v1
         with:
           python-version: '3.8.x'
       - name: Install Dependencies
         run: |
           pip install virtualenv
+          pip install tomli
           virtualenv test_python -q
           source test_python/bin/activate
           make installdeps
