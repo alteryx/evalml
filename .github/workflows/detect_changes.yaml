@@ -15,7 +15,6 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install virtualenv
-          pip install tomli
           virtualenv test_python -q
           source test_python/bin/activate
           make installdeps

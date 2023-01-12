@@ -29,7 +29,6 @@ jobs:
           virtualenv test_python -q
           source test_python/bin/activate
           pip install .[test]
-          pip install tomli
       - name: Clone Feedstock & Check Versions
         run: |
           virtualenv test_python -q
