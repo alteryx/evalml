@@ -18,6 +18,7 @@ jobs:
           virtualenv test_python -q
           source test_python/bin/activate
           make installdeps
+          pip install tomli
       - name: Detect Dependency Changes
         id: check
         continue-on-error: true
