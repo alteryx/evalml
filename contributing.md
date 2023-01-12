@@ -103,7 +103,7 @@ Conda packages are created from recipes, which are yaml config files that list a
 EvalML's latest published [recipe](https://github.com/conda-forge/evalml-core-feedstock/blob/master/recipe/meta.yaml).
 GitHub repositories containing conda recipes are called `feedstocks`.
 
-If you opened a PR to EvalML that modifies the packages in `install_requires` within `setup.cfg`, or if the latest dependency bot
+If you opened a PR to EvalML that modifies the packages in `dependencies` within `pyproject.toml`, or if the latest dependency bot
 updates the latest version of one of our packages, you will see a CI job called `build_conda_pkg`. This section describes
 what `build_conda_pkg` does and what to do if you see it fails in your pr. 
 
@@ -155,7 +155,7 @@ or update our code to support that version. If we opt for the former, then just 
 to the recipe located at `.github/meta.yaml`
 
 #### What about the `check_versions` CI check?
-This check verifies that the allowed versions listed in `setup.cfg` match those listed in
+This check verifies that the allowed versions listed in `pyproject.toml` match those listed in
 the conda recipe so that the PyPi requirements and conda requirements don't get out of sync.
 
 ## Code Style Guide

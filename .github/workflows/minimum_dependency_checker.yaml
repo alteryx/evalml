@@ -4,7 +4,7 @@ on:
     branches:
       - main
     paths:
-      - 'setup.cfg'
+      - 'pyproject.toml'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,10 +16,10 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Run min dep generator - test requirements
         id: min_dep_gen_test
-        uses: alteryx/minimum-dependency-generator@v3.1
+        uses: alteryx/minimum-dependency-generator@v3.4
         with:
-          paths: 'setup.cfg'
-          options: 'install_requires'
+          paths: 'pyproject.toml'
+          options: 'dependencies'
           extras_require: 'test'
       - name: Save min test requirements and run diff
         id: check_min_test
@@ -34,10 +34,10 @@ jobs:
           printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" > evalml/tests/dependency_update_check/minimum_test_requirements.txt
       - name: Run min dep generator - requirements
         id: min_dep_gen_reqs
-        uses: alteryx/minimum-dependency-generator@v3.1
+        uses: alteryx/minimum-dependency-generator@v3.4
         with:
-          paths: 'setup.cfg'
-          options: 'install_requires'
+          paths: 'pyproject.toml'
+          options: 'dependencies'
       - name: Save min requirements and run diff
         id: check_min_reqs
         continue-on-error: true
