@@ -17,6 +17,7 @@ Release Notes
         * Added the ability to retrieve prediction intervals for estimators that support time series regression :pr:`3876`
         * Added utils to handle the logic for threshold tuning objective and resplitting data :pr:`3888`
         * Integrated ``OrdinalEncoder`` into AutoMLSearch :pr:`3765`
+        * Added ``dates_needed_for_prediction`` for time series pipelines :pr:`3906`
     * Fixes
         * Fixed ARIMA not accounting for gap in prediction from end of training data :pr:`3884`
         * Fixed ``DefaultAlgorithm`` adding an extra ``OneHotEncoder`` when a categorical column is not selected :pr:`3914`
