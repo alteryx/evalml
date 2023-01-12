@@ -1,5 +1,4 @@
 """CLI functions."""
-import configparser
 import locale
 import os
 import pathlib
@@ -8,7 +7,7 @@ import struct
 import sys
 
 import pkg_resources
-import requirements
+import tomli
 
 import evalml
 from evalml.utils import get_logger
@@ -138,9 +137,13 @@ def get_evalml_pip_requirements(evalml_path, ignore_packages=None):
     Returns:
         List of pip requirements for evalml.
     """
-    config = configparser.ConfigParser()
-    config.read(pathlib.Path(evalml_path, "setup.cfg"))
+    toml_dict = None
+    project_metadata_filepath = pathlib.Path(evalml_path, "pyproject.toml")
+    with open(project_metadata_filepath, "rb") as f:
+        toml_dict = tomli.load(f)
+    dependencies = toml_dict["project"]["dependencies"]
+    print(dependencies)
     return standardize_format(
-        requirements.parse(config["options"]["install_requires"]),
+        dependencies,
         ignore_packages=ignore_packages,
     )
