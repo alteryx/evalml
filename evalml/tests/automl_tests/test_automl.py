@@ -2611,17 +2611,17 @@ def test_stopping_criterion_bad(X_y_binary):
         AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_time=("test",))
     with pytest.raises(
         ValueError,
-        match=f"Parameter max_batches must be None or non-negative. Received -1.",
+        match="Parameter max_batches must be None or non-negative. Received -1.",
     ):
         AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_batches=-1)
     with pytest.raises(
         ValueError,
-        match=f"Parameter max_time must be None or non-negative. Received -1.",
+        match="Parameter max_time must be None or non-negative. Received -1.",
     ):
         AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_time=-1)
     with pytest.raises(
         ValueError,
-        match=f"Parameter max_iterations must be None or non-negative. Received -1.",
+        match="Parameter max_iterations must be None or non-negative. Received -1.",
     ):
         AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=-1)
 
@@ -5343,7 +5343,7 @@ def test_init_create_holdout_set(caplog):
     )
     out = caplog.text
 
-    match_text = f"AutoMLSearch will use mean CV score to rank pipelines."
+    match_text = "AutoMLSearch will use mean CV score to rank pipelines."
     assert match_text in out
     assert len(automl.X_train) == len(X)
     assert len(automl.y_train) == len(y)

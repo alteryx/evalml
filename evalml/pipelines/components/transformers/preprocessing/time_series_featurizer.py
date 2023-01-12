@@ -207,7 +207,7 @@ class TimeSeriesFeaturizer(Transformer):
             {f"{col}_rolling_mean": rolling_mean(X.index, X[col]) for col in numerics},
         )
         if y is not None and "numeric" in y.ww.semantic_tags:
-            data[f"target_rolling_mean"] = rolling_mean(y.index, y)
+            data["target_rolling_mean"] = rolling_mean(y.index, y)
         data.index = X.index
         data.ww.init(
             logical_types={col: "Double" for col in data.columns},

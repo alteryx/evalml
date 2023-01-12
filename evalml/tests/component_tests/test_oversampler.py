@@ -316,7 +316,7 @@ def test_smotenc_output_shape(X_y_binary):
     y_imbalanced = pd.Series([0] * 90 + [1] * 10)
     X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
     snc = Oversampler()
-    with pytest.raises(ComponentNotYetFittedError, match=f"You must fit Oversampler"):
+    with pytest.raises(ComponentNotYetFittedError, match="You must fit Oversampler"):
         snc.transform(X_ww, y)
     # test sampling and no sampling
     for y_value in [y, y_imbalanced]:

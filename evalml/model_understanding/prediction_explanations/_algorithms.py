@@ -66,8 +66,8 @@ def _compute_lime_values(pipeline, features, index_to_explain):
             pred = pipeline.estimator.predict_proba(row)
         return np.array(pred)
 
-    def list_to_dict(l):
-        return {item[0]: [item[1]] for item in l}
+    def list_to_dict(lt):
+        return {item[0]: [item[1]] for item in lt}
 
     num_features = features.shape[1]
     if isinstance(features, pd.DataFrame):

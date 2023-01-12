@@ -731,7 +731,7 @@ def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
         problem_configuration=problem_config,
     ).data_checks
     data_check_error_type = DataCheckError(
-        message=f"Target data type should be numeric for regression type problems.",
+        message="Target data type should be numeric for regression type problems.",
         data_check_name="InvalidTargetDataCheck",
         message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE_REGRESSION,
     ).to_dict()
