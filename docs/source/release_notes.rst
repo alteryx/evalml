@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.65.0 Jan. 3, 2023**
+    * Enhancements
         * Added the ability to retrieve prediction intervals for estimators that support time series regression :pr:`3876`
         * Added utils to handle the logic for threshold tuning objective and resplitting data :pr:`3888`
         * Integrated ``OrdinalEncoder`` into AutoMLSearch :pr:`3765`
@@ -18,10 +30,6 @@ Release Notes
     * Documentation Changes
         * Hid non-essential warning messages in time series docs :pr:`3890`
     * Testing Changes
-
-.. warning::
-
-    **Breaking Changes**
 
 
 **v0.64.0 Dec. 8, 2022**
