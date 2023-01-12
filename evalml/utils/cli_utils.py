@@ -7,8 +7,8 @@ import struct
 import sys
 
 import pkg_resources
+import requirements
 import tomli
-from packaging.requirements import Requirement
 
 import evalml
 from evalml.utils import get_logger
@@ -119,8 +119,11 @@ def standardize_format(packages, ignore_packages=None):
         if package.name in ignore_packages:
             continue
         name = CONDA_TO_PIP_NAME.get(package.name, package.name)
-        if package.specifier:
-            all_specs = ",".join(["".join(spec) for spec in package.specifier])
+        if package.specs:
+            print(package)
+            print(package.specifier)
+            print(package.specs)
+            all_specs = ",".join(["".join(spec) for spec in package.specs])
             standardized = f"{name}{all_specs}"
         else:
             standardized = name
@@ -144,9 +147,9 @@ def get_evalml_pip_requirements(evalml_path, ignore_packages=None):
         toml_dict = tomli.load(f)
     dependencies = []
     for dep in toml_dict["project"]["dependencies"]:
-        dependencies.append(Requirement(dep))
-    print(dependencies)
-    return standardize_format(
-        dependencies,
+        dependencies.append(dep)
+    standardized_package_specifiers = standardize_format(
+        requirements.parse("\n".join(dependencies)),
         ignore_packages=ignore_packages,
     )
+    return standardized_package_specifiers
