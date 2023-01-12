@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Add ruff and use pyproject.toml (move away from setup.cfg) :pr:`3928`
     * Documentation Changes
     * Testing Changes
 
