@@ -317,6 +317,8 @@ class PolynomialDecomposer(Decomposer):
             )  # the .forecaster attribute is an unfitted version
 
             trend = forecaster.predict(fh=fh, X=y)
+            if not isinstance(trend, pd.Series):
+                trend = pd.Series(trend.iloc[:, 0])
 
             seasonality = seasonal_decompose(
                 y - trend,

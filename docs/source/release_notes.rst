@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Updated ``PolynomialDecomposer`` to work with sktime v0.15.1 :pr:`3930`
     * Documentation Changes
     * Testing Changes
 
