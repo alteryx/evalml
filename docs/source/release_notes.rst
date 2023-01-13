@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Updated ``PolynomialDecomposer`` to work with sktime v0.15.1 :pr:`3930`
         * Add ruff and use pyproject.toml (move away from setup.cfg) :pr:`3928`
     * Documentation Changes
     * Testing Changes
