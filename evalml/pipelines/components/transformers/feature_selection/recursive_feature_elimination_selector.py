@@ -1,3 +1,4 @@
+"""Components that select top features based on recursive feature elimination with a Random Forest model."""
 from abc import abstractmethod
 
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
@@ -11,23 +12,7 @@ from evalml.pipelines.components.transformers.feature_selection.feature_selector
 
 
 class RecursiveFeatureEliminationSelector(FeatureSelector):
-    """Selects relevant features using RFE
-
-    Args:
-        estimator (Estimator): The maximum number of features to select.
-            If both percent_features and number_features are specified, take the greater number of features. Defaults to 0.5.
-            Defaults to None.
-        n_estimators (int or string): The number of estimators.
-        perc (int): percentile used as our threshold for comparison between shadow and real features
-        alpha (float): Level at which the corrected p-values will get rejected in both
-            correction steps.
-        two_step (boolean): if False, will use Bonferroni correction only
-        max_iter (int): maximum number of iterations to perform
-        n_jobs (int or None): Number of jobs to run in parallel. -1 uses all processes. Defaults to -1.
-        random_seed (int): Seed for the random number generator. Defaults to 0.
-        early_stopping (boolean): whether to use early stopping
-        n_iter_no_change (int): Maximum number of iterations to do without confirming a tentative feature
-    """
+    """Selects relevant features using recursive feature elimination."""
 
     hyperparameter_ranges = {
         "perc": Integer(0, 100),
@@ -82,10 +67,12 @@ class RecursiveFeatureEliminationSelector(FeatureSelector):
 
     @abstractmethod
     def _get_estimator(self, random_seed, n_estimators, max_depth, n_jobs):
-        """Return estimator with supplied parameters"""
+        """Return estimator with supplied parameters."""
 
 
 class RFClassifierRFESelector(RecursiveFeatureEliminationSelector):
+    """Selects relevant features using recursive feature elimination with a Random Forest Classifier."""
+
     name = "RFE Selector with RF Classifier"
 
     def _get_estimator(self, random_seed, n_estimators, max_depth, n_jobs):
@@ -98,6 +85,8 @@ class RFClassifierRFESelector(RecursiveFeatureEliminationSelector):
 
 
 class RFRegressorRFESelector(RecursiveFeatureEliminationSelector):
+    """Selects relevant features using recursive feature elimination with a Random Forest Regressor."""
+
     name = "RFE Selector with RF Regressor"
 
     def _get_estimator(self, random_seed, n_estimators, max_depth, n_jobs):
