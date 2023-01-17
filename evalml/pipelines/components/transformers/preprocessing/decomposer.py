@@ -146,6 +146,7 @@ class Decomposer(Transformer):
         def _get_rel_max_from_acf(y):
             """Determines the relative maxima of the target's autocorrelation."""
             acf = sm.tsa.acf(y, nlags=np.maximum(400, len(y)))
+            # Filter out small values to avoid picking up noise
             filter_acf = [acf[i] if (acf[i] > 0.01) else 0 for i in range(len(acf))]
             rel_max = argrelextrema(
                 np.array(filter_acf),
@@ -158,7 +159,9 @@ class Decomposer(Transformer):
             return rel_max[np.argmax(max_acfs)]
 
         def _detrend_on_fly(X, y):
-            """Uses the underlying decomposer to determine the target's trend and remove it."""
+            """Uses a moving average to determine the target's trend and remove it."""
+            # A larger moving average will be less likely to remove the seasonal signal
+            # but we need to make sure we're not passing in a window that's larger than the data
             moving_avg = min(51, len(y) // 3)
             y_trend_estimate = y.rolling(moving_avg).mean().dropna()
             y_detrended = y - y_trend_estimate
