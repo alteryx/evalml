@@ -17,7 +17,12 @@ from plotly import io as pio
 from sklearn.model_selection import BaseCrossValidator
 from skopt.space import Categorical
 
-from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
+from evalml.automl.automl_algorithm import (
+    BorutaAlgorithm,
+    DefaultAlgorithm,
+    IterativeAlgorithm,
+    RFEAlgorithm,
+)
 from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engine import SequentialEngine
 from evalml.automl.engine.cf_engine import CFClient, CFEngine
@@ -848,6 +853,40 @@ class AutoMLSearch:
             )
         elif automl_algorithm == "default":
             self.automl_algorithm = DefaultAlgorithm(
+                X=self.X_train,
+                y=self.y_train,
+                problem_type=self.problem_type,
+                sampler_name=self._sampler_name,
+                tuner_class=self.tuner_class,
+                random_seed=self.random_seed,
+                search_parameters=internal_search_parameters,
+                text_in_ensembling=text_in_ensembling,
+                allow_long_running_models=allow_long_running_models,
+                features=features,
+                ensembling=self.ensembling,
+                verbose=self.verbose,
+                n_jobs=self.n_jobs,
+                exclude_featurizers=self.exclude_featurizers,
+            )
+        elif automl_algorithm == "boruta":
+            self.automl_algorithm = BorutaAlgorithm(
+                X=self.X_train,
+                y=self.y_train,
+                problem_type=self.problem_type,
+                sampler_name=self._sampler_name,
+                tuner_class=self.tuner_class,
+                random_seed=self.random_seed,
+                search_parameters=internal_search_parameters,
+                text_in_ensembling=text_in_ensembling,
+                allow_long_running_models=allow_long_running_models,
+                features=features,
+                ensembling=self.ensembling,
+                verbose=self.verbose,
+                n_jobs=self.n_jobs,
+                exclude_featurizers=self.exclude_featurizers,
+            )
+        elif automl_algorithm == "rfe":
+            self.automl_algorithm = RFEAlgorithm(
                 X=self.X_train,
                 y=self.y_train,
                 problem_type=self.problem_type,

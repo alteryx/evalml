@@ -213,13 +213,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         feature_selector = None
 
         if use_features:
-            feature_selector = [
-                (
-                    RFRegressorSelectFromModel
-                    if is_regression(self.problem_type)
-                    else RFClassifierSelectFromModel
-                ),
-            ]
+            feature_selector = self._get_feature_selectors()
         else:
             feature_selector = []
 
@@ -245,6 +239,15 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         pipelines = self._add_without_pipelines(pipelines, estimators, feature_selector)
         pipelines = self._init_pipelines_with_starter_params(pipelines)
         return pipelines
+
+    def _get_feature_selectors(self):
+        return [
+            (
+                RFRegressorSelectFromModel
+                if is_regression(self.problem_type)
+                else RFClassifierSelectFromModel
+            ),
+        ]
 
     def _add_without_pipelines(self, pipelines, estimators, feature_selector=[]):
         if (
