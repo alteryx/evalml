@@ -27,7 +27,6 @@ def make_rf_feature_selectors():
         percent_features=0.5,
         threshold=0,
     )
-
     return rf_classifier, rf_regressor
 
 

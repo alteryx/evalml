@@ -1,19 +1,13 @@
-"""Base class for Boruta Selectors"""
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
-import numpy as np
-import pandas as pd
-from boruta import BorutaPy
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from sklearn.feature_selection import RFECV
 from skopt.space import Integer
 
-from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.transformers.feature_selection.feature_selector import (
     FeatureSelector,
 )
-from evalml.utils import infer_feature_types
 
 
 class RecursiveFeatureEliminationSelector(FeatureSelector):
@@ -24,15 +18,15 @@ class RecursiveFeatureEliminationSelector(FeatureSelector):
             If both percent_features and number_features are specified, take the greater number of features. Defaults to 0.5.
             Defaults to None.
         n_estimators (int or string): The number of estimators.
-        perc (int): percentile used as our threshold for copmarison between shadow and real features
+        perc (int): percentile used as our threshold for comparison between shadow and real features
         alpha (float): Level at which the corrected p-values will get rejected in both
             correction steps.
         two_step (boolean): if False, will use Bonferroni correction only
-        max_iter (int): maximum number of iterations to perfrom
+        max_iter (int): maximum number of iterations to perform
         n_jobs (int or None): Number of jobs to run in parallel. -1 uses all processes. Defaults to -1.
         random_seed (int): Seed for the random number generator. Defaults to 0.
         early_stopping (boolean): whether to use early stopping
-        n_iter_no_change (int): Maximum number of itertaions to do without confriming a tenative feature
+        n_iter_no_change (int): Maximum number of iterations to do without confirming a tentative feature
     """
 
     hyperparameter_ranges = {
