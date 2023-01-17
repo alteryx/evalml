@@ -97,7 +97,12 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         gap_features = pd.DataFrame()
         gap_target = pd.Series()
         if (
-            are_datasets_separated_by_gap_time_index(X_train, X, self.pipeline_params)
+            are_datasets_separated_by_gap_time_index(
+                X_train,
+                X,
+                self.pipeline_params,
+                self.frequency,
+            )
             and self.gap
         ):
 
@@ -119,11 +124,10 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
             # Properly fill in the dates in the gap
             time_index = self.pipeline_params["time_index"]
-            freq = pd.infer_freq(X_train[time_index])
             correct_range = pd.date_range(
                 start=X_train[time_index].iloc[-1],
                 periods=self.gap + 1,
-                freq=freq,
+                freq=self.frequency,
             )[1:]
             gap_features[time_index] = correct_range
 
@@ -286,3 +290,30 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         This helper passes y as an argument if needed by the estimator.
         """
         return self.estimator.predict(features)
+
+    def dates_needed_for_prediction(self, date):
+        """Return dates needed to forecast the given date in the future.
+
+        Args:
+            date (pd.Timestamp): Date to forecast in the future.
+
+        Returns:
+            dates_needed (tuple(pd.Timestamp)): Range of dates needed to forecast the given date.
+        """
+        beginning_date_num = (
+            self.forecast_horizon
+            + self.max_delay  # include start delay for featurization
+            + self.gap  # add first gap for the actual gap from the end date
+            + self.gap  # add another gap to ensure training data is greater than gap
+            + 1  # for the + 1 in the time series featurizer
+        )
+
+        beginning_date = date - pd.tseries.frequencies.to_offset(
+            f"{beginning_date_num}{self.frequency}",
+        )
+
+        end_date_num = 1 + self.gap
+        end_date = date - pd.tseries.frequencies.to_offset(
+            f"{end_date_num}{self.frequency}",
+        )
+        return (beginning_date, end_date)

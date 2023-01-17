@@ -2,24 +2,36 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+        * Updated ``PolynomialDecomposer`` to work with sktime v0.15.1 :pr:`3930`
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.65.0 Jan. 3, 2023**
+    * Enhancements
         * Added the ability to retrieve prediction intervals for estimators that support time series regression :pr:`3876`
         * Added utils to handle the logic for threshold tuning objective and resplitting data :pr:`3888`
         * Integrated ``OrdinalEncoder`` into AutoMLSearch :pr:`3765`
+        * Added ``dates_needed_for_prediction`` for time series pipelines :pr:`3906`
     * Fixes
         * Fixed ARIMA not accounting for gap in prediction from end of training data :pr:`3884`
+        * Fixed ``DefaultAlgorithm`` adding an extra ``OneHotEncoder`` when a categorical column is not selected :pr:`3914`
     * Changes
         * Added a threshold to ``DateTimeFormatDataCheck`` to account for too many duplicate or nan values :pr:`3883`
         * Changed treatment of ``Boolean`` columns for ``SimpleImputer`` and ``ClassImbalanceDataCheck`` to be compatible with new Woodwork inference :pr:`3892`
         * Split decomposer ``seasonal_period`` parameter into ``seasonal_smoother`` and ``period`` parameters :pr:`3896`
         * Excluded catboost from the broken link checking workflow due to 403 errors :pr:`3899`
         * Pinned scikit-learn version below 1.2.0 :pr:`3901`
+        * Cast newly created one hot encoded columns as ``bool`` dtype :pr:`3913`
     * Documentation Changes
         * Hid non-essential warning messages in time series docs :pr:`3890`
     * Testing Changes
-
-.. warning::
-
-    **Breaking Changes**
 
 
 **v0.64.0 Dec. 8, 2022**
