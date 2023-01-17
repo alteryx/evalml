@@ -251,7 +251,8 @@ def test_dfs_with_empty_input_features(
     X_y_binary,
 ):
     """Confirms that the features arg being an empty list is not treated the same as
-    it being unspecified."""
+    it being unspecified.
+    """
     X, y = X_y_binary
     X_pd = pd.DataFrame(X)
     X_pd.columns = X_pd.columns.astype(str)

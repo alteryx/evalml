@@ -186,6 +186,7 @@ class TimeSeriesFeaturizer(Transformer):
         Args:
             X (pd.DataFrame or None): Data to transform.
             y (pd.Series, or None): Target.
+            original_features (pd.Series): The original features.
 
         Returns:
             pd.DataFrame: Data with rolling features. All new features.
@@ -220,7 +221,7 @@ class TimeSeriesFeaturizer(Transformer):
         Use the autocorrelation to determine delays.
 
         Args:
-            X (pd.DataFrame): Data to transform.
+            X_ww (pd.DataFrame): Data to transform.
             y (pd.Series, or None): Target.
 
         Returns:

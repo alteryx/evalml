@@ -2055,8 +2055,8 @@ def test_graph_partial_dependence_ice_plot_two_way_error(
 def test_partial_dependence_scale_error():
     """Test to catch the case when the scale of the features is so small
     that the 5th and 95th percentiles are too close to each other.  This is
-    an sklearn exception."""
-
+    an sklearn exception.
+    """
     pl = RegressionPipeline(["Random Forest Regressor"])
     X = pd.DataFrame({"a": list(range(30)), "b": list(range(-10, 20))})
     y = 10 * X["a"] + X["b"]
@@ -2463,7 +2463,9 @@ def test_partial_dependence_jupyter_graph_check(
 def test_partial_dependence_fast_mode_after_dropped_feature(X_y_categorical_regression):
     """The feature selector component in this test will drop the 'time' feature, so confirm
     that fast mode handles the dropping of this feature correctly--namely that the feature
-    has no impact on predictions"""
+    has no impact on predictions
+    .
+    """
     X, y = X_y_categorical_regression
 
     pipeline = RegressionPipeline(
@@ -2510,7 +2512,8 @@ def test_partial_dependence_fast_mode_after_dropped_grid_value(
     column after they are one-hot encoded. This means that we lose some grid values based on their
     feature importance, which is problematic when we fit a pipeline on just the single 'day' feature
     for fast mode. This test confirms that fast mode isn't improperly dropping categories based
-    off of the single column."""
+    off of the single column.
+    """
     if problem_type == ProblemTypes.REGRESSION:
         feature = "day"
         pipeline = RegressionPipeline(
@@ -2947,7 +2950,8 @@ def test_partial_dependence_dfs_transformer_does_not_calculate_feature_matrix(
 ):
     """Tests that the DFS Transformer doesn't ever have to call calculate feature matrix
     in partial dependence fast mode. This is important, because it ensures that we are doing
-    the exact same calculations as slow mode."""
+    the exact same calculations as slow mode.
+    """
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X.columns = X.columns.astype(str)

@@ -611,7 +611,7 @@ class MockCheck(DataCheck):
     name = "mock_check"
 
     def __init__(self, foo, bar, baz=3):
-        """Mock init"""
+        """Mock init."""
 
     def validate(self, X, y=None):
         """Mock validate."""
@@ -621,7 +621,7 @@ class MockCheck2(DataCheck):
     name = "MockCheck"
 
     def __init__(self, foo, bar, baz=3):
-        """Mock init"""
+        """Mock init."""
 
     def validate(self, X, y=None):
         """Mock validate."""

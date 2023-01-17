@@ -29,6 +29,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             parameters (dict): Dictionary of parameters for the component. Defaults to None.
             component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+            kwargs (Any): Any keyword arguments to pass into the component.
         """
         self.random_seed = random_seed
         self._component_obj = component_obj

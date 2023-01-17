@@ -145,8 +145,8 @@ namespaces = true
 version = {attr = "evalml.__version__"}
 
 [tool.ruff]
-ignore = ["E501"]
 select = [
+    "D",
     # Pyflakes
     "F",
     # Pycodestyle
@@ -155,13 +155,19 @@ select = [
     # isort
     "I001"
 ]
+ignore = ["E501", "D107"]
 src = ["evalml"]
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["E402", "F401", "I001", "E501"]
+"evalml/tests/**" = ["D"]
+"docs/source/**" = ["D"]
 
 [tool.ruff.isort]
 known-first-party = ["evalml"]
+
+[tool.ruff.pydocstyle]
+convention = "google"
 
 [tool.coverage.run]
 source = ["evalml"]
@@ -169,12 +175,8 @@ source = ["evalml"]
 [tool.coverage.report]
 exclude_lines =[
     "pragma: no cover",
-    "def __repr__",
     "raise AssertionError",
-    "raise NotImplementedError",
     "if __name__ == .__main__.:",
-    "if self._verbose:",
-    "if verbose:",
     "if profile:",
     "pytest.skip"
 ]
