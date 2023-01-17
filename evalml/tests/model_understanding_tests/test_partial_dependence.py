@@ -2463,8 +2463,7 @@ def test_partial_dependence_jupyter_graph_check(
 def test_partial_dependence_fast_mode_after_dropped_feature(X_y_categorical_regression):
     """The feature selector component in this test will drop the 'time' feature, so confirm
     that fast mode handles the dropping of this feature correctly--namely that the feature
-    has no impact on predictions
-    .
+    has no impact on predictions.
     """
     X, y = X_y_categorical_regression
 
