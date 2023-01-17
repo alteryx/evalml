@@ -232,7 +232,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """Updates the parameter dictionary of the component.
 
         Args:
-            return_dict (dict): A dict of parameters to update.
+            update_dict (dict): A dict of parameters to update.
             reset_fit (bool, optional): If True, will set `_is_fitted` to False.
         """
         self._parameters.update(update_dict)
