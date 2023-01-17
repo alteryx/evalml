@@ -16,3 +16,4 @@ dask>=2022.12.1, !=2022.10.1
 nlp-primitives>=2.9.0
 featuretools>=1.16.0
 networkx>=2.5,<2.6
+category-encoders==2.5.1.post0
