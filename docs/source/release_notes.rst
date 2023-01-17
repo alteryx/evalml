@@ -6,6 +6,7 @@ Release Notes
         * Added ``dates_needed_for_prediction`` for time series pipelines :pr:`3906`
     * Fixes
     * Changes
+        * Updated ``PolynomialDecomposer`` to work with sktime v0.15.1 :pr:`3930`
     * Documentation Changes
     * Testing Changes
 
