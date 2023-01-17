@@ -14,7 +14,7 @@ class RFClassifierSelectFromModel(FeatureSelector):
     Args:
         number_features (int): The maximum number of features to select.
             If both percent_features and number_features are specified, take the greater number of features. Defaults to None.
-        n_estimators (float): The number of trees in the forest. Defaults to 10.
+        n_estimators (int): The number of trees in the forest. Defaults to 10.
         max_depth (int): Maximum tree depth for base learners. Defaults to None.
         percent_features (float): Percentage of features to use.
             If both percent_features and number_features are specified, take the greater number of features. Defaults to 0.5.

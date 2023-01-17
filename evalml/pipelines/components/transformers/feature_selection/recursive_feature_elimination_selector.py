@@ -24,7 +24,7 @@ class RecursiveFeatureEliminationSelector(FeatureSelector):
 
     def __init__(
         self,
-        step=5,
+        step=0.2,
         min_features_to_select=10,
         cv=None,
         scoring=None,
@@ -71,7 +71,22 @@ class RecursiveFeatureEliminationSelector(FeatureSelector):
 
 
 class RFClassifierRFESelector(RecursiveFeatureEliminationSelector):
-    """Selects relevant features using recursive feature elimination with a Random Forest Classifier."""
+    """Selects relevant features using recursive feature elimination with a Random Forest Classifier.
+
+    Args:
+        step (int, float): The number of features to eliminate in each iteration. If an integer is specified
+            this will represent the number of features to eliminate. If a float is specified this represents
+            the percentage of features to eliminate each iteration. The last iteration may drop fewer than this
+            number of features in order to satisfy the min_features_to_select constraint. Defaults to 0.2.
+        min_features_to_select (int): The minimum number of features to return. Defaults to 10.
+        cv (int or None): Number of folds to use for the cross-validation splitting strategy. Defaults to None
+            which will use 5 folds.
+        scoring (str, callable or None): A string or scorer callable object to specify the scoring method.
+        n_jobs (int or None): Number of jobs to run in parallel. -1 uses all processes. Defaults to -1.
+        n_estimators (int): The number of trees in the forest. Defaults to 10.
+        max_depth (int): Maximum tree depth for base learners. Defaults to None.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "RFE Selector with RF Classifier"
 
@@ -85,7 +100,22 @@ class RFClassifierRFESelector(RecursiveFeatureEliminationSelector):
 
 
 class RFRegressorRFESelector(RecursiveFeatureEliminationSelector):
-    """Selects relevant features using recursive feature elimination with a Random Forest Regressor."""
+    """Selects relevant features using recursive feature elimination with a Random Forest Regressor.
+
+    Args:
+        step (int, float): The number of features to eliminate in each iteration. If an integer is specified
+            this will represent the number of features to eliminate. If a float is specified this represents
+            the percentage of features to eliminate each iteration. The last iteration may drop fewer than this
+            number of features in order to satisfy the min_features_to_select constraint. Defaults to 0.2.
+        min_features_to_select (int): The minimum number of features to return. Defaults to 10.
+        cv (int or None): Number of folds to use for the cross-validation splitting strategy. Defaults to None
+            which will use 5 folds.
+        scoring (str, callable or None): A string or scorer callable object to specify the scoring method.
+        n_jobs (int or None): Number of jobs to run in parallel. -1 uses all processes. Defaults to -1.
+        n_estimators (int): The number of trees in the forest. Defaults to 10.
+        max_depth (int): Maximum tree depth for base learners. Defaults to None.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "RFE Selector with RF Regressor"
 
