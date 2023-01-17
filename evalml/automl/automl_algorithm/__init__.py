@@ -5,5 +5,3 @@ from evalml.automl.automl_algorithm.automl_algorithm import (
 )
 from evalml.automl.automl_algorithm.iterative_algorithm import IterativeAlgorithm
 from evalml.automl.automl_algorithm.default_algorithm import DefaultAlgorithm
-from evalml.automl.automl_algorithm.boruta_algorithm import BorutaAlgorithm
-from evalml.automl.automl_algorithm.rfe_algorithm import RFEAlgorithm

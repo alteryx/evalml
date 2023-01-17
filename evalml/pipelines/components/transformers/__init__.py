@@ -8,9 +8,7 @@ from evalml.pipelines.components.transformers.encoders import (
 )
 from evalml.pipelines.components.transformers.feature_selection import (
     FeatureSelector,
-    RFClassifierBorutaSelector,
     RFClassifierSelectFromModel,
-    RFRegressorBorutaSelector,
     RFRegressorSelectFromModel,
     RFClassifierRFESelector,
     RFRegressorRFESelector,

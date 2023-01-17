@@ -7,7 +7,6 @@ from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components import (
     ComponentBase,
     FeatureSelector,
-    RFClassifierBorutaSelector,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
 )
@@ -28,15 +27,14 @@ def make_rf_feature_selectors():
         percent_features=0.5,
         threshold=0,
     )
-    boruta_selector = RFClassifierBorutaSelector()
-    return rf_classifier, rf_regressor, boruta_selector
+
+    return rf_classifier, rf_regressor
 
 
 def test_init():
-    rf_classifier, rf_regressor, boruta_selector = make_rf_feature_selectors()
+    rf_classifier, rf_regressor = make_rf_feature_selectors()
     assert rf_classifier.name == "RF Classifier Select From Model"
     assert rf_regressor.name == "RF Regressor Select From Model"
-    assert boruta_selector.name == "Boruta Selector"
 
 
 def test_component_fit(X_y_binary, X_y_multi, X_y_regression):
@@ -44,7 +42,7 @@ def test_component_fit(X_y_binary, X_y_multi, X_y_regression):
     X_multi, y_multi = X_y_multi
     X_reg, y_reg = X_y_regression
 
-    rf_classifier, rf_regressor, boruta_selector = make_rf_feature_selectors()
+    rf_classifier, rf_regressor = make_rf_feature_selectors()
     assert isinstance(rf_classifier.fit(X_binary, y_binary), ComponentBase)
     assert isinstance(rf_classifier.fit(X_multi, y_multi), ComponentBase)
     assert isinstance(rf_regressor.fit(X_reg, y_reg), ComponentBase)
@@ -100,7 +98,7 @@ def test_feature_selectors_drop_columns_maintains_woodwork():
     X.ww.init(logical_types={"a": "double", "b": "categorical"})
     y = pd.Series([0, 1, 1])
 
-    rf_classifier, rf_regressor, boruta_selector = make_rf_feature_selectors()
+    rf_classifier, rf_regressor = make_rf_feature_selectors()
 
     rf_classifier.fit(X, y)
     X_t = rf_classifier.transform(X, y)
@@ -108,10 +106,6 @@ def test_feature_selectors_drop_columns_maintains_woodwork():
 
     rf_regressor.fit(X, y)
     X_t = rf_regressor.transform(X, y)
-    assert len(X_t.columns) == 2
-
-    boruta_selector.fit(X, y)
-    X_t = boruta_selector.transform(X, y)
     assert len(X_t.columns) == 2
 
 
@@ -134,7 +128,7 @@ def test_feature_selectors_drop_columns_maintains_woodwork():
     ],
 )
 def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df):
-    rf_classifier, rf_regressor, boruta_selector = make_rf_feature_selectors()
+    rf_classifier, rf_regressor = make_rf_feature_selectors()
     y = pd.Series([1, 2, 1])
     X_df["another column"] = pd.Series([1.0, 2.0, 3.0], dtype="float")
     override_types = [Integer, Double, Boolean]
@@ -155,14 +149,6 @@ def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df
 
         rf_regressor.fit(X, y)
         transformed = rf_regressor.transform(X, y)
-        assert isinstance(transformed, pd.DataFrame)
-        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            0: logical_type,
-            "another column": Double,
-        }
-
-        boruta_selector.fit(X, y)
-        transformed = boruta_selector.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             0: logical_type,
