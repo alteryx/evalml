@@ -161,7 +161,7 @@ src = ["evalml"]
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["E402", "F401", "I001", "E501"]
 "evalml/tests/**" = ["D"]
-"docs/source/**" = ["D"]
+"docs/**" = ["D"]
 
 [tool.ruff.isort]
 known-first-party = ["evalml"]
