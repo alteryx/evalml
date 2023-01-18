@@ -436,8 +436,7 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
     dec.set_period(X, y)
 
     assert 0.95 * period <= dec.period <= 1.05 * period
-    # TODO: Fix this with https://github.com/alteryx/evalml/issues/3771
-    # assert dec.parameters["period"] == dec.period
+    assert dec.parameters["period"] == dec.period
 
 
 @pytest.mark.parametrize(

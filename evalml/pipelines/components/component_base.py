@@ -228,3 +228,14 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             [f"{key}={safe_repr(value)}" for key, value in self.parameters.items()],
         )
         return f"{(type(self).__name__)}({parameters_repr})"
+
+    def update_parameters(self, update_dict, reset_fit=True):
+        """Updates the parameter dictionary of the component.
+
+        Args:
+            update_dict (dict): A dict of parameters to update.
+            reset_fit (bool, optional): If True, will set `_is_fitted` to False.
+        """
+        self._parameters.update(update_dict)
+        if reset_fit:
+            self._is_fitted = False
