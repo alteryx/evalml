@@ -14,13 +14,13 @@ lint:
 	python docs/notebook_version_standardizer.py check-versions
 	python docs/notebook_version_standardizer.py check-execution
 	black evalml/ docs/source/ --check --config pyproject.toml
-	ruff evalml/ docs/source/
+	ruff evalml/ docs/source/ --config pyproject.toml
 
 .PHONY: lint-fix
 lint-fix:
 	python docs/notebook_version_standardizer.py standardize
 	black evalml docs/source/ --config pyproject.toml
-	ruff evalml/ docs/source/ --fix
+	ruff evalml/ docs/source/ --config pyproject.toml --fix
 
 .PHONY: test
 test:
