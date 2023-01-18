@@ -3,10 +3,11 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Fixed `set_period()` not updating decomposer parameters :pr:`3932`
+        * Fixed ``set_period()`` not updating decomposer parameters :pr:`3932`
+        * Removed second identical batch for time series problems in ``DefaultAlgorithm`` :pr:`3936`
     * Changes
         * Updated ``PolynomialDecomposer`` to work with sktime v0.15.1 :pr:`3930`
-        * Pinned `category-encoders`` to 2.5.1.post0 :pr:`3933``
+        * Pinned ``category-encoders`` to 2.5.1.post0 :pr:`3933``
     * Documentation Changes
     * Testing Changes
 
