@@ -42,9 +42,8 @@ outputs:
         - nlp-primitives>=2.9.0
         - python >=3.8.*
         - networkx >=2.5,<2.6
-        - category_encoders >=2.2.2
+        - category_encoders >=2.2.2, <=2.5.1.post0
         - python-graphviz >=0.13
-        - category-encoders==2.5.1.post0
     test:
       imports:
         - evalml
@@ -84,7 +83,7 @@ outputs:
         - pytest ==6.0.1
         - nbval ==0.9.3
         - python-graphviz >=0.8.4
-        - category_encoders >=2.0.0
+        - category_encoders >=2.0.0, <=2.5.1.post0
         - pytest-xdist
       source_files:
         - evalml/*

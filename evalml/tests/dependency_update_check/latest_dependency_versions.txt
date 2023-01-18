@@ -31,4 +31,3 @@ texttable==1.6.7
 vowpalwabbit==9.6.0
 woodwork==0.21.2
 xgboost==1.7.3
-category-encoders==2.5.1.post0
