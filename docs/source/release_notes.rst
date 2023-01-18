@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
         * Updated ``PolynomialDecomposer`` to work with sktime v0.15.1 :pr:`3930`
+        * Pinned `category-encoders`` to 2.5.1.post0 :pr:`3933``
     * Documentation Changes
     * Testing Changes
 
