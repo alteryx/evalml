@@ -14,68 +14,84 @@ from evalml.pipelines.components import (
 )
 
 
-def make_rf_feature_selectors():
-    rf_classifier = RFClassifierSelectFromModel(
+@pytest.fixture()
+def rf_classifier():
+    return RFClassifierSelectFromModel(
         number_features=5,
         n_estimators=10,
         max_depth=7,
         percent_features=0.5,
         threshold=0,
     )
-    rf_regressor = RFRegressorSelectFromModel(
+
+
+@pytest.fixture()
+def rf_regressor():
+    return RFRegressorSelectFromModel(
         number_features=5,
         n_estimators=10,
         max_depth=7,
         percent_features=0.5,
         threshold=0,
     )
-    rf_classifier_rfe = RFClassifierRFESelector(
+
+
+@pytest.fixture()
+def rf_classifier_rfe():
+    return RFClassifierRFESelector(
         step=0.1,
         min_features_to_select=2,
         n_estimators=10,
         max_depth=7,
         cv=2,
     )
-    rf_regressor_rfe = RFRegressorRFESelector(
+
+
+@pytest.fixture()
+def rf_regressor_rfe():
+    return RFRegressorRFESelector(
         step=0.1,
         min_features_to_select=2,
         n_estimators=10,
         max_depth=7,
         cv=2,
     )
-    return rf_classifier, rf_regressor, rf_classifier_rfe, rf_regressor_rfe
 
 
-def test_init():
-    (
-        rf_classifier,
-        rf_regressor,
-        rf_classifier_rfe,
-        rf_regressor_rfe,
-    ) = make_rf_feature_selectors()
-    assert rf_classifier.name == "RF Classifier Select From Model"
-    assert rf_regressor.name == "RF Regressor Select From Model"
-    assert rf_classifier_rfe.name == "RFE Selector with RF Classifier"
-    assert rf_regressor_rfe.name == "RFE Selector with RF Regressor"
+@pytest.mark.parametrize(
+    "selector_name, expected",
+    [
+        ("rf_classifier", "RF Classifier Select From Model"),
+        ("rf_regressor", "RF Regressor Select From Model"),
+        ("rf_classifier_rfe", "RFE Selector with RF Classifier"),
+        ("rf_regressor_rfe", "RFE Selector with RF Regressor"),
+    ],
+)
+def test_init(selector_name, expected, request):
+    selector = request.getfixturevalue(selector_name)
+    assert selector.name == expected
 
 
-def test_component_fit(X_y_binary, X_y_multi, X_y_regression):
+@pytest.mark.parametrize(
+    "selector_name",
+    ["rf_classifier", "rf_classifier_rfe"],
+)
+def test_component_fit_classifiers(selector_name, X_y_binary, X_y_multi, request):
     X_binary, y_binary = X_y_binary
     X_multi, y_multi = X_y_multi
-    X_reg, y_reg = X_y_regression
+    selector = request.getfixturevalue(selector_name)
+    assert isinstance(selector.fit(X_binary, y_binary), ComponentBase)
+    assert isinstance(selector.fit(X_multi, y_multi), ComponentBase)
 
-    (
-        rf_classifier,
-        rf_regressor,
-        rf_classifier_rfe,
-        rf_regressor_rfe,
-    ) = make_rf_feature_selectors()
-    assert isinstance(rf_classifier.fit(X_binary, y_binary), ComponentBase)
-    assert isinstance(rf_classifier.fit(X_multi, y_multi), ComponentBase)
-    assert isinstance(rf_regressor.fit(X_reg, y_reg), ComponentBase)
-    assert isinstance(rf_classifier_rfe.fit(X_binary, y_binary), ComponentBase)
-    assert isinstance(rf_classifier_rfe.fit(X_multi, y_multi), ComponentBase)
-    assert isinstance(rf_regressor_rfe.fit(X_reg, y_reg), ComponentBase)
+
+@pytest.mark.parametrize(
+    "selector_name",
+    ["rf_regressor", "rf_regressor_rfe"],
+)
+def test_component_fit_regressors(selector_name, X_y_regression, request):
+    X_reg, y_reg = X_y_regression
+    selector = request.getfixturevalue(selector_name)
+    assert isinstance(selector.fit(X_reg, y_reg), ComponentBase)
 
 
 def test_feature_selector_missing_component_obj():
@@ -123,17 +139,19 @@ def test_feature_selector_component_obj_missing_transform():
         mock_feature_selector.fit_transform(pd.DataFrame())
 
 
-def test_feature_selectors_drop_columns_maintains_woodwork():
+@pytest.mark.parametrize(
+    "selector_name",
+    ["rf_classifier", "rf_regressor", "rf_classifier_rfe", "rf_regressor_rfe"],
+)
+def test_feature_selectors_drop_columns_maintains_woodwork(selector_name, request):
     X = pd.DataFrame({"a": [1, 2, 3], "b": [2, 4, 6], "c": [1, 2, 3], "d": [1, 2, 3]})
     X.ww.init(logical_types={"a": "double", "b": "categorical"})
     y = pd.Series([0, 1, 1])
 
-    selectors = make_rf_feature_selectors()
-
-    for selector in selectors:
-        selector.fit(X, y)
-        X_t = selector.transform(X, y)
-        assert len(X_t.columns) == 2
+    selector = request.getfixturevalue(selector_name)
+    selector.fit(X, y)
+    X_t = selector.transform(X, y)
+    assert len(X_t.columns) == 2
 
 
 @pytest.mark.parametrize(
@@ -154,13 +172,16 @@ def test_feature_selectors_drop_columns_maintains_woodwork():
         ),
     ],
 )
-def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df):
-    (
-        rf_classifier,
-        rf_regressor,
-        rf_classifier_rfe,
-        rf_regressor_rfe,
-    ) = make_rf_feature_selectors()
+@pytest.mark.parametrize(
+    "selector_name",
+    ["rf_classifier", "rf_regressor", "rf_classifier_rfe", "rf_regressor_rfe"],
+)
+def test_feature_selectors_woodwork_custom_overrides_returned_by_components(
+    X_df,
+    selector_name,
+    request,
+):
+    selector = request.getfixturevalue(selector_name)
     y = pd.Series([1, 2, 1])
     X_df["another column"] = pd.Series([1.0, 2.0, 3.0], dtype="float")
     override_types = [Integer, Double, Boolean]
@@ -171,32 +192,8 @@ def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df
         except ww.exceptions.TypeConversionError:
             continue
 
-        rf_classifier.fit(X, y)
-        transformed = rf_classifier.transform(X, y)
-        assert isinstance(transformed, pd.DataFrame)
-        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            0: logical_type,
-            "another column": Double,
-        }
-
-        rf_regressor.fit(X, y)
-        transformed = rf_regressor.transform(X, y)
-        assert isinstance(transformed, pd.DataFrame)
-        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            0: logical_type,
-            "another column": Double,
-        }
-
-        rf_classifier_rfe.fit(X, y)
-        transformed = rf_classifier_rfe.transform(X, y)
-        assert isinstance(transformed, pd.DataFrame)
-        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            0: logical_type,
-            "another column": Double,
-        }
-
-        rf_regressor_rfe.fit(X, y)
-        transformed = rf_regressor_rfe.transform(X, y)
+        selector.fit(X, y)
+        transformed = selector.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             0: logical_type,
