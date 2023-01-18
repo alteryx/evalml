@@ -4,7 +4,7 @@ from abc import abstractmethod
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from sklearn.feature_selection import RFECV
-from skopt.space import Integer
+from skopt.space import Real
 
 from evalml.pipelines.components.transformers.feature_selection.feature_selector import (
     FeatureSelector,
@@ -15,17 +15,16 @@ class RecursiveFeatureEliminationSelector(FeatureSelector):
     """Selects relevant features using recursive feature elimination."""
 
     hyperparameter_ranges = {
-        "perc": Integer(0, 100),
+        "step": Real(0.05, 0.25),
     }
     """{
-        "percent_features": Real(0.01, 1),
-        "threshold": ["mean", "median"],
+        "step": Real(0.05, 0.25)
     }"""
 
     def __init__(
         self,
         step=0.2,
-        min_features_to_select=10,
+        min_features_to_select=1,
         cv=None,
         scoring=None,
         n_jobs=-1,
@@ -78,7 +77,7 @@ class RFClassifierRFESelector(RecursiveFeatureEliminationSelector):
             this will represent the number of features to eliminate. If a float is specified this represents
             the percentage of features to eliminate each iteration. The last iteration may drop fewer than this
             number of features in order to satisfy the min_features_to_select constraint. Defaults to 0.2.
-        min_features_to_select (int): The minimum number of features to return. Defaults to 10.
+        min_features_to_select (int): The minimum number of features to return. Defaults to 1.
         cv (int or None): Number of folds to use for the cross-validation splitting strategy. Defaults to None
             which will use 5 folds.
         scoring (str, callable or None): A string or scorer callable object to specify the scoring method.
@@ -107,7 +106,7 @@ class RFRegressorRFESelector(RecursiveFeatureEliminationSelector):
             this will represent the number of features to eliminate. If a float is specified this represents
             the percentage of features to eliminate each iteration. The last iteration may drop fewer than this
             number of features in order to satisfy the min_features_to_select constraint. Defaults to 0.2.
-        min_features_to_select (int): The minimum number of features to return. Defaults to 10.
+        min_features_to_select (int): The minimum number of features to return. Defaults to 1.
         cv (int or None): Number of folds to use for the cross-validation splitting strategy. Defaults to None
             which will use 5 folds.
         scoring (str, callable or None): A string or scorer callable object to specify the scoring method.
