@@ -571,6 +571,23 @@ def test_describe_component():
     }
 
 
+def test_update_parameters(X_y_binary):
+    X, y = X_y_binary
+    new_val = "New val"
+
+    cmp = MockFitComponent()
+    cmp.fit(X, y)
+    cmp.update_parameters({"param_a": new_val})
+    assert cmp.parameters["param_a"] == new_val
+    assert cmp._is_fitted is False
+
+    cmp = MockFitComponent()
+    cmp.fit(X, y)
+    cmp.update_parameters({"param_b": new_val}, reset_fit=False)
+    assert cmp.parameters["param_b"] == new_val
+    assert cmp._is_fitted is True
+
+
 def test_missing_attributes(X_y_binary):
     class MockComponentName(ComponentBase):
         pass
