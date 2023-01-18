@@ -48,7 +48,6 @@ from evalml.pipelines.components import (
     RandomForestClassifier,
     RandomForestRegressor,
     ReplaceNullableTypes,
-    RFClassifierRFESelector,
     RFClassifierSelectFromModel,
     RFRegressorRFESelector,
     RFRegressorSelectFromModel,
