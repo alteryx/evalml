@@ -443,6 +443,19 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     self._top_n_pipelines,
                     self.num_long_pipelines_per_batch,
                 )
+        # this logic needs to be updated once time series also supports ensembling
+        elif is_time_series(self.problem_type):
+            if self._batch_number == 0:
+                next_batch = self._create_naive_pipelines()
+            elif self._batch_number == 1:
+                next_batch = self._create_fast_final()
+            elif self.batch_number == 2:
+                next_batch = self._create_long_exploration(n=self.top_n)
+            else:
+                next_batch = self._create_n_pipelines(
+                    self._top_n_pipelines,
+                    self.num_long_pipelines_per_batch,
+                )
         else:
             if self._batch_number == 0:
                 next_batch = self._create_naive_pipelines()
