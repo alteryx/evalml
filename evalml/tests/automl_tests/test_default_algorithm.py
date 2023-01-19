@@ -49,7 +49,7 @@ def test_default_algorithm_init(X_y_binary):
         sampler_name,
         verbose=True,
     )
-    assert algo.default_max_batches == 3
+    assert algo.default_max_batches == 2
 
     algo = DefaultAlgorithm(
         X,
