@@ -23,7 +23,8 @@ from evalml.tests.automl_tests.dask_test_utils import (
 
 def test_submit_training_job_single(X_y_binary_cls):
     """Test that training a single pipeline using the parallel engine produces the
-    same results as simply running the train_pipeline function."""
+    same results as simply running the train_pipeline function.
+    """
     X, y = X_y_binary_cls
 
     with DaskEngine() as engine:
@@ -58,7 +59,8 @@ def test_submit_training_job_single(X_y_binary_cls):
 
 def test_submit_training_jobs_multiple(X_y_binary_cls):
     """Test that training multiple pipelines using the parallel engine produces the
-    same results as the sequential engine."""
+    same results as the sequential engine.
+    """
     X, y = X_y_binary_cls
     pipelines = [
         BinaryClassificationPipeline(
@@ -102,7 +104,8 @@ def test_submit_training_jobs_multiple(X_y_binary_cls):
 
 def test_submit_evaluate_job_single(X_y_binary_cls):
     """Test that evaluating a single pipeline using the parallel engine produces the
-    same results as simply running the evaluate_pipeline function."""
+    same results as simply running the evaluate_pipeline function.
+    """
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
@@ -158,7 +161,8 @@ def test_submit_evaluate_job_single(X_y_binary_cls):
 
 def test_submit_evaluate_jobs_multiple(X_y_binary_cls):
     """Test that evaluating multiple pipelines using the parallel engine produces the
-    same results as the sequential engine."""
+    same results as the sequential engine.
+    """
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
@@ -214,7 +218,8 @@ def test_submit_evaluate_jobs_multiple(X_y_binary_cls):
 
 def test_submit_scoring_job_single(X_y_binary_cls):
     """Test that scoring a single pipeline using the parallel engine produces the
-    same results as simply running the score_pipeline function."""
+    same results as simply running the score_pipeline function.
+    """
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
@@ -251,7 +256,8 @@ def test_submit_scoring_job_single(X_y_binary_cls):
 
 def test_submit_scoring_jobs_multiple(X_y_binary_cls):
     """Test that scoring multiple pipelines using the parallel engine produces the
-    same results as the sequential engine."""
+    same results as the sequential engine.
+    """
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
@@ -307,7 +313,8 @@ def test_submit_scoring_jobs_multiple(X_y_binary_cls):
 
 def test_cancel_job(X_y_binary_cls):
     """Test that training a single pipeline using the parallel engine produces the
-    same results as simply running the train_pipeline function."""
+    same results as simply running the train_pipeline function.
+    """
     X, y = X_y_binary_cls
 
     with DaskEngine() as engine:
@@ -377,8 +384,8 @@ def test_dask_sends_woodwork_schema(X_y_binary_cls):
 
 def test_daskengine_convenience():
     """The purpose of this test is to ensure that a DaskEngine initialized without an
-    explicit client self-initializes a threaded Client."""
-
+    explicit client self-initializes a threaded Client.
+    """
     with DaskEngine() as dask_engine:
         assert isinstance(dask_engine.client, Client)
         assert isinstance(dask_engine.cluster, LocalCluster)

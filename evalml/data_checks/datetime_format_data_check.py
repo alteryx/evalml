@@ -371,7 +371,7 @@ class DateTimeFormatDataCheck(DataCheck):
         if no_dt_found:
             messages.append(
                 DataCheckError(
-                    message=f"Datetime information could not be found in the data, or was not in a supported datetime format.",
+                    message="Datetime information could not be found in the data, or was not in a supported datetime format.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_INFORMATION_NOT_FOUND,
                 ).to_dict(),

@@ -652,6 +652,7 @@ def _make_stacked_ensemble_pipeline(
             {model_family: {hash1: trained_component_graph, hash2: trained_component_graph...}...}.
             Defaults to None.
         label_encoder_params (dict): The parameters passed in for the label encoder, used only for classification problems. Defaults to None.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Returns:
         Pipeline with appropriate stacked ensemble estimator.

@@ -286,7 +286,7 @@ def test_explainers(
             if algorithm == "shap":
                 assert all(
                     len(v) == n_points_to_explain for v in class_values.values()
-                ), f"A SHAP value must be computed for every data point to explain!"
+                ), "A SHAP value must be computed for every data point to explain!"
     elif problem_type == ProblemTypes.REGRESSION:
         assert isinstance(
             explainer_values,
@@ -301,7 +301,7 @@ def test_explainers(
         if algorithm == "shap":
             assert all(
                 len(v) == n_points_to_explain for v in explainer_values.values()
-            ), f"A SHAP value must be computed for every data point to explain!"
+            ), "A SHAP value must be computed for every data point to explain!"
 
 
 @pytest.mark.parametrize("data_type", ["ww", "np"])

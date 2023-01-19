@@ -355,7 +355,8 @@ def test_ordinal_encoder_diff_na_types():
 
 def test_null_values_with_categories_specified():
     """Nans aren't treated by Woodwork as categories in ordinal cols, so they shouldn't
-    have an impact on the categories parameter and be handled entirely independently."""
+    have an impact on the categories parameter and be handled entirely independently.
+    """
     X = pd.DataFrame(
         {
             "col_1": ["a", "b", "c", np.nan, np.nan],
@@ -476,7 +477,8 @@ def test_categories_set_at_init():
 
 def test_categories_includes_not_present_value():
     """This tests the case where the categories we pass into the encoder include
-    values that aren't in the data or even the Ordinal.order."""
+    values that aren't in the data or even the Ordinal.order.
+    """
     X = pd.DataFrame(
         {
             "col_1": ["a", "b", "c", "d", "e", "f", "g"],

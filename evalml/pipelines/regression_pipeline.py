@@ -54,7 +54,7 @@ class RegressionPipeline(PipelineBase):
         X = infer_feature_types(X)
         y = infer_feature_types(y)
         if "numeric" not in y.ww.semantic_tags:
-            raise ValueError(f"Regression pipeline can only handle numeric target data")
+            raise ValueError("Regression pipeline can only handle numeric target data")
 
         self._fit(X, y)
         return self

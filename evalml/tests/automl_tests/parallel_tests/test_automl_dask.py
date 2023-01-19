@@ -46,7 +46,6 @@ def test_automl(
     sequential_results,
 ):
     """Comparing the results of parallel and sequential AutoML to each other."""
-
     X, y = X_y_binary_cls
     par_automl = AutoMLSearch(
         X_train=X,
@@ -85,7 +84,6 @@ def test_automl_max_iterations(
     X_y_binary_cls,
 ):
     """Making sure that the max_iterations parameter limits the number of pipelines run."""
-
     X, y = X_y_binary_cls
     max_iterations = 4
     par_automl = AutoMLSearch(

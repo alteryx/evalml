@@ -109,7 +109,7 @@ def _remove_notebook_empty_last_cell(notebooks):
 
 @click.group()
 def cli():
-    """no-op"""
+    """no-op."""
 
 
 @cli.command()

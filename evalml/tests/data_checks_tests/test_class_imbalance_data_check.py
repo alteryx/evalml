@@ -560,7 +560,7 @@ def test_class_imbalance_large_multiclass(test_size):
             details={"target_values": [2, 1, 0]},
         ).to_dict(),
         DataCheckWarning(
-            message=f"The following labels in the target have severe class imbalance because they fall under 10% of the target and have less than 100 samples: [2, 1, 0]",
+            message="The following labels in the target have severe class imbalance because they fall under 10% of the target and have less than 100 samples: [2, 1, 0]",
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_SEVERE,
             details={"target_values": [2, 1, 0]},
@@ -577,7 +577,7 @@ def test_class_imbalance_large_multiclass(test_size):
             details={"target_values": [200]},
         ).to_dict(),
         DataCheckWarning(
-            message=f"The following labels in the target have severe class imbalance because they fall under 10% of the target and have less than 100 samples: [200]",
+            message="The following labels in the target have severe class imbalance because they fall under 10% of the target and have less than 100 samples: [200]",
             data_check_name=class_imbalance_data_check_name,
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_SEVERE,
             details={"target_values": [200]},

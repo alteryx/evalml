@@ -200,7 +200,7 @@ class ComponentGraph:
         """
         if self._is_instantiated:
             raise ValueError(
-                f"Cannot reinstantiate a component graph that was previously instantiated",
+                "Cannot reinstantiate a component graph that was previously instantiated",
             )
         parameters = parameters or {}
         param_set = set(s for s in parameters.keys() if s not in ["pipeline"])
@@ -791,7 +791,7 @@ class ComponentGraph:
         for component_name, component_class in self.component_instances.items():
             label = "%s\l" % (component_name)  # noqa: W605
             if isinstance(component_class, ComponentBase):
-                parameters = "\l".join(
+                parameters = "\\l".join(
                     [
                         key + " : " + "{:0.2f}".format(val)
                         if (isinstance(val, float))

@@ -63,16 +63,16 @@ def test_time_series_split(max_delay, gap, forecast_horizon, time_index, y_none)
 
     answer = [
         (
-            pd.date_range("2020-10-01", f"2020-10-28"),
-            pd.date_range(f"2020-10-29", f"2020-10-29"),
+            pd.date_range("2020-10-01", "2020-10-28"),
+            pd.date_range("2020-10-29", "2020-10-29"),
         ),
         (
-            pd.date_range("2020-10-01", f"2020-10-29"),
-            pd.date_range(f"2020-10-30", f"2020-10-30"),
+            pd.date_range("2020-10-01", "2020-10-29"),
+            pd.date_range("2020-10-30", "2020-10-30"),
         ),
         (
-            pd.date_range("2020-10-01", f"2020-10-30"),
-            pd.date_range(f"2020-10-31", "2020-10-31"),
+            pd.date_range("2020-10-01", "2020-10-30"),
+            pd.date_range("2020-10-31", "2020-10-31"),
         ),
     ]
     answer_dt = [

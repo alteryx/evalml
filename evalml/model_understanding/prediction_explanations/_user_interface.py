@@ -141,9 +141,12 @@ def _make_text_table(
         explainer_values (dict): Dictionary mapping the feature names to their explainer values. In a multiclass setting,
             this dictionary for correspond to the explainer values for a single class.
         normalized_values (dict): Normalized explainer values. Same structure as explainer_values parameter.
+        pipeline_features (pd.Series): The features created by the pipeline.
+        original_features (pd.Series): The features passed to the pipeline by the user. If possible,
+            will display the original feature value.
         top_k (int): How many of the highest/lowest features to include in the table.
         include_explainer_values (bool): Whether to include the explainer values in their own column.
-
+        algorithm (str): The algorithm used to compute the explainer values. Used to determine the column name for the
     Returns:
         str
     """

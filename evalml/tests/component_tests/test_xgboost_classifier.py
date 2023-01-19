@@ -22,7 +22,7 @@ def test_xgboost_classifier_default_evaluation_metric(metric):
 
 
 def test_xgboost_classifier_random_seed_bounds_seed(X_y_binary):
-    """ensure xgboost's RNG doesn't fail for the min/max bounds we support on user-inputted random seeds"""
+    """ensure xgboost's RNG doesn't fail for the min/max bounds we support on user-inputted random seeds."""
     X, y = X_y_binary
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X.ww.columns = col_names
