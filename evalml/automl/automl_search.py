@@ -693,7 +693,7 @@ class AutoMLSearch:
         if self.X_holdout is None and self.y_holdout is None:
             # Holdout set enabled but not enough rows
             self.logger.info(
-                f"AutoMLSearch will use mean CV score to rank pipelines.",
+                "AutoMLSearch will use mean CV score to rank pipelines.",
             )
         else:
             self.logger.info(

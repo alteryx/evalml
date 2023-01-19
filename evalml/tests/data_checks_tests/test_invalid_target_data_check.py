@@ -446,7 +446,7 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data(problem_ty
     y_numeric = pd.Series([1, 2.2, 3, 4.4])
 
     data_check_error = DataCheckError(
-        message=f"Target data type should be numeric for regression type problems.",
+        message="Target data type should be numeric for regression type problems.",
         data_check_name=invalid_targets_data_check_name,
         message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE_REGRESSION,
         details={},
@@ -496,7 +496,7 @@ def test_invalid_target_data_check_multiclass_problem_binary_data(problem_type):
     y_binary = pd.Series([0, 1, 1, 1, 0, 0] * 25)
 
     data_check_error = DataCheckError(
-        message=f"Target has two or less classes, which is too few for multiclass problems.  Consider changing to binary.",
+        message="Target has two or less classes, which is too few for multiclass problems.  Consider changing to binary.",
         data_check_name=invalid_targets_data_check_name,
         message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_ENOUGH_CLASSES,
         details={"num_classes": len(set(y_binary))},
@@ -535,7 +535,7 @@ def test_invalid_target_data_check_multiclass_problem_almost_continuous_data(
     )  # 100 classes, 300 samples, .33 class/sample ratio
     X = pd.DataFrame({"col": range(len(y_multiclass_high_classes))})
     data_check_warning = DataCheckWarning(
-        message=f"Target has a large number of unique values, could be regression type problem.",
+        message="Target has a large number of unique values, could be regression type problem.",
         data_check_name=invalid_targets_data_check_name,
         message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
         details={"class_to_value_ratio": 1 / 3},
@@ -549,7 +549,7 @@ def test_invalid_target_data_check_multiclass_problem_almost_continuous_data(
     )  # 5 classes, 100 samples, .05 class/sample ratio
     X = pd.DataFrame({"col": range(len(y_multiclass_med_classes))})
     data_check_warning = DataCheckWarning(
-        message=f"Target has a large number of unique values, could be regression type problem.",
+        message="Target has a large number of unique values, could be regression type problem.",
         data_check_name=invalid_targets_data_check_name,
         message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
         details={"class_to_value_ratio": 0.05},
@@ -714,7 +714,7 @@ def test_invalid_target_data_check_action_for_data_with_null(
     elif is_multiclass(problem_type):
         expected.append(
             DataCheckError(
-                message=f"Target has two or less classes, which is too few for multiclass problems.  Consider changing to binary.",
+                message="Target has two or less classes, which is too few for multiclass problems.  Consider changing to binary.",
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_ENOUGH_CLASSES,
                 details={"num_classes": 1},
@@ -722,7 +722,7 @@ def test_invalid_target_data_check_action_for_data_with_null(
         )
         expected.append(
             DataCheckWarning(
-                message=f"Target has a large number of unique values, could be regression type problem.",
+                message="Target has a large number of unique values, could be regression type problem.",
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
                 details={"class_to_value_ratio": 0.1},

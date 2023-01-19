@@ -107,7 +107,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
     if issue == "type_errors":
         assert datetime_format_check.validate(X, y) == [
             DataCheckError(
-                message=f"Datetime information could not be found in the data, or was not in a supported datetime format.",
+                message="Datetime information could not be found in the data, or was not in a supported datetime format.",
                 data_check_name=datetime_format_check_name,
                 message_code=DataCheckMessageCode.DATETIME_INFORMATION_NOT_FOUND,
             ).to_dict(),
@@ -230,7 +230,7 @@ def test_datetime_format_data_check_multiple_missing(n_missing):
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
-            message=f"Column 'dates' has datetime values missing between start and end date.",
+            message="Column 'dates' has datetime values missing between start and end date.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
@@ -257,7 +257,7 @@ def test_datetime_format_data_check_multiple_errors():
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
-            message=f"Column 'dates' has datetime values missing between start and end date.",
+            message="Column 'dates' has datetime values missing between start and end date.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
@@ -280,12 +280,12 @@ def test_datetime_format_data_check_multiple_errors():
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
-            message=f"Column 'dates' has more than one row with the same datetime value.",
+            message="Column 'dates' has more than one row with the same datetime value.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
         ).to_dict(),
         DataCheckError(
-            message=f"Column 'dates' has datetime values missing between start and end date.",
+            message="Column 'dates' has datetime values missing between start and end date.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
@@ -308,12 +308,12 @@ def test_datetime_format_data_check_multiple_errors():
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
-            message=f"Column 'dates' has more than one row with the same datetime value.",
+            message="Column 'dates' has more than one row with the same datetime value.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
         ).to_dict(),
         DataCheckError(
-            message=f"Column 'dates' has datetime values missing between start and end date.",
+            message="Column 'dates' has datetime values missing between start and end date.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
@@ -337,12 +337,12 @@ def test_datetime_format_data_check_multiple_errors():
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
-            message=f"Column 'dates' has datetime values missing between start and end date.",
+            message="Column 'dates' has datetime values missing between start and end date.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
         DataCheckError(
-            message=f"Column 'dates' has datetime values that do not align with the inferred frequency.",
+            message="Column 'dates' has datetime values that do not align with the inferred frequency.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_HAS_MISALIGNED_VALUES,
         ).to_dict(),
@@ -366,12 +366,12 @@ def test_datetime_format_data_check_multiple_errors():
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
-            message=f"Column 'dates' has datetime values missing between start and end date.",
+            message="Column 'dates' has datetime values missing between start and end date.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
         DataCheckError(
-            message=f"Column 'dates' has datetime values that do not align with the inferred frequency.",
+            message="Column 'dates' has datetime values that do not align with the inferred frequency.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_HAS_MISALIGNED_VALUES,
         ).to_dict(),
@@ -398,7 +398,7 @@ def test_datetime_format_unusual_interval():
 
     expected = [
         DataCheckError(
-            message=f"Column 'dates' has datetime values missing between start and end date.",
+            message="Column 'dates' has datetime values missing between start and end date.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
@@ -418,12 +418,12 @@ def test_datetime_format_unusual_interval():
 
     expected = [
         DataCheckError(
-            message=f"Column 'dates' has more than one row with the same datetime value.",
+            message="Column 'dates' has more than one row with the same datetime value.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
         ).to_dict(),
         DataCheckError(
-            message=f"Column 'dates' has datetime values missing between start and end date.",
+            message="Column 'dates' has datetime values missing between start and end date.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
@@ -473,12 +473,12 @@ def test_datetime_format_nan_data_check_error():
     expected.extend(
         [
             DataCheckError(
-                message=f"Column 'date' has more than one row with the same datetime value.",
+                message="Column 'date' has more than one row with the same datetime value.",
                 data_check_name=datetime_format_check_name,
                 message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
             ).to_dict(),
             DataCheckError(
-                message=f"Column 'date' has datetime values missing between start and end date.",
+                message="Column 'date' has datetime values missing between start and end date.",
                 data_check_name=datetime_format_check_name,
                 message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
             ).to_dict(),

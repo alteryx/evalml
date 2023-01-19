@@ -103,7 +103,8 @@ def test_knn_imputer_ignores_natural_language(
     df_composition,
 ):
     """Test to ensure that the simple imputer just passes through
-    natural language columns, unchanged."""
+    natural language columns, unchanged.
+    """
     if df_composition == "single_column":
         X_df = imputer_test_data[["natural language col"]]
         X_df.ww.init()

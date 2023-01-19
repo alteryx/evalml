@@ -18,7 +18,7 @@ from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_e
 
 
 def validate_plot_feature_values(results, X):
-    """Helper to validate feature values returned from force plots"""
+    """Helper to validate feature values returned from force plots."""
     for row, result in enumerate(results):
         for result_label in result:
             # Check feature values in generated force plot correspond to input rows

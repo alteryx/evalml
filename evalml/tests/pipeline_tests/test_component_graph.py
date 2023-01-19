@@ -58,15 +58,15 @@ class DummyTransformer(Transformer):
 
 
 class TransformerA(DummyTransformer):
-    """copy class"""
+    """copy class."""
 
 
 class TransformerB(DummyTransformer):
-    """copy class"""
+    """copy class."""
 
 
 class TransformerC(DummyTransformer):
-    """copy class"""
+    """copy class."""
 
 
 class DummyEstimator(Estimator):
@@ -87,15 +87,15 @@ class DummyEstimator(Estimator):
 
 
 class EstimatorA(DummyEstimator):
-    """copy class"""
+    """copy class."""
 
 
 class EstimatorB(DummyEstimator):
-    """copy class"""
+    """copy class."""
 
 
 class EstimatorC(DummyEstimator):
-    """copy class"""
+    """copy class."""
 
 
 @pytest.fixture
