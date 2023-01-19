@@ -683,7 +683,7 @@ def test_t_sne_errors_n_components(n_components):
 
     with pytest.raises(
         ValueError,
-        match=f"The parameter n_components must be of type integer and greater than 0",
+        match="The parameter n_components must be of type integer and greater than 0",
     ):
         t_sne(X, n_components=n_components)
 
@@ -694,7 +694,7 @@ def test_t_sne_errors_perplexity(perplexity):
 
     with pytest.raises(
         ValueError,
-        match=f"The parameter perplexity must be non-negative",
+        match="The parameter perplexity must be non-negative",
     ):
         t_sne(X, perplexity=perplexity)
 
@@ -719,7 +719,7 @@ def test_t_sne_errors_marker_line_width(marker_line_width):
 
     with pytest.raises(
         ValueError,
-        match=f"The parameter marker_line_width must be non-negative",
+        match="The parameter marker_line_width must be non-negative",
     ):
         graph_t_sne(X, marker_line_width=marker_line_width)
 
@@ -730,7 +730,7 @@ def test_t_sne_errors_marker_size(marker_size):
 
     with pytest.raises(
         ValueError,
-        match=f"The parameter marker_size must be non-negative",
+        match="The parameter marker_size must be non-negative",
     ):
         graph_t_sne(X, marker_size=marker_size)
 

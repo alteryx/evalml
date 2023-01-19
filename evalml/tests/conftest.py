@@ -1733,7 +1733,7 @@ def churn_local():
 
 @pytest.fixture
 def mock_imbalanced_data_X_y():
-    """Helper function to return an imbalanced binary or multiclass dataset"""
+    """Helper function to return an imbalanced binary or multiclass dataset."""
 
     def _imbalanced_data_X_y(problem_type, categorical_columns, size):
         """ "Generates a dummy classification dataset with particular amounts of class imbalance and categorical input columns.
@@ -1850,7 +1850,8 @@ class _AutoMLTestEnv:
 
     def _reset_mocks(self):
         """Set the mocks to None before running a computation so that we can prevent users from trying to access
-        them before leaving the context manager."""
+        them before leaving the context manager.
+        """
         self._mock_fit = None
         self._mock_tell = None
         self._mock_score = None

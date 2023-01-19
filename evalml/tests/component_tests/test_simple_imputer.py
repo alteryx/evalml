@@ -505,7 +505,8 @@ def test_component_handles_pre_init_ww():
     """Test to determine whether SimpleImputer can handle
     a Woodwork-inited DataFrame with partially null and fully
     null columns (post Woodwork 0.5.1) and still perform the
-    expected behavior."""
+    expected behavior.
+    """
     df = pd.DataFrame(
         {"part_null": [0, 1, 2, None], "all_null": [None, None, None, None]},
     )
@@ -529,7 +530,8 @@ def test_simple_imputer_ignores_natural_language(
     df_composition,
 ):
     """Test to ensure that the simple imputer just passes through
-    natural language columns, unchanged."""
+    natural language columns, unchanged.
+    """
     if df_composition == "single_column":
         X_df = imputer_test_data.ww[["natural language col"]]
     elif df_composition == "full_df":

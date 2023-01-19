@@ -359,7 +359,7 @@ def train_and_score_pipeline(
     holdout_scores = np.NaN
     if use_holdout:
         logger.info("\tStarting holdout set scoring")
-        logger.debug(f"\t\tTraining and scoring entire dataset")
+        logger.debug("\t\tTraining and scoring entire dataset")
         holdout_score, holdout_scores, stored_pipeline = _train_and_score(
             X_train=full_X_train,
             X_score=X_holdout,

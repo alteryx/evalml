@@ -13,6 +13,7 @@ class BinaryClassificationPipelineMixin:
 
     @threshold.setter
     def threshold(self, value):
+        """Threshold used to make a prediction. Defaults to None."""
         self._threshold = value
 
     def _predict_with_objective(self, X, ypred_proba, objective):

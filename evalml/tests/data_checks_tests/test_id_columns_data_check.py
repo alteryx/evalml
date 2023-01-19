@@ -207,13 +207,16 @@ def test_id_cols_data_check_input_formats(logical_type):
 
 
 @pytest.mark.parametrize(
-    "input_type", ["integer", "integer_nullable", "string", "double"]
+    "input_type",
+    ["integer", "integer_nullable", "string", "double"],
 )
 def test_identified_first_col_primary_key(
-    input_type, get_test_data_with_or_without_primary_key
+    input_type,
+    get_test_data_with_or_without_primary_key,
 ):
     X = get_test_data_with_or_without_primary_key(
-        input_type=input_type, has_primary_key=True
+        input_type=input_type,
+        has_primary_key=True,
     )
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
     assert id_cols_check.validate(X) == [
@@ -277,13 +280,16 @@ def test_identified_first_col_primary_key(
 
 
 @pytest.mark.parametrize(
-    "input_type", ["integer", "integer_nullable", "string", "double"]
+    "input_type",
+    ["integer", "integer_nullable", "string", "double"],
 )
 def test_unidentified_first_col_primary_key(
-    input_type, get_test_data_with_or_without_primary_key
+    input_type,
+    get_test_data_with_or_without_primary_key,
 ):
     X = get_test_data_with_or_without_primary_key(
-        input_type=input_type, has_primary_key=False
+        input_type=input_type,
+        has_primary_key=False,
     )
 
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
