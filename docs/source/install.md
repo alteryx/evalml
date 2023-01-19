@@ -83,7 +83,7 @@ $ pip install evalml[prophet]
 ```
 ```{tab} Update Checker
 ```console
-$ pip install evalml[update_checker]
+$ pip install evalml[updater]
 ```
 ````
 ````{tab} Conda
