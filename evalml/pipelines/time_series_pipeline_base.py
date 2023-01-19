@@ -328,6 +328,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         Returns:
             dates_needed (tuple(pd.Timestamp)): Range of dates needed to forecast the given date.
         """
+        if start_date > end_date:
+            raise ValueError("`start_date` must come before `end_date`.")
+
         start_range = self.dates_needed_for_prediction(start_date)
         end_range = self.dates_needed_for_prediction(end_date)
         return (start_range[0], end_range[1])

@@ -1855,7 +1855,11 @@ def test_dates_needed_for_prediction_range(
 
     assert beginning_date <= end_date
     assert end_date < prediction_end
-    # date_diff = pipeline.forecast_horizon + pipeline.max_delay + pipeline.gap
-    # assert end_date == beginning_date + pd.tseries.frequencies.to_offset(
-    #     f"{date_diff}{pipeline.frequency}",
-    # )
+
+    prediction_start = pd.Timestamp("2022-03-01")
+    prediction_end = pd.Timestamp("2022-02-28")
+    with pytest.raises(ValueError):
+        pipeline.dates_needed_for_prediction_range(
+            prediction_start,
+            prediction_end,
+        )
