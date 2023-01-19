@@ -111,7 +111,7 @@ prophet = [
     "prophet-prebuilt == 1.0.2",
 ]
 complete = [
-    "evalml[prophet, update_checker]",
+    "evalml[prophet, updater]",
 ]
 
 [tool.setuptools]

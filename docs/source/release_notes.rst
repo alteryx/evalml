@@ -5,6 +5,7 @@ Release Notes
         * Added ``RFClassifierRFESelector``  and ``RFRegressorRFESelector`` components for feature selection using recursive feature elimination :pr:`3934`
     * Fixes
         * Fixed `set_period()` not updating decomposer parameters :pr:`3932`
+        * Fix install command for alteryx-open-src-update-checker :pr:`3940`
     * Changes
         * Updated ``PolynomialDecomposer`` to work with sktime v0.15.1 :pr:`3930`
         * Add ruff and use pyproject.toml (move away from setup.cfg) :pr:`3928`
