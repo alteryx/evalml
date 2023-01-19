@@ -189,7 +189,7 @@ class IDColumnsDataCheck(DataCheck):
                     col
                     for col in cols_with_all_unique
                     if all(
-                        X_temp[col].mod(1).eq(0)
+                        X_temp[col].mod(1).eq(0),
                     )  # Parse out columns that contain all `integer` values
                 ]
 

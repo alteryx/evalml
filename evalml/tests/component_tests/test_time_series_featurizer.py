@@ -826,7 +826,7 @@ def test_delayed_feature_transformer_conf_level(
     )
     new_X = dft.fit_transform(X, y)
 
-    first_significant_10 = [l for l in significant_lags if l < 10]
+    first_significant_10 = [lag for lag in significant_lags if lag < 10]
     expected_lags = set(peaks).union(first_significant_10)
     expected_lags = sorted(
         expected_lags.intersection(

@@ -1992,7 +1992,7 @@ def test_percent_better_than_baseline_in_rankings(
             return self.__class__(self.parameters, random_seed=self.random_seed)
 
         def fit(self, *args, **kwargs):
-            """Mocking fit"""
+            """Mocking fit."""
 
     class Pipeline1(DummyPipeline):
         custom_name = "Pipeline1"
@@ -2170,7 +2170,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
             return self.__class__(self.parameters, random_seed=self.random_seed)
 
         def fit(self, *args, **kwargs):
-            """Mocking fit"""
+            """Mocking fit."""
 
     additional_objectives = None
     if custom_additional_objective:
@@ -2611,17 +2611,17 @@ def test_stopping_criterion_bad(X_y_binary):
         AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_time=("test",))
     with pytest.raises(
         ValueError,
-        match=f"Parameter max_batches must be None or non-negative. Received -1.",
+        match="Parameter max_batches must be None or non-negative. Received -1.",
     ):
         AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_batches=-1)
     with pytest.raises(
         ValueError,
-        match=f"Parameter max_time must be None or non-negative. Received -1.",
+        match="Parameter max_time must be None or non-negative. Received -1.",
     ):
         AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_time=-1)
     with pytest.raises(
         ValueError,
-        match=f"Parameter max_iterations must be None or non-negative. Received -1.",
+        match="Parameter max_iterations must be None or non-negative. Received -1.",
     ):
         AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=-1)
 
@@ -4342,7 +4342,8 @@ def test_search_with_text_nans(mock_score, mock_fit, nans):
 )
 def test_build_engine(engine_str):
     """Test to ensure that AutoMLSearch's build_engine_from_str() chooses
-    and returns an instance of the correct engine."""
+    and returns an instance of the correct engine.
+    """
     if "cf" in engine_str:
         expected_engine_type = CFEngine
         engine = build_engine_from_str(engine_str)
@@ -4372,7 +4373,8 @@ def test_build_engine(engine_str):
 )
 def test_automl_chooses_engine(engine_choice, X_y_binary):
     """Test that ensures that AutoMLSearch chooses an engine for valid input types and raises
-    the proper exception for others."""
+    the proper exception for others.
+    """
     X, y = X_y_binary
     if engine_choice == "str":
         engine_choice = "dask_process"
@@ -5343,7 +5345,7 @@ def test_init_create_holdout_set(caplog):
     )
     out = caplog.text
 
-    match_text = f"AutoMLSearch will use mean CV score to rank pipelines."
+    match_text = "AutoMLSearch will use mean CV score to rank pipelines."
     assert match_text in out
     assert len(automl.X_train) == len(X)
     assert len(automl.y_train) == len(y)

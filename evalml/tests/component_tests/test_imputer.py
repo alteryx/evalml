@@ -469,8 +469,8 @@ def test_imputer_with_none_separated(
     boolean_impute_strategy,
 ):
     """Test for correctness for the different numeric, categorical and boolean dtypes using dataframes that contain
-    either just the tested imputed dtypes or combinations of dtypes."""
-
+    either just the tested imputed dtypes or combinations of dtypes.
+    """
     test_ltypes = dict((k, ltypes[k]) for k in columns_dict[dtypes])
     X_test = X[columns_dict[dtypes]]
     X_test.ww.init(logical_types=test_ltypes)

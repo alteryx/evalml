@@ -489,7 +489,7 @@ def t_sne(
 ):
     """Get the transformed output after fitting X to the embedded space using t-SNE.
 
-     Args:
+    Args:
         X (np.ndarray, pd.DataFrame): Data to be transformed. Must be numeric.
         n_components (int, optional): Dimension of the embedded space.
         perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.

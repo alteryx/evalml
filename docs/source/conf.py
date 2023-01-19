@@ -14,10 +14,10 @@
 
 import os
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
+from sphinx.domains.python import PythonDomain
 from sphinx.ext.autodoc import Documenter, MethodDocumenter
 
 import evalml
@@ -165,7 +165,7 @@ html_static_path = ["_static"]
 #
 # html_sidebars = {}
 html_js_files = [
-    "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js"
+    "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js",
 ]
 
 
@@ -309,9 +309,6 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
     priority = 0.6
 
 
-from sphinx.domains.python import PythonDomain
-
-
 class PatchedPythonDomain(PythonDomain):
     """To disable cross-reference warning: https://github.com/sphinx-doc/sphinx/issues/3866."""
 
@@ -335,7 +332,8 @@ def setup(app):
         print(f"Adding disable-warnings.py and set-headers.py to {str(p)}")
         p.mkdir(parents=True, exist_ok=True)
         shutil.copy(
-            "disable-warnings.py", "/home/docs/.ipython/profile_default/startup/"
+            "disable-warnings.py",
+            "/home/docs/.ipython/profile_default/startup/",
         )
         shutil.copy("set-headers.py", "/home/docs/.ipython/profile_default/startup")
     app.add_domain(PatchedPythonDomain, override=True)

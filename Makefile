@@ -10,19 +10,17 @@ clean:
 
 .PHONY: lint
 lint:
-	isort --check-only evalml
 	sh ./import_or_skip.sh
 	python docs/notebook_version_standardizer.py check-versions
 	python docs/notebook_version_standardizer.py check-execution
-	black evalml docs/source -t py39 --check
-	pydocstyle evalml/ --convention=google --add-ignore=D107 --add-select=D400 --match-dir='^(?!(tests)).*'
-	flake8 evalml
+	black evalml/ docs/source/ --check --config pyproject.toml
+	ruff evalml/ docs/source/ --config pyproject.toml
 
 .PHONY: lint-fix
 lint-fix:
-	black evalml docs/source -t py39
-	isort evalml
 	python docs/notebook_version_standardizer.py standardize
+	black evalml docs/source/ --config pyproject.toml
+	ruff evalml/ docs/source/ --config pyproject.toml --fix
 
 .PHONY: test
 test:
@@ -68,8 +66,8 @@ git-test-integration:
 
 .PHONY: installdeps
 installdeps:
-	pip install --upgrade pip -q
-	pip install -e . -q
+	pip install --upgrade pip
+	pip install -e .
 
 .PHONY: installdeps-min
 installdeps-min:
@@ -104,9 +102,13 @@ upgradepip:
 upgradebuild:
 	python -m pip install --upgrade build
 
+.PHONY: upgradesetuptools
+upgradesetuptools:
+	python -m pip install --upgrade setuptools
+
 .PHONY: package_evalml
-package_evalml: upgradepip upgradebuild
+package_evalml: upgradepip upgradebuild upgradesetuptools
 	python -m build
-	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
+	$(eval PACKAGE=$(shell python -c 'import setuptools; setuptools.setup()' --version))
 	tar -zxvf "dist/evalml-${PACKAGE}.tar.gz"
 	mv "evalml-${PACKAGE}" unpacked_sdist

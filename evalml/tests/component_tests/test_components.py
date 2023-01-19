@@ -981,7 +981,8 @@ def test_default_parameters_raise_no_warnings(cls):
 
 def test_components_can_be_used_for_partial_dependence_fast_mode():
     """This test is intended to fail when new components are added to remind developers
-    to decide whether or not partial dependence fast mode should be allowed for the new component."""
+    to decide whether or not partial dependence fast mode should be allowed for the new component.
+    """
     all_native_components = all_components()
 
     invalid_for_pd_fast_mode = [
