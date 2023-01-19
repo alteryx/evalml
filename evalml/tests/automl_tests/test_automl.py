@@ -4715,6 +4715,8 @@ def test_search_parameters_held_automl(
                 ],
             },
         }
+        batches = 2 if algorithm == "default" else batches
+
     search_parameters = {
         "Imputer": {"numeric_impute_strategy": parameter},
         "DateTime Featurizer": {"features_to_extract": ["month", "day_of_week"]},
