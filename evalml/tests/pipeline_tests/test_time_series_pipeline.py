@@ -1803,3 +1803,59 @@ def test_dates_needed_for_prediction(
 
     _ = pipeline.predict(X_test, X_train=X_train, y_train=y_train).all()
     assert not mock_predict.call_args[0][0].empty
+
+
+@pytest.mark.parametrize(
+    "forecast_horizon,gap,max_delay",
+    [(1, 0, 1), (1, 1, 2), (2, 0, 2), (3, 1, 2), (1, 2, 2), (2, 7, 3), (3, 2, 4)],
+)
+@pytest.mark.parametrize(
+    "freq",
+    ["W", "D", "M", "Y", "Q"],
+)
+@patch("evalml.pipelines.components.RandomForestRegressor.fit")
+@patch("evalml.pipelines.components.RandomForestRegressor.predict")
+def test_dates_needed_for_prediction_range(
+    mock_predict,
+    mock_fit,
+    forecast_horizon,
+    gap,
+    max_delay,
+    freq,
+    ts_data,
+    time_series_regression_pipeline_class,
+):
+    X, X_t, y = ts_data(freq=freq)
+    X.ww.set_time_index("date")
+
+    pipeline = time_series_regression_pipeline_class(
+        parameters={
+            "pipeline": {
+                "gap": gap,
+                "max_delay": max_delay,
+                "time_index": "date",
+                "forecast_horizon": forecast_horizon,
+            },
+            "Time Series Featurizer": {
+                "gap": gap,
+                "max_delay": max_delay,
+                "time_index": "date",
+                "forecast_horizon": forecast_horizon,
+            },
+        },
+    )
+    pipeline.fit(X, y)
+
+    prediction_start = pd.Timestamp("2022-02-01")
+    prediction_end = pd.Timestamp("2022-02-28")
+    beginning_date, end_date = pipeline.dates_needed_for_prediction_range(
+        prediction_start,
+        prediction_end,
+    )
+
+    assert beginning_date <= end_date
+    assert end_date < prediction_end
+    # date_diff = pipeline.forecast_horizon + pipeline.max_delay + pipeline.gap
+    # assert end_date == beginning_date + pd.tseries.frequencies.to_offset(
+    #     f"{date_diff}{pipeline.frequency}",
+    # )
