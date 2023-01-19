@@ -26,6 +26,9 @@ class Decomposer(Transformer):
         seasonal_smoother (int): The seasonal smoothing parameter for STLDecomposer, not used for PolynomialDecomposer.
         time_index (str) : The column name of the feature matrix (X) that the datetime information
             should be pulled from.
+        acf_threshold (float) : The threshold for the autocorrelation function to determine the period. Any values below
+            the threshold are considered to be 0 and will not be considered for the period. Defaults to 0.01.
+        rel_max_order (int) : The order of the relative maximum to determine the period. Defaults to 5.
     """
 
     name = "Decomposer"
@@ -43,6 +46,8 @@ class Decomposer(Transformer):
         period: int = -1,
         seasonal_smoother: int = 7,
         time_index: str = None,
+        acf_threshold: float = 0.01,
+        rel_max_order: int = 5,
         **kwargs,
     ):
         degree = self._raise_typeerror_if_not_int("degree", degree)
@@ -57,6 +62,8 @@ class Decomposer(Transformer):
             "period": period,
             "seasonal_smoother": self.seasonal_smoother,
             "time_index": time_index,
+            "acf_threshold": acf_threshold,
+            "rel_max_order": rel_max_order,
         }
         parameters.update(kwargs)
         super().__init__(
@@ -145,13 +152,18 @@ class Decomposer(Transformer):
 
         def _get_rel_max_from_acf(y):
             """Determines the relative maxima of the target's autocorrelation."""
+            acf_threshold = self.parameters.get("acf_threshold", 0.01)
+            rel_max_order = self.parameters.get("rel_max_order", 5)
+
             acf = sm.tsa.acf(y, nlags=np.maximum(400, len(y)))
             # Filter out small values to avoid picking up noise
-            filter_acf = [acf[i] if (acf[i] > 0.01) else 0 for i in range(len(acf))]
+            filter_acf = [
+                acf[i] if (acf[i] > acf_threshold) else 0 for i in range(len(acf))
+            ]
             rel_max = argrelextrema(
                 np.array(filter_acf),
                 np.greater,
-                order=5,  # considers 5 points on either side to determine rel max
+                order=rel_max_order,  # considers `order` points on either side to determine rel max
             )[0]
             if len(rel_max) == 0:
                 return None
@@ -165,7 +177,10 @@ class Decomposer(Transformer):
             moving_avg = min(51, len(y) // 3)
             y_trend_estimate = y.rolling(moving_avg).mean().dropna()
             y_detrended = y - y_trend_estimate
-            return y_detrended.dropna()
+            return round(
+                y_detrended.dropna(),
+                10,
+            )  # round to 10 decimal places to avoid floating point errors
 
         # Make the data more stationary by detrending
         y_detrended = _detrend_on_fly(X, y)

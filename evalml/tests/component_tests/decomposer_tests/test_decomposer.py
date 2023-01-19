@@ -447,7 +447,10 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
 @pytest.mark.parametrize("decomposer_picked_correct_degree", [True, False])
 @pytest.mark.parametrize(
     "synthetic_data,trend_degree,period",
-    [*itertools.product(["synthetic"], [1, 2, 3], [1, 7, 30, 365]), ("real", 1, 365)],
+    [
+        *itertools.product(["synthetic"], [1, 2, 3], [None, 7, 30, 365]),
+        ("real", 1, 365),
+    ],
 )
 def test_decomposer_determine_periodicity(
     decomposer_child_class,
@@ -470,16 +473,9 @@ def test_decomposer_determine_periodicity(
     dec = decomposer_child_class(degree=trend_degree, period=period)
     ac = dec.determine_periodicity(X, y)
 
-    if period == 1:
+    if period is None:
         assert ac is None
-    # There's one flaky test case, but only in GitHub CI.
-    # Will file an issue to investigate why it's different in CI.
-    if (
-        synthetic_data != "synthetic"
-        and trend_degree != 3
-        and period != 365
-        and not isinstance(decomposer_child_class, STLDecomposer)
-    ):
+    else:
         assert 0.95 * period <= ac <= 1.05 * period
 
 
