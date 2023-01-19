@@ -18,6 +18,8 @@ def test_polynomial_decomposer_init():
         "period": -1,
         "seasonal_smoother": 7,
         "time_index": "dates",
+        "acf_threshold": 0.01,
+        "rel_max_order": 5,
     }
 
 
