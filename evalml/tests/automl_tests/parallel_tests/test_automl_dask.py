@@ -331,8 +331,6 @@ def test_score_pipelines_passes_X_train_y_train(
     expected_X_train, expected_y_train = None, None
     if is_time_series(problem_type):
         expected_X_train, expected_y_train = X_train, y_train
-    print(len(env.mock_score.mock_calls))
-    print(len(automl.allowed_pipelines))
     assert len(env.mock_score.mock_calls) == len(automl.allowed_pipelines)
     for mock_call in env.mock_score.mock_calls:
         if expected_X_train is not None:
