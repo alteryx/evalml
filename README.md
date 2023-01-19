@@ -54,7 +54,7 @@ conda install -c conda-forge evalml
 PyPI:
 
 ```bash
-pip install "evalml[update_checker]"
+pip install "evalml[updater]"
 ```
 Conda:
 ```
