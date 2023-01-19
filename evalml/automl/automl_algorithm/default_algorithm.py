@@ -147,7 +147,12 @@ class DefaultAlgorithm(AutoMLAlgorithm):
     @property
     def default_max_batches(self):
         """Returns the number of max batches AutoMLSearch should run by default."""
-        return 4 if self.ensembling else 3
+        if self.ensembling:
+            return 4
+        elif is_time_series(self.problem_type):
+            return 2  # we do not run feature selection for time series
+        else:
+            return 3
 
     def num_pipelines_per_batch(self, batch_number):
         """Return the number of pipelines in the nth batch.
