@@ -56,7 +56,7 @@ dependencies = [
     "matplotlib >= 3.3.3",
     "graphviz >= 0.13; platform_system!='Windows'",
     "seaborn >= 0.11.1",
-    "category_encoders >= 2.2.2",
+    "category_encoders >= 2.2.2, <= 2.5.1.post0",
     "imbalanced-learn >= 0.9.1",
     "pmdarima >= 1.8.1, < 2.0.0",
     "sktime >= 0.13.3",
