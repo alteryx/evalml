@@ -28,7 +28,7 @@ jobs:
         run: |
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
-          python -m pip install -e .[update_checker]
+          python -m pip install -e .[updater]
       - name: Test by importing packages
         run: |
           python -c "import alteryx_open_src_update_checker"
