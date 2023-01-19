@@ -5,6 +5,7 @@ Release Notes
         * Improved decomposer ``determine_periodicity`` functionality for better period guesses :pr:`3912`
         * Added ``dates_needed_for_prediction`` for time series pipelines :pr:`3906`
     * Fixes
+        * Fixed `set_period()` not updating decomposer parameters :pr:`3932`
     * Changes
         * Updated ``PolynomialDecomposer`` to work with sktime v0.15.1 :pr:`3930`
         * Pinned `category-encoders`` to 2.5.1.post0 :pr:`3933``

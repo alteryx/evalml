@@ -199,7 +199,7 @@ class Decomposer(Transformer):
 
         """
         self.period = self.determine_periodicity(X, y)
-        self.parameters.update({"period": self.period})
+        self.update_parameters({"period": self.period})
 
     def _check_oos_past(self, y):
         """Function to check whether provided target data is out-of-sample and in the past."""
