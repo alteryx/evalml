@@ -17,7 +17,7 @@ jobs:
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
-          make installdeps
+          make installdeps-test
           pip install tomli
       - name: Detect Dependency Changes
         id: check
