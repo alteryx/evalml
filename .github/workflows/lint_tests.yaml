@@ -26,5 +26,5 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Run Lint Test
         run: |
-          source test_python/bin/activate
+          make installdeps-dev
           make lint
