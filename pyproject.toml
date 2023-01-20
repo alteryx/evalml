@@ -154,12 +154,13 @@ select = [
     # isort
     "I001"
 ]
-ignore = ["E501", "D107"]
+ignore = ["E501", "D107", "D401"]
 src = ["evalml"]
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["E402", "F401", "I001", "E501"]
 "evalml/tests/**" = ["D"]
+"evalml/utils/**" = ["D"]
 "docs/**" = ["D"]
 
 [tool.ruff.isort]
