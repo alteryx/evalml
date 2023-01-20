@@ -2,7 +2,6 @@ import os
 from unittest.mock import patch
 
 import pytest
-import requirements
 from click.testing import CliRunner
 
 from evalml.__main__ import cli
@@ -23,6 +22,8 @@ def current_dir():
 
 
 def get_requirements(current_dir):
+    import requirements
+
     evalml_path = os.path.abspath(os.path.join(current_dir, "..", "..", ".."))
     full_requirements = get_evalml_pip_requirements(evalml_path)
 
