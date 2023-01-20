@@ -19,8 +19,8 @@ lint:
 .PHONY: lint-fix
 lint-fix:
 	python docs/notebook_version_standardizer.py standardize
-	black evalml docs/source/ --config pyproject.toml
-	ruff evalml/ docs/source/ --config pyproject.toml --fix
+	black evalml docs/source/ --config=./pyproject.toml
+	ruff evalml/ docs/source/ --config=./pyproject.toml --fix
 
 .PHONY: test
 test:
