@@ -6,6 +6,7 @@ Release Notes
     * Fixes
         * Fixed `set_period()` not updating decomposer parameters :pr:`3932`
         * Fix install command for alteryx-open-src-update-checker :pr:`3940`
+        * Move `tomli` to requirements to fix latest dependency workflow :pr:`3944`
     * Changes
         * Updated ``PolynomialDecomposer`` to work with sktime v0.15.1 :pr:`3930`
         * Add ruff and use pyproject.toml (move away from setup.cfg) :pr:`3928`
