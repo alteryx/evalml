@@ -50,7 +50,6 @@ outputs:
       requires:
         - pytest ==6.0.1
         - nbval ==0.9.3
-        - tomli >=2.0.1
       source_files:
         - evalml/*
         - pyproject.toml
