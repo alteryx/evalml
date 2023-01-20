@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``RFClassifierRFESelector``  and ``RFRegressorRFESelector`` components for feature selection using recursive feature elimination :pr:`3934`
     * Fixes
         * Fixed `set_period()` not updating decomposer parameters :pr:`3932`
         * Fix install command for alteryx-open-src-update-checker :pr:`3940`
