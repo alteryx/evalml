@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Improved decomposer ``determine_periodicity`` functionality for better period guesses :pr:`3912`
         * Added ``dates_needed_for_prediction`` for time series pipelines :pr:`3906`
+        * Added ``RFClassifierRFESelector``  and ``RFRegressorRFESelector`` components for feature selection using recursive feature elimination :pr:`3934`
     * Fixes
         * Fixed `set_period()` not updating decomposer parameters :pr:`3932`
         * Fix install command for alteryx-open-src-update-checker :pr:`3940`
