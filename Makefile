@@ -13,8 +13,8 @@ lint:
 	sh ./import_or_skip.sh
 	python docs/notebook_version_standardizer.py check-versions
 	python docs/notebook_version_standardizer.py check-execution
-	black evalml/ docs/source/ --check --config pyproject.toml
-	ruff evalml/ docs/source/ --config pyproject.toml
+	black evalml/ docs/source/ --check --config=.pyproject.toml
+	ruff evalml/ docs/source/ --config=.pyproject.toml
 
 .PHONY: lint-fix
 lint-fix:
