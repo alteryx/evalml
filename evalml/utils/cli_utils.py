@@ -7,8 +7,6 @@ import struct
 import sys
 
 import pkg_resources
-import requirements
-import tomli
 
 import evalml
 from evalml.utils import get_logger
@@ -129,6 +127,10 @@ def standardize_format(packages, ignore_packages=None):
 
 
 def get_evalml_pip_requirements(evalml_path, ignore_packages=None):
+
+    import requirements
+    import tomli
+
     """Gets pip requirements for evalml.
 
     Args:
