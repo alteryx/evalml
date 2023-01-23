@@ -8,10 +8,12 @@ Release Notes
     * Fixes
         * Fixed `set_period()` not updating decomposer parameters :pr:`3932`
         * Fix install command for alteryx-open-src-update-checker :pr:`3940`
+        * Fixed non-prophet case of ``test_components_can_be_used_for_partial_dependence_fast_mode`` :pr:`3949`
     * Changes
         * Updated ``PolynomialDecomposer`` to work with sktime v0.15.1 :pr:`3930`
         * Add ruff and use pyproject.toml (move away from setup.cfg) :pr:`3928`
-        * Pinned `category-encoders`` to 2.5.1.post0 :pr:`3933``
+        * Pinned `category-encoders`` to 2.5.1.post0 :pr:`3933`
+        * Remove requirements-parser and tomli from core requirements :pr:`3948`
     * Documentation Changes
     * Testing Changes
 
