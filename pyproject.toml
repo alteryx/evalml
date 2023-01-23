@@ -38,7 +38,6 @@ dependencies = [
     "colorama >= 0.4.4",
     "cloudpickle >= 1.5.0",
     "click >= 7.1.2",
-    "requirements-parser >= 0.2.0",
     "shap >= 0.40.0",
     "statsmodels >= 0.12.2",
     "texttable >= 1.6.2",
@@ -62,6 +61,8 @@ dependencies = [
     "sktime >= 0.13.3",
     "lime >= 0.2.0.1",
     "vowpalwabbit >= 8.11.0",
+    "tomli >= 2.0.1",
+    "requirements-parser >= 0.2.0",
 ]
 
 [project.urls]
@@ -83,10 +84,9 @@ test = [
     "codecov == 2.1.11",
     "PyYAML == 5.4",
     "coverage[toml] >= 6.4",
-    "tomli >= 2.0.1",
 ]
 dev = [
-    "ruff >= 0.0.219",
+    "ruff == 0.0.228",
     "black[jupyter] >= 22.3.0",
     "darglint == 1.8.0",
     "pre-commit >= 2.20.0",
@@ -155,12 +155,13 @@ select = [
     # isort
     "I001"
 ]
-ignore = ["E501", "D107"]
+ignore = ["E501", "D107", "D401"]
 src = ["evalml"]
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["E402", "F401", "I001", "E501"]
 "evalml/tests/**" = ["D"]
+"evalml/utils/**" = ["D"]
 "docs/**" = ["D"]
 
 [tool.ruff.isort]
