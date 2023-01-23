@@ -86,7 +86,7 @@ test = [
     "tomli >= 2.0.1",
 ]
 dev = [
-    "ruff >= 0.0.219",
+    "ruff < 0.0.228",",
     "black[jupyter] >= 22.3.0",
     "darglint == 1.8.0",
     "pre-commit >= 2.20.0",
