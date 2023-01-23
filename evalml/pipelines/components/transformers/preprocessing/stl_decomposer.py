@@ -180,6 +180,10 @@ class STLDecomposer(Decomposer):
         # Save the frequency of the fitted series for checking against transform data.
         self.frequency = y.index.freqstr or pd.infer_freq(y.index)
 
+        # Determine the period of the seasonal component
+        if self.period is None:
+            self.set_period(X, y)
+
         stl = STL(y, seasonal=self.seasonal_smoother, period=self.period)
         res = stl.fit()
         self.seasonal = res.seasonal
