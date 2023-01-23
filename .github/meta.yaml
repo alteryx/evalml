@@ -49,6 +49,7 @@ outputs:
       requires:
         - pytest ==6.0.1
         - nbval ==0.9.3
+        - requirements-parser >=0.2.0
       source_files:
         - evalml/*
         - pyproject.toml
@@ -82,6 +83,7 @@ outputs:
         - pytest ==6.0.1
         - nbval ==0.9.3
         - python-graphviz >=0.8.4
+        - requirements-parser >=0.2.0
         - category_encoders >=2.0.0, <=2.5.1.post0
         - pytest-xdist
       source_files:
