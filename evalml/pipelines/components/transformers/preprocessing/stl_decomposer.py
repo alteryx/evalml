@@ -36,24 +36,7 @@ class STLDecomposer(Decomposer):
 
     modifies_features = False
     modifies_target = True
-    invalid_frequencies = [
-        "SM",
-        "BM",
-        "SMS",
-        "BMS",
-        "BQ",
-        "BQS",
-        "T",
-        "S",
-        "L",
-        "U",
-        "N",
-        "A",
-        "BA",
-        "AS",
-        "BAS",
-        "BH",
-    ]
+    invalid_frequencies = []
 
     def __init__(
         self,
@@ -112,6 +95,7 @@ class STLDecomposer(Decomposer):
             self.trend,
             ARIMA,
             model_kwargs=dict(order=(1, 1, 0), trend="t"),
+            period=self.period,
         )
         stlf_res = stlf.fit()
         forecast = stlf_res.forecast(units_forward)
