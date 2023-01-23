@@ -1015,6 +1015,16 @@ def test_components_can_be_used_for_partial_dependence_fast_mode():
         expected_num_valid_for_pd_fast_mode = 61
     else:
         expected_num_valid_for_pd_fast_mode = 64
+    print(num_valid_for_pd_fast_mode)
+    print(invalid_for_pd_fast_mode)
+    print(
+        [
+            cls.name
+            for cls in all_native_components
+            if cls._can_be_used_for_fast_partial_dependence
+        ],
+    )
+    print(invalid_for_pd_fast_mode)
     assert num_valid_for_pd_fast_mode == expected_num_valid_for_pd_fast_mode
 
 
