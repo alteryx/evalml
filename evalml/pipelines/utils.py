@@ -250,7 +250,12 @@ def _get_decomposer(X, y, problem_type, estimator_class, sampler_name=None):
             return components
         freq = time_index.freq.name
         if STLDecomposer.is_freq_valid(freq):
-            components.append(STLDecomposer)
+            # Make sure there's a seasonal period
+            order = 3 if "Q" in freq else 5
+            temp_decomp = STLDecomposer(time_index, rel_max_order=order)
+            seasonal_period = temp_decomp.determine_periodicity(X, y)
+            if seasonal_period is not None:
+                components.append(STLDecomposer)
     return components
 
 
