@@ -49,7 +49,7 @@ def test_default_algorithm_init(X_y_binary):
         sampler_name,
         verbose=True,
     )
-    assert algo.default_max_batches == 3
+    assert algo.default_max_batches == 2
 
     algo = DefaultAlgorithm(
         X,
@@ -626,14 +626,6 @@ def test_default_algorithm_time_series(
         assert pipeline.parameters["DateTime Featurizer"]["time_index"]
     add_result(algo, first_batch)
 
-    second_batch = algo.next_batch()
-    assert len(second_batch) == 2 if problem_type != "time series regression" else 4
-    assert {p.model_family for p in second_batch} == naive_model_families
-    for pipeline in second_batch:
-        assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
-        assert pipeline.parameters["DateTime Featurizer"]["time_index"]
-    add_result(algo, second_batch)
-
     final_batch = algo.next_batch()
     for pipeline in final_batch:
         if not isinstance(
@@ -720,21 +712,6 @@ def test_default_algorithm_time_series_known_in_advance(
             "Not Known In Advance Pipeline - Select Columns Transformer"
         ]["columns"] == ["feature", "date"]
     add_result(algo, first_batch)
-
-    second_batch = algo.next_batch()
-    assert len(second_batch) == 2
-    assert {p.model_family for p in second_batch} == naive_model_families
-    for pipeline in second_batch:
-        assert (
-            pipeline.parameters[
-                "Known In Advance Pipeline - Select Columns Transformer"
-            ]["columns"]
-            == known_in_advance
-        )
-        assert pipeline.parameters[
-            "Not Known In Advance Pipeline - Select Columns Transformer"
-        ]["columns"] == ["feature", "date"]
-    add_result(algo, second_batch)
 
     final_batch = algo.next_batch()
     for pipeline in final_batch:
