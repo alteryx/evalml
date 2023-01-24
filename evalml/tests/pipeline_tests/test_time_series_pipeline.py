@@ -1853,8 +1853,10 @@ def test_dates_needed_for_prediction_range(
         prediction_end,
     )
 
-    assert beginning_date <= end_date
-    assert end_date < prediction_end
+    assert beginning_date <= end_date  # beginning_date must come before end_date
+    assert (
+        end_date < prediction_end
+    )  # end_date must come before the last prediction date
 
     prediction_start = pd.Timestamp("2022-03-01")
     prediction_end = pd.Timestamp("2022-02-28")
