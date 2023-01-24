@@ -41,6 +41,32 @@ def test_stl_raises_warning_high_smoother(caplog, ts_data):
 @pytest.mark.parametrize(
     "period,freq",
     [
+        (7, "D"),
+        (30, "D"),
+        (365, "D"),
+        (12, "M"),
+        (40, "M"),
+    ],
+)
+def test_stl_sets_determined_period(
+    period,
+    freq,
+    generate_seasonal_data,
+):
+
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+        period,
+        freq_str=freq,
+    )
+
+    stl = STLDecomposer()
+    stl.fit(X, y)
+    assert period * 0.99 <= stl.period <= period * 1.01
+
+
+@pytest.mark.parametrize(
+    "period,freq",
+    [
         (7, "D"),  # Weekly season
         (30, "D"),
         (365, "D"),
