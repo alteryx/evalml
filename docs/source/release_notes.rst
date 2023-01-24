@@ -6,7 +6,8 @@ Release Notes
         * Added ``dates_needed_for_prediction`` for time series pipelines :pr:`3906`
         * Added ``RFClassifierRFESelector``  and ``RFRegressorRFESelector`` components for feature selection using recursive feature elimination :pr:`3934`
     * Fixes
-        * Fixed `set_period()` not updating decomposer parameters :pr:`3932`
+        * Fixed ``set_period()`` not updating decomposer parameters :pr:`3932`
+        * Removed second identical batch for time series problems in ``DefaultAlgorithm`` :pr:`3936`
         * Fix install command for alteryx-open-src-update-checker :pr:`3940`
         * Fixed non-prophet case of ``test_components_can_be_used_for_partial_dependence_fast_mode`` :pr:`3949`
     * Changes
