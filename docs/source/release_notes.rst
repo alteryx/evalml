@@ -2,14 +2,19 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Improved decomposer ``determine_periodicity`` functionality for better period guesses :pr:`3912`
+        * Added ``dates_needed_for_prediction`` for time series pipelines :pr:`3906`
+        * Added ``RFClassifierRFESelector``  and ``RFRegressorRFESelector`` components for feature selection using recursive feature elimination :pr:`3934`
     * Fixes
         * Fixed ``set_period()`` not updating decomposer parameters :pr:`3932`
         * Removed second identical batch for time series problems in ``DefaultAlgorithm`` :pr:`3936`
         * Fix install command for alteryx-open-src-update-checker :pr:`3940`
+        * Fixed non-prophet case of ``test_components_can_be_used_for_partial_dependence_fast_mode`` :pr:`3949`
     * Changes
         * Updated ``PolynomialDecomposer`` to work with sktime v0.15.1 :pr:`3930`
         * Add ruff and use pyproject.toml (move away from setup.cfg) :pr:`3928`
-        * Pinned `category-encoders`` to 2.5.1.post0 :pr:`3933``
+        * Pinned `category-encoders`` to 2.5.1.post0 :pr:`3933`
+        * Remove requirements-parser and tomli from core requirements :pr:`3948`
     * Documentation Changes
     * Testing Changes
 
@@ -23,7 +28,6 @@ Release Notes
         * Added the ability to retrieve prediction intervals for estimators that support time series regression :pr:`3876`
         * Added utils to handle the logic for threshold tuning objective and resplitting data :pr:`3888`
         * Integrated ``OrdinalEncoder`` into AutoMLSearch :pr:`3765`
-        * Added ``dates_needed_for_prediction`` for time series pipelines :pr:`3906`
     * Fixes
         * Fixed ARIMA not accounting for gap in prediction from end of training data :pr:`3884`
         * Fixed ``DefaultAlgorithm`` adding an extra ``OneHotEncoder`` when a categorical column is not selected :pr:`3914`

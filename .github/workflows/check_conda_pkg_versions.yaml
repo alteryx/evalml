@@ -25,12 +25,7 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Install Dependencies
         run: |
-          pip install virtualenv
-          virtualenv test_python -q
-          source test_python/bin/activate
-          pip install .[test]
+          make installdeps-test
       - name: Clone Feedstock & Check Versions
         run: |
-          virtualenv test_python -q
-          source test_python/bin/activate
           python .github/conda_version_check.py
