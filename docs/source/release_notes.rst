@@ -8,7 +8,8 @@ Release Notes
         * Integrated ``determine_periodicity`` into ``AutoMLSearch`` :pr:`3952`
         * Removed frequency limitations for decomposition using the ``STLDecomposer`` :pr:`3952`
     * Fixes
-        * Fixed `set_period()` not updating decomposer parameters :pr:`3932`
+        * Fixed ``set_period()`` not updating decomposer parameters :pr:`3932`
+        * Removed second identical batch for time series problems in ``DefaultAlgorithm`` :pr:`3936`
         * Fix install command for alteryx-open-src-update-checker :pr:`3940`
         * Fixed non-prophet case of ``test_components_can_be_used_for_partial_dependence_fast_mode`` :pr:`3949`
     * Changes

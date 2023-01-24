@@ -147,7 +147,12 @@ class DefaultAlgorithm(AutoMLAlgorithm):
     @property
     def default_max_batches(self):
         """Returns the number of max batches AutoMLSearch should run by default."""
-        return 4 if self.ensembling else 3
+        if self.ensembling:
+            return 4
+        elif is_time_series(self.problem_type):
+            return 2  # we do not run feature selection for time series
+        else:
+            return 3
 
     def num_pipelines_per_batch(self, batch_number):
         """Return the number of pipelines in the nth batch.
@@ -438,6 +443,19 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 next_batch = self._create_ensemble(
                     self._pipeline_parameters.get("Label Encoder", {}),
                 )
+            else:
+                next_batch = self._create_n_pipelines(
+                    self._top_n_pipelines,
+                    self.num_long_pipelines_per_batch,
+                )
+        # this logic needs to be updated once time series also supports ensembling
+        elif is_time_series(self.problem_type):
+            if self._batch_number == 0:
+                next_batch = self._create_naive_pipelines()
+            elif self._batch_number == 1:
+                next_batch = self._create_fast_final()
+            elif self.batch_number == 2:
+                next_batch = self._create_long_exploration(n=self.top_n)
             else:
                 next_batch = self._create_n_pipelines(
                     self._top_n_pipelines,
