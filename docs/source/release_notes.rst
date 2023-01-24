@@ -2,6 +2,8 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Improved decomposer ``determine_periodicity`` functionality for better period guesses :pr:`3912`
+        * Added ``dates_needed_for_prediction`` for time series pipelines :pr:`3906`
         * Added ``RFClassifierRFESelector``  and ``RFRegressorRFESelector`` components for feature selection using recursive feature elimination :pr:`3934`
         * Added ``dates_needed_for_prediction_range`` for time series pipelines :pr:`3941`
     * Fixes
@@ -26,7 +28,6 @@ Release Notes
         * Added the ability to retrieve prediction intervals for estimators that support time series regression :pr:`3876`
         * Added utils to handle the logic for threshold tuning objective and resplitting data :pr:`3888`
         * Integrated ``OrdinalEncoder`` into AutoMLSearch :pr:`3765`
-        * Added ``dates_needed_for_prediction`` for time series pipelines :pr:`3906`
     * Fixes
         * Fixed ARIMA not accounting for gap in prediction from end of training data :pr:`3884`
         * Fixed ``DefaultAlgorithm`` adding an extra ``OneHotEncoder`` when a categorical column is not selected :pr:`3914`
