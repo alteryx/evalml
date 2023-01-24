@@ -49,6 +49,7 @@ from evalml.pipelines.components import (
     RandomForestRegressor,
     ReplaceNullableTypes,
     RFClassifierSelectFromModel,
+    RFRegressorRFESelector,
     RFRegressorSelectFromModel,
     SelectByType,
     SelectColumns,
@@ -904,6 +905,8 @@ def test_transformer_transform_output_type(component_class, X_y_binary):
             assert transform_output.shape == (X.shape[0], 10)
         elif isinstance(component, RFClassifierSelectFromModel):
             assert transform_output.shape == (X.shape[0], 10)
+        elif isinstance(component, RFRegressorRFESelector):
+            assert transform_output.shape == (X.shape[0], 16)
         elif isinstance(component, PCA) or isinstance(
             component,
             LinearDiscriminantAnalysis,
@@ -934,6 +937,8 @@ def test_transformer_transform_output_type(component_class, X_y_binary):
             assert transform_output.shape == (X.shape[0], 10)
         elif isinstance(component, RFClassifierSelectFromModel):
             assert transform_output.shape == (X.shape[0], 10)
+        elif isinstance(component, RFRegressorRFESelector):
+            assert transform_output.shape == (X.shape[0], 16)
         elif isinstance(component, PCA) or isinstance(
             component,
             LinearDiscriminantAnalysis,
@@ -1007,9 +1012,9 @@ def test_components_can_be_used_for_partial_dependence_fast_mode():
     # Expected number is hardcoded so that this test will fail when new components are added
     # It should be len(all_native_components) - num_invalid_for_pd_fast_mode
     if ProphetRegressor not in all_native_components:
-        expected_num_valid_for_pd_fast_mode = 61
+        expected_num_valid_for_pd_fast_mode = 63
     else:
-        expected_num_valid_for_pd_fast_mode = 62
+        expected_num_valid_for_pd_fast_mode = 64
     assert num_valid_for_pd_fast_mode == expected_num_valid_for_pd_fast_mode
 
 

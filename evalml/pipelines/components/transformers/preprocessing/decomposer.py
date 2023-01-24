@@ -26,6 +26,9 @@ class Decomposer(Transformer):
         seasonal_smoother (int): The seasonal smoothing parameter for STLDecomposer, not used for PolynomialDecomposer.
         time_index (str) : The column name of the feature matrix (X) that the datetime information
             should be pulled from.
+        acf_threshold (float) : The threshold for the autocorrelation function to determine the period. Any values below
+            the threshold are considered to be 0 and will not be considered for the period. Defaults to 0.01.
+        rel_max_order (int) : The order of the relative maximum to determine the period. Defaults to 5.
     """
 
     name = "Decomposer"
@@ -43,6 +46,8 @@ class Decomposer(Transformer):
         period: int = -1,
         seasonal_smoother: int = 7,
         time_index: str = None,
+        acf_threshold: float = 0.01,
+        rel_max_order: int = 5,
         **kwargs,
     ):
         degree = self._raise_typeerror_if_not_int("degree", degree)
@@ -57,6 +62,8 @@ class Decomposer(Transformer):
             "period": period,
             "seasonal_smoother": self.seasonal_smoother,
             "time_index": time_index,
+            "acf_threshold": acf_threshold,
+            "rel_max_order": rel_max_order,
         }
         parameters.update(kwargs)
         super().__init__(
@@ -126,75 +133,62 @@ class Decomposer(Transformer):
         self,
         X: pd.DataFrame,
         y: pd.Series,
-        method: str = "autocorrelation",
     ):
-        """Function that uses autocorrelative methods to determine the first, signficant period of the seasonal signal.
+        """Function that uses autocorrelative methods to determine the likely most signficant period of the seasonal signal.
 
         Args:
             X (pandas.DataFrame): The feature data of the time series problem.
             y (pandas.Series): The target data of a time series problem.
-            method (str): Either "autocorrelation" or "partial-autocorrelation".  The method by which to determine the
-                first period of the seasonal part of the target signal.  "partial-autocorrelation" should currently not
-                be used.  Defaults to "autocorrelation".
 
         Returns:
-            (list[int]): The integer numbers of entries in time series data over which the seasonal part of the target data
+            int: The integer number of entries in time series data over which the seasonal part of the target data
                 repeats.  If the time series data is in days, then this is the number of days that it takes the target's
                 seasonal signal to repeat. Note: the target data can contain multiple seasonal signals.  This function
-                will only return the first, and thus, shortest period.  E.g. if the target has both weekly and yearly
-                seasonality, the function will only return "7" and not return "365".  If no period is detected, returns [None].
+                will only return the stronger.  E.g. if the target has both weekly and yearly seasonality, the function
+                may return either "7" or "365", depending on which seasonality is more strongly autocorrelated.  If no
+                period is detected, returns None.
 
         """
 
         def _get_rel_max_from_acf(y):
             """Determines the relative maxima of the target's autocorrelation."""
+            acf_threshold = self.parameters.get("acf_threshold", 0.01)
+            rel_max_order = self.parameters.get("rel_max_order", 5)
+
             acf = sm.tsa.acf(y, nlags=np.maximum(400, len(y)))
-            filter_acf = [acf[i] if (acf[i] > 0) else 0 for i in range(len(acf))]
+            # Filter out small values to avoid picking up noise
+            filter_acf = [
+                acf[i] if (acf[i] > acf_threshold) else 0 for i in range(len(acf))
+            ]
             rel_max = argrelextrema(
                 np.array(filter_acf),
                 np.greater,
-                order=5,  # considers 5 points on either side to determine rel max
+                order=rel_max_order,  # considers `order` points on either side to determine rel max
             )[0]
+            if len(rel_max) == 0:
+                return None
             max_acfs = [acf[i] for i in rel_max]
-            if len(max_acfs) > 0:
-                rel_max = np.array([filter_acf.index(max(max_acfs))])
-            else:
-                rel_max = []
-            return rel_max
-
-        def _get_rel_max_from_pacf(y):
-            """Determines the relative maxima of the target's partial autocorrelation."""
-            pacf = sm.tsa.pacf(y)
-            return argrelextrema(pacf, np.greater)[0]
+            return rel_max[np.argmax(max_acfs)]
 
         def _detrend_on_fly(X, y):
-            """Uses the underlying decomposer to determine the target's trend and remove it."""
-            self.fit(X, y)
-            res = self.get_trend_dataframe(X, y)
-            y_time_index = self._set_time_index(X, y)
-            y_detrended = y_time_index - res[0]["trend"]
-            return y_detrended
-
-        if method == "autocorrelation":
-            _get_rel_max = _get_rel_max_from_acf
-        elif method == "partial-autocorrelation":
-            self.logger.warning(
-                "Partial autocorrelations are not currently guaranteed to be accurate due to the need for continuing "
-                "algorithmic work and should not be used at this time.",
-            )
-            _get_rel_max = _get_rel_max_from_pacf
+            """Uses a moving average to determine the target's trend and remove it."""
+            # A larger moving average will be less likely to remove the seasonal signal
+            # but we need to make sure we're not passing in a window that's larger than the data
+            moving_avg = min(51, len(y) // 3)
+            y_trend_estimate = y.rolling(moving_avg).mean().dropna()
+            y_detrended = y - y_trend_estimate
+            return round(
+                y_detrended.dropna(),
+                10,
+            )  # round to 10 decimal places to avoid floating point errors
 
         # Make the data more stationary by detrending
         y_detrended = _detrend_on_fly(X, y)
-        relative_maxima = _get_rel_max(y_detrended)
-        self.logger.info(
-            f"Decomposer discovered {len(relative_maxima)} possible periods.",
-        )
+        relative_maxima = _get_rel_max_from_acf(y_detrended)
 
-        if len(relative_maxima) == 0:
+        if relative_maxima is None:
             self.logger.warning("No periodic signal could be detected in target data.")
-            relative_maxima = [None]
-        return relative_maxima[0]
+        return relative_maxima
 
     def set_period(self, X: pd.DataFrame, y: pd.Series):
         """Function to set the component's seasonal period based on the target's seasonality.

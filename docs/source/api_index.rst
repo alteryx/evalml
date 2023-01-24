@@ -174,6 +174,8 @@ Transformers are components that take in data as input and output transformed da
     evalml.pipelines.components.StandardScaler
     evalml.pipelines.components.RFRegressorSelectFromModel
     evalml.pipelines.components.RFClassifierSelectFromModel
+    evalml.pipelines.components.RFClassifierRFESelector
+    evalml.pipelines.components.RFRegressorRFESelector
     evalml.pipelines.components.DropNullColumns
     evalml.pipelines.components.DateTimeFeaturizer
     evalml.pipelines.components.NaturalLanguageFeaturizer

@@ -62,6 +62,8 @@ all_requirements_set = set(
         "Per Column Imputer",
         "RF Classifier Select From Model",
         "RF Regressor Select From Model",
+        "RFE Selector with RF Classifier",
+        "RFE Selector with RF Regressor",
         "Random Forest Classifier",
         "Random Forest Regressor",
         "Replace Nullable Types Transformer",

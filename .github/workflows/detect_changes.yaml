@@ -14,16 +14,11 @@ jobs:
           python-version: '3.8.x'
       - name: Install Dependencies
         run: |
-          pip install virtualenv
-          virtualenv test_python -q
-          source test_python/bin/activate
-          make installdeps
-          pip install tomli
+          make installdeps-test
       - name: Detect Dependency Changes
         id: check
         continue-on-error: true
         run: |
-          source test_python/bin/activate
           mkdir /tmp/dependencies_updated_artifacts
           export DEPENDENCY_FILE_PATH=/tmp/dependencies_updated_artifacts/current_dependencies.txt
           evalml/tests/dependency_update_check/make_deps_diff.sh
