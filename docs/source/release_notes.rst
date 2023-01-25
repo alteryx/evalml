@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.66.0 Jan. 24, 2023**
+    * Enhancements
         * Improved decomposer ``determine_periodicity`` functionality for better period guesses :pr:`3912`
         * Added ``dates_needed_for_prediction`` for time series pipelines :pr:`3906`
         * Added ``RFClassifierRFESelector``  and ``RFRegressorRFESelector`` components for feature selection using recursive feature elimination :pr:`3934`
@@ -16,12 +28,6 @@ Release Notes
         * Add ruff and use pyproject.toml (move away from setup.cfg) :pr:`3928`
         * Pinned `category-encoders`` to 2.5.1.post0 :pr:`3933`
         * Remove requirements-parser and tomli from core requirements :pr:`3948`
-    * Documentation Changes
-    * Testing Changes
-
-.. warning::
-
-    **Breaking Changes**
 
 
 **v0.65.0 Jan. 3, 2023**
