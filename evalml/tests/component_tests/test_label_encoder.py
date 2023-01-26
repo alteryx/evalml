@@ -223,11 +223,15 @@ def test_label_encoder_with_positive_label_with_custom_indices():
     assert_index_equal(y_with_custom_indices.index, y_transformed.index)
 
 
-def test_label_encoder_categorical_boolean_values():
+@pytest.mark.parametrize("logical_type", ["Categorical", "Boolean"])
+def test_label_encoder_categorical_handled_properly_boolean_values(logical_type):
+    # adding this test after WW version 0.21.2, which introduces auto-boolean inference
+    # This broke this test case where the logical type converts to boolean after inverse_transform
+    # because of woodwork inference
     X = pd.DataFrame({})
     # binary
     y = pd.Series(["yes", "yes", "no", "yes"])
-    y = ww.init_series(y, logical_type="Categorical")
+    y = ww.init_series(y, logical_type=logical_type)
     y_expected = pd.Series([1, 1, 0, 1])
     encoder = LabelEncoder()
     encoder.fit(X, y)
