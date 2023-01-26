@@ -47,6 +47,7 @@ class LabelEncoder(Transformer):
         if y is None:
             raise ValueError("y cannot be None!")
         y_ww = infer_feature_types(y)
+        # remove this when typelib gets deprecated
         self.original_typing = str(y_ww.ww.logical_type)
         self.mapping = {val: i for i, val in enumerate(sorted(y_ww.unique()))}
         if self.parameters["positive_label"] is not None:
