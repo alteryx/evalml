@@ -608,3 +608,19 @@ def test_simple_imputer_errors_with_bool_and_categorical_columns(
     else:
         si = SimpleImputer()
         si.fit(X_df)
+
+
+def test_simple_imputer_boolean_nullable_all_null():
+    X_train = pd.DataFrame({"a": [pd.NA] * 20 + [1.0] + [pd.NA] * 20})
+    y = pd.Series(range(len(X_train)))
+    X_test = pd.DataFrame({"a": [pd.NA] * 10})
+
+    X_train.ww.init(logical_types={"a": "boolean_nullable"})
+    X_test.ww.init(logical_types={"a": "boolean_nullable"})
+
+    imp = SimpleImputer()
+    imp.fit(X_train, y)
+
+    X_t = imp.transform(X_test)
+    assert not X_t["a"].isna().any()
+    assert X_t.ww.logical_types["a"].type_string == "boolean_nullable"
