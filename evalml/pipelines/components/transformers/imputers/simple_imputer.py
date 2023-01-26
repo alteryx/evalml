@@ -85,9 +85,13 @@ class SimpleImputer(Transformer):
         X, _ = drop_natural_language_columns(X)
 
         # Convert any boolean columns to IntegerNullable, but keep track of the columns so they can be converted back
-        self._boolean_cols = X.ww.schema._filter_cols(
-            include=["Boolean", "BooleanNullable"],
+        self._boolean_cols = list(
+            X.ww.select(
+                include=["Boolean", "BooleanNullable"],
+                return_schema=True,
+            ).columns,
         )
+        # import pdb; pdb.set_trace()
         # Make sure we're tracking Categorical columns that should be boolean as well
         self._boolean_cols.extend(
             [

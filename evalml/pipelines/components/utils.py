@@ -196,11 +196,20 @@ def set_boolean_columns_to_integer(X):
         pd.Dataframe: the dataframe with any of its ww columns that are boolean set to integer nullable.
     """
     X = X.ww.copy()
-    X_schema = X.ww.schema
-    original_X_schema = X_schema.get_subset_schema(
-        subset_cols=X_schema._filter_cols(exclude=["Boolean", "BooleanNullable"]),
+    original_X_schema = X.ww.schema.get_subset_schema(
+        subset_cols=list(
+            X.ww.select(
+                exclude=["Boolean", "BooleanNullable"],
+                return_schema=True,
+            ).columns,
+        ),
     )
-    X_boolean_cols = X_schema._filter_cols(include=["Boolean", "BooleanNullable"])
+    X_boolean_cols = list(
+        X.ww.select(
+            include=["Boolean", "BooleanNullable"],
+            return_schema=True,
+        ).columns,
+    )
     new_ltypes_for_boolean_cols = {col: "IntegerNullable" for col in X_boolean_cols}
     X.ww.init(schema=original_X_schema, logical_types=new_ltypes_for_boolean_cols)
     return X
