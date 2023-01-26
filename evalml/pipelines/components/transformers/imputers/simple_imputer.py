@@ -10,6 +10,7 @@ from evalml.pipelines.components.utils import (
     set_boolean_columns_to_integer,
 )
 from evalml.utils import infer_feature_types
+from evalml.utils.gen_utils import is_categorical_actually_boolean
 
 
 class SimpleImputer(Transformer):
@@ -65,12 +66,17 @@ class SimpleImputer(Transformer):
         """
         X = infer_feature_types(X)
 
-        cat_cols = X.ww.select(["category", "boolean"]).columns
-        if 0 < len(cat_cols) < X.shape[1] and self.impute_strategy not in set(
-            ["most_frequent", "constant"],
+        if set([lt.type_string for lt in X.ww.logical_types.values()]) == {
+            "boolean",
+            "categorical",
+        } and not all(
+            [
+                is_categorical_actually_boolean(X, col)
+                for col in X.ww.select("Categorical")
+            ],
         ):
             raise ValueError(
-                f"SimpleImputer cannot impute categorical columns with impute strategy {self.impute_strategy}. Use Imputer or select a different strategy.",
+                "SimpleImputer cannot handle dataframes with both boolean and categorical features.  Use Imputer instead.",
             )
 
         nan_ratio = X.isna().sum() / X.shape[0]

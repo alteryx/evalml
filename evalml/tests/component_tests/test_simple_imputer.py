@@ -487,11 +487,10 @@ def test_simple_imputer_woodwork_custom_overrides_returned_by_components(
     except ww.exceptions.TypeConversionError:
         return
 
-    impute_strategy_to_use = impute_strategy
-    if logical_type in [NaturalLanguage, Categorical]:
-        impute_strategy_to_use = "most_frequent"
+    if logical_type in [NaturalLanguage, Categorical, Boolean, BooleanNullable]:
+        impute_strategy = "most_frequent"
 
-    imputer = SimpleImputer(impute_strategy=impute_strategy_to_use)
+    imputer = SimpleImputer(impute_strategy=impute_strategy)
     transformed = imputer.fit_transform(X, y)
     assert isinstance(transformed, pd.DataFrame)
     if str(logical_type) == "IntegerNullable":
