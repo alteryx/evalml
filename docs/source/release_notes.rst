@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Updated ``LabelEncoder`` to store the original typing information :pr:`3960`
         * Fixed bug where all-null ``BooleanNullable`` columns would break the imputer during transform :pr:`3959`
     * Changes
     * Documentation Changes
