@@ -186,14 +186,14 @@ def drop_natural_language_columns(X):
     return X, natural_language_columns
 
 
-def set_boolean_columns_to_categorical(X):
-    """Sets boolean columns to categorical for the imputer.
+def set_boolean_columns_to_integer(X):
+    """Sets boolean columns to integer nullable for the imputer.
 
     Args:
         X (pd.Dataframe): The dataframe that we want to impute on.
 
     Returns:
-        pd.Dataframe: the dataframe with any of its ww columns that are boolean set to categorical.
+        pd.Dataframe: the dataframe with any of its ww columns that are boolean set to integer nullable.
     """
     X = X.ww.copy()
     X_schema = X.ww.schema
@@ -201,7 +201,7 @@ def set_boolean_columns_to_categorical(X):
         subset_cols=X_schema._filter_cols(exclude=["Boolean", "BooleanNullable"]),
     )
     X_boolean_cols = X_schema._filter_cols(include=["Boolean", "BooleanNullable"])
-    new_ltypes_for_boolean_cols = {col: "Categorical" for col in X_boolean_cols}
+    new_ltypes_for_boolean_cols = {col: "IntegerNullable" for col in X_boolean_cols}
     X.ww.init(schema=original_X_schema, logical_types=new_ltypes_for_boolean_cols)
     return X
 

@@ -7,10 +7,9 @@ from woodwork.logical_types import Double
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.utils import (
     drop_natural_language_columns,
-    set_boolean_columns_to_categorical,
+    set_boolean_columns_to_integer,
 )
 from evalml.utils import infer_feature_types
-from evalml.utils.gen_utils import is_categorical_actually_boolean
 
 
 class SimpleImputer(Transformer):
@@ -66,23 +65,24 @@ class SimpleImputer(Transformer):
         """
         X = infer_feature_types(X)
 
-        if set([lt.type_string for lt in X.ww.logical_types.values()]) == {
-            "boolean",
-            "categorical",
-        } and not all(
-            [
-                is_categorical_actually_boolean(X, col)
-                for col in X.ww.select("Categorical")
-            ],
+        cat_cols = X.ww.select(["category", "boolean"]).columns
+        if 0 < len(cat_cols) < X.shape[1] and self.impute_strategy not in set(
+            ["most_frequent", "constant"],
         ):
             raise ValueError(
-                "SimpleImputer cannot handle dataframes with both boolean and categorical features.  Use Imputer instead.",
+                f"SimpleImputer cannot impute categorical columns with impute strategy {self.impute_strategy}. Use Imputer or select a different strategy.",
             )
+
         nan_ratio = X.isna().sum() / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
         X, _ = drop_natural_language_columns(X)
-        X = set_boolean_columns_to_categorical(X)
+
+        # Convert any boolean columns to IntegerNullable, but keep track of the columns so they can be converted back
+        self._boolean_cols = X.ww.schema._filter_cols(
+            include=["Boolean", "BooleanNullable"],
+        )
+        X = set_boolean_columns_to_integer(X)
 
         # If the Dataframe only had natural language columns, do nothing.
         if X.shape[1] == 0:
@@ -102,11 +102,7 @@ class SimpleImputer(Transformer):
         """
         X = infer_feature_types(X)
         original_schema = X.ww.schema
-        X = set_boolean_columns_to_categorical(X)
-
-        # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
-        if (X.dtypes == bool).all():
-            return X
+        X = set_boolean_columns_to_integer(X)
 
         not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
         original_index = X.index
@@ -124,11 +120,9 @@ class SimpleImputer(Transformer):
 
         new_schema = original_schema.get_subset_schema(X_t.columns)
 
-        # TODO: Fix this after WW adds inference of object type booleans to BooleanNullable
-        # Iterate through categorical columns that might have been boolean and convert them back to boolean
-        for col in X.ww.select(["Categorical"], return_schema=True).columns:
-            if is_categorical_actually_boolean(X, col):
-                X_t[col] = X_t[col].astype(bool)
+        # Iterate through previously saved boolean columns and convert them back to boolean
+        for col in self._boolean_cols:
+            X_t[col] = X_t[col].astype(bool)
 
         # Convert Nullable Integers to Doubles for the "mean" and "median" strategies
         if self.impute_strategy in ["mean", "median"]:
