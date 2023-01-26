@@ -88,6 +88,14 @@ class SimpleImputer(Transformer):
         self._boolean_cols = X.ww.schema._filter_cols(
             include=["Boolean", "BooleanNullable"],
         )
+        # Make sure we're tracking Categorical columns that should be boolean as well
+        self._boolean_cols.extend(
+            [
+                col
+                for col in X.ww.select("Categorical")
+                if is_categorical_actually_boolean(X, col)
+            ],
+        )
         X = set_boolean_columns_to_integer(X)
 
         # If the Dataframe only had natural language columns, do nothing.
