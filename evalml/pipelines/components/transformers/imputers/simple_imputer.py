@@ -91,7 +91,6 @@ class SimpleImputer(Transformer):
                 return_schema=True,
             ).columns,
         )
-        # import pdb; pdb.set_trace()
         # Make sure we're tracking Categorical columns that should be boolean as well
         self._boolean_cols.extend(
             [
