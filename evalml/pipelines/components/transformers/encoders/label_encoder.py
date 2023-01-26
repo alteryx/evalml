@@ -23,6 +23,7 @@ class LabelEncoder(Transformer):
     def __init__(self, positive_label=None, random_seed=0, **kwargs):
         parameters = {"positive_label": positive_label}
         parameters.update(kwargs)
+        self.original_typing = ""
 
         super().__init__(
             parameters=parameters,
@@ -46,6 +47,7 @@ class LabelEncoder(Transformer):
         if y is None:
             raise ValueError("y cannot be None!")
         y_ww = infer_feature_types(y)
+        self.original_typing = str(y_ww.ww.logical_type)
         self.mapping = {val: i for i, val in enumerate(sorted(y_ww.unique()))}
         if self.parameters["positive_label"] is not None:
             if len(self.mapping) != 2:
@@ -114,5 +116,5 @@ class LabelEncoder(Transformer):
         if y is None:
             raise ValueError("y cannot be None!")
         y_ww = infer_feature_types(y)
-        y_it = infer_feature_types(y_ww.map(self.inverse_mapping))
+        y_it = infer_feature_types(y_ww.map(self.inverse_mapping), self.original_typing)
         return y_it

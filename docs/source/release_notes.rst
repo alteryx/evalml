@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Updated ``LabelEncoder`` to store the original typing information :pr:``
     * Changes
     * Documentation Changes
     * Testing Changes
