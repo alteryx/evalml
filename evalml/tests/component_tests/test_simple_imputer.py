@@ -622,4 +622,4 @@ def test_simple_imputer_boolean_nullable_all_null():
 
     X_t = imp.transform(X_test)
     assert not X_t["a"].isna().any()
-    assert X_t.ww.logical_types["a"].type_string == "boolean_nullable"
+    assert isinstance(X_t.ww.logical_types["a"], BooleanNullable)
