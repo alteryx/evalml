@@ -3,7 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Updated ``LabelEncoder`` to store the original typing information :pr:``
+        * Updated ``LabelEncoder`` to store the original typing information :pr:`3960`
     * Changes
     * Documentation Changes
     * Testing Changes
