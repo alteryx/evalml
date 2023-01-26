@@ -2,12 +2,25 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.66.0 Jan. 24, 2023**
+    * Enhancements
         * Improved decomposer ``determine_periodicity`` functionality for better period guesses :pr:`3912`
         * Added ``dates_needed_for_prediction`` for time series pipelines :pr:`3906`
         * Added ``RFClassifierRFESelector``  and ``RFRegressorRFESelector`` components for feature selection using recursive feature elimination :pr:`3934`
         * Added ``dates_needed_for_prediction_range`` for time series pipelines :pr:`3941`
     * Fixes
-        * Fixed `set_period()` not updating decomposer parameters :pr:`3932`
+        * Fixed ``set_period()`` not updating decomposer parameters :pr:`3932`
+        * Removed second identical batch for time series problems in ``DefaultAlgorithm`` :pr:`3936`
         * Fix install command for alteryx-open-src-update-checker :pr:`3940`
         * Fixed non-prophet case of ``test_components_can_be_used_for_partial_dependence_fast_mode`` :pr:`3949`
     * Changes
@@ -15,12 +28,6 @@ Release Notes
         * Add ruff and use pyproject.toml (move away from setup.cfg) :pr:`3928`
         * Pinned `category-encoders`` to 2.5.1.post0 :pr:`3933`
         * Remove requirements-parser and tomli from core requirements :pr:`3948`
-    * Documentation Changes
-    * Testing Changes
-
-.. warning::
-
-    **Breaking Changes**
 
 
 **v0.65.0 Jan. 3, 2023**

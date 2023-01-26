@@ -304,7 +304,6 @@ def test_score_pipelines_passes_X_train_y_train(
         X_train=X_train,
         y_train=y_train,
         problem_type=problem_type,
-        max_iterations=5,
         optimize_thresholds=False,
         problem_configuration={
             "time_index": "date",
