@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed bug where all-null ``BooleanNullable`` columns would break the imputer during transform :pr:`3959`
     * Changes
     * Documentation Changes
     * Testing Changes
