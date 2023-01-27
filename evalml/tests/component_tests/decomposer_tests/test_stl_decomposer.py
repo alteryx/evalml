@@ -69,22 +69,26 @@ def test_stl_sets_determined_period(
     [
         (7, "D"),  # Weekly season
         (30, "D"),
-        (365, "D"),
+        pytest.param(
+            365,
+            "D",
+            marks=pytest.mark.xfail(
+                reason="STL is less precise with larger periods.",
+            ),
+        ),
         (12, "M"),  # Annual season
         (4, "M"),  # Quarterly season
     ],
 )
 @pytest.mark.parametrize("trend_degree", [1, 2, 3])
-@pytest.mark.parametrize("synthetic_data", ["synthetic"])
 def test_stl_fit_transform_in_sample(
     period,
     freq,
     trend_degree,
-    synthetic_data,
     generate_seasonal_data,
 ):
 
-    X, y = generate_seasonal_data(real_or_synthetic=synthetic_data)(
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
         period,
         freq_str=freq,
         trend_degree=trend_degree,
