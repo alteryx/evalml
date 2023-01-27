@@ -3,8 +3,6 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Updated ``LabelEncoder`` to store the original typing information :pr:`3960`
-        * Fixed bug where all-null ``BooleanNullable`` columns would break the imputer during transform :pr:`3959`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -13,6 +11,11 @@ Release Notes
 
     **Breaking Changes**
 
+
+**v0.66.1 Jan. 26, 2023**
+    * Fixes
+        * Updated ``LabelEncoder`` to store the original typing information :pr:`3960`
+        * Fixed bug where all-null ``BooleanNullable`` columns would break the imputer during transform :pr:`3959`
 
 **v0.66.0 Jan. 24, 2023**
     * Enhancements
