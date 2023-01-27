@@ -487,11 +487,10 @@ def test_simple_imputer_woodwork_custom_overrides_returned_by_components(
     except ww.exceptions.TypeConversionError:
         return
 
-    impute_strategy_to_use = impute_strategy
-    if logical_type in [NaturalLanguage, Categorical]:
-        impute_strategy_to_use = "most_frequent"
+    if logical_type in [NaturalLanguage, Categorical, Boolean, BooleanNullable]:
+        impute_strategy = "most_frequent"
 
-    imputer = SimpleImputer(impute_strategy=impute_strategy_to_use)
+    imputer = SimpleImputer(impute_strategy=impute_strategy)
     transformed = imputer.fit_transform(X, y)
     assert isinstance(transformed, pd.DataFrame)
     if str(logical_type) == "IntegerNullable":
@@ -608,3 +607,22 @@ def test_simple_imputer_errors_with_bool_and_categorical_columns(
     else:
         si = SimpleImputer()
         si.fit(X_df)
+
+
+def test_simple_imputer_boolean_nullable_valid_train_empty_test():
+    """Test to ensure we can handle sparse boolean nullable columns, where
+    the training data has some non-null values but the test set has none.
+    """
+    X_train = pd.DataFrame({"a": [pd.NA] * 20 + [1.0] + [pd.NA] * 20})
+    y = pd.Series(range(len(X_train)))
+    X_test = pd.DataFrame({"a": [pd.NA] * 10})
+
+    X_train.ww.init(logical_types={"a": "boolean_nullable"})
+    X_test.ww.init(logical_types={"a": "boolean_nullable"})
+
+    imp = SimpleImputer()
+    imp.fit(X_train, y)
+
+    X_t = imp.transform(X_test)
+    assert not X_t["a"].isna().any()
+    assert isinstance(X_t.ww.logical_types["a"], BooleanNullable)
