@@ -5,6 +5,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Added demo for prediction intervals :pr:`3954`
     * Testing Changes
 
 .. warning::
