@@ -56,8 +56,8 @@ outputs:
         - pyproject.toml
       commands:
         - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
-        - python -c "from evalml.demos.fraud import load_fraud; load_fraud(nrows=10)"
-        - python -c "from evalml.demos.churn import load_churn; load_churn(nrows=10)"
+        - python -c "from evalml.demos import load_fraud; load_fraud(nrows=10)"
+        - python -c "from evalml.demos import load_churn; load_churn(nrows=10)"
 
   - name: evalml
     build:
