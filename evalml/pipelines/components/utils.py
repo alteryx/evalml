@@ -474,10 +474,23 @@ def make_balancing_dictionary(y, sampling_ratio):
 
 
 def handle_float_categories_for_catboost(X):
-    """Catboost cannot handle data in X that is Categoriecal with floating point categories.
+    """Updates input data to be compatible with CatBoost estimators.
 
-    When those values can be converted to integers, they should be. If they cannot, we should
-    convert them to string categories or error DECIDE WHICH --> fill this out completly
+    CatBoost cannot handle data in X that is the Categorical Woodwork logical type with floating point categories.
+    This utility determines if the floating point categories can be converted to integers
+    without truncating any data, and if they can be, converts them to int64 categories.
+    Will not attempt to use values that are truly floating points.
+
+    Args:
+        X (pd.DataFrame): Input data to CatBoost that has Woodwork initialized
+
+    Returns:
+        DataFrame: Input data with exact same Woodwork typing info as the original but with any float categories
+            converted to be int64 when possible.
+
+    Raises:
+        ValueError: if the numeric categories are actual floats that cannot be converted to integers
+            without truncating data
     """
     original_schema = X.ww.schema
     original_dtypes = X.dtypes
@@ -508,7 +521,7 @@ def handle_float_categories_for_catboost(X):
         else:
             # CatBoost explanation as to why they don't support float categories: https://catboost.ai/en/docs/concepts/faq#floating-point-values
             # CatBoost bug keeping us from converting to string: https://github.com/catboost/catboost/issues/1965
-            # Pandas bug keeping us from converting `.astype("string").astype("object")` to create the categories:
+            # Pandas bug keeping us from converting `.astype("string").astype("object")`: https://github.com/pandas-dev/pandas/issues/51074
             raise ValueError(
                 f"Invalid category found in {col}. CatBoost does not support floats as categories.",
             )
