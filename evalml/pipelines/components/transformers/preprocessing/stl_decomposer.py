@@ -36,7 +36,6 @@ class STLDecomposer(Decomposer):
 
     modifies_features = False
     modifies_target = True
-    invalid_frequencies = []
 
     def __init__(
         self,

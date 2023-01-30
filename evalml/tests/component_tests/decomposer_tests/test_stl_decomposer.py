@@ -61,6 +61,7 @@ def test_stl_sets_determined_period(
 
     stl = STLDecomposer()
     stl.fit(X, y)
+    # Allow for a slight margin of error with detection
     assert period * 0.99 <= stl.period <= period * 1.01
 
 
