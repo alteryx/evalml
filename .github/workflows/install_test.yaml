@@ -1,13 +1,10 @@
+name: Install Test
 on:
   pull_request:
     types: [opened, synchronize]
-    paths:
-      - 'evalml/utils/update_checker.py'
   push:
     branches:
       - main
-
-name: Install Test
 jobs:
   install:
     name: ${{ matrix.os }} - ${{ matrix.python_version }} install evalml
