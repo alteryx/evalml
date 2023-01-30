@@ -1,5 +1,8 @@
 import warnings
 
+import pandas as pd
+import woodwork as ww
+
 from evalml.pipelines.components import CatBoostClassifier
 from evalml.utils import SEED_BOUNDS
 
@@ -35,3 +38,27 @@ def test_catboost_classifier_init_thread_count():
         CatBoostClassifier(thread_count=2)
     assert len(w) == 1
     assert "Parameter 'thread_count' will be ignored. " in str(w[-1].message)
+
+
+def test_catboost_classifier_double_categories_in_X():
+    X = pd.DataFrame({"double_cats": pd.Series([1.0, 2.0, 3.0, 4.0, 5.0] * 20)})
+    y = pd.Series(range(100))
+    y.ww.init()
+    X.ww.init(logical_types={"double_cats": "Categorical"})
+
+    clf = CatBoostClassifier()
+    clf.fit(X, y)
+
+
+def test_catboost_classifier_double_categories_in_y():
+    X = pd.DataFrame({"cats": pd.Series([1, 2, 3, 4, 5] * 20)})
+    X.ww.init(logical_types={"cats": "Categorical"})
+    # --> this was never causing errors it seems - test more though to confirm!!
+    y = pd.Series(
+        [1.0, 2.0, 3.0, 4.0, 5.0] * 20,
+    )
+    ww.init_series(y, logical_type="Categorical")
+
+    clf = CatBoostClassifier()
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, CatBoostClassifier)

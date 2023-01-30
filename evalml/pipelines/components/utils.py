@@ -471,3 +471,48 @@ def make_balancing_dictionary(y, sampling_ratio):
             # this class is already larger than the ratio, don't change
             class_dic[index] = value_counts[index]
     return class_dic
+
+
+def handle_float_categories_for_catboost(X):
+    """Catboost cannot handle data in X that is Categoriecal with floating point categories.
+
+    When those values can be converted to integers, they should be. If they cannot, we should
+    convert them to string categories or error DECIDE WHICH --> fill this out completly
+    """
+    original_schema = X.ww.schema
+    original_dtypes = X.dtypes
+
+    #
+    cat_col_names = X.ww.select("category", return_schema=True).columns.keys()
+    float_category_cols = [
+        col
+        for col in cat_col_names
+        if original_dtypes[col].categories.dtype == "float64"
+    ]
+
+    # if not float_category_cols:
+    #     return X
+
+    int_cols = []
+    float_cols = []
+    for cat_col in float_category_cols:
+        floats_are_really_ints = (X.dtypes[cat_col].categories % 1 == 0).all()
+        if floats_are_really_ints:
+            int_cols.append(cat_col)
+        else:
+            float_cols.append(cat_col)
+        # separate into can be converted to ints and cannot
+    # --> need to confirm if this nullable int will be problematic downstream for catboost - need to test predictions!!
+
+    X_int_cats = X[int_cols].astype("Int64").astype("category")
+    X_float_cats = X[float_cols].astype("string").astype("category")
+
+    # --> think of better way than copying
+    X = X.copy()
+    X[int_cols] = X_int_cats
+    X[float_cols] = X_float_cats
+
+    # All we ultimately did was change the dtype of the categories, so the same woodwork schema should apply
+    # --> need to check if ww schema contains info on the categories
+    X.ww.init(schema=original_schema)
+    return X

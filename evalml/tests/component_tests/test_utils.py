@@ -19,6 +19,7 @@ from evalml.pipelines.components.utils import (
     drop_natural_language_columns,
     estimator_unable_to_handle_nans,
     handle_component_class,
+    handle_float_categories_for_catboost,
     make_balancing_dictionary,
     scikit_learn_wrapped_estimator,
     set_boolean_columns_to_integer,
@@ -118,7 +119,9 @@ def test_all_components(
 ):
     if is_using_conda:
         # No prophet, ARIMA, and vowpalwabbit
-        expected_components = all_requirements_set.difference(not_supported_in_conda)
+        expected_components = all_requirements_set.difference(
+            not_supported_in_conda,
+        )
     else:
         expected_components = all_requirements_set
     all_component_names = [component.name for component in all_components()]
@@ -149,7 +152,9 @@ def test_handle_component_class_names():
 
 
 def test_scikit_learn_wrapper_invalid_problem_type():
-    evalml_pipeline = MulticlassClassificationPipeline([RandomForestClassifier])
+    evalml_pipeline = MulticlassClassificationPipeline(
+        [RandomForestClassifier],
+    )
     evalml_pipeline.problem_type = None
     with pytest.raises(
         ValueError,
@@ -313,3 +318,49 @@ def test_set_boolean_columns_to_integer():
         X_e.ww.select(["IntegerNullable"]),
         check_dtype=False,
     )
+
+
+def test_handle_float_categories_for_catboost():
+    X = pd.DataFrame({"double_cats": pd.Series([1.0, 2.0, 3.0, 4.0, 5.0] * 20)})
+    X.ww.init(logical_types={"double_cats": "Categorical"})
+
+    assert X["double_cats"].dtype.categories.dtype == "float64"
+    X_t = handle_float_categories_for_catboost(X)
+    assert X_t["double_cats"].dtype.categories.dtype == "Int64"
+
+
+def test_handle_float_categories_for_catboost_with_nans():
+    X = pd.DataFrame({"double_cats_nan": pd.Series([1.0, 2.0, None, 4.0, 5.0] * 20)})
+    X.ww.init(logical_types={"double_cats_nan": "Categorical"})
+
+    assert X["double_cats_nan"].dtype.categories.dtype == "float64"
+    X_t = handle_float_categories_for_catboost(X)
+    assert X_t["double_cats_nan"].dtype.categories.dtype == "Int64"
+
+
+def test_handle_float_categories_for_catboost_with_actual_floats():
+    X = pd.DataFrame({"double_cats_nan": pd.Series([1.2, 2.3, 3.9, 4.1, 5.5] * 20)})
+    X.ww.init(logical_types={"double_cats_nan": "Categorical"})
+
+    assert X["double_cats_nan"].dtype.categories.dtype == "float64"
+    X_t = handle_float_categories_for_catboost(X)
+    assert X_t["double_cats_nan"].dtype.categories.dtype == "string"
+
+
+def test_handle_float_categories_for_catboost_no_categorical_cols():
+    X = pd.DataFrame({"double_cats_nan": pd.Series([1.2, 2.3, 3.9, 4.1, 5.5] * 20)})
+    X.ww.init()
+
+    X_t = handle_float_categories_for_catboost(X)
+    pd.testing.assert_frame_equal(X, X_t)
+
+
+# --> test with float y
+# test with float in X
+# test with mixture of int and float and other cats and non cat types
+# test with nans present
+# test in larger dataset with other categoricals that cant be converted to numeric
+# test with actual floating points like 1.1
+# --> these need to test with transform as well once fit is fixed!
+# --> test no categorical cols
+# test no float c ats

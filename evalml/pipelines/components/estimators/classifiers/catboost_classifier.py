@@ -9,6 +9,7 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.pipelines.components.transformers import LabelEncoder
+from evalml.pipelines.components.utils import handle_float_categories_for_catboost
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise, infer_feature_types
 
@@ -119,6 +120,8 @@ class CatBoostClassifier(Estimator):
         if y.nunique() <= 2:
             self._label_encoder = LabelEncoder()
             y = self._label_encoder.fit_transform(None, y)[1]
+
+        X = handle_float_categories_for_catboost(X)
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return self
 
