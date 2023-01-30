@@ -18,8 +18,6 @@ def test_stl_decomposer_init():
         "period": None,
         "seasonal_smoother": 7,
         "time_index": "dates",
-        "acf_threshold": 0.01,
-        "rel_max_order": 5,
     }
 
 
