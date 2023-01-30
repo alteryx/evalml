@@ -35,7 +35,6 @@ jobs:
           python -c "import evalml"
           python -c "import alteryx_open_src_update_checker"
           python -c "from evalml.demos import load_fraud; load_fraud(n_rows=10)"
-          python -c "from evalml.demos import load_diabetes; load_diabetes(n_rows=10)"
           python -c "from evalml.demos import load_churn; load_churn(n_rows=10)"
         env:
           # Disables API requests which is not needed for testing.
