@@ -56,6 +56,9 @@ outputs:
         - pyproject.toml
       commands:
         - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
+        - python -c "from evalml.demos.fraud import load_fraud; load_fraud()"
+        - python -c "from evalml.demos.diabetes import load_diabetes; load_diabetes()"
+        - python -c "from evalml.demos.churn import load_churn; load_churn()"
 
   - name: evalml
     build:
@@ -91,7 +94,10 @@ outputs:
         - pyproject.toml
       commands:
         - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
-
+        - python -c "from evalml.demos.fraud import load_fraud; load_fraud()"
+        - python -c "from evalml.demos.diabetes import load_diabetes; load_diabetes()"
+        - python -c "from evalml.demos.churn import load_churn; load_churn()"
+        
 about:
   doc_url: https://evalml.featurelabs.com/
   dev_url: https://github.com/alteryx/evalml/
