@@ -320,36 +320,45 @@ def test_set_boolean_columns_to_integer():
     )
 
 
-def test_handle_float_categories_for_catboost():
-    X = pd.DataFrame({"double_cats": pd.Series([1.0, 2.0, 3.0, 4.0, 5.0] * 20)})
-    X.ww.init(logical_types={"double_cats": "Categorical"})
+def test_handle_float_categories_for_catboost(categorical_floats_df):
+    X = categorical_floats_df.ww[["double_int_cats"]]
 
-    assert X["double_cats"].dtype.categories.dtype == "float64"
     X_t = handle_float_categories_for_catboost(X)
-    assert X_t["double_cats"].dtype.categories.dtype == "Int64"
+    assert X["double_int_cats"].dtype.categories.dtype == "float64"
+    assert X_t["double_int_cats"].dtype.categories.dtype == "int64"
 
 
 def test_handle_float_categories_for_catboost_with_nans():
+    # --> maybe this should error - there hsouldn't be any nans present at this stage!
     X = pd.DataFrame({"double_cats_nan": pd.Series([1.0, 2.0, None, 4.0, 5.0] * 20)})
     X.ww.init(logical_types={"double_cats_nan": "Categorical"})
 
-    assert X["double_cats_nan"].dtype.categories.dtype == "float64"
     X_t = handle_float_categories_for_catboost(X)
+    assert X["double_cats_nan"].dtype.categories.dtype == "float64"
     assert X_t["double_cats_nan"].dtype.categories.dtype == "Int64"
 
 
-def test_handle_float_categories_for_catboost_with_actual_floats():
-    X = pd.DataFrame({"double_cats_nan": pd.Series([1.2, 2.3, 3.9, 4.1, 5.5] * 20)})
-    X.ww.init(logical_types={"double_cats_nan": "Categorical"})
+def test_handle_float_categories_for_catboost_with_actual_floats(categorical_floats_df):
+    X = categorical_floats_df.ww[["really_double_cats"]]
 
-    assert X["double_cats_nan"].dtype.categories.dtype == "float64"
     X_t = handle_float_categories_for_catboost(X)
-    assert X_t["double_cats_nan"].dtype.categories.dtype == "string"
+    assert X["really_double_cats"].dtype.categories.dtype == "float64"
+    assert X_t["really_double_cats"].dtype.categories.dtype == "O"
 
 
-def test_handle_float_categories_for_catboost_no_categorical_cols():
-    X = pd.DataFrame({"double_cats_nan": pd.Series([1.2, 2.3, 3.9, 4.1, 5.5] * 20)})
-    X.ww.init()
+def test_handle_float_categories_for_catboost_no_categorical_cols(
+    categorical_floats_df,
+):
+    X = categorical_floats_df.ww[["int_col"]]
+
+    X_t = handle_float_categories_for_catboost(X)
+    pd.testing.assert_frame_equal(X, X_t)
+
+
+def test_handle_float_categories_for_catboost_string_categorical_cols(
+    categorical_floats_df,
+):
+    X = categorical_floats_df.ww[["string_cats"]]
 
     X_t = handle_float_categories_for_catboost(X)
     pd.testing.assert_frame_equal(X, X_t)
@@ -362,5 +371,3 @@ def test_handle_float_categories_for_catboost_no_categorical_cols():
 # test in larger dataset with other categoricals that cant be converted to numeric
 # test with actual floating points like 1.1
 # --> these need to test with transform as well once fit is fixed!
-# --> test no categorical cols
-# test no float c ats

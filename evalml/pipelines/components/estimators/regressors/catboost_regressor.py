@@ -119,6 +119,19 @@ class CatBoostRegressor(Estimator):
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return self
 
+    def predict(self, X):
+        """Make predictions using the fitted CatBoost regressor.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.DataFrame: Predicted values.
+        """
+        X = handle_float_categories_for_catboost(X)
+        predictions = super().predict(X)
+        return predictions
+
     @property
     def feature_importance(self):
         """Feature importance of fitted CatBoost regressor."""

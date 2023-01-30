@@ -135,6 +135,7 @@ class CatBoostClassifier(Estimator):
             pd.DataFrame: Predicted values.
         """
         X = infer_feature_types(X)
+        X = handle_float_categories_for_catboost(X)
         predictions = self._component_obj.predict(X)
         if predictions.ndim == 2 and predictions.shape[1] == 1:
             predictions = predictions.flatten()

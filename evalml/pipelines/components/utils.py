@@ -482,7 +482,7 @@ def handle_float_categories_for_catboost(X):
     original_schema = X.ww.schema
     original_dtypes = X.dtypes
 
-    #
+    # Determine which categorical columns have float categories, which CatBoost would error on
     cat_col_names = X.ww.select("category", return_schema=True).columns.keys()
     float_category_cols = [
         col
@@ -490,9 +490,10 @@ def handle_float_categories_for_catboost(X):
         if original_dtypes[col].categories.dtype == "float64"
     ]
 
-    # if not float_category_cols:
-    #     return X
+    if not float_category_cols:
+        return X
 
+    # determine which columns should really be integers vs are actually floats
     int_cols = []
     float_cols = []
     for cat_col in float_category_cols:
@@ -504,8 +505,15 @@ def handle_float_categories_for_catboost(X):
         # separate into can be converted to ints and cannot
     # --> need to confirm if this nullable int will be problematic downstream for catboost - need to test predictions!!
 
-    X_int_cats = X[int_cols].astype("Int64").astype("category")
-    X_float_cats = X[float_cols].astype("string").astype("category")
+    # Note - this conversion to int64 would not work if nans were present in the data
+    # however CatBoost would only ever be used after the Imputer has replaced any null values,
+    # so we are okay with leaving the ValueError: Cannot convert float NaN to integer to be
+    # raised if nans are present
+    X_int_cats = X[int_cols].astype("int64").astype("category")
+    # --> there has to be a better way
+    #   - just string raises TypeError: Cannot convert StringArray to numpy.ndarray
+    #   - just object raises the original cat_features must be integer or string, real number values error
+    X_float_cats = X[float_cols].astype("string").astype("object").astype("category")
 
     # --> think of better way than copying
     X = X.copy()

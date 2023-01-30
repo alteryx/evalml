@@ -40,16 +40,6 @@ def test_catboost_classifier_init_thread_count():
     assert "Parameter 'thread_count' will be ignored. " in str(w[-1].message)
 
 
-def test_catboost_classifier_double_categories_in_X():
-    X = pd.DataFrame({"double_cats": pd.Series([1.0, 2.0, 3.0, 4.0, 5.0] * 20)})
-    y = pd.Series(range(100))
-    y.ww.init()
-    X.ww.init(logical_types={"double_cats": "Categorical"})
-
-    clf = CatBoostClassifier()
-    clf.fit(X, y)
-
-
 def test_catboost_classifier_double_categories_in_y():
     X = pd.DataFrame({"cats": pd.Series([1, 2, 3, 4, 5] * 20)})
     X.ww.init(logical_types={"cats": "Categorical"})
@@ -62,3 +52,15 @@ def test_catboost_classifier_double_categories_in_y():
     clf = CatBoostClassifier()
     fitted = clf.fit(X, y)
     assert isinstance(fitted, CatBoostClassifier)
+
+
+def test_catboost_classifier_double_categories_in_X(categorical_floats_df):
+    X = categorical_floats_df
+    y = pd.Series([1, 2, 3, 4, 5] * 20)
+
+    clf = CatBoostClassifier()
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, CatBoostClassifier)
+    predictions = clf.predict(X)
+    # --> double check a series is expected - maybe diff for classification
+    assert isinstance(predictions, pd.Series)
