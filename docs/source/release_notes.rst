@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Update pyproject.toml to correctly specify the data filepaths :pr:`3967`
     * Documentation Changes
         * Added demo for prediction intervals :pr:`3954`
     * Testing Changes
