@@ -128,6 +128,7 @@ class CatBoostRegressor(Estimator):
         Returns:
             pd.DataFrame: Predicted values.
         """
+        X = infer_feature_types(X)
         X = handle_float_categories_for_catboost(X)
         predictions = super().predict(X)
         return predictions
