@@ -48,6 +48,3 @@ def test_catboost_regressor_double_categories_in_X(categorical_floats_df):
     assert isinstance(fitted, CatBoostRegressor)
     predictions = clf.predict(X)
     assert isinstance(predictions, pd.Series)
-
-
-# --> consider adding a test that confirms the original catboost error is still present - if it goes away we can remove this logic but keep the tests in the component test
