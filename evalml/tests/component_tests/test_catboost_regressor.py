@@ -50,13 +50,4 @@ def test_catboost_regressor_double_categories_in_X(categorical_floats_df):
     assert isinstance(predictions, pd.Series)
 
 
-# --> do we need to actually predict? Or do something after just fitting?
-
-
-# test with float in X
-# test that converting to Int64 isn't problematic for estimator
-# test that when nans are present it's not problematic for estimator
-# test that when we turn floats to strings it's not problematic for estimator
-
-# --> these need to test with predict as well once fit is fixed!
-# --> consider adding at est that confirms the original catboost error is still present - if it goes away we can remove this logic but keep the tests in the component test
+# --> consider adding a test that confirms the original catboost error is still present - if it goes away we can remove this logic but keep the tests in the component test

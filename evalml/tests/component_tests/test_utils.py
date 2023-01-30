@@ -331,10 +331,11 @@ def test_handle_float_categories_for_catboost(categorical_floats_df):
 
     expected_dtype_before_and_after = {
         "double_int_cats": ("float64", "int64"),
-        "really_double_cats": ("float64", "O"),
         # These shouldn't change
         "string_cats": None,
+        "int_cats": None,
         "int_col": None,
+        "double_col": None,
     }
 
     for col in X.columns:
@@ -349,20 +350,19 @@ def test_handle_float_categories_for_catboost(categorical_floats_df):
             pd.testing.assert_series_equal(X[col], X_t[col])
 
 
-# def test_handle_float_categories_for_catboost_with_nans():
-#     # --> maybe this should error - there hsouldn't be any nans present at this stage!
-#     X = pd.DataFrame({"double_cats_nan": pd.Series([1.0, 2.0, None, 4.0, 5.0] * 20)})
-#     X.ww.init(logical_types={"double_cats_nan": "Categorical"})
+def test_handle_float_categories_for_catboost_actual_floats():
+    X = pd.DataFrame({"really_double_cats": pd.Series([1.2, 2.3, 3.9, 4.1, 5.5] * 20)})
+    X.ww.init(logical_types={"really_double_cats": "Categorical"})
 
-#     X_t = handle_float_categories_for_catboost(X)
-#     assert X["double_cats_nan"].dtype.categories.dtype == "float64"
-#     assert X_t["double_cats_nan"].dtype.categories.dtype == "Int64"
+    error = "CatBoost does not support floats as categories."
+    with pytest.raises(ValueError, match=error):
+        handle_float_categories_for_catboost(X)
 
 
 def test_handle_float_categories_for_catboost_noop(
     categorical_floats_df,
 ):
-    X = categorical_floats_df.ww[["string_cats", "int_col"]]
+    X = categorical_floats_df.ww[["string_cats", "int_col", "int_cats"]]
 
     X_t = handle_float_categories_for_catboost(X)
     pd.testing.assert_frame_equal(X, X_t)

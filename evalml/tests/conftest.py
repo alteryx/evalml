@@ -2319,17 +2319,19 @@ def categorical_floats_df():
     X = pd.DataFrame(
         {
             "double_int_cats": pd.Series([1.0, 2.0, 3.0, 4.0, 5.0] * 20),
-            "really_double_cats": pd.Series([1.2, 2.3, 3.9, 4.1, 5.5] * 20),
             "string_cats": pd.Series(["a", "b", "c", "d", "e"] * 20),
+            "int_cats": pd.Series([1, 2, 3, 4, 5] * 20),
             "int_col": pd.Series([1, 2, 3, 4, 5] * 20),
+            "double_col": pd.Series([1.2, 2.3, 3.9, 4.1, 5.5] * 20),
         },
     )
     X.ww.init(
         logical_types={
             "double_int_cats": "Categorical",
-            "really_double_cats": "Categorical",
             "string_cats": "Categorical",
+            "int_cats": "Categorical",
             "int_col": "Integer",
+            "double_col": "Double",
         },
     )
 

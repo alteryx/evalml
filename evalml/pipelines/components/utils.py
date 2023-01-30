@@ -483,44 +483,36 @@ def handle_float_categories_for_catboost(X):
     original_dtypes = X.dtypes
 
     # Determine which categorical columns have float categories, which CatBoost would error on
-    cat_col_names = X.ww.select("category", return_schema=True).columns.keys()
-    float_category_cols = [
+    categorical_columns = X.ww.select("category", return_schema=True).columns.keys()
+    cols_with_float_categories = [
         col
-        for col in cat_col_names
+        for col in categorical_columns
         if original_dtypes[col].categories.dtype == "float64"
     ]
 
-    if not float_category_cols:
+    if not cols_with_float_categories:
         return X
 
-    # determine which columns should really be integers vs are actually floats
-    int_cols = []
-    float_cols = []
-    for cat_col in float_category_cols:
-        floats_are_really_ints = (X.dtypes[cat_col].categories % 1 == 0).all()
+    # determine which columns are really integers vs are actually floats
+    new_dtypes = {}
+    for col in cols_with_float_categories:
+        col_categories = original_dtypes[col].categories
+        floats_are_really_ints = (col_categories % 1 == 0).all()
         if floats_are_really_ints:
-            int_cols.append(cat_col)
+            # We can use non nullable int64 here because there will not be any nans at this point
+            new_categories = col_categories.astype("int64")
+            new_dtypes[col] = pd.CategoricalDtype(
+                categories=new_categories,
+                ordered=original_dtypes[col].ordered,
+            )
         else:
-            float_cols.append(cat_col)
-        # separate into can be converted to ints and cannot
-    # --> need to confirm if this nullable int will be problematic downstream for catboost - need to test predictions!!
+            # CatBoost explanation as to why they don't support float categories: https://catboost.ai/en/docs/concepts/faq#floating-point-values
+            # CatBoost bug keeping us from converting to string: https://github.com/catboost/catboost/issues/1965
+            # Pandas bug keeping us from converting `.astype("string").astype("object")` to create the categories:
+            raise ValueError(
+                f"Invalid category found in {col}. CatBoost does not support floats as categories.",
+            )
 
-    # Note - this conversion to int64 would not work if nans were present in the data
-    # however CatBoost would only ever be used after the Imputer has replaced any null values,
-    # so we are okay with leaving the ValueError: Cannot convert float NaN to integer to be
-    # raised if nans are present
-    X_int_cats = X[int_cols].astype("int64").astype("category")
-    # --> there has to be a better way
-    #   - just string raises TypeError: Cannot convert StringArray to numpy.ndarray
-    #   - just object raises the original cat_features must be integer or string, real number values error
-    X_float_cats = X[float_cols].astype("string").astype("object").astype("category")
-
-    # --> think of better way than copying
-    X = X.copy()
-    X[int_cols] = X_int_cats
-    X[float_cols] = X_float_cats
-
-    # All we ultimately did was change the dtype of the categories, so the same woodwork schema should apply
-    # --> need to check if ww schema contains info on the categories
-    X.ww.init(schema=original_schema)
-    return X
+    X_t = X.astype(new_dtypes)
+    X_t.ww.init(schema=original_schema)
+    return X_t
