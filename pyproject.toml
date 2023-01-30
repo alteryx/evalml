@@ -127,9 +127,9 @@ namespaces = true
     "README.md",
 ]
 "evalml" = [
-    "demo/churn.csv",
-    "demo/daily-min-temperatures.csv",
-    "demo/fraud_transactions.csv.gz",
+    "demo/data/churn.csv",
+    "demo/data/daily-min-temperatures.csv",
+    "demo/data/fraud_transactions.csv.gz",
     "tests/data/daily-min-temperatures.csv",
     "tests/data/fraud_transactions.csv.gz",
     "tests/data/tips.csv",
