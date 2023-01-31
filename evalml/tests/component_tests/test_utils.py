@@ -19,6 +19,7 @@ from evalml.pipelines.components.utils import (
     drop_natural_language_columns,
     estimator_unable_to_handle_nans,
     handle_component_class,
+    handle_float_categories_for_catboost,
     make_balancing_dictionary,
     scikit_learn_wrapped_estimator,
     set_boolean_columns_to_integer,
@@ -118,7 +119,9 @@ def test_all_components(
 ):
     if is_using_conda:
         # No prophet, ARIMA, and vowpalwabbit
-        expected_components = all_requirements_set.difference(not_supported_in_conda)
+        expected_components = all_requirements_set.difference(
+            not_supported_in_conda,
+        )
     else:
         expected_components = all_requirements_set
     all_component_names = [component.name for component in all_components()]
@@ -149,7 +152,9 @@ def test_handle_component_class_names():
 
 
 def test_scikit_learn_wrapper_invalid_problem_type():
-    evalml_pipeline = MulticlassClassificationPipeline([RandomForestClassifier])
+    evalml_pipeline = MulticlassClassificationPipeline(
+        [RandomForestClassifier],
+    )
     evalml_pipeline.problem_type = None
     with pytest.raises(
         ValueError,
@@ -313,3 +318,52 @@ def test_set_boolean_columns_to_integer():
         X_e.ww.select(["IntegerNullable"]),
         check_dtype=False,
     )
+
+
+def test_handle_float_categories_for_catboost(categorical_floats_df):
+    X = categorical_floats_df
+    X_t = handle_float_categories_for_catboost(X)
+
+    # Since only the categories' changed, the woodwork schema should be equal before and after
+    # But the dtype Series' shouldn't
+    assert X.ww.schema == X_t.ww.schema
+    assert not X.dtypes.equals(X_t.dtypes)
+
+    expected_dtype_before_and_after = {
+        "double_int_cats": ("float64", "int64"),
+        # These shouldn't change
+        "string_cats": None,
+        "int_cats": None,
+        "int_col": None,
+        "double_col": None,
+    }
+
+    for col in X.columns:
+        if before_and_after := expected_dtype_before_and_after.get(col):
+            before_dtype, after_dtype = before_and_after
+            assert X.dtypes[col].categories.dtype == before_dtype
+            assert X_t.dtypes[col].categories.dtype == after_dtype
+            # Confirm that the numeric values are still equal - we didn't truncate anything
+            for i in range(len(X)):
+                assert X[col].iloc[i] == float(X_t[col].iloc[i])
+        else:
+            pd.testing.assert_series_equal(X[col], X_t[col])
+
+
+def test_handle_float_categories_for_catboost_actual_floats():
+    X = pd.DataFrame({"really_double_cats": pd.Series([1.2, 2.3, 3.9, 4.1, 5.5] * 20)})
+    X.ww.init(logical_types={"really_double_cats": "Categorical"})
+
+    error = "CatBoost does not support floats as categories."
+    with pytest.raises(ValueError, match=error):
+        handle_float_categories_for_catboost(X)
+
+
+def test_handle_float_categories_for_catboost_noop(
+    categorical_floats_df,
+):
+    X = categorical_floats_df.ww[["string_cats", "int_col", "int_cats"]]
+
+    X_t = handle_float_categories_for_catboost(X)
+    pd.testing.assert_frame_equal(X, X_t)
+    assert X.ww.schema == X_t.ww.schema
