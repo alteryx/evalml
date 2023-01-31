@@ -65,10 +65,13 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             "ARIMA Regressor",
             "Prophet Regressor",
         ]
-        self.should_drop_time_index = (
+        self.should_skip_featurization = (
             not datetime_featurizer_included
             and not time_series_featurizer_included
             and self.estimator is not None
+        )
+        self.should_drop_time_index = (
+            self.should_skip_featurization
             and self.estimator.name not in time_series_native_estimators
         )
 
@@ -161,6 +164,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             y.ww.init(schema=y_schema)
 
             if X.ww.schema is not None:
+                X = X.ww.copy()
                 X.ww.set_time_index(None)
                 X.ww.set_index(self.time_index)
                 X = X.ww.drop(self.time_index)
@@ -189,7 +193,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         X, y = self._convert_to_woodwork(X, y)
 
         empty_training_data = X_train.empty or y_train.empty
-        if empty_training_data or self.should_drop_time_index:
+        if empty_training_data or self.should_skip_featurization:
             features_holdout = super().transform_all_but_final(X, y)
         else:
             padded_features, padded_target = self._add_training_data_to_X_Y(

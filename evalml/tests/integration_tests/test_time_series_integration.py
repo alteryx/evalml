@@ -1,9 +1,11 @@
+from unittest.mock import patch
+
 import pandas as pd
 import pytest
 from featuretools import EntitySet, Feature, calculate_feature_matrix, dfs
 
 from evalml.automl import AutoMLSearch
-from evalml.preprocessing import TimeSeriesSplit
+from evalml.preprocessing import TimeSeriesSplit, split_data
 from evalml.problem_types import ProblemTypes
 
 PERIODS = 500
@@ -155,6 +157,9 @@ def test_can_run_automl_for_time_series_known_in_advance(
     automl.best_pipeline.predict(X_valid, X_train=X, y_train=y)
 
 
+@patch(
+    "evalml.pipelines.time_series_pipeline_base.TimeSeriesPipelineBase._add_training_data_to_X_Y",
+)
 @pytest.mark.parametrize(
     "problem_type",
     [
@@ -164,6 +169,7 @@ def test_can_run_automl_for_time_series_known_in_advance(
     ],
 )
 def test_can_run_automl_for_time_series_with_exclude_featurizers(
+    mock_add_X_y,
     problem_type,
 ):
 
@@ -197,21 +203,31 @@ def test_can_run_automl_for_time_series_with_exclude_featurizers(
     feature_matrix = calculate_feature_matrix(entityset=es, features=features)
     # target lagged features must be present with correct start delay (gap + forecast horizon)
     feature_matrix.ww["target_delay_6"] = y.shift(6)
+    feature_matrix.ww.set_time_index("date")
 
-    automl = AutoMLSearch(
+    problem_config = {
+        "max_delay": 5,
+        "gap": 3,
+        "forecast_horizon": 3,
+        "time_index": "date",
+    }
+    X_train, X_test, y_train, y_test = split_data(
         feature_matrix,
         y,
         problem_type=problem_type,
-        problem_configuration={
-            "max_delay": 5,
-            "gap": 3,
-            "forecast_horizon": 3,
-            "time_index": "date",
-        },
+        problem_configuration=problem_config,
+    )
+
+    automl = AutoMLSearch(
+        X_train,
+        y_train,
+        problem_type=problem_type,
+        problem_configuration=problem_config,
         optimize_thresholds=False,
         exclude_featurizers=["DatetimeFeaturizer", "TimeSeriesFeaturizer"],
     )
     automl.search()
+    assert mock_add_X_y.call_count == 0
 
     rankings = automl.rankings
     for score in rankings["ranking_score"].values:
@@ -222,5 +238,11 @@ def test_can_run_automl_for_time_series_with_exclude_featurizers(
         pipeline = automl.get_pipeline(pipeline_number)
         if pipeline.estimator.name in ["ARIMA Regressor", "Prophet Regressor"]:
             assert not pipeline.should_drop_time_index
+
+            # Make sure we can still predict on these estimators
+            pipeline.fit(X_train, y_train)
+            pipeline.predict_in_sample(X_test, y_test, X_train, y_train)
+
         else:
             assert pipeline.should_drop_time_index
+        assert pipeline.should_skip_featurization
