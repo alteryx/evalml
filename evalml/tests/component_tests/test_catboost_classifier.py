@@ -61,3 +61,5 @@ def test_catboost_classifier_double_categories_in_X(categorical_floats_df):
     assert isinstance(fitted, CatBoostClassifier)
     predictions = clf.predict(X)
     assert isinstance(predictions, pd.Series)
+    predictions = clf.predict_proba(X)
+    assert isinstance(predictions, pd.DataFrame)

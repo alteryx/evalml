@@ -132,7 +132,7 @@ class CatBoostClassifier(Estimator):
             X (pd.DataFrame): Data of shape [n_samples, n_features].
 
         Returns:
-            pd.DataFrame: Predicted values.
+            pd.Series: Predicted values.
         """
         X = infer_feature_types(X)
         X = handle_float_categories_for_catboost(X)
@@ -145,6 +145,20 @@ class CatBoostClassifier(Estimator):
             )
         predictions = infer_feature_types(predictions)
         predictions.index = X.index
+        return predictions
+
+    def predict_proba(self, X):
+        """Make prediction probabilities using the fitted CatBoost classifier.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.DataFrame: Predicted probability values.
+        """
+        X = infer_feature_types(X)
+        X = handle_float_categories_for_catboost(X)
+        predictions = super().predict_proba(X)
         return predictions
 
     @property
