@@ -1,13 +1,13 @@
+name: Install Test
 on:
   pull_request:
     types: [opened, synchronize]
-    paths:
-      - 'evalml/utils/update_checker.py'
   push:
     branches:
       - main
-
-name: Install Test
+env:
+  # Disables API requests which is not needed for testing.
+  ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
 jobs:
   install:
     name: ${{ matrix.os }} - ${{ matrix.python_version }} install evalml
@@ -24,14 +24,18 @@ jobs:
           python-version: ${{ matrix.python_version }}
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Build evalml package
+        run: make package
       - name: Install EvalML and update checker
         run: |
           pip config --site set global.progress_bar off
-          python -m pip install --upgrade pip
-          python -m pip install -e .[updater]
+          python -m pip install "unpacked_sdist/[updater]"
       - name: Test by importing packages
         run: |
+          python -c "import evalml"
           python -c "import alteryx_open_src_update_checker"
-        env:
-          # Disables API requests which is not needed for testing.
-          ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
+          python -c "from evalml.demos import load_fraud; load_fraud(n_rows=10)"
+          python -c "from evalml.demos import load_churn; load_churn(n_rows=10)"
+      - name: Check package conflicts
+        run: |
+          python -m pip check

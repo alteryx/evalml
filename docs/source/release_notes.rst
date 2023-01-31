@@ -5,6 +5,7 @@ Release Notes
     * Fixes
         * Re-added ``TimeSeriesPipeline.should_skip_featurization`` to fix bug where data would get featurized unnecessarily :pr:`3964`
     * Changes
+        * Update pyproject.toml to correctly specify the data filepaths :pr:`3967`
     * Documentation Changes
         * Added demo for prediction intervals :pr:`3954`
     * Testing Changes

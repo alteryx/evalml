@@ -126,12 +126,14 @@ namespaces = true
     "*.txt",
     "README.md",
 ]
-"evalml.tests.data" = [
-    "evalml/tests/data/churn.csv",
-    "evalml/tests/data/daily-min-temperatures.csv",
-    "evalml/tests/data/fraud_transactions.csv.gz",
-    "evalml/tests/data/tips.csv",
-    "evalml/tests/data/titanic.csv",
+"evalml" = [
+    "demo/data/churn.csv",
+    "demo/data/daily-min-temperatures.csv",
+    "demo/data/fraud_transactions.csv.gz",
+    "tests/data/daily-min-temperatures.csv",
+    "tests/data/fraud_transactions.csv.gz",
+    "tests/data/tips.csv",
+    "tests/data/titanic.csv",
 ]
 
 [tool.setuptools.exclude-package-data]
