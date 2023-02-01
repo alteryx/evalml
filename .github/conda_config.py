@@ -11,15 +11,13 @@ class CondaDumper(yaml.Dumper):
 
 
 def write_conda_recipe(version):
-    """
-    Writes the EvalML recipe to build a conda package based on the version
+    """Writes the EvalML recipe to build a conda package based on the version
     Args:
-        version: The version of EvalML we are building with this feedstock
+        version: The version of EvalML we are building with this feedstock.
 
     Returns:
         None: Side effect of overwriting the existing meta.yaml in the feedstock
     """
-
     recipe_file_path = os.path.join(
         os.path.join(os.path.join(os.getcwd(), "evalml-core-feedstock"), "recipe"),
         "meta" ".yaml",

@@ -164,6 +164,7 @@ src = ["evalml"]
 "__init__.py" = ["E402", "F401", "I001", "E501"]
 "evalml/tests/**" = ["D"]
 "evalml/utils/**" = ["D"]
+".github/**" = ["D"]
 "docs/**" = ["D"]
 
 [tool.ruff.isort]
