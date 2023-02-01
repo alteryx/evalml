@@ -613,7 +613,6 @@ def test_make_single_prediction_table(
     output_format,
     answer,
 ):
-
     class_names = ["0", "1", "2"]
 
     if isinstance(values, list):

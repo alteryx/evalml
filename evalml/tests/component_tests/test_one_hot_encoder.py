@@ -82,7 +82,6 @@ def test_invalid_inputs():
 
 
 def test_ohe_is_no_op_for_not_categorical_features():
-
     ohe = OneHotEncoder(handle_missing="error")
     X = pd.DataFrame(
         {
@@ -594,7 +593,6 @@ def test_data_types(data_type):
     ],
 )
 def test_ohe_preserves_custom_index(index):
-
     df = pd.DataFrame(
         {"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
         index=index,

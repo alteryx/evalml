@@ -277,7 +277,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             unique_encoded_columns = []
             encoded_features_to_drop = []
             for cat_index, category in enumerate(column_categories):
-
                 # Drop categories specified by the user
                 if (
                     self._encoder.drop_idx_ is not None

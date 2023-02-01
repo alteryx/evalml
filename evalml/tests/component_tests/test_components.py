@@ -1301,7 +1301,6 @@ def test_all_transformers_check_fit_input_type(
     make_data_type,
     ts_data,
 ):
-
     X, y = X_y_binary
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
@@ -1721,7 +1720,6 @@ def test_estimator_fit_respects_custom_indices(
     ts_data,
     helper_functions,
 ):
-
     supported_problem_types = estimator_class.supported_problem_types
 
     ts_problem = False

@@ -51,7 +51,6 @@ def test_imputer_init(
     numeric_impute_strategy,
     boolean_impute_strategy,
 ):
-
     imputer = Imputer(
         categorical_impute_strategy=categorical_impute_strategy,
         numeric_impute_strategy=numeric_impute_strategy,

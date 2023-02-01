@@ -280,7 +280,6 @@ class NullDataCheck(DataCheck):
             )
 
         if moderately_null_cols:
-
             impute_strategies_dict = {}
             for col in moderately_null_cols:
                 col_in_df = X.ww[col]
