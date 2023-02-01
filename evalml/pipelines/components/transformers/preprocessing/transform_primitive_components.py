@@ -9,7 +9,6 @@ from evalml.utils import infer_feature_types
 
 
 class _ExtractFeaturesWithTransformPrimitives(Transformer):
-
     hyperparameter_ranges = {}
     """{}"""
 

@@ -1321,7 +1321,6 @@ def test_component_graph_types_merge_mock(mock_rf_fit):
 
 
 def test_component_graph_preserves_ltypes_created_during_pipeline_evaluation():
-
     # This test checks that the component graph preserves logical types created during pipeline evaluation
     # The other tests ensure that logical types set before pipeline evaluation are preserved
 
@@ -2671,7 +2670,6 @@ def test_component_graph_handles_engineered_features(
 
 
 def test_get_component_input_logical_types():
-
     X = pd.DataFrame(
         {
             "cat": pd.Series(["a"] * 50 + ["b"] * 50 + ["c"] * 50),

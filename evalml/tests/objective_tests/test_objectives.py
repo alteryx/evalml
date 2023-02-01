@@ -63,7 +63,6 @@ def test_get_objective_does_raises_error_for_incorrect_name_or_random_class():
 
 
 def test_get_objective_return_instance_does_not_work_for_some_objectives():
-
     with pytest.raises(
         ObjectiveCreationError,
         match="In get_objective, cannot pass in return_instance=True for Cost Benefit Matrix",
@@ -80,7 +79,6 @@ def test_get_objective_does_not_work_for_none_type():
 
 
 def test_get_objective_kwargs():
-
     obj = get_objective(
         "cost benefit matrix",
         return_instance=True,

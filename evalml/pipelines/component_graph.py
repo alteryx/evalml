@@ -585,7 +585,6 @@ class ComponentGraph:
         for component_instance in transformers:
             component_provenance = component_instance._get_feature_provenance()
             for component_input, component_output in component_provenance.items():
-
                 # Case 1: The transformer created features from one of the original features
                 if component_input in provenance:
                     provenance[component_input] = provenance[component_input].union(

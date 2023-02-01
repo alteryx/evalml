@@ -89,7 +89,6 @@ def test_make_pipeline(
     column_names,
     get_test_data_from_configuration,
 ):
-
     X, y = get_test_data_from_configuration(
         input_type,
         problem_type,
@@ -703,7 +702,6 @@ def test_generate_code_pipeline_json_with_objects():
 
 
 def test_generate_code_pipeline():
-
     binary_pipeline = BinaryClassificationPipeline(
         ["Imputer", "Random Forest Classifier"],
     )

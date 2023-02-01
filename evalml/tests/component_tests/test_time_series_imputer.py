@@ -43,7 +43,6 @@ def test_imputer_init(
     numeric_impute_strategy,
     categorical_impute_strategy,
 ):
-
     imputer = TimeSeriesImputer(
         categorical_impute_strategy=categorical_impute_strategy,
         numeric_impute_strategy=numeric_impute_strategy,

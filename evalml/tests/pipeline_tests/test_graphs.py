@@ -42,7 +42,6 @@ def test_component_graph(example_graph):
 
 
 def test_backend(test_pipeline, graphviz):
-
     with patch("graphviz.Digraph.pipe") as mock_func:
         mock_func.side_effect = graphviz.backend.ExecutableNotFound("Not Found")
         clf = test_pipeline
@@ -51,14 +50,12 @@ def test_backend(test_pipeline, graphviz):
 
 
 def test_returns_digraph_object(test_pipeline, graphviz):
-
     clf = test_pipeline
     graph = clf.graph()
     assert isinstance(graph, graphviz.Digraph)
 
 
 def test_backend_comp_graph(test_component_graph, graphviz):
-
     with patch("graphviz.Digraph.pipe") as mock_func:
         mock_func.side_effect = graphviz.backend.ExecutableNotFound("Not Found")
         comp = test_component_graph
@@ -74,14 +71,12 @@ def test_saving_png_file(tmpdir, test_pipeline):
 
 
 def test_returns_digraph_object_comp_graph(test_component_graph, graphviz):
-
     comp = test_component_graph
     graph = comp.graph("test", "png")
     assert isinstance(graph, graphviz.Digraph)
 
 
 def test_returns_digraph_object_comp_graph_with_params(test_component_graph, graphviz):
-
     comp = test_component_graph
     parameters = {
         "OneHot_RandomForest": {"top_n": 3},

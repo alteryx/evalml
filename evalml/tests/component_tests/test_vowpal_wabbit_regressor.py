@@ -43,7 +43,6 @@ def test_vw_parameters():
 
 
 def test_vw_fit_predict(X_y_regression, vw):
-
     X, y = X_y_regression
     vw_regressor = VowpalWabbitRegressor()
 

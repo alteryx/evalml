@@ -47,7 +47,6 @@ def test_lightgbm_classifier_random_seed_bounds_seed(X_y_binary):
 
 
 def test_fit_predict_binary(X_y_binary, lgbm):
-
     X, y = X_y_binary
 
     sk_clf = lgbm.sklearn.LGBMClassifier(random_state=0)
@@ -65,7 +64,6 @@ def test_fit_predict_binary(X_y_binary, lgbm):
 
 
 def test_fit_predict_multi(X_y_multi, lgbm):
-
     X, y = X_y_multi
 
     clf = lgbm.sklearn.LGBMClassifier(random_state=0)
@@ -83,7 +81,6 @@ def test_fit_predict_multi(X_y_multi, lgbm):
 
 
 def test_feature_importance(X_y_binary, lgbm):
-
     X, y = X_y_binary
 
     clf = LightGBMClassifier(n_jobs=1)
@@ -98,7 +95,6 @@ def test_feature_importance(X_y_binary, lgbm):
 
 
 def test_fit_string_features(X_y_binary, lgbm):
-
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X["string_col"] = "abc"
@@ -269,7 +265,6 @@ def test_binary_label_encoding(mock_predict, X_y_binary):
 
 
 def test_binary_rf(X_y_binary, lgbm):
-
     X, y = X_y_binary
 
     with pytest.raises(lgbm.basic.LightGBMError, match="bagging_fraction"):

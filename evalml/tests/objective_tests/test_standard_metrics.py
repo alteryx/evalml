@@ -733,7 +733,6 @@ def test_calculate_percent_difference(objective_class):
     product(_all_objectives_dict().values(), [None, np.nan]),
 )
 def test_calculate_percent_difference_with_nan(objective_class, nan_value):
-
     assert pd.isna(objective_class.calculate_percent_difference(nan_value, 2))
     assert pd.isna(objective_class.calculate_percent_difference(-1, nan_value))
     assert pd.isna(objective_class.calculate_percent_difference(nan_value, nan_value))
@@ -758,7 +757,6 @@ def test_calculate_percent_difference_when_baseline_0_or_close_to_0(
 
 
 def test_calculate_percent_difference_negative_and_equal_numbers():
-
     assert (
         CostBenefitMatrix.calculate_percent_difference(score=5, baseline_score=5) == 0
     )

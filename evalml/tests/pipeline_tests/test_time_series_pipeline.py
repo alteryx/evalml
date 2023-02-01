@@ -219,7 +219,6 @@ def test_fit_drop_nans_before_estimator(
     include_delayed_features,
     ts_data,
 ):
-
     X, _, y = ts_data(problem_type=pipeline_class.problem_type)
 
     if include_delayed_features:
@@ -427,7 +426,6 @@ def test_predict_and_predict_in_sample(
     include_feature_not_known_in_advance,
     ts_data,
 ):
-
     X, _, target = ts_data(problem_type=pipeline_class.problem_type)
     if include_feature_not_known_in_advance:
         X.ww["not_known_in_advance_1"] = (
@@ -586,7 +584,6 @@ def test_predict_and_predict_in_sample_with_time_index(
     estimator_name,
     ts_data,
 ):
-
     X, _, target = ts_data(problem_type=pipeline_class.problem_type)
     mock_to_check = mock_regressor_predict
     if is_classification(pipeline_class.problem_type):
@@ -1636,7 +1633,6 @@ def test_ts_pipeline_transform_with_final_estimator(
 
 
 def test_time_index_cannot_be_none(time_series_regression_pipeline_class):
-
     with pytest.raises(ValueError, match="time_index cannot be None!"):
         time_series_regression_pipeline_class(
             {

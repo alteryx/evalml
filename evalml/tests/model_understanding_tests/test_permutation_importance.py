@@ -760,7 +760,6 @@ def test_graph_permutation_importance(
     logistic_regression_binary_pipeline,
     go,
 ):
-
     X, y = X_y_binary
     logistic_regression_binary_pipeline.fit(X, y)
     fig = graph_permutation_importance(
@@ -803,7 +802,6 @@ def test_graph_permutation_importance_show_all_features(
     logistic_regression_binary_pipeline,
     go,
 ):
-
     mock_perm_importance.return_value = pd.DataFrame(
         {"feature": ["f1", "f2"], "importance": [0.0, 0.6]},
     )
@@ -828,7 +826,6 @@ def test_graph_permutation_importance_threshold(
     go,
     logistic_regression_binary_pipeline,
 ):
-
     mock_perm_importance.return_value = pd.DataFrame(
         {"feature": ["f1", "f2"], "importance": [0.0, 0.6]},
     )

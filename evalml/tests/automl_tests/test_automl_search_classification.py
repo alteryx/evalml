@@ -611,7 +611,6 @@ def test_max_time_units(X_y_binary):
 
 
 def test_plot_iterations_max_iterations(X_y_binary, go):
-
     X, y = X_y_binary
 
     automl = AutoMLSearch(

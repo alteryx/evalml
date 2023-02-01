@@ -108,7 +108,6 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             )
             and self.gap
         ):
-
             # The training data does not have the gap dates so don't need to include them
             last_row_of_training -= self.gap
 

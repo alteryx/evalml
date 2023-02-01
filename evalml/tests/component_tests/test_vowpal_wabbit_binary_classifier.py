@@ -48,7 +48,6 @@ def test_vw_parameters():
 
 
 def test_fit_predict(X_y_binary, vw):
-
     X, y = X_y_binary
     vw_classifier = VowpalWabbitBinaryClassifier()
 
