@@ -12,5 +12,5 @@ jobs:
         with:
           exclude-branches: "release_v/**, backport_v/**, main, latest-dep-update-/**, min-dep-update-/**, dependabot/**"
           comment: false
-          github-token: ${{ secrets.REPO_SCOPED_TOKEN }}
+          github-token: ${{ secrets.MACHINEFL_DEPENDENCY_CHECKER_TOKEN }}
           
