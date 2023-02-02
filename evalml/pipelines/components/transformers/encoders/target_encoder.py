@@ -63,7 +63,7 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
             )
 
         category_encode = import_or_raise(
-            "category-encoders",
+            "category_encoders",
             error_msg="category-encoders not installed. Please install using `pip install category-encoders`",
         )
         # Supress warnings for now due to problems discussion here:
