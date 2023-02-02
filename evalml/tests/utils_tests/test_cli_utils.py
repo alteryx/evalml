@@ -23,7 +23,6 @@ def current_dir():
 
 
 def get_requirements(current_dir):
-
     evalml_path = os.path.abspath(os.path.join(current_dir, "..", "..", ".."))
     full_requirements = get_evalml_pip_requirements(evalml_path)
 

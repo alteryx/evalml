@@ -33,7 +33,6 @@ def compare_two_tables(table_1, table_2):
 
 
 def test_error_metrics():
-
     np.testing.assert_array_equal(
         abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])),
         np.array([3, 1, 3]),
@@ -483,7 +482,6 @@ multiclass_no_best_worst_answer = """Test Pipeline Name
 
 
 def _add_custom_index(answer, index_best, index_worst, output_format):
-
     if output_format == "text":
         answer = answer.format(index_0=index_best, index_1=index_worst)
     elif output_format == "dataframe":
@@ -947,7 +945,6 @@ def test_explain_predictions_best_worst_custom_metric(
     output_format,
     answer,
 ):
-
     mock_make_table.return_value = (
         "table goes here"
         if output_format == "text"
@@ -1129,7 +1126,6 @@ def test_json_serialization(
     X_y_multi,
     logistic_regression_multiclass_pipeline,
 ):
-
     if problem_type == problem_type.REGRESSION:
         X, y = X_y_regression
         y = pd.Series(y)
@@ -1165,7 +1161,6 @@ def test_json_serialization(
 
 
 def transform_y_for_problem_type(problem_type, y):
-
     if problem_type == ProblemTypes.REGRESSION:
         y = y.astype("int")
     elif problem_type == ProblemTypes.MULTICLASS:

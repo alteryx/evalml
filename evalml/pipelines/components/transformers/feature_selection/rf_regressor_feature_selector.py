@@ -47,7 +47,6 @@ class RFRegressorSelectFromModel(FeatureSelector):
         random_seed=0,
         **kwargs,
     ):
-
         parameters = {
             "number_features": number_features,
             "n_estimators": n_estimators,

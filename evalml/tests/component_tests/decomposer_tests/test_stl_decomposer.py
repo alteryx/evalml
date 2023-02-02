@@ -69,7 +69,6 @@ def test_stl_fit_transform_in_sample(
     synthetic_data,
     generate_seasonal_data,
 ):
-
     X, y = generate_seasonal_data(real_or_synthetic=synthetic_data)(
         period,
         freq_str=freq,
@@ -201,7 +200,6 @@ def test_stl_decomposer_get_trend_dataframe(
     fit_before_decompose,
     variateness,
 ):
-
     period = 7
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
         period=period,
@@ -232,7 +230,6 @@ def test_stl_decomposer_get_trend_dataframe(
             [get_trend_dataframe_format_correct(x) for idx, x in enumerate(result_dfs)]
 
     elif transformer_fit_on_data != "in-sample":
-
         y_t_new = build_test_target(
             subset_y,
             period,
@@ -276,7 +273,6 @@ def test_stl_decomposer_get_trend_dataframe(
 def test_stl_decomposer_get_trend_dataframe_sets_time_index_internally(
     generate_seasonal_data,
 ):
-
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
         period=7,
         set_time_index=False,

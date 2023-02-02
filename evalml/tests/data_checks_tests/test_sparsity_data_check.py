@@ -13,7 +13,6 @@ sparsity_data_check_name = SparsityDataCheck.name
 
 
 def test_sparsity_data_check_init():
-
     sparsity_check = SparsityDataCheck("multiclass", threshold=4 / 15)
     assert sparsity_check.threshold == 4 / 15
 

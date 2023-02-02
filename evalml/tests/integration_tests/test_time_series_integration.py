@@ -22,7 +22,6 @@ PERIODS = 500
 def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
     problem_type,
 ):
-
     X = pd.DataFrame(
         {
             "features": range(101, 101 + PERIODS),
@@ -92,7 +91,6 @@ def test_can_run_automl_for_time_series_known_in_advance(
     problem_type,
     sampler,
 ):
-
     X = pd.DataFrame(
         {
             "features": range(101, 101 + PERIODS),
@@ -172,7 +170,6 @@ def test_can_run_automl_for_time_series_with_exclude_featurizers(
     mock_add_X_y,
     problem_type,
 ):
-
     X = pd.DataFrame(
         {
             "features": range(101, 101 + PERIODS),

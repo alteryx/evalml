@@ -232,7 +232,6 @@ def test_component_fit_transform(
     make_expected_ltypes,
     df_with_url_and_email,
 ):
-
     data = make_data(df_with_url_and_email)
     expected = make_expected(data)
     expected_logical_types = make_expected_ltypes()

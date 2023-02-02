@@ -116,7 +116,6 @@ def test_submit_evaluate_job_single(X_y_binary_cls):
     )
 
     with DaskEngine() as engine:
-
         # Verify that engine evaluates a pipeline
         pipeline_future = engine.submit_evaluation_job(
             X=X,

@@ -241,7 +241,6 @@ class TimeSeriesFeaturizer(Transformer):
                 X_ww[categorical_columns],
             )
             for col_name in cols_to_delay:
-
                 col = X_ww[col_name]
                 if col_name in categorical_columns:
                     col = X_categorical[col_name]

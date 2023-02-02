@@ -274,7 +274,6 @@ def test_precision_recall_curve_pos_label_idx_error(make_data_type):
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type, go):
-
     X, y_true = X_y_binary
     rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
@@ -302,7 +301,6 @@ def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type, go)
 
 
 def test_graph_precision_recall_curve_title_addition(X_y_binary, go):
-
     X, y_true = X_y_binary
     rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
@@ -414,7 +412,6 @@ def test_roc_curve_multiclass(data_type, make_data_type):
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type, go):
-
     X, y_true = X_y_binary
     rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
@@ -442,7 +439,6 @@ def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type, go):
 
 
 def test_graph_roc_curve_nans(go):
-
     one_val_y_zero = np.array([0])
     with pytest.warns(UndefinedMetricWarning):
         fig = graph_roc_curve(one_val_y_zero, one_val_y_zero)
@@ -466,7 +462,6 @@ def test_graph_roc_curve_nans(go):
 
 
 def test_graph_roc_curve_multiclass(binarized_ys, go):
-
     y_true, y_tr, y_pred_proba = binarized_ys
     fig = graph_roc_curve(y_true, y_pred_proba)
     assert isinstance(fig, type(go.Figure()))
@@ -497,7 +492,6 @@ def test_graph_roc_curve_multiclass(binarized_ys, go):
 
 
 def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys, go):
-
     y_true, y_tr, y_pred_proba = binarized_ys
     custom_class_names = ["one", "two", "three"]
     fig = graph_roc_curve(y_true, y_pred_proba, custom_class_names=custom_class_names)
@@ -518,7 +512,6 @@ def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys, go):
 
 
 def test_graph_roc_curve_title_addition(X_y_binary, go):
-
     X, y_true = X_y_binary
     rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
@@ -533,7 +526,6 @@ def test_graph_roc_curve_title_addition(X_y_binary, go):
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type, go):
-
     X, y_true = X_y_binary
     rs = get_random_state(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
@@ -570,7 +562,6 @@ def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type, g
 
 
 def test_graph_confusion_matrix_norm_disabled(X_y_binary, go):
-
     X, y_true = X_y_binary
     rs = get_random_state(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
@@ -597,7 +588,6 @@ def test_graph_confusion_matrix_norm_disabled(X_y_binary, go):
 
 
 def test_graph_confusion_matrix_title_addition(X_y_binary, go):
-
     X, y_true = X_y_binary
     rs = get_random_state(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)

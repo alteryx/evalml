@@ -182,7 +182,6 @@ def test_infer_feature_types_preserves_semantic_tags():
 
 
 def test_infer_feature_types_raises_invalid_schema_error():
-
     df = pd.DataFrame(pd.Series([1, 2, None]))
 
     # Raise error when user requests incompatible type

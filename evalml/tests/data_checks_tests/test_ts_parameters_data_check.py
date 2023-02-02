@@ -55,7 +55,6 @@ def test_time_series_param_data_check(
     n_splits,
     is_valid,
 ):
-
     config = {
         "gap": gap,
         "max_delay": max_delay,

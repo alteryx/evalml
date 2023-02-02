@@ -151,7 +151,6 @@ def test_graph_binary_objective_vs_threshold(
     make_data_type,
     go,
 ):
-
     X, y = X_y_binary
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
@@ -255,7 +254,6 @@ def test_get_prediction_vs_actual_data(data_type, make_data_type):
 
 
 def test_graph_prediction_vs_actual_default(go):
-
     y_true = [1, 2, 3000, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     y_pred = [5, 4, 2, 8, 6, 6, 5, 1, 7, 2, 1, 3000]
 
@@ -277,7 +275,6 @@ def test_graph_prediction_vs_actual_default(go):
 
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_graph_prediction_vs_actual(data_type, go):
-
     y_true = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     y_pred = [5, 4, 3, 8, 6, 3, 5, 9, 7, 12, 1, 2]
 
@@ -739,7 +736,6 @@ def test_t_sne_errors_marker_size(marker_size):
 @pytest.mark.parametrize("perplexity", [0, 2.6, 3])
 @pytest.mark.parametrize("learning_rate", [100.0, 0.1])
 def test_graph_t_sne(data_type, perplexity, learning_rate, go):
-
     if data_type == "np":
         X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
     elif data_type == "pd":

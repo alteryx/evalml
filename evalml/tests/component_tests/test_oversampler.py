@@ -261,7 +261,6 @@ def test_samplers_perform_equally(
 
 
 def test_smoten_categorical_boolean(X_y_binary, im):
-
     X, y = X_y_binary
     X.ww.set_types({0: "Categorical", 1: "Boolean"})
     X = X.drop(range(2, len(X.columns)), axis=1)
@@ -271,7 +270,6 @@ def test_smoten_categorical_boolean(X_y_binary, im):
 
 
 def test_smotenc_boolean_numeric(X_y_binary, im):
-
     X, y = X_y_binary
     X.ww.set_types({5: "Boolean", 12: "Boolean"})
     snc = Oversampler()

@@ -2318,7 +2318,6 @@ def test_undersampler_component_in_pipeline_predict():
 
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
 def test_oversampler_component_in_pipeline_fit(mock_fit):
-
     X = pd.DataFrame(
         {
             "a": [i for i in range(1000)],

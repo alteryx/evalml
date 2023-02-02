@@ -3077,7 +3077,6 @@ def test_automl_rerun(AutoMLTestEnv, X_y_binary, caplog):
 
 
 def test_timeseries_baseline_init_with_correct_gap_max_delay(AutoMLTestEnv, ts_data):
-
     X, _, y = ts_data()
     automl = AutoMLSearch(
         X_train=X,
@@ -3130,7 +3129,6 @@ def test_automl_does_not_include_positive_only_objectives_by_default(
     problem_type,
     X_y_regression,
 ):
-
     X, y = X_y_regression
 
     only_positive = []
@@ -3156,7 +3154,6 @@ def test_automl_does_not_include_positive_only_objectives_by_default(
 
 @pytest.mark.parametrize("non_core_objective", get_non_core_objectives())
 def test_automl_validate_objective(non_core_objective, X_y_regression):
-
     X, y = X_y_regression
 
     with pytest.raises(ValueError, match="is not allowed in AutoML!"):
@@ -3528,7 +3525,6 @@ def test_train_batch_works(
     stackable_classifiers,
     caplog,
 ):
-
     exceptions_to_check = [
         str(e) for e in pipeline_fit_side_effect if isinstance(e, Exception)
     ]
@@ -3653,7 +3649,6 @@ def test_score_batch_works(
     stackable_classifiers,
     caplog,
 ):
-
     exceptions_to_check = []
     expected_scores = {}
     for i, e in enumerate(pipeline_score_side_effect):
@@ -3700,7 +3695,6 @@ def test_score_batch_works(
     def score_batch_and_check():
         caplog.clear()
         with env.test_context(mock_score_side_effect=pipeline_score_side_effect):
-
             scores = automl.score_pipelines(
                 pipelines,
                 X,
@@ -3854,7 +3848,6 @@ def test_automl_supports_float_targets_for_classification(
     ],
 )
 def test_automl_issues_beta_warning_for_time_series(problem_type, X_y_binary):
-
     X, y = X_y_binary
 
     with warnings.catch_warnings(record=True) as warn:
@@ -4872,7 +4865,6 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
     AutoMLTestEnv,
     is_using_windows,
 ):
-
     X, _, y = ts_data()
 
     env = AutoMLTestEnv("time series regression")
@@ -5004,7 +4996,6 @@ def test_automl_does_not_restrict_use_covariates_if_user_specified(
     is_using_windows,
     X_y_binary,
 ):
-
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X["Date"] = pd.date_range("2010-01-01", periods=X.shape[0])

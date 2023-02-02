@@ -143,7 +143,6 @@ def test_categorical_regression(X_y_categorical_regression):
 
 
 def test_plot_iterations_max_iterations(X_y_regression, go):
-
     X, y = X_y_regression
 
     automl = AutoMLSearch(
@@ -167,7 +166,6 @@ def test_plot_iterations_max_iterations(X_y_regression, go):
 
 
 def test_plot_iterations_max_time(AutoMLTestEnv, X_y_regression, go):
-
     X, y = X_y_regression
 
     automl = AutoMLSearch(
