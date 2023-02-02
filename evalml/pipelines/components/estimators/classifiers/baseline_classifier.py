@@ -4,6 +4,7 @@ import pandas as pd
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.utils import make_fake_nullable_type_transformation
 from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_state, infer_feature_types
 
@@ -62,6 +63,7 @@ class BaselineClassifier(Estimator):
         X = infer_feature_types(X)
         y = infer_feature_types(y)
 
+        make_fake_nullable_type_transformation(X, y)
         vals, counts = np.unique(y, return_counts=True)
         self._classes = list(vals)
         self._percentage_freq = counts.astype(float) / len(y)
@@ -82,6 +84,7 @@ class BaselineClassifier(Estimator):
             pd.Series: Predicted values.
         """
         X = infer_feature_types(X)
+        make_fake_nullable_type_transformation(X)
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             predictions = pd.Series([self._mode] * len(X))
@@ -108,6 +111,7 @@ class BaselineClassifier(Estimator):
             pd.DataFrame: Predicted probability values.
         """
         X = infer_feature_types(X)
+        make_fake_nullable_type_transformation(X)
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             mode_index = self._classes.index(self._mode)

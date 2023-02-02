@@ -4,6 +4,7 @@ import numpy as np
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.pipelines.components.transformers import TimeSeriesFeaturizer
+from evalml.pipelines.components.utils import make_fake_nullable_type_transformation
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
@@ -69,6 +70,7 @@ class TimeSeriesBaselineEstimator(Estimator):
             ValueError: If input y is None.
         """
         X = infer_feature_types(X)
+        make_fake_nullable_type_transformation(X, y)
         if y is None:
             raise ValueError("Cannot fit Time Series Baseline Classifier if y is None")
         vals, _ = np.unique(y, return_counts=True)
@@ -89,6 +91,7 @@ class TimeSeriesBaselineEstimator(Estimator):
             ValueError: If input y is None.
         """
         X = infer_feature_types(X)
+        make_fake_nullable_type_transformation(X)
         feature_name = TimeSeriesFeaturizer.target_colname_prefix.format(
             self.start_delay,
         )
@@ -113,6 +116,7 @@ class TimeSeriesBaselineEstimator(Estimator):
         Raises:
             ValueError: If input y is None.
         """
+        make_fake_nullable_type_transformation(X)
         preds = self.predict(X).astype("int")
         proba_arr = np.zeros((len(preds), len(self._classes)))
         proba_arr[np.arange(len(preds)), preds] = 1

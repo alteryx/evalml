@@ -10,6 +10,7 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.pipelines.components.transformers import LabelEncoder
+from evalml.pipelines.components.utils import make_fake_nullable_type_transformation
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     SEED_BOUNDS,
@@ -184,6 +185,7 @@ class LightGBMClassifier(Estimator):
             self
         """
         X = infer_feature_types(X)
+        make_fake_nullable_type_transformation(X, y)
         X_encoded = self._encode_categories(X, fit=True)
         y_encoded = self._encode_labels(y)
         self._component_obj.fit(X_encoded, y_encoded)
@@ -198,6 +200,7 @@ class LightGBMClassifier(Estimator):
         Returns:
             pd.DataFrame: Predicted values.
         """
+        make_fake_nullable_type_transformation(X)
         X_encoded = self._encode_categories(X)
         predictions = super().predict(X_encoded)
         if not self._label_encoder:
@@ -216,5 +219,6 @@ class LightGBMClassifier(Estimator):
         Returns:
             pd.DataFrame: Predicted probability values.
         """
+        make_fake_nullable_type_transformation(X)
         X_encoded = self._encode_categories(X)
         return super().predict_proba(X_encoded)

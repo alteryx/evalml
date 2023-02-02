@@ -6,8 +6,12 @@ from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.utils import make_fake_nullable_type_transformation
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import _rename_column_names_to_numeric, import_or_raise
+from evalml.utils.gen_utils import (
+    _rename_column_names_to_numeric,
+    import_or_raise,
+)
 
 
 class XGBoostRegressor(Estimator):
@@ -92,6 +96,7 @@ class XGBoostRegressor(Estimator):
             self
         """
         X, y = super()._manage_woodwork(X, y)
+        make_fake_nullable_type_transformation(X, y)
         self.input_feature_names = list(X.columns)
         X = _rename_column_names_to_numeric(X)
         self._component_obj.fit(X, y)
@@ -107,6 +112,7 @@ class XGBoostRegressor(Estimator):
             pd.Series: Predicted values.
         """
         X, _ = super()._manage_woodwork(X)
+        make_fake_nullable_type_transformation(X)
         X = _rename_column_names_to_numeric(X)
         return super().predict(X)
 

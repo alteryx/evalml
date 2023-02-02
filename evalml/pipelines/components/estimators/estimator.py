@@ -86,6 +86,7 @@ class Estimator(ComponentBase):
             self
         """
         X, y = self._manage_woodwork(X, y)
+        make_fake_nullable_type_transformation(X, y)
         self.input_feature_names = list(X.columns)
         self._component_obj.fit(X, y)
         return self
@@ -104,6 +105,7 @@ class Estimator(ComponentBase):
         """
         try:
             X = infer_feature_types(X)
+            make_fake_nullable_type_transformation(X)
             predictions = self._component_obj.predict(X)
         except AttributeError:
             raise MethodPropertyNotFoundError(
@@ -127,6 +129,7 @@ class Estimator(ComponentBase):
         """
         try:
             X = infer_feature_types(X)
+            make_fake_nullable_type_transformation(X)
             pred_proba = self._component_obj.predict_proba(X)
         except AttributeError:
             raise MethodPropertyNotFoundError(
@@ -209,3 +212,21 @@ class Estimator(ComponentBase):
             super().__eq__(other)
             and self.supported_problem_types == other.supported_problem_types
         )
+
+
+# implementing our own util here to avoid circular import
+def make_fake_nullable_type_transformation(X, y=None):
+    # use this as a proxy for each individual component having its own nullable type transformations over and over
+    # this shouldn't actually change any data
+
+    int_cols = X.ww.select(["Integer"], return_schema=True).columns.keys()
+    bool_cols = X.ww.select(["Boolean"], return_schema=True).columns.keys()
+
+    X[int_cols].astype("int64")
+    X[bool_cols].astype("bool")
+
+    if y is not None:
+        if str(y.ww.logical_type) == "Boolean":
+            y.astype("bool")
+        elif str(y.ww.logical_type) == "Integer":
+            y.astype("int64")

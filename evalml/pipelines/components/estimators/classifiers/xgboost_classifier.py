@@ -7,6 +7,7 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.pipelines.components.transformers import LabelEncoder
+from evalml.pipelines.components.utils import make_fake_nullable_type_transformation
 from evalml.problem_types import ProblemTypes
 from evalml.utils import _rename_column_names_to_numeric, import_or_raise
 
@@ -105,6 +106,7 @@ class XGBoostClassifier(Estimator):
             self
         """
         X, y = super()._manage_woodwork(X, y)
+        make_fake_nullable_type_transformation(X, y)
         self.input_feature_names = list(X.columns)
         X = _rename_column_names_to_numeric(X)
         y = self._label_encode(y)
@@ -121,6 +123,7 @@ class XGBoostClassifier(Estimator):
             pd.DataFrame: Predicted values.
         """
         X, _ = super()._manage_woodwork(X)
+        make_fake_nullable_type_transformation(X)
         X = _rename_column_names_to_numeric(X)
         predictions = super().predict(X)
         if not self._label_encoder:

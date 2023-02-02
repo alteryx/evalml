@@ -4,6 +4,7 @@ import pandas as pd
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.utils import make_fake_nullable_type_transformation
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
@@ -63,6 +64,7 @@ class BaselineRegressor(Estimator):
             raise ValueError("Cannot fit Baseline regressor if y is None")
         X = infer_feature_types(X)
         y = infer_feature_types(y)
+        make_fake_nullable_type_transformation(X, y)
 
         if self.parameters["strategy"] == "mean":
             self._prediction_value = y.mean()
@@ -81,6 +83,7 @@ class BaselineRegressor(Estimator):
             pd.Series: Predicted values.
         """
         X = infer_feature_types(X)
+        make_fake_nullable_type_transformation(X)
         predictions = pd.Series([self._prediction_value] * len(X))
         return infer_feature_types(predictions)
 

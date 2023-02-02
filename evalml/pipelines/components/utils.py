@@ -529,3 +529,24 @@ def handle_float_categories_for_catboost(X):
     X_t = X.astype(new_dtypes)
     X_t.ww.init(schema=original_schema)
     return X_t
+
+
+def make_fake_nullable_type_transformation(X, y=None):
+    # use this as a proxy for each individual component having its own nullable type transformations over and over
+    # this shouldn't actually change any data
+
+    int_cols = X.ww.select(["Integer"], return_schema=True).columns.keys()
+    bool_cols = X.ww.select(["Boolean"], return_schema=True).columns.keys()
+
+    X[int_cols].astype("int64")
+    X[bool_cols].astype("bool")
+
+    if y is not None:
+        if str(y.ww.logical_type) == "Boolean":
+            y.astype("bool")
+        elif str(y.ww.logical_type) == "Integer":
+            y.astype("int64")
+
+    # take all int/intnullable and convert to int - this will work even when we pass in the nullable types
+    # because they get converted to int at either the
+    # take all bool and bool mullable and convert to bool

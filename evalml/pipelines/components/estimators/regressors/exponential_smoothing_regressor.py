@@ -8,6 +8,7 @@ from skopt.space import Integer
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.utils import make_fake_nullable_type_transformation
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise, infer_feature_types
 
@@ -110,6 +111,7 @@ class ExponentialSmoothingRegressor(Estimator):
             ValueError: If y was not passed in.
         """
         X, y = self._manage_woodwork(X, y)
+        make_fake_nullable_type_transformation(X, y)
         if y is None:
             raise ValueError("Exponential Smoothing Regressor requires y as input.")
 
@@ -129,6 +131,7 @@ class ExponentialSmoothingRegressor(Estimator):
             pd.Series: Predicted values.
         """
         X, y = self._manage_woodwork(X, y)
+        make_fake_nullable_type_transformation(X)
         fh_ = self._set_forecast(X)
 
         y_pred = self._component_obj.predict(fh=fh_)

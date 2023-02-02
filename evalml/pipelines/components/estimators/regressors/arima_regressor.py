@@ -7,6 +7,7 @@ from skopt.space import Integer
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.utils import make_fake_nullable_type_transformation
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     downcast_int_nullable_to_double,
@@ -210,6 +211,7 @@ class ARIMARegressor(Estimator):
             X = downcast_int_nullable_to_double(X)
             X = X.fillna(X.mean())
         X, y = self._manage_woodwork(X, y)
+        make_fake_nullable_type_transformation(X, y)
         if y is None:
             raise ValueError("ARIMA Regressor requires y as input.")
 
@@ -271,6 +273,7 @@ class ARIMARegressor(Estimator):
             ValueError: If X was passed to `fit` but not passed in `predict`.
         """
         X, y = self._manage_woodwork(X, y)
+        make_fake_nullable_type_transformation(X, y)
         X, fh_ = self._manage_types_and_forecast(X=X)
 
         if not X.empty and self.use_covariates:

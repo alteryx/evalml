@@ -8,6 +8,7 @@ from skopt.space import Real
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.utils import make_fake_nullable_type_transformation
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise, infer_feature_types
 from evalml.utils.gen_utils import classproperty
@@ -130,6 +131,7 @@ class ProphetRegressor(Estimator):
             self
         """
         X, y = super()._manage_woodwork(X, y)
+        make_fake_nullable_type_transformation(X, y)
 
         prophet_df = ProphetRegressor.build_prophet_df(
             X=X,
@@ -151,6 +153,7 @@ class ProphetRegressor(Estimator):
             pd.Series: Predicted values.
         """
         X = infer_feature_types(X)
+        make_fake_nullable_type_transformation(X, y)
 
         prophet_df = ProphetRegressor.build_prophet_df(
             X=X,

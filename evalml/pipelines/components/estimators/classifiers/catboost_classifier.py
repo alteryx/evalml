@@ -9,7 +9,10 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.pipelines.components.transformers import LabelEncoder
-from evalml.pipelines.components.utils import handle_float_categories_for_catboost
+from evalml.pipelines.components.utils import (
+    handle_float_categories_for_catboost,
+    make_fake_nullable_type_transformation,
+)
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise, infer_feature_types
 
@@ -113,6 +116,7 @@ class CatBoostClassifier(Estimator):
             self
         """
         X = infer_feature_types(X)
+        make_fake_nullable_type_transformation(X, y)
         cat_cols = list(X.ww.select("category", return_schema=True).columns)
         self.input_feature_names = list(X.columns)
         X, y = super()._manage_woodwork(X, y)
@@ -135,6 +139,7 @@ class CatBoostClassifier(Estimator):
             pd.Series: Predicted values.
         """
         X = infer_feature_types(X)
+        make_fake_nullable_type_transformation(X)
         X = handle_float_categories_for_catboost(X)
         predictions = self._component_obj.predict(X)
         if predictions.ndim == 2 and predictions.shape[1] == 1:
@@ -157,6 +162,7 @@ class CatBoostClassifier(Estimator):
             pd.DataFrame: Predicted probability values.
         """
         X = infer_feature_types(X)
+        make_fake_nullable_type_transformation(X)
         X = handle_float_categories_for_catboost(X)
         predictions = super().predict_proba(X)
         return predictions

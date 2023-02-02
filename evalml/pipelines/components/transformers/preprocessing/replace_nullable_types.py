@@ -27,6 +27,9 @@ class ReplaceNullableTypes(Transformer):
             random_seed=random_seed,
         )
 
+    # --> can I fit and transform in all components? instead of having it inserted prior
+    # --> maybe I can just do local test comparing specific components in specified pipelines - start with this
+    # -->
     def fit(self, X, y=None):
         """Fits component to data.
 
