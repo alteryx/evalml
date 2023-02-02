@@ -148,7 +148,7 @@ version = {attr = "evalml.__version__"}
 
 [tool.black]
 line-length = 88
-extend-exclude = '\.ipynb'
+target-version = ["py39"]
 
 [tool.ruff]
 line-length = 88
