@@ -2,7 +2,6 @@ import os
 import pathlib
 from contextlib import contextmanager
 
-import requirements
 from packaging.requirements import Requirement
 import yaml
 
