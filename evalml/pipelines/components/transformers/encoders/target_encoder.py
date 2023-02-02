@@ -63,8 +63,8 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
             )
 
         category_encode = import_or_raise(
-            "category_encoders",
-            error_msg="category_encoders not installed. Please install using `pip install category_encoders`",
+            "category-encoders",
+            error_msg="category-encoders not installed. Please install using `pip install category-encoders`",
         )
         # Supress warnings for now due to problems discussion here:
         # https://github.com/scikit-learn-contrib/category_encoders/issues/327
