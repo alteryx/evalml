@@ -6,6 +6,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Add pull request check for linked issues to CI workflow :pr:`3970`
 
 .. warning::
 
