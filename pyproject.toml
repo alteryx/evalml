@@ -146,7 +146,12 @@ namespaces = true
 [tool.setuptools.dynamic]
 version = {attr = "evalml.__version__"}
 
+[tool.black]
+line-length = 88
+extend-exclude = '\.ipynb'
+
 [tool.ruff]
+line-length = 88
 select = [
     "D",
     # Pyflakes
