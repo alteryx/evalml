@@ -62,7 +62,7 @@ dependencies = [
     "lime >= 0.2.0.1",
     "vowpalwabbit >= 8.11.0",
     "tomli >= 2.0.1",
-    "packaging >= 23.0"
+    "packaging >= 23.0",
 ]
 
 [project.urls]
