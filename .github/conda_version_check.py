@@ -2,8 +2,8 @@ import os
 import pathlib
 from contextlib import contextmanager
 
-from packaging.requirements import Requirement
 import yaml
+from packaging.requirements import Requirement
 
 from evalml.utils import get_evalml_pip_requirements, standardize_format
 
@@ -26,7 +26,7 @@ def get_evalml_conda_requirements(conda_recipe):
         all_reqs = core_reqs + extra_reqs
     packages = []
     for dep in all_reqs:
-        if 'python >=' in dep:
+        if "python >=" in dep:
             continue
         packages.append(Requirement(dep))
     return standardize_format(packages, IGNORE_PACKAGES, convert_to_conda=True)

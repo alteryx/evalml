@@ -42,7 +42,7 @@ dependencies = [
     "statsmodels >= 0.12.2",
     "texttable >= 1.6.2",
     "woodwork >= 0.21.1",
-    "dask >= 2022.2.0, !=2022.10.1",
+    "dask >= 2022.2.0, != 2022.10.1",
     "featuretools >= 1.16.0",
     "nlp-primitives >= 2.9.0",
     "networkx >= 2.5, < 2.6",
@@ -90,13 +90,13 @@ dev = [
     "black[jupyter] >= 22.3.0",
     "darglint == 1.8.0",
     "pre-commit >= 2.20.0",
-    "evalml[docs, test]",
+    "evalml[docs,test]",
 ]
 updater = [
     "alteryx-open-src-update-checker >= 2.1.0"
 ]
 docs = [
-    "docutils >=0.15.2, <0.17",
+    "docutils >=0.15.2, < 0.17",
     "pydata-sphinx-theme >= 0.3.1",
     "astroid <= 2.6.6",
     "Sphinx >= 4.5.0",
@@ -111,7 +111,7 @@ prophet = [
     "prophet-prebuilt == 1.0.2",
 ]
 complete = [
-    "evalml[prophet, updater]",
+    "evalml[prophet,updater]",
 ]
 
 [tool.setuptools]
@@ -146,7 +146,12 @@ namespaces = true
 [tool.setuptools.dynamic]
 version = {attr = "evalml.__version__"}
 
+[tool.black]
+line-length = 88
+target-version = ["py39"]
+
 [tool.ruff]
+line-length = 88
 select = [
     "D",
     # Pyflakes
@@ -164,6 +169,7 @@ src = ["evalml"]
 "__init__.py" = ["E402", "F401", "I001", "E501"]
 "evalml/tests/**" = ["D"]
 "evalml/utils/**" = ["D"]
+".github/**" = ["D"]
 "docs/**" = ["D"]
 
 [tool.ruff.isort]

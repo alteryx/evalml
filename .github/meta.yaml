@@ -55,7 +55,7 @@ outputs:
         - evalml/*
         - pyproject.toml
       commands:
-        - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
+        - pytest evalml/tests -n auto --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
         - python -c "from evalml.demos import load_fraud; load_fraud(n_rows=10)"
         - python -c "from evalml.demos import load_churn; load_churn(n_rows=10)"
 
@@ -92,7 +92,7 @@ outputs:
         - evalml/*
         - pyproject.toml
       commands:
-        - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
+        - pytest evalml/tests -n auto --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
         - python -c "from evalml.demos import load_fraud; load_fraud(n_rows=10)"
         - python -c "from evalml.demos import load_churn; load_churn(n_rows=10)"
         
