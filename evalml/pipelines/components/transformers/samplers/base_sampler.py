@@ -5,6 +5,7 @@ from abc import abstractmethod
 from woodwork.logical_types import IntegerNullable
 
 from evalml.pipelines.components.transformers import Transformer
+from evalml.pipelines.components.utils import make_fake_nullable_type_transformation
 from evalml.utils.woodwork_utils import infer_feature_types
 
 
@@ -96,6 +97,7 @@ class BaseSampler(Transformer):
         X, y = self._prepare_data(X, y)
 
         categorical_columns = X.ww.select("Categorical", return_schema=True).columns
+        make_fake_nullable_type_transformation(X)
         for col in categorical_columns:
             X[col] = X[col].astype("object")
 

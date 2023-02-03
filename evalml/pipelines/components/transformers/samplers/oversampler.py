@@ -1,6 +1,9 @@
 """SMOTE Oversampler component. Will automatically select whether to use SMOTE, SMOTEN, or SMOTENC based on inputs to the component."""
 from evalml.pipelines.components.transformers.samplers.base_sampler import BaseSampler
-from evalml.pipelines.components.utils import make_balancing_dictionary
+from evalml.pipelines.components.utils import (
+    make_balancing_dictionary,
+    make_fake_nullable_type_transformation,
+)
 from evalml.utils import import_or_raise
 from evalml.utils.woodwork_utils import infer_feature_types
 
@@ -67,6 +70,7 @@ class Oversampler(BaseSampler):
             self
         """
         X_ww, y_ww = self._prepare_data(X, y)
+        make_fake_nullable_type_transformation(X)
         sampler_name = self._get_best_oversampler(X_ww)
         self.sampler = self.sampler_options[sampler_name]
 

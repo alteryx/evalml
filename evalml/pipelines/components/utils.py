@@ -535,11 +535,14 @@ def make_fake_nullable_type_transformation(X, y=None):
     # use this as a proxy for each individual component having its own nullable type transformations over and over
     # this shouldn't actually change any data
 
+    if X.ww.schema is None:
+        X.ww.init()
     int_cols = X.ww.select(["Integer"], return_schema=True).columns.keys()
     bool_cols = X.ww.select(["Boolean"], return_schema=True).columns.keys()
 
-    X[int_cols].astype("int64")
-    X[bool_cols].astype("bool")
+    # this will take longer than we'd need
+    X[int_cols].astype("object").astype("int64")
+    X[bool_cols].astype("object").astype("bool")
 
     if y is not None:
         if str(y.ww.logical_type) == "Boolean":

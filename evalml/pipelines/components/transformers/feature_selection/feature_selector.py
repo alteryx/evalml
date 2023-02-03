@@ -3,6 +3,7 @@ import pandas as pd
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.transformers import Transformer
+from evalml.pipelines.components.utils import make_fake_nullable_type_transformation
 from evalml.utils import infer_feature_types
 
 
@@ -45,6 +46,9 @@ class FeatureSelector(Transformer):
             MethodPropertyNotFoundError: If feature selector does not have a transform method or a component_obj that implements transform
         """
         X_ww = infer_feature_types(X)
+        # calling twice bc i dont want to add a whole fit method rn
+        make_fake_nullable_type_transformation(X, y)
+        make_fake_nullable_type_transformation(X, y)
         self.input_feature_names = list(X_ww.columns.values)
 
         try:
