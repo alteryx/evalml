@@ -55,14 +55,14 @@ dependencies = [
     "matplotlib >= 3.3.3",
     "graphviz >= 0.13; platform_system!='Windows'",
     "seaborn >= 0.11.1",
-    "category_encoders >= 2.2.2, <= 2.5.1.post0",
+    "category-encoders >= 2.2.2, <= 2.5.1.post0",
     "imbalanced-learn >= 0.9.1",
     "pmdarima >= 1.8.1, < 2.0.0",
     "sktime >= 0.13.3",
     "lime >= 0.2.0.1",
     "vowpalwabbit >= 8.11.0",
     "tomli >= 2.0.1",
-    "requirements-parser >= 0.2.0",
+    "packaging >= 23.0",
 ]
 
 [project.urls]
@@ -127,9 +127,9 @@ namespaces = true
     "README.md",
 ]
 "evalml" = [
-    "demo/data/churn.csv",
-    "demo/data/daily-min-temperatures.csv",
-    "demo/data/fraud_transactions.csv.gz",
+    "demos/data/churn.csv",
+    "demos/data/daily-min-temperatures.csv",
+    "demos/data/fraud_transactions.csv.gz",
     "tests/data/daily-min-temperatures.csv",
     "tests/data/fraud_transactions.csv.gz",
     "tests/data/tips.csv",
