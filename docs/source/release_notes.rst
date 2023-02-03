@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Remove requirements-parser requirement :pr:`3978`
     * Documentation Changes
     * Testing Changes
 
