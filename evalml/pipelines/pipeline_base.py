@@ -15,24 +15,15 @@ import pandas as pd
 from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
 from evalml.objectives import get_objective
 from evalml.pipelines import ComponentGraph
-from evalml.pipelines.components import (
-    PCA,
-    ComponentBase,
-    DFSTransformer,
-    Estimator,
-    LinearDiscriminantAnalysis,
-)
-from evalml.pipelines.components.utils import all_components, handle_component_class
+from evalml.pipelines.components import (PCA, ComponentBase, DFSTransformer,
+                                         Estimator, LinearDiscriminantAnalysis)
+from evalml.pipelines.components.utils import (
+    all_components, handle_component_class,
+    make_fake_nullable_type_transformation)
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.problem_types import is_binary
-from evalml.utils import (
-    import_or_raise,
-    infer_feature_types,
-    jupyter_check,
-    log_subtitle,
-    log_title,
-    safe_repr,
-)
+from evalml.utils import (import_or_raise, infer_feature_types, jupyter_check,
+                          log_subtitle, log_title, safe_repr)
 from evalml.utils.logger import get_logger
 
 logger = logging.getLogger(__name__)
@@ -350,6 +341,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @staticmethod
     def _score(X, y, predictions, objective):
+        make_fake_nullable_type_transformation(X, y)
         return objective.score(y, predictions, X)
 
     def _score_all_objectives(self, X, y, y_pred, y_pred_proba, objectives):
