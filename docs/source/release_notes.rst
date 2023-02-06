@@ -7,7 +7,7 @@ Release Notes
         * Remove requirements-parser requirement :pr:`3978`
     * Documentation Changes
     * Testing Changes
-        * Add pull request check for linked issues to CI workflow :pr:`3970`
+        * Add pull request check for linked issues to CI workflow :pr:`3970`, :pr:`3980`
 
 .. warning::
 
