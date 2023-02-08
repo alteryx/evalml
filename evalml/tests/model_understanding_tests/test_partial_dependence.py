@@ -462,6 +462,7 @@ def test_partial_dependence_xgboost_feature_names(
 
     X = pd.DataFrame(X)
     X = X.rename(columns={0: "<[0]"})
+    X.columns = X.columns.astype(str)
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, features="<[0]", grid_resolution=5)
     check_partial_dependence_dataframe(pipeline, part_dep)
