@@ -302,7 +302,11 @@ def test_smotenc_category_features(X_y_binary):
 
     X_ww = infer_feature_types(
         X,
-        feature_types={"postal": "PostalCode", "country": "CountryCode", 2: "Boolean"},
+        feature_types={
+            "postal": "PostalCode",
+            "country": "CountryCode",
+            "2": "Boolean",
+        },
     )
     snc = Oversampler()
     _ = snc.fit_transform(X_ww, y)

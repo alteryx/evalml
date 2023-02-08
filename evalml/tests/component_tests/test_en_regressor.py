@@ -16,7 +16,6 @@ def test_en_parameters():
         "alpha": 0.75,
         "l1_ratio": 0.5,
         "max_iter": 1000,
-        "normalize": False,
     }
     assert clf.parameters == expected_parameters
 
@@ -35,7 +34,6 @@ def test_fit_predict(X_y_regression):
         alpha=0.0001,
         l1_ratio=0.15,
         random_state=0,
-        normalize=False,
         max_iter=1000,
     )
     sk_clf.fit(X, y)
@@ -56,7 +54,6 @@ def test_feature_importance(X_y_regression):
         alpha=0.0001,
         l1_ratio=0.15,
         random_state=0,
-        normalize=False,
         max_iter=1000,
     )
     sk_clf.fit(X, y)
