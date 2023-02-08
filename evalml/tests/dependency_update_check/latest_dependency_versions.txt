@@ -30,6 +30,6 @@ sktime==0.16.0
 statsmodels==0.13.5
 texttable==1.6.7
 tomli==2.0.1
-vowpalwabbit==9.6.0
+vowpalwabbit==9.7.0
 woodwork==0.21.2
 xgboost==1.7.3
