@@ -5,6 +5,8 @@ Release Notes
     * Fixes
     * Changes
         * Remove requirements-parser requirement :pr:`3978`
+        * Updated the ``SKOptTuner`` to use a gradient boosting regressor for tuning instead of extra trees :pr:`3983`
+        * Unpinned sktime from <1.2.0 :pr:`3983`
     * Documentation Changes
     * Testing Changes
         * Add pull request check for linked issues to CI workflow :pr:`3970`, :pr:`3980`
