@@ -43,7 +43,6 @@ def readable_explanation(
         )
 
     if importance_method == "permutation":
-
         if objective == "auto":
             objective = evalml.automl.get_default_primary_search_objective(
                 pipeline.problem_type,

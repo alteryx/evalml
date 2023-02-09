@@ -6,15 +6,24 @@ Release Notes
         * Removed frequency limitations for decomposition using the ``STLDecomposer`` :pr:`3952`
     * Fixes
     * Changes
-        * Update pyproject.toml to correctly specify the data filepaths :pr:`3967`
+        * Remove requirements-parser requirement :pr:`3978`
     * Documentation Changes
-        * Added demo for prediction intervals :pr:`3954`
     * Testing Changes
+        * Add pull request check for linked issues to CI workflow :pr:`3970`, :pr:`3980`
 
 .. warning::
 
     **Breaking Changes**
 
+
+**v0.67.0 Jan. 31, 2023**
+    * Fixes
+        * Re-added ``TimeSeriesPipeline.should_skip_featurization`` to fix bug where data would get featurized unnecessarily :pr:`3964`
+        * Allow float categories to be passed into CatBoost estimators :pr:`3966`
+    * Changes
+        * Update pyproject.toml to correctly specify the data filepaths :pr:`3967`
+    * Documentation Changes
+        * Added demo for prediction intervals :pr:`3954`
 
 **v0.66.1 Jan. 26, 2023**
     * Fixes

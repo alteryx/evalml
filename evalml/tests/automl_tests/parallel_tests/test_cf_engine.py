@@ -166,7 +166,6 @@ def test_submit_evaluate_job_single(
     pool = get_pool(pool_type, thread_pool, process_pool)
 
     with CFClient(pool) as client:
-
         pipeline = BinaryClassificationPipeline(
             component_graph=["Logistic Regression Classifier"],
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
@@ -232,7 +231,6 @@ def test_submit_evaluate_jobs_multiple(
     pool = get_pool(pool_type, thread_pool, process_pool)
 
     with CFClient(pool) as client:
-
         pipelines = [
             BinaryClassificationPipeline(
                 component_graph=["Logistic Regression Classifier"],
@@ -296,7 +294,6 @@ def test_submit_scoring_job_single(
     pool = get_pool(pool_type, thread_pool, process_pool)
 
     with CFClient(pool) as client:
-
         pipeline = BinaryClassificationPipeline(
             component_graph=["Logistic Regression Classifier"],
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
@@ -343,7 +340,6 @@ def test_submit_scoring_jobs_multiple(
     pool = get_pool(pool_type, thread_pool, process_pool)
 
     with CFClient(pool) as client:
-
         pipelines = [
             BinaryClassificationPipeline(
                 component_graph=["Logistic Regression Classifier"],

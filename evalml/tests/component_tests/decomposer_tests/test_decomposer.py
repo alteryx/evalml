@@ -43,7 +43,6 @@ def test_set_time_index(decomposer_child_class):
     decomposer_list,
 )
 def test_decomposer_init_raises_error_if_degree_not_int(decomposer_child_class):
-
     with pytest.raises(TypeError, match="Received str"):
         decomposer_child_class(degree="1")
 
@@ -459,7 +458,6 @@ def test_decomposer_determine_periodicity(
     synthetic_data,
     generate_seasonal_data,
 ):
-
     X, y = generate_seasonal_data(real_or_synthetic=synthetic_data)(
         period,
         trend_degree=trend_degree,

@@ -43,8 +43,8 @@ outputs:
         - networkx >=2.5,<2.6
         - category_encoders >=2.2.2, <=2.5.1.post0
         - python-graphviz >=0.13
-        - requirements-parser >=0.2.0
         - tomli >=2.0.1
+        - packaging >=23.0
     test:
       imports:
         - evalml
@@ -55,7 +55,7 @@ outputs:
         - evalml/*
         - pyproject.toml
       commands:
-        - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
+        - pytest evalml/tests -n auto --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
         - python -c "from evalml.demos import load_fraud; load_fraud(n_rows=10)"
         - python -c "from evalml.demos import load_churn; load_churn(n_rows=10)"
 
@@ -92,7 +92,7 @@ outputs:
         - evalml/*
         - pyproject.toml
       commands:
-        - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
+        - pytest evalml/tests -n auto --ignore evalml/tests/automl_tests/parallel_tests/ --is-using-conda
         - python -c "from evalml.demos import load_fraud; load_fraud(n_rows=10)"
         - python -c "from evalml.demos import load_churn; load_churn(n_rows=10)"
         

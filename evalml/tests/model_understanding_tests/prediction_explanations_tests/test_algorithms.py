@@ -306,7 +306,6 @@ def test_explainers(
 
 @pytest.mark.parametrize("data_type", ["ww", "np"])
 def test_lime_xgboost(data_type, X_y_multi):
-
     from evalml.pipelines.components import XGBoostClassifier
 
     X, y = X_y_multi
@@ -362,7 +361,6 @@ def test_compute_shap_values_absolute_probs(mock_predict_proba, X_y_binary):
 
 
 def test_normalize_values_exceptions():
-
     with pytest.raises(
         ValueError,
         match="^Unsupported data type for _normalize_explainer_values",
@@ -402,7 +400,6 @@ def check_equal_dicts(normalized, answer):
     ],
 )
 def test_normalize_values(values, answer):
-
     normalized = _normalize_explainer_values(values)
     if isinstance(normalized, dict):
         check_equal_dicts(normalized, answer)

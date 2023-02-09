@@ -18,24 +18,43 @@ jobs:
         python_version: ["3.8", "3.9", "3.10"]
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
-      - name: Checkout repository
-        uses: actions/checkout@v3
+          cache: 'pip' 
+          cache-dependency-path: 'pyproject.toml'
+      - uses: actions/cache@v3
+        id: cache
+        with:
+          path: ${{ env.pythonLocation }} 
+          key: ${{ matrix.os- }}-${{ matrix.python_version }}-install-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
       - name: Build evalml package
         run: make package
-      - name: Install EvalML and update checker
+      - name: Install evalml from sdist (not using cache)
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          pip config --site set global.progress_bar off
-          python -m pip install "unpacked_sdist/[updater]"
+          python -m pip install "unpacked_sdist/."
+      - name: Install evalml from sdist (using cache)
+        if: steps.cache.outputs.cache-hit == 'true'
+        run: |
+          python -m pip install "unpacked_sdist/." --no-deps
       - name: Test by importing packages
         run: |
           python -c "import evalml"
-          python -c "import alteryx_open_src_update_checker"
           python -c "from evalml.demos import load_fraud; load_fraud(n_rows=10)"
           python -c "from evalml.demos import load_churn; load_churn(n_rows=10)"
       - name: Check package conflicts
         run: |
           python -m pip check
+      - name: Verify extra_requires commands
+        run: |
+          python -m pip install "unpacked_sdist/[updater]"
+      - name: Test by importing packages
+        run: |
+          python -c "import alteryx_open_src_update_checker"

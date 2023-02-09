@@ -68,7 +68,6 @@ def assert_features_and_length_equal(
 
 
 def test_ts_regularizer_init():
-
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
 
     assert ts_regularizer.name == "Time Series Regularizer"
@@ -230,7 +229,6 @@ def test_ts_regularizer_duplicate(
     duplicate_scattered,
     duplicate_continuous,
 ):
-
     if duplicate_location == "beginning":
         dates = duplicate_beginning
     elif duplicate_location == "middle":
@@ -263,7 +261,6 @@ def test_ts_regularizer_missing(
     missing_scattered,
     missing_continuous,
 ):
-
     if missing_location == "beginning":
         dates = missing_beginning
     elif missing_location == "middle":
@@ -297,7 +294,6 @@ def test_ts_regularizer_uneven(
     uneven_continuous,
     uneven_work_week,
 ):
-
     if uneven_type == "beginning":
         dates = uneven_beginning
     elif uneven_type == "middle":

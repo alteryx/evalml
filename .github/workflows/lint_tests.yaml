@@ -1,30 +1,41 @@
 name: Lint
-
 on:
   pull_request:
     types: [opened, synchronize]
   push:
     branches:
       - main
-
 jobs:
-  lint_test:
+  lint_check:
     name: Python ${{ matrix.python_version }} lint test
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python_version: ["3.9"]
     steps:
-      - name: Set up Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python_version }}
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: Run Lint Test
+      - name: Set up python ${{ matrix.python_version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python_version }}
+          cache: 'pip' 
+          cache-dependency-path: 'pyproject.toml'
+      - uses: actions/cache@v3
+        id: cache
+        with:
+          path: ${{ env.pythonLocation }} 
+          key: ${{ matrix.python_version }}-lint-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
+      - name: Install evalml with dev requirements (not using cache)
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          make installdeps-dev
-          make lint
+          python -m pip install -e .[dev]
+      - name: Install evalml with no requirements (using cache)
+        if: steps.cache.outputs.cache-hit == 'true'
+        run: |
+          python -m pip install -e .[dev] --no-deps
+      - name: Run lint test
+        run: make lint

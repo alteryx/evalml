@@ -7,6 +7,7 @@ from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.utils import handle_float_categories_for_catboost
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     downcast_int_nullable_to_double,
@@ -113,8 +114,24 @@ class CatBoostRegressor(Estimator):
         self.input_feature_names = list(X.columns)
         X, y = super()._manage_woodwork(X, y)
         X = downcast_int_nullable_to_double(X)
+
+        X = handle_float_categories_for_catboost(X)
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return self
+
+    def predict(self, X):
+        """Make predictions using the fitted CatBoost regressor.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.DataFrame: Predicted values.
+        """
+        X = infer_feature_types(X)
+        X = handle_float_categories_for_catboost(X)
+        predictions = super().predict(X)
+        return predictions
 
     @property
     def feature_importance(self):

@@ -42,7 +42,7 @@ dependencies = [
     "statsmodels >= 0.12.2",
     "texttable >= 1.6.2",
     "woodwork >= 0.21.1",
-    "dask >= 2022.2.0, !=2022.10.1",
+    "dask >= 2022.2.0, != 2022.10.1",
     "featuretools >= 1.16.0",
     "nlp-primitives >= 2.9.0",
     "networkx >= 2.5, < 2.6",
@@ -55,14 +55,14 @@ dependencies = [
     "matplotlib >= 3.3.3",
     "graphviz >= 0.13; platform_system!='Windows'",
     "seaborn >= 0.11.1",
-    "category_encoders >= 2.2.2, <= 2.5.1.post0",
+    "category-encoders >= 2.2.2, <= 2.5.1.post0",
     "imbalanced-learn >= 0.9.1",
     "pmdarima >= 1.8.1, < 2.0.0",
     "sktime >= 0.13.3",
     "lime >= 0.2.0.1",
     "vowpalwabbit >= 8.11.0",
     "tomli >= 2.0.1",
-    "requirements-parser >= 0.2.0",
+    "packaging >= 23.0",
 ]
 
 [project.urls]
@@ -90,13 +90,13 @@ dev = [
     "black[jupyter] >= 22.3.0",
     "darglint == 1.8.0",
     "pre-commit >= 2.20.0",
-    "evalml[docs, test]",
+    "evalml[docs,test]",
 ]
 updater = [
     "alteryx-open-src-update-checker >= 2.1.0"
 ]
 docs = [
-    "docutils >=0.15.2, <0.17",
+    "docutils >=0.15.2, < 0.17",
     "pydata-sphinx-theme >= 0.3.1",
     "astroid <= 2.6.6",
     "Sphinx >= 4.5.0",
@@ -111,7 +111,7 @@ prophet = [
     "prophet-prebuilt == 1.0.2",
 ]
 complete = [
-    "evalml[prophet, updater]",
+    "evalml[prophet,updater]",
 ]
 
 [tool.setuptools]
@@ -127,9 +127,9 @@ namespaces = true
     "README.md",
 ]
 "evalml" = [
-    "demo/data/churn.csv",
-    "demo/data/daily-min-temperatures.csv",
-    "demo/data/fraud_transactions.csv.gz",
+    "demos/data/churn.csv",
+    "demos/data/daily-min-temperatures.csv",
+    "demos/data/fraud_transactions.csv.gz",
     "tests/data/daily-min-temperatures.csv",
     "tests/data/fraud_transactions.csv.gz",
     "tests/data/tips.csv",
@@ -146,7 +146,12 @@ namespaces = true
 [tool.setuptools.dynamic]
 version = {attr = "evalml.__version__"}
 
+[tool.black]
+line-length = 88
+target-version = ["py39"]
+
 [tool.ruff]
+line-length = 88
 select = [
     "D",
     # Pyflakes
@@ -164,6 +169,7 @@ src = ["evalml"]
 "__init__.py" = ["E402", "F401", "I001", "E501"]
 "evalml/tests/**" = ["D"]
 "evalml/utils/**" = ["D"]
+".github/**" = ["D"]
 "docs/**" = ["D"]
 
 [tool.ruff.isort]

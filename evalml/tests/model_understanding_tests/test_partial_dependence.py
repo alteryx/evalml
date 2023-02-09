@@ -994,7 +994,6 @@ def test_graph_partial_dependence_ww_categories(
     logistic_regression_binary_pipeline,
     go,
 ):
-
     X, y = fraud_100
     X.ww.set_types(
         logical_types={
@@ -1183,7 +1182,6 @@ def test_graph_partial_dependence_multiclass(
     logistic_regression_multiclass_pipeline,
     go,
 ):
-
     X, y = wine_local
     logistic_regression_multiclass_pipeline.fit(X, y)
 
@@ -1417,7 +1415,6 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
     X_y_binary,
     logistic_regression_binary_pipeline,
 ):
-
     if problem_type == "binary":
         X, y = X_y_binary
         pipeline = logistic_regression_binary_pipeline
@@ -1484,7 +1481,6 @@ def test_partial_dependence_multiclass_categorical(
     class_label,
     logistic_regression_multiclass_pipeline,
 ):
-
     X, y = wine_local
     X.ww["categorical_column"] = ww.init_series(
         pd.Series([i % 3 for i in range(X.shape[0])]).astype(str),
@@ -1557,7 +1553,6 @@ def test_partial_dependence_multiclass_categorical(
 def test_partial_dependence_all_nan_value_error(
     logistic_regression_binary_pipeline,
 ):
-
     X = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6], "c": [7, 8, 9]})
     y = pd.Series([0, 1, 0])
     logistic_regression_binary_pipeline.fit(X, y)
@@ -1740,7 +1735,6 @@ def test_graph_partial_dependence_regression_and_binary_datetime(
     X_y_regression,
     X_y_binary,
 ):
-
     if problem_type == "binary":
         X, y = X_y_binary
         pipeline = BinaryClassificationPipeline(
@@ -1782,7 +1776,6 @@ def test_graph_partial_dependence_regression_and_binary_datetime(
 
 
 def test_graph_partial_dependence_regression_date_order(X_y_binary):
-
     X, y = X_y_binary
     pipeline = BinaryClassificationPipeline(
         component_graph=[
@@ -2340,7 +2333,6 @@ def test_partial_dependence_categorical_nan(fraud_100):
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
 def test_partial_dependence_preserves_woodwork_schema(mock_predict_proba, fraud_100):
-
     X, y = fraud_100
     X_test = X.ww.copy()
 

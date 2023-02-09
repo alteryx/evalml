@@ -48,7 +48,6 @@ def test_vw_parameters():
 
 
 def test_vw_fit_predict(X_y_multi, vw):
-
     X, y = X_y_multi
     vw_classifier = VowpalWabbitMulticlassClassifier()
 

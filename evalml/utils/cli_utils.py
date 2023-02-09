@@ -7,8 +7,8 @@ import struct
 import sys
 
 import pkg_resources
-import requirements
 import tomli
+from packaging.requirements import Requirement
 
 import evalml
 from evalml.utils import get_logger
@@ -18,6 +18,7 @@ CONDA_TO_PIP_NAME = {
     "py-xgboost": "xgboost",
     "matplotlib-base": "matplotlib",
     "python-graphviz": "graphviz",
+    "category-encoders": "category_encoders",
 }
 
 
@@ -103,7 +104,7 @@ def get_evalml_root():
     return os.path.dirname(evalml.__file__)
 
 
-def standardize_format(packages, ignore_packages=None):
+def standardize_format(packages, ignore_packages=None, convert_to_conda=True):
     """Standardizes the format of the given packages.
 
     Args:
@@ -118,9 +119,11 @@ def standardize_format(packages, ignore_packages=None):
     for package in packages:
         if package.name in ignore_packages:
             continue
-        name = CONDA_TO_PIP_NAME.get(package.name, package.name)
-        if package.specs:
-            all_specs = ",".join(["".join(spec) for spec in package.specs])
+        name = package.name
+        if convert_to_conda and name in CONDA_TO_PIP_NAME:
+            name = CONDA_TO_PIP_NAME.get(package.name)
+        if package.specifier:
+            all_specs = package.specifier
             standardized = f"{name}{all_specs}"
         else:
             standardized = name
@@ -128,8 +131,12 @@ def standardize_format(packages, ignore_packages=None):
     return standardized_package_specifiers
 
 
-def get_evalml_pip_requirements(evalml_path, ignore_packages=None):
-    """Gets pip requirements for evalml.
+def get_evalml_pip_requirements(
+    evalml_path,
+    ignore_packages=None,
+    convert_to_conda=True,
+):
+    """Gets pip requirements for evalml (with pip packages converted to conda names)
 
     Args:
         evalml_path: Path to evalml root.
@@ -142,11 +149,12 @@ def get_evalml_pip_requirements(evalml_path, ignore_packages=None):
     project_metadata_filepath = pathlib.Path(evalml_path, "pyproject.toml")
     with open(project_metadata_filepath, "rb") as f:
         toml_dict = tomli.load(f)
-    dependencies = []
+    packages = []
     for dep in toml_dict["project"]["dependencies"]:
-        dependencies.append(dep)
+        packages.append(Requirement(dep))
     standardized_package_specifiers = standardize_format(
-        requirements.parse("\n".join(dependencies)),
+        packages=packages,
         ignore_packages=ignore_packages,
+        convert_to_conda=convert_to_conda,
     )
     return standardized_package_specifiers

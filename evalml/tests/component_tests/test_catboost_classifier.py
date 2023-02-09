@@ -1,5 +1,8 @@
 import warnings
 
+import pandas as pd
+import woodwork as ww
+
 from evalml.pipelines.components import CatBoostClassifier
 from evalml.utils import SEED_BOUNDS
 
@@ -35,3 +38,28 @@ def test_catboost_classifier_init_thread_count():
         CatBoostClassifier(thread_count=2)
     assert len(w) == 1
     assert "Parameter 'thread_count' will be ignored. " in str(w[-1].message)
+
+
+def test_catboost_classifier_double_categories_in_y(categorical_floats_df):
+    X = categorical_floats_df
+    y = pd.Series(
+        [1.0, 2.0, 3.0, 4.0, 5.0] * 20,
+    )
+    ww.init_series(y, logical_type="Categorical")
+
+    clf = CatBoostClassifier()
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, CatBoostClassifier)
+
+
+def test_catboost_classifier_double_categories_in_X(categorical_floats_df):
+    X = categorical_floats_df
+    y = pd.Series([1, 2, 3, 4, 5] * 20)
+
+    clf = CatBoostClassifier()
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, CatBoostClassifier)
+    predictions = clf.predict(X)
+    assert isinstance(predictions, pd.Series)
+    predictions = clf.predict_proba(X)
+    assert isinstance(predictions, pd.DataFrame)

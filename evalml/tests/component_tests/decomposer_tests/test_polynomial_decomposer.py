@@ -40,7 +40,6 @@ def test_polynomial_decomposer_get_trend_dataframe(
     ts_data_quadratic_trend,
     ts_data_cubic_trend,
 ):
-
     if degree == 1:
         X_input, _, y_input = ts_data()
     elif degree == 2:

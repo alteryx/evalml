@@ -23,7 +23,6 @@ def prophet():
 
 
 def test_cmdstanpy_backend(prophet):
-
     m = prophet.Prophet(stan_backend="CMDSTANPY")
     assert m.stan_backend.get_type() == "CMDSTANPY"
 
