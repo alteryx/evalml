@@ -51,7 +51,6 @@ def test_stl_sets_determined_period(
     freq,
     generate_seasonal_data,
 ):
-
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
         period,
         freq_str=freq,
@@ -314,7 +313,8 @@ def test_unsupported_frequencies(
     generate_seasonal_data,
 ):
     """This test exists to highlight that even though the underlying statsmodels STL component won't work
-    for minute or annual frequencies, we can still run these frequencies with automatic period detection."""
+    for minute or annual frequencies, we can still run these frequencies with automatic period detection.
+    """
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
         period=7,
         freq_str=bad_frequency,
