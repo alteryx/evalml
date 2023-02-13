@@ -11,12 +11,12 @@ class DecisionTreeRegressor(Estimator):
     """Decision Tree Regressor.
 
     Args:
-        criterion ({"mse", "friedman_mse", "mae", "poisson"}): The function to measure the quality of a split.
+        criterion ({"squared_error", "friedman_mse", "absolute_error", "poisson"}): The function to measure the quality of a split.
             Supported criteria are:
 
-                - "mse" for the mean squared error, which is equal to variance reduction as feature selection criterion and minimizes the L2 loss using the mean of each terminal node
+                - "squared_error" for the mean squared error, which is equal to variance reduction as feature selection criterion and minimizes the L2 loss using the mean of each terminal node
                 - "friedman_mse", which uses mean squared error with Friedman"s improvement score for potential splits
-                - "mae" for the mean absolute error, which minimizes the L1 loss using the median of each terminal node,
+                - "absolute_error" for the mean absolute error, which minimizes the L1 loss using the median of each terminal node,
                 - "poisson" which uses reduction in Poisson deviance to find splits.
         max_features (int, float or {"auto", "sqrt", "log2"}): The number of features to consider when looking for the best split:
 
@@ -42,12 +42,12 @@ class DecisionTreeRegressor(Estimator):
 
     name = "Decision Tree Regressor"
     hyperparameter_ranges = {
-        "criterion": ["mse", "friedman_mse", "mae"],
+        "criterion": ["squared_error", "friedman_mse", "absolute_error"],
         "max_features": ["auto", "sqrt", "log2"],
         "max_depth": Integer(4, 10),
     }
     """{
-        "criterion": ["mse", "friedman_mse", "mae"],
+        "criterion": ["squared_error", "friedman_mse", "absolute_error"],
         "max_features": ["auto", "sqrt", "log2"],
         "max_depth": Integer(4, 10),
     }"""
@@ -64,7 +64,7 @@ class DecisionTreeRegressor(Estimator):
 
     def __init__(
         self,
-        criterion="mse",
+        criterion="squared_error",
         max_features="auto",
         max_depth=6,
         min_samples_split=2,

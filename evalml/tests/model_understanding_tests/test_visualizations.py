@@ -498,7 +498,7 @@ def test_decision_tree_data_from_pipeline_feature_length(X_y_categorical_regress
     mock_pipeline.fit(X, y)
     assert (
         len(mock_pipeline.input_feature_names[mock_pipeline.estimator.name])
-        == mock_pipeline.estimator._component_obj.n_features_
+        == mock_pipeline.estimator._component_obj.n_features_in_
     )
 
 
@@ -733,7 +733,7 @@ def test_t_sne_errors_marker_size(marker_size):
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-@pytest.mark.parametrize("perplexity", [0, 2.6, 3])
+@pytest.mark.parametrize("perplexity", [0.1, 2.6, 3])
 @pytest.mark.parametrize("learning_rate", [100.0, 0.1])
 def test_graph_t_sne(data_type, perplexity, learning_rate, go):
     if data_type == "np":
