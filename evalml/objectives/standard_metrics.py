@@ -577,7 +577,7 @@ class LogLossBinary(BinaryClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1])
         >>> y_pred = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
-        >>> np.testing.assert_almost_equal(LogLossBinary().objective_function(y_true, y_pred), 18.8393325)
+        >>> np.testing.assert_almost_equal(LogLossBinary().objective_function(y_true, y_pred), 19.6601745)
     """
 
     name = "Log Loss Binary"

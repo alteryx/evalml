@@ -12,6 +12,14 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
 
+def _handle_column_names_for_scikit(X):
+    if any(isinstance(col, str) for col in X.columns) and not all(
+        isinstance(col, str) for col in X.columns
+    ):
+        X.columns = X.columns.astype(str)
+    return X
+
+
 class Estimator(ComponentBase):
     """A component that fits and predicts given data.
 
@@ -86,6 +94,7 @@ class Estimator(ComponentBase):
             self
         """
         X, y = self._manage_woodwork(X, y)
+        X = _handle_column_names_for_scikit(X)
         self.input_feature_names = list(X.columns)
         self._component_obj.fit(X, y)
         return self
@@ -104,6 +113,7 @@ class Estimator(ComponentBase):
         """
         try:
             X = infer_feature_types(X)
+            X = _handle_column_names_for_scikit(X)
             predictions = self._component_obj.predict(X)
         except AttributeError:
             raise MethodPropertyNotFoundError(
@@ -127,6 +137,7 @@ class Estimator(ComponentBase):
         """
         try:
             X = infer_feature_types(X)
+            X = _handle_column_names_for_scikit(X)
             pred_proba = self._component_obj.predict_proba(X)
         except AttributeError:
             raise MethodPropertyNotFoundError(

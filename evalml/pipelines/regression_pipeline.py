@@ -21,7 +21,7 @@ class RegressionPipeline(PipelineBase):
 
     Example:
         >>> pipeline = RegressionPipeline(component_graph=["Simple Imputer", "Linear Regressor"],
-        ...                               parameters={"Linear Regressor": {"normalize": True}},
+        ...                               parameters={"Simple Imputer": {"impute_strategy": "mean"}},
         ...                               custom_name="My Regression Pipeline")
         ...
         >>> assert pipeline.custom_name == "My Regression Pipeline"
@@ -31,8 +31,8 @@ class RegressionPipeline(PipelineBase):
         were passed in as they were above.
 
         >>> assert pipeline.parameters == {
-        ...     'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
-        ...     'Linear Regressor': {'fit_intercept': True, 'normalize': True, 'n_jobs': -1}}
+        ...     'Simple Imputer': {'impute_strategy': 'mean', 'fill_value': None},
+        ...     'Linear Regressor': {'fit_intercept': True, 'n_jobs': -1}}
     """
 
     problem_type = ProblemTypes.REGRESSION

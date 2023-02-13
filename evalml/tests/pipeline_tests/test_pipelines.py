@@ -1122,7 +1122,6 @@ def test_clone_init(
         },
         "Linear Regressor": {
             "fit_intercept": True,
-            "normalize": True,
         },
     }
     pipeline = pipeline.new(parameters=parameters, random_seed=42)

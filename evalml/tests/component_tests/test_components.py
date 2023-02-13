@@ -364,7 +364,6 @@ def test_describe_component():
             "alpha": 0.0001,
             "l1_ratio": 0.15,
             "max_iter": 1000,
-            "normalize": False,
         },
     }
     assert et_classifier.describe(return_dict=True) == {
@@ -399,7 +398,7 @@ def test_describe_component():
     }
     assert linear_regressor.describe(return_dict=True) == {
         "name": "Linear Regressor",
-        "parameters": {"fit_intercept": True, "normalize": False, "n_jobs": -1},
+        "parameters": {"fit_intercept": True, "n_jobs": -1},
     }
     assert svm_classifier.describe(return_dict=True) == {
         "name": "SVM Classifier",

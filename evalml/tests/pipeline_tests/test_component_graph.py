@@ -2705,7 +2705,7 @@ def test_get_component_input_logical_types():
         "cat_b": Boolean(),
         "cat_c": Boolean(),
         "EMAIL_ADDRESS_TO_DOMAIN(email)_gmail.com": Boolean(),
-        "IS_FREE_EMAIL_DOMAIN(email)_True": Boolean(),
+        "IS_FREE_EMAIL_DOMAIN(email)_1.0": Boolean(),
     }
 
     ensemble = ComponentGraph(

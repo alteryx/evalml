@@ -42,7 +42,7 @@ class SKOptTuner(Tuner):
         super().__init__(pipeline_hyperparameter_ranges, random_seed=random_seed)
         self.opt = Optimizer(
             self._search_space_ranges,
-            "ET",
+            "GBRT",
             acq_optimizer="sampling",
             random_state=random_seed,
         )

@@ -25,7 +25,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
 
     Example:
         >>> pipeline = TimeSeriesRegressionPipeline(component_graph=["Simple Imputer", "Linear Regressor"],
-        ...                                                       parameters={"Linear Regressor": {"normalize": True},
+        ...                                                       parameters={"Simple Imputer": {"impute_strategy": "mean"},
         ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "time_index": "date"}},
         ...                                                       custom_name="My TimeSeriesRegression Pipeline")
         ...
@@ -36,8 +36,8 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         were passed in as they were above.
 
         >>> assert pipeline.parameters == {
-        ...     'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
-        ...     'Linear Regressor': {'fit_intercept': True, 'normalize': True, 'n_jobs': -1},
+        ...     'Simple Imputer': {'impute_strategy': 'mean', 'fill_value': None},
+        ...     'Linear Regressor': {'fit_intercept': True, 'n_jobs': -1},
         ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'time_index': "date"}}
     """
 
@@ -112,11 +112,11 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             >>> gap = 1
             >>> forecast_horizon = 2
             >>> pipeline = TimeSeriesRegressionPipeline(component_graph=["Linear Regressor"],
-            ...                                         parameters={"Linear Regressor": {"normalize": True},
+            ...                                         parameters={"Simple Imputer": {"impute_strategy": "mean"},
             ...                                                     "pipeline": {"gap": gap, "max_delay": 1, "forecast_horizon": forecast_horizon, "time_index": "date"}},
             ...                                        )
             >>> pipeline.fit(X, y)
-            pipeline = TimeSeriesRegressionPipeline(component_graph={'Linear Regressor': ['Linear Regressor', 'X', 'y']}, parameters={'Linear Regressor':{'fit_intercept': True, 'normalize': True, 'n_jobs': -1}, 'pipeline':{'gap': 1, 'max_delay': 1, 'forecast_horizon': 2, 'time_index': 'date'}}, random_seed=0)
+            pipeline = TimeSeriesRegressionPipeline(component_graph={'Linear Regressor': ['Linear Regressor', 'X', 'y']}, parameters={'Linear Regressor':{'fit_intercept': True, 'n_jobs': -1}, 'pipeline':{'gap': 1, 'max_delay': 1, 'forecast_horizon': 2, 'time_index': 'date'}}, random_seed=0)
             >>> dates = pipeline.get_forecast_period(X)
             >>> expected = pd.Series(pd.date_range(start='2022-01-11', periods=(gap + forecast_horizon), freq='D'), name='date', index=[10, 11, 12])
             >>> assert dates.equals(expected)
