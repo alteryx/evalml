@@ -2,6 +2,8 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Integrated ``determine_periodicity`` into ``AutoMLSearch`` :pr:`3952`
+        * Removed frequency limitations for decomposition using the ``STLDecomposer`` :pr:`3952`
     * Fixes
     * Changes
         * Remove requirements-parser requirement :pr:`3978`
