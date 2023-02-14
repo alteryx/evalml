@@ -36,24 +36,6 @@ class STLDecomposer(Decomposer):
 
     modifies_features = False
     modifies_target = True
-    invalid_frequencies = [
-        "SM",
-        "BM",
-        "SMS",
-        "BMS",
-        "BQ",
-        "BQS",
-        "T",
-        "S",
-        "L",
-        "U",
-        "N",
-        "A",
-        "BA",
-        "AS",
-        "BAS",
-        "BH",
-    ]
 
     def __init__(
         self,
@@ -112,6 +94,7 @@ class STLDecomposer(Decomposer):
             self.trend,
             ARIMA,
             model_kwargs=dict(order=(1, 1, 0), trend="t"),
+            period=self.period,
         )
         stlf_res = stlf.fit()
         forecast = stlf_res.forecast(units_forward)
@@ -179,6 +162,10 @@ class STLDecomposer(Decomposer):
 
         # Save the frequency of the fitted series for checking against transform data.
         self.frequency = y.index.freqstr or pd.infer_freq(y.index)
+
+        # Determine the period of the seasonal component
+        if self.period is None:
+            self.set_period(X, y)
 
         stl = STL(y, seasonal=self.seasonal_smoother, period=self.period)
         res = stl.fit()

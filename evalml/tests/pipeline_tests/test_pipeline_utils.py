@@ -209,31 +209,32 @@ def test_make_pipeline(
     ],
 )
 @pytest.mark.parametrize(
-    "frequency, should_decomp",
+    "frequency, period, should_decomp",
     [
-        ("D", True),
-        ("MS", True),
-        ("A", False),
-        ("T", False),
-        ("10T", False),
-        ("AS-JAN", False),
-        ("YS", False),
-        ("S", False),
-        ("2BQ", False),
-        (None, False),
+        ("D", 7, True),
+        ("MS", 12, True),
+        ("A", None, False),
+        ("T", 24, True),
+        ("10T", None, False),
+        ("AS-JAN", None, False),
+        ("YS", 6, True),
+        ("Q", 4, True),
+        ("Q", 2, False),
+        (None, None, False),
     ],
 )
 def test_make_pipeline_controls_decomposer_time_series(
     problem_type,
     frequency,
+    period,
     should_decomp,
-    get_test_data_from_configuration,
+    generate_seasonal_data,
 ):
-    X, y = get_test_data_from_configuration(
-        "ww",
-        problem_type,
-        column_names=["dates", "numerical"],
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+        period,
+        freq_str=frequency,
     )
+    X.ww.init()
     if frequency is None:
         X.ww["dates"] = pd.Series(
             pd.date_range("2000-02-03", periods=10, freq=frequency).append(
@@ -241,9 +242,7 @@ def test_make_pipeline_controls_decomposer_time_series(
             ),
         )
     else:
-        X.ww["dates"] = pd.Series(
-            pd.date_range("2000-02-03", periods=20, freq=frequency),
-        )
+        X.ww["dates"] = pd.Series(X.index)
     parameters = {
         "pipeline": {
             "time_index": "date",

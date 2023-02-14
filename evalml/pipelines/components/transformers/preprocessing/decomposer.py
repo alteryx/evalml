@@ -26,9 +26,6 @@ class Decomposer(Transformer):
         seasonal_smoother (int): The seasonal smoothing parameter for STLDecomposer, not used for PolynomialDecomposer.
         time_index (str) : The column name of the feature matrix (X) that the datetime information
             should be pulled from.
-        acf_threshold (float) : The threshold for the autocorrelation function to determine the period. Any values below
-            the threshold are considered to be 0 and will not be considered for the period. Defaults to 0.01.
-        rel_max_order (int) : The order of the relative maximum to determine the period. Defaults to 5.
     """
 
     name = "Decomposer"
@@ -46,8 +43,6 @@ class Decomposer(Transformer):
         period: int = -1,
         seasonal_smoother: int = 7,
         time_index: str = None,
-        acf_threshold: float = 0.01,
-        rel_max_order: int = 5,
         **kwargs,
     ):
         degree = self._raise_typeerror_if_not_int("degree", degree)
@@ -62,8 +57,6 @@ class Decomposer(Transformer):
             "period": period,
             "seasonal_smoother": self.seasonal_smoother,
             "time_index": time_index,
-            "acf_threshold": acf_threshold,
-            "rel_max_order": rel_max_order,
         }
         parameters.update(kwargs)
         super().__init__(
@@ -108,7 +101,7 @@ class Decomposer(Transformer):
         return self.fit(X, y).transform(X, y)
 
     @classmethod
-    def is_freq_valid(self, freq: str):
+    def is_freq_valid(cls, freq: str):
         """Determines if the given string represents a valid frequency for this decomposer.
 
         Args:
@@ -119,7 +112,7 @@ class Decomposer(Transformer):
         """
         match = re.match(r"(^\d+)?([A-Z]+)-?([A-Z]+)?", freq)
         _, freq, _ = match.groups()
-        return freq not in self.invalid_frequencies
+        return freq not in cls.invalid_frequencies
 
     @abstractmethod
     def get_trend_dataframe(self, y: pd.Series):
@@ -129,16 +122,22 @@ class Decomposer(Transformer):
     def inverse_transform(self, y: pd.Series):
         """Add the trend + seasonality back to y."""
 
+    @classmethod
     def determine_periodicity(
-        self,
+        cls,
         X: pd.DataFrame,
         y: pd.Series,
+        acf_threshold: float = 0.01,
+        rel_max_order: int = 5,
     ):
         """Function that uses autocorrelative methods to determine the likely most signficant period of the seasonal signal.
 
         Args:
             X (pandas.DataFrame): The feature data of the time series problem.
             y (pandas.Series): The target data of a time series problem.
+            acf_threshold (float) : The threshold for the autocorrelation function to determine the period. Any values below
+                the threshold are considered to be 0 and will not be considered for the period. Defaults to 0.01.
+            rel_max_order (int) : The order of the relative maximum to determine the period. Defaults to 5.
 
         Returns:
             int: The integer number of entries in time series data over which the seasonal part of the target data
@@ -152,9 +151,6 @@ class Decomposer(Transformer):
 
         def _get_rel_max_from_acf(y):
             """Determines the relative maxima of the target's autocorrelation."""
-            acf_threshold = self.parameters.get("acf_threshold", 0.01)
-            rel_max_order = self.parameters.get("rel_max_order", 5)
-
             acf = sm.tsa.acf(y, nlags=np.maximum(400, len(y)))
             # Filter out small values to avoid picking up noise
             filter_acf = [
@@ -185,20 +181,26 @@ class Decomposer(Transformer):
         # Make the data more stationary by detrending
         y_detrended = _detrend_on_fly(X, y)
         relative_maxima = _get_rel_max_from_acf(y_detrended)
-
-        if relative_maxima is None:
-            self.logger.warning("No periodic signal could be detected in target data.")
         return relative_maxima
 
-    def set_period(self, X: pd.DataFrame, y: pd.Series):
+    def set_period(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series,
+        acf_threshold: float = 0.01,
+        rel_max_order: int = 5,
+    ):
         """Function to set the component's seasonal period based on the target's seasonality.
 
         Args:
             X (pandas.DataFrame): The feature data of the time series problem.
             y (pandas.Series): The target data of a time series problem.
+            acf_threshold (float) : The threshold for the autocorrelation function to determine the period. Any values below
+                the threshold are considered to be 0 and will not be considered for the period. Defaults to 0.01.
+            rel_max_order (int) : The order of the relative maximum to determine the period. Defaults to 5.
 
         """
-        self.period = self.determine_periodicity(X, y)
+        self.period = self.determine_periodicity(X, y, acf_threshold, rel_max_order)
         self.update_parameters({"period": self.period})
 
     def _check_oos_past(self, y):
