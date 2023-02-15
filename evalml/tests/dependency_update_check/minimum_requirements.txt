@@ -1,3 +1,4 @@
+black==22.3.0
 catboost==0.20
 category-encoders==2.2.2
 click==7.1.2
