@@ -12,6 +12,7 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Add pull request check for linked issues to CI workflow :pr:`3970`, :pr:`3980`
+        * Upgraded minimum `IPython` version to 8.10.0 :pr:`3987`
 
 .. warning::
 
