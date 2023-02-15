@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Integrated ``determine_periodicity`` into ``AutoMLSearch`` :pr:`3952`
         * Removed frequency limitations for decomposition using the ``STLDecomposer`` :pr:`3952`
+        * Move black to regular dependency and use it for ``generate_pipeline_code`` :pr:`4005`
     * Fixes
     * Changes
         * Remove requirements-parser requirement :pr:`3978`
