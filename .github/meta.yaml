@@ -45,6 +45,7 @@ outputs:
         - python-graphviz >=0.13
         - tomli >=2.0.1
         - packaging >=23.0
+        - black[jupyter] >=22.3.0
     test:
       imports:
         - evalml
