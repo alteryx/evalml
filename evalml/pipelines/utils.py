@@ -620,6 +620,8 @@ def generate_pipeline_code(element):
     Raises:
         ValueError: If element is not a pipeline, or if the pipeline is nonlinear.
     """
+    import black
+
     # hold the imports needed and add code to end
     code_strings = []
     if not isinstance(element, PipelineBase):
@@ -635,7 +637,13 @@ def generate_pipeline_code(element):
         ),
     )
     code_strings.append(repr(element))
-    return "\n".join(code_strings)
+    pipeline_code = "\n".join(code_strings)
+    pipeline_code = black.format_str(
+        pipeline_code,
+        mode=black.Mode(target_versions={black.TargetVersion.PY39}, line_length=88),
+    )
+
+    return pipeline_code
 
 
 def _make_stacked_ensemble_pipeline(

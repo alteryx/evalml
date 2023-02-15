@@ -63,6 +63,7 @@ dependencies = [
     "vowpalwabbit >= 8.11.0",
     "tomli >= 2.0.1",
     "packaging >= 23.0",
+    "black[jupyter] >= 22.3.0",
 ]
 
 [project.urls]
@@ -87,7 +88,6 @@ test = [
 ]
 dev = [
     "ruff == 0.0.228",
-    "black[jupyter] >= 22.3.0",
     "darglint == 1.8.0",
     "pre-commit >= 2.20.0",
     "evalml[docs,test]",
