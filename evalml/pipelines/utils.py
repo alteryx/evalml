@@ -1,6 +1,7 @@
 """Utility methods for EvalML pipelines."""
 import copy
 
+import black
 from woodwork import logical_types
 
 from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
@@ -620,8 +621,6 @@ def generate_pipeline_code(element):
     Raises:
         ValueError: If element is not a pipeline, or if the pipeline is nonlinear.
     """
-    import black
-
     # hold the imports needed and add code to end
     code_strings = []
     if not isinstance(element, PipelineBase):
