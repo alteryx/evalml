@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+import black
 import numpy as np
 import pandas as pd
 import pytest
@@ -676,12 +677,12 @@ def test_generate_code_pipeline_json_with_objects():
         parameters={"My Custom Estimator": {"numpy_arg": np.array([0])}},
     )
     generated_pipeline_code = generate_pipeline_code(pipeline)
-    assert (
-        generated_pipeline_code
-        == "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
+    assert generated_pipeline_code == black.format_str(
+        "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
         "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'My Custom Estimator': [CustomEstimator, 'Imputer.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None, 'boolean_fill_value': None}, "
-        "'My Custom Estimator':{'random_arg': False, 'numpy_arg': array([0])}}, custom_name='Mock Binary Pipeline with Transformer', random_seed=0)"
+        "'My Custom Estimator':{'random_arg': False, 'numpy_arg': array([0])}}, custom_name='Mock Binary Pipeline with Transformer', random_seed=0)",
+        mode=black.Mode(target_versions={black.TargetVersion.PY39}, line_length=88),
     )
 
     pipeline = BinaryClassificationPipeline(
@@ -690,13 +691,13 @@ def test_generate_code_pipeline_json_with_objects():
         parameters={"My Custom Estimator": {"random_arg": Imputer()}},
     )
     generated_pipeline_code = generate_pipeline_code(pipeline)
-    assert (
-        generated_pipeline_code
-        == "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
+    assert generated_pipeline_code == black.format_str(
+        "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
         "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'My Custom Estimator': [CustomEstimator, 'Imputer.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None, 'boolean_fill_value': None}, "
         "'My Custom Estimator':{'random_arg': Imputer(categorical_impute_strategy='most_frequent', numeric_impute_strategy='mean', boolean_impute_strategy='most_frequent', categorical_fill_value=None, numeric_fill_value=None, boolean_fill_value=None), 'numpy_arg': []}}, "
-        "custom_name='Mock Binary Pipeline with Transformer', random_seed=0)"
+        "custom_name='Mock Binary Pipeline with Transformer', random_seed=0)",
+        mode=black.Mode(target_versions={black.TargetVersion.PY39}, line_length=88),
     )
 
 
@@ -704,12 +705,14 @@ def test_generate_code_pipeline():
     binary_pipeline = BinaryClassificationPipeline(
         ["Imputer", "Random Forest Classifier"],
     )
-    expected_code = (
+    expected_code = black.format_str(
         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
         "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None, 'boolean_fill_value': None}, "
-        "'Random Forest Classifier':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, random_seed=0)"
+        "'Random Forest Classifier':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, random_seed=0)",
+        mode=black.Mode(target_versions={black.TargetVersion.PY39}, line_length=88),
     )
+
     pipeline = generate_pipeline_code(binary_pipeline)
     assert expected_code == pipeline
 
@@ -717,10 +720,11 @@ def test_generate_code_pipeline():
         ["Imputer", "Random Forest Regressor"],
         custom_name="Mock Regression Pipeline",
     )
-    expected_code = (
+    expected_code = black.format_str(
         "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
         "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}, parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None, 'boolean_fill_value': None}, "
-        "'Random Forest Regressor':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)"
+        "'Random Forest Regressor':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)",
+        mode=black.Mode(target_versions={black.TargetVersion.PY39}, line_length=88),
     )
     pipeline = generate_pipeline_code(regression_pipeline)
     assert pipeline == expected_code
@@ -733,11 +737,12 @@ def test_generate_code_pipeline():
             "Random Forest Regressor": {"n_estimators": 50},
         },
     )
-    expected_code_params = (
+    expected_code_params = black.format_str(
         "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
         "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'most_frequent', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None, 'boolean_fill_value': None}, "
-        "'Random Forest Regressor':{'n_estimators': 50, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)"
+        "'Random Forest Regressor':{'n_estimators': 50, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)",
+        mode=black.Mode(target_versions={black.TargetVersion.PY39}, line_length=88),
     )
     pipeline = generate_pipeline_code(regression_pipeline_with_params)
     assert pipeline == expected_code_params
@@ -762,7 +767,7 @@ def test_generate_code_nonlinear_pipeline():
         component_graph=component_graph,
         custom_name=custom_name,
     )
-    expected = (
+    expected = black.format_str(
         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
         "pipeline = BinaryClassificationPipeline("
         "component_graph={'Imputer': ['Imputer', 'X', 'y'], "
@@ -777,7 +782,8 @@ def test_generate_code_nonlinear_pipeline():
         "'Random Forest':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}, "
         "'Elastic Net':{'penalty': 'elasticnet', 'C': 1.0, 'l1_ratio': 0.15, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'saga'}, "
         "'Logistic Regression Classifier':{'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}, "
-        "custom_name='Non Linear Binary Pipeline', random_seed=0)"
+        "custom_name='Non Linear Binary Pipeline', random_seed=0)",
+        mode=black.Mode(target_versions={black.TargetVersion.PY39}, line_length=88),
     )
     pipeline_code = generate_pipeline_code(pipeline)
     assert pipeline_code == expected
@@ -818,10 +824,11 @@ def test_generate_code_pipeline_with_custom_components():
     mock_pipeline_with_custom_components = BinaryClassificationPipeline(
         [CustomTransformer, CustomEstimator],
     )
-    expected_code = (
+    expected_code = black.format_str(
         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
         "pipeline = BinaryClassificationPipeline(component_graph={'My Custom Transformer': [CustomTransformer, 'X', 'y'], 'My Custom Estimator': [CustomEstimator, 'My Custom Transformer.x', 'y']}, "
-        "parameters={'My Custom Estimator':{'random_arg': False}}, random_seed=0)"
+        "parameters={'My Custom Estimator':{'random_arg': False}}, random_seed=0)",
+        mode=black.Mode(target_versions={black.TargetVersion.PY39}, line_length=88),
     )
     pipeline = generate_pipeline_code(mock_pipeline_with_custom_components)
     assert pipeline == expected_code
