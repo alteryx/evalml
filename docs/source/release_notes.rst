@@ -2,23 +2,27 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Integrated ``determine_periodicity`` into ``AutoMLSearch`` :pr:`3952`
-        * Removed frequency limitations for decomposition using the ``STLDecomposer`` :pr:`3952`
     * Fixes
     * Changes
-        * Remove requirements-parser requirement :pr:`3978`
-        * Updated the ``SKOptTuner`` to use a gradient boosting regressor for tuning instead of extra trees :pr:`3983`
-        * Unpinned sktime from below 1.2, increased minimum to 1.2.1 :pr:`3983`
     * Documentation Changes
     * Testing Changes
-        * Add pull request check for linked issues to CI workflow :pr:`3970`, :pr:`3980`
-        * Upgraded minimum `IPython` version to 8.10.0 :pr:`3987`
         * Use ``release.yaml`` for performance tests on merge to main :pr:`4007`
 
 .. warning::
 
     **Breaking Changes**
 
+**v0.68.0 Feb. 15, 2023**
+    * Enhancements
+        * Integrated ``determine_periodicity`` into ``AutoMLSearch`` :pr:`3952`
+        * Removed frequency limitations for decomposition using the ``STLDecomposer`` :pr:`3952`
+    * Changes
+        * Remove requirements-parser requirement :pr:`3978`
+        * Updated the ``SKOptTuner`` to use a gradient boosting regressor for tuning instead of extra trees :pr:`3983`
+        * Unpinned sktime from below 1.2, increased minimum to 1.2.1 :pr:`3983`
+    * Testing Changes
+        * Add pull request check for linked issues to CI workflow :pr:`3970`, :pr:`3980`
+        * Upgraded minimum `IPython` version to 8.10.0 :pr:`3987`
 
 **v0.67.0 Jan. 31, 2023**
     * Fixes
