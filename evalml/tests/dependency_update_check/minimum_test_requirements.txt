@@ -1,4 +1,4 @@
-IPython==7.16.3
+IPython==8.10.0
 PyYAML==5.4
 catboost==0.20
 category-encoders==2.2.2
