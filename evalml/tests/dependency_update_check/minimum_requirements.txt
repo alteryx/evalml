@@ -1,5 +1,5 @@
 black==22.3.0
-catboost==0.20
+catboost==1.1.1
 category-encoders==2.2.2
 click>=8.0.0
 cloudpickle==1.5.0
@@ -32,4 +32,4 @@ texttable==1.6.2
 tomli==2.0.1
 vowpalwabbit==8.11.0
 woodwork==0.21.1
-xgboost==1.5.1
+xgboost==1.7.0

@@ -5,6 +5,7 @@ Release Notes
       * Move black to regular dependency and use it for ``generate_pipeline_code`` :pr:`4005`
     * Fixes
     * Changes
+        * Increase min catboost to 1.1.1 and xgboost to 1.7.0 to add nullable type support for those estimators :pr:`3996`
     * Documentation Changes
     * Testing Changes
 
