@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Implement ``generate_pipeline_example`` :pr:`4023`
     * Fixes
     * Changes
         * Increase min catboost to 1.1.1 and xgboost to 1.7.0 to add nullable type support for those estimators :pr:`3996`
