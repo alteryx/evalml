@@ -1,7 +1,6 @@
 import woodwork as ww
 
 
-# --> add to __init__.py - figure out circular dependency
 def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullable=True):
     """Removes Pandas nullable integer and nullable boolean dtypes from data by transforming
         to other dtypes via Woodwork logical type transformations.
@@ -15,8 +14,6 @@ def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullabl
     Returns:
         X with any incompatible nullable types downcasted to compatible equivalents.
     """
-    # --> consider adding param for expecting there to not be any nans present so we're
-    # notified if we're ever unknowingly converting to Double or Categorical when we shouldnt in automl search
     if X.ww.schema is None:
         X.ww.init()
 
@@ -92,11 +89,9 @@ def _get_downcast_logical_type(nullable_logical_type, data_has_nans):
     Returns:
         LogicalType string to be used to downcast incompatible nullable logical types.
     """
-    # --> maybe this can be configurable so we could easily choose different values to downcast to for specific components?
     downcast_matches = {
         "BooleanNullable": ("Boolean", "Categorical"),
         "IntegerNullable": ("Integer", "Double"),
-        # --> age fractional or double? I think AgeFractional to avoid losing info
         "AgeNullable": ("Age", "AgeFractional"),
     }
 

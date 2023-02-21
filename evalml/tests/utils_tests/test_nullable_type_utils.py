@@ -108,7 +108,6 @@ def test_downcast_nullable_X_replaces_nullable_types(nullable_type_test_data):
 
 
 def test_downcast_nullable_X_only_bools(nullable_type_test_data):
-    # --> consider parameterizing this and test below
     X = nullable_type_test_data()
 
     X_d = _downcast_nullable_X(
@@ -207,7 +206,6 @@ def test_downcast_nullable_y_replaces_nullable_types(
     ["BooleanNullable", "IntegerNullable", "AgeNullable"],
 )
 def test_downcast_nullable_y_only_bools(nullable_type_target, nullable_ltype, has_nans):
-    # --> consider parameterizing this and test below
     y = nullable_type_target(ltype=nullable_ltype, has_nans=has_nans)
     original_ltype = y.ww.logical_type
 

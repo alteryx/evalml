@@ -102,7 +102,6 @@ def test_classes():
         modifies_features = True
         modifies_target = False
         training_only = False
-        # --> add tests with variations on these
         _boolean_nullable_incompatibilities = ["X", "y"]
         _integer_nullable_incompatibilities = ["X", "y"]
 

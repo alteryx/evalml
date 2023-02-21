@@ -2242,9 +2242,6 @@ def imputer_test_data():
     return X
 
 
-# --> consider combining with imputer fixture
-
-
 @pytest.fixture
 def nullable_type_test_data():
     def _build_nullable_type_data(has_nans=True):
