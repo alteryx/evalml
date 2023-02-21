@@ -2227,6 +2227,90 @@ def imputer_test_data():
     return X
 
 
+# --> consider combining with imputer fixture
+
+
+@pytest.fixture
+def nullable_type_test_data():
+    def _build_nullable_type_data(has_nans=True):
+        X_no_nans = pd.DataFrame(
+            {
+                "dates": pd.date_range("01-01-2022", periods=20),
+                "categorical col": pd.Series(
+                    ["zero", "one", "two", "zero", "two"] * 4,
+                    dtype="category",
+                ),
+                "int col": [0, 1, 2, 0, 3] * 4,
+                "age col": [11, 21, 30, 45, 89] * 4,
+                "object col": ["b", "b", "a", "c", "d"] * 4,
+                "float col": [0.1, 1.0, 0.0, -2.0, 5.0] * 4,
+                "bool col": [True, False, False, True, True] * 4,
+                "natural language col": pd.Series(
+                    ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
+                    dtype="string",
+                ),
+                # Columns with nullable types that dont have nans
+                "int col nullable": [0, 1, 2, 0, 3] * 4,
+                "bool col nullable": [True, False, False, True, True] * 4,
+                "age col nullable": [11, 21, 30, 45, 89] * 4,
+            },
+        )
+        X_no_nans.ww.init(
+            logical_types={
+                "dates": "datetime",
+                "categorical col": "categorical",
+                "int col": "integer",
+                "age col": "age",
+                "object col": "categorical",
+                "float col": "double",
+                "bool col": "boolean",
+                "natural language col": "NaturalLanguage",
+                "int col nullable": "IntegerNullable",
+                "bool col nullable": "BooleanNullable",
+                "age col nullable": "AgeNullable",
+            },
+        )
+        if not has_nans:
+            return X_no_nans
+
+        X_nans = pd.DataFrame(
+            {
+                "categorical with nan": pd.Series(
+                    [np.nan, "1", "0", "0", "3"] * 4,
+                    dtype="category",
+                ),
+                "int with nan": [np.nan, 1, 0, 0, 1] * 4,
+                "float with nan": [0.3, 1.0, np.nan, -1.0, 0.0] * 4,
+                "age with nan": [np.nan, 12, 22, 31, 9] * 4,
+                "object with nan": ["b", "b", np.nan, "c", np.nan] * 4,
+                "bool with nan": pd.Series(
+                    [True, np.nan, False, np.nan, True] * 4,
+                    dtype="category",
+                ),
+                "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan] * 4,
+                "all nan cat": pd.Series(
+                    [np.nan, np.nan, np.nan, np.nan, np.nan] * 4,
+                    dtype="category",
+                ),
+            },
+        )
+        X_nans.ww.init(
+            logical_types={
+                "categorical with nan": "categorical",
+                "int with nan": "IntegerNullable",
+                "float with nan": "double",
+                "object with nan": "categorical",
+                "bool with nan": "BooleanNullable",
+                "all nan": "unknown",
+                "all nan cat": "categorical",
+                "age with nan": "AgeNullable",
+            },
+        )
+        return ww.concat_columns([X_no_nans, X_nans])
+
+    return _build_nullable_type_data
+
+
 @pytest.fixture
 def generate_seasonal_data():
     """Function that returns data with a linear trend and a seasonal signal with specified period."""

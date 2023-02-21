@@ -3,6 +3,7 @@ import woodwork as ww
 
 # --> add to __init__.py
 def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullable=True):
+    # --> initial look is that this is 3x (or more when no nullable types present) faster
     """--> add full docstrings"""
     if X.ww.schema is None:
         X.ww.init()
@@ -22,10 +23,12 @@ def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullabl
         return X
 
     # --> try to find a more elegant way to do this
+    # --> consider using objects instead of str representations
     downcast_matches = {
         "BooleanNullable": ("Boolean", "Categorical"),
         "IntegerNullable": ("Integer", "Double"),
-        "AgeNullable": ("Integer", "Double"),
+        # --> age fractional or double? I think AgeFractional to avoid losing info
+        "AgeNullable": ("Age", "AgeFractional"),
     }
     cols_with_nans = set(
         nullable_X_to_downcast.columns[nullable_X_to_downcast.isnull().any()],
@@ -51,3 +54,8 @@ def _downcast_nullable_y(y, handle_boolean_nullable=True, handle_integer_nullabl
         ww.init_series(y)
 
     return y
+
+
+def _get_downcast_type(col_name, logical_types, has_nans):
+    # --> might be worth implementing this
+    pass

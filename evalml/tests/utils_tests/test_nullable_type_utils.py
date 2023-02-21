@@ -1,4 +1,15 @@
 import pandas as pd
+from woodwork.logical_types import (
+    Age,
+    AgeFractional,
+    AgeNullable,
+    Boolean,
+    BooleanNullable,
+    Categorical,
+    Double,
+    Integer,
+    IntegerNullable,
+)
 
 from evalml.utils.nullable_type_utils import (
     _downcast_nullable_X,
@@ -23,8 +34,9 @@ def test_downcast_utils_handle_woodwork_not_init(X_y_binary):
 
 
 # --> test that we're always initing y with init_series so that we never get a type conversion error
-# --> add fixture like the imputer that has a mixture of nullalbe with and without nans
-# --> test with age nullable
+# --> confirm nan values are maintained
+# --> confirm works with different types of nans
+# --> test all other woodwork types maintained
 
 
 def test_downcast_nullable_X_noop_when_no_downcast_needed(imputer_test_data):
@@ -44,6 +56,11 @@ def test_downcast_nullable_X_noop_when_no_nullable_types_present(X_y_binary):
     X, _ = X_y_binary
     original_X = X.ww.copy()
 
+    assert (
+        len(X.ww.select(["IntegerNullable", "AgeNullable", "BooleanNullable"]).columns)
+        == 0
+    )
+
     X_d = _downcast_nullable_X(
         X,
         handle_boolean_nullable=True,
@@ -53,8 +70,8 @@ def test_downcast_nullable_X_noop_when_no_nullable_types_present(X_y_binary):
     pd.testing.assert_frame_equal(X_d, original_X)
 
 
-def test_downcast_nullable_X_replaces_nullable_types(imputer_test_data):
-    X = imputer_test_data
+def test_downcast_nullable_X_replaces_nullable_types(nullable_type_test_data):
+    X = nullable_type_test_data()
     original_X = X.ww.copy()
 
     assert len(original_X.ww.select(["IntegerNullable", "BooleanNullable"]).columns) > 0
@@ -67,3 +84,58 @@ def test_downcast_nullable_X_replaces_nullable_types(imputer_test_data):
 
     assert set(X_d.columns) == set(original_X.columns)
     assert len(X_d.ww.select(["IntegerNullable", "BooleanNullable"]).columns) == 0
+
+
+def test_downcast_nullable_X_handles_type_according_to_nans(nullable_type_test_data):
+    # --> consider parameterizing this and two tests below
+    X = nullable_type_test_data()
+
+    X_d = _downcast_nullable_X(
+        X,
+        handle_boolean_nullable=True,
+        handle_integer_nullable=True,
+    )
+    downcast_ltypes = X_d.ww.logical_types
+
+    assert isinstance(downcast_ltypes["int col nullable"], Integer)
+    assert isinstance(downcast_ltypes["int with nan"], Double)
+    assert isinstance(downcast_ltypes["bool col nullable"], Boolean)
+    assert isinstance(downcast_ltypes["bool with nan"], Categorical)
+    assert isinstance(downcast_ltypes["age col nullable"], Age)
+    assert isinstance(downcast_ltypes["age with nan"], AgeFractional)
+
+
+def test_downcast_nullable_X_only_bools(nullable_type_test_data):
+    X = nullable_type_test_data()
+
+    X_d = _downcast_nullable_X(
+        X,
+        handle_boolean_nullable=True,
+        handle_integer_nullable=False,
+    )
+    downcast_ltypes = X_d.ww.logical_types
+
+    assert isinstance(downcast_ltypes["int col nullable"], IntegerNullable)
+    assert isinstance(downcast_ltypes["int with nan"], IntegerNullable)
+    assert isinstance(downcast_ltypes["bool col nullable"], Boolean)
+    assert isinstance(downcast_ltypes["bool with nan"], Categorical)
+    assert isinstance(downcast_ltypes["age col nullable"], AgeNullable)
+    assert isinstance(downcast_ltypes["age with nan"], AgeNullable)
+
+
+def test_downcast_nullable_X_only_ints(nullable_type_test_data):
+    X = nullable_type_test_data()
+
+    X_d = _downcast_nullable_X(
+        X,
+        handle_boolean_nullable=False,
+        handle_integer_nullable=True,
+    )
+    downcast_ltypes = X_d.ww.logical_types
+
+    assert isinstance(downcast_ltypes["int col nullable"], Integer)
+    assert isinstance(downcast_ltypes["int with nan"], Double)
+    assert isinstance(downcast_ltypes["bool col nullable"], BooleanNullable)
+    assert isinstance(downcast_ltypes["bool with nan"], BooleanNullable)
+    assert isinstance(downcast_ltypes["age col nullable"], Age)
+    assert isinstance(downcast_ltypes["age with nan"], AgeFractional)
