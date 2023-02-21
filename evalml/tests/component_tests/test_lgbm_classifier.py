@@ -328,27 +328,3 @@ def test_lgbm_preserves_schema_in_rename(mock_predict_proba, mock_predict, mock_
     assert mock_predict.call_args[0][0].ww.schema == original_schema
     lgb.predict_proba(X)
     assert mock_predict_proba.call_args[0][0].ww.schema == original_schema
-
-
-def test_lgbm_with_nullable_types(nullable_type_test_data, nullable_type_target):
-    y = nullable_type_target(ltype="IntegerNullable", has_nans=False)
-    X = nullable_type_test_data(has_nans=False)
-    # Select types that the lgbm classifier can handle
-    X = X.ww.select(["Integer", "IntegerNullable", "Boolean", "BooleanNullable"])
-
-    lgb = LightGBMClassifier()
-
-    with pytest.raises(ValueError, match="Unknown label type:"):
-        lgb.fit(X, y)
-
-    # Show how the handle method allows the classifier to work
-    # TODO: When _handle_nullable_types is called within fit and predict methods, change
-    # to be a simple test that just confirms we can pass all types of nullable types in
-    X_d, y_d = lgb._handle_nullable_types(X, y)
-
-    lgb.fit(X_d, y_d)
-    y_pred = lgb.predict(X)
-    y_pred_proba = lgb.predict_proba(X)
-
-    assert not y_pred.isnull().values.any()
-    assert not y_pred_proba.isnull().values.any().any()

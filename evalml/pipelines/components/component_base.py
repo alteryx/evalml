@@ -6,17 +6,9 @@ import cloudpickle
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
-from evalml.utils import (
-    classproperty,
-    infer_feature_types,
-    log_subtitle,
-    safe_repr,
-)
+from evalml.utils import classproperty, infer_feature_types, log_subtitle, safe_repr
 from evalml.utils.logger import get_logger
-from evalml.utils.nullable_type_utils import (
-    _downcast_nullable_X,
-    _downcast_nullable_y,
-)
+from evalml.utils.nullable_type_utils import _downcast_nullable_X, _downcast_nullable_y
 
 
 class ComponentBase(ABC, metaclass=ComponentBaseMeta):
@@ -262,19 +254,22 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         Returns:
             X, y with any incompatible nullable types downcasted to compatible equivalents.
         """
-        # --> maybe also skip when we dont need any handling for X or y - investigate if this saves noticible time
-        if X is not None:
+        X_bool_incompatible = "X" in self._boolean_nullable_incompatibilities
+        X_int_incompatible = "X" in self._integer_nullable_incompatibilities
+        if X is not None and (X_bool_incompatible or X_int_incompatible):
             X = _downcast_nullable_X(
                 X,
-                handle_boolean_nullable="X" in self._boolean_nullable_incompatibilities,
-                handle_integer_nullable="X" in self._integer_nullable_incompatibilities,
+                handle_boolean_nullable=X_bool_incompatible,
+                handle_integer_nullable=X_int_incompatible,
             )
 
-        if y is not None:
+        y_bool_incompatible = "y" in self._boolean_nullable_incompatibilities
+        y_int_incompatible = "y" in self._integer_nullable_incompatibilities
+        if y is not None and (y_bool_incompatible or y_int_incompatible):
             y = _downcast_nullable_y(
                 y,
-                handle_boolean_nullable="y" in self._boolean_nullable_incompatibilities,
-                handle_integer_nullable="y" in self._integer_nullable_incompatibilities,
+                handle_boolean_nullable=y_bool_incompatible,
+                handle_integer_nullable=y_int_incompatible,
             )
 
         return X, y

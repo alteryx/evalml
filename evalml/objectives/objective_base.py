@@ -6,16 +6,12 @@ import pandas as pd
 
 from evalml.problem_types import handle_problem_types
 from evalml.utils import classproperty
-from evalml.utils.nullable_type_utils import _downcast_nullable_y
 
 
 class ObjectiveBase(ABC):
     """Base class for all objectives."""
 
     problem_types = None
-    # Referring to the pandas nullable dtypes; not just woodwork logical types
-    _integer_nullable_incompatible = False
-    _boolean_nullable_incompatible = False
 
     @property
     @classmethod
@@ -203,19 +199,3 @@ class ObjectiveBase(ABC):
     def is_defined_for_problem_type(cls, problem_type):
         """Returns whether or not an objective is defined for a problem type."""
         return handle_problem_types(problem_type) in cls.problem_types
-
-    def _handle_nullable_types(self, y_true):
-        """Transforms y_true to remove any incompatible nullable types according to an objective function's needs.
-
-        Args:
-            y_true (pd.Series): Actual class labels of length [n_samples].
-                May contain nullable types.
-
-        Returns:
-            y_true with any incompatible nullable types downcasted to compatible equivalents.
-        """
-        return _downcast_nullable_y(
-            y_true,
-            handle_boolean_nullable=self._boolean_nullable_incompatible,
-            handle_integer_nullable=self._integer_nullable_incompatible,
-        )

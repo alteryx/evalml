@@ -1,15 +1,22 @@
 """Base class for all binary classification objectives."""
 import numpy as np
+import pandas as pd
 from scipy.optimize import differential_evolution
 
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.problem_types import ProblemTypes
+from evalml.utils.nullable_type_utils import _downcast_nullable_y
 
 
 class BinaryClassificationObjective(ObjectiveBase):
     """Base class for all binary classification objectives."""
 
     problem_types = [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
+
+    # Referring to the pandas nullable dtypes; not just woodwork logical types
+    _integer_nullable_incompatible = False
+    _boolean_nullable_incompatible = False
+
     """[ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]"""
 
     @property
@@ -81,3 +88,25 @@ class BinaryClassificationObjective(ObjectiveBase):
             raise ValueError("y_true contains more than two unique values")
         if len(np.unique(y_predicted)) > 2 and not self.score_needs_proba:
             raise ValueError("y_predicted contains more than two unique values")
+
+    def _handle_nullable_types(self, y_true):
+        """Transforms y_true to remove any incompatible nullable types according to an objective function's needs.
+
+        Args:
+            y_true (pd.Series): Actual class labels of length [n_samples].
+                May contain nullable types.
+
+        Returns:
+            y_true with any incompatible nullable types downcasted to compatible equivalents.
+        """
+        # Since Objective functions dont have the same safeguards around non woodwork inputs,
+        # we'll choose to avoid the downcasting path since we shouldn't have nullable pandas types
+        # without them being set by Woodwork
+        if isinstance(y_true, pd.Series) and y_true.ww.schema is not None:
+            return _downcast_nullable_y(
+                y_true,
+                handle_boolean_nullable=self._boolean_nullable_incompatible,
+                handle_integer_nullable=self._integer_nullable_incompatible,
+            )
+
+        return y_true

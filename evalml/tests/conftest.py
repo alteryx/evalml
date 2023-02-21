@@ -2084,6 +2084,21 @@ def CustomClassificationObjectiveRanges(ranges):
     return CustomClassificationObjectiveRanges()
 
 
+class CustomBinaryClassificationObjective(BinaryClassificationObjective):
+    _integer_nullable_incompatible = True
+    _boolean_nullable_incompatible = True
+
+    name = "my_objective"
+    greater_is_better = True
+    score_needs_proba = False
+    perfect_score = 1.0
+    is_bounded_like_percentage = True
+    expected_range = [0, 1]
+
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        pass
+
+
 def load_daily_temp_local(n_rows=None):
     currdir_path = os.path.dirname(os.path.abspath(__file__))
     data_folder_path = os.path.join(currdir_path, "data")

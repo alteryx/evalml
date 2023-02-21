@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from skopt.space import Categorical
+from woodwork.logical_types import AgeNullable, BooleanNullable, IntegerNullable
 
 from evalml.exceptions import ComponentNotYetFittedError, MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
@@ -101,6 +102,9 @@ def test_classes():
         modifies_features = True
         modifies_target = False
         training_only = False
+        # --> add tests with variations on these
+        _boolean_nullable_incompatibilities = ["X", "y"]
+        _integer_nullable_incompatibilities = ["X", "y"]
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
@@ -1804,3 +1808,26 @@ def test_component_parameters_supported_by_list_API(component_class):
         assert not component_class._supported_by_list_API
     else:
         assert component_class._supported_by_list_API
+
+
+def test_handle_nullable_types(
+    test_classes,
+    nullable_type_test_data,
+    nullable_type_target,
+):
+    MockComponent, _, _ = test_classes
+    y = nullable_type_target(ltype="IntegerNullable", has_nans=False)
+    X = nullable_type_test_data(has_nans=False)
+
+    cmp = MockComponent()
+    X_d, y_d = cmp._handle_nullable_types(X, y)
+
+    nullable_ltypes = (AgeNullable, IntegerNullable, BooleanNullable)
+
+    assert not isinstance(
+        y_d.ww.logical_type,
+        nullable_ltypes,
+    )
+
+    for ltype in X_d.ww.logical_types.values():
+        assert not isinstance(ltype, nullable_ltypes)

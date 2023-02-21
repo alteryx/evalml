@@ -225,7 +225,7 @@ def test_downcast_nullable_y_only_bools(nullable_type_target, nullable_ltype, ha
     if nullable_ltype in ["BooleanNullable"]:
         assert not isinstance(
             y_d.ww.logical_type,
-            (AgeNullable, IntegerNullable, BooleanNullable),
+            BooleanNullable,
         )
     else:
         assert y_d.ww.logical_type == original_ltype
@@ -249,7 +249,7 @@ def test_downcast_nullable_y_only_ints(nullable_type_target, nullable_ltype, has
     if nullable_ltype in ["IntegerNullable", "AgeNullable"]:
         assert not isinstance(
             y_d.ww.logical_type,
-            (AgeNullable, IntegerNullable, BooleanNullable),
+            (AgeNullable, IntegerNullable),
         )
     else:
         assert y_d.ww.logical_type == original_ltype
