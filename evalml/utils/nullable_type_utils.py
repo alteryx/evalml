@@ -3,9 +3,6 @@ import woodwork as ww
 
 # --> add to __init__.py - figure out circular dependency
 def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullable=True):
-    # --> initial look is that this is 3x faster - for fraud and contains_nulls and churn
-    # --> breast cancer and wine are faster but not by too much - theyre all doubles
-    # --> wine was
     """Removes Pandas nullable integer and nullable boolean dtypes from data by transforming
         to other dtypes via Woodwork logical type transformations.
 
@@ -25,7 +22,6 @@ def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullabl
 
     select_param = []
     if handle_boolean_nullable:
-        # --> depending on how often we need to group the nullable ltypes, might be worth an enum
         select_param.append("BooleanNullable")
     if handle_integer_nullable:
         select_param.append("IntegerNullable")
@@ -53,9 +49,6 @@ def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullabl
 
 
 def _downcast_nullable_y(y, handle_boolean_nullable=True, handle_integer_nullable=True):
-    # --> slower if nans are present bc we change types now
-    # --> faster if no nans are present and no nullable type
-    # --> equal if no nans are present and nullable types
     """Removes Pandas nullable integer and nullable boolean dtypes from data by transforming
         to other dtypes via Woodwork logical type transformations.
 
@@ -73,7 +66,6 @@ def _downcast_nullable_y(y, handle_boolean_nullable=True, handle_integer_nullabl
 
     nullable_types_to_handle = []
     if handle_boolean_nullable:
-        # --> depending on how often we need to group the nullable ltypes, might be worth an enum
         nullable_types_to_handle.append(ww.logical_types.BooleanNullable)
     if handle_integer_nullable:
         nullable_types_to_handle.append(ww.logical_types.IntegerNullable)

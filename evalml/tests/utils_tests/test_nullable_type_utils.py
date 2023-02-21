@@ -31,9 +31,6 @@ def test_downcast_utils_handle_woodwork_not_init(X_y_binary):
     assert y_d.ww.schema is not None
 
 
-# --> confirm nan values are maintained
-
-
 def test_downcast_nullable_X_noop_when_no_downcast_needed(imputer_test_data):
     X = imputer_test_data
     original_X = X.ww.copy()
@@ -197,8 +194,6 @@ def test_downcast_nullable_y_replaces_nullable_types(
         handle_boolean_nullable=True,
         handle_integer_nullable=True,
     )
-
-    # --> check that the values are the same?
 
     assert not isinstance(
         y_d.ww.logical_type,
