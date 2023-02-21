@@ -638,6 +638,75 @@ def generate_pipeline_code(element):
     return "\n".join(code_strings)
 
 
+def generate_pipeline_example(
+    pipeline,
+    path_to_train,
+    path_to_holdout,
+    target,
+    path_to_mapping="",
+    output_file_path=None,
+):
+    """Creates and returns a string that contains the Python imports and code required for running the EvalML pipeline.
+
+    Args:
+        pipeline (pipeline instance): The instance of the pipeline to generate string Python code.
+        path_to_train (str): path to training data.
+        path_to_holdout (str): path to holdout data.
+        target (str): target variable.
+        path_to_mapping (str): path to mapping json
+        output_file_path (str): path to output python file.
+
+    Returns:
+        str: String representation of Python code that can be run separately in order to recreate the pipeline instance.
+        Does not include code for custom component implementation.
+
+    """
+    output_str = f"""
+import evalml
+import woodwork
+import pandas as pd
+
+PATH_TO_TRAIN = "{path_to_train}"
+PATH_TO_HOLDOUT = "{path_to_holdout}"
+TARGET = "{target}"
+column_mapping = "{path_to_mapping}"
+
+# This is the machine learning pipeline you have exported.
+# By running this code you will fit the pipeline on the files provided
+# and you can then use this pipeline for prediction and model understanding.
+{generate_pipeline_code(pipeline)}
+
+print(pipeline.name)
+print(pipeline.parameters)
+pipeline.describe()
+
+df = pd.read_csv(PATH_TO_TRAIN)
+y_train = df[TARGET]
+X_train = df.drop(TARGET, axis=1)
+
+pipeline.fit(X_train, y_train)
+
+# You can now generate predictions as well as run model understanding.
+df = pd.read_csv(PATH_TO_HOLDOUT)
+y_holdout = df[TARGET]
+X_holdout= df.drop(TARGET, axis=1)
+
+pipeline.predict(X_holdout)
+
+# Note: to predict on new data you have on hand
+# Map the column names to AML internal names and run prediction
+# X_test = X_test.rename(column_mapping, axis=1)
+# pipeline.predict(X_test)
+
+# For more info please check out:
+# https://evalml.alteryx.com/en/stable/user_guide/automl.html
+  """
+    if output_file_path:
+        with open(output_file_path, "w") as text_file:
+            text_file.write(output_str)
+    return output_str
+
+
 def _make_stacked_ensemble_pipeline(
     input_pipelines,
     problem_type,

@@ -1,3 +1,4 @@
+import os
 from unittest.mock import patch
 
 import numpy as np
@@ -45,6 +46,7 @@ from evalml.pipelines.utils import (
     _get_preprocessing_components,
     _make_pipeline_from_multiple_graphs,
     generate_pipeline_code,
+    generate_pipeline_example,
     get_estimators,
     is_classification,
     is_regression,
@@ -825,6 +827,28 @@ def test_generate_code_pipeline_with_custom_components():
     )
     pipeline = generate_pipeline_code(mock_pipeline_with_custom_components)
     assert pipeline == expected_code
+
+
+def test_generate_pipeline_example(tmpdir, breast_cancer_local):
+    path = os.path.join(str(tmpdir), "train.csv")
+    X, y = breast_cancer_local
+
+    from evalml import AutoMLSearch
+
+    aml = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
+    aml.search()
+    binary_pipeline = aml.best_pipeline
+    # binary_pipeline = BinaryClassificationPipeline(
+    #     ["Imputer", "Random Forest Classifier"],
+    # )
+
+    X["target"] = y
+    X.to_csv(path)
+
+    pipeline_example = generate_pipeline_example(binary_pipeline, path, path, "target")
+    print(pipeline_example)
+    exec(pipeline_example)
+    assert pipeline_example
 
 
 def test_rows_of_interest_errors(X_y_binary):
