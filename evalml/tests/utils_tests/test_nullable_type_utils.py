@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 from woodwork.logical_types import (
     Age,
     AgeFractional,
@@ -11,7 +12,10 @@ from woodwork.logical_types import (
     IntegerNullable,
 )
 
-from evalml.utils.nullable_type_utils import _downcast_nullable_X, _downcast_nullable_y
+from evalml.utils.nullable_type_utils import (
+    _downcast_nullable_X,
+    _downcast_nullable_y,
+)
 
 
 def test_downcast_utils_handle_woodwork_not_init(X_y_binary):
@@ -145,3 +149,111 @@ def test_downcast_nullable_X_only_ints(nullable_type_test_data):
     assert isinstance(downcast_ltypes["bool with nan"], BooleanNullable)
     assert isinstance(downcast_ltypes["age col nullable"], Age)
     assert isinstance(downcast_ltypes["age with nan"], AgeFractional)
+
+
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+)
+def test_downcast_nullable_y_noop_when_no_downcast_needed(
+    nullable_type_target,
+    nullable_ltype,
+):
+    y = nullable_type_target(ltype=nullable_ltype)
+    original_y = y.ww.copy()
+
+    y_d = _downcast_nullable_y(
+        y,
+        handle_boolean_nullable=False,
+        handle_integer_nullable=False,
+    )
+
+    pd.testing.assert_series_equal(y_d, original_y)
+
+
+def test_downcast_nullable_y_noop_when_no_nullable_types_present(X_y_binary):
+    _, y = X_y_binary
+    original_y = y.ww.copy()
+
+    y_d = _downcast_nullable_y(
+        y,
+        handle_boolean_nullable=True,
+        handle_integer_nullable=True,
+    )
+
+    pd.testing.assert_series_equal(y_d, original_y)
+
+
+@pytest.mark.parametrize("has_nans", [True, False])
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+)
+def test_downcast_nullable_y_replaces_nullable_types(
+    nullable_type_target,
+    nullable_ltype,
+    has_nans,
+):
+    y = nullable_type_target(ltype=nullable_ltype, has_nans=has_nans)
+
+    y_d = _downcast_nullable_y(
+        y,
+        handle_boolean_nullable=True,
+        handle_integer_nullable=True,
+    )
+
+    # --> check that the values are the same?
+
+    assert not isinstance(
+        y_d.ww.logical_type,
+        (AgeNullable, IntegerNullable, BooleanNullable),
+    )
+
+
+@pytest.mark.parametrize("has_nans", [True, False])
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+)
+def test_downcast_nullable_y_only_bools(nullable_type_target, nullable_ltype, has_nans):
+    # --> consider parameterizing this and test below
+    y = nullable_type_target(ltype=nullable_ltype, has_nans=has_nans)
+    original_ltype = y.ww.logical_type
+
+    y_d = _downcast_nullable_y(
+        y,
+        handle_boolean_nullable=True,
+        handle_integer_nullable=False,
+    )
+
+    if nullable_ltype in ["BooleanNullable"]:
+        assert not isinstance(
+            y_d.ww.logical_type,
+            (AgeNullable, IntegerNullable, BooleanNullable),
+        )
+    else:
+        assert y_d.ww.logical_type == original_ltype
+
+
+@pytest.mark.parametrize("has_nans", [True, False])
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+)
+def test_downcast_nullable_y_only_ints(nullable_type_target, nullable_ltype, has_nans):
+    y = nullable_type_target(ltype=nullable_ltype, has_nans=has_nans)
+    original_ltype = y.ww.logical_type
+
+    y_d = _downcast_nullable_y(
+        y,
+        handle_boolean_nullable=False,
+        handle_integer_nullable=True,
+    )
+
+    if nullable_ltype in ["IntegerNullable", "AgeNullable"]:
+        assert not isinstance(
+            y_d.ww.logical_type,
+            (AgeNullable, IntegerNullable, BooleanNullable),
+        )
+    else:
+        assert y_d.ww.logical_type == original_ltype

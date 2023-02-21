@@ -2249,7 +2249,7 @@ def nullable_type_test_data():
                     ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
                     dtype="string",
                 ),
-                # Columns with nullable types that dont have nans
+                # Columns with nullable types that don't have nans
                 "int col nullable": [0, 1, 2, 0, 3] * 4,
                 "bool col nullable": [True, False, False, True, True] * 4,
                 "age col nullable": [11, 21, 30, 45, 89] * 4,
@@ -2307,6 +2307,21 @@ def nullable_type_test_data():
             },
         )
         return ww.concat_columns([X_no_nans, X_nans])
+
+    return _build_nullable_type_data
+
+
+@pytest.fixture
+def nullable_type_target():
+    def _build_nullable_type_data(ltype="BooleanNullable", has_nans=True):
+        y = pd.Series([1, 0, 1, 1, 0] * 4)
+
+        if has_nans:
+            y = pd.Series([1, 0, 1, 1, 0] * 4)
+        else:
+            y = pd.Series([1, 0, pd.NA, 1, 0] * 4)
+
+        return ww.init_series(y, logical_type=ltype)
 
     return _build_nullable_type_data
 

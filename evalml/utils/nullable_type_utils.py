@@ -15,6 +15,7 @@ def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullabl
 
     select_param = []
     if handle_boolean_nullable:
+        # --> depending on how often we need to group the nullable ltypes, might be worth an enum
         select_param.append("BooleanNullable")
     if handle_integer_nullable:
         select_param.append("IntegerNullable")
@@ -27,25 +28,13 @@ def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullabl
     if not len(nullable_X_to_downcast.columns):
         return X
 
-    # --> try to find a more elegant way to do this
-    # --> consider using objects instead of str representations
-    downcast_matches = {
-        "BooleanNullable": ("Boolean", "Categorical"),
-        "IntegerNullable": ("Integer", "Double"),
-        # --> age fractional or double? I think AgeFractional to avoid losing info
-        "AgeNullable": ("Age", "AgeFractional"),
-    }
     cols_with_nans = set(
         nullable_X_to_downcast.columns[nullable_X_to_downcast.isnull().any()],
     )
-    original_ltypes = nullable_X_to_downcast.ww.logical_types
-    # --> this is probably overly confusing to read. Simplify!
-    def get_ltype(type_tuple, col):
-        return type_tuple[1] if col in cols_with_nans else type_tuple[0]
 
     new_ltypes = {
-        col: get_ltype(downcast_matches[str(ltype)], col)
-        for col, ltype in original_ltypes.items()
+        col: _get_downcast_logical_type(ltype, col in cols_with_nans)
+        for col, ltype in nullable_X_to_downcast.ww.logical_types.items()
     }
 
     if new_ltypes:
@@ -54,13 +43,46 @@ def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullabl
 
 
 def _downcast_nullable_y(y, handle_boolean_nullable=True, handle_integer_nullable=True):
+    # --> slower if nans are present bc we change types now
+    # --> faster if no nans are present and no nullable type
+    # --> equal if no nans are present and nullable types
     """--> add full docstrings"""
     if y.ww.schema is None:
         ww.init_series(y)
 
+    nullable_types_to_handle = []
+    if handle_boolean_nullable:
+        # --> depending on how often we need to group the nullable ltypes, might be worth an enum
+        nullable_types_to_handle.append(ww.logical_types.BooleanNullable)
+    if handle_integer_nullable:
+        nullable_types_to_handle.append(ww.logical_types.IntegerNullable)
+        nullable_types_to_handle.append(ww.logical_types.AgeNullable)
+
+    if isinstance(y.ww.logical_type, tuple(nullable_types_to_handle)):
+        new_ltype = _get_downcast_logical_type(y.ww.logical_type, y.isnull().any())
+        return y.ww.set_logical_type(new_ltype)
+
     return y
 
 
-def _get_downcast_type(col_name, logical_types, has_nans):
-    # --> might be worth implementing this
-    pass
+def _get_downcast_logical_type(logical_type, data_has_nans):
+    # --> try to find a more elegant way to do this
+    # --> consider using objects instead of str representations
+    """--> add docstring"""
+    # --> maybe this can be configurable so we could easily choose different values to downcast to for specific components?
+    downcast_matches = {
+        "BooleanNullable": ("Boolean", "Categorical"),
+        "IntegerNullable": ("Integer", "Double"),
+        # --> age fractional or double? I think AgeFractional to avoid losing info
+        "AgeNullable": ("Age", "AgeFractional"),
+    }
+
+    no_nans_ltype, has_nans_ltype = downcast_matches[str(logical_type)]
+
+    if data_has_nans:
+        return has_nans_ltype
+
+    return no_nans_ltype
+
+
+# --> if I independently test this then i dont have to care about the types in the bigger utils :thinking
