@@ -2228,6 +2228,7 @@ def imputer_test_data():
 
 
 # --> consider combining with imputer fixture
+# --> one fixture for X and y
 
 
 @pytest.fixture
@@ -2317,9 +2318,9 @@ def nullable_type_target():
         y = pd.Series([1, 0, 1, 1, 0] * 4)
 
         if has_nans:
-            y = pd.Series([1, 0, 1, 1, 0] * 4)
-        else:
             y = pd.Series([1, 0, pd.NA, 1, 0] * 4)
+        else:
+            y = pd.Series([1, 0, 1, 1, 0] * 4)
 
         return ww.init_series(y, logical_type=ltype)
 

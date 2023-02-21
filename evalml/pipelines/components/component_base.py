@@ -246,6 +246,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
 
     def _handle_nullable_types(self, X=None, y=None):
         """---> add docstring."""
+        # --> maybe also skip when we dont need any handling for X or y - investigate if this saves noticible time
         if X is not None:
             X = _downcast_nullable_X(
                 X,
