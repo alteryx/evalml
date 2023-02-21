@@ -12,10 +12,7 @@ from woodwork.logical_types import (
     IntegerNullable,
 )
 
-from evalml.utils.nullable_type_utils import (
-    _downcast_nullable_X,
-    _downcast_nullable_y,
-)
+from evalml.utils.nullable_type_utils import _downcast_nullable_X, _downcast_nullable_y
 
 
 def test_downcast_utils_handle_woodwork_not_init(X_y_binary):
@@ -34,7 +31,6 @@ def test_downcast_utils_handle_woodwork_not_init(X_y_binary):
     assert y_d.ww.schema is not None
 
 
-# --> test that we're always initing y with init_series so that we never get a type conversion error
 # --> confirm nan values are maintained
 
 

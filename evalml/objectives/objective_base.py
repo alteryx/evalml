@@ -204,10 +204,18 @@ class ObjectiveBase(ABC):
         """Returns whether or not an objective is defined for a problem type."""
         return handle_problem_types(problem_type) in cls.problem_types
 
-    def _handle_nullable_types(self, y):
-        """---> add docstring."""
+    def _handle_nullable_types(self, y_true):
+        """Transforms y_true to remove any incompatible nullable types according to an objective function's needs.
+
+        Args:
+            y_true (pd.Series): Actual class labels of length [n_samples].
+                May contain nullable types.
+
+        Returns:
+            y_true with any incompatible nullable types downcasted to compatible equivalents.
+        """
         return _downcast_nullable_y(
-            y,
+            y_true,
             handle_boolean_nullable=self._boolean_nullable_incompatible,
             handle_integer_nullable=self._integer_nullable_incompatible,
         )

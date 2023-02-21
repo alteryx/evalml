@@ -1,13 +1,23 @@
 import woodwork as ww
 
 
-# --> add to __init__.py
+# --> add to __init__.py - figure out circular dependency
 def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullable=True):
     # --> initial look is that this is 3x faster - for fraud and contains_nulls and churn
     # --> breast cancer and wine are faster but not by too much - theyre all doubles
     # --> wine was
+    """Removes Pandas nullable integer and nullable boolean dtypes from data by transforming
+        to other dtypes via Woodwork logical type transformations.
 
-    """--> add full docstrings - make sure to note that the handle_integer_nullable refers to the dtype so itll catch both age and itneger ltypes"""
+    Args:
+        X (pd.DataFrame): Input data of shape [n_samples, n_features] whose nullable types will be changed.
+        handle_boolean_nullable (bool, optional): Whether or not to downcast data with BooleanNullable logical types.
+        handle_integer_nullable (bool, optional): Whether or not to downcast data with IntegerNullable or AgeNullable logical types.
+
+
+    Returns:
+        X with any incompatible nullable types downcasted to compatible equivalents.
+    """
     # --> consider adding param for expecting there to not be any nans present so we're
     # notified if we're ever unknowingly converting to Double or Categorical when we shouldnt in automl search
     if X.ww.schema is None:
@@ -46,7 +56,18 @@ def _downcast_nullable_y(y, handle_boolean_nullable=True, handle_integer_nullabl
     # --> slower if nans are present bc we change types now
     # --> faster if no nans are present and no nullable type
     # --> equal if no nans are present and nullable types
-    """--> add full docstrings"""
+    """Removes Pandas nullable integer and nullable boolean dtypes from data by transforming
+        to other dtypes via Woodwork logical type transformations.
+
+    Args:
+        y (pd.Series): Target data of shape [n_samples] whose nullable types will be changed.
+        handle_boolean_nullable (bool, optional): Whether or not to downcast data with BooleanNullable logical types.
+        handle_integer_nullable (bool, optional): Whether or not to downcast data with IntegerNullable or AgeNullable logical types.
+
+
+    Returns:
+        y with any incompatible nullable types downcasted to compatible equivalents.
+    """
     if y.ww.schema is None:
         ww.init_series(y)
 
@@ -65,10 +86,20 @@ def _downcast_nullable_y(y, handle_boolean_nullable=True, handle_integer_nullabl
     return y
 
 
-def _get_downcast_logical_type(logical_type, data_has_nans):
-    # --> try to find a more elegant way to do this
-    # --> consider using objects instead of str representations
-    """--> add docstring"""
+def _get_downcast_logical_type(nullable_logical_type, data_has_nans):
+    """Determines what logical type to downcast to based on whether nans were present or not.
+        - BooleanNullable becomes Boolean if nans are not present and Categorical if they are
+        - IntegerNullable becomes Integer if nans are not present and Double if they are.
+        - AgeNullable becomes Age if nans are not present and AgeFractional if they are.
+
+    Args:
+        nullable_logical_type (str): String representation of the Woodwork LogicalType to downcast
+        data_has_nans (bool): Whether or not nans were present in the data.
+            Determines whether a non nullable LogicalType can be used for downcasting or not.
+
+    Returns:
+        LogicalType string to be used to downcast incompatible nullable logical types.
+    """
     # --> maybe this can be configurable so we could easily choose different values to downcast to for specific components?
     downcast_matches = {
         "BooleanNullable": ("Boolean", "Categorical"),
@@ -77,12 +108,9 @@ def _get_downcast_logical_type(logical_type, data_has_nans):
         "AgeNullable": ("Age", "AgeFractional"),
     }
 
-    no_nans_ltype, has_nans_ltype = downcast_matches[str(logical_type)]
+    no_nans_ltype, has_nans_ltype = downcast_matches[str(nullable_logical_type)]
 
     if data_has_nans:
         return has_nans_ltype
 
     return no_nans_ltype
-
-
-# --> if I independently test this then i dont have to care about the types in the bigger utils :thinking

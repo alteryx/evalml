@@ -2228,7 +2228,6 @@ def imputer_test_data():
 
 
 # --> consider combining with imputer fixture
-# --> one fixture for X and y
 
 
 @pytest.fixture
