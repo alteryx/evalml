@@ -3,8 +3,13 @@ import woodwork as ww
 
 # --> add to __init__.py
 def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullable=True):
-    # --> initial look is that this is 3x (or more when no nullable types present) faster
-    """--> add full docstrings"""
+    # --> initial look is that this is 3x faster - for fraud and contains_nulls and churn
+    # --> breast cancer and wine are faster but not by too much - theyre all doubles
+    # --> wine was
+
+    """--> add full docstrings - make sure to note that the handle_integer_nullable refers to the dtype so itll catch both age and itneger ltypes"""
+    # --> consider adding param for expecting there to not be any nans present so we're
+    # notified if we're ever unknowingly converting to Double or Categorical when we shouldnt in automl search
     if X.ww.schema is None:
         X.ww.init()
 

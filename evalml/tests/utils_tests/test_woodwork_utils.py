@@ -312,6 +312,7 @@ def test_schema_is_equal_fraud(fraud_100):
 
 @pytest.mark.parametrize("ignore_null_cols", [True, False])
 def test_downcast_nullable_types_series(ignore_null_cols):
+    # --> probably not worth using null types fixture here bc we'l lremove as part of implementation
     X = pd.DataFrame(
         {
             "int": [1, 0, 1, 1, 0.0],
