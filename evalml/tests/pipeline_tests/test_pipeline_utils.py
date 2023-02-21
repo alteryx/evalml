@@ -829,23 +829,68 @@ def test_generate_code_pipeline_with_custom_components():
     assert pipeline == expected_code
 
 
-def test_generate_pipeline_example(tmpdir, breast_cancer_local):
+@pytest.mark.parametrize(
+    "automl_type",
+    [
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+    ],
+)
+def test_generate_pipeline_example(
+    automl_type,
+    tmpdir,
+    AutoMLTestEnv,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
+    ts_data,
+):
     path = os.path.join(str(tmpdir), "train.csv")
-    X, y = breast_cancer_local
+    if automl_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+    elif automl_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+    elif automl_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+    elif (
+        automl_type == ProblemTypes.TIME_SERIES_MULTICLASS
+        or automl_type == ProblemTypes.TIME_SERIES_BINARY
+    ):
+        X, _, y = ts_data(problem_type=automl_type)
+    else:
+        X, _, y = ts_data(problem_type=automl_type)
 
     from evalml import AutoMLSearch
 
-    aml = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
-    aml.search()
-    binary_pipeline = aml.best_pipeline
-    # binary_pipeline = BinaryClassificationPipeline(
-    #     ["Imputer", "Random Forest Classifier"],
-    # )
+    aml = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type=automl_type,
+        optimize_thresholds=False,
+        max_time=1,
+        max_iterations=5,
+        problem_configuration={
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 1,
+            "forecast_horizon": 3,
+        }
+        if is_time_series(automl_type)
+        else None,
+    )
+    env = AutoMLTestEnv(automl_type)
+    with env.test_context(score_return_value={aml.objective.name: 1.0}):
+        aml.search()
+    pipeline = aml.best_pipeline
 
     X["target"] = y
     X.to_csv(path)
 
-    pipeline_example = generate_pipeline_example(binary_pipeline, path, path, "target")
+    pipeline_example = generate_pipeline_example(pipeline, path, path, "target")
     print(pipeline_example)
     exec(pipeline_example)
     assert pipeline_example

@@ -690,7 +690,9 @@ pipeline.fit(X_train, y_train)
 df = pd.read_csv(PATH_TO_HOLDOUT)
 y_holdout = df[TARGET]
 X_holdout= df.drop(TARGET, axis=1)
-
+"""
+    if not is_time_series(pipeline.problem_type):
+        output_str += """
 pipeline.predict(X_holdout)
 
 # Note: to predict on new data you have on hand
@@ -700,7 +702,20 @@ pipeline.predict(X_holdout)
 
 # For more info please check out:
 # https://evalml.alteryx.com/en/stable/user_guide/automl.html
-  """
+"""
+    else:
+        output_str += """
+pipeline.predict(X_holdout, X_train=X_train, y_train=y_train)
+
+# Note: to predict on new data you have on hand
+# Map the column names to AML internal names and run prediction
+# X_test = X_test.rename(column_mapping, axis=1)
+# pipeline.predict(X_test, X_train=X_train, y_train=y_train)
+
+# For more info please check out:
+# https://evalml.alteryx.com/en/stable/user_guide/automl.html
+"""
+
     if output_file_path:
         with open(output_file_path, "w") as text_file:
             text_file.write(output_str)
