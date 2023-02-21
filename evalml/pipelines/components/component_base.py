@@ -8,6 +8,7 @@ from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
 from evalml.utils import classproperty, infer_feature_types, log_subtitle, safe_repr
 from evalml.utils.logger import get_logger
+from evalml.utils.nullable_type_utils import _downcast_nullable_X, _downcast_nullable_y
 
 
 class ComponentBase(ABC, metaclass=ComponentBaseMeta):
@@ -21,6 +22,9 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
 
     _default_parameters = None
     _can_be_used_for_fast_partial_dependence = True
+    # Referring to the pandas nullable dtypes; not just woodwork logical types
+    _integer_nullable_incompatibilities = []
+    _boolean_nullable_incompatibilities = []
 
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         """Base class for all components.
@@ -239,3 +243,21 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         self._parameters.update(update_dict)
         if reset_fit:
             self._is_fitted = False
+
+    def _handle_nullable_types(self, X=None, y=None):
+        """---> add docstring."""
+        if X is not None:
+            X = _downcast_nullable_X(
+                X,
+                handle_boolean_nullable="X" in self._boolean_nullable_incompatibilities,
+                handle_integer_nullable="X" in self._integer_nullable_incompatibilities,
+            )
+
+        if y is not None:
+            y = _downcast_nullable_y(
+                y,
+                handle_boolean_nullable="y" in self._boolean_nullable_incompatibilities,
+                handle_integer_nullable="y" in self._integer_nullable_incompatibilities,
+            )
+
+        return X, y
