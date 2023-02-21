@@ -1,5 +1,6 @@
 """Utility methods for EvalML pipelines."""
 import copy
+import os
 
 import black
 from woodwork import logical_types
@@ -65,6 +66,7 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.utils import get_time_index, infer_feature_types
+from evalml.utils.cli_utils import get_evalml_black_config
 from evalml.utils.gen_utils import contains_all_ts_parameters
 
 
@@ -637,11 +639,10 @@ def generate_pipeline_code(element):
     )
     code_strings.append(repr(element))
     pipeline_code = "\n".join(code_strings)
-    pipeline_code = black.format_str(
-        pipeline_code,
-        mode=black.Mode(target_versions={black.TargetVersion.PY39}, line_length=88),
-    )
-
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    evalml_path = os.path.abspath(os.path.join(current_dir, "..", ".."))
+    black_config = get_evalml_black_config(evalml_path)
+    pipeline_code = black.format_str(pipeline_code, mode=black.Mode(**black_config))
     return pipeline_code
 
 

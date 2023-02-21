@@ -47,6 +47,7 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.utils import infer_feature_types
+from evalml.utils.cli_utils import get_evalml_black_config
 
 
 def pytest_configure(config):
@@ -2337,3 +2338,11 @@ def categorical_floats_df():
     )
 
     return X
+
+
+@pytest.fixture
+def get_black_config():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    evalml_path = os.path.abspath(os.path.join(current_dir, "..", ".."))
+    black_config = get_evalml_black_config(evalml_path)
+    return black_config

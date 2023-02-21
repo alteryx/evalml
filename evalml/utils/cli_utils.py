@@ -6,6 +6,7 @@ import platform
 import struct
 import sys
 
+import black
 import pkg_resources
 import tomli
 from packaging.requirements import Requirement
@@ -158,3 +159,30 @@ def get_evalml_pip_requirements(
         convert_to_conda=convert_to_conda,
     )
     return standardized_package_specifiers
+
+
+def get_evalml_black_config(
+    evalml_path,
+):
+    """Gets configuration for black.
+
+    Args:
+        evalml_path: Path to evalml root.
+
+    Returns:
+        Dictionary of black configuration.
+    """
+    toml_dict = None
+    project_metadata_filepath = pathlib.Path(evalml_path, "pyproject.toml")
+    with open(project_metadata_filepath, "rb") as f:
+        toml_dict = tomli.load(f)
+    black_config = toml_dict["tool"]["black"]
+    black_config["line_length"] = black_config.pop("line-length")
+    target_versions = set(
+        [
+            black.TargetVersion[ver.upper()]
+            for ver in black_config.pop("target-version")
+        ],
+    )
+    black_config["target_versions"] = target_versions
+    return black_config
