@@ -1,6 +1,7 @@
 import os
 from unittest.mock import patch
 
+import black
 import pytest
 from click.testing import CliRunner
 from packaging.requirements import Requirement
@@ -113,11 +114,11 @@ def test_get_evalml_root(current_dir):
 def test_get_evalml_black_config(current_dir):
     evalml_path = os.path.abspath(os.path.join(current_dir, "..", "..", ".."))
     black_config = get_evalml_black_config(evalml_path)
-    assert black_config["line_length"] == "88"
-    assert black_config["target_versions"] == set("PY39")
+    assert black_config["line_length"] == 88
+    assert black_config["target_versions"] == set([black.TargetVersion["PY39"]])
 
     black_config = get_evalml_black_config(
         os.path.join(current_dir, "..", "..", "random_file"),
     )
-    assert black_config["line_length"] == "88"
-    assert black_config["target_versions"] == set("PY39")
+    assert black_config["line_length"] == 88
+    assert black_config["target_versions"] == set([black.TargetVersion["PY39"]])
