@@ -18,7 +18,10 @@ from woodwork.logical_types import Ordinal
 from evalml.demos import load_weather
 from evalml.model_family import ModelFamily
 from evalml.objectives import BinaryClassificationObjective
-from evalml.objectives.utils import get_core_objectives, get_non_core_objectives
+from evalml.objectives.utils import (
+    get_core_objectives,
+    get_non_core_objectives,
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -2096,7 +2099,7 @@ class CustomBinaryClassificationObjective(BinaryClassificationObjective):
     expected_range = [0, 1]
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
-        pass
+        """Not implementing"""
 
 
 def load_daily_temp_local(n_rows=None):
