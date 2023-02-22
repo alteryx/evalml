@@ -1,9 +1,5 @@
 import pytest
-from woodwork.logical_types import (
-    AgeNullable,
-    BooleanNullable,
-    IntegerNullable,
-)
+from woodwork.logical_types import AgeNullable, BooleanNullable, IntegerNullable
 
 from evalml.utils.nullable_type_utils import (
     _determine_downcast_type,
@@ -134,7 +130,7 @@ def test_downcast_nullable_X_replaces_nullable_types(nullable_type_test_data):
     # Set other typing info to confirm it's maintained
     X.ww.init(
         schema=X.ww.schema,
-        column_origins={"int col nullable": "base", "float col": "engineered"},
+        column_origins={"int with nan": "base", "float col": "engineered"},
     )
     original_X = X.ww.copy()
 
@@ -159,7 +155,7 @@ def test_downcast_nullable_X_replaces_nullable_types(nullable_type_test_data):
 
     assert set(X_d.columns) == set(original_X.columns)
     assert len(X_d.ww.select(["IntegerNullable", "BooleanNullable"]).columns) == 0
-    assert X_d.ww["int col nullable"].ww.origin == "base"
+    assert X_d.ww["int with nan"].ww.origin == "base"
 
     # Check that no nullable types remain
     assert (

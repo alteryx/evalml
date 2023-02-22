@@ -19,7 +19,10 @@ from evalml.demos import load_weather
 from evalml.model_family import ModelFamily
 from evalml.objectives import BinaryClassificationObjective
 from evalml.objectives.objective_base import ObjectiveBase
-from evalml.objectives.utils import get_core_objectives, get_non_core_objectives
+from evalml.objectives.utils import (
+    get_core_objectives,
+    get_non_core_objectives,
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -2194,7 +2197,7 @@ def dummy_data_check_validate_output_errors():
 
 
 @pytest.fixture
-def imputer_test_data():
+def X_no_nans():
     X = pd.DataFrame(
         {
             "dates": pd.date_range("01-01-2022", periods=20),
@@ -2206,6 +2209,30 @@ def imputer_test_data():
             "object col": ["b", "b", "a", "c", "d"] * 4,
             "float col": [0.1, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
+            "natural language col": pd.Series(
+                ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
+                dtype="string",
+            ),
+        },
+    )
+    X.ww.init(
+        logical_types={
+            "dates": "datetime",
+            "categorical col": "categorical",
+            "int col": "integer",
+            "object col": "categorical",
+            "float col": "double",
+            "bool col": "boolean",
+            "natural language col": "NaturalLanguage",
+        },
+    )
+    return X
+
+
+@pytest.fixture
+def X_nans_and_nullable_types():
+    X = pd.DataFrame(
+        {
             "categorical with nan": pd.Series(
                 [np.nan, "1", "0", "0", "3"] * 4,
                 dtype="category",
@@ -2222,20 +2249,10 @@ def imputer_test_data():
                 [np.nan, np.nan, np.nan, np.nan, np.nan] * 4,
                 dtype="category",
             ),
-            "natural language col": pd.Series(
-                ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
-                dtype="string",
-            ),
         },
     )
     X.ww.init(
         logical_types={
-            "dates": "datetime",
-            "categorical col": "categorical",
-            "int col": "integer",
-            "object col": "categorical",
-            "float col": "double",
-            "bool col": "boolean",
             "categorical with nan": "categorical",
             "int with nan": "IntegerNullable",
             "float with nan": "double",
@@ -2243,89 +2260,49 @@ def imputer_test_data():
             "bool col with nan": "BooleanNullable",
             "all nan": "unknown",
             "all nan cat": "categorical",
-            "natural language col": "NaturalLanguage",
         },
     )
     return X
 
 
 @pytest.fixture
-def nullable_type_test_data():
+def imputer_test_data(X_no_nans, X_nans_and_nullable_types):
+    return ww.concat_columns(
+        [X_no_nans, X_nans_and_nullable_types],
+    )
+
+
+@pytest.fixture
+def nullable_type_test_data(
+    X_no_nans,
+    X_nans_and_nullable_types,
+):
     def _build_nullable_type_data(has_nans=True):
-        X_no_nans = pd.DataFrame(
+        X_age_no_nans = pd.DataFrame(
             {
-                "dates": pd.date_range("01-01-2022", periods=20),
-                "categorical col": pd.Series(
-                    ["zero", "one", "two", "zero", "two"] * 4,
-                    dtype="category",
-                ),
-                "int col": [0, 1, 2, 0, 3] * 4,
                 "age col": [11, 21, 30, 45, 89] * 4,
-                "object col": ["b", "b", "a", "c", "d"] * 4,
-                "float col": [0.1, 1.0, 0.0, -2.0, 5.0] * 4,
-                "bool col": [True, False, False, True, True] * 4,
-                "natural language col": pd.Series(
-                    ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
-                    dtype="string",
-                ),
-                # Columns with nullable types that don't have nans
-                "int col nullable": [0, 1, 2, 0, 3] * 4,
-                "bool col nullable": [True, False, False, True, True] * 4,
                 "age col nullable": [11, 21, 30, 45, 89] * 4,
             },
         )
-        X_no_nans.ww.init(
+        X_age_no_nans.ww.init(
             logical_types={
-                "dates": "datetime",
-                "categorical col": "categorical",
-                "int col": "integer",
-                "age col": "age",
-                "object col": "categorical",
-                "float col": "double",
-                "bool col": "boolean",
-                "natural language col": "NaturalLanguage",
-                "int col nullable": "IntegerNullable",
-                "bool col nullable": "BooleanNullable",
+                "age col": "Age",
                 "age col nullable": "AgeNullable",
             },
         )
         if not has_nans:
-            return X_no_nans
+            return ww.concat_columns([X_no_nans, X_age_no_nans])
 
-        X_nans = pd.DataFrame(
-            {
-                "categorical with nan": pd.Series(
-                    [np.nan, "1", "0", "0", "3"] * 4,
-                    dtype="category",
-                ),
-                "int with nan": [np.nan, 1, 0, 0, 1] * 4,
-                "float with nan": [0.3, 1.0, np.nan, -1.0, 0.0] * 4,
-                "age with nan": [np.nan, 12, 22, 31, 9] * 4,
-                "object with nan": ["b", "b", np.nan, "c", np.nan] * 4,
-                "bool with nan": pd.Series(
-                    [True, np.nan, False, np.nan, True] * 4,
-                    dtype="category",
-                ),
-                "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan] * 4,
-                "all nan cat": pd.Series(
-                    [np.nan, np.nan, np.nan, np.nan, np.nan] * 4,
-                    dtype="category",
-                ),
-            },
+        X_age_nans = pd.Series([np.nan, 12, 22, 31, 9] * 4, name="age with nan")
+        X_age_nans = ww.init_series(X_age_nans, logical_type="AgeNullable")
+        return ww.concat_columns(
+            [
+                X_no_nans,
+                X_age_no_nans,
+                X_nans_and_nullable_types,
+                X_age_nans,
+            ],
         )
-        X_nans.ww.init(
-            logical_types={
-                "categorical with nan": "categorical",
-                "int with nan": "IntegerNullable",
-                "float with nan": "double",
-                "object with nan": "categorical",
-                "bool with nan": "BooleanNullable",
-                "all nan": "unknown",
-                "all nan cat": "categorical",
-                "age with nan": "AgeNullable",
-            },
-        )
-        return ww.concat_columns([X_no_nans, X_nans])
 
     return _build_nullable_type_data
 
