@@ -172,11 +172,11 @@ def get_evalml_black_config(
     Returns:
         Dictionary of black configuration.
     """
-    black_config = {"line_length": "88", "target_versions": "PY39"}
+    black_config = {"line_length": "88", "target_versions": set("PY39")}
     try:
         toml_dict = None
-        project_metadata_filepath = pathlib.Path(evalml_path, "pyproject.toml")
-        with open(project_metadata_filepath, "rb") as f:
+        pathlib.Path(evalml_path, "pyproject.toml")
+        with open(evalml_path, "rb") as f:
             toml_dict = tomli.load(f)
         black_config = toml_dict["tool"]["black"]
         black_config["line_length"] = black_config.pop("line-length")
@@ -187,6 +187,6 @@ def get_evalml_black_config(
             ],
         )
         black_config["target_versions"] = target_versions
-    except FileNotFoundError:
+    except Exception:
         pass
     return black_config

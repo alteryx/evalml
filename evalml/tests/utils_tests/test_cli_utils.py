@@ -7,6 +7,7 @@ from packaging.requirements import Requirement
 
 from evalml.__main__ import cli
 from evalml.utils.cli_utils import (
+    get_evalml_black_config,
     get_evalml_pip_requirements,
     get_evalml_root,
     get_installed_packages,
@@ -109,12 +110,14 @@ def test_get_evalml_root(current_dir):
     assert get_evalml_root() == root
 
 
-def get_evalml_black_config(current_dir):
+def test_get_evalml_black_config(current_dir):
     evalml_path = os.path.abspath(os.path.join(current_dir, "..", "..", ".."))
     black_config = get_evalml_black_config(evalml_path)
     assert black_config["line_length"] == "88"
     assert black_config["target_versions"] == set("PY39")
 
-    black_config = get_evalml_black_config("")
+    black_config = get_evalml_black_config(
+        os.path.join(current_dir, "..", "..", "random_file"),
+    )
     assert black_config["line_length"] == "88"
     assert black_config["target_versions"] == set("PY39")
