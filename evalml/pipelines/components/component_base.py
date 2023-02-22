@@ -6,9 +6,17 @@ import cloudpickle
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
-from evalml.utils import classproperty, infer_feature_types, log_subtitle, safe_repr
+from evalml.utils import (
+    classproperty,
+    infer_feature_types,
+    log_subtitle,
+    safe_repr,
+)
 from evalml.utils.logger import get_logger
-from evalml.utils.nullable_type_utils import _downcast_nullable_X, _downcast_nullable_y
+from evalml.utils.nullable_type_utils import (
+    _downcast_nullable_X,
+    _downcast_nullable_y,
+)
 
 
 class ComponentBase(ABC, metaclass=ComponentBaseMeta):
@@ -249,7 +257,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
 
         Args:
             X (pd.DataFrame, optional): Input data to a component of shape [n_samples, n_features].
-            y (pd.Series): The target of length [n_samples]. May contain nullable types.
+                May contain nullable types.
+            y (pd.Series, optional): The target of length [n_samples]. May contain nullable types.
 
         Returns:
             X, y with any incompatible nullable types downcasted to compatible equivalents.
