@@ -24,9 +24,6 @@ def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullabl
         select_param.append("IntegerNullable")
         select_param.append("AgeNullable")
 
-    if not select_param:
-        return X
-
     nullable_X_to_downcast = X.ww.select(select_param)
     if not len(nullable_X_to_downcast.columns):
         return X
