@@ -1,7 +1,7 @@
 import pytest
 from woodwork.logical_types import AgeNullable, BooleanNullable, IntegerNullable
 
-from evalml.utils.nullable_type_utils import (
+from evalml.utils import (
     _determine_downcast_type,
     _downcast_nullable_X,
     _downcast_nullable_y,

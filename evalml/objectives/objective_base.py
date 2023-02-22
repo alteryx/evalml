@@ -5,8 +5,7 @@ import numpy as np
 import pandas as pd
 
 from evalml.problem_types import handle_problem_types
-from evalml.utils import classproperty
-from evalml.utils.nullable_type_utils import _downcast_nullable_y
+from evalml.utils import _downcast_nullable_y, classproperty
 
 
 class ObjectiveBase(ABC):

@@ -7,16 +7,14 @@ import cloudpickle
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
 from evalml.utils import (
+    _downcast_nullable_X,
+    _downcast_nullable_y,
     classproperty,
     infer_feature_types,
     log_subtitle,
     safe_repr,
 )
 from evalml.utils.logger import get_logger
-from evalml.utils.nullable_type_utils import (
-    _downcast_nullable_X,
-    _downcast_nullable_y,
-)
 
 
 class ComponentBase(ABC, metaclass=ComponentBaseMeta):
