@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Move black to regular dependency and use it for ``generate_pipeline_code`` :pr:`4005`
         * Implement ``generate_pipeline_example`` :pr:`4023`
     * Fixes
     * Changes

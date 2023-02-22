@@ -2,7 +2,7 @@ IPython==8.10.0
 PyYAML==5.4
 catboost==1.1.1
 category-encoders==2.2.2
-click==7.1.2
+click>=8.0.0
 cloudpickle==1.5.0
 codecov==2.1.11
 colorama==0.4.4
