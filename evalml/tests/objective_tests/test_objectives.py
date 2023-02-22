@@ -21,7 +21,7 @@ from evalml.objectives import (
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.objectives.utils import _all_objectives_dict
 from evalml.problem_types import ProblemTypes
-from evalml.tests.conftest import CustomBinaryClassificationObjective
+from evalml.tests.conftest import CustomObjective
 
 
 def test_create_custom_objective():
@@ -199,7 +199,7 @@ def test_get_objectives_all_expected_ranges(obj):
 def test_binary_objective_handle_nullable_types(nullable_type_target, nullable_ltype):
     y_true = nullable_type_target(ltype=nullable_ltype, has_nans=False)
 
-    obj = CustomBinaryClassificationObjective()
+    obj = CustomObjective()
     y_true_d = obj._handle_nullable_types(y_true)
     assert str(y_true_d.ww.logical_type) != nullable_ltype
 
@@ -209,6 +209,6 @@ def test_binary_objective_handle_nullable_types_non_ww_input(make_data_type, dat
     y_true = pd.Series([1, 0, 1, 1, 0] * 5)
     y_true = make_data_type(data_type, y_true)
 
-    obj = CustomBinaryClassificationObjective()
+    obj = CustomObjective()
     y_true_d = obj._handle_nullable_types(y_true)
     assert y_true_d is y_true
