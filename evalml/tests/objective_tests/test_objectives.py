@@ -214,7 +214,7 @@ def test_binary_objective_handle_nullable_types(
 
 def test_binary_objective_handle_nullable_types_numpy_input(make_data_type):
     y_true = pd.Series([1, 0, 1, 1, 0] * 5)
-    y_true = make_data_type("np", y_true)
+    y_true = y_true.to_numpy()
 
     obj = CustomObjective()
     y_true_d = obj._handle_nullable_types(y_true)
