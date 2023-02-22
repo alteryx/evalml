@@ -17,28 +17,22 @@ def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullabl
     if X.ww.schema is None:
         X.ww.init()
 
-    select_param = []
-    if handle_boolean_nullable:
-        select_param.append("BooleanNullable")
-    if handle_integer_nullable:
-        select_param.append("IntegerNullable")
-        select_param.append("AgeNullable")
-
-    nullable_X_to_downcast = X.ww.select(select_param)
-    if not len(nullable_X_to_downcast.columns):
-        return X
-
-    cols_with_nans = set(
-        nullable_X_to_downcast.columns[nullable_X_to_downcast.isnull().any()],
+    incompatible_logical_types = _get_incompatible_nullable_types(
+        handle_boolean_nullable,
+        handle_integer_nullable,
     )
 
+    data_to_downcast = X.ww.select(incompatible_logical_types)
+    # If no incompatible types are present, no downcasting is needed
+    if not len(data_to_downcast.columns):
+        return X
+
     new_ltypes = {
-        col: _get_downcast_logical_type(ltype, col in cols_with_nans)
-        for col, ltype in nullable_X_to_downcast.ww.logical_types.items()
+        col: _determine_downcast_type(data_to_downcast.ww[col])
+        for col in data_to_downcast.columns
     }
 
-    if new_ltypes:
-        X.ww.set_types(logical_types=new_ltypes)
+    X.ww.set_types(logical_types=new_ltypes)
     return X
 
 
@@ -58,6 +52,28 @@ def _downcast_nullable_y(y, handle_boolean_nullable=True, handle_integer_nullabl
     if y.ww.schema is None:
         ww.init_series(y)
 
+    incompatible_logical_types = _get_incompatible_nullable_types(
+        handle_boolean_nullable,
+        handle_integer_nullable,
+    )
+
+    if isinstance(y.ww.logical_type, tuple(incompatible_logical_types)):
+        new_ltype = _determine_downcast_type(y)
+        return y.ww.set_logical_type(new_ltype)
+
+    return y
+
+
+def _get_incompatible_nullable_types(handle_boolean_nullable, handle_integer_nullable):
+    """Determines which Woodwork logical types are incompatible.
+
+    Args:
+        handle_boolean_nullable (bool): Whether boolean nullable logical types are incompatible.
+        handle_integer_nullable (bool): Whether integer nullable logical types are incompatible.
+
+    Returns:
+        list[ww.LogicalType] of logical types that are incompatible.
+    """
     nullable_types_to_handle = []
     if handle_boolean_nullable:
         nullable_types_to_handle.append(ww.logical_types.BooleanNullable)
@@ -65,23 +81,18 @@ def _downcast_nullable_y(y, handle_boolean_nullable=True, handle_integer_nullabl
         nullable_types_to_handle.append(ww.logical_types.IntegerNullable)
         nullable_types_to_handle.append(ww.logical_types.AgeNullable)
 
-    if isinstance(y.ww.logical_type, tuple(nullable_types_to_handle)):
-        new_ltype = _get_downcast_logical_type(y.ww.logical_type, y.isnull().any())
-        return y.ww.set_logical_type(new_ltype)
-
-    return y
+    return nullable_types_to_handle
 
 
-def _get_downcast_logical_type(nullable_logical_type, data_has_nans):
+def _determine_downcast_type(col):
     """Determines what logical type to downcast to based on whether nans were present or not.
         - BooleanNullable becomes Boolean if nans are not present and Categorical if they are
         - IntegerNullable becomes Integer if nans are not present and Double if they are.
         - AgeNullable becomes Age if nans are not present and AgeFractional if they are.
 
     Args:
-        nullable_logical_type (str): String representation of the Woodwork LogicalType to downcast
-        data_has_nans (bool): Whether or not nans were present in the data.
-            Determines whether a non nullable LogicalType can be used for downcasting or not.
+        col (Woodwork Series): The data whose downcast logical type we are determining by inspecting
+            its current logical type and whether nans are present.
 
     Returns:
         LogicalType string to be used to downcast incompatible nullable logical types.
@@ -92,9 +103,8 @@ def _get_downcast_logical_type(nullable_logical_type, data_has_nans):
         "AgeNullable": ("Age", "AgeFractional"),
     }
 
-    no_nans_ltype, has_nans_ltype = downcast_matches[str(nullable_logical_type)]
-
-    if data_has_nans:
+    no_nans_ltype, has_nans_ltype = downcast_matches[str(col.ww.logical_type)]
+    if col.isnull().any():
         return has_nans_ltype
 
     return no_nans_ltype
