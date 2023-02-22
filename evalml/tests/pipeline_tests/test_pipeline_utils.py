@@ -889,11 +889,16 @@ def test_generate_pipeline_example(
 
     X["target"] = y
     X.to_csv(path)
-
-    pipeline_example = generate_pipeline_example(pipeline, path, path, "target")
-    print(pipeline_example)
+    output_path = os.path.join(str(tmpdir), "example.py")
+    pipeline_example = generate_pipeline_example(
+        pipeline=pipeline,
+        path_to_train=path,
+        path_to_holdout=path,
+        target="target",
+        output_file_path=output_path,
+    )
     exec(pipeline_example)
-    assert pipeline_example
+    assert os.path.exists(output_path)
 
 
 def test_rows_of_interest_errors(X_y_binary):
