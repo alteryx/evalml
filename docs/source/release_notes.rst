@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
       * Move black to regular dependency and use it for ``generate_pipeline_code`` :pr:`4005`
+        * Add new downcast utils for component-specific nullable type handling and begin implementation on objective and component base classes :pr:`4024`
     * Fixes
     * Changes
         * Increase min catboost to 1.1.1 and xgboost to 1.7.0 to add nullable type support for those estimators :pr:`3996`
