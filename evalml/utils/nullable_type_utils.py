@@ -50,7 +50,7 @@ def _downcast_nullable_y(y, handle_boolean_nullable=True, handle_integer_nullabl
         y with any incompatible nullable types downcasted to compatible equivalents.
     """
     if y.ww.schema is None:
-        ww.init_series(y)
+        y = ww.init_series(y)
 
     incompatible_logical_types = _get_incompatible_nullable_types(
         handle_boolean_nullable,

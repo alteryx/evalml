@@ -217,7 +217,10 @@ class ObjectiveBase(ABC):
         # Since Objective functions dont have the same safeguards around non woodwork inputs,
         # we'll choose to avoid the downcasting path since we shouldn't have nullable pandas types
         # without them being set by Woodwork
-        if isinstance(y_true, pd.Series) and y_true.ww.schema is not None:
+
+        # Do not pass numpy inputs into downcasting util, because they can
+        # never have nullable pandas dtypes.
+        if isinstance(y_true, pd.Series):
             return _downcast_nullable_y(
                 y_true,
                 handle_boolean_nullable=self._boolean_nullable_incompatible,

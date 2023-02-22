@@ -196,19 +196,27 @@ def test_get_objectives_all_expected_ranges(obj):
     "nullable_ltype",
     ["BooleanNullable", "IntegerNullable", "AgeNullable"],
 )
-def test_binary_objective_handle_nullable_types(nullable_type_target, nullable_ltype):
+@pytest.mark.parametrize("data_type", ["ww", "pd"])
+def test_binary_objective_handle_nullable_types(
+    nullable_type_target,
+    data_type,
+    nullable_ltype,
+):
     y_true = nullable_type_target(ltype=nullable_ltype, has_nans=False)
+    if data_type == "pd":
+        # remove woodwork types but keep nullable pandas dtype
+        y_true = y_true.copy()
 
     obj = CustomObjective()
     y_true_d = obj._handle_nullable_types(y_true)
     assert str(y_true_d.ww.logical_type) != nullable_ltype
 
 
-@pytest.mark.parametrize("data_type", ["np", "pd"])
-def test_binary_objective_handle_nullable_types_non_ww_input(make_data_type, data_type):
+def test_binary_objective_handle_nullable_types_numpy_input(make_data_type):
     y_true = pd.Series([1, 0, 1, 1, 0] * 5)
-    y_true = make_data_type(data_type, y_true)
+    y_true = make_data_type("np", y_true)
 
     obj = CustomObjective()
     y_true_d = obj._handle_nullable_types(y_true)
+
     assert y_true_d is y_true
