@@ -6,7 +6,14 @@ import cloudpickle
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
-from evalml.utils import classproperty, infer_feature_types, log_subtitle, safe_repr
+from evalml.utils import (
+    _downcast_nullable_X,
+    _downcast_nullable_y,
+    classproperty,
+    infer_feature_types,
+    log_subtitle,
+    safe_repr,
+)
 from evalml.utils.logger import get_logger
 
 
@@ -21,6 +28,9 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
 
     _default_parameters = None
     _can_be_used_for_fast_partial_dependence = True
+    # Referring to the pandas nullable dtypes; not just woodwork logical types
+    _integer_nullable_incompatibilities = []
+    _boolean_nullable_incompatibilities = []
 
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         """Base class for all components.
@@ -239,3 +249,34 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         self._parameters.update(update_dict)
         if reset_fit:
             self._is_fitted = False
+
+    def _handle_nullable_types(self, X=None, y=None):
+        """Transforms X and y to remove any incompatible nullable types according to a component's needs.
+
+        Args:
+            X (pd.DataFrame, optional): Input data to a component of shape [n_samples, n_features].
+                May contain nullable types.
+            y (pd.Series, optional): The target of length [n_samples]. May contain nullable types.
+
+        Returns:
+            X, y with any incompatible nullable types downcasted to compatible equivalents.
+        """
+        X_bool_incompatible = "X" in self._boolean_nullable_incompatibilities
+        X_int_incompatible = "X" in self._integer_nullable_incompatibilities
+        if X is not None and (X_bool_incompatible or X_int_incompatible):
+            X = _downcast_nullable_X(
+                X,
+                handle_boolean_nullable=X_bool_incompatible,
+                handle_integer_nullable=X_int_incompatible,
+            )
+
+        y_bool_incompatible = "y" in self._boolean_nullable_incompatibilities
+        y_int_incompatible = "y" in self._integer_nullable_incompatibilities
+        if y is not None and (y_bool_incompatible or y_int_incompatible):
+            y = _downcast_nullable_y(
+                y,
+                handle_boolean_nullable=y_bool_incompatible,
+                handle_integer_nullable=y_int_incompatible,
+            )
+
+        return X, y

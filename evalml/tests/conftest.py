@@ -13,11 +13,17 @@ from sklearn import datasets
 from sklearn.preprocessing import minmax_scale
 from skopt.space import Integer, Real
 from woodwork import logical_types as ww_logical_types
-from woodwork.logical_types import Ordinal
+from woodwork.logical_types import (
+    AgeNullable,
+    BooleanNullable,
+    IntegerNullable,
+    Ordinal,
+)
 
 from evalml.demos import load_weather
 from evalml.model_family import ModelFamily
 from evalml.objectives import BinaryClassificationObjective
+from evalml.objectives.objective_base import ObjectiveBase
 from evalml.objectives.utils import get_core_objectives, get_non_core_objectives
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -33,6 +39,7 @@ from evalml.pipelines.components import (
     Estimator,
     LogisticRegressionClassifier,
 )
+from evalml.pipelines.components.component_base import ComponentBase
 from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
     _nonstackable_model_families,
 )
@@ -2084,6 +2091,42 @@ def CustomClassificationObjectiveRanges(ranges):
     return CustomClassificationObjectiveRanges()
 
 
+def CustomObjective(
+    integer_nullable_incompatible=True,
+    boolean_nullable_incompatible=True,
+):
+    class CustomObjective(ObjectiveBase):
+        _integer_nullable_incompatible = integer_nullable_incompatible
+        _boolean_nullable_incompatible = boolean_nullable_incompatible
+
+        name = "my_objective"
+        greater_is_better = True
+        score_needs_proba = False
+        perfect_score = 1.0
+        is_bounded_like_percentage = True
+        expected_range = [0, 1]
+
+        def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+            """Not implementing"""
+
+    return CustomObjective()
+
+
+def CustomComponent(
+    integer_nullable_incompatibilities=["X", "y"],
+    boolean_nullable_incompatibilities=["X", "y"],
+):
+    class CustomComponent(ComponentBase):
+        name = "CustomComponent"
+        modifies_features = True
+        modifies_target = False
+        training_only = False
+        _boolean_nullable_incompatibilities = boolean_nullable_incompatibilities
+        _integer_nullable_incompatibilities = integer_nullable_incompatibilities
+
+    return CustomComponent()
+
+
 def load_daily_temp_local(n_rows=None):
     currdir_path = os.path.dirname(os.path.abspath(__file__))
     data_folder_path = os.path.join(currdir_path, "data")
@@ -2172,7 +2215,7 @@ def dummy_data_check_validate_output_errors():
 
 
 @pytest.fixture
-def imputer_test_data():
+def X_no_nans():
     X = pd.DataFrame(
         {
             "dates": pd.date_range("01-01-2022", periods=20),
@@ -2184,6 +2227,30 @@ def imputer_test_data():
             "object col": ["b", "b", "a", "c", "d"] * 4,
             "float col": [0.1, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
+            "natural language col": pd.Series(
+                ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
+                dtype="string",
+            ),
+        },
+    )
+    X.ww.init(
+        logical_types={
+            "dates": "datetime",
+            "categorical col": "categorical",
+            "int col": "integer",
+            "object col": "categorical",
+            "float col": "double",
+            "bool col": "boolean",
+            "natural language col": "NaturalLanguage",
+        },
+    )
+    return X
+
+
+@pytest.fixture
+def X_nans_and_nullable_types():
+    X = pd.DataFrame(
+        {
             "categorical with nan": pd.Series(
                 [np.nan, "1", "0", "0", "3"] * 4,
                 dtype="category",
@@ -2200,20 +2267,10 @@ def imputer_test_data():
                 [np.nan, np.nan, np.nan, np.nan, np.nan] * 4,
                 dtype="category",
             ),
-            "natural language col": pd.Series(
-                ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
-                dtype="string",
-            ),
         },
     )
     X.ww.init(
         logical_types={
-            "dates": "datetime",
-            "categorical col": "categorical",
-            "int col": "integer",
-            "object col": "categorical",
-            "float col": "double",
-            "bool col": "boolean",
             "categorical with nan": "categorical",
             "int with nan": "IntegerNullable",
             "float with nan": "double",
@@ -2221,10 +2278,70 @@ def imputer_test_data():
             "bool col with nan": "BooleanNullable",
             "all nan": "unknown",
             "all nan cat": "categorical",
-            "natural language col": "NaturalLanguage",
         },
     )
     return X
+
+
+@pytest.fixture
+def imputer_test_data(X_no_nans, X_nans_and_nullable_types):
+    return ww.concat_columns(
+        [X_no_nans, X_nans_and_nullable_types],
+    )
+
+
+@pytest.fixture
+def nullable_type_test_data(
+    X_no_nans,
+    X_nans_and_nullable_types,
+):
+    def _build_nullable_type_data(has_nans=True):
+        X_more_nullable_types = pd.DataFrame(
+            {
+                "age col": [11, 21, 30, 45, 89] * 4,
+                "age col nullable": [11, 21, 30, 45, 89] * 4,
+                "int col nullable": [0, 1, 2, 0, 3] * 4,
+                "bool col nullable": [True, False, False, True, True] * 4,
+            },
+        )
+        X_more_nullable_types.ww.init(
+            logical_types={
+                "age col": "Age",
+                "age col nullable": "AgeNullable",
+                "int col nullable": "IntegerNullable",
+                "bool col nullable": "BooleanNullable",
+            },
+        )
+        if not has_nans:
+            return ww.concat_columns([X_no_nans, X_more_nullable_types])
+
+        X_age_nans = pd.Series([np.nan, 12, 22, 31, 9] * 4, name="age with nan")
+        X_age_nans = ww.init_series(X_age_nans, logical_type="AgeNullable")
+        return ww.concat_columns(
+            [
+                X_no_nans,
+                X_more_nullable_types,
+                X_nans_and_nullable_types,
+                X_age_nans,
+            ],
+        )
+
+    return _build_nullable_type_data
+
+
+@pytest.fixture
+def nullable_type_target():
+    def _build_nullable_type_data(ltype="BooleanNullable", has_nans=True):
+        y = pd.Series([1, 0, 1, 1, 0] * 4)
+
+        if has_nans:
+            y = pd.Series([1, 0, pd.NA, 1, 0] * 4)
+        else:
+            y = pd.Series([1, 0, 1, 1, 0] * 4)
+
+        return ww.init_series(y, logical_type=ltype)
+
+    return _build_nullable_type_data
 
 
 @pytest.fixture
@@ -2346,3 +2463,27 @@ def get_black_config():
     evalml_path = os.path.abspath(os.path.join(current_dir, "..", ".."))
     black_config = get_evalml_black_config(evalml_path)
     return black_config
+
+
+@pytest.fixture
+def split_nullable_logical_types_by_compatibility():
+    def _split_nullable_logical_types_by_compatibility(
+        int_null_incompatible,
+        bool_null_incompatible,
+    ):
+        incompatible_ltypes = []
+        compatible_ltypes = []
+        if int_null_incompatible:
+            incompatible_ltypes.append(IntegerNullable)
+            incompatible_ltypes.append(AgeNullable)
+        else:
+            compatible_ltypes.append(IntegerNullable)
+            compatible_ltypes.append(AgeNullable)
+        if bool_null_incompatible:
+            incompatible_ltypes.append(BooleanNullable)
+        else:
+            compatible_ltypes.append(BooleanNullable)
+
+        return compatible_ltypes, incompatible_ltypes
+
+    return _split_nullable_logical_types_by_compatibility

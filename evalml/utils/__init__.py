@@ -36,3 +36,9 @@ from evalml.utils.woodwork_utils import (
     downcast_int_nullable_to_double,
     downcast_nullable_types,
 )
+from evalml.utils.nullable_type_utils import (
+    _downcast_nullable_X,
+    _downcast_nullable_y,
+    _determine_downcast_type,
+    _get_incompatible_nullable_types,
+)

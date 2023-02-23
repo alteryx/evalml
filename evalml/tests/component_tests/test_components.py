@@ -92,6 +92,9 @@ from evalml.pipelines.components.utils import (
     generate_component_code,
 )
 from evalml.problem_types import ProblemTypes
+from evalml.tests.conftest import (
+    CustomComponent,
+)
 
 
 @pytest.fixture(scope="module")
@@ -1804,3 +1807,80 @@ def test_component_parameters_supported_by_list_API(component_class):
         assert not component_class._supported_by_list_API
     else:
         assert component_class._supported_by_list_API
+
+
+@pytest.mark.parametrize(
+    "nullable_y_ltype",
+    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+)
+@pytest.mark.parametrize("X_bool_null_incompatible", [True, False])
+@pytest.mark.parametrize("X_int_null_incompatible", [True, False])
+@pytest.mark.parametrize("y_bool_null_incompatible", [True, False])
+@pytest.mark.parametrize("y_int_null_incompatible", [True, False])
+def test_handle_nullable_types(
+    split_nullable_logical_types_by_compatibility,
+    nullable_type_test_data,
+    nullable_type_target,
+    X_bool_null_incompatible,
+    X_int_null_incompatible,
+    y_bool_null_incompatible,
+    y_int_null_incompatible,
+    nullable_y_ltype,
+):
+    """Tests all 4^2 combinations of X and y nullable type incompatibilities with
+    int nullable or boolean nullable with all the different options for y's logical type.
+    """
+    y = nullable_type_target(ltype=nullable_y_ltype, has_nans=True)
+    X = nullable_type_test_data(has_nans=True)
+
+    # Recreate the properties needed to specify incompatibilities
+    integer_nullable_incompatibilities = []
+    if X_int_null_incompatible:
+        integer_nullable_incompatibilities.append("X")
+    if y_int_null_incompatible:
+        integer_nullable_incompatibilities.append("y")
+
+    boolean_nullable_incompatibilities = []
+    if y_bool_null_incompatible:
+        boolean_nullable_incompatibilities.append("y")
+    if X_bool_null_incompatible:
+        boolean_nullable_incompatibilities.append("X")
+
+    cmp = CustomComponent(
+        integer_nullable_incompatibilities,
+        boolean_nullable_incompatibilities,
+    )
+    X_d, y_d = cmp._handle_nullable_types(X, y)
+
+    # Confirm that the incompatibilities specified above actually remove any incompatible
+    # logical types and that compatible logical types remain
+    (
+        X_compatible_ltypes,
+        X_incompatible_ltypes,
+    ) = split_nullable_logical_types_by_compatibility(
+        X_int_null_incompatible,
+        X_bool_null_incompatible,
+    )
+    (
+        y_compatible_ltypes,
+        y_incompatible_ltypes,
+    ) = split_nullable_logical_types_by_compatibility(
+        y_int_null_incompatible,
+        y_bool_null_incompatible,
+    )
+
+    assert len(X_d.ww.select(X_incompatible_ltypes).columns) == 0
+    assert len(X_d.ww.select(X_compatible_ltypes).columns) == len(
+        X.ww.select(X_compatible_ltypes).columns,
+    )
+
+    if nullable_y_ltype in {str(ltype) for ltype in y_compatible_ltypes}:
+        assert isinstance(
+            y_d.ww.logical_type,
+            tuple(y_compatible_ltypes),
+        )
+    else:
+        assert not isinstance(
+            y_d.ww.logical_type,
+            tuple(y_incompatible_ltypes),
+        )
