@@ -213,10 +213,6 @@ class ObjectiveBase(ABC):
         Returns:
             y_true with any incompatible nullable types downcasted to compatible equivalents.
         """
-        # Since Objective functions dont have the same safeguards around non woodwork inputs,
-        # we'll choose to avoid the downcasting path since we shouldn't have nullable pandas types
-        # without them being set by Woodwork
-
         # Do not pass numpy inputs into downcasting util, because they can
         # never have nullable pandas dtypes.
         if isinstance(y_true, pd.Series):
