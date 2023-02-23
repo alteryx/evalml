@@ -23,7 +23,7 @@ numpy==1.21.0
 packaging==23.0
 pandas==1.5.0
 plotly==5.0.0
-pmdarima==1.8.1
+pmdarima==1.8.5
 pytest-cov==2.10.1
 pytest-timeout==1.4.2
 pytest-xdist==2.1.0
