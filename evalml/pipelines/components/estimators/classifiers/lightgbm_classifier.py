@@ -83,6 +83,9 @@ class LightGBMClassifier(Estimator):
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound
     """SEED_BOUNDS.max_bound"""
+    # --> need a test that confirms the accuracy of th incompatibilities below
+    _integer_nullable_incompatibilities = ["X", "y"]
+    _boolean_nullable_incompatibilities = ["X", "y"]
 
     def __init__(
         self,

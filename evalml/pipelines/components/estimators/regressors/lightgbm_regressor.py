@@ -75,6 +75,9 @@ class LightGBMRegressor(Estimator):
     SEED_MAX = SEED_BOUNDS.max_bound
     """SEED_BOUNDS.max_bound"""
 
+    _integer_nullable_incompatibilities = ["X", "y"]
+    _boolean_nullable_incompatibilities = ["X", "y"]
+
     def __init__(
         self,
         boosting_type="gbdt",

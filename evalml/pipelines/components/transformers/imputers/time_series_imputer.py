@@ -47,6 +47,12 @@ class TimeSeriesImputer(Transformer):
     _valid_target_impute_strategies = set(
         ["backwards_fill", "forwards_fill", "interpolate"],
     )
+    # --> we currently have handling in place to avoid the errors we expect to see, so will be hard to test
+    # --> idea: make liist of components with existing handling in place and do a separate check with their dependency
+    # --> make its own test for time series - run with arima maybe?
+
+    _integer_nullable_incompatibilities = ["y", "X"]
+    _boolean_nullable_incompatibilities = ["y", "X"]
 
     def __init__(
         self,
