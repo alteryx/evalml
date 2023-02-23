@@ -211,10 +211,10 @@ def test_downcast_nullable_y_replaces_nullable_types(
         bool_null_incompatible,
     )
 
-    if isinstance(nullable_ltype, tuple(y_compatible_ltypes)):
+    if nullable_ltype in {str(ltype) for ltype in y_compatible_ltypes}:
         assert isinstance(
             y_d.ww.logical_type,
-            tuple(y_incompatible_ltypes),
+            tuple(y_compatible_ltypes),
         )
     else:
         assert not isinstance(

@@ -227,10 +227,14 @@ def test_objective_base_handle_nullable_types(
         y_int_null_incompatible,
         y_bool_null_incompatible,
     )
-    if isinstance(nullable_ltype, tuple(y_compatible_ltypes)):
+
+    # pd data type will get non nullable logical type when woodwork is initialized, so we don't expect it to be the same
+    if data_type != "pd" and nullable_ltype in {
+        str(ltype) for ltype in y_compatible_ltypes
+    }:
         assert isinstance(
             y_true_d.ww.logical_type,
-            tuple(y_incompatible_ltypes),
+            tuple(y_compatible_ltypes),
         )
     else:
         assert not isinstance(

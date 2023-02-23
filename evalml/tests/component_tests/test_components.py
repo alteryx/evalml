@@ -1874,10 +1874,10 @@ def test_handle_nullable_types(
         X.ww.select(X_compatible_ltypes).columns,
     )
 
-    if isinstance(nullable_y_ltype, tuple(y_compatible_ltypes)):
+    if nullable_y_ltype in {str(ltype) for ltype in y_compatible_ltypes}:
         assert isinstance(
             y_d.ww.logical_type,
-            tuple(y_incompatible_ltypes),
+            tuple(y_compatible_ltypes),
         )
     else:
         assert not isinstance(
