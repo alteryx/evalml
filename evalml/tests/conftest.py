@@ -19,10 +19,7 @@ from evalml.demos import load_weather
 from evalml.model_family import ModelFamily
 from evalml.objectives import BinaryClassificationObjective
 from evalml.objectives.objective_base import ObjectiveBase
-from evalml.objectives.utils import (
-    get_core_objectives,
-    get_non_core_objectives,
-)
+from evalml.objectives.utils import get_core_objectives, get_non_core_objectives
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -37,6 +34,7 @@ from evalml.pipelines.components import (
     Estimator,
     LogisticRegressionClassifier,
 )
+from evalml.pipelines.components.component_base import ComponentBase
 from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
     _nonstackable_model_families,
 )
@@ -2107,6 +2105,21 @@ def CustomObjective(
             """Not implementing"""
 
     return CustomObjective()
+
+
+def CustomComponent(
+    integer_nullable_incompatibilities=["X", "y"],
+    boolean_nullable_incompatibilities=["X", "y"],
+):
+    class CustomComponent(ComponentBase):
+        name = "CustomComponent"
+        modifies_features = True
+        modifies_target = False
+        training_only = False
+        _boolean_nullable_incompatibilities = boolean_nullable_incompatibilities
+        _integer_nullable_incompatibilities = integer_nullable_incompatibilities
+
+    return CustomComponent()
 
 
 def load_daily_temp_local(n_rows=None):

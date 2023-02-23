@@ -93,6 +93,7 @@ from evalml.pipelines.components.utils import (
     generate_component_code,
 )
 from evalml.problem_types import ProblemTypes
+from evalml.tests.conftest import CustomComponent
 
 
 @pytest.fixture(scope="module")
@@ -102,8 +103,6 @@ def test_classes():
         modifies_features = True
         modifies_target = False
         training_only = False
-        _boolean_nullable_incompatibilities = ["X", "y"]
-        _integer_nullable_incompatibilities = ["X", "y"]
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
@@ -1809,24 +1808,87 @@ def test_component_parameters_supported_by_list_API(component_class):
         assert component_class._supported_by_list_API
 
 
+@pytest.mark.parametrize(
+    "nullable_y_ltype",
+    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+)
+@pytest.mark.parametrize("X_bool_null_incompatible", [True, False])
+@pytest.mark.parametrize("X_int_null_incompatible", [True, False])
+@pytest.mark.parametrize("y_bool_null_incompatible", [True, False])
+@pytest.mark.parametrize("y_int_null_incompatible", [True, False])
 def test_handle_nullable_types(
-    test_classes,
     nullable_type_test_data,
     nullable_type_target,
+    X_bool_null_incompatible,
+    X_int_null_incompatible,
+    y_bool_null_incompatible,
+    y_int_null_incompatible,
+    nullable_y_ltype,
 ):
-    MockComponent, _, _ = test_classes
-    y = nullable_type_target(ltype="IntegerNullable", has_nans=False)
-    X = nullable_type_test_data(has_nans=False)
+    """Tests all 4^2 combinations of X and y nullable type incompatibilities with
+    int nullable or boolean nullable with all the different options for y's logical type.
+    """
+    y = nullable_type_target(ltype=nullable_y_ltype, has_nans=True)
+    X = nullable_type_test_data(has_nans=True)
 
-    cmp = MockComponent()
+    # Recreate the properties needed to specify incompatibilities
+    integer_nullable_incompatibilities = []
+    if X_int_null_incompatible:
+        integer_nullable_incompatibilities.append("X")
+    if y_int_null_incompatible:
+        integer_nullable_incompatibilities.append("y")
+
+    boolean_nullable_incompatibilities = []
+    if y_bool_null_incompatible:
+        boolean_nullable_incompatibilities.append("y")
+    if X_bool_null_incompatible:
+        boolean_nullable_incompatibilities.append("X")
+
+    cmp = CustomComponent(
+        integer_nullable_incompatibilities,
+        boolean_nullable_incompatibilities,
+    )
     X_d, y_d = cmp._handle_nullable_types(X, y)
 
-    nullable_ltypes = (AgeNullable, IntegerNullable, BooleanNullable)
+    # Confirm that the incompatibilities specified above actually remove any incompatible
+    # logical types and that compatible logical types remain
+    X_incompatible_ltypes = []
+    X_compatible_ltypes = []
+    y_incompatible_ltypes = []
+    y_compatible_ltypes = []
+    if X_int_null_incompatible:
+        X_incompatible_ltypes.append(IntegerNullable)
+        X_incompatible_ltypes.append(AgeNullable)
+    else:
+        X_compatible_ltypes.append(IntegerNullable)
+        X_compatible_ltypes.append(AgeNullable)
+    if X_bool_null_incompatible:
+        X_incompatible_ltypes.append(BooleanNullable)
+    else:
+        X_compatible_ltypes.append(BooleanNullable)
+    if y_int_null_incompatible:
+        y_incompatible_ltypes.append(IntegerNullable)
+        y_incompatible_ltypes.append(AgeNullable)
+    else:
+        y_compatible_ltypes.append(IntegerNullable)
+        y_compatible_ltypes.append(AgeNullable)
+    if y_bool_null_incompatible:
+        y_incompatible_ltypes.append(BooleanNullable)
+    else:
+        y_compatible_ltypes.append(BooleanNullable)
 
-    assert not isinstance(
-        y_d.ww.logical_type,
-        nullable_ltypes,
+    assert len(X_d.ww.select(X_incompatible_ltypes).columns) == 0
+    assert len(X_d.ww.select(X_compatible_ltypes).columns) == len(
+        X.ww.select(X_compatible_ltypes).columns,
     )
 
-    for ltype in X_d.ww.logical_types.values():
-        assert not isinstance(ltype, nullable_ltypes)
+    if isinstance(nullable_y_ltype, tuple(y_compatible_ltypes)):
+        assert isinstance(
+            y_d.ww.logical_type,
+            tuple(y_incompatible_ltypes),
+        )
+    else:
+        assert not isinstance(
+            y_d.ww.logical_type,
+            tuple(y_incompatible_ltypes),
+        )
