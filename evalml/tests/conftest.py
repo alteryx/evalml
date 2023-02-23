@@ -13,7 +13,12 @@ from sklearn import datasets
 from sklearn.preprocessing import minmax_scale
 from skopt.space import Integer, Real
 from woodwork import logical_types as ww_logical_types
-from woodwork.logical_types import Ordinal
+from woodwork.logical_types import (
+    AgeNullable,
+    BooleanNullable,
+    IntegerNullable,
+    Ordinal,
+)
 
 from evalml.demos import load_weather
 from evalml.model_family import ModelFamily
@@ -2291,27 +2296,31 @@ def nullable_type_test_data(
     X_nans_and_nullable_types,
 ):
     def _build_nullable_type_data(has_nans=True):
-        X_age_no_nans = pd.DataFrame(
+        X_more_nullable_types = pd.DataFrame(
             {
                 "age col": [11, 21, 30, 45, 89] * 4,
                 "age col nullable": [11, 21, 30, 45, 89] * 4,
+                "int col nullable": [0, 1, 2, 0, 3] * 4,
+                "bool col nullable": [True, False, False, True, True] * 4,
             },
         )
-        X_age_no_nans.ww.init(
+        X_more_nullable_types.ww.init(
             logical_types={
                 "age col": "Age",
                 "age col nullable": "AgeNullable",
+                "int col nullable": "IntegerNullable",
+                "bool col nullable": "BooleanNullable",
             },
         )
         if not has_nans:
-            return ww.concat_columns([X_no_nans, X_age_no_nans])
+            return ww.concat_columns([X_no_nans, X_more_nullable_types])
 
         X_age_nans = pd.Series([np.nan, 12, 22, 31, 9] * 4, name="age with nan")
         X_age_nans = ww.init_series(X_age_nans, logical_type="AgeNullable")
         return ww.concat_columns(
             [
                 X_no_nans,
-                X_age_no_nans,
+                X_more_nullable_types,
                 X_nans_and_nullable_types,
                 X_age_nans,
             ],
@@ -2454,3 +2463,27 @@ def get_black_config():
     evalml_path = os.path.abspath(os.path.join(current_dir, "..", ".."))
     black_config = get_evalml_black_config(evalml_path)
     return black_config
+
+
+@pytest.fixture
+def split_nullable_logical_types_by_compatibility():
+    def _split_nullable_logical_types_by_compatibility(
+        int_null_incompatible,
+        bool_null_incompatible,
+    ):
+        incompatible_ltypes = []
+        compatible_ltypes = []
+        if int_null_incompatible:
+            incompatible_ltypes.append(IntegerNullable)
+            incompatible_ltypes.append(AgeNullable)
+        else:
+            compatible_ltypes.append(IntegerNullable)
+            compatible_ltypes.append(AgeNullable)
+        if bool_null_incompatible:
+            incompatible_ltypes.append(BooleanNullable)
+        else:
+            compatible_ltypes.append(BooleanNullable)
+
+        return compatible_ltypes, incompatible_ltypes
+
+    return _split_nullable_logical_types_by_compatibility

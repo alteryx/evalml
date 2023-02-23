@@ -125,15 +125,25 @@ def test_downcast_nullable_X_noop_when_no_nullable_types_present(
     assert data_d is data
 
 
-def test_downcast_nullable_X_replaces_nullable_types(nullable_type_test_data):
-    X = nullable_type_test_data()
+@pytest.mark.parametrize("has_nans", [True, False])
+@pytest.mark.parametrize("bool_null_incompatible", [True, False])
+@pytest.mark.parametrize("int_null_incompatible", [True, False])
+def test_downcast_nullable_X_replaces_nullable_types(
+    split_nullable_logical_types_by_compatibility,
+    nullable_type_test_data,
+    int_null_incompatible,
+    bool_null_incompatible,
+    has_nans,
+):
+    X = nullable_type_test_data(has_nans=has_nans)
     # Set other typing info to confirm it's maintained
     X.ww.init(
         schema=X.ww.schema,
-        column_origins={"int with nan": "base", "float col": "engineered"},
+        column_origins={"int col nullable": "base", "float col": "engineered"},
     )
     original_X = X.ww.copy()
 
+    # Confirm nullable types are all present in original data
     assert (
         len(
             original_X.ww.select(
@@ -142,64 +152,32 @@ def test_downcast_nullable_X_replaces_nullable_types(nullable_type_test_data):
         )
         > 0
     )
-    non_nullable_original_schema = original_X.ww.select(
-        exclude=["IntegerNullable", "BooleanNullable"],
+
+    _, incompatible_ltypes = split_nullable_logical_types_by_compatibility(
+        int_null_incompatible,
+        bool_null_incompatible,
+    )
+
+    compatible_original_schema = original_X.ww.select(
+        exclude=incompatible_ltypes,
         return_schema=True,
     )
 
     X_d = _downcast_nullable_X(
         X,
-        handle_boolean_nullable=True,
-        handle_integer_nullable=True,
+        handle_boolean_nullable=bool_null_incompatible,
+        handle_integer_nullable=int_null_incompatible,
     )
 
     assert set(X_d.columns) == set(original_X.columns)
-    assert len(X_d.ww.select(["IntegerNullable", "BooleanNullable"]).columns) == 0
-    assert X_d.ww["int with nan"].ww.origin == "base"
-
-    # Check that no nullable types remain
-    assert (
-        len(
-            X_d.ww.select(
-                ["IntegerNullable", "BooleanNullable", "AgeNullable"],
-            ).columns,
-        )
-        == 0
-    )
+    assert len(X_d.ww.select(incompatible_ltypes).columns) == 0
+    assert X_d.ww["int col nullable"].ww.origin == "base"
 
     # Confirm the other columns' woodwork info is unchanged
-    undowncasted_schema = original_X.ww.get_subset_schema(
-        non_nullable_original_schema.columns.keys(),
+    undowncasted_partial_schema = original_X.ww.get_subset_schema(
+        compatible_original_schema.columns.keys(),
     )
-    assert non_nullable_original_schema == undowncasted_schema
-
-
-def test_downcast_nullable_X_only_bools(nullable_type_test_data):
-    X = nullable_type_test_data()
-
-    X_d = _downcast_nullable_X(
-        X,
-        handle_boolean_nullable=True,
-        handle_integer_nullable=False,
-    )
-
-    # Check that only the expected types remain
-    assert len(X_d.ww.select(["BooleanNullable"]).columns) == 0
-    assert len(X_d.ww.select(["IntegerNullable", "AgeNullable"]).columns) > 0
-
-
-def test_downcast_nullable_X_only_ints(nullable_type_test_data):
-    X = nullable_type_test_data()
-
-    X_d = _downcast_nullable_X(
-        X,
-        handle_boolean_nullable=False,
-        handle_integer_nullable=True,
-    )
-
-    # Check that only the expected types remain
-    assert len(X_d.ww.select(["IntegerNullable", "AgeNullable"]).columns) == 0
-    assert len(X_d.ww.select(["BooleanNullable"]).columns) > 0
+    assert compatible_original_schema == undowncasted_partial_schema
 
 
 @pytest.mark.parametrize("has_nans", [True, False])
@@ -207,8 +185,13 @@ def test_downcast_nullable_X_only_ints(nullable_type_test_data):
     "nullable_ltype",
     ["BooleanNullable", "IntegerNullable", "AgeNullable"],
 )
+@pytest.mark.parametrize("bool_null_incompatible", [True, False])
+@pytest.mark.parametrize("int_null_incompatible", [True, False])
 def test_downcast_nullable_y_replaces_nullable_types(
+    split_nullable_logical_types_by_compatibility,
     nullable_type_target,
+    int_null_incompatible,
+    bool_null_incompatible,
     nullable_ltype,
     has_nans,
 ):
@@ -216,59 +199,25 @@ def test_downcast_nullable_y_replaces_nullable_types(
 
     y_d = _downcast_nullable_y(
         y,
-        handle_boolean_nullable=True,
-        handle_integer_nullable=True,
+        handle_boolean_nullable=bool_null_incompatible,
+        handle_integer_nullable=int_null_incompatible,
     )
 
-    assert not isinstance(
-        y_d.ww.logical_type,
-        (AgeNullable, IntegerNullable, BooleanNullable),
+    (
+        y_compatible_ltypes,
+        y_incompatible_ltypes,
+    ) = split_nullable_logical_types_by_compatibility(
+        int_null_incompatible,
+        bool_null_incompatible,
     )
 
-
-@pytest.mark.parametrize("has_nans", [True, False])
-@pytest.mark.parametrize(
-    "nullable_ltype",
-    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
-)
-def test_downcast_nullable_y_only_bools(nullable_type_target, nullable_ltype, has_nans):
-    y = nullable_type_target(ltype=nullable_ltype, has_nans=has_nans)
-    original_ltype = y.ww.logical_type
-
-    y_d = _downcast_nullable_y(
-        y,
-        handle_boolean_nullable=True,
-        handle_integer_nullable=False,
-    )
-
-    if nullable_ltype in ["BooleanNullable"]:
-        assert not isinstance(
+    if isinstance(nullable_ltype, tuple(y_compatible_ltypes)):
+        assert isinstance(
             y_d.ww.logical_type,
-            BooleanNullable,
+            tuple(y_incompatible_ltypes),
         )
     else:
-        assert y_d.ww.logical_type == original_ltype
-
-
-@pytest.mark.parametrize("has_nans", [True, False])
-@pytest.mark.parametrize(
-    "nullable_ltype",
-    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
-)
-def test_downcast_nullable_y_only_ints(nullable_type_target, nullable_ltype, has_nans):
-    y = nullable_type_target(ltype=nullable_ltype, has_nans=has_nans)
-    original_ltype = y.ww.logical_type
-
-    y_d = _downcast_nullable_y(
-        y,
-        handle_boolean_nullable=False,
-        handle_integer_nullable=True,
-    )
-
-    if nullable_ltype in ["IntegerNullable", "AgeNullable"]:
         assert not isinstance(
             y_d.ww.logical_type,
-            (AgeNullable, IntegerNullable),
+            tuple(y_incompatible_ltypes),
         )
-    else:
-        assert y_d.ww.logical_type == original_ltype

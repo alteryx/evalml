@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from skopt.space import Categorical
-from woodwork.logical_types import AgeNullable, BooleanNullable, IntegerNullable
 
 from evalml.exceptions import ComponentNotYetFittedError, MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
@@ -93,7 +92,9 @@ from evalml.pipelines.components.utils import (
     generate_component_code,
 )
 from evalml.problem_types import ProblemTypes
-from evalml.tests.conftest import CustomComponent
+from evalml.tests.conftest import (
+    CustomComponent,
+)
 
 
 @pytest.fixture(scope="module")
@@ -1817,6 +1818,7 @@ def test_component_parameters_supported_by_list_API(component_class):
 @pytest.mark.parametrize("y_bool_null_incompatible", [True, False])
 @pytest.mark.parametrize("y_int_null_incompatible", [True, False])
 def test_handle_nullable_types(
+    split_nullable_logical_types_by_compatibility,
     nullable_type_test_data,
     nullable_type_target,
     X_bool_null_incompatible,
@@ -1852,30 +1854,20 @@ def test_handle_nullable_types(
 
     # Confirm that the incompatibilities specified above actually remove any incompatible
     # logical types and that compatible logical types remain
-    X_incompatible_ltypes = []
-    X_compatible_ltypes = []
-    y_incompatible_ltypes = []
-    y_compatible_ltypes = []
-    if X_int_null_incompatible:
-        X_incompatible_ltypes.append(IntegerNullable)
-        X_incompatible_ltypes.append(AgeNullable)
-    else:
-        X_compatible_ltypes.append(IntegerNullable)
-        X_compatible_ltypes.append(AgeNullable)
-    if X_bool_null_incompatible:
-        X_incompatible_ltypes.append(BooleanNullable)
-    else:
-        X_compatible_ltypes.append(BooleanNullable)
-    if y_int_null_incompatible:
-        y_incompatible_ltypes.append(IntegerNullable)
-        y_incompatible_ltypes.append(AgeNullable)
-    else:
-        y_compatible_ltypes.append(IntegerNullable)
-        y_compatible_ltypes.append(AgeNullable)
-    if y_bool_null_incompatible:
-        y_incompatible_ltypes.append(BooleanNullable)
-    else:
-        y_compatible_ltypes.append(BooleanNullable)
+    (
+        X_compatible_ltypes,
+        X_incompatible_ltypes,
+    ) = split_nullable_logical_types_by_compatibility(
+        X_int_null_incompatible,
+        X_bool_null_incompatible,
+    )
+    (
+        y_compatible_ltypes,
+        y_incompatible_ltypes,
+    ) = split_nullable_logical_types_by_compatibility(
+        y_int_null_incompatible,
+        y_bool_null_incompatible,
+    )
 
     assert len(X_d.ww.select(X_incompatible_ltypes).columns) == 0
     assert len(X_d.ww.select(X_compatible_ltypes).columns) == len(

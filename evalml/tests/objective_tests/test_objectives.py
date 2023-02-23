@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from woodwork.logical_types import AgeNullable, BooleanNullable, IntegerNullable
 
 from evalml.exceptions import ObjectiveCreationError, ObjectiveNotFoundError
 from evalml.objectives import (
@@ -22,7 +21,9 @@ from evalml.objectives import (
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.objectives.utils import _all_objectives_dict
 from evalml.problem_types import ProblemTypes
-from evalml.tests.conftest import CustomObjective
+from evalml.tests.conftest import (
+    CustomObjective,
+)
 
 
 def test_create_custom_objective():
@@ -200,7 +201,8 @@ def test_get_objectives_all_expected_ranges(obj):
 @pytest.mark.parametrize("y_bool_null_incompatible", [True, False])
 @pytest.mark.parametrize("y_int_null_incompatible", [True, False])
 @pytest.mark.parametrize("data_type", ["ww", "pd"])
-def test_binary_objective_handle_nullable_types(
+def test_objective_base_handle_nullable_types(
+    split_nullable_logical_types_by_compatibility,
     nullable_type_target,
     data_type,
     y_bool_null_incompatible,
@@ -218,19 +220,13 @@ def test_binary_objective_handle_nullable_types(
     )
     y_true_d = obj._handle_nullable_types(y_true)
 
-    y_incompatible_ltypes = []
-    y_compatible_ltypes = []
-    if y_int_null_incompatible:
-        y_incompatible_ltypes.append(IntegerNullable)
-        y_incompatible_ltypes.append(AgeNullable)
-    else:
-        y_compatible_ltypes.append(IntegerNullable)
-        y_compatible_ltypes.append(AgeNullable)
-    if y_bool_null_incompatible:
-        y_incompatible_ltypes.append(BooleanNullable)
-    else:
-        y_compatible_ltypes.append(BooleanNullable)
-
+    (
+        y_compatible_ltypes,
+        y_incompatible_ltypes,
+    ) = split_nullable_logical_types_by_compatibility(
+        y_int_null_incompatible,
+        y_bool_null_incompatible,
+    )
     if isinstance(nullable_ltype, tuple(y_compatible_ltypes)):
         assert isinstance(
             y_true_d.ww.logical_type,
