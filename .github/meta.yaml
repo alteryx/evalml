@@ -33,7 +33,7 @@ outputs:
         - statsmodels >=0.12.2
         - colorama >=0.4.4
         - cloudpickle >=1.5.0
-        - click >=7.1.2
+        - click>=8.0.0
         - shap >=0.40.0
         - texttable >=1.6.2
         - woodwork >=0.21.1
@@ -45,6 +45,7 @@ outputs:
         - python-graphviz >=0.13
         - tomli >=2.0.1
         - packaging >=23.0
+        - black[jupyter] >=22.3.0
     test:
       imports:
         - evalml

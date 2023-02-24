@@ -21,6 +21,9 @@ from evalml.objectives import (
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.objectives.utils import _all_objectives_dict
 from evalml.problem_types import ProblemTypes
+from evalml.tests.conftest import (
+    CustomObjective,
+)
 
 
 def test_create_custom_objective():
@@ -189,3 +192,62 @@ def test_is_defined_for_problem_type():
 @pytest.mark.parametrize("obj", _all_objectives_dict().values())
 def test_get_objectives_all_expected_ranges(obj):
     assert len(obj.expected_range) == 2
+
+
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+)
+@pytest.mark.parametrize("y_bool_null_incompatible", [True, False])
+@pytest.mark.parametrize("y_int_null_incompatible", [True, False])
+@pytest.mark.parametrize("data_type", ["ww", "pd"])
+def test_objective_base_handle_nullable_types(
+    split_nullable_logical_types_by_compatibility,
+    nullable_type_target,
+    data_type,
+    y_bool_null_incompatible,
+    y_int_null_incompatible,
+    nullable_ltype,
+):
+    y_true = nullable_type_target(ltype=nullable_ltype, has_nans=False)
+    if data_type == "pd":
+        # remove woodwork types but keep nullable pandas dtype
+        y_true = y_true.copy()
+
+    obj = CustomObjective(
+        integer_nullable_incompatible=y_int_null_incompatible,
+        boolean_nullable_incompatible=y_bool_null_incompatible,
+    )
+    y_true_d = obj._handle_nullable_types(y_true)
+
+    (
+        y_compatible_ltypes,
+        y_incompatible_ltypes,
+    ) = split_nullable_logical_types_by_compatibility(
+        y_int_null_incompatible,
+        y_bool_null_incompatible,
+    )
+
+    # pd data type will get non nullable logical type when woodwork is initialized, so we don't expect it to be the same
+    if data_type != "pd" and nullable_ltype in {
+        str(ltype) for ltype in y_compatible_ltypes
+    }:
+        assert isinstance(
+            y_true_d.ww.logical_type,
+            tuple(y_compatible_ltypes),
+        )
+    else:
+        assert not isinstance(
+            y_true_d.ww.logical_type,
+            tuple(y_incompatible_ltypes),
+        )
+
+
+def test_binary_objective_handle_nullable_types_numpy_input():
+    y_true = pd.Series([1, 0, 1, 1, 0] * 5)
+    y_true = y_true.to_numpy()
+
+    obj = CustomObjective()
+    y_true_d = obj._handle_nullable_types(y_true)
+
+    assert y_true_d is y_true
