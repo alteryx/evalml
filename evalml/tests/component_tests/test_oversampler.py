@@ -450,7 +450,7 @@ def test_oversampler_handle_nullable_types(
 
     (_, incompatible_y_ltypes) = split_nullable_logical_types_by_compatibility(
         "y" in oversampler._integer_nullable_incompatibilities,
-        "y" in oversampler._integer_nullable_incompatibilities,
+        "y" in oversampler._boolean_nullable_incompatibilities,
     )
 
     for nullable_ltype in incompatible_y_ltypes:

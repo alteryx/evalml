@@ -44,7 +44,7 @@ class ExponentialSmoothingRegressor(Estimator):
     """ModelFamily.EXPONENTIAL_SMOOTHING"""
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
     """[ProblemTypes.TIME_SERIES_REGRESSION]"""
-    # --> make its own test for time series - run with arima maybe?
+
     _integer_nullable_incompatibilities = ["y"]
     _boolean_nullable_incompatibilities = ["y"]
 

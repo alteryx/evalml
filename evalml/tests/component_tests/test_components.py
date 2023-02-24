@@ -8,6 +8,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from skopt.space import Categorical
 
 from evalml.exceptions import ComponentNotYetFittedError, MethodPropertyNotFoundError
@@ -1886,4 +1887,84 @@ def test_handle_nullable_types(
         )
 
 
-# --> add test for compatible components that they can take in nans
+@pytest.mark.parametrize(
+    "component_class",
+    [
+        comp
+        for comp in all_components()
+        if not (
+            comp._integer_nullable_incompatibilities
+            or comp._boolean_nullable_incompatibilities
+        )
+    ],
+)
+@pytest.mark.parametrize(
+    "nullable_y_ltype",
+    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+)
+# --> this is 180 tests - is it overkill?
+def test_components_support_nullable_types(
+    nullable_y_ltype,
+    component_class,
+    nullable_type_test_data,
+    nullable_type_target,
+    ts_data,
+    helper_functions,
+):
+    """Confirm that components without any nullable type incompatibilities can actually
+    use all the nullable types in X and y in fit and predict/transform. If a new
+    component is added that has nullable type incompatibilities, this should fail."""
+    cannot_handle_boolean_target = [CatBoostRegressor]
+
+    if component_class == TimeSeriesBaselineEstimator:
+        pytest.skip(
+            "Time Series Baseline Estimator is meant to be used in a pipeline with a Time Series Featurizer",
+        )
+
+    elif (
+        component_class in cannot_handle_boolean_target
+        and nullable_y_ltype == "BooleanNullable"
+    ):
+        pytest.skip(f"Cannot pass boolean y into {component_class}.")
+
+    # Some components require special handling to fit and predict/transform
+    requires_time_index = [
+        ARIMARegressor,
+        ProphetRegressor,
+        TimeSeriesFeaturizer,
+        TimeSeriesRegularizer,
+        PolynomialDecomposer,
+        STLDecomposer,
+    ]
+    requires_all_numeric = [PCA, LinearDiscriminantAnalysis]
+
+    component = helper_functions.safe_init_component_with_njobs_1(component_class)
+    if component_class in requires_time_index:
+        component = component_class(time_index="date")
+
+        X, _, y = ts_data()
+        bool_col = ww.init_series(
+            pd.Series([True, False] * 20, index=y.index),
+            "BooleanNullable",
+        )
+
+        if nullable_y_ltype == "BooleanNullable":
+            y = bool_col
+
+        # Add nullable types
+        X.ww.set_types(logical_types={"feature": "IntegerNullable"})
+        X.ww["bool col"] = bool_col
+    else:
+        y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
+        X = nullable_type_test_data(has_nans=False)
+
+        if component_class in requires_all_numeric:
+            X = X.ww.select(["numeric"])
+        else:
+            X = X.ww.select(["numeric", "Boolean", "BooleanNullable"])
+
+    component.fit(X, y)
+    if issubclass(component_class, Estimator):
+        component.predict(X)
+    else:
+        component.transform(X, y)

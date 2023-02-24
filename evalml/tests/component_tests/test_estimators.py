@@ -468,7 +468,7 @@ def test_estimators_with_nullable_type_incompatibilities(
 
     (_, incompatible_y_ltypes) = split_nullable_logical_types_by_compatibility(
         "y" in incompatible_estimator._integer_nullable_incompatibilities,
-        "y" in incompatible_estimator._integer_nullable_incompatibilities,
+        "y" in incompatible_estimator._boolean_nullable_incompatibilities,
     )
 
     for y_ltype in incompatible_y_ltypes:
