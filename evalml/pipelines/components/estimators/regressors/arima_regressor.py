@@ -66,7 +66,7 @@ class ARIMARegressor(Estimator):
     max_rows = 1000
     max_cols = 7
     # --> this might only be X - test this
-    _integer_nullable_incompatibilities = ["X", "y"]
+    _integer_nullable_incompatibilities = ["X"]
 
     def __init__(
         self,
@@ -208,7 +208,6 @@ class ARIMARegressor(Estimator):
         Raises:
             ValueError: If y was not passed in.
         """
-        # --. arima needs its own test bc of diff compatib le inputs and that the data needs to be time series
         if X is not None:
             X = downcast_int_nullable_to_double(X)
             X = X.fillna(X.mean())
