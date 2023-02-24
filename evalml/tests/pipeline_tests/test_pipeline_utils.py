@@ -1,3 +1,4 @@
+import os
 from unittest.mock import patch
 
 import black
@@ -46,6 +47,7 @@ from evalml.pipelines.utils import (
     _get_preprocessing_components,
     _make_pipeline_from_multiple_graphs,
     generate_pipeline_code,
+    generate_pipeline_example,
     get_estimators,
     is_classification,
     is_regression,
@@ -832,6 +834,89 @@ def test_generate_code_pipeline_with_custom_components(get_black_config):
     )
     pipeline = generate_pipeline_code(mock_pipeline_with_custom_components)
     assert pipeline == expected_code
+
+
+@pytest.mark.parametrize(
+    "automl_type",
+    [
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+    ],
+)
+def test_generate_pipeline_example(
+    automl_type,
+    tmpdir,
+    AutoMLTestEnv,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
+    ts_data,
+):
+    path = os.path.join(str(tmpdir), "train.csv")
+    if automl_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+    elif automl_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+    elif automl_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+    elif (
+        automl_type == ProblemTypes.TIME_SERIES_MULTICLASS
+        or automl_type == ProblemTypes.TIME_SERIES_BINARY
+    ):
+        X, _, y = ts_data(problem_type=automl_type)
+    else:
+        X, _, y = ts_data(problem_type=automl_type)
+
+    from evalml import AutoMLSearch
+
+    aml = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type=automl_type,
+        optimize_thresholds=False,
+        max_time=1,
+        max_iterations=5,
+        problem_configuration={
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 1,
+            "forecast_horizon": 3,
+        }
+        if is_time_series(automl_type)
+        else None,
+    )
+    env = AutoMLTestEnv(automl_type)
+    with env.test_context(score_return_value={aml.objective.name: 1.0}):
+        aml.search()
+    pipeline = aml.best_pipeline
+
+    X["target"] = y
+    X.to_csv(path)
+    output_path = os.path.join(str(tmpdir), "example.py")
+    pipeline_example = generate_pipeline_example(
+        pipeline=pipeline,
+        path_to_train=path,
+        path_to_holdout=path,
+        target="target",
+        output_file_path=output_path,
+    )
+    assert f'PATH_TO_TRAIN = "{path}"' in pipeline_example
+    assert f'PATH_TO_HOLDOUT = "{path}"' in pipeline_example
+    assert 'TARGET = "target"' in pipeline_example
+    assert 'column_mapping = ""' in pipeline_example
+    assert generate_pipeline_code(pipeline) in pipeline_example
+
+    if is_time_series(automl_type):
+        assert "predict(X_test, X_train=X_train, y_train=y_train)" in pipeline_example
+    else:
+        assert "predict(X_test)" in pipeline_example
+
+    exec(pipeline_example)
+    assert os.path.exists(output_path)
 
 
 def test_rows_of_interest_errors(X_y_binary):
