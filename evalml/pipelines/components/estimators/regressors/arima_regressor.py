@@ -69,6 +69,8 @@ class ARIMARegressor(Estimator):
     # ARIMARegressor doesn't support BooleanNullable not because of nullable type
     # incompatibilities but because we do not handle their null values correctly
     # https://github.com/alteryx/evalml/issues/4009
+    # IntegerNullable incompatibility: https://github.com/alteryx/evalml/issues/4015
+    # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4016
     _integer_nullable_incompatibilities = ["X"]
 
     def __init__(

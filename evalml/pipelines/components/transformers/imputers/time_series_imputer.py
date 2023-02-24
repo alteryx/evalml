@@ -48,6 +48,8 @@ class TimeSeriesImputer(Transformer):
         ["backwards_fill", "forwards_fill", "interpolate"],
     )
 
+    # Incompatibility: https://github.com/alteryx/evalml/issues/4001
+    # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4014
     _integer_nullable_incompatibilities = ["y", "X"]
     _boolean_nullable_incompatibilities = ["y", "X"]
 
@@ -155,8 +157,6 @@ class TimeSeriesImputer(Transformer):
         X_not_all_null = X.ww.drop(self._all_null_cols)
         X_schema = X_not_all_null.ww.schema
         X_schema = X_schema.get_subset_schema(
-            # --> note that I'm including it right now so I can test fully even though this will go once we integrate into automlsearch
-            # https://github.com/alteryx/evalml/issues/4001#issuecomment-1443894376
             subset_cols=X_schema._filter_cols(
                 exclude=["IntegerNullable", "BooleanNullable", "AgeNullable"],
             ),
@@ -201,7 +201,16 @@ class TimeSeriesImputer(Transformer):
         return X_not_all_null, y_imputed
 
     def _handle_nullable_types(self, X=None, y=None):
-        """--> docstring indicating why we need a different one."""
+        """Transforms X and y to remove any incompatible nullable types for the time series imputer when the interpolate method is used.
+
+        Args:
+            X (pd.DataFrame, optional): Input data to a component of shape [n_samples, n_features].
+                May contain nullable types.
+            y (pd.Series, optional): The target of length [n_samples]. May contain nullable types.
+
+        Returns:
+            X, y with any incompatible nullable types downcasted to compatible equivalents when interpolate is used. Is NoOp otherwise.
+        """
         if self._impute_target == "interpolate":
             _, y = super()._handle_nullable_types(None, y)
         if self._interpolate_cols is not None:

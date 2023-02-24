@@ -75,6 +75,8 @@ class LightGBMRegressor(Estimator):
     SEED_MAX = SEED_BOUNDS.max_bound
     """SEED_BOUNDS.max_bound"""
 
+    # Incompatibility: https://github.com/alteryx/evalml/issues/3924
+    # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4017
     _integer_nullable_incompatibilities = ["X", "y"]
     _boolean_nullable_incompatibilities = ["X", "y"]
 

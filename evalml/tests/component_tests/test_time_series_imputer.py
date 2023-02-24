@@ -590,7 +590,6 @@ def test_imputer_nullable_handling_target_interpolate(
     nullable_type_test_data,
     nullable_type_target,
 ):
-    # --> consider combining with test above in fixture
     X = nullable_type_test_data(has_nans=True)
     # Only use non nullable types so that we can hit the y interpolate call,
     # since X comes first, and we dont want to trigger the X incompatibility

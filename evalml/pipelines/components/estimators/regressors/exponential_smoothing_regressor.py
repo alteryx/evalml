@@ -45,6 +45,8 @@ class ExponentialSmoothingRegressor(Estimator):
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
     """[ProblemTypes.TIME_SERIES_REGRESSION]"""
 
+    # Incompatibility: https://github.com/alteryx/evalml/issues/3926
+    # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4016
     _integer_nullable_incompatibilities = ["y"]
     _boolean_nullable_incompatibilities = ["y"]
 

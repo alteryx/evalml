@@ -1902,7 +1902,6 @@ def test_handle_nullable_types(
     "nullable_y_ltype",
     ["BooleanNullable", "IntegerNullable", "AgeNullable"],
 )
-# --> this is 180 tests - is it overkill?
 def test_components_support_nullable_types(
     nullable_y_ltype,
     component_class,
