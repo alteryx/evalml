@@ -1,4 +1,5 @@
 import copy
+import re
 
 import numpy as np
 import pandas as pd
@@ -434,3 +435,40 @@ def test_oversampler_copy(X_y_binary):
     oversampler.fit(X, y)
     oversampler_fit_copy = copy.deepcopy(oversampler)
     assert oversampler == oversampler_fit_copy
+
+
+def test_oversampler_handle_nullable_types(
+    nullable_type_test_data,
+    nullable_type_target,
+    split_nullable_logical_types_by_compatibility,
+):
+    X = nullable_type_test_data(has_nans=False)
+    # Oversampler can only handle numeric and boolean columns
+    X = X.ww.select(include=["numeric", "Boolean", "BooleanNullable"])
+
+    oversampler = Oversampler(sampling_ratio=0.5)
+
+    (_, incompatible_y_ltypes) = split_nullable_logical_types_by_compatibility(
+        "y" in oversampler._integer_nullable_incompatibilities,
+        "y" in oversampler._integer_nullable_incompatibilities,
+    )
+
+    for nullable_ltype in incompatible_y_ltypes:
+        y = nullable_type_target(ltype=nullable_ltype, has_nans=False)
+        oversampler.fit(X, y)
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "Unknown label type: 'unknown'",
+            ),
+        ):
+            oversampler.transform(X, y)
+
+        # Confirm using the handle method lets the transform work
+        X_d, y_d = oversampler._handle_nullable_types(X, y)
+        X_t, y_t = oversampler.transform(X_d, y_d)
+
+        # Confirm oversampling happened by checking the length increased
+        assert len(X_t) > len(X)
+        assert len(y_t) > len(y)

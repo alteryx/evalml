@@ -2337,7 +2337,7 @@ def nullable_type_target():
         if has_nans:
             y = pd.Series([1, 0, pd.NA, 1, 0] * 4)
         else:
-            y = pd.Series([1, 0, 1, 1, 0] * 4)
+            y = pd.Series([1, 0, 1, 1, 1] * 4)
 
         return ww.init_series(y, logical_type=ltype)
 
