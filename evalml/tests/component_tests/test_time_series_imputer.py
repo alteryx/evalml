@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -558,3 +560,102 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
         transformed.ww.logical_types["categorical with nan"]
         == X.ww.logical_types["categorical with nan"]
     )
+
+
+def test_imputer_nullable_handling_numeric_interpolate(nullable_type_test_data):
+    X = nullable_type_test_data(has_nans=True)
+    # Only numeric imputing has interpolate as an option
+    X = X.ww.select("numeric")
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Invalid fill method. Expecting pad (ffill) or backfill (bfill). Got linear",
+        ),
+    ):
+        X.interpolate()
+
+    imputer = TimeSeriesImputer(numeric_impute_strategy="interpolate")
+    imputer.fit(X)
+    # No error because we have a workaround for nullable types in place
+    imputer.transform(X)
+
+    X_d, _ = imputer._handle_nullable_types(X, None)
+    imputed_X = X_d.interpolate()
+    imputed_X.bfill(inplace=True)  # Fill in the first value, if missing
+    assert not imputed_X.isnull().any().any()
+
+
+def test_imputer_nullable_handling_target_interpolate(
+    nullable_type_test_data,
+    nullable_type_target,
+):
+    # --> consider combining with test above in fixture
+    X = nullable_type_test_data(has_nans=True)
+    # Only use non nullable types so that we can hit the y interpolate call,
+    # since X comes first, and we dont want to trigger the X incompatibility
+    X = X.ww.select(["Integer", "Double"])
+    y = nullable_type_target(ltype="IntegerNullable", has_nans=True)
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Invalid fill method. Expecting pad (ffill) or backfill (bfill). Got linear",
+        ),
+    ):
+        y.interpolate()
+
+    imputer = TimeSeriesImputer(target_impute_strategy="interpolate")
+    imputer.fit(X, y)
+    # No error because we have a workaround for nullable types in place
+    imputer.transform(X, y)
+
+    _, y_d = imputer._handle_nullable_types(X, y)
+    imputed_y = y_d.interpolate()
+    imputed_y.bfill(inplace=True)  # Fill in the first value, if missing
+    assert not imputed_y.isnull().any()
+
+
+@pytest.mark.parametrize(
+    "categorical_impute_strategy",
+    ["forwards_fill", "backwards_fill"],
+)
+@pytest.mark.parametrize(
+    "numeric_impute_strategy",
+    ["forwards_fill", "backwards_fill", "interpolate"],
+)
+@pytest.mark.parametrize(
+    "target_impute_strategy",
+    ["forwards_fill", "backwards_fill", "interpolate"],
+)
+def test_imputer_nullable_handling_noop_for_non_impute_methods(
+    nullable_type_test_data,
+    nullable_type_target,
+    target_impute_strategy,
+    numeric_impute_strategy,
+    categorical_impute_strategy,
+):
+    imputer = TimeSeriesImputer(
+        categorical_impute_strategy=categorical_impute_strategy,
+        numeric_impute_strategy=numeric_impute_strategy,
+        target_impute_strategy=target_impute_strategy,
+    )
+
+    X = nullable_type_test_data(has_nans=True)
+    y = nullable_type_target(ltype="IntegerNullable", has_nans=True)
+
+    imputer.fit(X, y)
+    original_X_schema = X.ww.schema
+    original_y_schema = y.ww.schema
+    X_d, y_d = imputer._handle_nullable_types(X, y)
+
+    # Confirm that we only change inputs when interpolate is used
+    if numeric_impute_strategy != "interpolate":
+        assert X_d.ww.schema == original_X_schema
+    else:
+        assert X_d.ww.schema != original_X_schema
+
+    if target_impute_strategy != "interpolate":
+        assert y_d.ww.schema == original_y_schema
+    else:
+        assert y_d.ww.schema != original_y_schema

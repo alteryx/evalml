@@ -510,10 +510,13 @@ def test_arima_regressor_nullable_handling(ts_data):
         [i + 1 for i in range(len(X_test))],
         is_relative=True,
     )
+
     with pytest.raises(
         ValueError,
         match="Could not successfully fit a viable ARIMA model to input data.",
     ):
+        # Will stop raising this error when sktime adds support for IntegerNullable - https://github.com/sktime/sktime/issues/4236
+        # TODO: Remove nullable type handling https://github.com/alteryx/evalml/issues/4016
         sk_arima.fit(y=y_train, X=X_train)
 
     # But EvalML's ARIMARegressor has a call to downcast_int_nullable_to_double to handle IntegerNullable

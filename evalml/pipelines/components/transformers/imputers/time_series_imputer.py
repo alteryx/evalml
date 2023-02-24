@@ -158,8 +158,10 @@ class TimeSeriesImputer(Transformer):
         X_not_all_null = X.ww.drop(self._all_null_cols)
         X_schema = X_not_all_null.ww.schema
         X_schema = X_schema.get_subset_schema(
+            # --> note that I'm including it right now so I can test fully even though this will go once we integrate into automlsearch
+            # https://github.com/alteryx/evalml/issues/4001#issuecomment-1443894376
             subset_cols=X_schema._filter_cols(
-                exclude=["IntegerNullable", "BooleanNullable"],
+                exclude=["IntegerNullable", "BooleanNullable", "AgeNullable"],
             ),
         )
 
@@ -200,3 +202,12 @@ class TimeSeriesImputer(Transformer):
             y_imputed = ww.init_series(y_imputed)
 
         return X_not_all_null, y_imputed
+
+    def _handle_nullable_types(self, X=None, y=None):
+        """--> docstring indicating why we need a different one."""
+        if self._impute_target == "interpolate":
+            _, y = super()._handle_nullable_types(None, y)
+        if self._interpolate_cols is not None:
+            X, _ = super()._handle_nullable_types(X, None)
+
+        return X, y
