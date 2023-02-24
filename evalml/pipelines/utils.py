@@ -703,8 +703,8 @@ X_holdout= df.drop(TARGET, axis=1)
         output_str += """
 pipeline.predict(X_holdout)
 
-# Note: to predict on new data you have on hand
-# Map the column names to AML internal names and run prediction
+# Note: if you have a column mapping, to predict on new data you have on hand
+# Map the column names and run prediction
 # X_test = X_test.rename(column_mapping, axis=1)
 # pipeline.predict(X_test)
 
@@ -715,8 +715,8 @@ pipeline.predict(X_holdout)
         output_str += """
 pipeline.predict(X_holdout, X_train=X_train, y_train=y_train)
 
-# Note: to predict on new data you have on hand
-# Map the column names to AML internal names and run prediction
+# Note: if you have a column mapping, to predict on new data you have on hand
+# Map the column names and run prediction
 # X_test = X_test.rename(column_mapping, axis=1)
 # pipeline.predict(X_test, X_train=X_train, y_train=y_train)
 

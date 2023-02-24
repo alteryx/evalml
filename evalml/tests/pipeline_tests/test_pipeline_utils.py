@@ -904,6 +904,17 @@ def test_generate_pipeline_example(
         target="target",
         output_file_path=output_path,
     )
+    assert f'PATH_TO_TRAIN = "{path}"' in pipeline_example
+    assert f'PATH_TO_HOLDOUT = "{path}"' in pipeline_example
+    assert 'TARGET = "target"' in pipeline_example
+    assert 'column_mapping = ""' in pipeline_example
+    assert generate_pipeline_code(pipeline) in pipeline_example
+
+    if is_time_series(automl_type):
+        assert "predict(X_test, X_train=X_train, y_train=y_train)" in pipeline_example
+    else:
+        assert "predict(X_test)" in pipeline_example
+
     exec(pipeline_example)
     assert os.path.exists(output_path)
 
