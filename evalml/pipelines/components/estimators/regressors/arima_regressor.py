@@ -65,7 +65,10 @@ class ARIMARegressor(Estimator):
 
     max_rows = 1000
     max_cols = 7
-    # --> this might only be X - test this
+
+    # ARIMARegressor doesn't support BooleanNullable not because of nullable type
+    # incompatibilities but because we do not handle their null values correctly
+    # https://github.com/alteryx/evalml/issues/4009
     _integer_nullable_incompatibilities = ["X"]
 
     def __init__(
