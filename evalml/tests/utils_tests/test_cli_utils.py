@@ -10,6 +10,7 @@ from evalml.__main__ import cli
 from evalml.utils.cli_utils import (
     get_evalml_black_config,
     get_evalml_pip_requirements,
+    get_evalml_requirements_file,
     get_evalml_root,
     get_installed_packages,
     get_sys_info,
@@ -73,6 +74,20 @@ def test_print_deps_info(caplog, current_dir):
     assert "INSTALLED VERSIONS" in out
     for requirement in requirements:
         assert requirement in out
+
+
+def test_get_deps_file(current_dir, tmpdir):
+    evalml_path = os.path.abspath(os.path.join(current_dir, "..", "..", ".."))
+    path = os.path.join(str(tmpdir), "requirements.txt")
+    get_evalml_requirements_file(evalml_path, path)
+    assert os.path.exists(path)
+
+    requirement_file = open(path, "r")
+    requirement_file = requirement_file.read()
+
+    requirements = get_requirements(current_dir)
+    for requirement in requirements:
+        assert requirement in requirement_file
 
 
 def test_sys_info():
