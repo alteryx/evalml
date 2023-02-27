@@ -569,3 +569,5 @@ def test_arima_nullable_type_incompatibility(
     )
     sk_arima.fit(y=y_train, X=X_train)
     sk_arima.predict(fh=fh_, X=X_test)
+
+# --> test that handle is called from within fit and pred

@@ -73,14 +73,22 @@ class Oversampler(BaseSampler):
             self
         """
         X_ww, y_ww = self._prepare_data(X, y)
+        # X_d, y_d = self._handle_nullable_types(X_ww, y_ww)
+
         sampler_name = self._get_best_oversampler(X_ww)
         self.sampler = self.sampler_options[sampler_name]
 
         # get categorical features first, if necessary
         if sampler_name == "SMOTENC":
-            self._get_categorical(X)
-        super().fit(X, y)
+            self._get_categorical(X_ww)
+        super().fit(X_ww, y_ww)
         return self
+
+    def transform(self, X, y=None):
+        """--> add docstring."""
+        X_ww, y_ww = self._prepare_data(X, y)
+        X_d, y_d = self._handle_nullable_types(X_ww, y_ww)
+        return super().transform(X_d, y_d)
 
     def _get_best_oversampler(self, X):
         cat_cols = X.ww.select(["category", "boolean"]).columns
