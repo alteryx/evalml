@@ -119,6 +119,8 @@ class ExponentialSmoothingRegressor(Estimator):
         if y is None:
             raise ValueError("Exponential Smoothing Regressor requires y as input.")
 
+        X, y = self._handle_nullable_types(X, y)
+
         y = self._remove_datetime(y)
 
         self._component_obj.fit(y=y)
@@ -135,6 +137,7 @@ class ExponentialSmoothingRegressor(Estimator):
             pd.Series: Predicted values.
         """
         X, y = self._manage_woodwork(X, y)
+        X, y = self._handle_nullable_types(X, y)
         fh_ = self._set_forecast(X)
 
         y_pred = self._component_obj.predict(fh=fh_)
