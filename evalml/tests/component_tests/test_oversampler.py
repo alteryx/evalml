@@ -543,6 +543,8 @@ def test_oversampler_category_dtype_incompatibility(
 
     im_oversampler = im.SMOTENC(categorical_features=[0])
     im_oversampler.fit_resample(X, y)
+
+    
 @patch(
     "evalml.pipelines.components.component_base.ComponentBase._handle_nullable_types",
 )
