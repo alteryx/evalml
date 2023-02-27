@@ -561,6 +561,5 @@ def test_oversampler_calls_handle_nullable_types(
     oversampler.fit(X, y)
     assert not mock_handle_nullable_types.called
 
-    mock_handle_nullable_types.return_value = X, y
     oversampler.transform(X, y)
     assert mock_handle_nullable_types.called
