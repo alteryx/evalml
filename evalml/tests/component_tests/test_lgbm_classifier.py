@@ -391,3 +391,26 @@ def test_lgbm_classifier_nullable_type_incompatibility(
     sk_lgb = lgbm.sklearn.LGBMClassifier()
     sk_lgb.fit(X, y)
     sk_lgb.predict(X)
+
+
+@patch(
+    "evalml.pipelines.components.component_base.ComponentBase._handle_nullable_types",
+)
+def test_lgbm_calls_handle_nullable_types(
+    mock_handle_nullable_types,
+    X_y_binary,
+):
+    X, y = X_y_binary
+
+    lgb = LightGBMClassifier()
+
+    assert not mock_handle_nullable_types.called
+    mock_handle_nullable_types.return_value = X, y
+    lgb.fit(X, y)
+    assert mock_handle_nullable_types.call_count == 1
+
+    lgb.predict(X)
+    assert mock_handle_nullable_types.call_count == 2
+
+    lgb.predict_proba(X)
+    assert mock_handle_nullable_types.call_count == 3

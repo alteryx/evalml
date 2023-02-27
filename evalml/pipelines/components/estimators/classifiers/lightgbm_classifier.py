@@ -189,8 +189,9 @@ class LightGBMClassifier(Estimator):
             self
         """
         X = infer_feature_types(X)
-        X_encoded = self._encode_categories(X, fit=True)
-        y_encoded = self._encode_labels(y)
+        X_d, y_d = self._handle_nullable_types(X, y)
+        X_encoded = self._encode_categories(X_d, fit=True)
+        y_encoded = self._encode_labels(y_d)
         self._component_obj.fit(X_encoded, y_encoded)
         return self
 
@@ -204,7 +205,9 @@ class LightGBMClassifier(Estimator):
             pd.DataFrame: Predicted values.
         """
         X_encoded = self._encode_categories(X)
-        predictions = super().predict(X_encoded)
+        # --> again has to happen after encode bc we don't infer feature types
+        X_d, _ = self._handle_nullable_types(X_encoded)
+        predictions = super().predict(X_d)
         if not self._label_encoder:
             return predictions
         predictions = self._label_encoder.inverse_transform(
@@ -222,4 +225,5 @@ class LightGBMClassifier(Estimator):
             pd.DataFrame: Predicted probability values.
         """
         X_encoded = self._encode_categories(X)
-        return super().predict_proba(X_encoded)
+        X_d, _ = self._handle_nullable_types(X_encoded)
+        return super().predict_proba(X_d)
