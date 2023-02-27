@@ -87,7 +87,7 @@ class LightGBMClassifier(Estimator):
     # Incompatibility: https://github.com/alteryx/evalml/issues/3924
     # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4017
     _integer_nullable_incompatibilities = ["X", "y"]
-    _boolean_nullable_incompatibilities = ["X", "y"]
+    _boolean_nullable_incompatibilities = ["X"]
 
     def __init__(
         self,

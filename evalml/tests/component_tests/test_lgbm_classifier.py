@@ -1,3 +1,4 @@
+import re
 from unittest.mock import patch
 
 import numpy as np
@@ -328,3 +329,37 @@ def test_lgbm_preserves_schema_in_rename(mock_predict_proba, mock_predict, mock_
     assert mock_predict.call_args[0][0].ww.schema == original_schema
     lgb.predict_proba(X)
     assert mock_predict_proba.call_args[0][0].ww.schema == original_schema
+
+
+def test_lgbm_handle_nullable_types(
+    nullable_type_test_data,
+    nullable_type_target,
+    split_nullable_logical_types_by_compatibility,
+):
+    X = nullable_type_test_data(has_nans=False)
+    X = X.ww.select(include=["numeric", "Boolean", "BooleanNullable"])
+
+    lgb = LightGBMClassifier()
+
+    (_, incompatible_y_ltypes) = split_nullable_logical_types_by_compatibility(
+        "y" in lgb._integer_nullable_incompatibilities,
+        "y" in lgb._boolean_nullable_incompatibilities,
+    )
+
+    for nullable_ltype in incompatible_y_ltypes:
+        y = nullable_type_target(ltype=nullable_ltype, has_nans=False)
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "Unknown label type: 'unknown'",
+            ),
+        ):
+            lgb.fit(X, y)
+
+        # Confirm using the handle method lets the transform work
+        X_d, y_d = lgb._handle_nullable_types(X, y)
+        lgb.fit(X_d, y_d)
+        lgb.predict(X_d)
+
+
+# --> should we have tests for the compatible y ltypes?
