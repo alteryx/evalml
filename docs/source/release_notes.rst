@@ -5,6 +5,7 @@ Release Notes
         * Move black to regular dependency and use it for ``generate_pipeline_code`` :pr:`4005`
         * Implement ``generate_pipeline_example`` :pr:`4023`
         * Add new downcast utils for component-specific nullable type handling and begin implementation on objective and component base classes :pr:`4024`
+        * Pipelines with DFS Transformers will run fast permutation importance if DFS features pre-exist :pr:`4037`
     * Fixes
     * Changes
         * Uncapped `pmdarima` and updated minimum version :pr:`4027`
