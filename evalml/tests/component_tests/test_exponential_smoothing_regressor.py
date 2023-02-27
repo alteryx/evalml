@@ -196,3 +196,32 @@ def test_predict_no_X_in_fit(
     y_pred = m_clf.predict(X=X_test)
 
     assert (y_pred_sk.values == y_pred.values).all()
+
+
+def test_handle_nullable_types(
+    nullable_type_test_data,
+    nullable_type_target,
+    split_nullable_logical_types_by_compatibility,
+):
+    X = nullable_type_test_data(has_nans=False)
+    X = X.ww.select(include=["numeric", "Boolean", "BooleanNullable"])
+
+    comp = ExponentialSmoothingRegressor()
+
+    (_, incompatible_y_ltypes) = split_nullable_logical_types_by_compatibility(
+        "y" in comp._integer_nullable_incompatibilities,
+        "y" in comp._boolean_nullable_incompatibilities,
+    )
+
+    for nullable_ltype in incompatible_y_ltypes:
+        y = nullable_type_target(ltype=nullable_ltype, has_nans=False)
+        with pytest.raises(
+            ValueError,
+            match="Pandas data cast to numpy dtype of object. Check input data with",
+        ):
+            comp.fit(X, y)
+
+        # Confirm using the handle method lets the transform work
+        X_d, y_d = comp._handle_nullable_types(X, y)
+        comp.fit(X_d, y_d)
+        comp.predict(X_d)

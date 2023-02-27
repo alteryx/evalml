@@ -341,25 +341,34 @@ def test_lgbm_handle_nullable_types(
 
     lgb = LightGBMClassifier()
 
-    (_, incompatible_y_ltypes) = split_nullable_logical_types_by_compatibility(
+    (
+        compatible_y_ltypes,
+        incompatible_y_ltypes,
+    ) = split_nullable_logical_types_by_compatibility(
         "y" in lgb._integer_nullable_incompatibilities,
         "y" in lgb._boolean_nullable_incompatibilities,
     )
 
-    for nullable_ltype in incompatible_y_ltypes:
+    for nullable_ltype in incompatible_y_ltypes + compatible_y_ltypes:
         y = nullable_type_target(ltype=nullable_ltype, has_nans=False)
-        with pytest.raises(
-            ValueError,
-            match=re.escape(
-                "Unknown label type: 'unknown'",
-            ),
-        ):
-            lgb.fit(X, y)
 
-        # Confirm using the handle method lets the transform work
-        X_d, y_d = lgb._handle_nullable_types(X, y)
-        lgb.fit(X_d, y_d)
-        lgb.predict(X_d)
+        if nullable_ltype in incompatible_y_ltypes:
+            with pytest.raises(
+                ValueError,
+                match=re.escape(
+                    "Unknown label type: 'unknown'",
+                ),
+            ):
+                lgb.fit(X, y)
+
+            # Confirm using the handle method lets the transform work
+            X_d, y_d = lgb._handle_nullable_types(X, y)
+            lgb.fit(X_d, y_d)
+            lgb.predict(X_d)
+        else:
+            lgb.fit(X, y)
+            lgb.predict(X)
+            lgb.predict_proba(X)
 
 
 # --> should we have tests for the compatible y ltypes?

@@ -483,7 +483,7 @@ def test_arima_regressor_nullable_handling(ts_data):
     X.index = pd.date_range("1/1/21", periods=100)
     X.ww.init(logical_types={"nums": "IntegerNullable"})
 
-    y = pd.Series([i for i in range(100)], dtype="float64")
+    y = pd.Series([i for i in range(100)], dtype="Int64")
     y.index = pd.date_range("1/1/21", periods=100)
 
     X_train = X.ww.iloc[:80, :]
