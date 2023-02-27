@@ -1917,7 +1917,7 @@ def test_components_support_nullable_types(
 
     if component_class == TimeSeriesBaselineEstimator:
         pytest.skip(
-            "Time Series Baseline Estimator is meant to be used in a pipeline with a Time Series Featurizer",
+            "Time Series Baseline Estimator can only be used within a Pipeline.",
         )
 
     elif (
@@ -1928,7 +1928,6 @@ def test_components_support_nullable_types(
 
     # Some components require special handling to fit and predict/transform
     requires_time_index = [
-        ARIMARegressor,
         ProphetRegressor,
         TimeSeriesFeaturizer,
         TimeSeriesRegularizer,

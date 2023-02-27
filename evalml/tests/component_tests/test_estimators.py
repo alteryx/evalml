@@ -8,9 +8,6 @@ import woodwork as ww
 from evalml.exceptions import ComponentNotYetFittedError, MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
-from evalml.pipelines.components.estimators.regressors.arima_regressor import (
-    ARIMARegressor,
-)
 from evalml.pipelines.components.utils import (
     _all_estimators,
     _all_estimators_used_in_search,
@@ -444,49 +441,3 @@ def test_estimator_prediction_intervals(
     assert (predictions > result_75_85["0.75_lower"]).all()
     assert (result_75_85["0.85_lower"] > result_95["0.95_lower"]).all()
     assert (result_75_85["0.75_lower"] > result_75_85["0.85_lower"]).all()
-
-
-@pytest.mark.parametrize(
-    "incompatible_estimator",
-    [
-        comp
-        for comp in _all_estimators()
-        if comp._integer_nullable_incompatibilities
-        or comp._boolean_nullable_incompatibilities
-    ],
-)
-def test_estimators_with_nullable_type_incompatibilities(
-    split_nullable_logical_types_by_compatibility,
-    nullable_type_test_data,
-    nullable_type_target,
-    incompatible_estimator,
-):
-    if incompatible_estimator == ARIMARegressor:
-        pytest.skip(
-            f"Skipping because {incompatible_estimator} has nullable type handling in place to cover its errors",
-        )
-
-    (_, incompatible_y_ltypes) = split_nullable_logical_types_by_compatibility(
-        "y" in incompatible_estimator._integer_nullable_incompatibilities,
-        "y" in incompatible_estimator._boolean_nullable_incompatibilities,
-    )
-
-    for y_ltype in incompatible_y_ltypes:
-        # Most estimators cannot handle nans
-        y = nullable_type_target(ltype=y_ltype, has_nans=False)
-        X = nullable_type_test_data(has_nans=False)
-
-        # Exclude logical types that most estimators cannot handle
-        X = X.ww.select(["numeric", "Boolean", "BooleanNullable"])
-
-        comp = incompatible_estimator()
-
-        with pytest.raises(Exception):
-            comp.fit(X, y)
-            comp.predict(X)
-
-        # Confirm that using the handle method fixes the above exception
-        X_d, y_d = comp._handle_nullable_types(X, y)
-        comp.fit(X_d, y_d)
-        y_pred = comp.predict(X_d)
-        assert not y_pred.isnull().values.any()

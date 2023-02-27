@@ -1,4 +1,3 @@
-import re
 from unittest.mock import patch
 
 import numpy as np
@@ -250,9 +249,7 @@ def test_lgbm_handle_nullable_types(
         y = nullable_type_target(ltype=nullable_ltype, has_nans=False)
         with pytest.raises(
             ValueError,
-            match=re.escape(
-                "must be int, float or bool",
-            ),
+            match="must be int, float or bool",
         ):
             lgb.fit(X, y)
 

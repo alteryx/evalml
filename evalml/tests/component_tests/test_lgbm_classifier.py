@@ -362,13 +362,8 @@ def test_lgbm_handle_nullable_types(
                 lgb.fit(X, y)
 
             # Confirm using the handle method lets the transform work
-            X_d, y_d = lgb._handle_nullable_types(X, y)
-            lgb.fit(X_d, y_d)
-            lgb.predict(X_d)
-        else:
-            lgb.fit(X, y)
-            lgb.predict(X)
-            lgb.predict_proba(X)
+            X, y = lgb._handle_nullable_types(X, y)
 
-
-# --> should we have tests for the compatible y ltypes?
+        lgb.fit(X, y)
+        lgb.predict(X)
+        lgb.predict_proba(X)

@@ -50,8 +50,8 @@ class TimeSeriesImputer(Transformer):
 
     # Incompatibility: https://github.com/alteryx/evalml/issues/4001
     # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4014
-    _integer_nullable_incompatibilities = ["y", "X"]
-    _boolean_nullable_incompatibilities = ["y", "X"]
+    _integer_nullable_incompatibilities = ["X", "y"]
+    _boolean_nullable_incompatibilities = ["X", "y"]
 
     def __init__(
         self,
