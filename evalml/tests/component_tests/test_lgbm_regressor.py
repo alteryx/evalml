@@ -289,3 +289,24 @@ def test_lgbm_regressor_nullable_type_incompatibility(
     sk_lgb = lgbm.sklearn.LGBMRegressor()
     sk_lgb.fit(X, y)
     sk_lgb.predict(X)
+
+
+@patch(
+    "evalml.pipelines.components.component_base.ComponentBase._handle_nullable_types",
+)
+def test_oversampler_calls_handle_nullable_types(
+    mock_handle_nullable_types,
+    X_y_binary,
+):
+    X, y = X_y_binary
+
+    lgb = LightGBMRegressor()
+
+    assert not mock_handle_nullable_types.called
+    mock_handle_nullable_types.return_value = X, y
+    lgb.fit(X, y)
+    assert mock_handle_nullable_types.call_count == 1
+
+    mock_handle_nullable_types.return_value = X, y
+    lgb.predict(X)
+    assert mock_handle_nullable_types.call_count == 2
