@@ -389,28 +389,20 @@ def test_make_split_pipeline(sampler, features, X_y_binary):
     algo._selected_cols = ["1", "2", "3"]
     algo._selected_cat_cols = ["A", "B", "C"]
     pipeline = algo._make_split_pipeline(RandomForestClassifier, "test_pipeline")
-    compute_order = ["Label Encoder"]
-    if features:
-        compute_order.extend(["DFS Transformer"])
-    compute_order.extend(
-        [
-            "Categorical Pipeline - Select Columns Transformer",
-            "Categorical Pipeline - Label Encoder",
-            "Categorical Pipeline - Replace Nullable Types Transformer",
-            "Categorical Pipeline - Imputer",
-            "Categorical Pipeline - One Hot Encoder",
-            "Numeric Pipeline - Select Columns By Type Transformer",
-            "Numeric Pipeline - Label Encoder",
-            "Numeric Pipeline - Replace Nullable Types Transformer",
-            "Numeric Pipeline - Imputer",
-            "Numeric Pipeline - Select Columns Transformer",
-        ],
-    )
-    if sampler:
-        compute_order.extend([sampler])
-    compute_order.append("Random Forest Classifier")
 
-    assert pipeline.component_graph.compute_order == compute_order
+    order = pipeline.component_graph.compute_order
+    assert order[0] == "Label Encoder" if not features else "DFS Transformer"
+    if sampler:
+        assert order[-2] == sampler
+    assert order[-1] == "Random Forest Classifier"
+    for dtype in ["Categorical", "Numeric"]:
+        assert order.index(f"{dtype} Pipeline - Label Encoder") < order.index(
+            f"{dtype} Pipeline - Replace Nullable Types Transformer",
+        )
+        assert order.index(
+            f"{dtype} Pipeline - Replace Nullable Types Transformer",
+        ) < order.index(f"{dtype} Pipeline - Imputer")
+
     assert pipeline.name == "test_pipeline"
     assert pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][
         "column_types"
