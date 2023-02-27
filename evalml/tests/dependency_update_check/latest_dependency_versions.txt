@@ -14,7 +14,7 @@ lightgbm==3.3.5
 lime==0.2.0.1
 matplotlib==3.7.0
 matplotlib-inline==0.1.6
-networkx==2.5.1
+networkx==3.0.0
 nlp-primitives==2.10.0
 numpy==1.23.5
 packaging==23.0
