@@ -130,6 +130,7 @@ namespaces = true
     "demos/data/churn.csv",
     "demos/data/daily-min-temperatures.csv",
     "demos/data/fraud_transactions.csv.gz",
+    "tests/data/churn.csv",
     "tests/data/daily-min-temperatures.csv",
     "tests/data/fraud_transactions.csv.gz",
     "tests/data/tips.csv",
