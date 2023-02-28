@@ -397,18 +397,25 @@ def test_fast_permutation_importance_matches_slow_output(
             permutation_importance_one_col_slow,
         )
 
+
 class MockFeature:
     def __init__(self, name) -> None:
-        self.name=name
+        self.name = name
+
     def get_feature_names(self):
         return self.name
-    
+
+
 def pipelines_that_do_not_support_fast_permutation_importance():
     pipeline_with_dfs_and_no_prexisting_features = BinaryClassificationPipeline(
         [DFSTransformer, "Logistic Regression Classifier"],
     )
-    pipeline_with_dfs_and_no_prexisting_features.component_graph[DFSTransformer.name].features=[MockFeature("f_1"), MockFeature("f_2")]
-    pipeline_with_dfs_and_no_prexisting_features.input_feature_names[DFSTransformer.name]=["f_0"]
+    pipeline_with_dfs_and_no_prexisting_features.component_graph[
+        DFSTransformer.name
+    ].features = [MockFeature("f_1"), MockFeature("f_2")]
+    pipeline_with_dfs_and_no_prexisting_features.input_feature_names[
+        DFSTransformer.name
+    ] = ["f_0"]
 
     pipeline_with_custom_component = BinaryClassificationPipeline(
         [DoubleColumns, "Logistic Regression Classifier"],
