@@ -22,7 +22,6 @@ from evalml.pipelines.components.utils import (
     handle_float_categories_for_catboost,
     make_balancing_dictionary,
     scikit_learn_wrapped_estimator,
-    set_boolean_columns_to_integer,
 )
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
@@ -276,48 +275,6 @@ def test_drop_natural_languages():
         },
     )
     assert_frame_equal(X_expected, X_t)
-
-
-def test_set_boolean_columns_to_integer():
-    X = pd.DataFrame(
-        {
-            "bool with nan": pd.Series(
-                [True, pd.NA, False, pd.NA, False],
-                dtype="boolean",
-            ),
-            "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
-            "natural language": pd.Series(["asdf", "fdsa", "a", "b", "c"]),
-        },
-    )
-    X_e = pd.DataFrame(
-        {
-            "bool with nan": pd.Series(
-                [True, pd.NA, False, pd.NA, False],
-                dtype="boolean",
-            ),
-            "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
-        },
-    )
-    X_e = infer_feature_types(X_e)
-    X_e.ww.set_types(
-        logical_types={
-            "bool with nan": "IntegerNullable",
-            "bool no nan": "IntegerNullable",
-        },
-    )
-    X = infer_feature_types(X)
-    assert len(X.ww.select(["IntegerNullable"]) == 0)
-
-    X = set_boolean_columns_to_integer(X)
-
-    assert len(X.ww.select(["IntegerNullable"]).columns) == 2
-    assert len(X.ww.select(["IntegerNullable"]) == 5)
-
-    assert_frame_equal(
-        X.ww.select(["IntegerNullable"]),
-        X_e.ww.select(["IntegerNullable"]),
-        check_dtype=False,
-    )
 
 
 def test_handle_float_categories_for_catboost(categorical_floats_df):
