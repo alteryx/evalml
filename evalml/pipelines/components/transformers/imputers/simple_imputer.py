@@ -113,6 +113,7 @@ class SimpleImputer(Transformer):
             # If there are no columns to impute, return the original data without any fully null columns
             return X.ww[not_all_null_cols]
         elif (X.dtypes == bool).all():
+            # --> problematic potentially if the training data has nans and therefore has a different logical type
             return X
 
         X_t = self._component_obj.transform(X.ww[self._cols_to_impute])

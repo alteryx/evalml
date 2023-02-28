@@ -127,17 +127,21 @@ class Imputer(Transformer):
         nan_ratio = X.isna().sum() / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
-        X_numerics = X[[col for col in numeric_cols if col not in self._all_null_cols]]
+        X_numerics = X.ww[
+            [col for col in numeric_cols if col not in self._all_null_cols]
+        ]
         if len(X_numerics.columns) > 0:
             self._numeric_imputer.fit(X_numerics, y)
             self._numeric_cols = X_numerics.columns
 
-        X_categorical = X[[col for col in cat_cols if col not in self._all_null_cols]]
+        X_categorical = X.ww[
+            [col for col in cat_cols if col not in self._all_null_cols]
+        ]
         if len(X_categorical.columns) > 0:
             self._categorical_imputer.fit(X_categorical, y)
             self._categorical_cols = X_categorical.columns
 
-        X_boolean = X[[col for col in bool_cols if col not in self._all_null_cols]]
+        X_boolean = X.ww[[col for col in bool_cols if col not in self._all_null_cols]]
         if len(X_boolean.columns) > 0:
             self._boolean_imputer.fit(X_boolean, y)
             self._boolean_cols = X_boolean.columns
