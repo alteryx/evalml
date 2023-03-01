@@ -241,7 +241,8 @@ def test_exponential_smoothing_regressor_nullable_type_incompatibility(
     """Testing that the nullable type incompatibility that caused us to add handling for ExponentialSmoothingRegressor
     is still present in sktime's ForecastingHorizon component. If this test is causing the test suite to fail
     because the code below no longer raises the expected ValueError, we should confirm that the nullable
-    types now work for our use case and remove the nullable type handling logic from ExponentialSmoothingRegressor."""
+    types now work for our use case and remove the nullable type handling logic from ExponentialSmoothingRegressor.
+    """
     from sktime.forecasting.base import ForecastingHorizon
     from sktime.forecasting.exp_smoothing import ExponentialSmoothing
 

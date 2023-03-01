@@ -530,7 +530,8 @@ def test_arima_nullable_type_incompatibility(
     """Testing that the nullable type incompatibility that caused us to add handling for ARIMARegressor
     is still present in sktime's AutoARIMA component. If this test is causing the test suite to fail
     because the code below no longer raises the expected ValueError, we should confirm that the nullable
-    types now work for our use case and remove the nullable type handling logic from ARIMARegressor."""
+    types now work for our use case and remove the nullable type handling logic from ARIMARegressor.
+    """
     X = pd.DataFrame()
     X["nums"] = pd.Series([i for i in range(100)], dtype="Int64")
     X.index = pd.date_range("1/1/21", periods=100)

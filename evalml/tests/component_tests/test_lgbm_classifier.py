@@ -378,7 +378,8 @@ def test_lgbm_classifier_nullable_type_incompatibility(
     """Testing that the nullable type incompatibility that caused us to add handling for LightGBMClassifier
     is still present in sklearn's LGBMClassifier component. If this test is causing the test suite to fail
     because the code below no longer raises the expected ValueError, we should confirm that the nullable
-    types now work for our use case and remove the nullable type handling logic from LightGBMClassifier."""
+    types now work for our use case and remove the nullable type handling logic from LightGBMClassifier.
+    """
     y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
     X = nullable_type_test_data(has_nans=False)
     X = X.ww.select(include=["numeric", "Boolean", "BooleanNullable"])

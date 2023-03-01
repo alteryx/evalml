@@ -649,7 +649,8 @@ def test_time_series_imputer_nullable_type_incompatibility(
     """Testing that the nullable type incompatibility that caused us to add handling for the time series imputer
     is still present in pandas' interpolate method. If this test is causing the test suite to fail
     because the code below no longer raises the expected ValueError, we should confirm that the nullable
-    types now work for our use case and remove the nullable type handling logic from TimeSeriesImputer."""
+    types now work for our use case and remove the nullable type handling logic from TimeSeriesImputer.
+    """
     nullable_series = nullable_type_target(ltype=nullable_ltype, has_nans=True)
     if handle_incompatibility:
         imputer = TimeSeriesImputer(target_impute_strategy="interpolate")
