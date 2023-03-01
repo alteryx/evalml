@@ -658,3 +658,20 @@ def test_imputer_nullable_handling_noop_for_non_impute_methods(
         assert y_d.ww.schema == original_y_schema
     else:
         assert y_d.ww.schema != original_y_schema
+
+
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+)
+@pytest.mark.xfail(strict=True, raises=ValueError)
+def test_time_series_imputer_nullable_type_incompatibility(
+    nullable_type_target,
+    nullable_ltype,
+):
+    """Testing that the nullable type incompatibility that caused us to add handling for the time series imputer
+    is still present in pandas' interpolate method. If this test is causing the test suite to fail
+    because the code below no longer raises the expected ValueError, we should confirm that the nullable
+    types now work for our use case and remove the nullable type handling logic from TimeSeriesImputer."""
+    nullable_series = nullable_type_target(ltype=nullable_ltype, has_nans=True)
+    nullable_series.interpolate()
