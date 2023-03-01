@@ -14,7 +14,7 @@ lightgbm==3.3.5
 lime==0.2.0.1
 matplotlib==3.7.0
 matplotlib-inline==0.1.6
-networkx==2.5.1
+networkx==3.0
 nlp-primitives==2.10.0
 numpy==1.23.5
 packaging==23.0
@@ -24,7 +24,7 @@ pmdarima==2.0.2
 pyzmq==25.0.0
 scikit-learn==1.2.1
 scikit-optimize==0.9.0
-scipy==1.10.1
+scipy==1.9.1
 seaborn==0.12.2
 shap==0.41.0
 sktime==0.16.1
