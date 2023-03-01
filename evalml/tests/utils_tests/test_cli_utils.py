@@ -79,7 +79,9 @@ def test_print_deps_info(caplog, current_dir):
 def test_get_deps_file(current_dir, tmpdir):
     evalml_path = os.path.abspath(os.path.join(current_dir, "..", "..", ".."))
     path = os.path.join(str(tmpdir), "requirements.txt")
-    get_evalml_requirements_file(evalml_path, path)
+    assert not os.path.exists(path)
+
+    requirements_return = get_evalml_requirements_file(evalml_path, path)
     assert os.path.exists(path)
 
     requirement_file = open(path, "r")
@@ -88,6 +90,8 @@ def test_get_deps_file(current_dir, tmpdir):
     requirements = get_requirements(current_dir)
     for requirement in requirements:
         assert requirement in requirement_file
+
+    assert requirement_file == requirements_return
 
 
 def test_sys_info():
