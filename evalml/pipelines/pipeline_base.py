@@ -758,15 +758,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         )
         has_dfs = any(isinstance(c, DFSTransformer) for c in self.component_graph)
         if has_dfs:
-            dfs_feature_names = [
-                name
-                for feature in self.component_graph[DFSTransformer.name].features
-                for name in feature.get_feature_names()
-                if name != self.input_target_name
-            ]
-            contains_pre_existing_dfs_features = (
-                dfs_feature_names == self.input_feature_names[DFSTransformer.name]
-            )
+            dfs_transformer = self.component_graph[DFSTransformer.name]
+            input_feature_names = self.input_feature_names[DFSTransformer.name]
+            contains_pre_existing_dfs_features = dfs_transformer.contains_pre_existing_features(dfs_transformer.features, input_feature_names, self.input_target_name)
         return not any(
             [
                 has_more_than_one_estimator,
