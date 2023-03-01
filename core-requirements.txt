@@ -14,4 +14,4 @@ woodwork>= 0.21.1
 dask>=2022.2.0, !=2022.10.1
 nlp-primitives>=2.9.0
 featuretools>=1.16.0
-networkx>=2.5,<2.6
+networkx>=2.6

@@ -2100,9 +2100,9 @@ def test_nonlinear_pipeline_iteration(nonlinear_binary_pipeline):
     expected_order = [
         Imputer(),
         OneHotEncoder(),
-        ElasticNetClassifier(),
         OneHotEncoder(),
         RandomForestClassifier(),
+        ElasticNetClassifier(),
         LogisticRegressionClassifier(n_jobs=1),
     ]
 
@@ -2114,10 +2114,10 @@ def test_nonlinear_pipeline_iteration(nonlinear_binary_pipeline):
 
     expected_order_params = [
         Imputer(),
-        OneHotEncoder(top_n=2),
-        ElasticNetClassifier(),
         OneHotEncoder(top_n=5),
+        OneHotEncoder(top_n=2),
         RandomForestClassifier(),
+        ElasticNetClassifier(),
         LogisticRegressionClassifier(),
     ]
 
@@ -2153,10 +2153,10 @@ def test_nonlinear_getitem(nonlinear_binary_pipeline):
     pipeline = nonlinear_binary_pipeline.new({"OneHot_RandomForest": {"top_n": 4}})
 
     assert pipeline[0] == Imputer()
-    assert pipeline[1] == OneHotEncoder()
-    assert pipeline[2] == ElasticNetClassifier()
-    assert pipeline[3] == OneHotEncoder(top_n=4)
-    assert pipeline[4] == RandomForestClassifier()
+    assert pipeline[1] == OneHotEncoder(top_n=4)
+    assert pipeline[2] == OneHotEncoder()
+    assert pipeline[3] == RandomForestClassifier()
+    assert pipeline[4] == ElasticNetClassifier()
     assert pipeline[5] == LogisticRegressionClassifier()
 
     assert pipeline["Imputer"] == Imputer()
