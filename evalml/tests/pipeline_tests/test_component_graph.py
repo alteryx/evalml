@@ -111,15 +111,11 @@ def test_init(example_graph):
     comp_graph = ComponentGraph(graph)
     assert len(comp_graph.component_dict) == 6
 
-    expected_order = [
-        "Imputer",
-        "OneHot_ElasticNet",
-        "Elastic Net",
-        "OneHot_RandomForest",
-        "Random Forest",
-        "Logistic Regression Classifier",
-    ]
-    assert comp_graph.compute_order == expected_order
+    order = comp_graph.compute_order
+    assert order[0] == "Imputer"
+    assert order.index("OneHot_ElasticNet") < order.index("Elastic Net")
+    assert order.index("OneHot_RandomForest") < order.index("Random Forest")
+    assert order[-1] == "Logistic Regression Classifier"
 
 
 def test_init_str_components():
@@ -139,15 +135,11 @@ def test_init_str_components():
     comp_graph = ComponentGraph(graph)
     assert len(comp_graph.component_dict) == 6
 
-    expected_order = [
-        "Imputer",
-        "OneHot_ElasticNet",
-        "Elastic Net",
-        "OneHot_RandomForest",
-        "Random Forest",
-        "Logistic Regression Classifier",
-    ]
-    assert comp_graph.compute_order == expected_order
+    order = comp_graph.compute_order
+    assert order[0] == "Imputer"
+    assert order.index("OneHot_ElasticNet") < order.index("Elastic Net")
+    assert order.index("OneHot_RandomForest") < order.index("Random Forest")
+    assert order[-1] == "Logistic Regression Classifier"
 
 
 def test_init_instantiated():
@@ -271,15 +263,11 @@ def test_instantiate_with_parameters(example_graph):
     }
     component_graph.instantiate(parameters)
 
-    expected_order = [
-        "Imputer",
-        "OneHot_ElasticNet",
-        "Elastic Net",
-        "OneHot_RandomForest",
-        "Random Forest",
-        "Logistic Regression Classifier",
-    ]
-    assert component_graph.compute_order == expected_order
+    order = component_graph.compute_order
+    assert order[0] == "Imputer"
+    assert order.index("OneHot_ElasticNet") < order.index("Elastic Net")
+    assert order.index("OneHot_RandomForest") < order.index("Random Forest")
+    assert order[-1] == "Logistic Regression Classifier"
 
     assert isinstance(component_graph.get_component("Imputer"), Imputer)
     assert isinstance(
@@ -311,15 +299,11 @@ def test_instantiate_without_parameters(parameters, example_graph):
         "OneHot_RandomForest",
     ) is not component_graph.get_component("OneHot_ElasticNet")
 
-    expected_order = [
-        "Imputer",
-        "OneHot_ElasticNet",
-        "Elastic Net",
-        "OneHot_RandomForest",
-        "Random Forest",
-        "Logistic Regression Classifier",
-    ]
-    assert component_graph.compute_order == expected_order
+    order = component_graph.compute_order
+    assert order[0] == "Imputer"
+    assert order.index("OneHot_ElasticNet") < order.index("Elastic Net")
+    assert order.index("OneHot_RandomForest") < order.index("Random Forest")
+    assert order[-1] == "Logistic Regression Classifier"
 
 
 def test_reinstantiate(example_graph):
@@ -806,15 +790,11 @@ def test_multiple_y_parents():
 
 def test_component_graph_order(example_graph):
     component_graph = ComponentGraph(example_graph)
-    expected_order = [
-        "Imputer",
-        "OneHot_ElasticNet",
-        "Elastic Net",
-        "OneHot_RandomForest",
-        "Random Forest",
-        "Logistic Regression Classifier",
-    ]
-    assert expected_order == component_graph.compute_order
+    order = component_graph.compute_order
+    assert order[0] == "Imputer"
+    assert order.index("OneHot_ElasticNet") < order.index("Elastic Net")
+    assert order.index("OneHot_RandomForest") < order.index("Random Forest")
+    assert order[-1] == "Logistic Regression Classifier"
 
     component_graph = ComponentGraph({"Imputer": [Imputer, "X", "y"]})
     expected_order = ["Imputer"]
@@ -1023,9 +1003,9 @@ def test_iteration(example_graph):
     expected = [
         Imputer,
         OneHotEncoder,
-        ElasticNetClassifier,
         OneHotEncoder,
         RandomForestClassifier,
+        ElasticNetClassifier,
         LogisticRegressionClassifier,
     ]
     iteration = [component for component in component_graph]
@@ -1034,10 +1014,10 @@ def test_iteration(example_graph):
     component_graph.instantiate({"OneHot_RandomForest": {"top_n": 32}})
     expected = [
         Imputer(),
-        OneHotEncoder(),
-        ElasticNetClassifier(),
         OneHotEncoder(top_n=32),
+        OneHotEncoder(),
         RandomForestClassifier(),
+        ElasticNetClassifier(),
         LogisticRegressionClassifier(),
     ]
     iteration = [component for component in component_graph]

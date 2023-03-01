@@ -8,8 +8,9 @@ Release Notes
         * Pipelines with DFS Transformers will run fast permutation importance if DFS features pre-exist :pr:`4037`
     * Fixes
     * Changes
-        * Uncapped `pmdarima` and updated minimum version :pr:`4027`
+        * Uncapped ``pmdarima`` and updated minimum version :pr:`4027`
         * Increase min catboost to 1.1.1 and xgboost to 1.7.0 to add nullable type support for those estimators :pr:`3996`
+        * Unpinned ``networkx`` and updated minimum version :pr:`4035`
     * Documentation Changes
     * Testing Changes
         * Use ``release.yaml`` for performance tests on merge to main :pr:`4007`
