@@ -13,6 +13,7 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Use ``release.yaml`` for performance tests on merge to main :pr:`4007`
+        * Pin ``github-action-check-linked-issues`` at v1.4.5 :pr:`4042`
 
 .. warning::
 
