@@ -1,5 +1,9 @@
 import pytest
-from woodwork.logical_types import AgeNullable, BooleanNullable, IntegerNullable
+from woodwork.logical_types import (
+    AgeNullable,
+    BooleanNullable,
+    IntegerNullable,
+)
 
 from evalml.utils import (
     _determine_downcast_type,
@@ -195,6 +199,7 @@ def test_downcast_nullable_y_replaces_nullable_types(
     nullable_ltype,
     has_nans,
 ):
+    # --> remove this comment
     y = nullable_type_target(ltype=nullable_ltype, has_nans=has_nans)
 
     y_d = _downcast_nullable_y(
