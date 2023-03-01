@@ -215,7 +215,6 @@ class TimeSeriesImputer(Transformer):
         if self._impute_target == "interpolate":
             # For BooleanNullable, we have to avoid Categorical columns
             # since the category dtype also has incompatibilities with linear interpolate, which is expected
-            # --> i think this is essentially what happens now but won't that make floating point values that cant be turned back into bools?
             if isinstance(y.ww.logical_type, BooleanNullable):
                 y = ww.init_series(y, Double)
             else:
