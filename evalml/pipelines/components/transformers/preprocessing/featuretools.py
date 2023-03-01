@@ -132,7 +132,7 @@ class DFSTransformer(Transformer):
         partial_schema.metadata = {}
         feature_matrix.ww.init(schema=partial_schema)
         return feature_matrix
-    
+
     @staticmethod
     def _handle_partial_dependence_fast_mode(pipeline_parameters, X, target):
         """Determines whether or not a DFS Transformer component can be used with partial dependence's fast mode.
@@ -153,7 +153,12 @@ class DFSTransformer(Transformer):
         dfs_transformer = pipeline_parameters.get("DFS Transformer")
         if dfs_transformer is not None:
             dfs_features = dfs_transformer.get("features")
-            if dfs_features is None or not DFSTransformer.contains_pre_existing_features(dfs_features, list(X.columns), target):
+            if (
+                dfs_features is None
+                or not DFSTransformer.contains_pre_existing_features(
+                    dfs_features, list(X.columns), target
+                )
+            ):
                 raise ValueError(
                     "Cannot use fast mode with DFS Transformer when features are unspecified or not all present in X.",
                 )
@@ -161,9 +166,13 @@ class DFSTransformer(Transformer):
             # which would happen with the full set of features for a single column at refit
             pipeline_parameters["DFS Transformer"]["features"] = []
         return pipeline_parameters
-    
+
     @staticmethod
-    def contains_pre_existing_features(dfs_features: List[FeatureBase], input_feature_names: List[str], target: Optional[str]=None):
+    def contains_pre_existing_features(
+        dfs_features: List[FeatureBase],
+        input_feature_names: List[str],
+        target: Optional[str] = None,
+    ):
         if dfs_features:
             dfs_feature_names = [
                 name
