@@ -1,5 +1,3 @@
-import re
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -562,57 +560,26 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
     )
 
 
-def test_imputer_nullable_handling_numeric_interpolate(nullable_type_test_data):
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+)
+def test_imputer_can_take_in_nullable_types(
+    nullable_type_test_data,
+    nullable_type_target,
+    nullable_ltype,
+):
+    y = nullable_type_target(ltype=nullable_ltype, has_nans=True)
     X = nullable_type_test_data(has_nans=True)
     # Only numeric imputing has interpolate as an option
     X = X.ww.select("numeric")
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Invalid fill method. Expecting pad (ffill) or backfill (bfill). Got linear",
-        ),
-    ):
-        X.interpolate()
-
     imputer = TimeSeriesImputer(numeric_impute_strategy="interpolate")
-    imputer.fit(X)
-    # No error because we have a workaround for nullable types in place
-    imputer.transform(X)
-
-    X_d, _ = imputer._handle_nullable_types(X, None)
-    imputed_X = X_d.interpolate()
-    imputed_X.bfill(inplace=True)  # Fill in the first value, if missing
-    assert not imputed_X.isnull().any().any()
-
-
-def test_imputer_nullable_handling_target_interpolate(
-    nullable_type_test_data,
-    nullable_type_target,
-):
-    X = nullable_type_test_data(has_nans=True)
-    # Only use non nullable types so that we can hit the y interpolate call,
-    # since X comes first, and we dont want to trigger the X incompatibility
-    X = X.ww.select(["Integer", "Double"])
-    y = nullable_type_target(ltype="IntegerNullable", has_nans=True)
-
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Invalid fill method. Expecting pad (ffill) or backfill (bfill). Got linear",
-        ),
-    ):
-        y.interpolate()
-
-    imputer = TimeSeriesImputer(target_impute_strategy="interpolate")
     imputer.fit(X, y)
-    # No error because we have a workaround for nullable types in place
-    imputer.transform(X, y)
+    X_imputed, y_imputed = imputer.transform(X, y)
 
-    _, y_d = imputer._handle_nullable_types(X, y)
-    imputed_y = y_d.interpolate()
-    imputed_y.bfill(inplace=True)  # Fill in the first value, if missing
-    assert not imputed_y.isnull().any()
+    assert not X_imputed.isnull().any().any()
+    assert not y_imputed.isnull().any()
 
 
 @pytest.mark.parametrize(
@@ -664,9 +631,19 @@ def test_imputer_nullable_handling_noop_for_non_impute_methods(
     "nullable_ltype",
     ["BooleanNullable", "IntegerNullable", "AgeNullable"],
 )
-@pytest.mark.xfail(strict=True, raises=ValueError)
+@pytest.mark.parametrize(
+    "handle_incompatibility",
+    [
+        True,
+        pytest.param(
+            False,
+            marks=pytest.mark.xfail(strict=True, raises=ValueError),
+        ),
+    ],
+)
 def test_time_series_imputer_nullable_type_incompatibility(
     nullable_type_target,
+    handle_incompatibility,
     nullable_ltype,
 ):
     """Testing that the nullable type incompatibility that caused us to add handling for the time series imputer
@@ -674,4 +651,9 @@ def test_time_series_imputer_nullable_type_incompatibility(
     because the code below no longer raises the expected ValueError, we should confirm that the nullable
     types now work for our use case and remove the nullable type handling logic from TimeSeriesImputer."""
     nullable_series = nullable_type_target(ltype=nullable_ltype, has_nans=True)
+    if handle_incompatibility:
+        imputer = TimeSeriesImputer(target_impute_strategy="interpolate")
+        imputer.fit(pd.DataFrame(), nullable_series)
+        _, nullable_series = imputer._handle_nullable_types(None, nullable_series)
+
     nullable_series.interpolate()

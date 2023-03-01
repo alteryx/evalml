@@ -1,6 +1,7 @@
 """Component that imputes missing data according to a specified timeseries-specific imputation strategy."""
 import pandas as pd
 import woodwork as ww
+from woodwork.logical_types import BooleanNullable, Double
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
@@ -212,7 +213,13 @@ class TimeSeriesImputer(Transformer):
             X, y with any incompatible nullable types downcasted to compatible equivalents when interpolate is used. Is NoOp otherwise.
         """
         if self._impute_target == "interpolate":
-            _, y = super()._handle_nullable_types(None, y)
+            # For BooleanNullable, we have to avoid Categorical columns
+            # since the category dtype also has incompatibilities with linear interpolate, which is expected
+            # --> i think this is essentially what happens now but won't that make floating point values that cant be turned back into bools?
+            if isinstance(y.ww.logical_type, BooleanNullable):
+                y = ww.init_series(y, Double)
+            else:
+                _, y = super()._handle_nullable_types(None, y)
         if self._interpolate_cols is not None:
             X, _ = super()._handle_nullable_types(X, None)
 
