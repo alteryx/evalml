@@ -469,7 +469,7 @@ def test_dfs_contains_pre_existing_features():
             ["Origin Feature 2", "HOUR(Origin Feature 2)"],
             target="Origin Feature 1",
         )
-        == True
+        is True
     )
 
 
@@ -478,5 +478,5 @@ def test_dfs_contains_pre_existing_features_no_dfs_features():
         DFSTransformer.contains_pre_existing_features(
             None, ["f_1", "f_2"], target="f_2"
         )
-        == False
+        is False
     )

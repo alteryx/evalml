@@ -1,5 +1,6 @@
 """Featuretools DFS component that generates features for the input features."""
 from typing import List, Optional
+
 from featuretools import EntitySet, calculate_feature_matrix, dfs
 from featuretools.feature_base import FeatureBase, IdentityFeature
 
@@ -173,6 +174,15 @@ class DFSTransformer(Transformer):
         input_feature_names: List[str],
         target: Optional[str] = None,
     ):
+        """Determines whether or not features from a DFS Transformer match pipeline input features.
+
+        Args:
+            dfs_features (Optional[List[FeatureBase]]): List of features output from a DFS Transformer.
+            input_feature_names (List[str]): List of input features into the DFS Transformer.
+            target (Optional[str]): The target whose values we are trying to predict. This is used
+                to know which column to ignore if the target column is present in the list of features
+                in the DFS Transformer's parameters.
+        """
         if dfs_features:
             dfs_feature_names = [
                 name
