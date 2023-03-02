@@ -3,6 +3,8 @@ import copy
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
+from imblearn import over_sampling as im
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.exceptions import ComponentNotYetFittedError
@@ -434,3 +436,71 @@ def test_oversampler_copy(X_y_binary):
     oversampler.fit(X, y)
     oversampler_fit_copy = copy.deepcopy(oversampler)
     assert oversampler == oversampler_fit_copy
+
+
+@pytest.mark.parametrize(
+    "nullable_y_ltype",
+    ["IntegerNullable", "AgeNullable", "BooleanNullable"],
+)
+def test_oversampler_handle_nullable_types(
+    nullable_type_test_data,
+    nullable_type_target,
+    nullable_y_ltype,
+):
+    X = nullable_type_test_data(has_nans=False)
+    # Oversampler can only handle numeric and boolean columns
+    X = X.ww.select(include=["numeric", "Boolean", "BooleanNullable"])
+    y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
+
+    oversampler = Oversampler(sampling_ratio=0.5)
+    X, y = oversampler._handle_nullable_types(X, y)
+    oversampler.fit(X, y)
+    X_t, y_t = oversampler.transform(X, y)
+
+    # Confirm oversampling happened by checking the length increased
+    assert len(X_t) > len(X)
+    assert len(y_t) > len(y)
+
+
+@pytest.mark.parametrize(
+    "nullable_y_ltype",
+    ["IntegerNullable", "AgeNullable", "BooleanNullable"],
+)
+@pytest.mark.parametrize(
+    "im_oversampler",
+    [
+        im.SMOTE(),
+        im.SMOTENC(categorical_features=[0]),
+        im.SMOTEN(),
+    ],
+)
+@pytest.mark.parametrize(
+    "handle_incompatibility",
+    [
+        True,
+        pytest.param(
+            False,
+            marks=pytest.mark.xfail(strict=True, raises=ValueError),
+        ),
+    ],
+)
+def test_oversampler_nullable_type_incompatibility(
+    X_y_binary,
+    handle_incompatibility,
+    im_oversampler,
+    nullable_y_ltype,
+):
+    """Testing that the nullable type incompatibility that caused us to add handling for Oversampler
+    is still present in imblearn's SMOTE oversamplers. If this test is causing the test suite to fail
+    because the code below no longer raises the expected ValueError, we should confirm that the nullable
+    types now work for our use case and remove the nullable type handling logic from Oversampler.
+    """
+    X, y = X_y_binary
+    # Use nullable types in y
+    y = ww.init_series(y, logical_type=nullable_y_ltype)
+
+    if handle_incompatibility:
+        evalml_oversampler = Oversampler(sampling_ratio=0.5)
+        X, y = evalml_oversampler._handle_nullable_types(X, y)
+
+    im_oversampler.fit_resample(X, y)
