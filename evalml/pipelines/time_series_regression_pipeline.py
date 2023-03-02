@@ -198,7 +198,11 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             X_train=X_train,
             y_train=y_train,
         )
-        pred_intervals = self.estimator.get_prediction_intervals(estimator_input, y)
+        pred_intervals = self.estimator.get_prediction_intervals(
+            X=estimator_input,
+            y=y,
+            coverage=coverage,
+        )
         if self.estimator.model_family not in [
             ModelFamily.ARIMA,
             ModelFamily.EXPONENTIAL_SMOOTHING,
