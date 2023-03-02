@@ -169,7 +169,7 @@ class DFSTransformer(Transformer):
 
     @staticmethod
     def contains_pre_existing_features(
-        dfs_features: List[FeatureBase],
+        dfs_features: Optional[List[FeatureBase]],
         input_feature_names: List[str],
         target: Optional[str] = None,
     ):
