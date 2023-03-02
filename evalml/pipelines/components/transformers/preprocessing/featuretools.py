@@ -1,6 +1,8 @@
 """Featuretools DFS component that generates features for the input features."""
+from typing import List, Optional
+
 from featuretools import EntitySet, calculate_feature_matrix, dfs
-from featuretools.feature_base import IdentityFeature
+from featuretools.feature_base import FeatureBase, IdentityFeature
 
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import infer_feature_types
@@ -132,7 +134,8 @@ class DFSTransformer(Transformer):
         feature_matrix.ww.init(schema=partial_schema)
         return feature_matrix
 
-    def _handle_partial_dependence_fast_mode(self, pipeline_parameters, X, target):
+    @staticmethod
+    def _handle_partial_dependence_fast_mode(pipeline_parameters, X, target):
         """Determines whether or not a DFS Transformer component can be used with partial dependence's fast mode.
 
         Note:
@@ -150,18 +153,12 @@ class DFSTransformer(Transformer):
         """
         dfs_transformer = pipeline_parameters.get("DFS Transformer")
         if dfs_transformer is not None:
-            dfs_features = dfs_transformer["features"]
-            # remove the target if it's there
-            dfs_feature_names = [
-                name
-                for feature in dfs_features
-                for name in feature.get_feature_names()
-                if name != target
-            ]
-            X_cols = set(X.columns)
-
-            if dfs_features is None or any(
-                name not in X_cols for name in dfs_feature_names
+            dfs_features = dfs_transformer.get("features")
+            if (
+                dfs_features is None
+                or not DFSTransformer.contains_pre_existing_features(
+                    dfs_features, list(X.columns), target
+                )
             ):
                 raise ValueError(
                     "Cannot use fast mode with DFS Transformer when features are unspecified or not all present in X.",
@@ -170,3 +167,30 @@ class DFSTransformer(Transformer):
             # which would happen with the full set of features for a single column at refit
             pipeline_parameters["DFS Transformer"]["features"] = []
         return pipeline_parameters
+
+    @staticmethod
+    def contains_pre_existing_features(
+        dfs_features: Optional[List[FeatureBase]],
+        input_feature_names: List[str],
+        target: Optional[str] = None,
+    ):
+        """Determines whether or not features from a DFS Transformer match pipeline input features.
+
+        Args:
+            dfs_features (Optional[List[FeatureBase]]): List of features output from a DFS Transformer.
+            input_feature_names (List[str]): List of input features into the DFS Transformer.
+            target (Optional[str]): The target whose values we are trying to predict. This is used
+                to know which column to ignore if the target column is present in the list of features
+                in the DFS Transformer's parameters.
+        """
+        if dfs_features:
+            dfs_feature_names = [
+                name
+                for feature in dfs_features
+                for name in feature.get_feature_names()
+                if name != target
+            ]
+            return dfs_feature_names == input_feature_names
+
+        else:
+            return False

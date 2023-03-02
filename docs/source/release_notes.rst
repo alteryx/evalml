@@ -7,6 +7,7 @@ Release Notes
         * Add new downcast utils for component-specific nullable type handling and begin implementation on objective and component base classes :pr:`4024`
         * Add nullable type incompatibility properties to the components that need them :pr:`4031`
         * Add ``get_evalml_requirements_file`` :pr:`4034`
+        * Pipelines with DFS Transformers will run fast permutation importance if DFS features pre-exist :pr:`4037`
     * Fixes
     * Changes
         * Uncapped ``pmdarima`` and updated minimum version :pr:`4027`
