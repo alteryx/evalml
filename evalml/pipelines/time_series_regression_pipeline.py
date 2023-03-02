@@ -180,10 +180,10 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
             y (pd.Series): Target data. Ignored.
-            coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
-                prediction interval should be calculated for.
             X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features].
             y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
+            coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
+                prediction interval should be calculated for.
 
         Returns:
             dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
