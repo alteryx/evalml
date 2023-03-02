@@ -86,9 +86,11 @@ class SimpleImputer(Transformer):
         # If there are no columns to impute, return early
         if not self._cols_to_impute:
             return self
-            # --> note bool problem
         elif (X.dtypes == bool).all():
+            self._fit_with_all_bool_dtypes = True
             return self
+        else:
+            self._fit_with_all_bool_dtypes = False
 
         self._component_obj.fit(X[self._cols_to_impute], y)
         return self
@@ -113,8 +115,10 @@ class SimpleImputer(Transformer):
             # If there are no columns to impute, return the original data without any fully null columns
             return X.ww[not_all_null_cols]
         elif (X.dtypes == bool).all():
-            # --> problematic potentially if the training data has nans and therefore has a different logical type
             return X
+        # If the dtypes are not all bool but it was with with all bool dtypes we need to refit
+        elif self._fit_with_all_bool_dtypes:
+            self._component_obj.fit(X[self._cols_to_impute])
 
         X_t = self._component_obj.transform(X.ww[self._cols_to_impute])
         X_t = pd.DataFrame(X_t, columns=self._cols_to_impute)
@@ -143,7 +147,6 @@ class SimpleImputer(Transformer):
             X_t = X_t.ww[[col for col in original_schema.columns if col in X_t.columns]]
 
         if self._cols_to_impute:
-            # --> figure out what this does
             X_t.index = original_index
         return X_t
 

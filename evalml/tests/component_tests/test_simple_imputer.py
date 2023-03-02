@@ -626,3 +626,39 @@ def test_simple_imputer_boolean_nullable_valid_train_empty_test():
     X_t = imp.transform(X_test)
     assert not X_t["a"].isna().any()
     assert isinstance(X_t.ww.logical_types["a"], BooleanNullable)
+
+
+def test_simple_imputer_all_bools_at_fit_with_nans_at_transform():
+    # X_train will be only bool dtypes so the _component_obj won't be fit
+    X_train = pd.DataFrame(
+        {
+            "bools1": pd.Series([True, False, True, True] * 20),
+            "bools2": pd.Series([True, False, True, False] * 20),
+        },
+    )
+    X_train.ww.init(
+        logical_types={
+            "bools1": "Boolean",
+            "bools2": "Boolean",
+        },
+    )
+
+    imp = SimpleImputer()
+    imp.fit(X_train)
+
+    # X_test will be BooleanNullable which will be a problem when _component_obj isn't fit
+    X_test = pd.DataFrame(
+        {
+            "bools1": pd.Series([True, False, pd.NA, True] * 20),
+            "bools2": pd.Series([True, pd.NA, True, False] * 20),
+        },
+    )
+    X_test.ww.init(
+        logical_types={
+            "bools1": "BooleanNullable",
+            "bools2": "BooleanNullable",
+        },
+    )
+
+    X_imputed = imp.transform(X_test)
+    assert not X_imputed.isna().any().any()
