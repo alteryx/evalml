@@ -447,6 +447,8 @@ def test_dfs_multi_input_primitive(X_y_binary):
         excluded_cols.append(f"1 / {i}")
     for col in excluded_cols:
         assert col not in X_t.columns
+
+
 class MockFeature:
     def __init__(self, name) -> None:
         self.name = name
@@ -454,9 +456,27 @@ class MockFeature:
     def get_feature_names(self):
         return [self.name]
 
+
 def test_dfs_contains_pre_existing_features():
-    dfs_features = [MockFeature("Origin Feature 1"), MockFeature("Origin Feature 2"), MockFeature("HOUR(Origin Feature 2)")]
-    assert DFSTransformer.contains_pre_existing_features(dfs_features, ["Origin Feature 2", "HOUR(Origin Feature 2)"], target="Origin Feature 1") == True
+    dfs_features = [
+        MockFeature("Origin Feature 1"),
+        MockFeature("Origin Feature 2"),
+        MockFeature("HOUR(Origin Feature 2)"),
+    ]
+    assert (
+        DFSTransformer.contains_pre_existing_features(
+            dfs_features,
+            ["Origin Feature 2", "HOUR(Origin Feature 2)"],
+            target="Origin Feature 1",
+        )
+        == True
+    )
+
 
 def test_dfs_contains_pre_existing_features_no_dfs_features():
-    assert DFSTransformer.contains_pre_existing_features(None, ["f_1", "f_2"], target="f_2") == False
+    assert (
+        DFSTransformer.contains_pre_existing_features(
+            None, ["f_1", "f_2"], target="f_2"
+        )
+        == False
+    )
