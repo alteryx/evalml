@@ -15,7 +15,10 @@ from woodwork.logical_types import (
 )
 
 from evalml.pipelines.components import Imputer
-from evalml.pipelines.components.transformers.imputers import KNNImputer, SimpleImputer
+from evalml.pipelines.components.transformers.imputers import (
+    KNNImputer,
+    SimpleImputer,
+)
 
 
 def test_invalid_strategy_parameters():

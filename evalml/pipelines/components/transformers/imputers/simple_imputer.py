@@ -111,12 +111,11 @@ class SimpleImputer(Transformer):
 
         not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
         if not self._cols_to_impute:
-            # --> potential problem: this won't remove nullable types in cols without nans - not good for current - but the larger imputer comp may handle it
             # If there are no columns to impute, return the original data without any fully null columns
             return X.ww[not_all_null_cols]
         elif (X.dtypes == bool).all():
             return X
-        # If the dtypes are not all bool but it was with with all bool dtypes we need to refit
+        # If the dtypes are not all bool but it was with with all bool dtypes we need to fit the _component_obj
         elif self._fit_with_all_bool_dtypes:
             self._component_obj.fit(X[self._cols_to_impute])
 
@@ -134,15 +133,9 @@ class SimpleImputer(Transformer):
                 new_schema.set_types({col: Double})
         X_t.ww.init(schema=new_schema)
 
-        # Add back in the unchanged original columns that we want to keep
-        # Which will be the natural language columns and the columns without nans
-        original_cols_to_readd = [
-            col
-            for col in original_schema.columns
-            if col not in self._all_null_cols and col not in self._cols_to_impute
-        ]
-        if len(original_cols_to_readd) > 0:
-            X_t = woodwork.concat_columns([X_t, X.ww[original_cols_to_readd]])
+        # Add back in the unchanged original natural language columns that we want to keep
+        if len(self._natural_language_cols) > 0:
+            X_t = woodwork.concat_columns([X_t, X.ww[self._natural_language_cols]])
             # reorder columns to match original
             X_t = X_t.ww[[col for col in original_schema.columns if col in X_t.columns]]
 
