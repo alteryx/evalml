@@ -108,7 +108,7 @@ docs = [
     "myst-parser == 0.16.1",
 ]
 prophet = [
-    "prophet-prebuilt == 1.0.2",
+    "prophet == 1.1.1",
 ]
 complete = [
     "evalml[prophet,updater]",
