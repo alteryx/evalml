@@ -2,6 +2,7 @@
 import pandas as pd
 from woodwork.statistics_utils import infer_frequency
 
+from evalml.model_family import ModelFamily
 from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
@@ -161,3 +162,51 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         pred_dates = pd.DataFrame(self.get_forecast_period(X))
         preds = self.predict(pred_dates, objective=None, X_train=X, y_train=y)
         return preds
+
+    def get_prediction_intervals(
+        self,
+        X,
+        y=None,
+        X_train=None,
+        y_train=None,
+        coverage=None,
+    ):
+        """Find the prediction intervals using the fitted regressor.
+
+        This function takes the predictions of the fitted estimator and calculates the rolling standard deviation across
+        all predictions using a window size of 5. The lower and upper predictions are determined by taking the percent
+        point (quantile) function of the lower tail probability at each bound multiplied by the rolling standard deviation.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data. Ignored.
+            coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
+                prediction interval should be calculated for.
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features].
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
+
+        Returns:
+            dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+
+        Raises:
+            MethodPropertyNotFoundError: If the estimator does not support Time Series Regression as a problem type.
+        """
+        X, y = self._drop_time_index(X, y)
+        estimator_input = self.transform_all_but_final(
+            X,
+            y,
+            X_train=X_train,
+            y_train=y_train,
+        )
+        pred_intervals = self.estimator.get_prediction_intervals(estimator_input, y)
+        if self.estimator.model_family not in [
+            ModelFamily.ARIMA,
+            ModelFamily.EXPONENTIAL_SMOOTHING,
+            ModelFamily.PROPHET,
+        ]:
+            trans_pred_intervals = {}
+            for key, orig_pi_values in pred_intervals.items():
+                trans_pred_intervals[key] = self.inverse_transform(orig_pi_values)
+            return trans_pred_intervals
+        else:
+            return pred_intervals

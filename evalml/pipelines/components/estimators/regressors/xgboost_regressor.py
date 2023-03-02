@@ -115,6 +115,7 @@ class XGBoostRegressor(Estimator):
         X: pd.DataFrame,
         y: Optional[pd.Series] = None,
         coverage: List[float] = None,
+        predictions: pd.Series = None,
     ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted ProphetRegressor.
 
@@ -123,6 +124,7 @@ class XGBoostRegressor(Estimator):
             y (pd.Series): Target data. Ignored.
             coverage (List[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
                 prediction interval should be calculated for.
+            predictions (pd.Series): Optional list of predictions to use. If None, will generate predictions using `X`.
 
         Returns:
             dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
@@ -132,6 +134,7 @@ class XGBoostRegressor(Estimator):
             X=X,
             y=y,
             coverage=coverage,
+            predictions=predictions,
         )
         return prediction_interval_result
 

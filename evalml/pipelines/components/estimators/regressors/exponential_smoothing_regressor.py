@@ -146,6 +146,7 @@ class ExponentialSmoothingRegressor(Estimator):
         X: pd.DataFrame,
         y: Optional[pd.Series] = None,
         coverage: List[float] = None,
+        predictions: pd.Series = None,
     ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted ExponentialSmoothingRegressor.
 
@@ -156,6 +157,7 @@ class ExponentialSmoothingRegressor(Estimator):
             y (pd.Series): Target data. Optional.
             coverage (List[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
                 prediction interval should be calculated for.
+            predictions (pd.Series): Not used for Exponential Smoothing regressor.
 
         Returns:
             dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
