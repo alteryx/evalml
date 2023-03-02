@@ -5,7 +5,6 @@ import woodwork
 from sklearn.impute import KNNImputer as Sk_KNNImputer
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.pipelines.components.utils import drop_natural_language_columns
 from evalml.utils import infer_feature_types
 
 
@@ -51,16 +50,27 @@ class KNNImputer(Transformer):
 
         """
         X = infer_feature_types(X)
-        X, _ = drop_natural_language_columns(X)
 
         nan_ratio = X.isna().sum() / X.shape[0]
+
+        # Keep track of the different types of data in X
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
+        self._natural_language_cols = list(
+            X.ww.select("NaturalLanguage", return_schema=True).columns.keys(),
+        )
+
+        # Only impute data that is not natural language columns or fully null
+        self._cols_to_impute = [
+            col
+            for col in X.columns
+            if col not in self._natural_language_cols and col not in self._all_null_cols
+        ]
 
         # If the Dataframe only had natural language columns, do nothing.
-        if X.shape[1] == 0:
+        if not self._cols_to_impute:
             return self
 
-        self._component_obj.fit(X, y)
+        self._component_obj.fit(X[self._cols_to_impute], y)
         return self
 
     def transform(self, X, y=None):
@@ -77,37 +87,35 @@ class KNNImputer(Transformer):
 
         not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
         original_index = X.index
+        original_schema = X.ww.schema
 
         # Drop natural language columns and transform the other columns
-        X_t, natural_language_cols = drop_natural_language_columns(X)
-        if X_t.shape[1] == 0:
-            return X
-        not_all_null_or_natural_language_cols = [
-            col for col in not_all_null_cols if col not in natural_language_cols
-        ]
+        if not self._cols_to_impute:
+            return X.ww[not_all_null_cols]
 
-        X_t = self._component_obj.transform(X_t)
-        X_t = pd.DataFrame(X_t, columns=not_all_null_or_natural_language_cols)
+        X_t = self._component_obj.transform(X[self._cols_to_impute])
+        X_t = pd.DataFrame(X_t, columns=self._cols_to_impute)
 
-        X_schema = X.ww.schema
+        # Get Woodwork types for the imputed data
+        new_schema = original_schema.get_subset_schema(self._cols_to_impute)
 
-        X_bool_nullable_cols = X_schema._filter_cols(include=["BooleanNullable"])
-        X_int_nullable_cols = X_schema._filter_cols(include=["IntegerNullable"])
+        X_bool_nullable_cols = new_schema._filter_cols(include=["BooleanNullable"])
+        X_int_nullable_cols = new_schema._filter_cols(include=["IntegerNullable"])
         new_ltypes_for_nullable_cols = {col: "Boolean" for col in X_bool_nullable_cols}
         new_ltypes_for_nullable_cols.update(
             {col: "Double" for col in X_int_nullable_cols},
         )
 
         # Add back in natural language columns, unchanged
-        if len(natural_language_cols) > 0:
-            X_t = woodwork.concat_columns([X_t, X[natural_language_cols]])
+        if len(self._natural_language_cols) > 0:
+            X_t = woodwork.concat_columns([X_t, X.ww[self._natural_language_cols]])
 
         X_t.ww.init(
-            schema=X_schema,
+            schema=new_schema,
             logical_types=new_ltypes_for_nullable_cols,
         )
 
-        if not_all_null_or_natural_language_cols:
+        if self._cols_to_impute:
             X_t.index = original_index
 
         return X_t

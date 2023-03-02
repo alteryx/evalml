@@ -70,11 +70,13 @@ class SimpleImputer(Transformer):
             )
 
         nan_ratio = X.isna().sum() / X.shape[0]
-        self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
         # Keep track of the different types of data in X
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
-        self._natural_language_cols = X.ww.select("NaturalLanguage").columns.to_list()
+        self._natural_language_cols = X.ww.select(
+            "NaturalLanguage",
+            return_schema=True,
+        ).columns.keys()
 
         # Only impute data that is not natural language columns or fully null
         self._cols_to_impute = [
@@ -119,7 +121,7 @@ class SimpleImputer(Transformer):
         elif self._fit_with_all_bool_dtypes:
             self._component_obj.fit(X[self._cols_to_impute])
 
-        X_t = self._component_obj.transform(X.ww[self._cols_to_impute])
+        X_t = self._component_obj.transform(X[self._cols_to_impute])
         X_t = pd.DataFrame(X_t, columns=self._cols_to_impute)
 
         # Get Woodwork types for the imputed data

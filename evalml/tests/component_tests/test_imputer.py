@@ -727,3 +727,6 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             data: Double,
         }
+
+
+# --> add test for ww kept when passsed to child imputers

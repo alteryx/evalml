@@ -167,25 +167,6 @@ def handle_component_class(component_class):
     return component_class
 
 
-def drop_natural_language_columns(X):
-    """Drops natural language columns from dataframes for the imputers.
-
-    Args:
-        X (pd.Dataframe): The dataframe that we want to impute on.
-
-    Returns:
-        pd.Dataframe: the dataframe with any natural language columns dropped.
-        list: list of all the columns that are considered natural language.
-    """
-    natural_language_columns = list(
-        X.ww.select(["NaturalLanguage"], return_schema=True).columns.keys(),
-    )
-    if natural_language_columns:
-        X = X.ww.copy()
-        X = X.ww.drop(columns=natural_language_columns)
-    return X, natural_language_columns
-
-
 def get_prediction_intevals_for_tree_regressors(
     X: pd.DataFrame,
     predictions: pd.Series,
