@@ -283,5 +283,3 @@ def test_exponential_smoothing_regressor_calls_handle_nullable_types(
 
     comp.predict(X)
     assert mock_handle_nullable_types.call_count == 2
-
-
