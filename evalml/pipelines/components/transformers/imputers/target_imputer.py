@@ -8,6 +8,7 @@ from woodwork.logical_types import (
     Boolean,
     BooleanNullable,
     Double,
+    Integer,
     IntegerNullable,
 )
 
@@ -131,7 +132,10 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
 
         new_logical_type = y_ww.ww.logical_type
         if isinstance(y_ww.ww.logical_type, IntegerNullable):
-            new_logical_type = Double
+            if self.parameters["impute_strategy"] in ["mean", "median"]:
+                new_logical_type = Double
+            else:
+                new_logical_type = Integer
         elif isinstance(y_ww.ww.logical_type, BooleanNullable):
             new_logical_type = Boolean
 
