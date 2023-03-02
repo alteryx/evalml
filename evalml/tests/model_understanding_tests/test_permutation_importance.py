@@ -177,6 +177,32 @@ class PipelineWithTargetTransformer(RegressionPipeline):
     }
 
 
+class PipelineWithPreExistingDFSFeatures(BinaryClassificationPipeline):
+    component_graph = [
+        "Imputer",
+        DateTimeFeaturizer,
+        DFSTransformer.name,
+        OneHotEncoder,
+        "Random Forest Classifier",
+    ]
+
+
+class MockFeature:
+    def __init__(self, name) -> None:
+        self.name = name
+        self.dataframe_name = "foo"
+
+    def get_feature_names(self):
+        return [self.name]
+
+
+mock_features = [
+    MockFeature("provider"),
+    MockFeature("lng"),
+    MockFeature("card_id"),
+    MockFeature("country"),
+]
+
 test_cases = [
     (
         LinearPipelineWithDropCols,
@@ -304,6 +330,18 @@ test_cases = [
         PipelineWithTargetTransformer,
         {"SelectNumeric": {"columns": ["card_id", "store_id", "lat", "lng"]}},
     ),
+    (
+        PipelineWithPreExistingDFSFeatures,
+        {
+            "Select Columns Transformer": {
+                "columns": ["provider", "lng", "card_id", "country"],
+            },
+            "Drop Columns Transformer": {
+                "columns": ["datetime"],
+            },
+            DFSTransformer.name: {},
+        },
+    ),
 ]
 
 
@@ -331,6 +369,14 @@ def test_fast_permutation_importance_matches_slow_output(
     parameters["Estimator"] = {"n_jobs": 1}
 
     pipeline = pipeline_class(pipeline_class.component_graph, parameters=parameters)
+    if pipeline_class == PipelineWithPreExistingDFSFeatures:
+        pipeline.component_graph[DFSTransformer.name].features = mock_features
+        pipeline.input_feature_names[DFSTransformer.name] = [
+            "provider",
+            "lng",
+            "card_id",
+            "country",
+        ]
     pipeline.fit(X, y)
     fast_scores = calculate_permutation_importance(
         pipeline,
@@ -396,14 +442,6 @@ def test_fast_permutation_importance_matches_slow_output(
             permutation_importance_one_col_fast,
             permutation_importance_one_col_slow,
         )
-
-
-class MockFeature:
-    def __init__(self, name) -> None:
-        self.name = name
-
-    def get_feature_names(self):
-        return self.name
 
 
 def pipelines_that_do_not_support_fast_permutation_importance():
