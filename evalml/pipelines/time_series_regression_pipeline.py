@@ -203,7 +203,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             y=y,
             coverage=coverage,
         )
-        if self.estimator.model_family not in [
+        if self.estimator.model_family in [
             ModelFamily.ARIMA,
             ModelFamily.EXPONENTIAL_SMOOTHING,
             ModelFamily.PROPHET,
