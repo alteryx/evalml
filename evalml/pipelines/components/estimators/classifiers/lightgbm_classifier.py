@@ -189,6 +189,9 @@ class LightGBMClassifier(Estimator):
             self
         """
         X = infer_feature_types(X)
+        # --> why wasn't this here before? is it a problem to add
+        if y is not None:
+            y = infer_feature_types(y)
         X_d, y_d = self._handle_nullable_types(X, y)
         X_encoded = self._encode_categories(X_d, fit=True)
         y_encoded = self._encode_labels(y_d)
