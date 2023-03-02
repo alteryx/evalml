@@ -73,10 +73,12 @@ class SimpleImputer(Transformer):
 
         # Keep track of the different types of data in X
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
-        self._natural_language_cols = X.ww.select(
-            "NaturalLanguage",
-            return_schema=True,
-        ).columns.keys()
+        self._natural_language_cols = list(
+            X.ww.select(
+                "NaturalLanguage",
+                return_schema=True,
+            ).columns.keys(),
+        )
 
         # Only impute data that is not natural language columns or fully null
         self._cols_to_impute = [
