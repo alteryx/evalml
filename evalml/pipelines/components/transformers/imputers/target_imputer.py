@@ -7,7 +7,7 @@ from sklearn.impute import SimpleImputer as SkImputer
 from woodwork.logical_types import (
     Boolean,
     BooleanNullable,
-    Integer,
+    Double,
     IntegerNullable,
 )
 
@@ -131,8 +131,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
 
         new_logical_type = y_ww.ww.logical_type
         if isinstance(y_ww.ww.logical_type, IntegerNullable):
-            # --> need to check if this truncates floats
-            new_logical_type = Integer
+            new_logical_type = Double
         elif isinstance(y_ww.ww.logical_type, BooleanNullable):
             new_logical_type = Boolean
 

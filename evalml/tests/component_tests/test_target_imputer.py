@@ -153,7 +153,7 @@ def test_target_imputer_fit_transform_all_nan_empty(y):
 def test_target_imputer_numpy_input():
     y = np.array([np.nan, 0, 2])
     imputer = TargetImputer(impute_strategy="mean")
-    y_expected = pd.Series([1, 0, 2], dtype="int64")
+    y_expected = pd.Series([1, 0, 2], dtype="float64")
     _, y_t = imputer.fit_transform(None, y)
     assert y_expected.equals(y_t)
     np.testing.assert_almost_equal(y, np.array([np.nan, 0, 2]))
@@ -265,3 +265,25 @@ def test_target_imputer_woodwork_custom_overrides_returned_by_components(
             assert type(y_t.ww.logical_type) == logical_type
         else:
             assert type(y_t.ww.logical_type) == Double
+
+
+@pytest.mark.parametrize("impute_strategy", ["mean", "median", "most_frequent"])
+def test_target_imputer_doesnt_truncate_imputed_ints(impute_strategy):
+    y = pd.Series([1, 2, 3, 3, pd.NA], dtype="Int64")
+    y = ww.init_series(y, logical_type="IntegerNullable")
+
+    imputer = TargetImputer(impute_strategy=impute_strategy)
+    imputer.fit(None, y)
+
+    _, y_t = imputer.transform(None, y)
+    expected_y_t = pd.Series(
+        imputer._component_obj.transform(y.ww.to_frame())[:, 0],
+        index=y.index,
+    )
+
+    if impute_strategy != "most_frequent":
+        # Confirm floating points are present
+        assert not (expected_y_t % 1 == 0).all()
+
+    for i in range(len(y_t)):
+        assert y_t.iloc[i] == expected_y_t.iloc[i]
