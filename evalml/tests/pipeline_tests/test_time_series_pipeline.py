@@ -866,6 +866,7 @@ def test_classification_pipeline_encodes_targets(
     assert_series_equal(
         target_passed_to_estimator,
         pl._encode_targets(y_encoded_train.iloc[2:]),
+        check_series_type=True,
     )
 
     # Check predict encodes target

@@ -4863,7 +4863,6 @@ def test_automl_with_empty_features_list(
 def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
     ts_data,
     AutoMLTestEnv,
-    is_using_windows,
 ):
     X, _, y = ts_data()
 
@@ -4890,30 +4889,17 @@ def test_automl_with_iterative_algorithm_puts_ts_estimators_first(
         .id.map(lambda id_: automl.get_pipeline(id_).estimator.name)
         .tolist()
     )
-    if is_using_windows:
-        expected_order = [
-            "Time Series Baseline Estimator",
-            "ARIMA Regressor",
-            "ARIMA Regressor",
-            "Exponential Smoothing Regressor",
-            "Exponential Smoothing Regressor",
-            "Elastic Net Regressor",
-            "Elastic Net Regressor",
-            "XGBoost Regressor",
-            "XGBoost Regressor",
-        ]
-    else:
-        expected_order = [
-            "Time Series Baseline Estimator",
-            "ARIMA Regressor",
-            "ARIMA Regressor",
-            "Prophet Regressor",
-            "Prophet Regressor",
-            "Exponential Smoothing Regressor",
-            "Exponential Smoothing Regressor",
-            "Elastic Net Regressor",
-            "Elastic Net Regressor",
-        ]
+    expected_order = [
+        "Time Series Baseline Estimator",
+        "ARIMA Regressor",
+        "ARIMA Regressor",
+        "Prophet Regressor",
+        "Prophet Regressor",
+        "Exponential Smoothing Regressor",
+        "Exponential Smoothing Regressor",
+        "Elastic Net Regressor",
+        "Elastic Net Regressor",
+    ]
     assert estimator_order == expected_order
 
 
