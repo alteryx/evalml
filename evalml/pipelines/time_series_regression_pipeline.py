@@ -7,6 +7,12 @@ from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
 
+NO_PREDS_PI_ESTIMATORS = [
+    ModelFamily.ARIMA,
+    ModelFamily.EXPONENTIAL_SMOOTHING,
+    ModelFamily.PROPHET,
+]
+
 
 class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
     """Pipeline base class for time series regression problems.
