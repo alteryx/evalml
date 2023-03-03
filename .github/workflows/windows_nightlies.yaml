@@ -57,18 +57,7 @@ jobs:
           conda config --add channels conda-forge
           conda activate curr_py
           conda install numba -q -y
-      - if: ${{ matrix.command == 'git-test-automl' || matrix.command == 'git-test-prophet' }}
-        name: Install EvalML with test requirements and prophet
-        shell: pwsh
-        run: |
-          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
-          conda activate curr_py
-          python -m pip install --upgrade pip
-          python -m pip install .[test]
-          python -m pip install .[prophet]
-          pip freeze
-      - if: ${{ matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-parallel' }}
-        name: Install EvalML with test requirements
+      - name: Install EvalML with test requirements
         shell: pwsh
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
