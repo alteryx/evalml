@@ -26,4 +26,3 @@ python:
       path: .
       extra_requirements:
         - dev
-        - prophet
