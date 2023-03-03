@@ -558,3 +558,103 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
         transformed.ww.logical_types["categorical with nan"]
         == X.ww.logical_types["categorical with nan"]
     )
+
+
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+)
+def test_imputer_can_take_in_nullable_types(
+    nullable_type_test_data,
+    nullable_type_target,
+    nullable_ltype,
+):
+    y = nullable_type_target(ltype=nullable_ltype, has_nans=True)
+    X = nullable_type_test_data(has_nans=True)
+    # Only numeric imputing has interpolate as an option
+    X = X.ww.select("numeric")
+
+    imputer = TimeSeriesImputer(numeric_impute_strategy="interpolate")
+    imputer.fit(X, y)
+    X_imputed, y_imputed = imputer.transform(X, y)
+
+    assert not X_imputed.isnull().any().any()
+    assert not y_imputed.isnull().any()
+
+
+@pytest.mark.parametrize(
+    "categorical_impute_strategy",
+    ["forwards_fill", "backwards_fill"],
+)
+@pytest.mark.parametrize(
+    "numeric_impute_strategy",
+    ["forwards_fill", "backwards_fill", "interpolate"],
+)
+@pytest.mark.parametrize(
+    "target_impute_strategy",
+    ["forwards_fill", "backwards_fill", "interpolate"],
+)
+def test_imputer_nullable_handling_noop_for_non_impute_methods(
+    nullable_type_test_data,
+    nullable_type_target,
+    target_impute_strategy,
+    numeric_impute_strategy,
+    categorical_impute_strategy,
+):
+    imputer = TimeSeriesImputer(
+        categorical_impute_strategy=categorical_impute_strategy,
+        numeric_impute_strategy=numeric_impute_strategy,
+        target_impute_strategy=target_impute_strategy,
+    )
+
+    X = nullable_type_test_data(has_nans=True)
+    y = nullable_type_target(ltype="IntegerNullable", has_nans=True)
+
+    imputer.fit(X, y)
+    original_X_schema = X.ww.schema
+    original_y_schema = y.ww.schema
+    X_d, y_d = imputer._handle_nullable_types(X, y)
+
+    # Confirm that we only change inputs when interpolate is used
+    if numeric_impute_strategy != "interpolate":
+        assert X_d.ww.schema == original_X_schema
+    else:
+        assert X_d.ww.schema != original_X_schema
+
+    if target_impute_strategy != "interpolate":
+        assert y_d.ww.schema == original_y_schema
+    else:
+        assert y_d.ww.schema != original_y_schema
+
+
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+)
+@pytest.mark.parametrize(
+    "handle_incompatibility",
+    [
+        True,
+        pytest.param(
+            False,
+            marks=pytest.mark.xfail(strict=True, raises=ValueError),
+        ),
+    ],
+)
+def test_time_series_imputer_nullable_type_incompatibility(
+    nullable_type_target,
+    handle_incompatibility,
+    nullable_ltype,
+):
+    """Testing that the nullable type incompatibility that caused us to add handling for the time series imputer
+    is still present in pandas' interpolate method. If this test is causing the test suite to fail
+    because the code below no longer raises the expected ValueError, we should confirm that the nullable
+    types now work for our use case and remove the nullable type handling logic from TimeSeriesImputer.
+    """
+    nullable_series = nullable_type_target(ltype=nullable_ltype, has_nans=True)
+    if handle_incompatibility:
+        imputer = TimeSeriesImputer(target_impute_strategy="interpolate")
+        imputer.fit(pd.DataFrame(), nullable_series)
+        _, nullable_series = imputer._handle_nullable_types(None, nullable_series)
+
+    nullable_series.interpolate()

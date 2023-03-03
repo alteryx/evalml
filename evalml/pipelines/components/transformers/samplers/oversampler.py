@@ -24,6 +24,11 @@ class Oversampler(BaseSampler):
     name = "Oversampler"
     hyperparameter_ranges = {}
     _can_be_used_for_fast_partial_dependence = False
+
+    # Incompatibility https://github.com/alteryx/evalml/issues/3974
+    # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4013
+    _integer_nullable_incompatibilities = ["y"]
+    _boolean_nullable_incompatibilities = ["y"]
     """{}"""
 
     def __init__(

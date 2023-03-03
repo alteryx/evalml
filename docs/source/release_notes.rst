@@ -5,6 +5,9 @@ Release Notes
         * Move black to regular dependency and use it for ``generate_pipeline_code`` :pr:`4005`
         * Implement ``generate_pipeline_example`` :pr:`4023`
         * Add new downcast utils for component-specific nullable type handling and begin implementation on objective and component base classes :pr:`4024`
+        * Add nullable type incompatibility properties to the components that need them :pr:`4031`
+        * Add ``get_evalml_requirements_file`` :pr:`4034`
+        * Pipelines with DFS Transformers will run fast permutation importance if DFS features pre-exist :pr:`4037`
     * Fixes
     * Changes
         * Uncapped ``pmdarima`` and updated minimum version :pr:`4027`
@@ -13,6 +16,7 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Use ``release.yaml`` for performance tests on merge to main :pr:`4007`
+        * Pin ``github-action-check-linked-issues`` at v1.4.5 :pr:`4042`
 
 .. warning::
 

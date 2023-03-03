@@ -1,6 +1,7 @@
 """Component that imputes missing data according to a specified timeseries-specific imputation strategy."""
 import pandas as pd
 import woodwork as ww
+from woodwork.logical_types import BooleanNullable, Double
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
@@ -47,6 +48,11 @@ class TimeSeriesImputer(Transformer):
     _valid_target_impute_strategies = set(
         ["backwards_fill", "forwards_fill", "interpolate"],
     )
+
+    # Incompatibility: https://github.com/alteryx/evalml/issues/4001
+    # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4014
+    _integer_nullable_incompatibilities = ["X", "y"]
+    _boolean_nullable_incompatibilities = ["X", "y"]
 
     def __init__(
         self,
@@ -153,7 +159,7 @@ class TimeSeriesImputer(Transformer):
         X_schema = X_not_all_null.ww.schema
         X_schema = X_schema.get_subset_schema(
             subset_cols=X_schema._filter_cols(
-                exclude=["IntegerNullable", "BooleanNullable"],
+                exclude=["IntegerNullable", "BooleanNullable", "AgeNullable"],
             ),
         )
 
@@ -194,3 +200,26 @@ class TimeSeriesImputer(Transformer):
             y_imputed = ww.init_series(y_imputed)
 
         return X_not_all_null, y_imputed
+
+    def _handle_nullable_types(self, X=None, y=None):
+        """Transforms X and y to remove any incompatible nullable types for the time series imputer when the interpolate method is used.
+
+        Args:
+            X (pd.DataFrame, optional): Input data to a component of shape [n_samples, n_features].
+                May contain nullable types.
+            y (pd.Series, optional): The target of length [n_samples]. May contain nullable types.
+
+        Returns:
+            X, y with any incompatible nullable types downcasted to compatible equivalents when interpolate is used. Is NoOp otherwise.
+        """
+        if self._impute_target == "interpolate":
+            # For BooleanNullable, we have to avoid Categorical columns
+            # since the category dtype also has incompatibilities with linear interpolate, which is expected
+            if isinstance(y.ww.logical_type, BooleanNullable):
+                y = ww.init_series(y, Double)
+            else:
+                _, y = super()._handle_nullable_types(None, y)
+        if self._interpolate_cols is not None:
+            X, _ = super()._handle_nullable_types(X, None)
+
+        return X, y

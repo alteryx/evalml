@@ -2332,12 +2332,10 @@ def nullable_type_test_data(
 @pytest.fixture
 def nullable_type_target():
     def _build_nullable_type_data(ltype="BooleanNullable", has_nans=True):
-        y = pd.Series([1, 0, 1, 1, 0] * 4)
-
         if has_nans:
             y = pd.Series([1, 0, pd.NA, 1, 0] * 4)
         else:
-            y = pd.Series([1, 0, 1, 1, 0] * 4)
+            y = pd.Series([1, 0, 1, 1, 1] * 4)
 
         return ww.init_series(y, logical_type=ltype)
 

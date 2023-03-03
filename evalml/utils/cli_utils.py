@@ -161,6 +161,23 @@ def get_evalml_pip_requirements(
     return standardized_package_specifiers
 
 
+def get_evalml_requirements_file(evalml_path, requirements_file_path):
+    """Gets pip requirements for evalml as a requirements file
+
+    Args:
+        evalml_path: Path to evalml root.
+        requirements_file_path: Path to requirements file.
+    Returns:
+        Pip requirements for evalml in a singular string.
+    """
+    requirements = "\n".join(
+        get_evalml_pip_requirements(evalml_path, convert_to_conda=False),
+    )
+    with open(requirements_file_path, "w") as text_file:
+        text_file.write(requirements)
+    return requirements
+
+
 def get_evalml_black_config(
     evalml_path,
 ):
