@@ -7,6 +7,12 @@ from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
 
+NO_PREDS_PI_ESTIMATORS = [
+    ModelFamily.ARIMA,
+    ModelFamily.EXPONENTIAL_SMOOTHING,
+    ModelFamily.PROPHET,
+]
+
 
 class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
     """Pipeline base class for time series regression problems.
@@ -191,26 +197,33 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         Raises:
             MethodPropertyNotFoundError: If the estimator does not support Time Series Regression as a problem type.
         """
-        X, y = self._drop_time_index(X, y)
-        estimator_input = self.transform_all_but_final(
-            X,
-            y,
-            X_train=X_train,
-            y_train=y_train,
-        )
-        pred_intervals = self.estimator.get_prediction_intervals(
-            X=estimator_input,
-            y=y,
-            coverage=coverage,
-        )
-        if self.estimator.model_family in [
-            ModelFamily.ARIMA,
-            ModelFamily.EXPONENTIAL_SMOOTHING,
-            ModelFamily.PROPHET,
-        ]:
+        if self.estimator.model_family in NO_PREDS_PI_ESTIMATORS:
+            X, y = self._drop_time_index(X, y)
+            estimator_input = self.transform_all_but_final(
+                X,
+                y,
+                X_train=X_train,
+                y_train=y_train,
+            )
+            pred_intervals = self.estimator.get_prediction_intervals(
+                X=estimator_input,
+                y=y,
+                coverage=coverage,
+            )
             trans_pred_intervals = {}
             for key, orig_pi_values in pred_intervals.items():
                 trans_pred_intervals[key] = self.inverse_transform(orig_pi_values)
             return trans_pred_intervals
         else:
-            return pred_intervals
+            predictions = self.predict_in_sample(
+                X=X,
+                y=y,
+                X_train=X_train,
+                y_train=y_train,
+            )
+            return self.estimator.get_prediction_intervals(
+                X=estimator_input,
+                y=y,
+                coverage=coverage,
+                predictions=predictions,
+            )
