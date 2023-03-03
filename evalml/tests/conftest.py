@@ -532,11 +532,6 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture
-def is_using_conda(pytestconfig):
-    return pytestconfig.getoption("--is-using-conda")
-
-
-@pytest.fixture
 def is_using_windows(pytestconfig):
     return sys.platform in ["win32", "cygwin"]
 

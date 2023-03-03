@@ -80,6 +80,7 @@ outputs:
         - sktime >=0.15.0
         - pmdarima >=1.8.5
         - vowpalwabbit >=8.11.0
+        - prophet >=1.1.1
     test:
       imports:
         - evalml
