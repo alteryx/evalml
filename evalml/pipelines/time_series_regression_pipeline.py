@@ -11,6 +11,7 @@ NO_PREDS_PI_ESTIMATORS = [
     ModelFamily.ARIMA,
     ModelFamily.EXPONENTIAL_SMOOTHING,
     ModelFamily.PROPHET,
+    ModelFamily.EXTRA_TREES,
 ]
 
 
