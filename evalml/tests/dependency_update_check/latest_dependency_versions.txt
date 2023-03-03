@@ -21,6 +21,7 @@ packaging==23.0
 pandas==1.5.3
 plotly==5.13.1
 pmdarima==2.0.2
+prophet==1.1.1
 pyzmq==25.0.0
 scikit-learn==1.2.1
 scikit-optimize==0.9.0
