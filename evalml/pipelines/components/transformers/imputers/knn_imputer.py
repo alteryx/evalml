@@ -89,7 +89,6 @@ class KNNImputer(Transformer):
         original_index = X.index
         original_schema = X.ww.schema
 
-        # Drop natural language columns and transform the other columns
         if not self._cols_to_impute:
             return X.ww[not_all_null_cols]
 
