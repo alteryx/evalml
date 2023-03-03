@@ -197,14 +197,14 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         Raises:
             MethodPropertyNotFoundError: If the estimator does not support Time Series Regression as a problem type.
         """
+        X, y = self._drop_time_index(X, y)
+        estimator_input = self.transform_all_but_final(
+            X,
+            y,
+            X_train=X_train,
+            y_train=y_train,
+        )
         if self.estimator.model_family in NO_PREDS_PI_ESTIMATORS:
-            X, y = self._drop_time_index(X, y)
-            estimator_input = self.transform_all_but_final(
-                X,
-                y,
-                X_train=X_train,
-                y_train=y_train,
-            )
             pred_intervals = self.estimator.get_prediction_intervals(
                 X=estimator_input,
                 y=y,
