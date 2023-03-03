@@ -118,7 +118,7 @@ def test_all_components(
     is_using_conda,
 ):
     if is_using_conda:
-        # No prophet, ARIMA, and vowpalwabbit
+        # No prophet
         expected_components = all_requirements_set.difference(
             not_supported_in_conda,
         )

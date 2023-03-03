@@ -116,7 +116,7 @@ class XGBoostRegressor(Estimator):
         y: Optional[pd.Series] = None,
         coverage: List[float] = None,
     ) -> Dict[str, pd.Series]:
-        """Find the prediction intervals using the fitted ProphetRegressor.
+        """Find the prediction intervals using the fitted XGBoostRegressor.
 
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
