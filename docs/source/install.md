@@ -70,11 +70,16 @@ $ conda install -c conda-forge evalml-core
 EvalML allows users to install add-ons individually or all at once:
 
 - **Update Checker**: Receive automatic notifications of new EvalML releases
+- **Time Series**: Use EvalML with Facebook's Prophet library for time series support.
 
 ````{tab} PyPI
 ```{tab} All Add-ons
 ```console
 $ pip install evalml[complete]
+```
+```{tab} Time Series Support
+```console
+$ pip install evalml[prophet]
 ```
 ```{tab} Update Checker
 ```console
@@ -87,6 +92,15 @@ $ pip install evalml[updater]
 $ conda install -c conda-forge alteryx-open-src-update-checker
 ```
 ````
+
+## Time Series support with Facebook's Prophet
+
+To support the `Prophet` time series estimator, be sure to install it as an extra requirement. Please note that this may take a few minutes.
+```shell
+pip install evalml[prophet]
+```
+Another option for installing Prophet with CmdStan as a backend is to use `make installdeps-prophet`.
+
 
 ## Windows Additional Requirements & Troubleshooting
 

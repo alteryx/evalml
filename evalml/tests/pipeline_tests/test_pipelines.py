@@ -109,8 +109,13 @@ def test_allowed_model_families():
     )
 
 
-def test_all_estimators():
-    n_estimators = 18
+def test_all_estimators(
+    is_using_conda,
+):
+    if is_using_conda:
+        n_estimators = 17
+    else:
+        n_estimators = 18
     assert len(_all_estimators_used_in_search()) == n_estimators
 
 

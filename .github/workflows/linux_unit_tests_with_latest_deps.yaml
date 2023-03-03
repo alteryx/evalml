@@ -38,12 +38,22 @@ jobs:
           fetch-depth: 2
       - name: Update apt and install Graphviz
         run: sudo apt update && sudo apt install -y graphviz
-      - name: Installing Dependencies
+      - if: ${{ matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-parallel' }}
+        name: Installing Dependencies
         run: |
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
           make installdeps
+          make installdeps-test
+          pip freeze
+      - if: ${{ matrix.command == 'git-test-automl' || matrix.command == 'git-test-prophet' }}
+        name: Installing Dependencies and Prophet
+        run: |
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          make installdeps-prophet
           make installdeps-test
           pip freeze
       - name: Erase Coverage
