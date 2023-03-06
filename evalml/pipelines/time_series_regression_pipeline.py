@@ -224,7 +224,10 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             )
             trans_pred_intervals = {}
             for key, orig_pi_values in pred_intervals.items():
-                trans_pred_intervals[key] = self.inverse_transform(orig_pi_values)
+                res_intervals = orig_pi_values - predictions
+                trans_pred_intervals[key] = (
+                    self.inverse_transform(res_intervals) + predictions
+                )
             return trans_pred_intervals
         else:
             predictions = self.predict_in_sample(
