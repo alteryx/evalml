@@ -11,7 +11,6 @@ NO_PREDS_PI_ESTIMATORS = [
     ModelFamily.ARIMA,
     ModelFamily.EXPONENTIAL_SMOOTHING,
     ModelFamily.PROPHET,
-    ModelFamily.EXTRA_TREES,
 ]
 
 
@@ -206,12 +205,6 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             y_train=y_train,
         )
         if self.estimator.model_family in NO_PREDS_PI_ESTIMATORS:
-            predictions = self.predict_in_sample(
-                X=X,
-                y=y,
-                X_train=X_train,
-                y_train=y_train,
-            )
             pred_intervals = self.estimator.get_prediction_intervals(
                 X=estimator_input,
                 y=y,
@@ -219,10 +212,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             )
             trans_pred_intervals = {}
             for key, orig_pi_values in pred_intervals.items():
-                res_intervals = orig_pi_values - predictions
-                trans_pred_intervals[key] = (
-                    self.inverse_transform(res_intervals) + predictions
-                )
+                trans_pred_intervals[key] = self.inverse_transform(orig_pi_values)
             return trans_pred_intervals
         else:
             predictions = self.predict_in_sample(
