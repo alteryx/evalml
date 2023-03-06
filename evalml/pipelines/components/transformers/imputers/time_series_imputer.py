@@ -59,7 +59,6 @@ class TimeSeriesImputer(Transformer):
     # Incompatibility: https://github.com/alteryx/evalml/issues/4001
     # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4014
     _integer_nullable_incompatibilities = ["X", "y"]
-    # --> confirm that there isnt a bool nullable incom bc we wont ever pass it in via X to interpolate
     _boolean_nullable_incompatibilities = ["y"]
 
     def __init__(
@@ -178,7 +177,6 @@ class TimeSeriesImputer(Transformer):
         new_ltypes = None
 
         if self._forwards_cols is not None:
-            # --> ww here is unnecessary and below
             X_forward = X[self._forwards_cols]
             imputed = X_forward.pad()
             imputed.bfill(inplace=True)  # Fill in the first value, if missing

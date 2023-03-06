@@ -720,7 +720,6 @@ def test_imputer_calls_handle_nullable_types(
     numeric_impute_strategy,
     categorical_impute_strategy,
 ):
-    # --> also include other types to see how they play together?
     X = imputer_test_data.ww[
         ["dates", "int col", "float col", "float with nan", "all nan"]
     ]
@@ -740,6 +739,3 @@ def test_imputer_calls_handle_nullable_types(
 
     imputer.transform(X, y)
     assert mock_handle_nullable_types.call_count == 2
-
-
-# --> test impute bool null and int null maintain those types

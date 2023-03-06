@@ -447,7 +447,7 @@ def test_oversampler_with_nullable_types(
     nullable_type_target,
     nullable_y_ltype,
 ):
-    # --> consider testing with diff params
+    # --> consider testing with diff params here and in other tests
     X = nullable_type_test_data(has_nans=False)
     # Oversampler can only handle numeric and boolean columns
     X = X.ww.select(include=["numeric", "Boolean", "BooleanNullable", "category"])

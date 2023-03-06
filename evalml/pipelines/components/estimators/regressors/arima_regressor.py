@@ -212,7 +212,6 @@ class ARIMARegressor(Estimator):
         Raises:
             ValueError: If y was not passed in.
         """
-        # --> need to call manage woodwork first then handle then fillna
         X, y = self._manage_woodwork(X, y)
         X, y = self._handle_nullable_types(X, y)
         if X is not None:
