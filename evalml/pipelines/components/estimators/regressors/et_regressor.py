@@ -116,7 +116,7 @@ class ExtraTreesRegressor(Estimator):
         X, _ = self._manage_woodwork(X, y)
         X = X.ww.select(exclude="Datetime")
 
-        if predictions is not None:
+        if predictions is None:
             predictions = self._component_obj.predict(X)
         estimators = self._component_obj.estimators_
         return get_prediction_intevals_for_tree_regressors(
