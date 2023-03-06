@@ -99,7 +99,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
             raise TypeError("Provided target full of nulls.")
         y = y.to_frame()
 
-        # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
+        # Return early if all the columns are bool dtype, which will never have null values
         if (y.dtypes == bool).all():
             return y
 
@@ -123,7 +123,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         y_ww = infer_feature_types(y)
         y_df = y_ww.ww.to_frame()
 
-        # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
+        # Return early if all the columns are bool dtype, which will never have null values
         if (y_df.dtypes == bool).all():
             return X, y_ww
 

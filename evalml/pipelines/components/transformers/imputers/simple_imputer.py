@@ -94,7 +94,8 @@ class SimpleImputer(Transformer):
         X = X[self._cols_to_impute]
         if (X.dtypes == bool).all():
             # Ensure that _component_obj still gets fit so that if any of the dtypes are different
-            # at transform, we've fit the component
+            # at transform, we've fit the component. This is needed because sklearn doesn't allow
+            # data with only bool dtype to be passed in.
             X = X.astype("boolean")
 
         self._component_obj.fit(X, y)
@@ -117,8 +118,8 @@ class SimpleImputer(Transformer):
         X_t = X[self._cols_to_impute]
         not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
         if not self._cols_to_impute or (X_t.dtypes == bool).all():
-            # If there are no columns to impute or all columns to impute are bool dtype, which sklearn errors on,
-            # return the original data without any fully null columns
+            # If there are no columns to impute or all columns to impute are bool dtype,
+            # which will never have null values, return the original data without any fully null columns
             return X.ww[not_all_null_cols]
 
         X_t = self._component_obj.transform(X_t)

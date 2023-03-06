@@ -285,5 +285,4 @@ def test_target_imputer_doesnt_truncate_imputed_ints(impute_strategy):
         # Confirm floating points are present
         assert not (expected_y_t % 1 == 0).all()
 
-    for i in range(len(y_t)):
-        assert y_t.iloc[i] == expected_y_t.iloc[i]
+    assert_series_equal(y_t, expected_y_t, check_dtype=False)

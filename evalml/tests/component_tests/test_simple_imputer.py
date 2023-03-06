@@ -643,7 +643,7 @@ def test_simple_imputer_all_bools_at_fit_and_transform():
         },
     )
 
-    imp = SimpleImputer()
+    imp = SimpleImputer(impute_strategy="most_frequent")
     imp.fit(X)
 
     X_imputed = imp.transform(X)
@@ -659,7 +659,7 @@ def test_simple_imputer_all_bools_at_fit_and_transform_with_all_null_and_nl_cols
     X = imputer_test_data.ww[["all nan", "bool col", "natural language col"]]
     X_copy = X.ww.copy()
 
-    imp = SimpleImputer()
+    imp = SimpleImputer(impute_strategy="most_frequent")
     imp.fit(X)
 
     X_imputed = imp.transform(X)
@@ -683,7 +683,7 @@ def test_simple_imputer_all_bools_at_fit_with_nans_at_transform():
         },
     )
 
-    imp = SimpleImputer()
+    imp = SimpleImputer(impute_strategy="most_frequent")
     imp.fit(X_train)
 
     # X_test will be BooleanNullable which will be a problem when _component_obj isn't fit
