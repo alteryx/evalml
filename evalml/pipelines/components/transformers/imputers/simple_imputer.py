@@ -90,13 +90,14 @@ class SimpleImputer(Transformer):
         # If there are no columns to impute, return early
         if not self._cols_to_impute:
             return self
-        elif (X.dtypes == bool).all():
-            self._fit_with_all_bool_dtypes = True
-            return self
-        else:
-            self._fit_with_all_bool_dtypes = False
 
-        self._component_obj.fit(X[self._cols_to_impute], y)
+        X = X[self._cols_to_impute]
+        if (X.dtypes == bool).all():
+            # Ensure that _component_obj still gets fit so that if any of the dtypes are different
+            # at transform, we've fit the component
+            X = X.astype("boolean")
+
+        self._component_obj.fit(X, y)
         return self
 
     def transform(self, X, y=None):
@@ -113,17 +114,14 @@ class SimpleImputer(Transformer):
         original_schema = X.ww.schema
         original_index = X.index
 
+        X_t = X[self._cols_to_impute]
         not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
-        if not self._cols_to_impute:
-            # If there are no columns to impute, return the original data without any fully null columns
+        if not self._cols_to_impute or (X_t.dtypes == bool).all():
+            # If there are no columns to impute or all columns to impute are bool dtype, which sklearn errors on,
+            # return the original data without any fully null columns
             return X.ww[not_all_null_cols]
-        elif (X.dtypes == bool).all():
-            return X
-        # If the dtypes are not all bool but it was with with all bool dtypes we need to fit the _component_obj
-        elif self._fit_with_all_bool_dtypes:
-            self._component_obj.fit(X[self._cols_to_impute])
 
-        X_t = self._component_obj.transform(X[self._cols_to_impute])
+        X_t = self._component_obj.transform(X_t)
         X_t = pd.DataFrame(X_t, columns=self._cols_to_impute)
 
         # Get Woodwork types for the imputed data
