@@ -4,7 +4,13 @@ import numpy as np
 import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
-from woodwork.logical_types import Boolean, BooleanNullable, IntegerNullable
+from woodwork.logical_types import (
+    AgeFractional,
+    Boolean,
+    BooleanNullable,
+    Double,
+    IntegerNullable,
+)
 
 from evalml.pipelines.components import TimeSeriesImputer
 
@@ -131,6 +137,7 @@ def test_categorical_only_input(imputer_test_data):
             ),
             "bool col with nan": pd.Series(
                 [True, True, False, False, True] * 4,
+                dtype="boolean",
             ),
         },
     )
@@ -149,6 +156,7 @@ def test_categorical_only_input(imputer_test_data):
     )
     expected["bool col with nan"] = pd.Series(
         [True, False, False, True, True] * 4,
+        dtype="boolean",
     )
 
     imputer = TimeSeriesImputer(categorical_impute_strategy="backwards_fill")
@@ -161,7 +169,7 @@ def test_categorical_and_numeric_input(imputer_test_data):
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = TimeSeriesImputer()
     imputer.fit(X, y)
-    transformed, _ = imputer.transform(X, y)
+    transformed, _ = imputer.transform(X.ww.copy(), y)
     expected = pd.DataFrame(
         {
             "dates": pd.date_range("01-01-2022", periods=20),
@@ -199,7 +207,7 @@ def test_categorical_and_numeric_input(imputer_test_data):
         numeric_impute_strategy="forwards_fill",
         categorical_impute_strategy="forwards_fill",
     )
-    transformed, _ = imputer.fit_transform(X, y)
+    transformed, _ = imputer.fit_transform(X.ww.copy(), y)
     expected["float with nan"] = [0.3, 1.0, 1.0, -1.0, 0.0] * 4
     assert_frame_equal(transformed, expected, check_dtype=False)
 
@@ -564,25 +572,52 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
 
 
 @pytest.mark.parametrize(
-    "nullable_ltype",
-    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+    "nullable_ltype, expected_imputed_ltype",
+    [
+        ("BooleanNullable", Double),
+        ("IntegerNullable", Double),
+        ("AgeNullable", AgeFractional),
+    ],
 )
 def test_imputer_can_take_in_nullable_types(
     nullable_type_test_data,
     nullable_type_target,
     nullable_ltype,
+    expected_imputed_ltype,
 ):
     y = nullable_type_target(ltype=nullable_ltype, has_nans=True)
     X = nullable_type_test_data(has_nans=True)
-    # Only numeric imputing has interpolate as an option
-    X = X.ww.select("numeric")
+    # Drop the fully null columns since aren't relevant to the handle nullable types checks
+    X = X.ww.drop(["all nan", "all nan cat"])
 
-    imputer = TimeSeriesImputer(numeric_impute_strategy="interpolate")
+    cols_expected_to_change = X.ww.schema._filter_cols(
+        include=["IntegerNullable", "AgeNullable"],
+    )
+    cols_expected_to_stay_the_same = X.ww.schema._filter_cols(
+        exclude=["IntegerNullable", "AgeNullable"],
+    )
+
+    imputer = TimeSeriesImputer(
+        numeric_impute_strategy="interpolate",
+        target_impute_strategy="interpolate",
+    )
     imputer.fit(X, y)
     X_imputed, y_imputed = imputer.transform(X, y)
 
     assert not X_imputed.isnull().any().any()
     assert not y_imputed.isnull().any()
+
+    # Check that the types are as exoected
+    assert X.ww.get_subset_schema(
+        cols_expected_to_stay_the_same,
+    ) == X_imputed.ww.get_subset_schema(cols_expected_to_stay_the_same)
+    assert {
+        str(ltype)
+        for col, ltype in X_imputed.ww.logical_types.items()
+        if col in cols_expected_to_change
+    } == {"Double"}
+
+    assert isinstance(y_imputed.ww.logical_type, expected_imputed_ltype)
 
 
 @pytest.mark.parametrize(
@@ -680,21 +715,23 @@ def test_time_series_imputer_nullable_type_incompatibility(
 )
 def test_imputer_calls_handle_nullable_types(
     mock_handle_nullable_types,
-    nullable_type_test_data,
-    nullable_type_target,
+    imputer_test_data,
     target_impute_strategy,
     numeric_impute_strategy,
     categorical_impute_strategy,
 ):
+    # --> also include other types to see how they play together?
+    X = imputer_test_data.ww[
+        ["dates", "int col", "float col", "float with nan", "all nan"]
+    ]
+    y = pd.Series([0, 1, 0, 1, np.nan] * 4)
+    y.ww.init(logical_type="double")
+
     imputer = TimeSeriesImputer(
         categorical_impute_strategy=categorical_impute_strategy,
         numeric_impute_strategy=numeric_impute_strategy,
         target_impute_strategy=target_impute_strategy,
     )
-    # --> wil lfail for now
-
-    X = nullable_type_test_data(has_nans=True)
-    y = nullable_type_target(ltype="IntegerNullable", has_nans=True)
 
     assert not mock_handle_nullable_types.called
     mock_handle_nullable_types.return_value = X, y
@@ -703,3 +740,6 @@ def test_imputer_calls_handle_nullable_types(
 
     imputer.transform(X, y)
     assert mock_handle_nullable_types.call_count == 2
+
+
+# --> test impute bool null and int null maintain those types

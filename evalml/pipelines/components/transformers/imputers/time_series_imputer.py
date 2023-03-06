@@ -1,7 +1,14 @@
 """Component that imputes missing data according to a specified timeseries-specific imputation strategy."""
+
+
 import pandas as pd
 import woodwork as ww
-from woodwork.logical_types import BooleanNullable, Double
+from woodwork.logical_types import (
+    AgeNullable,
+    BooleanNullable,
+    Double,
+    IntegerNullable,
+)
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
@@ -52,7 +59,8 @@ class TimeSeriesImputer(Transformer):
     # Incompatibility: https://github.com/alteryx/evalml/issues/4001
     # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4014
     _integer_nullable_incompatibilities = ["X", "y"]
-    _boolean_nullable_incompatibilities = ["X", "y"]
+    # --> confirm that there isnt a bool nullable incom bc we wont ever pass it in via X to interpolate
+    _boolean_nullable_incompatibilities = ["y"]
 
     def __init__(
         self,
@@ -107,7 +115,10 @@ class TimeSeriesImputer(Transformer):
             self
         """
         X = infer_feature_types(X)
-        # --> call handle
+        if y is not None:
+            y = infer_feature_types(y)
+        # --> might not need this actually - check for all components if they need to have called in both
+        X, y = self._handle_nullable_types(X, y)
 
         nan_ratio = X.isna().sum() / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
@@ -132,7 +143,6 @@ class TimeSeriesImputer(Transformer):
         self._interpolate_cols = _filter_cols("interpolate", X)
 
         if y is not None:
-            y = infer_feature_types(y)
             if y.isnull().any():
                 self._impute_target = self.parameters["target_impute_strategy"]
 
@@ -156,35 +166,46 @@ class TimeSeriesImputer(Transformer):
         if y is not None:
             y = infer_feature_types(y)
 
+        # This will change the logical type of BooleanNullable/IntegerNullable/AgeNullable columns with nans
+        # so we save the original schema to recreate it where possible after imputation
+        original_schema = X.ww.schema
+        X, y = self._handle_nullable_types(X, y)
+
         X_not_all_null = X.ww.drop(self._all_null_cols)
-        X_schema = X_not_all_null.ww.schema
-        X_schema = X_schema.get_subset_schema(
-            subset_cols=X_schema._filter_cols(
-                exclude=["IntegerNullable", "BooleanNullable", "AgeNullable"],
-            ),
+        original_schema = original_schema.get_subset_schema(
+            subset_cols=list(X_not_all_null.columns),
         )
+        new_ltypes = None
 
         if self._forwards_cols is not None:
-            X_forward = X.ww[self._forwards_cols]
+            # --> ww here is unnecessary and below
+            X_forward = X[self._forwards_cols]
             imputed = X_forward.pad()
             imputed.bfill(inplace=True)  # Fill in the first value, if missing
             X_not_all_null[X_forward.columns] = imputed
 
         if self._backwards_cols is not None:
-            X_backward = X.ww[self._backwards_cols]
+            X_backward = X[self._backwards_cols]
             imputed = X_backward.bfill()
             imputed.pad(inplace=True)  # Fill in the last value, if missing
             X_not_all_null[X_backward.columns] = imputed
 
         if self._interpolate_cols is not None:
-            X_interpolate = X.ww[self._interpolate_cols]
-            # TODO: Revert when pandas introduces Float64 dtype
-            imputed = X_interpolate.astype(
-                float,
-            ).interpolate()  # Cast to float because Int64 not handled
+            X_interpolate = X_not_all_null[self._interpolate_cols]
+            imputed = X_interpolate.interpolate()
             imputed.bfill(inplace=True)  # Fill in the first value, if missing
             X_not_all_null[X_interpolate.columns] = imputed
-        X_not_all_null.ww.init(schema=X_schema)
+
+            # Interpolate may add floating point values to integer data,
+            # so we'll want to use the Double logical type
+            # --> this will lose the age ltype and I'm okay with that in this edge case
+            new_ltypes = {
+                col: Double
+                if isinstance(ltype, (IntegerNullable, AgeNullable))
+                else ltype
+                for col, ltype in original_schema.logical_types.items()
+            }
+        X_not_all_null.ww.init(schema=original_schema, logical_types=new_ltypes)
 
         y_imputed = pd.Series(y)
         if y is not None and len(y) > 0:
@@ -195,10 +216,12 @@ class TimeSeriesImputer(Transformer):
                 y_imputed = y.bfill()
                 y_imputed.pad(inplace=True)
             elif self._impute_target == "interpolate":
-                # TODO: Revert when pandas introduces Float64 dtype
-                y_imputed = y.astype(float).interpolate()
+                y_imputed = y.interpolate()
                 y_imputed.bfill(inplace=True)
-            y_imputed = ww.init_series(y_imputed)
+            # --> https://github.com/alteryx/evalml/issues/4053
+            # by using the y.ww.logical_type, we'll get the downcast type as the final, which is expected and
+            # onyl problematic for boolean which will be floats which is nonsensical
+            y_imputed = ww.init_series(y_imputed, logical_type=y.ww.logical_type)
 
         return X_not_all_null, y_imputed
 
