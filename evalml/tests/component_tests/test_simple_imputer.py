@@ -654,7 +654,8 @@ def test_simple_imputer_all_bools_at_fit_and_transform_with_all_null_and_nl_cols
     imputer_test_data,
 ):
     """Confirm that the simple imputer, which doesn't pass all null or natural language columns
-    to sklearn works when the remaining columns are all teh bool dtype, which sklearn would error on."""
+    to sklearn works when the remaining columns are all teh bool dtype, which sklearn would error on.
+    """
     X = imputer_test_data.ww[["all nan", "bool col", "natural language col"]]
     X_copy = X.ww.copy()
 
