@@ -234,7 +234,7 @@ def test_lgbm_preserves_schema_in_rename(mock_predict, mock_fit):
     "nullable_y_ltype",
     ["IntegerNullable", "AgeNullable", "BooleanNullable"],
 )
-def test_lgbm_handle_nullable_types(
+def test_lgbm_with_nullable_types(
     nullable_type_test_data,
     nullable_type_target,
     nullable_y_ltype,
@@ -245,7 +245,6 @@ def test_lgbm_handle_nullable_types(
 
     lgb = LightGBMRegressor()
 
-    X, y = lgb._handle_nullable_types(X, y)
     lgb.fit(X, y)
     preds = lgb.predict(X)
 

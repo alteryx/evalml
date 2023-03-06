@@ -213,6 +213,7 @@ class ARIMARegressor(Estimator):
         Raises:
             ValueError: If y was not passed in.
         """
+        # --> need to call manage woodwork first then handle then fillna
         if X is not None:
             X = downcast_int_nullable_to_double(X)
             X = X.fillna(X.mean())
@@ -278,6 +279,7 @@ class ARIMARegressor(Estimator):
             ValueError: If X was passed to `fit` but not passed in `predict`.
         """
         X, y = self._manage_woodwork(X, y)
+        # --> handle null
         X, fh_ = self._manage_types_and_forecast(X=X)
 
         if not X.empty and self.use_covariates:

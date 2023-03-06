@@ -4,6 +4,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from sktime.forecasting.arima import AutoARIMA as SKArima
 from sktime.forecasting.base import ForecastingHorizon
 
@@ -476,11 +477,15 @@ def test_arima_regressor_can_forecast_arbitrary_dates(use_covariates, ts_data):
     )
 
 
-def test_arima_regressor_nullable_handling():
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["IntegerNullable", "AgeNullable"],
+)
+def test_arima_regressor_with_nullable_types(nullable_ltype):
     X = pd.DataFrame()
     X["nums"] = pd.Series([i for i in range(100)], dtype="Int64")
     X.index = pd.date_range("1/1/21", periods=100)
-    X.ww.init(logical_types={"nums": "IntegerNullable"})
+    X.ww.init(logical_types={"nums": nullable_ltype})
 
     y = pd.Series([i for i in range(100)], dtype="Int64")
     y.index = pd.date_range("1/1/21", periods=100)
@@ -489,6 +494,7 @@ def test_arima_regressor_nullable_handling():
     X_test = X.ww.iloc[80:, :]
 
     y_train = y[:80]
+    y_train = ww.init_series(y_train, logical_type=nullable_ltype)
 
     arima_params = {
         "trend": None,
@@ -571,4 +577,52 @@ def test_arima_nullable_type_incompatibility(
     sk_arima.predict(fh=fh_, X=X_test)
 
 
-# --> test that handle is called from within fit and pred
+# --> make data into fixture
+# --> failing till we call handle
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["IntegerNullable", "AgeNullable"],
+)
+@patch(
+    "evalml.pipelines.components.component_base.ComponentBase._handle_nullable_types",
+)
+def test_arima_calls_handle_nullable_types(
+    mock_handle_nullable_types,
+    nullable_ltype,
+):
+    X = pd.DataFrame()
+    X["nums"] = pd.Series([i for i in range(100)], dtype="Int64")
+    X.index = pd.date_range("1/1/21", periods=100)
+    X.ww.init(logical_types={"nums": nullable_ltype})
+
+    y = pd.Series([i for i in range(100)], dtype="Int64")
+    y.index = pd.date_range("1/1/21", periods=100)
+
+    X.ww.iloc[:80, :]
+    X.ww.iloc[80:, :]
+
+    y_train = y[:80]
+    y_train = ww.init_series(y_train, logical_type=nullable_ltype)
+
+    arima_params = {
+        "trend": None,
+        "start_p": 2,
+        "d": 0,
+        "start_q": 2,
+        "max_p": 5,
+        "max_d": 2,
+        "max_q": 5,
+        "seasonal": True,
+        "maxiter": 10,
+        "n_jobs": -1,
+    }
+
+    evalml_arima = ARIMARegressor(**arima_params)
+
+    assert not mock_handle_nullable_types.called
+    mock_handle_nullable_types.return_value = X, y
+    evalml_arima.fit(X, y)
+    assert mock_handle_nullable_types.call_count == 1
+
+    evalml_arima.predict(X)
+    assert mock_handle_nullable_types.call_count == 2

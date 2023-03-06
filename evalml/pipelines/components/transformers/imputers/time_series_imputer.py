@@ -107,6 +107,7 @@ class TimeSeriesImputer(Transformer):
             self
         """
         X = infer_feature_types(X)
+        # --> call handle
 
         nan_ratio = X.isna().sum() / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
