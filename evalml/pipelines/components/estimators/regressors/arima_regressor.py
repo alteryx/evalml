@@ -9,7 +9,6 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
-    downcast_int_nullable_to_double,
     import_or_raise,
     infer_feature_types,
 )
@@ -214,10 +213,10 @@ class ARIMARegressor(Estimator):
             ValueError: If y was not passed in.
         """
         # --> need to call manage woodwork first then handle then fillna
-        if X is not None:
-            X = downcast_int_nullable_to_double(X)
-            X = X.fillna(X.mean())
         X, y = self._manage_woodwork(X, y)
+        X, y = self._handle_nullable_types(X, y)
+        if X is not None:
+            X = X.ww.fillna(X.mean())
         if y is None:
             raise ValueError("ARIMA Regressor requires y as input.")
 
@@ -279,7 +278,8 @@ class ARIMARegressor(Estimator):
             ValueError: If X was passed to `fit` but not passed in `predict`.
         """
         X, y = self._manage_woodwork(X, y)
-        # --> handle null
+        # --> maybe dont need to call??
+        X, y = self._handle_nullable_types(X, y)
         X, fh_ = self._manage_types_and_forecast(X=X)
 
         if not X.empty and self.use_covariates:

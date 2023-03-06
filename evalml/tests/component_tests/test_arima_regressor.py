@@ -577,52 +577,22 @@ def test_arima_nullable_type_incompatibility(
     sk_arima.predict(fh=fh_, X=X_test)
 
 
-# --> make data into fixture
-# --> failing till we call handle
-@pytest.mark.parametrize(
-    "nullable_ltype",
-    ["IntegerNullable", "AgeNullable"],
-)
 @patch(
     "evalml.pipelines.components.component_base.ComponentBase._handle_nullable_types",
 )
 def test_arima_calls_handle_nullable_types(
     mock_handle_nullable_types,
-    nullable_ltype,
+    ts_data,
 ):
-    X = pd.DataFrame()
-    X["nums"] = pd.Series([i for i in range(100)], dtype="Int64")
-    X.index = pd.date_range("1/1/21", periods=100)
-    X.ww.init(logical_types={"nums": nullable_ltype})
+    X_train, X_test, y_train = ts_data()
 
-    y = pd.Series([i for i in range(100)], dtype="Int64")
-    y.index = pd.date_range("1/1/21", periods=100)
-
-    X.ww.iloc[:80, :]
-    X.ww.iloc[80:, :]
-
-    y_train = y[:80]
-    y_train = ww.init_series(y_train, logical_type=nullable_ltype)
-
-    arima_params = {
-        "trend": None,
-        "start_p": 2,
-        "d": 0,
-        "start_q": 2,
-        "max_p": 5,
-        "max_d": 2,
-        "max_q": 5,
-        "seasonal": True,
-        "maxiter": 10,
-        "n_jobs": -1,
-    }
-
-    evalml_arima = ARIMARegressor(**arima_params)
+    evalml_arima = ARIMARegressor()
 
     assert not mock_handle_nullable_types.called
-    mock_handle_nullable_types.return_value = X, y
-    evalml_arima.fit(X, y)
+    mock_handle_nullable_types.return_value = X_train, y_train
+    evalml_arima.fit(X_train, X_train)
     assert mock_handle_nullable_types.call_count == 1
 
-    evalml_arima.predict(X)
+    mock_handle_nullable_types.return_value = X_test, None
+    evalml_arima.predict(X_test)
     assert mock_handle_nullable_types.call_count == 2
