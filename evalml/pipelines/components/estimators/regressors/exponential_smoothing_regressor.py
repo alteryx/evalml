@@ -137,7 +137,6 @@ class ExponentialSmoothingRegressor(Estimator):
             pd.Series: Predicted values.
         """
         X, y = self._manage_woodwork(X, y)
-        X, y = self._handle_nullable_types(X, y)
         fh_ = self._set_forecast(X)
 
         y_pred = self._component_obj.predict(fh=fh_)

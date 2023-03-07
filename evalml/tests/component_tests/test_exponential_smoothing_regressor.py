@@ -280,5 +280,7 @@ def test_exponential_smoothing_regressor_calls_handle_nullable_types(
     comp.fit(X, y)
     assert mock_handle_nullable_types.call_count == 1
 
+    # The nullable type incompatibility is only at fit
+    # so we don't need to call _handle_nullable_types again
     comp.predict(X)
-    assert mock_handle_nullable_types.call_count == 2
+    assert mock_handle_nullable_types.call_count == 1
