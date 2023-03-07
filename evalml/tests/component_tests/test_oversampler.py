@@ -263,18 +263,36 @@ def test_samplers_perform_equally(
     np.testing.assert_equal(sorted(y_im), expected_y)
 
 
-def test_smoten_categorical_boolean(X_y_binary, im):
+@pytest.mark.parametrize("use_nullable", [True, False])
+def test_smoten_categorical_boolean(X_y_binary, im, use_nullable):
     X, y = X_y_binary
-    X.ww.set_types({0: "Categorical", 1: "Boolean"})
-    X = X.drop(range(2, len(X.columns)), axis=1)
+    bool_ltype = "BooleanNullable" if use_nullable else "Boolean"
+    X.ww.set_types({0: "Categorical"})
+    X.ww[len(X.columns)] = ww.init_series(
+        pd.Series([True, False] * 50),
+        logical_type=bool_ltype,
+    )
+    X = X.ww.select(["Boolean", "BooleanNullable", "Categorical"])
+
     sn = Oversampler()
     _ = sn.fit_transform(X, y)
     assert sn.sampler == im.SMOTEN
 
 
-def test_smotenc_boolean_numeric(X_y_binary, im):
+@pytest.mark.parametrize("use_nullable_1", [True, False])
+@pytest.mark.parametrize("use_nullable_2", [True, False])
+def test_smotenc_boolean_numeric(X_y_binary, im, use_nullable_1, use_nullable_2):
+    bool_ltype_1 = "BooleanNullable" if use_nullable_1 else "Boolean"
+    bool_ltype_2 = "BooleanNullable" if use_nullable_2 else "Boolean"
     X, y = X_y_binary
-    X.ww.set_types({5: "Boolean", 12: "Boolean"})
+    X.ww[len(X.columns)] = ww.init_series(
+        pd.Series([True, False] * 50),
+        logical_type=bool_ltype_1,
+    )
+    X.ww[len(X.columns)] = ww.init_series(
+        pd.Series([True, False] * 50),
+        logical_type=bool_ltype_2,
+    )
     snc = Oversampler()
     _, _ = snc.fit_transform(X, y)
     assert snc.sampler == im.SMOTENC
@@ -312,9 +330,13 @@ def test_smotenc_category_features(X_y_binary):
             "2": "Boolean",
         },
     )
+    X_ww.ww[str(len(X.columns))] = ww.init_series(
+        pd.Series([True, False] * 50),
+        logical_type="BooleanNullable",
+    )
     snc = Oversampler()
     _ = snc.fit_transform(X_ww, y)
-    assert snc.categorical_features == [20, 21, 2]
+    assert snc.categorical_features == [20, 21, 2, len(X.columns)]
 
 
 def test_smotenc_output_shape(X_y_binary):
@@ -558,8 +580,14 @@ def test_oversampler_calls_handle_nullable_types(
 
     assert not mock_handle_nullable_types.called
     mock_handle_nullable_types.return_value = X, y
+
+    # Incompatibility is only when the sampler is actually called in transform,
+    # so we don't need to handle nullable types at fit
     oversampler.fit(X, y)
     assert not mock_handle_nullable_types.called
 
     oversampler.transform(X, y)
     assert mock_handle_nullable_types.called
+
+
+# --> go through all components and see if any assume no nullable types
