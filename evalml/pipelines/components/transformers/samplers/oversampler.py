@@ -73,7 +73,6 @@ class Oversampler(BaseSampler):
             self
         """
         X_ww, y_ww = self._prepare_data(X, y)
-        # X_d, y_d = self._handle_nullable_types(X_ww, y_ww)
 
         sampler_name = self._get_best_oversampler(X_ww)
         self.sampler = self.sampler_options[sampler_name]
@@ -91,7 +90,10 @@ class Oversampler(BaseSampler):
         return super().transform(X_d, y_d)
 
     def _get_best_oversampler(self, X):
-        cat_cols = X.ww.select(["category", "boolean"]).columns
+        cat_cols = X.ww.select(
+            ["category", "boolean", "BooleanNullable"],
+            return_schema=True,
+        ).columns
         if len(cat_cols) == X.shape[1]:
             return "SMOTEN"
         elif not len(cat_cols):
@@ -109,7 +111,7 @@ class Oversampler(BaseSampler):
         ]
         # Grab boolean columns, since SMOTE considers these categorical as well
         for i, val in enumerate(X.ww.types["Logical Type"].items()):
-            if str(val[1]) == "Boolean":
+            if str(val[1]) in {"Boolean", "BooleanNullable"}:
                 self.categorical_features.append(i)
         self._parameters["categorical_features"] = self.categorical_features
 

@@ -734,8 +734,11 @@ def test_imputer_calls_handle_nullable_types(
 
     assert not mock_handle_nullable_types.called
     mock_handle_nullable_types.return_value = X, y
+
+    # Since the incompatibility is in the interpolate() call
+    # there's no need to handle nullable types at fit
     imputer.fit(X, y)
-    assert mock_handle_nullable_types.call_count == 1
+    assert not mock_handle_nullable_types.called
 
     imputer.transform(X, y)
-    assert mock_handle_nullable_types.call_count == 2
+    assert mock_handle_nullable_types.called

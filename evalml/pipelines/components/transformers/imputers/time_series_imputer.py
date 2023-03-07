@@ -117,7 +117,6 @@ class TimeSeriesImputer(Transformer):
         if y is not None:
             y = infer_feature_types(y)
         # --> might not need this actually - check for all components if they need to have called in both
-        X, y = self._handle_nullable_types(X, y)
 
         nan_ratio = X.isna().sum() / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
