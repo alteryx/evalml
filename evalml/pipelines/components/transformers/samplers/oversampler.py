@@ -84,7 +84,15 @@ class Oversampler(BaseSampler):
         return self
 
     def transform(self, X, y=None):
-        """--> add docstring."""
+        """Transforms the input data by Oversampling the data.
+
+        Args:
+            X (pd.DataFrame): Training features.
+            y (pd.Series): Target.
+
+        Returns:
+            pd.DataFrame, pd.Series: Transformed features and target.
+        """
         X_ww, y_ww = self._prepare_data(X, y)
         X_d, y_d = self._handle_nullable_types(X_ww, y_ww)
         return super().transform(X_d, y_d)

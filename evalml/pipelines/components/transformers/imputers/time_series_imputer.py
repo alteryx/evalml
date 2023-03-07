@@ -191,8 +191,7 @@ class TimeSeriesImputer(Transformer):
             X_not_all_null[X_interpolate.columns] = imputed
 
             # Interpolate may add floating point values to integer data,
-            # so we'll want to use the Double logical type
-            # --> this will lose the age ltype and I'm okay with that in this edge case
+            # so we'll want to use the Double logical type. This will lose any Age logical type info
             new_ltypes = {
                 col: Double
                 if isinstance(ltype, (IntegerNullable, AgeNullable))
@@ -212,9 +211,7 @@ class TimeSeriesImputer(Transformer):
             elif self._impute_target == "interpolate":
                 y_imputed = y.interpolate()
                 y_imputed.bfill(inplace=True)
-            # --> https://github.com/alteryx/evalml/issues/4053
-            # by using the y.ww.logical_type, we'll get the downcast type as the final, which is expected and
-            # onyl problematic for boolean which will be floats which is nonsensical
+            # Re-initialize woodwork with the downcast logical type
             y_imputed = ww.init_series(y_imputed, logical_type=y.ww.logical_type)
 
         return X_not_all_null, y_imputed

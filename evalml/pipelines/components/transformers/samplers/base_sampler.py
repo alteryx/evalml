@@ -48,7 +48,6 @@ class BaseSampler(Transformer):
         """
 
     def _prepare_data(self, X, y):
-        # --> fix docstring to be relevant
         """Transforms the input data to pandas data structure that our sampler can ingest.
 
         Args:
