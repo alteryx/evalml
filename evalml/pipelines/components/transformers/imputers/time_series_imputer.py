@@ -138,6 +138,7 @@ class TimeSeriesImputer(Transformer):
         self._interpolate_cols = _filter_cols("interpolate", X)
 
         if y is not None:
+            y = infer_feature_types(y)
             if y.isnull().any():
                 self._impute_target = self.parameters["target_impute_strategy"]
 
