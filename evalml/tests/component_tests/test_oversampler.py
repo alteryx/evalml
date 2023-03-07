@@ -588,6 +588,3 @@ def test_oversampler_calls_handle_nullable_types(
 
     oversampler.transform(X, y)
     assert mock_handle_nullable_types.called
-
-
-# --> go through all components and see if any assume no nullable types

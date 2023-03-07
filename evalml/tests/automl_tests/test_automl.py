@@ -4,7 +4,6 @@ import warnings
 from collections import OrderedDict, defaultdict
 from itertools import product
 from math import ceil
-from pdb import set_trace
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import cloudpickle
@@ -5471,101 +5470,3 @@ def test_holdout_set_rankings(caplog, AutoMLTestEnv):
         automl.rankings["ranking_score"],
         check_names=False,
     )
-
-
-def test_broken_ts():
-    import pandas as pd
-
-    from evalml.demos import load_weather
-
-    X, y = load_weather()
-    train_dates, test_dates = X.Date < "1990-01-01", X.Date >= "1990-01-01"
-    X_train, y_train = X.ww.loc[train_dates], y.ww.loc[train_dates]
-    X_test, y_test = X.ww.loc[test_dates], y.ww.loc[test_dates]
-
-    X.ww["Categorical"] = pd.Series([str(i % 4) for i in range(len(X))])
-    X.ww["Numeric"] = pd.Series([i for i in range(len(X))])
-
-    # Re-split the data since we modified X
-    X_train, y_train = X.loc[train_dates], y.ww.loc[train_dates]
-    X_test, y_test = X.loc[test_dates], y.ww.loc[test_dates]
-
-    set_trace()
-    X_train["Date"][500] = None
-    X_train["Date"][1042] = None
-    X_train["Date"][1043] = None
-    X_train["Date"][231] = pd.Timestamp("1981-08-19")
-
-    X_train.drop(1209, inplace=True)
-    X_train.drop(398, inplace=True)
-    y_train.drop(1209, inplace=True)
-    y_train.drop(398, inplace=True)
-
-    from evalml.pipelines.components import TimeSeriesRegularizer
-
-    regularizer = TimeSeriesRegularizer(time_index="Date")
-    X_train, y_train = regularizer.fit_transform(X_train, y_train)
-
-    from evalml.pipelines.components import TimeSeriesImputer
-
-    ts_imputer = TimeSeriesImputer(
-        categorical_impute_strategy="forwards_fill",
-        numeric_impute_strategy="backwards_fill",
-        target_impute_strategy="interpolate",
-    )
-    # When we split the train and test data, we then insert nans into the training data, while test has none
-    # so when woodwork gets inited we'll end up with the different ltypes. Previously the ts imputer let type inference
-    # happen for the IntNull imputed cols, so in this case it ended up with another int64 but now we're keeping the types
-    # when possible, so for this numeric impute strategy we keep int nullable, so we now have different types
-    # Solution is to just maintian X_test's ww types
-    # But larger than this is a problem that we don't allow tran and test data with diff types
-    # But that's very possible for this exact reason. Solution in long run might be to change the defn of
-    # What a different schema is to allow nullable ltypes to be mismatched??
-
-    """
-    ---> put this in a comment on change in ts imputer
-     (which is a choice I made for simplicity's/runtime's sake - it's faster to keep the types than fall to woodwork type inference, and specifying each type to transform to after imputing is unnecessary complexity. I also feel like there is some amount of information stored in the fact that the type at one point _needed_ to be IntegerNullable that is worth keeping now that we can.)
-
-     This is now needed for the training and test data's woodwork schemas to match and not raise the `PipelineError` that the input types are different from the types the data was fitted on.
-
-The training and test data's logical types are now different because of the changes to the time series imputer to no longer rely on Woodwork type inference for IntegerNullable input columns after they're imputed, so instead of reinferring to `Integer` to match the test data, we pass in the original `IntegerNullable`.
-
-Here's a longer explanation as to why the change in types isn't worrying me right now and what the implications of this are:
-
-The training data has nans while the test doesnt because the TimeSeriesRegularizer introduces null values into the `"Numeric"` and `"Categorical"` columns in the training data, turning the logical type of `Numeric` from `Integer` into `IntegerNullable` which we then fill in with the time series imputer.
-
-Now that the time series imputer won't return the type back to `Integer`
-    """
-    X_train, y_train = ts_imputer.fit_transform(X_train, y_train)
-    X_test.ww.init(schema=X_train.ww.schema)
-
-    problem_config = {
-        "gap": 0,
-        "max_delay": 7,
-        "forecast_horizon": 7,
-        "time_index": "Date",
-    }
-
-    automl = AutoMLSearch(
-        X_train,
-        y_train,
-        problem_type="time series regression",
-        max_batches=1,
-        problem_configuration=problem_config,
-        allowed_model_families=[
-            "xgboost",
-            "random_forest",
-            "linear_model",
-            "extra_trees",
-            "decision_tree",
-        ],
-    )
-    automl.search()
-
-    pl = automl.best_pipeline
-
-    pl.fit(X_train, y_train)
-
-    pl.score(X_test, y_test, ["MedianAE"], X_train, y_train)["MedianAE"]
-
-    pl.transform_all_but_final(X_test, y_test)
