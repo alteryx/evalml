@@ -4,6 +4,8 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Calculated partial dependence grid values for integer data by rounding instead of truncating fractional values :pr:`4096`
+        * Remove unnecessary logic from imputer components prior to nullable type handling :pr:`4038`
     * Documentation Changes
     * Testing Changes
 
