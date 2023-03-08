@@ -1953,7 +1953,7 @@ def test_time_series_pipeline_get_prediction_intervals(
     )
 
     for key, pl_interval in pl_intervals.items():
-        if no_preds_pi_estimator is False:
+        if not no_preds_pi_estimator:
             assert_series_equal(est_intervals[key], pl_interval)
         else:
             est_interval = est_intervals[key]

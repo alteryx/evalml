@@ -184,6 +184,10 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         all predictions using a window size of 5. The lower and upper predictions are determined by taking the percent
         point (quantile) function of the lower tail probability at each bound multiplied by the rolling standard deviation.
 
+        Certain estimators (Extra Trees Estimator, XGBoost Estimator, Prophet Estimator, ARIMA, and
+        Exponential Smoothing estimator) utilize a different methodology to calculate prediction intervals.
+        See the docs for these estimators to learn more.
+
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
             y (pd.Series): Target data. Ignored.
