@@ -23,7 +23,6 @@ from evalml.utils.gen_utils import (
     get_random_seed,
     get_time_index,
     import_or_raise,
-    is_categorical_actually_boolean,
     jupyter_check,
     pad_with_nans,
     save_plot,
@@ -876,20 +875,6 @@ def test_year_start_separated_by_gap():
         test,
         {"time_index": "time_index", "gap": 2},
     )
-
-
-def test_is_categorical_actually_boolean():
-    X = pd.DataFrame(
-        {
-            "categorical": ["a", "b", "c"],
-            "boolean_categorical": [True, False, None],
-            "boolean": [True, False, True],
-        },
-    )
-
-    assert not is_categorical_actually_boolean(X, "categorical")
-    assert is_categorical_actually_boolean(X, "boolean_categorical")
-    assert not is_categorical_actually_boolean(X, "boolean")
 
 
 @pytest.mark.parametrize("X_num_time_columns", [0, 1, 2, 3])

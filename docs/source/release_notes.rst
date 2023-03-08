@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Remove unnecessary logic from imputer components prior to nullable type handling :pr:`4038`
     * Documentation Changes
     * Testing Changes
 

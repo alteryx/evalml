@@ -6,7 +6,13 @@ import pytest
 import woodwork as ww
 from featuretools.feature_base import IdentityFeature
 from pandas.testing import assert_frame_equal
-from woodwork.logical_types import Boolean, Categorical, Datetime, Double, Integer
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+)
 
 from evalml.demos import load_diabetes
 from evalml.pipelines.components import DFSTransformer
