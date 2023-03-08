@@ -8,7 +8,14 @@ import numpy as np
 import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_index_equal, assert_series_equal
-from woodwork.logical_types import Boolean, Categorical, Double, EmailAddress, Integer
+from woodwork.logical_types import (
+    Boolean,
+    BooleanNullable,
+    Categorical,
+    Double,
+    EmailAddress,
+    Integer,
+)
 
 from evalml.demos import load_diabetes
 from evalml.exceptions import (
@@ -2677,7 +2684,7 @@ def test_get_component_input_logical_types():
         "numeric": Integer(),
         "cat": Categorical(),
         "EMAIL_ADDRESS_TO_DOMAIN(email)": Categorical(),
-        "IS_FREE_EMAIL_DOMAIN(email)": Categorical(),
+        "IS_FREE_EMAIL_DOMAIN(email)": BooleanNullable(),
     }
     assert graph1.last_component_input_logical_types == {
         "numeric": Integer(),
@@ -2685,7 +2692,7 @@ def test_get_component_input_logical_types():
         "cat_b": Boolean(),
         "cat_c": Boolean(),
         "EMAIL_ADDRESS_TO_DOMAIN(email)_gmail.com": Boolean(),
-        "IS_FREE_EMAIL_DOMAIN(email)_1.0": Boolean(),
+        "IS_FREE_EMAIL_DOMAIN(email)": BooleanNullable(),
     }
 
     ensemble = ComponentGraph(
@@ -2717,7 +2724,7 @@ def test_get_component_input_logical_types():
         "cat": Categorical(),
         "numeric": Integer(),
         "EMAIL_ADDRESS_TO_DOMAIN(email)": Categorical(),
-        "IS_FREE_EMAIL_DOMAIN(email)": Categorical(),
+        "IS_FREE_EMAIL_DOMAIN(email)": BooleanNullable(),
     }
 
     no_estimator = ComponentGraph(

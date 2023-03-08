@@ -5,6 +5,7 @@ Release Notes
     * Fixes
     * Changes
         * Pinned ipywidgets version under 8.0.5 :pr:`4097`
+        * Remove unnecessary logic from imputer components prior to nullable type handling :pr:`4038`
     * Documentation Changes
     * Testing Changes
         * Updated graphviz installation in GitHub workflows to fix windows nightlies :pr:`4088`

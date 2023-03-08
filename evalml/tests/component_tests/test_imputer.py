@@ -15,7 +15,10 @@ from woodwork.logical_types import (
 )
 
 from evalml.pipelines.components import Imputer
-from evalml.pipelines.components.transformers.imputers import KNNImputer, SimpleImputer
+from evalml.pipelines.components.transformers.imputers import (
+    KNNImputer,
+    SimpleImputer,
+)
 
 
 def test_invalid_strategy_parameters():
@@ -179,6 +182,7 @@ def test_categorical_and_numeric_input(imputer_test_data):
             "object col": pd.Series(["b", "b", "a", "c", "d"] * 4, dtype="category"),
             "float col": [0.1, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
+            "bool col 2": [True, False, False, True, True] * 4,
             "natural language col": pd.Series(
                 ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
                 dtype="string",
