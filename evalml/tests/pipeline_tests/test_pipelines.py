@@ -2613,7 +2613,7 @@ def test_get_hyperparameter_ranges():
                 categories=("most_frequent", "mean"),
                 prior=None,
             ),
-            "boolean_impute_strategy": ["most_frequent", "knn"],
+            "boolean_impute_strategy": ["most_frequent"],
         },
         "Random Forest Classifier": {
             "n_estimators": Integer(
