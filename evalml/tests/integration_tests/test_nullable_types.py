@@ -65,7 +65,7 @@ def test_nullable_types_builds_pipelines(
 
     # A check to make sure we actually retrieve constructed pipelines from the algo.
     assert len(pipelines) > 0
-    assert all([ReplaceNullableTypes.name in pl for pl in pipelines])
+    assert not any([ReplaceNullableTypes.name in pl for pl in pipelines])
 
 
 def test_imputer_can_impute_features_generated_from_null_email_url_features():
@@ -92,3 +92,6 @@ def test_imputer_can_impute_features_generated_from_null_email_url_features():
     pl.fit(X, y)
     X_t = pl.transform(X, y)
     assert not X_t.isna().any(axis=None)
+
+
+# --> add tests with nullable types fixtures

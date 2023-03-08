@@ -88,28 +88,6 @@ def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
     return component
 
 
-def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
-    component = []
-    input_logical_types = {type(lt) for lt in X.ww.logical_types.values()}
-    types_replace_null_handles = [
-        logical_types.AgeNullable,
-        logical_types.Boolean,
-        logical_types.BooleanNullable,
-        logical_types.Double,
-        logical_types.Integer,
-        logical_types.IntegerNullable,
-    ]
-
-    nullable_target = isinstance(y.ww.logical_type, tuple(types_replace_null_handles))
-
-    if (
-        len(input_logical_types.intersection(set(types_replace_null_handles)))
-        or nullable_target
-    ):
-        component.append(ReplaceNullableTypes)
-    return component
-
-
 def _get_drop_index_unknown(X, y, problem_type, estimator_class, sampler_name=None):
     component = []
     index_and_unknown_columns = list(
@@ -311,7 +289,6 @@ def _get_preprocessing_components(
         components_functions = [
             _get_label_encoder,
             _get_drop_all_null,
-            _get_replace_null,
             _get_drop_index_unknown,
             _get_url,
             _get_email,
@@ -333,7 +310,6 @@ def _get_preprocessing_components(
         components_functions = [
             _get_label_encoder,
             _get_drop_all_null,
-            _get_replace_null,
             _get_drop_index_unknown,
             _get_url,
             _get_email,
