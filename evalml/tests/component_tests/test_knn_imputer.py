@@ -59,9 +59,6 @@ def test_knn_imputer_ignores_natural_language(
         X_df = X_df.astype(
             {"int col": float},
         )  # Convert to float as the imputer will do this as we're requesting KNN
-        result = result.astype(
-            {"int col": float},
-        )
         X_df["float col"] = result["float col"]
         X_df["int col"] = result["int col"]
         assert_frame_equal(result, X_df)
