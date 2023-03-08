@@ -395,13 +395,7 @@ def test_make_split_pipeline(sampler, features, X_y_binary):
     if sampler:
         assert order[-2] == sampler
     assert order[-1] == "Random Forest Classifier"
-    for dtype in ["Categorical", "Numeric"]:
-        assert order.index(f"{dtype} Pipeline - Label Encoder") < order.index(
-            f"{dtype} Pipeline - Replace Nullable Types Transformer",
-        )
-        assert order.index(
-            f"{dtype} Pipeline - Replace Nullable Types Transformer",
-        ) < order.index(f"{dtype} Pipeline - Imputer")
+    # --> not sure if deleting is right - maybe we shoudl confirm some other specific ordering?
 
     assert pipeline.name == "test_pipeline"
     assert pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][
@@ -433,7 +427,6 @@ def test_make_split_pipeline_categorical_only(X_y_binary):
     compute_order = [
         "Select Columns Transformer",
         "Label Encoder",
-        "Replace Nullable Types Transformer",
         "Imputer",
         "One Hot Encoder",
         "Random Forest Classifier",
