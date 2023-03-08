@@ -193,7 +193,7 @@ def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
     # The URL and EmailAddress Featurizers will create categorical columns
     categorical_cols = list(
         X.ww.select(
-            ["category", "URL", "EmailAddress", "BooleanNullable"],
+            ["category", "URL", "EmailAddress"],
             return_schema=True,
         ).columns,
     )

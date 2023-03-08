@@ -127,7 +127,7 @@ def test_make_pipeline(
             )
 
             if estimator_class.model_family != ModelFamily.CATBOOST and any(
-                column_name in ["url", "email", "categorical", "bool_null"]
+                column_name in ["url", "email", "categorical"]
                 for column_name in column_names
             ):
                 ohe = [OneHotEncoder]
