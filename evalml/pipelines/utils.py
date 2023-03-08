@@ -638,16 +638,19 @@ def generate_pipeline_code(element, features_path=None):
             element.__class__.__name__,
         ),
     )
-    if "DFS Transformer" in element.component_graph.compute_order:
-        if features_path:
-            code_strings.append("from featuretools import load_features")
-            code_strings.append(f'features=load_features("{features_path}")')
+    has_dfs_and_features = (
+        "DFS Transformer" in element.component_graph.compute_order and features_path
+    )
+    if has_dfs_and_features:
+        code_strings.append("from featuretools import load_features")
+        code_strings.append(f'features=load_features("{features_path}")')
     code_strings.append(repr(element))
     pipeline_code = "\n".join(code_strings)
-    pipeline_code = pipeline_code.replace(
-        "'DFS Transformer':{},",
-        "'DFS Transformer':{'features':features},",
-    )
+    if has_dfs_and_features:
+        pipeline_code = pipeline_code.replace(
+            "'DFS Transformer':{},",
+            "'DFS Transformer':{'features':features},",
+        )
     current_dir = os.path.dirname(os.path.abspath(__file__))
     evalml_path = os.path.abspath(os.path.join(current_dir, "..", ".."))
     black_config = get_evalml_black_config(evalml_path)

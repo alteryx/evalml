@@ -732,17 +732,18 @@ def test_generate_code_pipeline(get_black_config):
     assert pipeline == expected_code
 
     regression_pipeline_with_params = RegressionPipeline(
-        ["Imputer", "Random Forest Regressor"],
+        ["DFS Transformer", "Imputer", "Random Forest Regressor"],
         custom_name="Mock Regression Pipeline",
         parameters={
+            "DFS Transformer": {"features": None},
             "Imputer": {"numeric_impute_strategy": "most_frequent"},
             "Random Forest Regressor": {"n_estimators": 50},
         },
     )
     expected_code_params = black.format_str(
         "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
-        "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}, "
-        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'most_frequent', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None, 'boolean_fill_value': None}, "
+        "pipeline = RegressionPipeline(component_graph={'DFS Transformer': ['DFS Transformer', 'X', 'y'],'Imputer': ['Imputer', 'DFS Transformer.x', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}, "
+        "parameters={'DFS Transformer':{}, 'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'most_frequent', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None, 'boolean_fill_value': None}, "
         "'Random Forest Regressor':{'n_estimators': 50, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)",
         mode=black.Mode(**get_black_config),
     )
