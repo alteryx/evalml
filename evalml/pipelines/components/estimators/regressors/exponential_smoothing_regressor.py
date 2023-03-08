@@ -68,6 +68,7 @@ class ExponentialSmoothingRegressor(Estimator):
             "damped_trend": damped_trend,
             "seasonal": seasonal,
             "sp": sp,
+            "random_state": random_seed,
         }
         parameters.update(kwargs)
         smoothing_model_msg = (
@@ -174,6 +175,7 @@ class ExponentialSmoothingRegressor(Estimator):
             nsimulations=X.shape[0],
             repetitions=400,
             anchor="end",
+            random_state=self.parameters["random_state"],
         )
         prediction_interval_result = {}
         for conf_int in coverage:

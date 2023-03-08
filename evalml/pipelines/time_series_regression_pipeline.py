@@ -7,12 +7,6 @@ from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
 
-NO_PREDS_PI_ESTIMATORS = [
-    ModelFamily.ARIMA,
-    ModelFamily.EXPONENTIAL_SMOOTHING,
-    ModelFamily.PROPHET,
-]
-
 
 class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
     """Pipeline base class for time series regression problems.
@@ -49,6 +43,13 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
     """
 
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
+
+    NO_PREDS_PI_ESTIMATORS = [
+        ModelFamily.ARIMA,
+        ModelFamily.EXPONENTIAL_SMOOTHING,
+        ModelFamily.PROPHET,
+    ]
+
     """ProblemTypes.TIME_SERIES_REGRESSION"""
 
     def fit(self, X, y):
@@ -204,7 +205,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             X_train=X_train,
             y_train=y_train,
         )
-        if self.estimator.model_family in NO_PREDS_PI_ESTIMATORS:
+        if self.estimator.model_family in self.NO_PREDS_PI_ESTIMATORS:
             pred_intervals = self.estimator.get_prediction_intervals(
                 X=estimator_input,
                 y=y,
