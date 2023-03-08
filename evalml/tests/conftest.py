@@ -2227,6 +2227,7 @@ def X_no_nans():
             "object col": ["b", "b", "a", "c", "d"] * 4,
             "float col": [0.1, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
+            "bool col 2": [True, False, False, True, True] * 4,
             "natural language col": pd.Series(
                 ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
                 dtype="string",
@@ -2241,6 +2242,7 @@ def X_no_nans():
             "object col": "categorical",
             "float col": "double",
             "bool col": "boolean",
+            "bool col 2": "boolean",
             "natural language col": "NaturalLanguage",
         },
     )

@@ -627,21 +627,10 @@ def test_simple_imputer_boolean_nullable_valid_train_empty_test():
     assert isinstance(X_t.ww.logical_types["a"], BooleanNullable)
 
 
-def test_simple_imputer_all_bools_at_fit_and_transform():
+def test_simple_imputer_all_bools_at_fit_and_transform(imputer_test_data):
     """Confirms that the simple imputer can handle data with only the bool dtype
     which sklearn would error on."""
-    X = pd.DataFrame(
-        {
-            "bools1": pd.Series([True, False, True, True] * 20),
-            "bools2": pd.Series([True, False, True, False] * 20),
-        },
-    )
-    X.ww.init(
-        logical_types={
-            "bools1": "Boolean",
-            "bools2": "Boolean",
-        },
-    )
+    X = imputer_test_data.ww.select("boolean")
 
     imp = SimpleImputer(impute_strategy="most_frequent")
     imp.fit(X)
@@ -656,7 +645,9 @@ def test_simple_imputer_all_bools_at_fit_and_transform_with_all_null_and_nl_cols
     """Confirm that the simple imputer, which doesn't pass all null or natural language columns
     to sklearn works when the remaining columns are all teh bool dtype, which sklearn would error on.
     """
-    X = imputer_test_data.ww[["all nan", "bool col", "natural language col"]]
+    X = imputer_test_data.ww[
+        ["all nan", "bool col", "bool col 2", "natural language col"]
+    ]
     X_copy = X.ww.copy()
 
     imp = SimpleImputer(impute_strategy="most_frequent")
@@ -666,37 +657,22 @@ def test_simple_imputer_all_bools_at_fit_and_transform_with_all_null_and_nl_cols
     pd.testing.assert_frame_equal(X_copy.ww.drop("all nan"), X_imputed)
 
 
-def test_simple_imputer_all_bools_at_fit_with_nans_at_transform():
+def test_simple_imputer_all_bools_at_fit_with_nans_at_transform(imputer_test_data):
     """Confirm that the simple imputer can handle data whose dtype is different at transform
     when originally the data only had bool dtype columns."""
     # X_train will be only bool dtypes so the _component_obj won't be fit
-    X_train = pd.DataFrame(
-        {
-            "bools1": pd.Series([True, False, True, True] * 20),
-            "bools2": pd.Series([True, False, True, False] * 20),
-        },
-    )
-    X_train.ww.init(
-        logical_types={
-            "bools1": "Boolean",
-            "bools2": "Boolean",
-        },
-    )
+    X_train = imputer_test_data.ww.select("boolean")
 
     imp = SimpleImputer(impute_strategy="most_frequent")
     imp.fit(X_train)
 
     # X_test will be BooleanNullable which will be a problem when _component_obj isn't fit
-    X_test = pd.DataFrame(
-        {
-            "bools1": pd.Series([True, False, pd.NA, True] * 20),
-            "bools2": pd.Series([True, pd.NA, True, False] * 20),
-        },
-    )
+    X_test = X_train.copy()
+    X_test.iloc[-1] = np.nan
     X_test.ww.init(
         logical_types={
-            "bools1": "BooleanNullable",
-            "bools2": "BooleanNullable",
+            "bool col": "BooleanNullable",
+            "bool col 2": "BooleanNullable",
         },
     )
 
