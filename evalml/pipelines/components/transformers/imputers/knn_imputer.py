@@ -7,9 +7,7 @@ from sklearn.impute import KNNImputer as Sk_KNNImputer
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
-from evalml.utils.nullable_type_utils import (
-    _update_int_nullable_logical_types_for_imputed_data,
-)
+from evalml.utils.nullable_type_utils import _get_new_logical_types_for_imputed_data
 
 
 class KNNImputer(Transformer):
@@ -99,7 +97,7 @@ class KNNImputer(Transformer):
         X_t = self._component_obj.transform(X[self._cols_to_impute])
         X_t = pd.DataFrame(X_t, columns=self._cols_to_impute)
 
-        new_ltypes = _update_int_nullable_logical_types_for_imputed_data(
+        new_ltypes = _get_new_logical_types_for_imputed_data(
             impute_strategy="knn",
             original_schema=original_schema,
         )
