@@ -2,10 +2,10 @@
 import pandas as pd
 import woodwork
 from sklearn.impute import SimpleImputer as SkImputer
-from woodwork.logical_types import Double
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
+from evalml.utils.nullable_type_utils import _get_new_logical_types_for_imputed_data
 
 
 class SimpleImputer(Transformer):
@@ -127,14 +127,11 @@ class SimpleImputer(Transformer):
 
         # Get Woodwork types for the imputed data
         new_schema = original_schema.get_subset_schema(self._cols_to_impute)
-
-        # Convert Nullable Integers to Doubles for the "mean" and "median" strategies
-        if self.impute_strategy in ["mean", "median"]:
-            nullable_int_cols = X.ww.select(["IntegerNullable"], return_schema=True)
-            nullable_int_cols = [x for x in nullable_int_cols.columns.keys()]
-            for col in nullable_int_cols:
-                new_schema.set_types({col: Double})
-        X_t.ww.init(schema=new_schema)
+        new_logical_types = _get_new_logical_types_for_imputed_data(
+            self.impute_strategy,
+            new_schema,
+        )
+        X_t.ww.init(schema=new_schema, logical_types=new_logical_types)
 
         # Add back in the unchanged original natural language columns that we want to keep
         if len(self._natural_language_cols) > 0:
