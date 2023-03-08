@@ -148,7 +148,7 @@ def _determine_non_nullable_equivalent(logical_type):
 
     return non_nullable_ltype or logical_type
 
-def _update_int_nullable_logical_types_for_imputed_data(
+def _get_new_logical_types_for_imputed_data(
     impute_strategy,
     original_schema,
 ):

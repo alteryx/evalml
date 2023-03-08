@@ -4,18 +4,14 @@ from functools import wraps
 import pandas as pd
 import woodwork as ww
 from sklearn.impute import SimpleImputer as SkImputer
-from woodwork.logical_types import (
-    Boolean,
-    BooleanNullable,
-    Double,
-    Integer,
-    IntegerNullable,
-)
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import ComponentBaseMeta
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
+from evalml.utils.nullable_type_utils import (
+    _get_new_logical_types_for_imputed_data,
+)
 
 
 class TargetImputerMeta(ComponentBaseMeta):
@@ -130,21 +126,14 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         transformed = self._component_obj.transform(y_df)
         y_t = pd.Series(transformed[:, 0], index=y_ww.index)
 
-        new_logical_type = y_ww.ww.logical_type
-        if isinstance(y_ww.ww.logical_type, IntegerNullable):
-            if self.parameters["impute_strategy"] in ["mean", "median"]:
-                new_logical_type = Double
-            else:
-                new_logical_type = Integer
-        elif isinstance(y_ww.ww.logical_type, BooleanNullable):
-            new_logical_type = Boolean
-
-        y_t = ww.init_series(
-            y_t,
-            logical_type=new_logical_type,
-            semantic_tags=y_ww.ww.semantic_tags,
+        # Determine logical type to use - should match input data where possible
+        new_logical_type_dict = _get_new_logical_types_for_imputed_data(
+            self.parameters["impute_strategy"],
+            y_df.ww.schema,
         )
-        return X, y_t
+        new_logical_type = list(new_logical_type_dict.values())[0]
+
+        return X, ww.init_series(y_t, logical_type=new_logical_type)
 
     def fit_transform(self, X, y):
         """Fits on and transforms the input target data.
