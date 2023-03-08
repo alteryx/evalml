@@ -1,5 +1,5 @@
 import woodwork as ww
-from woodwork.logical_types import AgeNullable, BooleanNullable, IntegerNullable
+from woodwork.logical_types import AgeNullable, BooleanNullable, IntegerNullable, AgeFractional, Double
 
 DOWNCAST_TYPE_DICT = {
     "BooleanNullable": ("Boolean", "Categorical"),
@@ -147,3 +147,21 @@ def _determine_non_nullable_equivalent(logical_type):
     non_nullable_ltype, _ = DOWNCAST_TYPE_DICT.get(str(logical_type), (None, None))
 
     return non_nullable_ltype or logical_type
+
+def _update_int_nullable_logical_types_for_imputed_data(
+    impute_strategy,
+    original_schema,
+):
+    # --> might need X or y?
+    # --> needs docstring
+    # Some impute strategies will always maintain integer values, so we can use the original logical types
+    if impute_strategy in {"most_frequent", "forwards_fill", "backwards_fill"}:
+        return original_schema.logical_types
+
+    ltype_to_update_to = {"IntegerNullable": Double, "AgeNullable": AgeFractional}
+    return {
+        col: ltype_to_update_to[str(ltype)]
+        if isinstance(ltype, (AgeNullable, IntegerNullable))
+        else ltype
+        for col, ltype in original_schema.logical_types.items()
+    }

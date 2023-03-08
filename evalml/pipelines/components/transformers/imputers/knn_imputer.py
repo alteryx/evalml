@@ -1,4 +1,5 @@
 """Component that imputes missing data according to a specified imputation strategy."""
+
 import numpy as np
 import pandas as pd
 import woodwork
@@ -6,6 +7,9 @@ from sklearn.impute import KNNImputer as Sk_KNNImputer
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
+from evalml.utils.nullable_type_utils import (
+    _update_int_nullable_logical_types_for_imputed_data,
+)
 
 
 class KNNImputer(Transformer):
@@ -95,14 +99,9 @@ class KNNImputer(Transformer):
         X_t = self._component_obj.transform(X[self._cols_to_impute])
         X_t = pd.DataFrame(X_t, columns=self._cols_to_impute)
 
-        # Get Woodwork types for the imputed data
-        new_schema = original_schema.get_subset_schema(self._cols_to_impute)
-
-        X_bool_nullable_cols = new_schema._filter_cols(include=["BooleanNullable"])
-        X_int_nullable_cols = new_schema._filter_cols(include=["IntegerNullable"])
-        new_ltypes_for_nullable_cols = {col: "Boolean" for col in X_bool_nullable_cols}
-        new_ltypes_for_nullable_cols.update(
-            {col: "Double" for col in X_int_nullable_cols},
+        new_ltypes = _update_int_nullable_logical_types_for_imputed_data(
+            impute_strategy="knn",
+            original_schema=original_schema,
         )
 
         # Add back in natural language columns, unchanged
@@ -110,8 +109,8 @@ class KNNImputer(Transformer):
             X_t = woodwork.concat_columns([X_t, X.ww[self._natural_language_cols]])
 
         X_t.ww.init(
-            schema=new_schema,
-            logical_types=new_ltypes_for_nullable_cols,
+            schema=original_schema,
+            logical_types=new_ltypes,
         )
 
         if self._cols_to_impute:
