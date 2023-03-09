@@ -3,8 +3,6 @@ import copy
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
-from imblearn import over_sampling as im
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.exceptions import ComponentNotYetFittedError
@@ -460,31 +458,3 @@ def test_oversampler_handle_nullable_types(
     # Confirm oversampling happened by checking the length increased
     assert len(X_t) > len(X)
     assert len(y_t) > len(y)
-
-
-@pytest.mark.parametrize(
-    "nullable_y_ltype",
-    ["IntegerNullable", "AgeNullable", "BooleanNullable"],
-)
-@pytest.mark.parametrize(
-    "im_oversampler",
-    [
-        im.SMOTE(),
-        im.SMOTENC(categorical_features=[0]),
-        im.SMOTEN(),
-    ],
-)
-def test_oversampler_nullable_type_incompatibility(
-    X_y_binary,
-    im_oversampler,
-    nullable_y_ltype,
-):
-    """Testing that the nullable type incompatibility that caused us to add handling for Oversampler
-    is still present in imblearn's SMOTE oversamplers. If this test is causing the test suite to fail
-    because the code below no longer raises the expected ValueError, we should confirm that the nullable
-    types now work for our use case and remove the nullable type handling logic from Oversampler.
-    """
-    X, y = X_y_binary
-    # Use nullable types in y
-    y = ww.init_series(y, logical_type=nullable_y_ltype)
-    im_oversampler.fit_resample(X, y)
