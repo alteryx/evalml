@@ -9,11 +9,17 @@ Release Notes
         * Add ``get_evalml_requirements_file`` :pr:`4034`
         * Pipelines with DFS Transformers will run fast permutation importance if DFS features pre-exist :pr:`4037`
     * Fixes
+<<<<<<< HEAD
         * Fixed ``generate_pipeline_example`` erroring out for pipelines with a ``DFSTransformer`` :pr:`4059`
+=======
+        * Remove nullable types handling for ``OverSampler`` :pr:`4064`
+>>>>>>> 2b6a4e010b81103016b5f57711a5a41ad8eccd45
     * Changes
         * Uncapped ``pmdarima`` and updated minimum version :pr:`4027`
         * Increase min catboost to 1.1.1 and xgboost to 1.7.0 to add nullable type support for those estimators :pr:`3996`
         * Unpinned ``networkx`` and updated minimum version :pr:`4035`
+        * Increased ``scikit-learn`` version to 1.2.2 :pr:`4064`
+        * Capped max ``holidays`` version to 0.21 :pr:`4064`
     * Documentation Changes
     * Testing Changes
         * Use ``release.yaml`` for performance tests on merge to main :pr:`4007`
