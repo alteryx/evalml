@@ -474,19 +474,8 @@ def test_oversampler_handle_nullable_types(
         im.SMOTEN(),
     ],
 )
-@pytest.mark.parametrize(
-    "handle_incompatibility",
-    [
-        True,
-        pytest.param(
-            False,
-            marks=pytest.mark.xfail(strict=True, raises=ValueError),
-        ),
-    ],
-)
 def test_oversampler_nullable_type_incompatibility(
     X_y_binary,
-    handle_incompatibility,
     im_oversampler,
     nullable_y_ltype,
 ):
@@ -498,9 +487,4 @@ def test_oversampler_nullable_type_incompatibility(
     X, y = X_y_binary
     # Use nullable types in y
     y = ww.init_series(y, logical_type=nullable_y_ltype)
-
-    if handle_incompatibility:
-        evalml_oversampler = Oversampler(sampling_ratio=0.5)
-        X, y = evalml_oversampler._handle_nullable_types(X, y)
-
     im_oversampler.fit_resample(X, y)
