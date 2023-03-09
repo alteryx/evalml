@@ -188,7 +188,7 @@ def test_target_leakage_types():
     ] * 6 + [datetime.strptime("2015", "%Y")]
     X["d"] = ~y
     X["e"] = np.zeros(len(y))
-    y = y.astype(bool)
+    # y = y.astype(bool)
     X.ww.init(logical_types={"a": "categorical", "d": "Boolean", "b": "Boolean"})
 
     expected = [
@@ -356,8 +356,21 @@ def test_target_leakage_data_check_warnings_pearson():
     y = y.astype(bool)
 
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method="pearson")
-    # pearsons does not support boolean columns
-    assert leakage_check.validate(X, y) == []
+    assert leakage_check.validate(X, y) == [
+        DataCheckWarning(
+            message="Columns 'a', 'b', 'c', 'd' are 50.0% or more correlated with the target",
+            data_check_name=target_leakage_data_check_name,
+            message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+            details={"columns": ["a", "b", "c", "d"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=target_leakage_data_check_name,
+                    metadata={"columns": ["a", "b", "c", "d"]},
+                ),
+            ],
+        ).to_dict(),
+    ]
 
     y = y.astype(int)
     assert leakage_check.validate(X, y) == [
@@ -447,9 +460,6 @@ def test_target_leakage_none_measures(measures):
     X["b"] = y
     y = y.astype(bool)
 
-    if measures in ["pearson", "spearman"]:
-        assert leakage_check.validate(X, y) == []
-        return
     assert len(leakage_check.validate(X, y))
 
 
