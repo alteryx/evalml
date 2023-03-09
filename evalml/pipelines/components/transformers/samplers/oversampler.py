@@ -94,8 +94,7 @@ class Oversampler(BaseSampler):
             pd.DataFrame, pd.Series: Transformed features and target.
         """
         X_ww, y_ww = self._prepare_data(X, y)
-        X_d, y_d = self._handle_nullable_types(X_ww, y_ww)
-        return super().transform(X_d, y_d)
+        return super().transform(X_ww, y_ww)
 
     def _get_best_oversampler(self, X):
         cat_cols = X.ww.select(
