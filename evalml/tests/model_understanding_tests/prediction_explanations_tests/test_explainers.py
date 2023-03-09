@@ -1148,7 +1148,20 @@ def test_json_serialization(
         num_to_explain=1,
         output_format="dict",
     )
-    assert json.loads(json.dumps(best_worst)) == best_worst
+
+    def str_to_num_decoder(dct):
+        new_dct = {}
+        for k, v in dct.items():
+            if isinstance(k, str) and k.isdigit():
+                k = int(k)
+            if isinstance(v, dict):
+                v = str_to_num_decoder(v)
+            new_dct[k] = v
+        return new_dct
+
+    assert (
+        json.loads(json.dumps(best_worst), object_hook=str_to_num_decoder) == best_worst
+    )
 
     report = explain_predictions(
         pipeline,
