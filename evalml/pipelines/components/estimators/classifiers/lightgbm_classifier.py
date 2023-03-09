@@ -227,4 +227,4 @@ class LightGBMClassifier(Estimator):
         """
         X_encoded = self._encode_categories(X)
         X_d, _ = self._handle_nullable_types(X_encoded)
-        return super().predict_proba(X_encoded)
+        return super().predict_proba(X_d)
