@@ -1,6 +1,7 @@
 """Utility methods for EvalML pipelines."""
 import copy
 import os
+import warnings
 
 import black
 from woodwork import logical_types
@@ -638,9 +639,12 @@ def generate_pipeline_code(element, features_path=None):
             element.__class__.__name__,
         ),
     )
-    has_dfs_and_features = (
-        "DFS Transformer" in element.component_graph.compute_order and features_path
-    )
+    has_dfs = "DFS Transformer" in element.component_graph.compute_order
+    if has_dfs and not features_path:
+        warnings.warn(
+            "This pipeline contains a DFS Transformer but no `features_path` has been specified. Please add a `features_path` or the pipeline code will generate a pipeline that does not run DFS.",
+        )
+    has_dfs_and_features = has_dfs and features_path
     if has_dfs_and_features:
         code_strings.append("from featuretools import load_features")
         code_strings.append(f'features=load_features("{features_path}")')
