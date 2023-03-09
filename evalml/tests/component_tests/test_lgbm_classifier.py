@@ -345,9 +345,9 @@ def test_lgbm_with_nullable_types(
 
     lgb = LightGBMClassifier()
 
-    lgb.fit(X, y)
-    preds = lgb.predict(X)
-    pred_probs = lgb.predict_proba(X)
+    lgb.fit(X.ww.copy(), y)
+    preds = lgb.predict(X.ww.copy())
+    pred_probs = lgb.predict_proba(X.ww.copy())
 
     assert not preds.isnull().any().any()
     assert not pred_probs.isnull().any().any()
@@ -408,9 +408,8 @@ def test_lgbm_calls_handle_nullable_types(
     lgb.fit(X, y)
     assert mock_handle_nullable_types.call_count == 1
 
-    # The nullable type incompatibility is only in fitting the data
     lgb.predict(X)
-    assert mock_handle_nullable_types.call_count == 1
+    assert mock_handle_nullable_types.call_count == 2
 
     lgb.predict_proba(X)
-    assert mock_handle_nullable_types.call_count == 1
+    assert mock_handle_nullable_types.call_count == 3

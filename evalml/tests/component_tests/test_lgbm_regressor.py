@@ -245,8 +245,8 @@ def test_lgbm_with_nullable_types(
 
     lgb = LightGBMRegressor()
 
-    lgb.fit(X, y)
-    preds = lgb.predict(X)
+    lgb.fit(X.ww.copy(), y)
+    preds = lgb.predict(X.ww.copy())
 
     assert not preds.isnull().any().any()
 

@@ -213,8 +213,8 @@ def test_estimator_with_nullable_types(
 
     comp = ExponentialSmoothingRegressor()
 
-    comp.fit(X, y)
-    comp.predict(X)
+    comp.fit(X.ww.copy(), y)
+    comp.predict(X.ww.copy())
 
 
 @pytest.mark.parametrize(

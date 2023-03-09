@@ -601,8 +601,8 @@ def test_imputer_can_take_in_nullable_types(
         numeric_impute_strategy="interpolate",
         target_impute_strategy="interpolate",
     )
-    imputer.fit(X, y)
-    X_imputed, y_imputed = imputer.transform(X, y)
+    imputer.fit(X.ww.copy(), y)
+    X_imputed, y_imputed = imputer.transform(X.ww.copy(), y)
 
     assert not X_imputed.isnull().any().any()
     assert not y_imputed.isnull().any()

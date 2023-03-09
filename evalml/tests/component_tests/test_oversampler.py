@@ -262,36 +262,18 @@ def test_samplers_perform_equally(
     np.testing.assert_equal(sorted(y_im), expected_y)
 
 
-@pytest.mark.parametrize("use_nullable", [True, False])
-def test_smoten_categorical_boolean(X_y_binary, im, use_nullable):
+def test_smoten_categorical_boolean(X_y_binary, im):
     X, y = X_y_binary
-    bool_ltype = "BooleanNullable" if use_nullable else "Boolean"
-    X.ww.set_types({0: "Categorical"})
-    X.ww[len(X.columns)] = ww.init_series(
-        pd.Series([True, False] * 50),
-        logical_type=bool_ltype,
-    )
-    X = X.ww.select(["Boolean", "BooleanNullable", "Categorical"])
-
+    X.ww.set_types({0: "Categorical", 1: "Boolean"})
+    X = X.drop(range(2, len(X.columns)), axis=1)
     sn = Oversampler()
     _ = sn.fit_transform(X, y)
     assert sn.sampler == im.SMOTEN
 
 
-@pytest.mark.parametrize("use_nullable_1", [True, False])
-@pytest.mark.parametrize("use_nullable_2", [True, False])
-def test_smotenc_boolean_numeric(X_y_binary, im, use_nullable_1, use_nullable_2):
-    bool_ltype_1 = "BooleanNullable" if use_nullable_1 else "Boolean"
-    bool_ltype_2 = "BooleanNullable" if use_nullable_2 else "Boolean"
+def test_smotenc_boolean_numeric(X_y_binary, im):
     X, y = X_y_binary
-    X.ww[len(X.columns)] = ww.init_series(
-        pd.Series([True, False] * 50),
-        logical_type=bool_ltype_1,
-    )
-    X.ww[len(X.columns)] = ww.init_series(
-        pd.Series([True, False] * 50),
-        logical_type=bool_ltype_2,
-    )
+    X.ww.set_types({5: "Boolean", 12: "Boolean"})
     snc = Oversampler()
     _, _ = snc.fit_transform(X, y)
     assert snc.sampler == im.SMOTENC
@@ -329,13 +311,9 @@ def test_smotenc_category_features(X_y_binary):
             "2": "Boolean",
         },
     )
-    X_ww.ww[str(len(X.columns))] = ww.init_series(
-        pd.Series([True, False] * 50),
-        logical_type="BooleanNullable",
-    )
     snc = Oversampler()
     _ = snc.fit_transform(X_ww, y)
-    assert snc.categorical_features == [20, 21, 2, len(X.columns)]
+    assert snc.categorical_features == [20, 21, 2]
 
 
 def test_smotenc_output_shape(X_y_binary):
@@ -464,7 +442,7 @@ def test_oversampler_copy(X_y_binary):
     "nullable_y_ltype",
     ["IntegerNullable", "AgeNullable", "BooleanNullable"],
 )
-def test_oversampler_with_nullable_types(
+def test_oversampler_handle_nullable_types(
     nullable_type_test_data,
     nullable_type_target,
     nullable_y_ltype,
