@@ -1,4 +1,5 @@
 """SMOTE Oversampler component. Will automatically select whether to use SMOTE, SMOTEN, or SMOTENC based on inputs to the component."""
+
 from evalml.pipelines.components.transformers.samplers.base_sampler import BaseSampler
 from evalml.pipelines.components.utils import make_balancing_dictionary
 from evalml.utils import import_or_raise
@@ -24,6 +25,10 @@ class Oversampler(BaseSampler):
     name = "Oversampler"
     hyperparameter_ranges = {}
     _can_be_used_for_fast_partial_dependence = False
+    # --> need to make follow up evalml ticket to remove this eventually
+    _boolean_nullable_incompatibilities = ["X"]
+    _integer_nullable_incompatibilities = ["X"]
+
     """{}"""
 
     def __init__(
@@ -75,6 +80,23 @@ class Oversampler(BaseSampler):
             self._get_categorical(X)
         super().fit(X, y)
         return self
+
+    def transform(self, X, y=None):
+        """Transforms the input data by Oversampling the data.
+
+        Args:
+            X (pd.DataFrame): Training features.
+            y (pd.Series): Target.
+
+        Returns:
+            pd.DataFrame, pd.Series: Transformed features and target.
+        """
+        X_ww, y_ww = self._prepare_data(X, y)
+        original_schema = X_ww.ww.schema
+        X_d, y_d = self._handle_nullable_types(X_ww, y_ww)
+        X_t, y_t = super().transform(X_d, y_d)
+        X_t.ww.init(schema=original_schema)
+        return X_t, y_t
 
     def _get_best_oversampler(self, X):
         cat_cols = X.ww.select(["category", "boolean"]).columns
