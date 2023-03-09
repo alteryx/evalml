@@ -476,6 +476,8 @@ def test_oversampler_handle_nullable_types(
     original_schema = X.ww.schema
     y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
 
+    original_schema = X.ww.schema
+
     oversampler = Oversampler(sampling_ratio=0.5)
     oversampler.fit(X.ww.copy(), y)
     X_t, y_t = oversampler.transform(X.ww.copy(), y)
