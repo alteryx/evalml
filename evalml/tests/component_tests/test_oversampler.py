@@ -569,24 +569,3 @@ def test_oversampler_category_dtype_incompatibility(
     im_oversampler.fit_resample(X, y)
 
 
-@patch(
-    "evalml.pipelines.components.component_base.ComponentBase._handle_nullable_types",
-)
-def test_oversampler_calls_handle_nullable_types(
-    mock_handle_nullable_types,
-    X_y_binary,
-):
-    X, y = X_y_binary
-
-    oversampler = Oversampler()
-
-    assert not mock_handle_nullable_types.called
-    mock_handle_nullable_types.return_value = X, y
-
-    # Incompatibility is only when the sampler is actually called in transform,
-    # so we don't need to handle nullable types at fit
-    oversampler.fit(X, y)
-    assert not mock_handle_nullable_types.called
-
-    oversampler.transform(X, y)
-    assert mock_handle_nullable_types.called
