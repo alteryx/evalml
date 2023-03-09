@@ -32,5 +32,5 @@ statsmodels==0.13.5
 texttable==1.6.7
 tomli==2.0.1
 vowpalwabbit==9.7.0
-woodwork==0.21.2
+woodwork@git+https://github.com/alteryx/woodwork.git@47303d45ca2e8a9175c03ffa3e2e9146741b7c2b
 xgboost==1.7.4

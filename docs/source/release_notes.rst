@@ -17,7 +17,7 @@ Release Notes
     * Testing Changes
         * Use ``release.yaml`` for performance tests on merge to main :pr:`4007`
         * Pin ``github-action-check-linked-issues`` at v1.4.5 :pr:`4042`
-        * Updated tests to support Woodwork's object dtype inference for numeric columns :pr:`4065`
+        * Updated tests to support Woodwork's object dtype inference for numeric columns :pr:`4066`
 
 .. warning::
 
