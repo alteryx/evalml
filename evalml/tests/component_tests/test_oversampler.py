@@ -442,7 +442,7 @@ def test_oversampler_copy(X_y_binary):
     "nullable_y_ltype",
     ["IntegerNullable", "AgeNullable", "BooleanNullable"],
 )
-def test_oversampler_with_nullable_types(
+def test_oversampler_handle_nullable_types(
     nullable_type_test_data,
     nullable_type_target,
     nullable_y_ltype,
