@@ -339,6 +339,7 @@ class ARIMARegressor(Estimator):
         X, fh_ = self._manage_types_and_forecast(X=X)
 
         prediction_interval_result = {}
+        # --> test if pred intervals has issue with nullable types?
 
         if not X.empty and self.use_covariates:
             y_pred_intervals = self._component_obj.predict_interval(
