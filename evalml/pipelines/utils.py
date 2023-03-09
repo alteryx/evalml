@@ -248,6 +248,12 @@ def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_nam
 
 def _get_decomposer(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
+    if (
+        estimator_class
+        and estimator_class.model_family
+        in TimeSeriesRegressionPipeline.NO_PREDS_PI_ESTIMATORS
+    ):
+        return components
     if is_time_series(problem_type) and is_regression(problem_type):
         time_index = get_time_index(X, y, None)
         # If the time index frequency is uninferrable, STL will fail
