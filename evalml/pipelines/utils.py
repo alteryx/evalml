@@ -705,7 +705,6 @@ pipeline.describe()
 df = ww.deserialize.from_disk(PATH_TO_TRAIN)
 y_train = df.ww[TARGET]
 X_train = df.ww.drop(TARGET)
-# print([ X_train.ww[c].ww.origin for c in X_train.ww.columns])
 
 pipeline.fit(X_train, y_train)
 
