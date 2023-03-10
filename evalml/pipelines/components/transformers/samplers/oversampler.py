@@ -1,5 +1,4 @@
 """SMOTE Oversampler component. Will automatically select whether to use SMOTE, SMOTEN, or SMOTENC based on inputs to the component."""
-
 from evalml.pipelines.components.transformers.samplers.base_sampler import BaseSampler
 from evalml.pipelines.components.utils import make_balancing_dictionary
 from evalml.utils import import_or_raise
@@ -25,6 +24,9 @@ class Oversampler(BaseSampler):
     name = "Oversampler"
     hyperparameter_ranges = {}
     _can_be_used_for_fast_partial_dependence = False
+
+    # Incompatibility https://github.com/alteryx/evalml/issues/3974
+    # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4067
     _boolean_nullable_incompatibilities = ["X"]
     _integer_nullable_incompatibilities = ["X"]
 

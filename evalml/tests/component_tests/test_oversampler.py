@@ -529,6 +529,8 @@ def test_oversampler_nullable_type_incompatibility(
         evalml_oversampler = Oversampler(sampling_ratio=0.5)
         X, y = evalml_oversampler._handle_nullable_types(X, y)
 
+    # We have to convert to `object` dtype with categorical columns
+    # because of the sklearn bug described by the test below this one
     X["categorical col"] = X["categorical col"].astype("object")
 
     im_oversampler.fit_resample(X, y)
@@ -548,10 +550,10 @@ def test_oversampler_category_dtype_incompatibility(
     nullable_type_test_data,
     handle_incompatibility,
 ):
-    """Testing that the nullable type incompatibility that caused us to add handling for Oversampler
-    is still present in imblearn's SMOTE oversamplers. If this test is causing the test suite to fail
-    because the code below no longer raises the expected ValueError, we should confirm that the nullable
-    types now work for our use case and remove the nullable type handling logic from Oversampler.
+    """Testing that the sklearn error the SMOTENC oversampler produces with categorical columns
+    is still present. If this test is causing the test suite to fail because the code
+    below no longer raises the expected ValueError, we should confirm that the issue with categorical
+    columns is truly gone and remove the logic to convert categorical columns to the object dtype.
     """
     X = nullable_type_test_data(has_nans=False)
     X = X.ww[["categorical col", "bool col"]]
