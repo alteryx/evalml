@@ -78,6 +78,17 @@ def test_confusion_matrix(data_type, test_nullable, dtype, make_data_type):
         )
 
 
+def test_incom():
+    import pandas as pd
+    from sklearn.metrics import confusion_matrix
+
+    for dtype in ["Int64", "Float64", "boolean"]:
+        y_true = pd.Series([1, 0, 0, 1, 0, 1, 1, 0, 1], dtype=dtype)
+        y_predicted = pd.Series([0, 0, 1, 1, 0, 1, 1, 1, 1], dtype="int64")
+
+        confusion_matrix(y_true, y_predicted)
+
+
 @pytest.mark.parametrize("data_type", ["ww", "np", "pd"])
 def test_normalize_confusion_matrix(data_type, make_data_type):
     conf_mat = np.array([[2, 3, 0], [0, 1, 1], [1, 0, 2]])
@@ -634,3 +645,6 @@ def test_jupyter_graph_check(
         graph_roc_curve(y, y_pred_proba)
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
+
+
+# --> add another test with confusion matrix and nullable types?
