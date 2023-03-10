@@ -70,7 +70,7 @@ def test_imputer_init(
     expected_hyperparameters = {
         "categorical_impute_strategy": ["most_frequent"],
         "numeric_impute_strategy": ["mean", "median", "most_frequent", "knn"],
-        "boolean_impute_strategy": ["most_frequent", "knn"],
+        "boolean_impute_strategy": ["most_frequent"],
     }
     assert imputer.name == "Imputer"
     assert imputer.parameters == expected_parameters
@@ -78,25 +78,22 @@ def test_imputer_init(
 
 
 @pytest.mark.parametrize("categorical_impute_strategy", ["most_frequent", "constant"])
-def test_knn_as_input(categorical_impute_strategy):
+@pytest.mark.parametrize("boolean_impute_strategy", ["most_frequent", "constant"])
+def test_knn_as_input(boolean_impute_strategy, categorical_impute_strategy):
     imputer = Imputer(
         categorical_impute_strategy=categorical_impute_strategy,
         numeric_impute_strategy="knn",
-        boolean_impute_strategy="knn",
+        boolean_impute_strategy=boolean_impute_strategy,
     )
     assert isinstance(imputer._categorical_imputer, SimpleImputer)
     assert isinstance(imputer._numeric_imputer, KNNImputer)
-    assert isinstance(imputer._boolean_imputer, KNNImputer)
+    assert isinstance(imputer._boolean_imputer, SimpleImputer)
 
     expected_numeric_parameters = {
         "number_neighbors": 3,
     }
-    expected_boolean_parameters = {
-        "number_neighbors": 1,
-    }
 
     assert imputer._numeric_imputer.parameters == expected_numeric_parameters
-    assert imputer._boolean_imputer.parameters == expected_boolean_parameters
 
 
 def test_numeric_only_input(imputer_test_data):
