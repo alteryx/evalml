@@ -1,5 +1,4 @@
 import copy
-from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -451,7 +450,6 @@ def test_oversampler_handle_nullable_types(
     X = nullable_type_test_data(has_nans=False)
     # Oversampler can only handle numeric and boolean columns
     X = X.ww.select(include=["numeric", "Boolean", "BooleanNullable", "category"])
-    original_schema = X.ww.schema
     y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
 
     oversampler = Oversampler(sampling_ratio=0.5)
@@ -461,30 +459,6 @@ def test_oversampler_handle_nullable_types(
     # Confirm oversampling happened by checking the length increased
     assert len(X_t) > len(X)
     assert len(y_t) > len(y)
-
-    # Confirm the original types are maintained
-    assert original_schema == X_t.ww.schema
-
-
-@patch(
-    "evalml.pipelines.components.component_base.ComponentBase._handle_nullable_types",
-)
-def test_oversampler_calls_handle_nullable_types(
-    mock_handle_nullable_types,
-    X_y_binary,
-):
-    X, y = X_y_binary
-
-    oversampler = Oversampler()
-
-    assert not mock_handle_nullable_types.called
-    mock_handle_nullable_types.return_value = X, y
-
-    oversampler.fit(X, y)
-    assert not mock_handle_nullable_types.called
-
-    oversampler.transform(X, y)
-    assert mock_handle_nullable_types.called
 
 
 @pytest.mark.parametrize(
