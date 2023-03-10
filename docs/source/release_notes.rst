@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Added Oversampler nullable type incompatibility in X :pr:`4068`
     * Documentation Changes
     * Testing Changes
 

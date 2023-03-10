@@ -25,7 +25,6 @@ class Oversampler(BaseSampler):
     name = "Oversampler"
     hyperparameter_ranges = {}
     _can_be_used_for_fast_partial_dependence = False
-    # --> need to make follow up evalml ticket to remove this eventually
     _boolean_nullable_incompatibilities = ["X"]
     _integer_nullable_incompatibilities = ["X"]
 
