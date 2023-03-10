@@ -188,20 +188,20 @@ def test_target_leakage_types():
     ] * 6 + [datetime.strptime("2015", "%Y")]
     X["d"] = ~y
     X["e"] = np.zeros(len(y))
-    # y = y.astype(bool)
+    y = y.astype(bool)
     X.ww.init(logical_types={"a": "categorical", "d": "Boolean", "b": "Boolean"})
 
     expected = [
         DataCheckWarning(
-            message="Columns 'a', 'b' are 80.0% or more correlated with the target",
+            message="Columns 'a', 'b', 'c' are 80.0% or more correlated with the target",
             data_check_name=target_leakage_data_check_name,
             message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-            details={"columns": ["a", "b"]},
+            details={"columns": ["a", "b", "c"]},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    metadata={"columns": ["a", "b"]},
+                    metadata={"columns": ["a", "b", "c"]},
                 ),
             ],
         ).to_dict(),
