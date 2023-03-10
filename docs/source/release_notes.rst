@@ -17,6 +17,7 @@ Release Notes
         * Unpinned ``networkx`` and updated minimum version :pr:`4035`
         * Increased ``scikit-learn`` version to 1.2.2 :pr:`4064`
         * Capped max ``holidays`` version to 0.21 :pr:`4064`
+        * Stop allowing ``knn`` as a boolean impute strategy :pr:`4058`
     * Documentation Changes
     * Testing Changes
         * Use ``release.yaml`` for performance tests on merge to main :pr:`4007`
