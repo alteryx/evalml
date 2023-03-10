@@ -319,6 +319,7 @@ class ARIMARegressor(Estimator):
         X: pd.DataFrame,
         y: pd.Series = None,
         coverage: List[float] = None,
+        predictions: pd.Series = None,
     ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted ARIMARegressor.
 
@@ -327,6 +328,7 @@ class ARIMARegressor(Estimator):
             y (pd.Series): Target data. Optional.
             coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
                 prediction interval should be calculated for.
+            predictions (pd.Series): Not used for ARIMA regressor.
 
         Returns:
             dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
