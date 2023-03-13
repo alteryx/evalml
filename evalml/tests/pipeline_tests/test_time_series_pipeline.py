@@ -1864,3 +1864,101 @@ def test_dates_needed_for_prediction_range(
             prediction_start,
             prediction_end,
         )
+
+
+@pytest.mark.parametrize("add_decomposer", [True, False])
+@pytest.mark.parametrize("no_preds_pi_estimator", [True, False])
+def test_time_series_pipeline_get_prediction_intervals(
+    no_preds_pi_estimator,
+    add_decomposer,
+    ts_data_long,
+):
+    X, _, y = ts_data_long
+    component_graph = {
+        "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
+        "DateTime Featurizer": ["DateTime Featurizer", "Time Series Featurizer.x", "y"],
+        "Drop NaN Rows Transformer": [
+            "Drop NaN Rows Transformer",
+            "DateTime Featurizer.x",
+            "y",
+        ],
+        "Regressor": [
+            "Exponential Smoothing Regressor"
+            if no_preds_pi_estimator
+            else "Linear Regressor",
+            "Drop NaN Rows Transformer.x",
+            "Drop NaN Rows Transformer.y",
+        ],
+    }
+    if add_decomposer:
+        component_graph.update(
+            {
+                "STL Decomposer": ["STL Decomposer", "Time Series Featurizer.x", "y"],
+                "DateTime Featurizer": [
+                    "DateTime Featurizer",
+                    "STL Decomposer.x",
+                    "STL Decomposer.y",
+                ],
+                "Drop NaN Rows Transformer": [
+                    "Drop NaN Rows Transformer",
+                    "DateTime Featurizer.x",
+                    "STL Decomposer.y",
+                ],
+            },
+        )
+
+    pipeline = TimeSeriesRegressionPipeline(
+        component_graph=component_graph,
+        parameters={
+            "pipeline": {
+                "gap": 1,
+                "max_delay": 10,
+                "time_index": "date",
+                "forecast_horizon": 7,
+                "random_seed": 0,
+            },
+            "Time Series Featurizer": {
+                "max_delay": 2,
+                "gap": 1,
+                "forecast_horizon": 10,
+                "time_index": "date",
+            },
+        },
+    )
+    limit = int(np.floor(0.66 * len(X)))
+    X_train, y_train = X[:limit], y[:limit]
+    X_validation, y_validation = X[limit + 1 :], y[limit + 1 :]
+    pipeline.fit(X_train, y_train)
+
+    pl_intervals = pipeline.get_prediction_intervals(
+        X=X_validation,
+        y=y_validation,
+        X_train=X_train,
+        y_train=y_train,
+    )
+
+    predictions = pipeline.predict_in_sample(
+        X_validation,
+        y_validation,
+        X_train,
+        y_train,
+    )
+    features = pipeline.transform_all_but_final(
+        X_validation,
+        y_validation,
+        X_train,
+        y_train,
+    )
+    est_intervals = pipeline.estimator.get_prediction_intervals(
+        X=features,
+        y=y_validation,
+        predictions=predictions,
+    )
+
+    for key, pl_interval in pl_intervals.items():
+        if not no_preds_pi_estimator:
+            assert_series_equal(est_intervals[key], pl_interval)
+        else:
+            est_interval = est_intervals[key]
+            inv_trans_interval = pipeline.inverse_transform(est_interval)
+            assert_series_equal(inv_trans_interval, pl_interval)
