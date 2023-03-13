@@ -292,7 +292,7 @@ def roc_curve(y_true, y_pred_proba):
     y_pred_proba = y_pred_proba[~nan_indices]
 
     lb = LabelBinarizer()
-    lb.fit(np.unique(y_true_np))
+    lb.fit(y_true_np)
     y_one_hot_true = lb.transform(y_true_np)
     n_classes = y_one_hot_true.shape[1]
 
