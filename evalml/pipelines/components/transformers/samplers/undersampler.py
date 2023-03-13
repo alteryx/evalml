@@ -95,7 +95,11 @@ class Undersampler(BaseSampler):
         Returns:
             pd.DataFrame, pd.Series: Transformed features and target.
         """
-        X_ww, y_ww = self._prepare_data(X, y)
+        X_ww = infer_feature_types(X)
+        if y is None:
+            raise ValueError("y cannot be None")
+        y_ww = infer_feature_types(y)
+
         index_df = pd.Series(y_ww.index)
         indices = self.fit_resample(X_ww, y_ww)
 

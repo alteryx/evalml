@@ -72,7 +72,10 @@ class Oversampler(BaseSampler):
         Returns:
             self
         """
-        X_ww, y_ww = self._prepare_data(X, y)
+        X_ww = infer_feature_types(X)
+        if y is None:
+            raise ValueError("y cannot be None")
+        y_ww = infer_feature_types(y)
 
         sampler_name = self._get_best_oversampler(X_ww)
         self.sampler = self.sampler_options[sampler_name]
@@ -93,7 +96,10 @@ class Oversampler(BaseSampler):
         Returns:
             pd.DataFrame, pd.Series: Transformed features and target.
         """
-        X_ww, y_ww = self._prepare_data(X, y)
+        X_ww = infer_feature_types(X)
+        if y is None:
+            raise ValueError("y cannot be None")
+        y_ww = infer_feature_types(y)
         return super().transform(X_ww, y_ww)
 
     def _get_best_oversampler(self, X):
@@ -132,7 +138,9 @@ class Oversampler(BaseSampler):
             y (pd.Series): Target.
         """
         sampler_class = self.sampler
-        _, y_pd = self._prepare_data(X, y)
+        if y is None:
+            raise ValueError("y cannot be None")
+        y_pd = infer_feature_types(y)
         sampler_params = {
             k: v
             for k, v in self.parameters.items()
