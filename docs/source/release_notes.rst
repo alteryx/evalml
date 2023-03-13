@@ -5,7 +5,7 @@ Release Notes
     * Fixes
     * Changes
         * Remove unnecessary logic from imputer components prior to nullable type handling :pr:`4038`
-        * Called ``_handle_nullable_types`` in component fit, transform, and predict methods :pr:`4046`
+        * Added calls to ``_handle_nullable_types`` in component fit, transform, and predict methods when needed :pr:`4046`
     * Documentation Changes
     * Testing Changes
 

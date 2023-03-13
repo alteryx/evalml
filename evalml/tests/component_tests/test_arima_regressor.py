@@ -481,7 +481,6 @@ def test_arima_regressor_can_forecast_arbitrary_dates(use_covariates, ts_data):
     "nullable_ltype",
     ["IntegerNullable", "AgeNullable"],
 )
-# TODO In https://github.com/alteryx/evalml/issues/4009, add BooleanNullable to this
 def test_arima_regressor_with_nullable_types(nullable_ltype):
     X = pd.DataFrame()
     X["nums"] = pd.Series([i for i in range(100)], dtype="Int64")
