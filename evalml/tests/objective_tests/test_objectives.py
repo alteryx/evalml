@@ -197,7 +197,7 @@ def test_get_objectives_all_expected_ranges(obj):
 @pytest.mark.parametrize("obj", [obj for obj in _all_objectives_dict().values()])
 @pytest.mark.parametrize(
     "nullable_y_true_ltype",
-    ["BooleanNullable", "Integer", "AgeNullable"],
+    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
 )
 def test_objectives_support_nullable_types(
     nullable_y_true_ltype,
