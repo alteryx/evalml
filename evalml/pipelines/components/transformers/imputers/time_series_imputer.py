@@ -12,6 +12,7 @@ from woodwork.logical_types import (
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
+from evalml.utils.nullable_type_utils import _determine_fractional_type
 
 
 class TimeSeriesImputer(Transformer):
@@ -191,10 +192,10 @@ class TimeSeriesImputer(Transformer):
             imputed.bfill(inplace=True)  # Fill in the first value, if missing
             X_not_all_null[X_interpolate.columns] = imputed
 
-            # Interpolate may add floating point values to integer data,
-            # so we'll want to use the Double logical type. This will lose any Age logical type info
+            # Interpolate may add floating point values to integer data, so we
+            # have to convert to a fractional type
             new_ltypes = {
-                col: Double
+                col: _determine_fractional_type(ltype)
                 if isinstance(ltype, (IntegerNullable, AgeNullable))
                 else ltype
                 for col, ltype in original_schema.logical_types.items()

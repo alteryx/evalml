@@ -615,7 +615,7 @@ def test_imputer_can_take_in_nullable_types(
         str(ltype)
         for col, ltype in X_imputed.ww.logical_types.items()
         if col in cols_expected_to_change
-    } == {"Double"}
+    } == {"Double", "AgeFractional"}
 
     assert isinstance(y_imputed.ww.logical_type, expected_imputed_ltype)
 
