@@ -956,6 +956,48 @@ def test_generate_pipeline_example(
     exec(pipeline_example)
     assert os.path.exists(output_path)
 
+    with pytest.raises(
+        ValueError,
+        match="Provided features in `features_path` do not match pipeline features. There is a different amount of features in the loaded features.",
+    ):
+        _, false_features = ft.dfs(
+            entityset=es,
+            target_dataframe_name="X",
+            trans_primitives=["absolute", "is_null"],
+            return_types="all",
+        )
+        false_features_path = os.path.join(str(tmpdir), "false_features.json")
+        ft.save_features(false_features, false_features_path)
+        _ = generate_pipeline_example(
+            pipeline=pipeline,
+            path_to_train=train_path,
+            path_to_holdout=holdout_path,
+            path_to_features=false_features_path,
+            target="target",
+            output_file_path=output_path,
+        )
+
+    with pytest.raises(
+        ValueError,
+        match="Provided features in `features_path` do not match pipeline features.",
+    ):
+        _, false_features = ft.dfs(
+            entityset=es,
+            target_dataframe_name="X",
+            trans_primitives=["is_null"],
+            return_types="all",
+        )
+        false_features_path = os.path.join(str(tmpdir), "false_features.json")
+        ft.save_features(false_features, false_features_path)
+        _ = generate_pipeline_example(
+            pipeline=pipeline,
+            path_to_train=train_path,
+            path_to_holdout=holdout_path,
+            path_to_features=false_features_path,
+            target="target",
+            output_file_path=output_path,
+        )
+
 
 def test_rows_of_interest_errors(X_y_binary):
     pipeline = BinaryClassificationPipeline(

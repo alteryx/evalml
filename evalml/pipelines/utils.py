@@ -4,6 +4,7 @@ import os
 import warnings
 
 import black
+import featuretools as ft
 from woodwork import logical_types
 
 from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
@@ -648,8 +649,26 @@ def generate_pipeline_code(element, features_path=None):
         warnings.warn(
             "This pipeline contains a DFS Transformer but no `features_path` has been specified. Please add a `features_path` or the pipeline code will generate a pipeline that does not run DFS.",
         )
+
     has_dfs_and_features = has_dfs and features_path
     if has_dfs_and_features:
+        features = ft.load_features(features_path)
+        if len(features) != len(element.parameters[DFSTransformer.name]["features"]):
+            raise ValueError(
+                "Provided features in `features_path` do not match pipeline features. There is a different amount of features in the loaded features.",
+            )
+
+        for pipeline_feature, serialized_feature in zip(
+            element.parameters[DFSTransformer.name]["features"],
+            features,
+        ):
+            if (
+                pipeline_feature.get_feature_names()
+                != serialized_feature.get_feature_names()
+            ):
+                raise ValueError(
+                    "Provided features in `features_path` do not match pipeline features.",
+                )
         code_strings.append("from featuretools import load_features")
         code_strings.append(f'features=load_features("{features_path}")')
     code_strings.append(repr(element))
