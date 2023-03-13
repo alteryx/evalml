@@ -247,8 +247,7 @@ def roc_curve(y_true, y_pred_proba):
 
     Args:
         y_true (pd.Series or np.ndarray): True labels.
-        # --> also pd dataframe for multiclass
-        y_pred_proba (pd.Series or np.ndarray): Predictions from a classifier, before thresholding has been applied.
+        y_pred_proba (pd.Series or pd.DataFrame or np.ndarray): Predictions from a classifier, before thresholding has been applied.
 
     Returns:
         list(dict): A list of dictionaries (with one for each class) is returned. Binary classification problems return a list with one dictionary.
@@ -258,34 +257,30 @@ def roc_curve(y_true, y_pred_proba):
                   * `threshold`: Threshold values used to produce each pair of true/false positive rates.
                   * `auc_score`: The area under the ROC curve.
     """
-    # Pull in data and convert to numpy arrays -
     y_true_ww = infer_feature_types(y_true)
     y_pred_proba = infer_feature_types(y_pred_proba)
-    # If preds are 1d, turn it sideways to turn it 2d?
-    # --> check if series
+
+    # Standardize data to be a DataFrame even for binary target
     if isinstance(y_pred_proba, pd.Series):
         y_pred_proba = pd.DataFrame(y_pred_proba)
-    # If preds are 2d with two columns then only select the second column - for a binary situation
+    # Only use one column for binary inputs that are still a DataFrame
     elif y_pred_proba.shape[1] == 2:
         y_pred_proba = pd.DataFrame(y_pred_proba.iloc[:, 1])
 
-    y_true_nan_map = pd.isna(y_true_ww)
-    y_pred_nan_map = pd.isna(y_pred_proba).any(axis=1)
-    nan_indices = np.logical_or(y_true_nan_map, y_pred_nan_map)
+    nan_indices = np.logical_or(pd.isna(y_true_ww), pd.isna(y_pred_proba).any(axis=1))
     y_true_ww = y_true_ww[~nan_indices]
     y_pred_proba = y_pred_proba[~nan_indices]
 
     lb = LabelBinarizer()
     lb.fit(y_true_ww)
-    # --> confirm this doesn't need to be woodwork inited
-    y_one_hot_true = pd.DataFrame(lb.transform(y_true_ww))
-    n_classes = y_one_hot_true.shape[1]
+    # label binarizer will output a numpy array
+    y_one_hot_true_np = lb.transform(y_true_ww)
+    n_classes = y_one_hot_true_np.shape[1]
 
     curve_data = []
     for i in range(n_classes):
-        # --> change to loc if name matters and will always be ints?
         fpr_rates, tpr_rates, thresholds = sklearn_roc_curve(
-            y_one_hot_true.iloc[:, i],
+            y_one_hot_true_np[:, i],
             y_pred_proba.iloc[:, i],
         )
         auc_score = sklearn_auc(fpr_rates, tpr_rates)
