@@ -639,7 +639,11 @@ def generate_pipeline_code(element, features_path=None):
             element.__class__.__name__,
         ),
     )
-    has_dfs = element.component_graph.get_component(DFSTransformer.name)
+    try:
+        has_dfs = element.component_graph.get_component(DFSTransformer.name)
+    except ValueError:
+        has_dfs = False
+
     if has_dfs and not features_path:
         warnings.warn(
             "This pipeline contains a DFS Transformer but no `features_path` has been specified. Please add a `features_path` or the pipeline code will generate a pipeline that does not run DFS.",
