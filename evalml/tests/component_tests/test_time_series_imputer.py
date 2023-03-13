@@ -169,6 +169,7 @@ def test_categorical_and_numeric_input(imputer_test_data):
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = TimeSeriesImputer()
     imputer.fit(X, y)
+    # Copy X to avoid X taking on any mutations from the internal _handle_nullable_types call
     transformed, _ = imputer.transform(X.ww.copy(), y)
     expected = pd.DataFrame(
         {
@@ -207,6 +208,7 @@ def test_categorical_and_numeric_input(imputer_test_data):
         numeric_impute_strategy="forwards_fill",
         categorical_impute_strategy="forwards_fill",
     )
+    # Copy X to avoid X taking on any mutations from the internal _handle_nullable_types call
     transformed, _ = imputer.fit_transform(X.ww.copy(), y)
     expected["float with nan"] = [0.3, 1.0, 1.0, -1.0, 0.0] * 4
     assert_frame_equal(transformed, expected, check_dtype=False)
@@ -601,6 +603,7 @@ def test_imputer_can_take_in_nullable_types(
         numeric_impute_strategy="interpolate",
         target_impute_strategy="interpolate",
     )
+    # Copy X to avoid X taking on any mutations from the internal _handle_nullable_types call
     imputer.fit(X.ww.copy(), y)
     X_imputed, y_imputed = imputer.transform(X.ww.copy(), y)
 

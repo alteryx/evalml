@@ -213,6 +213,7 @@ def test_estimator_with_nullable_types(
 
     comp = ExponentialSmoothingRegressor()
 
+    # Copy X to avoid X taking on any mutations from the internal _handle_nullable_types call
     comp.fit(X.ww.copy(), y)
     comp.predict(X.ww.copy())
 

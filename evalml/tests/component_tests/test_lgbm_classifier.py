@@ -345,6 +345,7 @@ def test_lgbm_with_nullable_types(
 
     lgb = LightGBMClassifier()
 
+    # Copy X to avoid X taking on any mutations from the internal _handle_nullable_types call
     lgb.fit(X.ww.copy(), y)
     preds = lgb.predict(X.ww.copy())
     pred_probs = lgb.predict_proba(X.ww.copy())
