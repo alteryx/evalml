@@ -616,7 +616,7 @@ def generate_pipeline_code(element, features_path=None):
 
     Args:
         element (pipeline instance): The instance of the pipeline to generate string Python code.
-        features_path (str): path to features json. Defaults to None.
+        features_path (str): path to features json created from featuretools.save_features(). Defaults to None.
 
     Returns:
         str: String representation of Python code that can be run separately in order to recreate the pipeline instance.
@@ -639,7 +639,7 @@ def generate_pipeline_code(element, features_path=None):
             element.__class__.__name__,
         ),
     )
-    has_dfs = "DFS Transformer" in element.component_graph.compute_order
+    has_dfs = element.component_graph.get_component(DFSTransformer.name)
     if has_dfs and not features_path:
         warnings.warn(
             "This pipeline contains a DFS Transformer but no `features_path` has been specified. Please add a `features_path` or the pipeline code will generate a pipeline that does not run DFS.",
