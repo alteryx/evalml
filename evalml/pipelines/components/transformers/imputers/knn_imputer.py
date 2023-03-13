@@ -91,12 +91,8 @@ class KNNImputer(Transformer):
 
         X_schema = X.ww.schema
 
-        X_bool_nullable_cols = X_schema._filter_cols(include=["BooleanNullable"])
         X_int_nullable_cols = X_schema._filter_cols(include=["IntegerNullable"])
-        new_ltypes_for_nullable_cols = {col: "Boolean" for col in X_bool_nullable_cols}
-        new_ltypes_for_nullable_cols.update(
-            {col: "Double" for col in X_int_nullable_cols},
-        )
+        new_ltypes_for_nullable_cols = {col: "Double" for col in X_int_nullable_cols}
 
         # Add back in natural language columns, unchanged
         if len(natural_language_cols) > 0:

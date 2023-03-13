@@ -97,6 +97,7 @@ class ExtraTreesRegressor(Estimator):
         X: pd.DataFrame,
         y: Optional[pd.Series] = None,
         coverage: List[float] = None,
+        predictions: pd.Series = None,
     ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted ExtraTreesRegressor.
 
@@ -105,6 +106,7 @@ class ExtraTreesRegressor(Estimator):
             y (pd.Series): Target data. Optional.
             coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
                 prediction interval should be calculated for.
+            predictions (pd.Series): Optional list of predictions to use. If None, will generate predictions using `X`.
 
         Returns:
             dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
@@ -114,7 +116,8 @@ class ExtraTreesRegressor(Estimator):
         X, _ = self._manage_woodwork(X, y)
         X = X.ww.select(exclude="Datetime")
 
-        predictions = self._component_obj.predict(X)
+        if predictions is None:
+            predictions = self._component_obj.predict(X)
         estimators = self._component_obj.estimators_
         return get_prediction_intevals_for_tree_regressors(
             X,

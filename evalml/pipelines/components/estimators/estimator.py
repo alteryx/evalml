@@ -152,6 +152,7 @@ class Estimator(ComponentBase):
         X: pd.DataFrame,
         y: Optional[pd.Series] = None,
         coverage: List[float] = None,
+        predictions: pd.Series = None,
     ) -> Dict[str, pd.Series]:
         """Find the prediction intervals using the fitted regressor.
 
@@ -164,6 +165,7 @@ class Estimator(ComponentBase):
             y (pd.Series): Target data. Ignored.
             coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
                 prediction interval should be calculated for.
+            predictions (pd.Series): Optional list of predictions to use. If None, will generate predictions using `X`.
 
         Returns:
             dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
@@ -178,7 +180,8 @@ class Estimator(ComponentBase):
         if coverage is None:
             coverage = [0.95]
         X, _ = self._manage_woodwork(X, y)
-        predictions = self._component_obj.predict(X)
+        if predictions is None:
+            predictions = self._component_obj.predict(X)
 
         prediction_interval_result = {}
         for conf_int in coverage:
