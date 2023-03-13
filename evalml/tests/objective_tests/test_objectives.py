@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+from woodwork.logical_types import BooleanNullable
 
 from evalml.exceptions import ObjectiveCreationError, ObjectiveNotFoundError
 from evalml.objectives import (
@@ -18,12 +19,11 @@ from evalml.objectives import (
     get_ranking_objectives,
     ranking_only_objectives,
 )
+from evalml.objectives.fraud_cost import FraudCost
 from evalml.objectives.objective_base import ObjectiveBase
+from evalml.objectives.standard_metrics import MAPE
 from evalml.objectives.utils import _all_objectives_dict
 from evalml.problem_types import ProblemTypes
-from evalml.tests.conftest import (
-    CustomObjective,
-)
 
 
 def test_create_custom_objective():
@@ -194,60 +194,40 @@ def test_get_objectives_all_expected_ranges(obj):
     assert len(obj.expected_range) == 2
 
 
+@pytest.mark.parametrize("obj", [obj for obj in _all_objectives_dict().values()])
 @pytest.mark.parametrize(
-    "nullable_ltype",
-    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+    "nullable_y_true_ltype",
+    ["BooleanNullable", "Integer", "AgeNullable"],
 )
-@pytest.mark.parametrize("y_bool_null_incompatible", [True, False])
-@pytest.mark.parametrize("y_int_null_incompatible", [True, False])
-@pytest.mark.parametrize("data_type", ["ww", "pd"])
-def test_objective_base_handle_nullable_types(
-    split_nullable_logical_types_by_compatibility,
+def test_objectives_support_nullable_types(
+    nullable_y_true_ltype,
+    obj,
     nullable_type_target,
-    data_type,
-    y_bool_null_incompatible,
-    y_int_null_incompatible,
-    nullable_ltype,
 ):
-    y_true = nullable_type_target(ltype=nullable_ltype, has_nans=False)
-    if data_type == "pd":
-        # remove woodwork types but keep nullable pandas dtype
-        y_true = y_true.copy()
+    y_true = nullable_type_target(ltype=nullable_y_true_ltype, has_nans=False)
+    y_pred = pd.Series([0, 1, 0, 1, 1] * 4, dtype="int64")
+    X = None
 
-    obj = CustomObjective(
-        integer_nullable_incompatible=y_int_null_incompatible,
-        boolean_nullable_incompatible=y_bool_null_incompatible,
-    )
-    y_true_d = obj._handle_nullable_types(y_true)
-
-    (
-        y_compatible_ltypes,
-        y_incompatible_ltypes,
-    ) = split_nullable_logical_types_by_compatibility(
-        y_int_null_incompatible,
-        y_bool_null_incompatible,
-    )
-
-    # pd data type will get non nullable logical type when woodwork is initialized, so we don't expect it to be the same
-    if data_type != "pd" and nullable_ltype in {
-        str(ltype) for ltype in y_compatible_ltypes
-    }:
-        assert isinstance(
-            y_true_d.ww.logical_type,
-            tuple(y_compatible_ltypes),
+    # Instantiate objective with any needed parameters
+    if obj == CostBenefitMatrix:
+        obj = obj(
+            true_positive=10,
+            true_negative=-1,
+            false_positive=-7,
+            false_negative=-2,
         )
     else:
-        assert not isinstance(
-            y_true_d.ww.logical_type,
-            tuple(y_incompatible_ltypes),
-        )
+        obj = obj()
 
+    # Make any changes to data needed for objective
+    if isinstance(obj, FraudCost):
+        # FraudCost needs an "amount" column
+        X = pd.DataFrame({"amount": [100, 5, 250, 89] * 5})
+    elif isinstance(obj, MAPE):
+        if isinstance(y_true.ww.logical_type, BooleanNullable):
+            pytest.skip("MAPE doesn't support inputs containing 0")
+        # Replace numeric inputs containing 0
+        y_true = y_true.ww.replace({0: 10})
+        y_pred = y_pred.replace({0: 10})
 
-def test_binary_objective_handle_nullable_types_numpy_input():
-    y_true = pd.Series([1, 0, 1, 1, 0] * 5)
-    y_true = y_true.to_numpy()
-
-    obj = CustomObjective()
-    y_true_d = obj._handle_nullable_types(y_true)
-
-    assert y_true_d is y_true
+    obj.score(y_true=y_true, y_predicted=y_pred, X=X)

@@ -838,9 +838,9 @@ class MAPE(TimeSeriesRegressionObjective):
                 "targets contain the value 0.",
             )
         if isinstance(y_true, pd.Series):
-            y_true = y_true.values
+            y_true = y_true.to_numpy()
         if isinstance(y_predicted, pd.Series):
-            y_predicted = y_predicted.values
+            y_predicted = y_predicted.to_numpy()
         scaled_difference = (y_true - y_predicted) / y_true
         return np.abs(scaled_difference).mean() * 100
 
