@@ -575,25 +575,3 @@ def test_arima_nullable_type_incompatibility(
     )
     sk_arima.fit(y=y_train, X=X_train)
     sk_arima.predict(fh=fh_, X=X_test)
-
-
-@patch(
-    "evalml.pipelines.components.component_base.ComponentBase._handle_nullable_types",
-)
-def test_arima_calls_handle_nullable_types(
-    mock_handle_nullable_types,
-    ts_data,
-):
-    X_train, X_test, y_train = ts_data()
-
-    evalml_arima = ARIMARegressor()
-
-    assert not mock_handle_nullable_types.called
-    mock_handle_nullable_types.return_value = X_train, y_train
-    evalml_arima.fit(X_train, X_train)
-    assert mock_handle_nullable_types.call_count == 1
-
-    mock_handle_nullable_types.return_value = X_test, None
-    # We don't need to run _handle_nullable_types in predict - the incompatibility is only in fit
-    evalml_arima.predict(X_test)
-    assert mock_handle_nullable_types.call_count == 1

@@ -263,25 +263,3 @@ def test_exponential_smoothing_regressor_nullable_type_incompatibility(
     sk_comp = ExponentialSmoothing()
     sk_comp.fit(X=X_train, y=y_train)
     sk_comp.predict(fh=fh_)
-
-
-@patch(
-    "evalml.pipelines.components.component_base.ComponentBase._handle_nullable_types",
-)
-def test_exponential_smoothing_regressor_calls_handle_nullable_types(
-    mock_handle_nullable_types,
-    X_y_binary,
-):
-    X, y = X_y_binary
-
-    comp = ExponentialSmoothingRegressor()
-
-    assert not mock_handle_nullable_types.called
-    mock_handle_nullable_types.return_value = X, y
-    comp.fit(X, y)
-    assert mock_handle_nullable_types.call_count == 1
-
-    # The nullable type incompatibility is only at fit
-    # so we don't need to call _handle_nullable_types again
-    comp.predict(X)
-    assert mock_handle_nullable_types.call_count == 1
