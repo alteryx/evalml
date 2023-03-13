@@ -5,6 +5,7 @@ Release Notes
     * Fixes
     * Changes
         * Added Oversampler nullable type incompatibility in X :pr:`4068`
+        * Removed nullable handling from objective functions, ``roc_curve``, and ``correlation_matrix`` :pr:`4072`
     * Documentation Changes
     * Testing Changes
 
