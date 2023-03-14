@@ -48,10 +48,6 @@ class TargetLeakageDataCheck(DataCheck):
         while target_str in list(X2.columns):
             target_str += "_y"
         X2.ww[target_str] = y
-        # bool_columns = X2.ww.select(["Boolean", "BooleanNullable"]).columns.values
-        # bool_to_int = {col: "IntegerNullable" for col in bool_columns}
-        # X2.ww.set_types(bool_to_int)
-        # print(X2.ww.types)
         try:
             dep_corr = X2.ww.dependence_dict(
                 measures=self.method,
