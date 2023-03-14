@@ -52,12 +52,12 @@ git-test-modelunderstanding:
 
 .PHONY: git-test-other
 git-test-other:
-	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ --ignore evalml/tests/component_tests/test_prophet_regressor.py --ignore evalml/tests/component_tests/test_components.py --ignore evalml/tests/integration_tests/ -n 2 --durations 0 --timeout $(TIMEOUT) --cov=evalml --cov-config=./pyproject.toml --junitxml=test-reports/git-test-other-junit.xml
+	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ --ignore evalml/tests/pipeline_tests/test_pipelines.py --ignore evalml/tests/component_tests/test_prophet_regressor.py --ignore evalml/tests/component_tests/test_components.py --ignore evalml/tests/component_tests/test_utils.py --ignore evalml/tests/integration_tests/ -n 2 --durations 0 --timeout $(TIMEOUT) --cov=evalml --cov-config=./pyproject.toml --junitxml=test-reports/git-test-other-junit.xml
 	make doctests
 
 .PHONY: git-test-prophet
 git-test-prophet:
-	pytest evalml/tests/component_tests/test_prophet_regressor.py evalml/tests/component_tests/test_components.py -n 2 --durations 0 --timeout $(TIMEOUT) --cov=evalml --cov-config=./pyproject.toml --junitxml=test-reports/git-test-prophet-junit.xml
+	pytest evalml/tests/component_tests/test_prophet_regressor.py evalml/tests/component_tests/test_components.py evalml/tests/component_tests/test_utils.py evalml/tests/pipeline_tests/test_pipelines.py -n 2 --durations 0 --timeout $(TIMEOUT) --cov=evalml --cov-config=./pyproject.toml --junitxml=test-reports/git-test-prophet-junit.xml
 
 .PHONY: git-test-integration
 git-test-integration:
