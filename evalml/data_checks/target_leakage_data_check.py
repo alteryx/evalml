@@ -53,7 +53,6 @@ class TargetLeakageDataCheck(DataCheck):
                 measures=self.method,
                 target_col=target_str,
             )
-            print(dep_corr)
         except KeyError:
             # keyError raised when the target does not appear due to incompatibility with the metric, return []
             return []
