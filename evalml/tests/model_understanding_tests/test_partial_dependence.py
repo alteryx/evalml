@@ -1425,10 +1425,14 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
 
     X = pd.DataFrame(X)
     X.columns = [str(i) for i in range(X.shape[1])]
-    X["categorical_column"] = pd.Series([i % 3 for i in range(X.shape[0])]).astype(
+    X["categorical_column"] = pd.Series(
+        [f"cat_{i % 3}" for i in range(X.shape[0])],
+    ).astype(
         "str",
     )
-    X["categorical_column_2"] = pd.Series([i % 6 for i in range(X.shape[0])]).astype(
+    X["categorical_column_2"] = pd.Series(
+        [f"cat_{i % 6}" for i in range(X.shape[0])],
+    ).astype(
         "str",
     )
 
@@ -1442,7 +1446,7 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
     )
     plot_data = fig.to_dict()["data"][0]
     assert plot_data["type"] == "bar"
-    assert list(plot_data["x"]) == ["0", "1", "2"]
+    assert list(plot_data["x"]) == ["cat_0", "cat_1", "cat_2"]
 
     fig = graph_partial_dependence(
         pipeline,
@@ -1453,7 +1457,7 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
     fig_dict = fig.to_dict()
     plot_data = fig_dict["data"][0]
     assert plot_data["type"] == "contour"
-    assert fig_dict["layout"]["yaxis"]["ticktext"] == ["0", "1", "2"]
+    assert fig_dict["layout"]["yaxis"]["ticktext"] == ["cat_0", "cat_1", "cat_2"]
     assert (
         fig_dict["layout"]["title"]["text"]
         == "Partial Dependence of 'categorical_column' vs. '0'"
@@ -1468,8 +1472,15 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
     fig_dict = fig.to_dict()
     plot_data = fig_dict["data"][0]
     assert plot_data["type"] == "contour"
-    assert fig_dict["layout"]["xaxis"]["ticktext"] == ["0", "1", "2"]
-    assert fig_dict["layout"]["yaxis"]["ticktext"] == ["0", "1", "2", "3", "4", "5"]
+    assert fig_dict["layout"]["xaxis"]["ticktext"] == ["cat_0", "cat_1", "cat_2"]
+    assert fig_dict["layout"]["yaxis"]["ticktext"] == [
+        "cat_0",
+        "cat_1",
+        "cat_2",
+        "cat_3",
+        "cat_4",
+        "cat_5",
+    ]
     assert (
         fig_dict["layout"]["title"]["text"]
         == "Partial Dependence of 'categorical_column_2' vs. 'categorical_column'"
