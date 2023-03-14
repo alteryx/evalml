@@ -934,28 +934,7 @@ def test_generate_pipeline_example(
     X_test.ww.to_disk(holdout_path)
     output_path = os.path.join(str(tmpdir), "example.py")
 
-    pipeline_example = generate_pipeline_example(
-        pipeline=pipeline,
-        path_to_train=train_path,
-        path_to_holdout=holdout_path,
-        path_to_features=features_path,
-        target="target",
-        output_file_path=output_path,
-    )
-    assert f'PATH_TO_TRAIN = "{train_path}"' in pipeline_example
-    assert f'PATH_TO_HOLDOUT = "{holdout_path}"' in pipeline_example
-    assert 'TARGET = "target"' in pipeline_example
-    assert 'column_mapping = ""' in pipeline_example
-    assert generate_pipeline_code(pipeline, features_path) in pipeline_example
-
-    if is_time_series(automl_type):
-        assert "predict(X_test, X_train=X_train, y_train=y_train)" in pipeline_example
-    else:
-        assert "predict(X_test)" in pipeline_example
-
-    exec(pipeline_example)
-    assert os.path.exists(output_path)
-
+    # extra features provided to example
     with pytest.raises(
         ValueError,
         match="Provided features in `features_path` do not match pipeline features. There is a different amount of features in the loaded features.",
@@ -977,6 +956,7 @@ def test_generate_pipeline_example(
             output_file_path=output_path,
         )
 
+    # different features provided to example
     with pytest.raises(
         ValueError,
         match="Provided features in `features_path` do not match pipeline features.",
@@ -997,6 +977,28 @@ def test_generate_pipeline_example(
             target="target",
             output_file_path=output_path,
         )
+
+    pipeline_example = generate_pipeline_example(
+        pipeline=pipeline,
+        path_to_train=train_path,
+        path_to_holdout=holdout_path,
+        path_to_features=features_path,
+        target="target",
+        output_file_path=output_path,
+    )
+    assert f'PATH_TO_TRAIN = "{train_path}"' in pipeline_example
+    assert f'PATH_TO_HOLDOUT = "{holdout_path}"' in pipeline_example
+    assert 'TARGET = "target"' in pipeline_example
+    assert 'column_mapping = ""' in pipeline_example
+    assert generate_pipeline_code(pipeline, features_path) in pipeline_example
+
+    if is_time_series(automl_type):
+        assert "predict(X_test, X_train=X_train, y_train=y_train)" in pipeline_example
+    else:
+        assert "predict(X_test)" in pipeline_example
+
+    exec(pipeline_example)
+    assert os.path.exists(output_path)
 
 
 def test_rows_of_interest_errors(X_y_binary):

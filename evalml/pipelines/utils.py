@@ -625,6 +625,7 @@ def generate_pipeline_code(element, features_path=None):
 
     Raises:
         ValueError: If element is not a pipeline, or if the pipeline is nonlinear.
+        ValueError: If features in `features_path` do not match the features on the pipeline.
     """
     # hold the imports needed and add code to end
     code_strings = []
