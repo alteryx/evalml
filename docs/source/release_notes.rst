@@ -10,7 +10,6 @@ Release Notes
         * Pipelines with DFS Transformers will run fast permutation importance if DFS features pre-exist :pr:`4037`
         * Add get_prediction_intervals() at the pipeline level :pr:`4052`
     * Fixes
-        * Updated ``TargetLeakageDataCheck`` to handle boolean targets properly :pr:`4061`
         * Remove nullable types handling for ``OverSampler`` :pr:`4064`
     * Changes
         * Uncapped ``pmdarima`` and updated minimum version :pr:`4027`
@@ -25,6 +24,7 @@ Release Notes
         * Use ``release.yaml`` for performance tests on merge to main :pr:`4007`
         * Pin ``github-action-check-linked-issues`` at v1.4.5 :pr:`4042`
         * Updated tests to support Woodwork's object dtype inference for numeric columns :pr:`4066`
+        * Updated ``TargetLeakageDataCheck` tests` to handle boolean targets properly :pr:`4061`
 
 .. warning::
 
