@@ -964,7 +964,7 @@ def test_generate_pipeline_example(
         _, false_features = ft.dfs(
             entityset=es,
             target_dataframe_name="X",
-            trans_primitives=["is_null"],
+            trans_primitives=["sine"],
             return_types="all",
         )
         false_features_path = os.path.join(str(tmpdir), "false_features.json")
