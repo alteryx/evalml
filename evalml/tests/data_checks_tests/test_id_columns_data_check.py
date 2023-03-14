@@ -127,15 +127,15 @@ def test_id_columns_strings():
     id_cols_check = IDColumnsDataCheck(id_threshold=1.0)
     assert id_cols_check.validate(X) == [
         DataCheckWarning(
-            message="Columns 'Id' are 100.0% or more likely to be an ID column",
+            message="Columns 'Id', 'col_3_id' are 100.0% or more likely to be an ID column",
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-            details={"columns": ["Id"]},
+            details={"columns": ["Id", "col_3_id"]},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
-                    metadata={"columns": ["Id"]},
+                    metadata={"columns": ["Id", "col_3_id"]},
                 ),
             ],
         ).to_dict(),
@@ -293,17 +293,23 @@ def test_unidentified_first_col_primary_key(
     )
 
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
+    if input_type == "string":
+        order = ["col_2", "col_3_id", "col_1_id"]
+    else:
+        order = ["col_2", "col_1_id", "col_3_id"]
+    order_msg = f"Columns '{order[0]}', '{order[1]}', '{order[2]}' are 95.0% or more likely to be an ID column"
+
     assert id_cols_check.validate(X) == [
         DataCheckWarning(
-            message="Columns 'col_2', 'col_1_id', 'col_3_id' are 95.0% or more likely to be an ID column",
+            message=order_msg,
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-            details={"columns": ["col_2", "col_1_id", "col_3_id"]},
+            details={"columns": order},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
-                    metadata={"columns": ["col_2", "col_1_id", "col_3_id"]},
+                    metadata={"columns": order},
                 ),
             ],
         ).to_dict(),
