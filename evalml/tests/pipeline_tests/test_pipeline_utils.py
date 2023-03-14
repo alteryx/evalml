@@ -732,17 +732,18 @@ def test_generate_code_pipeline(get_black_config):
     assert pipeline == expected_code
 
     regression_pipeline_with_params = RegressionPipeline(
-        ["Imputer", "Random Forest Regressor"],
+        ["DFS Transformer", "Imputer", "Random Forest Regressor"],
         custom_name="Mock Regression Pipeline",
         parameters={
+            "DFS Transformer": {"features": None},
             "Imputer": {"numeric_impute_strategy": "most_frequent"},
             "Random Forest Regressor": {"n_estimators": 50},
         },
     )
     expected_code_params = black.format_str(
         "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
-        "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}, "
-        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'most_frequent', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None, 'boolean_fill_value': None}, "
+        "pipeline = RegressionPipeline(component_graph={'DFS Transformer': ['DFS Transformer', 'X', 'y'],'Imputer': ['Imputer', 'DFS Transformer.x', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}, "
+        "parameters={'DFS Transformer':{}, 'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'most_frequent', 'boolean_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None, 'boolean_fill_value': None}, "
         "'Random Forest Regressor':{'n_estimators': 50, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)",
         mode=black.Mode(**get_black_config),
     )
@@ -856,59 +857,140 @@ def test_generate_pipeline_example(
     X_y_regression,
     ts_data,
 ):
-    path = os.path.join(str(tmpdir), "train.csv")
     if automl_type == ProblemTypes.BINARY:
         X, y = X_y_binary
     elif automl_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
     elif automl_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
-    elif (
-        automl_type == ProblemTypes.TIME_SERIES_MULTICLASS
-        or automl_type == ProblemTypes.TIME_SERIES_BINARY
-    ):
-        X, _, y = ts_data(problem_type=automl_type)
-    else:
+    elif is_time_series(automl_type):
         X, _, y = ts_data(problem_type=automl_type)
 
-    from evalml import AutoMLSearch
-
-    aml = AutoMLSearch(
-        X_train=X,
-        y_train=y,
-        problem_type=automl_type,
-        optimize_thresholds=False,
-        max_time=1,
-        max_iterations=5,
-        problem_configuration={
+    problem_configuration = (
+        {
             "time_index": "date",
             "gap": 1,
             "max_delay": 1,
             "forecast_horizon": 3,
         }
         if is_time_series(automl_type)
-        else None,
+        else None
+    )
+
+    import featuretools as ft
+
+    from evalml import AutoMLSearch
+    from evalml.preprocessing import split_data
+
+    X_train, X_test, y_train, y_test = split_data(
+        X,
+        y,
+        problem_type=automl_type,
+        test_size=0.2,
+    )
+
+    X_train = pd.DataFrame(X_train)
+    X_train.columns = X_train.columns.astype(str)
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X",
+        dataframe=X_train,
+        index="index",
+        make_index=False,
+    )
+    X_train_t, features = ft.dfs(
+        entityset=es,
+        target_dataframe_name="X",
+        trans_primitives=["absolute"],
+        return_types="all",
+    )
+    features_path = os.path.join(str(tmpdir), "features.json")
+    ft.save_features(features, features_path)
+
+    aml = AutoMLSearch(
+        X_train=X_train_t,
+        y_train=y_train,
+        problem_type=automl_type,
+        optimize_thresholds=False,
+        max_iterations=5,
+        problem_configuration=problem_configuration,
+        features=features,
     )
     env = AutoMLTestEnv(automl_type)
     with env.test_context(score_return_value={aml.objective.name: 1.0}):
         aml.search()
-    pipeline = aml.best_pipeline
 
-    X["target"] = y
-    X.to_csv(path)
+    pipeline = aml.get_pipeline(2)
+
+    y_train.index = X_train_t.index
+    y_test.index = X_test.index
+    X_train_t.ww["target"] = y_train
+    X_test.ww["target"] = y_test.reindex(X_test.index)
+
+    train_path = os.path.join(str(tmpdir), "train")
+    holdout_path = os.path.join(str(tmpdir), "holdout")
+
+    X_train_t.ww.to_disk(train_path)
+    X_test.ww.to_disk(holdout_path)
     output_path = os.path.join(str(tmpdir), "example.py")
+
+    # extra features provided to example
+    with pytest.raises(
+        ValueError,
+        match="Provided features in `features_path` do not match pipeline features. There is a different amount of features in the loaded features.",
+    ):
+        _, false_features = ft.dfs(
+            entityset=es,
+            target_dataframe_name="X",
+            trans_primitives=["absolute", "is_null"],
+            return_types="all",
+        )
+        false_features_path = os.path.join(str(tmpdir), "false_features.json")
+        ft.save_features(false_features, false_features_path)
+        _ = generate_pipeline_example(
+            pipeline=pipeline,
+            path_to_train=train_path,
+            path_to_holdout=holdout_path,
+            path_to_features=false_features_path,
+            target="target",
+            output_file_path=output_path,
+        )
+
+    # different features provided to example
+    with pytest.raises(
+        ValueError,
+        match="Provided features in `features_path` do not match pipeline features.",
+    ):
+        _, false_features = ft.dfs(
+            entityset=es,
+            target_dataframe_name="X",
+            trans_primitives=["sine"],
+            return_types="all",
+        )
+        false_features_path = os.path.join(str(tmpdir), "false_features.json")
+        ft.save_features(false_features, false_features_path)
+        _ = generate_pipeline_example(
+            pipeline=pipeline,
+            path_to_train=train_path,
+            path_to_holdout=holdout_path,
+            path_to_features=false_features_path,
+            target="target",
+            output_file_path=output_path,
+        )
+
     pipeline_example = generate_pipeline_example(
         pipeline=pipeline,
-        path_to_train=path,
-        path_to_holdout=path,
+        path_to_train=train_path,
+        path_to_holdout=holdout_path,
+        path_to_features=features_path,
         target="target",
         output_file_path=output_path,
     )
-    assert f'PATH_TO_TRAIN = "{path}"' in pipeline_example
-    assert f'PATH_TO_HOLDOUT = "{path}"' in pipeline_example
+    assert f'PATH_TO_TRAIN = "{train_path}"' in pipeline_example
+    assert f'PATH_TO_HOLDOUT = "{holdout_path}"' in pipeline_example
     assert 'TARGET = "target"' in pipeline_example
     assert 'column_mapping = ""' in pipeline_example
-    assert generate_pipeline_code(pipeline) in pipeline_example
+    assert generate_pipeline_code(pipeline, features_path) in pipeline_example
 
     if is_time_series(automl_type):
         assert "predict(X_test, X_train=X_train, y_train=y_train)" in pipeline_example

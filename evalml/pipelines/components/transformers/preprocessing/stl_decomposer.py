@@ -208,7 +208,6 @@ class STLDecomposer(Decomposer):
             return X, y
         original_index = y.index
         X, y = self._check_target(X, y)
-
         self._check_oos_past(y)
 
         y_in_sample = pd.Series([])
