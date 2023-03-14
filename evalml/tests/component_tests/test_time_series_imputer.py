@@ -135,7 +135,7 @@ def test_categorical_only_input(imputer_test_data):
             ),
             "bool col with nan": pd.Series(
                 [True, True, False, False, True] * 4,
-                dtype="boolean",
+                dtype="bool",
             ),
         },
     )
@@ -154,7 +154,7 @@ def test_categorical_only_input(imputer_test_data):
     )
     expected["bool col with nan"] = pd.Series(
         [True, False, False, True, True] * 4,
-        dtype="boolean",
+        dtype="bool",
     )
 
     imputer = TimeSeriesImputer(categorical_impute_strategy="backwards_fill")
@@ -591,10 +591,10 @@ def test_imputer_can_take_in_nullable_types(
     X = X.ww.drop(["all nan", "all nan cat"])
 
     cols_expected_to_change = X.ww.schema._filter_cols(
-        include=["IntegerNullable", "AgeNullable"],
+        include=["IntegerNullable", "AgeNullable", "BooleanNullable"],
     )
     cols_expected_to_stay_the_same = X.ww.schema._filter_cols(
-        exclude=["IntegerNullable", "AgeNullable"],
+        exclude=["IntegerNullable", "AgeNullable", "BooleanNullable"],
     )
 
     imputer = TimeSeriesImputer(
@@ -616,7 +616,7 @@ def test_imputer_can_take_in_nullable_types(
         str(ltype)
         for col, ltype in X_imputed.ww.logical_types.items()
         if col in cols_expected_to_change
-    } == {"Double", "AgeFractional"}
+    } == {"Age", "AgeFractional", "Double", "Integer", "Boolean"}
 
     assert isinstance(y_imputed.ww.logical_type, expected_imputed_ltype)
 

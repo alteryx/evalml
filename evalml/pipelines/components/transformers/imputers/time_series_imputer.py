@@ -12,7 +12,10 @@ from woodwork.logical_types import (
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
-from evalml.utils.nullable_type_utils import _determine_fractional_type
+from evalml.utils.nullable_type_utils import (
+    _determine_fractional_type,
+    _determine_non_nullable_equivalent,
+)
 
 
 class TimeSeriesImputer(Transformer):
@@ -169,10 +172,17 @@ class TimeSeriesImputer(Transformer):
         X, y = self._handle_nullable_types(X, y)
 
         X_not_all_null = X.ww.drop(self._all_null_cols)
-        original_schema = original_schema.get_subset_schema(
-            subset_cols=list(X_not_all_null.columns),
-        )
-        new_ltypes = None
+
+        # Because the TimeSeriesImputer is always used with the TimeSeriesRegulizer,
+        # many of the columns containing nans may have originally been non nullable logical types.
+        # We will use the non nullable equivalents where possible
+        original_schema = X_not_all_null.ww.schema
+        new_ltypes = {
+            col: _determine_non_nullable_equivalent(ltype)
+            if isinstance(ltype, (IntegerNullable, AgeNullable, BooleanNullable))
+            else ltype
+            for col, ltype in original_schema.logical_types.items()
+        }
 
         if self._forwards_cols is not None:
             X_forward = X[self._forwards_cols]
@@ -193,12 +203,12 @@ class TimeSeriesImputer(Transformer):
             X_not_all_null[X_interpolate.columns] = imputed
 
             # Interpolate may add floating point values to integer data, so we
-            # have to convert to a fractional type
+            # have to update those logical types to a fractional type
             new_ltypes = {
                 col: _determine_fractional_type(ltype)
                 if isinstance(ltype, (IntegerNullable, AgeNullable))
                 else ltype
-                for col, ltype in original_schema.logical_types.items()
+                for col, ltype in new_ltypes.items()
             }
         X_not_all_null.ww.init(schema=original_schema, logical_types=new_ltypes)
 
