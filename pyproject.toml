@@ -41,7 +41,7 @@ dependencies = [
     "shap >= 0.40.0",
     "statsmodels >= 0.12.2",
     "texttable >= 1.6.2",
-    "woodwork >= 0.21.1",
+    "woodwork >= 0.21.1, < 0.22.0",
     "dask >= 2022.2.0, != 2022.10.1",
     "featuretools >= 1.16.0",
     "nlp-primitives >= 2.9.0",
