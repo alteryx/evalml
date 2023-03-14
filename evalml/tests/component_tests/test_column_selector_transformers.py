@@ -71,7 +71,7 @@ def test_select_by_type_empty_X():
             [
                 lambda X, X_t: X_t.empty,
                 lambda X, X_t: X_t.empty,
-                lambda X, X_t: X_t.equals(X[["three"]].astype("int64")),
+                lambda X, X_t: X_t.equals(X[["one", "three"]].astype("int64")),
                 lambda X, X_t: X_t.astype(str).equals(X.astype(str)),
             ],
         ),
@@ -135,7 +135,7 @@ def test_column_transformer_transform(class_to_test, checking_functions):
             SelectByType,
             [
                 lambda X, X_t: X_t.empty,
-                lambda X, X_t: X_t.equals(X[["three"]].astype("int64")),
+                lambda X, X_t: X_t.equals(X[["one", "three"]].astype("int64")),
                 lambda X, X_t: X_t.astype(str).equals(X.astype(str)),
             ],
         ),
