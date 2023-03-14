@@ -173,7 +173,7 @@ class TimeSeriesImputer(Transformer):
 
         X_not_all_null = X.ww.drop(self._all_null_cols)
 
-        # Because the TimeSeriesImputer is always used with the TimeSeriesRegulizer,
+        # Because the TimeSeriesImputer is always used with the TimeSeriesRegularizer,
         # many of the columns containing nans may have originally been non nullable logical types.
         # We will use the non nullable equivalents where possible
         original_schema = X_not_all_null.ww.schema
