@@ -1132,11 +1132,11 @@ def test_json_serialization(
         pipeline = linear_regression_pipeline
     elif problem_type == problem_type.BINARY:
         X, y = X_y_binary
-        y = pd.Series(y).astype("str")
+        y = pd.Series(y).astype("string")
         pipeline = logistic_regression_binary_pipeline
     else:
         X, y = X_y_multi
-        y = pd.Series(y).astype("str")
+        y = pd.Series(y).astype("string")
         pipeline = logistic_regression_multiclass_pipeline
 
     pipeline.fit(X, y)
@@ -1149,19 +1149,7 @@ def test_json_serialization(
         output_format="dict",
     )
 
-    def str_to_num_decoder(dct):
-        new_dct = {}
-        for k, v in dct.items():
-            if isinstance(k, str) and k.isdigit():
-                k = int(k)
-            if isinstance(v, dict):
-                v = str_to_num_decoder(v)
-            new_dct[k] = v
-        return new_dct
-
-    assert (
-        json.loads(json.dumps(best_worst), object_hook=str_to_num_decoder) == best_worst
-    )
+    assert json.loads(json.dumps(best_worst)) == best_worst
 
     report = explain_predictions(
         pipeline,

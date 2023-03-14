@@ -295,10 +295,9 @@ def test_unidentified_first_col_primary_key(
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
     if input_type == "string":
         order = ["col_2", "col_3_id", "col_1_id"]
-        order_msg = "Columns 'col_2', 'col_3_id', 'col_1_id' are 95.0% or more likely to be an ID column"
     else:
         order = ["col_2", "col_1_id", "col_3_id"]
-        order_msg = "Columns 'col_2', 'col_1_id', 'col_3_id' are 95.0% or more likely to be an ID column"
+    order_msg = f"Columns '{order[0]}', '{order[1]}', '{order[2]}' are 95.0% or more likely to be an ID column"
 
     assert id_cols_check.validate(X) == [
         DataCheckWarning(
