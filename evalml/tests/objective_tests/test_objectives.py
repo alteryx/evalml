@@ -230,4 +230,5 @@ def test_objectives_support_nullable_types(
         y_true = y_true.ww.replace({0: 10})
         y_pred = y_pred.replace({0: 10})
 
-    obj.score(y_true=y_true, y_predicted=y_pred, X=X)
+    score = obj.score(y_true=y_true, y_predicted=y_pred, X=X)
+    assert not pd.isna(score)
