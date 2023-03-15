@@ -4,10 +4,8 @@
 import pandas as pd
 import woodwork as ww
 from woodwork.logical_types import (
-    AgeNullable,
     BooleanNullable,
     Double,
-    IntegerNullable,
 )
 
 from evalml.pipelines.components.transformers import Transformer
@@ -181,8 +179,6 @@ class TimeSeriesImputer(Transformer):
         )
         new_ltypes = {
             col: _determine_non_nullable_equivalent(ltype)
-            if isinstance(ltype, (IntegerNullable, AgeNullable, BooleanNullable))
-            else ltype
             for col, ltype in original_schema.logical_types.items()
         }
 
