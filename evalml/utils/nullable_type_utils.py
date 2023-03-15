@@ -107,7 +107,7 @@ def _determine_downcast_type(col):
 def _determine_fractional_type(logical_type):
     """Determines what logical type to use for integer data that has fractional values imputed.
     - IntegerNullable becomes Double.
-    - AgeNullable AgeFractional.
+    - AgeNullable becomes AgeFractional.
 
     Args:
         logical_type (ww.LogicalType): The logical type whose fractional equivalent we are determining.
@@ -122,17 +122,16 @@ def _determine_fractional_type(logical_type):
 
 
 def _determine_non_nullable_equivalent(logical_type):
-    """Determines what logical type to use for integer data that has fractional values imputed.
-    - IntegerNullable becomes Double.
-    - AgeNullable AgeFractional.
-    # --> update for this util - for any ltype
+    """Determines the non nullable equivalent logical type to use for nullable types. These types cannot support null values.
+    - IntegerNullable becomes Integer.
+    - AgeNullable becomes Age.
+    - BooleanNullable becomes Boolean.
 
     Args:
-        logical_type (ww.LogicalType): The logical type whose fractional equivalent we are determining.
-            Should be either IntegerNullable or AgeNullable.
+        logical_type (ww.LogicalType): The logical type whose non nullable equivalent we are determining.
 
     Returns:
-        LogicalType string to be used after fractional values have been added to a previously integer column.
+        LogicalType string to be used instead of nullable type when nans aren't present.
     """
     non_nullable_ltype, _ = DOWNCAST_TYPE_DICT[str(logical_type)]
 
