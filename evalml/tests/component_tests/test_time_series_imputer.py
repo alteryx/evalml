@@ -579,9 +579,14 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
         ("AgeNullable", AgeFractional),
     ],
 )
+@pytest.mark.parametrize(
+    "numeric_impute_strategy",
+    ["forwards_fill", "backwards_fill", "interpolate"],
+)
 def test_imputer_can_take_in_nullable_types(
     nullable_type_test_data,
     nullable_type_target,
+    numeric_impute_strategy,
     nullable_ltype,
     expected_imputed_ltype,
 ):
@@ -598,7 +603,7 @@ def test_imputer_can_take_in_nullable_types(
     )
 
     imputer = TimeSeriesImputer(
-        numeric_impute_strategy="interpolate",
+        numeric_impute_strategy=numeric_impute_strategy,
         target_impute_strategy="interpolate",
     )
     # Copy X to avoid X taking on any mutations from the internal _handle_nullable_types call
@@ -608,7 +613,12 @@ def test_imputer_can_take_in_nullable_types(
     assert not X_imputed.isnull().any().any()
     assert not y_imputed.isnull().any()
 
-    # Check that the types are as exoected
+    # Check that the types are as expected - when interpolate is used, we need fractional numeric ltypes
+    if numeric_impute_strategy == "interpolate":
+        expected_X_ltypes = {"AgeFractional", "Double", "Boolean"}
+    else:
+        expected_X_ltypes = {"Age", "Integer", "Boolean"}
+
     assert X.ww.get_subset_schema(
         cols_expected_to_stay_the_same,
     ) == X_imputed.ww.get_subset_schema(cols_expected_to_stay_the_same)
@@ -616,7 +626,7 @@ def test_imputer_can_take_in_nullable_types(
         str(ltype)
         for col, ltype in X_imputed.ww.logical_types.items()
         if col in cols_expected_to_change
-    } == {"Age", "AgeFractional", "Double", "Integer", "Boolean"}
+    } == expected_X_ltypes
 
     assert isinstance(y_imputed.ww.logical_type, expected_imputed_ltype)
 

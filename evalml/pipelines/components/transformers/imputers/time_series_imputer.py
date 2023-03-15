@@ -176,7 +176,9 @@ class TimeSeriesImputer(Transformer):
         # Because the TimeSeriesImputer is always used with the TimeSeriesRegularizer,
         # many of the columns containing nans may have originally been non nullable logical types.
         # We will use the non nullable equivalents where possible
-        original_schema = X_not_all_null.ww.schema
+        original_schema = original_schema.get_subset_schema(
+            list(X_not_all_null.columns),
+        )
         new_ltypes = {
             col: _determine_non_nullable_equivalent(ltype)
             if isinstance(ltype, (IntegerNullable, AgeNullable, BooleanNullable))
@@ -204,12 +206,15 @@ class TimeSeriesImputer(Transformer):
 
             # Interpolate may add floating point values to integer data, so we
             # have to update those logical types to a fractional type
-            new_ltypes = {
+            int_cols_to_update = original_schema._filter_cols(
+                include=["IntegerNullable", "AgeNullable"],
+            )
+            new_int_ltypes = {
                 col: _determine_fractional_type(ltype)
-                if isinstance(ltype, (IntegerNullable, AgeNullable))
-                else ltype
-                for col, ltype in new_ltypes.items()
+                for col, ltype in original_schema.logical_types.items()
+                if col in int_cols_to_update
             }
+            new_ltypes.update(new_int_ltypes)
         X_not_all_null.ww.init(schema=original_schema, logical_types=new_ltypes)
 
         y_imputed = pd.Series(y)

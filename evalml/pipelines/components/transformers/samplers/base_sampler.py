@@ -35,8 +35,6 @@ class BaseSampler(Transformer):
         if y is None:
             raise ValueError("y cannot be None")
         X_ww = infer_feature_types(X)
-        if y is None:
-            raise ValueError("y cannot be None")
         y_ww = infer_feature_types(y)
         self._initialize_sampler(X_ww, y_ww)
         return self
@@ -50,7 +48,7 @@ class BaseSampler(Transformer):
             y (pd.Series): The target data.
         """
 
-    def transform(self, X, y=None):
+    def transform(self, X, y):
         """Transforms the input data by sampling the data.
 
         Args:
@@ -61,8 +59,6 @@ class BaseSampler(Transformer):
             pd.DataFrame, pd.Series: Transformed features and target.
         """
         X = infer_feature_types(X)
-        if y is None:
-            raise ValueError("y cannot be None")
         y = infer_feature_types(y)
 
         categorical_columns = X.ww.select("Categorical", return_schema=True).columns

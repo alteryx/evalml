@@ -138,8 +138,6 @@ class Oversampler(BaseSampler):
             y (pd.Series): Target.
         """
         sampler_class = self.sampler
-        if y is None:
-            raise ValueError("y cannot be None")
         y_pd = infer_feature_types(y)
         sampler_params = {
             k: v
