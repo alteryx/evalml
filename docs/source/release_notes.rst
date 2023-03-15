@@ -10,6 +10,7 @@ Release Notes
         * Pipelines with DFS Transformers will run fast permutation importance if DFS features pre-exist :pr:`4037`
         * Add get_prediction_intervals() at the pipeline level :pr:`4052`
     * Fixes
+        * Fixed ``generate_pipeline_example`` erroring out for pipelines with a ``DFSTransformer`` :pr:`4059`
         * Remove nullable types handling for ``OverSampler`` :pr:`4064`
     * Changes
         * Uncapped ``pmdarima`` and updated minimum version :pr:`4027`

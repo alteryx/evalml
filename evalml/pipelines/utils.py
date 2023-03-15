@@ -1,8 +1,10 @@
 """Utility methods for EvalML pipelines."""
 import copy
 import os
+import warnings
 
 import black
+import featuretools as ft
 from woodwork import logical_types
 
 from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
@@ -610,11 +612,12 @@ def make_pipeline(
     return pipeline
 
 
-def generate_pipeline_code(element):
+def generate_pipeline_code(element, features_path=None):
     """Creates and returns a string that contains the Python imports and code required for running the EvalML pipeline.
 
     Args:
         element (pipeline instance): The instance of the pipeline to generate string Python code.
+        features_path (str): path to features json created from featuretools.save_features(). Defaults to None.
 
     Returns:
         str: String representation of Python code that can be run separately in order to recreate the pipeline instance.
@@ -622,6 +625,7 @@ def generate_pipeline_code(element):
 
     Raises:
         ValueError: If element is not a pipeline, or if the pipeline is nonlinear.
+        ValueError: If features in `features_path` do not match the features on the pipeline.
     """
     # hold the imports needed and add code to end
     code_strings = []
@@ -637,8 +641,44 @@ def generate_pipeline_code(element):
             element.__class__.__name__,
         ),
     )
+    try:
+        has_dfs = element.component_graph.get_component(DFSTransformer.name)
+    except ValueError:
+        has_dfs = False
+
+    if has_dfs and not features_path:
+        warnings.warn(
+            "This pipeline contains a DFS Transformer but no `features_path` has been specified. Please add a `features_path` or the pipeline code will generate a pipeline that does not run DFS.",
+        )
+
+    has_dfs_and_features = has_dfs and features_path
+    if has_dfs_and_features:
+        features = ft.load_features(features_path)
+        if len(features) != len(element.parameters[DFSTransformer.name]["features"]):
+            raise ValueError(
+                "Provided features in `features_path` do not match pipeline features. There is a different amount of features in the loaded features.",
+            )
+
+        for pipeline_feature, serialized_feature in zip(
+            element.parameters[DFSTransformer.name]["features"],
+            features,
+        ):
+            if (
+                pipeline_feature.get_feature_names()
+                != serialized_feature.get_feature_names()
+            ):
+                raise ValueError(
+                    "Provided features in `features_path` do not match pipeline features.",
+                )
+        code_strings.append("from featuretools import load_features")
+        code_strings.append(f'features=load_features("{features_path}")')
     code_strings.append(repr(element))
     pipeline_code = "\n".join(code_strings)
+    if has_dfs_and_features:
+        pipeline_code = pipeline_code.replace(
+            "'DFS Transformer':{},",
+            "'DFS Transformer':{'features':features},",
+        )
     current_dir = os.path.dirname(os.path.abspath(__file__))
     evalml_path = os.path.abspath(os.path.join(current_dir, "..", ".."))
     black_config = get_evalml_black_config(evalml_path)
@@ -651,6 +691,7 @@ def generate_pipeline_example(
     path_to_train,
     path_to_holdout,
     target,
+    path_to_features=None,
     path_to_mapping="",
     output_file_path=None,
 ):
@@ -661,8 +702,9 @@ def generate_pipeline_example(
         path_to_train (str): path to training data.
         path_to_holdout (str): path to holdout data.
         target (str): target variable.
-        path_to_mapping (str): path to mapping json
-        output_file_path (str): path to output python file.
+        path_to_features (str): path to features json. Defaults to None.
+        path_to_mapping (str): path to mapping json. Defaults to None.
+        output_file_path (str): path to output python file. Defaults to None.
 
     Returns:
         str: String representation of Python code that can be run separately in order to recreate the pipeline instance.
@@ -671,7 +713,7 @@ def generate_pipeline_example(
     """
     output_str = f"""
 import evalml
-import woodwork
+import woodwork as ww
 import pandas as pd
 
 PATH_TO_TRAIN = "{path_to_train}"
@@ -682,22 +724,22 @@ column_mapping = "{path_to_mapping}"
 # This is the machine learning pipeline you have exported.
 # By running this code you will fit the pipeline on the files provided
 # and you can then use this pipeline for prediction and model understanding.
-{generate_pipeline_code(pipeline)}
+{generate_pipeline_code(pipeline, path_to_features)}
 
 print(pipeline.name)
 print(pipeline.parameters)
 pipeline.describe()
 
-df = pd.read_csv(PATH_TO_TRAIN)
-y_train = df[TARGET]
-X_train = df.drop(TARGET, axis=1)
+df = ww.deserialize.from_disk(PATH_TO_TRAIN)
+y_train = df.ww[TARGET]
+X_train = df.ww.drop(TARGET)
 
 pipeline.fit(X_train, y_train)
 
 # You can now generate predictions as well as run model understanding.
-df = pd.read_csv(PATH_TO_HOLDOUT)
-y_holdout = df[TARGET]
-X_holdout= df.drop(TARGET, axis=1)
+df = ww.deserialize.from_disk(PATH_TO_HOLDOUT)
+y_holdout = df.ww[TARGET]
+X_holdout= df.ww.drop(TARGET)
 """
     if not is_time_series(pipeline.problem_type):
         output_str += """
