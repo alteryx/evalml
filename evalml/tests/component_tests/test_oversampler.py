@@ -1,5 +1,4 @@
 import copy
-from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -567,5 +566,3 @@ def test_oversampler_category_dtype_incompatibility(
 
     im_oversampler = im.SMOTENC(categorical_features=[0])
     im_oversampler.fit_resample(X, y)
-
-
