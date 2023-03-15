@@ -572,7 +572,7 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
 
 
 @pytest.mark.parametrize(
-    "nullable_ltype, expected_imputed_ltype",
+    "nullable_y_ltype, expected_imputed_y_ltype",
     [
         ("BooleanNullable", Double),
         ("IntegerNullable", Double),
@@ -587,10 +587,10 @@ def test_imputer_can_take_in_nullable_types(
     nullable_type_test_data,
     nullable_type_target,
     numeric_impute_strategy,
-    nullable_ltype,
-    expected_imputed_ltype,
+    nullable_y_ltype,
+    expected_imputed_y_ltype,
 ):
-    y = nullable_type_target(ltype=nullable_ltype, has_nans=True)
+    y = nullable_type_target(ltype=nullable_y_ltype, has_nans=True)
     X = nullable_type_test_data(has_nans=True)
     # Drop the fully null columns since aren't relevant to the handle nullable types checks
     X = X.ww.drop(["all nan", "all nan cat"])
@@ -628,7 +628,7 @@ def test_imputer_can_take_in_nullable_types(
         if col in cols_expected_to_change
     } == expected_X_ltypes
 
-    assert isinstance(y_imputed.ww.logical_type, expected_imputed_ltype)
+    assert isinstance(y_imputed.ww.logical_type, expected_imputed_y_ltype)
 
 
 @pytest.mark.parametrize(

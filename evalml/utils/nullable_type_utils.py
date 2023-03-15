@@ -1,5 +1,11 @@
 import woodwork as ww
 
+DOWNCAST_TYPE_DICT = {
+    "BooleanNullable": ("Boolean", "Categorical"),
+    "IntegerNullable": ("Integer", "Double"),
+    "AgeNullable": ("Age", "AgeFractional"),
+}
+
 
 def _downcast_nullable_X(X, handle_boolean_nullable=True, handle_integer_nullable=True):
     """Removes Pandas nullable integer and nullable boolean dtypes from data by transforming
@@ -136,10 +142,3 @@ def _determine_non_nullable_equivalent(logical_type):
     non_nullable_ltype, _ = DOWNCAST_TYPE_DICT[str(logical_type)]
 
     return non_nullable_ltype
-
-
-DOWNCAST_TYPE_DICT = {
-    "BooleanNullable": ("Boolean", "Categorical"),
-    "IntegerNullable": ("Integer", "Double"),
-    "AgeNullable": ("Age", "AgeFractional"),
-}
