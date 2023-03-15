@@ -32,16 +32,11 @@ Release Notes
         * Capped max ``holidays`` version to 0.21 :pr:`4064`
         * Stop allowing ``knn`` as a boolean impute strategy :pr:`4058`
         * Capped ``nbsphinx`` at < 0.9.0 :pr:`4071`
-    * Documentation Changes
     * Testing Changes
         * Use ``release.yaml`` for performance tests on merge to main :pr:`4007`
         * Pin ``github-action-check-linked-issues`` at v1.4.5 :pr:`4042`
         * Updated tests to support Woodwork's object dtype inference for numeric columns :pr:`4066`
         * Updated ``TargetLeakageDataCheck`` tests to handle boolean targets properly :pr:`4066`
-
-.. warning::
-
-    **Breaking Changes**
 
 **v0.68.0 Feb. 15, 2023**
     * Enhancements
