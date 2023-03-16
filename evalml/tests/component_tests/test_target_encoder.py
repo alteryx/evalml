@@ -303,6 +303,3 @@ def test_target_encoder_woodwork_custom_overrides_returned_by_components(X_df):
             assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
                 0: logical_type,
             }
-
-
-# --> test that ww ltypes maintained when expected
