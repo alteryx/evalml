@@ -144,6 +144,6 @@ def _determine_non_nullable_equivalent(logical_type):
     Returns:
         LogicalType to be used instead of nullable type when nans aren't present.
     """
-    non_nullable_ltype, _ = DOWNCAST_TYPE_DICT.get(str(logical_type)) or (None, None)
+    non_nullable_ltype, _ = DOWNCAST_TYPE_DICT.get(str(logical_type), (None, None))
 
     return non_nullable_ltype or logical_type
