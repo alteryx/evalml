@@ -104,7 +104,7 @@ def test_imputer_can_impute_features_generated_from_null_email_url_features():
 def test_automl_search_with_nullable_types(
     nullable_type_test_data,
     nullable_type_target,
-    # AutoMLTestEn
+    AutoMLTestEnv,
     ensembling,
     max_batches,
     automl_algorithm,
@@ -152,8 +152,8 @@ def test_automl_search_with_nullable_types(
         ensembling=ensembling,
     )
     # --> should probably use the automl test env but im not sure if its okay to have the score return value be set?
-    # env = AutoMLTestEnv(problem_type)
-    # with env.test_context(score_return_value={automl.objective.name: 1.0}):
-    automl.search()
+    env = AutoMLTestEnv(problem_type)
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
     rankings = automl.rankings
     assert len(rankings)
