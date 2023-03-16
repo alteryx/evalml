@@ -11,6 +11,7 @@ from woodwork.logical_types import (
     BooleanNullable,
     Categorical,
     Double,
+    Integer,
     NaturalLanguage,
 )
 
@@ -580,6 +581,7 @@ def test_imputer_multitype_with_one_bool(data_type, make_data_type):
 
 
 def test_imputer_int_preserved():
+    # With mean impute strategy, the integer column should become Double
     X = pd.DataFrame(pd.Series([1, 2, 11, np.nan]))
     imputer = Imputer(numeric_impute_strategy="mean")
     transformed = imputer.fit_transform(X)
@@ -591,6 +593,7 @@ def test_imputer_int_preserved():
         0: Double,
     }
 
+    # With mean impute strategy, the integer column should become Double even if mean is an integer
     X = pd.DataFrame(pd.Series([1, 2, 3, np.nan]))
     imputer = Imputer(numeric_impute_strategy="mean")
     transformed = imputer.fit_transform(X)
@@ -603,6 +606,8 @@ def test_imputer_int_preserved():
         0: Double,
     }
 
+    # If no null values need to be imputed, integer column should be maintained
+    # even with mean impute strategy.
     X = pd.DataFrame(pd.Series([1, 2, 3, 4], dtype="int"))
     imputer = Imputer(numeric_impute_strategy="mean")
     transformed = imputer.fit_transform(X)
@@ -611,7 +616,7 @@ def test_imputer_int_preserved():
         pd.DataFrame(pd.Series([1, 2, 3, 4])),
         check_dtype=False,
     )
-    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Double}
+    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Integer}
 
 
 @pytest.mark.parametrize("null_type", ["pandas_na", "numpy_nan", "python_none"])
@@ -653,6 +658,8 @@ def test_imputer_does_not_erase_ww_info():
     # Would error out if ww got erased because `b` would be inferred as Unknown, then Double.
     imputer.transform(df_holdout, None)
 
+    # --> having a hard time understanding the purpose of this? confirming it'll add woodwork types if the child imputers havent?
+    # We want the child imputers to always also initailize woodwork types
     with patch("evalml.pipelines.components.SimpleImputer.transform") as mock_transform:
         mock_transform.side_effect = [df_holdout[["a"]], df_train[["b"]].iloc[0]]
         imputer.transform(df_holdout, None)
@@ -713,7 +720,7 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
     assert isinstance(transformed, pd.DataFrame)
     if logical_type == BooleanNullable:
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            # --> maybe just add bool nullable to the cat and nl elif below
+            # --> maybe just add bool nullable to the cat and a separate nl elif below
             data: logical_type,
         }
     elif numeric_impute_strategy == "most_frequent":
