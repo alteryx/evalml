@@ -147,20 +147,3 @@ def _determine_non_nullable_equivalent(logical_type):
     non_nullable_ltype, _ = DOWNCAST_TYPE_DICT.get(str(logical_type), (None, None))
 
     return non_nullable_ltype or logical_type
-
-
-def _get_new_logical_types_for_imputed_data(
-    impute_strategy,
-    original_schema,
-):
-    # --> might need X or y?
-    # --> needs docstring
-    # --> belongs elsewhere impute utils?
-    # Some impute strategies will always maintain integer values, so we can use the original logical types
-    if impute_strategy in {"most_frequent", "forwards_fill", "backwards_fill"}:
-        return original_schema.logical_types
-
-    return {
-        col: _determine_fractional_type(ltype)
-        for col, ltype in original_schema.logical_types.items()
-    }
