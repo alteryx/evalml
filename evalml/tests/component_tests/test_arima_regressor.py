@@ -511,8 +511,10 @@ def test_arima_regressor_with_nullable_types(nullable_ltype):
 
     evalml_arima = ARIMARegressor(**arima_params)
     evalml_arima.fit(X_train, y_train)
-    preds = evalml_arima.predict(X=X_test)
+    preds = evalml_arima.predict(X=X_test.ww.copy())
     assert not preds.isnull().any().any()
+    results_coverage = evalml_arima.get_prediction_intervals(X=X_test.ww.copy())
+    assert results_coverage
 
 
 @pytest.mark.parametrize(

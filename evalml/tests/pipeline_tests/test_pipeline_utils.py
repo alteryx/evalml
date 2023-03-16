@@ -1341,6 +1341,3 @@ def test_make_pipeline_features_and_dfs(X_y_binary):
     )
 
     assert "DFS Transformer" == pipeline.component_graph.compute_order[0]
-
-
-# --> check no rplace nullable types

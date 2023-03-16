@@ -179,7 +179,6 @@ class ExponentialSmoothingRegressor(Estimator):
             random_state=self.parameters["random_state"],
         )
         prediction_interval_result = {}
-        # --> test if pred intervals has issue with nullable types?
         for conf_int in coverage:
             prediction_interval_lower = y_pred.quantile(
                 q=round((1 - conf_int) / 2, 3),
