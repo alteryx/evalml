@@ -1,6 +1,4 @@
 """Component that imputes missing data according to a specified timeseries-specific imputation strategy."""
-
-
 import pandas as pd
 import woodwork as ww
 from woodwork.logical_types import (
@@ -116,7 +114,6 @@ class TimeSeriesImputer(Transformer):
             self
         """
         X = infer_feature_types(X)
-        # --> call handle
 
         nan_ratio = X.isna().sum() / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
@@ -202,7 +199,8 @@ class TimeSeriesImputer(Transformer):
             X_not_all_null[X_interpolate.columns] = imputed
 
             # Interpolate may add floating point values to integer data, so we
-            # have to update those logical types to a fractional type
+            # have to update those logical types from the ones passed in to a fractional type
+            # Note we ignore all other types of columns to maintain the types specified above
             int_cols_to_update = original_schema._filter_cols(
                 include=["IntegerNullable", "AgeNullable"],
             )

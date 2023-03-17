@@ -11,6 +11,8 @@ from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import Oversampler
 from evalml.utils.woodwork_utils import infer_feature_types
 
+# --> something wonky is happening with the diff here -- look into it.
+
 
 def test_init():
     parameters = {
@@ -474,8 +476,6 @@ def test_oversampler_handle_nullable_types(
     X = X.ww.select(include=["numeric", "Boolean", "BooleanNullable", "category"])
     original_schema = X.ww.schema
     y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
-
-    original_schema = X.ww.schema
 
     oversampler = Oversampler(sampling_ratio=0.5)
     oversampler.fit(X.ww.copy(), y)

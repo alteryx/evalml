@@ -277,7 +277,6 @@ class ARIMARegressor(Estimator):
             ValueError: If X was passed to `fit` but not passed in `predict`.
         """
         X, y = self._manage_woodwork(X, y)
-        # --> handle null
         X, fh_ = self._manage_types_and_forecast(X=X)
 
         if not X.empty and self.use_covariates:

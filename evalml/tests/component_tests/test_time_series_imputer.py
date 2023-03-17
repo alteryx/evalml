@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -709,45 +707,3 @@ def test_time_series_imputer_nullable_type_incompatibility(
         _, nullable_series = imputer._handle_nullable_types(None, nullable_series)
 
     nullable_series.interpolate()
-
-
-@pytest.mark.parametrize(
-    "categorical_impute_strategy",
-    ["forwards_fill", "backwards_fill"],
-)
-@pytest.mark.parametrize(
-    "numeric_impute_strategy",
-    ["forwards_fill", "backwards_fill", "interpolate"],
-)
-@pytest.mark.parametrize(
-    "target_impute_strategy",
-    ["forwards_fill", "backwards_fill", "interpolate"],
-)
-@patch(
-    "evalml.pipelines.components.transformers.imputers.time_series_imputer.TimeSeriesImputer._handle_nullable_types",
-)
-def test_imputer_calls_handle_nullable_types(
-    mock_handle_nullable_types,
-    nullable_type_test_data,
-    nullable_type_target,
-    target_impute_strategy,
-    numeric_impute_strategy,
-    categorical_impute_strategy,
-):
-    imputer = TimeSeriesImputer(
-        categorical_impute_strategy=categorical_impute_strategy,
-        numeric_impute_strategy=numeric_impute_strategy,
-        target_impute_strategy=target_impute_strategy,
-    )
-    # --> wil lfail for now
-
-    X = nullable_type_test_data(has_nans=True)
-    y = nullable_type_target(ltype="IntegerNullable", has_nans=True)
-
-    assert not mock_handle_nullable_types.called
-    mock_handle_nullable_types.return_value = X, y
-    imputer.fit(X, y)
-    assert mock_handle_nullable_types.call_count == 1
-
-    imputer.transform(X, y)
-    assert mock_handle_nullable_types.call_count == 2

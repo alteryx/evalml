@@ -1,5 +1,4 @@
 """Component that imputes missing data according to a specified imputation strategy."""
-
 import numpy as np
 import pandas as pd
 import woodwork
@@ -101,7 +100,7 @@ class KNNImputer(Transformer):
 
         new_ltypes = _get_new_logical_types_for_imputed_data(
             impute_strategy="knn",
-            original_schema=original_schema,
+            original_schema=original_schema.get_subset_schema(self._cols_to_impute),
         )
 
         # Add back in natural language columns, unchanged
