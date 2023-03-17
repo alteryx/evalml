@@ -23,7 +23,6 @@ from woodwork.logical_types import (
 from evalml.demos import load_weather
 from evalml.model_family import ModelFamily
 from evalml.objectives import BinaryClassificationObjective
-from evalml.objectives.objective_base import ObjectiveBase
 from evalml.objectives.utils import get_core_objectives, get_non_core_objectives
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -2089,27 +2088,6 @@ def CustomClassificationObjectiveRanges(ranges):
             """Not implementing since mocked in our tests."""
 
     return CustomClassificationObjectiveRanges()
-
-
-def CustomObjective(
-    integer_nullable_incompatible=True,
-    boolean_nullable_incompatible=True,
-):
-    class CustomObjective(ObjectiveBase):
-        _integer_nullable_incompatible = integer_nullable_incompatible
-        _boolean_nullable_incompatible = boolean_nullable_incompatible
-
-        name = "my_objective"
-        greater_is_better = True
-        score_needs_proba = False
-        perfect_score = 1.0
-        is_bounded_like_percentage = True
-        expected_range = [0, 1]
-
-        def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
-            """Not implementing"""
-
-    return CustomObjective()
 
 
 def CustomComponent(
