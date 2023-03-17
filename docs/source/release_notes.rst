@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed error in ``PipelineBase._supports_fast_permutation_importance`` with stacked ensemble pipelines :pr:`4083`
     * Changes
     * Documentation Changes
     * Testing Changes

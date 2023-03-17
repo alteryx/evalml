@@ -759,7 +759,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             for c in self.component_graph
         )
         has_dfs = any(isinstance(c, DFSTransformer) for c in self.component_graph)
-        if has_dfs:
+        # If the pipeline is a stacked ensemble, the DFS Transformer name will be different
+        # and we don't need to check for the pre_existing features anyway
+        if has_dfs and not has_more_than_one_estimator:
             dfs_transformer = self.component_graph[DFSTransformer.name]
             input_feature_names = self.input_feature_names[DFSTransformer.name]
             contains_pre_existing_dfs_features = (
@@ -774,7 +776,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 has_more_than_one_estimator,
                 has_custom_components,
                 has_dim_reduction,
-                (has_dfs and not contains_pre_existing_dfs_features),
+                (
+                    has_dfs
+                    and not has_more_than_one_estimator
+                    and not contains_pre_existing_dfs_features
+                ),
             ],
         )
 
