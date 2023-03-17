@@ -4,9 +4,6 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
-        * Added Oversampler nullable type incompatibility in X :pr:`4068`
-        * Removed nullable handling from objective functions, ``roc_curve``, and ``correlation_matrix`` :pr:`4072`
-        * Transitioned from ``prophet-prebuilt`` to ``prophet`` directly :pr:`4045`
     * Documentation Changes
     * Testing Changes
 
@@ -14,6 +11,12 @@ Release Notes
 
     **Breaking Changes**
 
+
+**v0.70.0 Mar. 16, 2023s**
+    * Changes
+        * Added Oversampler nullable type incompatibility in X :pr:`4068`
+        * Removed nullable handling from objective functions, ``roc_curve``, and ``correlation_matrix`` :pr:`4072`
+        * Transitioned from ``prophet-prebuilt`` to ``prophet`` directly :pr:`4045`
 
 **v0.69.0 Mar. 15, 2023**
     * Enhancements
