@@ -450,6 +450,7 @@ def test_oversampler_handle_nullable_types(
     X = nullable_type_test_data(has_nans=False)
     # Oversampler can only handle numeric and boolean columns
     X = X.ww.select(include=["numeric", "Boolean", "BooleanNullable", "category"])
+    original_schema = X.ww.schema
     y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
 
     oversampler = Oversampler(sampling_ratio=0.5)
@@ -459,6 +460,9 @@ def test_oversampler_handle_nullable_types(
     # Confirm oversampling happened by checking the length increased
     assert len(X_t) > len(X)
     assert len(y_t) > len(y)
+
+    # Confirm the original types are maintained
+    assert original_schema == X_t.ww.schema
 
 
 @pytest.mark.parametrize(
