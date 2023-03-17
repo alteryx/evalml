@@ -119,6 +119,8 @@ class ExponentialSmoothingRegressor(Estimator):
         if y is None:
             raise ValueError("Exponential Smoothing Regressor requires y as input.")
 
+        X, y = self._handle_nullable_types(X, y)
+
         y = self._remove_datetime(y)
 
         self._component_obj.fit(y=y)

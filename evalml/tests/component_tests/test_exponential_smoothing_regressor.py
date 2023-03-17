@@ -202,7 +202,7 @@ def test_predict_no_X_in_fit(
     "nullable_y_ltype",
     ["IntegerNullable", "AgeNullable", "BooleanNullable"],
 )
-def test_handle_nullable_types(
+def test_estimator_with_nullable_types(
     nullable_type_test_data,
     nullable_type_target,
     nullable_y_ltype,
@@ -213,9 +213,9 @@ def test_handle_nullable_types(
 
     comp = ExponentialSmoothingRegressor()
 
-    X_d, y_d = comp._handle_nullable_types(X, y)
-    comp.fit(X_d, y_d)
-    comp.predict(X_d)
+    # Copy X to avoid X taking on any mutations from the internal _handle_nullable_types call
+    comp.fit(X.ww.copy(), y)
+    comp.predict(X.ww.copy())
 
 
 @pytest.mark.parametrize(

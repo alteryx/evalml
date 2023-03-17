@@ -6,6 +6,7 @@ Release Notes
     * Changes
         * Pinned ipywidgets version under 8.0.5 :pr:`4097`
         * Remove unnecessary logic from imputer components prior to nullable type handling :pr:`4038`
+        * Added calls to ``_handle_nullable_types`` in component fit, transform, and predict methods when needed :pr:`4046`
     * Documentation Changes
     * Testing Changes
         * Updated graphviz installation in GitHub workflows to fix windows nightlies :pr:`4088`
