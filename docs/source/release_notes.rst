@@ -6,6 +6,7 @@ Release Notes
     * Changes
         * Added Oversampler nullable type incompatibility in X :pr:`4068`
         * Removed nullable handling from objective functions, ``roc_curve``, and ``correlation_matrix`` :pr:`4072`
+        * Transitioned from ``prophet-prebuilt`` to ``prophet`` directly :pr:`4045`
     * Documentation Changes
     * Testing Changes
 
@@ -30,7 +31,6 @@ Release Notes
         * Uncapped ``pmdarima`` and updated minimum version :pr:`4027`
         * Increase min catboost to 1.1.1 and xgboost to 1.7.0 to add nullable type support for those estimators :pr:`3996`
         * Unpinned ``networkx`` and updated minimum version :pr:`4035`
-        * Transitioned from ``prophet-prebuilt`` to ``prophet`` directly :pr:`4045`
         * Increased ``scikit-learn`` version to 1.2.2 :pr:`4064`
         * Capped max ``holidays`` version to 0.21 :pr:`4064`
         * Stop allowing ``knn`` as a boolean impute strategy :pr:`4058`
