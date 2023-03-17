@@ -97,10 +97,15 @@ class Oversampler(BaseSampler):
             pd.DataFrame, pd.Series: Transformed features and target.
         """
         X_ww = infer_feature_types(X)
+        original_schema = X_ww.ww.schema
         if y is None:
             raise ValueError("y cannot be None")
         y_ww = infer_feature_types(y)
-        return super().transform(X_ww, y_ww)
+        X_d, y_d = self._handle_nullable_types(X_ww, y_ww)
+        X_t, y_t = super().transform(X_d, y_d)
+        X_t.ww.init(schema=original_schema)
+
+        return X_t, y_t
 
     def _get_best_oversampler(self, X):
         cat_cols = X.ww.select(
