@@ -856,7 +856,12 @@ def test_generate_pipeline_example(
     X_y_multi,
     X_y_regression,
     ts_data,
+    is_using_windows,
 ):
+    if is_using_windows:
+        pytest.xfail(
+            "Pipeline code generation is not expected to work on Windows machines",
+        )
     if automl_type == ProblemTypes.BINARY:
         X, y = X_y_binary
     elif automl_type == ProblemTypes.MULTICLASS:

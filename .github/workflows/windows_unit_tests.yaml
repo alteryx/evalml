@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         python_version: ['3.8']
-        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-parallel']
+        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-parallel', 'git-test-prophet']
     steps:
       - name: Download Miniconda
         shell: pwsh
@@ -59,7 +59,18 @@ jobs:
           conda config --add channels conda-forge
           conda activate curr_py
           conda install numba -q -y
-      - name: Install EvalML with test requirements
+      - if: ${{ matrix.command == 'git-test-prophet' }}
+        name: Install EvalML with test requirements and prophet
+        shell: pwsh
+        run: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
+          conda activate curr_py
+          python -m pip install --upgrade pip
+          python -m pip install .[test]
+          python -m pip install .[prophet]
+          pip freeze
+      - if: ${{ matrix.command != 'git-test-prophet' }}
+        name: Install EvalML with test requirements
         shell: pwsh
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1

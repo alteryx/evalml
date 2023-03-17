@@ -111,15 +111,11 @@ def test_allowed_model_families():
 
 def test_all_estimators(
     is_using_conda,
-    is_using_windows,
 ):
     if is_using_conda:
         n_estimators = 17
     else:
-        # This is wrong because only prophet is missing in windows
-        # but we don't run this test in windows.
-        # TODO: Change when https://github.com/alteryx/evalml/issues/3190 is addressed
-        n_estimators = 16 if is_using_windows else 18
+        n_estimators = 18
     assert len(_all_estimators_used_in_search()) == n_estimators
 
 
