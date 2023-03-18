@@ -3,7 +3,6 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Fixed error in ``PipelineBase._supports_fast_permutation_importance`` with stacked ensemble pipelines :pr:`4083`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -13,7 +12,11 @@ Release Notes
     **Breaking Changes**
 
 
-**v0.70.0 Mar. 16, 2023s**
+**v0.71.0 Mar. 17, 2023***
+    * Fixes
+        * Fixed error in ``PipelineBase._supports_fast_permutation_importance`` with stacked ensemble pipelines :pr:`4083`
+
+**v0.70.0 Mar. 16, 2023**
     * Changes
         * Added Oversampler nullable type incompatibility in X :pr:`4068`
         * Removed nullable handling from objective functions, ``roc_curve``, and ``correlation_matrix`` :pr:`4072`
