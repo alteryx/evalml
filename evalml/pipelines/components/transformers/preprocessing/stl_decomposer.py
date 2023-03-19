@@ -97,7 +97,9 @@ class STLDecomposer(Decomposer):
             period=self.period,
         )
         stlf_res = stlf.fit()
-        forecast = stlf_res.forecast(units_forward)
+        # forecast = stlf_res.forecast(units_forward)
+        ps = stlf_res.get_prediction(len(self.trend), len(self.trend) + units_forward - 1)
+        forecast = ps.summary_frame(.05)["mean"]
 
         # Handle out-of-sample forecasts.  The forecast will have additional data
         # between the end of the in-sample data and the beginning of the
