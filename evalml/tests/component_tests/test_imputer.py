@@ -12,6 +12,7 @@ from woodwork.logical_types import (
     Categorical,
     Double,
     Integer,
+    IntegerNullable,
     NaturalLanguage,
 )
 
@@ -695,7 +696,7 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
         "bool col": imputer_test_data[["bool col"]],
     }[data]
     logical_type = {
-        "Integer": Double,
+        "Integer": Integer,
         "Double": Double,
         "Categorical": Categorical,
         "NaturalLanguage": NaturalLanguage,
@@ -703,6 +704,8 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
     }[logical_type]
     if has_nan == "has_nan" and logical_type == Boolean:
         logical_type = BooleanNullable
+    elif has_nan == "has_nan" and logical_type == Integer:
+        logical_type = IntegerNullable
     y = pd.Series([1, 2, 1])
     try:
         X = X_df.copy()
@@ -718,16 +721,12 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     assert isinstance(transformed, pd.DataFrame)
-    if logical_type == BooleanNullable:
-        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            # --> maybe just add bool nullable to the cat and a separate nl elif below
-            data: logical_type,
-        }
-    elif numeric_impute_strategy == "most_frequent":
-        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            data: logical_type,
-        }
-    elif logical_type in [Categorical, NaturalLanguage] or has_nan == "no_nans":
+    # We maintain the original logical type in non numeric
+    if (
+        logical_type in [Categorical, NaturalLanguage, BooleanNullable]
+        or has_nan == "no_nans"
+        or numeric_impute_strategy == "most_frequent"
+    ):
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             data: logical_type,
         }
