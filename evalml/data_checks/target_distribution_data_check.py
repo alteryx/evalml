@@ -64,7 +64,7 @@ class TargetDistributionDataCheck(DataCheck):
             >>> y = pd.Series(pd.date_range("1/1/21", periods=10))
             >>> assert target_check.validate(None, y) == [
             ...     {
-            ...         "message": "Target is unsupported datetime type. Valid Woodwork logical types include: integer, double",
+            ...         "message": "Target is unsupported datetime type. Valid Woodwork logical types include: integer, double, age, age_fractional",
             ...         "data_check_name": "TargetDistributionDataCheck",
             ...         "level": "error",
             ...         "details": {"columns": None, "rows": None, "unsupported_type": "datetime"},
