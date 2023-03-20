@@ -52,11 +52,11 @@ jobs:
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate curr_py
-          conda install python-graphviz=0.16 graphviz=2.38 -q -y
+          conda config --add channels conda-forge
+          conda install -q -y -c conda-forge python-graphviz graphviz
       - name: Install numba (for shap)
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
-          conda config --add channels conda-forge
           conda activate curr_py
           conda install numba -q -y
       - if: ${{ matrix.command == 'git-test-prophet' }}
