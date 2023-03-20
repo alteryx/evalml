@@ -76,7 +76,7 @@ class InvalidTargetDataCheck(DataCheck):
             >>> target_check = InvalidTargetDataCheck("regression", "R2")
             >>> assert target_check.validate(X, y) == [
             ...     {
-            ...         "message": "Target is unsupported Unknown type. Valid Woodwork logical types include: integer, double, boolean, integer_nullable, boolean_nullable, age_nullable, age_fractional",
+            ...         "message": "Target is unsupported Unknown type. Valid Woodwork logical types include: integer, double, boolean, age, age_fractional, integer_nullable, boolean_nullable, age_nullable",
             ...         "data_check_name": "InvalidTargetDataCheck",
             ...         "level": "error",
             ...         "details": {"columns": None, "rows": None, "unsupported_type": "unknown"},
