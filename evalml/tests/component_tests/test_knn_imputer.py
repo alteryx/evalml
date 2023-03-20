@@ -34,7 +34,7 @@ def test_knn_imputer_ignores_natural_language(
     imputer_test_data,
     df_composition,
 ):
-    """Test to ensure that the simple imputer just passes through
+    """Test to ensure that the knn imputer just passes through
     natural language columns, unchanged.
     """
     if df_composition == "single_column":
@@ -56,9 +56,8 @@ def test_knn_imputer_ignores_natural_language(
     result = imputer.transform(X_df, y)
 
     if df_composition == "full_df":
-        X_df = X_df.astype(
-            {"int col": float},
-        )  # Convert to float as the imputer will do this as we're requesting KNN
+        # Update the other columns in result so that we can confirm the natural language column
+        # is unchanged
         X_df["float col"] = result["float col"]
         X_df["int col"] = result["int col"]
         assert_frame_equal(result, X_df)

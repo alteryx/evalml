@@ -11,8 +11,6 @@ from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import Oversampler
 from evalml.utils.woodwork_utils import infer_feature_types
 
-# --> something wonky is happening with the diff here -- look into it.
-
 
 def test_init():
     parameters = {
@@ -268,7 +266,9 @@ def test_samplers_perform_equally(
 def test_smoten_categorical_boolean(X_y_binary, im, use_nullable):
     X, y = X_y_binary
     bool_ltype = "BooleanNullable" if use_nullable else "Boolean"
+    # Set the 0 column of float values to be Categorical type
     X.ww.set_types({0: "Categorical"})
+    # Add a Boolean column into X
     X.ww[len(X.columns)] = ww.init_series(
         pd.Series([True, False] * 50),
         logical_type=bool_ltype,
@@ -286,6 +286,7 @@ def test_smotenc_boolean_numeric(X_y_binary, im, use_nullable_1, use_nullable_2)
     bool_ltype_1 = "BooleanNullable" if use_nullable_1 else "Boolean"
     bool_ltype_2 = "BooleanNullable" if use_nullable_2 else "Boolean"
     X, y = X_y_binary
+    # Add two boolean columns into X
     X.ww[len(X.columns)] = ww.init_series(
         pd.Series([True, False] * 50),
         logical_type=bool_ltype_1,
@@ -323,6 +324,7 @@ def test_smotenc_category_features(X_y_binary):
     X["postal"] = np.arange(10001, 10001 + X.shape[0])
     X["country"] = np.arange(20001, 20001 + X.shape[0])
 
+    # Add different types of categorical data - boolean values, string categories, and postal codes
     X_ww = infer_feature_types(
         X,
         feature_types={

@@ -92,10 +92,6 @@ class TargetDistributionDataCheck(DataCheck):
             ww.logical_types.Double.type_string,
             ww.logical_types.Age.type_string,
             ww.logical_types.AgeFractional.type_string,
-            # --> this is a bool nullable incompatibility in scipy with shapiro, jarque_bera
-            # --> make scipy tickets for incompatibilities and add a test for them? or at elast open evalml ticket
-            # ww.logical_types.IntegerNullable.type_string,
-            # ww.logical_types.AgeNullable.type_string,
         ]
         is_supported_type = y.ww.logical_type.type_string in allowed_types
 

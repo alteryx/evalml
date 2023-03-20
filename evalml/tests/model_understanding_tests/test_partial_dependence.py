@@ -139,9 +139,7 @@ def test_partial_dependence_with_non_numeric_columns(
         },
     )
     if data_type == "ww":
-        X.ww.init(
-            logical_types={"numeric": "IntegerNullable", "also numeric": "Integer"},
-        )
+        X.ww.init()
     y = [0, 0.2, 1.4, 1] * 4
 
     linear_regression_pipeline.fit(X, y)
@@ -3020,6 +3018,10 @@ def test_partial_dependence_dfs_transformer_does_not_calculate_feature_matrix(
     "grid_resolution",
     [2, 10],
 )
+@pytest.mark.parametrize(
+    "X_has_nans",
+    [True, False],
+)
 def test_partial_dependence_with_nullable_types(
     nullable_type_test_data,
     nullable_type_target,
@@ -3027,9 +3029,10 @@ def test_partial_dependence_with_nullable_types(
     logistic_regression_binary_pipeline,
     nullable_y_ltype,
     grid_resolution,
+    X_has_nans,
 ):
     y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
-    X = nullable_type_test_data(has_nans=False)
+    X = nullable_type_test_data(has_nans=X_has_nans)
     X = X.ww.select(["IntegerNullable", "BooleanNullable"])
 
     pipeline = linear_regression_pipeline

@@ -582,7 +582,7 @@ def test_imputer_multitype_with_one_bool(data_type, make_data_type):
 
 
 def test_imputer_int_preserved():
-    # With mean impute strategy, the integer column should become Double
+    # With mean impute strategy, the integer nullable column should become Double
     X = pd.DataFrame(pd.Series([1, 2, 11, np.nan]))
     imputer = Imputer(numeric_impute_strategy="mean")
     transformed = imputer.fit_transform(X)
@@ -594,7 +594,7 @@ def test_imputer_int_preserved():
         0: Double,
     }
 
-    # With mean impute strategy, the integer column should become Double even if mean is an integer
+    # With mean impute strategy, the integer nullable column should become Double even if mean is an integer
     X = pd.DataFrame(pd.Series([1, 2, 3, np.nan]))
     imputer = Imputer(numeric_impute_strategy="mean")
     transformed = imputer.fit_transform(X)
@@ -721,7 +721,6 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     assert isinstance(transformed, pd.DataFrame)
-    # We maintain the original logical type in non numeric
     if (
         logical_type in [Categorical, NaturalLanguage, BooleanNullable]
         or has_nan == "no_nans"
