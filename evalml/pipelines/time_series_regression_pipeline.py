@@ -190,7 +190,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
 
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
-            y (pd.Series): Target data. Ignored.
+            y (pd.Series): Target data.
             X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features].
             y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
             coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
@@ -216,9 +216,20 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
                 coverage=coverage,
             )
             trans_pred_intervals = {}
-            for key, orig_pi_values in pred_intervals.items():
-                trans_pred_intervals[key] = self.inverse_transform(orig_pi_values)
-            return trans_pred_intervals
+            if "STL Decomposer" in list(
+                self.component_graph.component_instances.keys(),
+            ):
+                trend_pred_intervals = self.component_graph.component_instances[
+                    "STL Decomposer"
+                ].get_trend_prediction_intervals(y, coverage=coverage)
+                for key, orig_pi_values in pred_intervals.items():
+                    trans_pred_intervals[key] = pd.Series(
+                        orig_pi_values.values + trend_pred_intervals[key].values,
+                        index=orig_pi_values.index,
+                    )
+                return trans_pred_intervals
+            else:
+                return pred_intervals
         else:
             predictions = self.predict_in_sample(
                 X=X,

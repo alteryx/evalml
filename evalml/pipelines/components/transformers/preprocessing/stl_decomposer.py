@@ -97,9 +97,7 @@ class STLDecomposer(Decomposer):
             period=self.period,
         )
         stlf_res = stlf.fit()
-        # forecast = stlf_res.forecast(units_forward)
-        ps = stlf_res.get_prediction(len(self.trend), len(self.trend) + units_forward - 1)
-        forecast = ps.summary_frame(.05)["mean"]
+        forecast = stlf_res.forecast(units_forward)
 
         # Handle out-of-sample forecasts.  The forecast will have additional data
         # between the end of the in-sample data and the beginning of the
@@ -384,3 +382,46 @@ class STLDecomposer(Decomposer):
             for colname in y.columns:
                 result_dfs.append(_decompose_target(X, y[colname], None))
         return result_dfs
+
+    def get_trend_prediction_intervals(self, y, coverage=[0.95]):
+        """Function to project the in-sample trend into the future."""
+        self._check_oos_past(y)
+        alphas = [1 - val for val in coverage]
+
+        index = self._choose_proper_index(y)
+
+        # Determine how many units forward to project by finding the difference,
+        # in index values, between the requested target and the fit data.
+        if isinstance(y.index, pd.DatetimeIndex):
+            units_forward = (
+                len(
+                    pd.date_range(
+                        start=self.trend.index[-1],
+                        end=y.index[-1],
+                        freq=self.frequency,
+                    ),
+                )
+                - 1
+            )
+        elif isinstance(y.index, RangeIndex) or y.index.is_numeric():
+            units_forward = int(y.index[-1] - index[-1])
+
+        # Model the trend and project it forward
+        stlf = STLForecast(
+            self.trend,
+            ARIMA,
+            model_kwargs=dict(order=(1, 1, 0), trend="t"),
+            period=self.period,
+        )
+        stlf_res = stlf.fit()
+        ps = stlf_res.get_prediction(
+            len(self.trend),
+            len(self.trend) + units_forward - 1,
+        )
+
+        prediction_interval_result = {}
+        for i, alpha in enumerate(alphas):
+            result = ps.summary_frame(alpha=alpha)
+            prediction_interval_result[f"{coverage[i]}_lower"] = result["mean_ci_lower"]
+            prediction_interval_result[f"{coverage[i]}_upper"] = result["mean_ci_upper"]
+        return prediction_interval_result
