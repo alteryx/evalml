@@ -395,7 +395,6 @@ def test_make_split_pipeline(sampler, features, X_y_binary):
     if sampler:
         assert order[-2] == sampler
     assert order[-1] == "Random Forest Classifier"
-    # --> not sure if deleting is right - maybe we shoudl confirm some other specific ordering?
 
     assert pipeline.name == "test_pipeline"
     assert pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][

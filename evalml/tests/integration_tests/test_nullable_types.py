@@ -151,7 +151,6 @@ def test_automl_search_with_nullable_types(
         automl_algorithm=automl_algorithm,
         ensembling=ensembling,
     )
-    # --> should probably use the automl test env but im not sure if its okay to have the score return value be set?
     env = AutoMLTestEnv(problem_type)
     with env.test_context(score_return_value={automl.objective.name: 1.0}):
         automl.search()

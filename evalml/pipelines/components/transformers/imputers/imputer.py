@@ -165,7 +165,6 @@ class Imputer(Transformer):
             imputed = self._numeric_imputer.transform(X_numeric)
             X_no_all_null[X_numeric.columns] = imputed
             # Numeric imputing may have changed logical types because of use of _get_new_logical_types_for_imputed_data
-            # --> this is only needed because of test_imputer_does_not_erase_ww_info test - otherwise we always assume ww types would be present
             if imputed.ww.schema is None:
                 imputed.ww.init()
             new_ltypes = imputed.ww.logical_types

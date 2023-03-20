@@ -1316,7 +1316,6 @@ def test_make_pipeline_from_multiple_graphs_pre_pipeline_components(X_y_binary):
         pre_pipeline_components=pre_pipeline_components,
         sub_pipeline_names=sub_pipeline_names,
     )
-    # --> is this what we want to check for??
     assert (
         combined_pipeline.component_graph.get_inputs("First Pipeline - Imputer")[0]
         == "DFS Transformer.x"

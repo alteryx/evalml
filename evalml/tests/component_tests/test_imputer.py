@@ -659,8 +659,6 @@ def test_imputer_does_not_erase_ww_info():
     # Would error out if ww got erased because `b` would be inferred as Unknown, then Double.
     imputer.transform(df_holdout, None)
 
-    # --> having a hard time understanding the purpose of this? confirming it'll add woodwork types if the child imputers havent?
-    # We want the child imputers to always also initailize woodwork types
     with patch("evalml.pipelines.components.SimpleImputer.transform") as mock_transform:
         mock_transform.side_effect = [df_holdout[["a"]], df_train[["b"]].iloc[0]]
         imputer.transform(df_holdout, None)
