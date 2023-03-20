@@ -171,12 +171,20 @@ class STLDecomposer(Decomposer):
         res = stl.fit()
         self.seasonal = res.seasonal
         self.period = stl.period
-        dist = len(y) % self.period
-        self.seasonality = (
-            self.seasonal[-(dist + self.period) : -dist]
-            if dist > 0
-            else self.seasonal[-self.period :]
+        len(y) % self.period
+
+        seasonal_dict = {i: [] for i in range(self.period)}
+        for i in range(len(self.seasonal)):
+            seasonal_dict[i % self.period].append(self.seasonal[i])
+        seasonality = [0] * self.period
+        for ind, seasons in seasonal_dict.items():
+            seasonality[ind] = sum(seasons) / len(seasons)
+        self.seasonality = pd.Series(
+            seasonality,
+            index=y.index[: self.period],
+            name=None,
         )
+
         self.trend = res.trend
         self.residual = res.resid
 
