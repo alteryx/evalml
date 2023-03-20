@@ -422,6 +422,16 @@ class STLDecomposer(Decomposer):
         prediction_interval_result = {}
         for i, alpha in enumerate(alphas):
             result = ps.summary_frame(alpha=alpha)
+            overlapping_ind = [ind for ind in y.index if ind in result.index]
             prediction_interval_result[f"{coverage[i]}_lower"] = result["mean_ci_lower"]
             prediction_interval_result[f"{coverage[i]}_upper"] = result["mean_ci_upper"]
+
+            if len(overlapping_ind) > 0:
+                prediction_interval_result[
+                    f"{coverage[i]}_lower"
+                ] = prediction_interval_result[f"{coverage[i]}_lower"][overlapping_ind]
+                prediction_interval_result[
+                    f"{coverage[i]}_upper"
+                ] = prediction_interval_result[f"{coverage[i]}_upper"][overlapping_ind]
+
         return prediction_interval_result
