@@ -433,5 +433,13 @@ class STLDecomposer(Decomposer):
                 prediction_interval_result[
                     f"{coverage[i]}_upper"
                 ] = prediction_interval_result[f"{coverage[i]}_upper"][overlapping_ind]
-
+            else:
+                prediction_interval_result[
+                    f"{coverage[i]}_lower"
+                ] = prediction_interval_result[f"{coverage[i]}_lower"][-len(y) :]
+                prediction_interval_result[
+                    f"{coverage[i]}_upper"
+                ] = prediction_interval_result[f"{coverage[i]}_upper"][-len(y) :]
+                prediction_interval_result[f"{coverage[i]}_lower"].index = y.index
+                prediction_interval_result[f"{coverage[i]}_upper"].index = y.index
         return prediction_interval_result
