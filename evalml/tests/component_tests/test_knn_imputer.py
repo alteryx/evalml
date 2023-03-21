@@ -83,7 +83,7 @@ def test_knn_imputer_maintains_woodwork_types(imputer_test_data):
     } == {"Double"}
 
 
-def test_simple_imputer_with_all_null_and_nl_cols(
+def test_knn_imputer_with_all_null_and_nl_cols(
     imputer_test_data,
 ):
     X = imputer_test_data.ww[["all nan", "natural language col", "int col"]]
