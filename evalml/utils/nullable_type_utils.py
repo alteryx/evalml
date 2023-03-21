@@ -147,3 +147,31 @@ def _determine_non_nullable_equivalent(logical_type):
     non_nullable_ltype, _ = DOWNCAST_TYPE_DICT.get(str(logical_type), (None, None))
 
     return non_nullable_ltype or logical_type
+
+
+def _get_new_logical_types_for_imputed_data(
+    impute_strategy,
+    original_schema,
+):
+    """Determines what the logical types should be after imputing data. New logical types are only needed for integer data that may have had fractional values imputed.
+
+    Args:
+        impute_strategy (str): The strategy used to impute data. May be one of
+            "most_frequent", "forwards_fill", "backwards_fill", "mean", "median", "constant", "interpolate, or "knn".
+            Integer types will be converted to their corresponding fractional types if any but
+            "most_frequent", "forwards_fill" or "backwards_fill" are used.
+        original_schema (ww.TableSchema): The Woodwork table schema of the original data that was passed to the imputer.
+
+    Returns:
+        dict[str, ww.LogicalType]: Updated logical types to use for imputed data.
+    """
+    # Some impute strategies will always maintain integer values, so we can use the original logical types
+    if impute_strategy in {"most_frequent", "forwards_fill", "backwards_fill"}:
+        return original_schema.logical_types
+
+    return {
+        col: _determine_fractional_type(ltype)
+        if isinstance(ltype, (AgeNullable, IntegerNullable))
+        else ltype
+        for col, ltype in original_schema.logical_types.items()
+    }

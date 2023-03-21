@@ -4,10 +4,8 @@ import woodwork
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.pipelines.components.transformers.imputers.utils import (
-    _get_new_logical_types_for_imputed_data,
-)
 from evalml.utils import infer_feature_types
+from evalml.utils.nullable_type_utils import _get_new_logical_types_for_imputed_data
 
 
 class SimpleImputer(Transformer):
