@@ -41,12 +41,13 @@ class InvalidTargetDataCheck(DataCheck):
 
     multiclass_continuous_threshold = 0.05
 
-    def __init__(self, problem_type, objective, n_unique=100):
+    def __init__(self, problem_type, objective, n_unique=100, null_strategy="impute"):
         self.problem_type = handle_problem_types(problem_type)
         self.objective = get_objective(objective)
         if n_unique is not None and n_unique <= 0:
             raise ValueError("`n_unique` must be a non-negative integer value.")
         self.n_unique = n_unique
+        self.null_strategy = null_strategy
 
     def validate(self, X, y):
         """Check if the target data is considered invalid. If the input features argument is not None, it will be used to check that the target and features have the same dimensions and indices.
@@ -243,6 +244,39 @@ class InvalidTargetDataCheck(DataCheck):
         elif null_rows.any():
             num_null_rows = null_rows.sum()
             pct_null_rows = null_rows.mean() * 100
+            rows_to_drop = null_rows.index.tolist()
+
+            action_options = []
+            impute_action_option = DataCheckActionOption(
+                DataCheckActionCode.IMPUTE_COL,
+                data_check_name=self.name,
+                parameters={
+                    "impute_strategy": {
+                        "parameter_type": DCAOParameterType.GLOBAL,
+                        "type": "category",
+                        "categories": ["mean", "most_frequent"]
+                        if is_regression(self.problem_type)
+                        else ["most_frequent"],
+                        "default_value": "mean"
+                        if is_regression(self.problem_type)
+                        else "most_frequent",
+                    },
+                },
+                metadata={"is_target": True},
+            )
+            drop_action_option = DataCheckActionOption(
+                DataCheckActionCode.DROP_ROWS,
+                data_check_name=self.name,
+                metadata={"rows": rows_to_drop},
+            )
+
+            if self.null_strategy.lower() == "impute":
+                action_options.append(impute_action_option)
+            elif self.null_strategy.lower() == "drop":
+                action_options.append(drop_action_option)
+            elif self.null_strategy.lower() == "both":
+                action_options.extend([impute_action_option, drop_action_option])
+
             messages.append(
                 DataCheckError(
                     message="{} row(s) ({}%) of target values are null".format(
@@ -255,25 +289,7 @@ class InvalidTargetDataCheck(DataCheck):
                         "num_null_rows": num_null_rows,
                         "pct_null_rows": pct_null_rows,
                     },
-                    action_options=[
-                        DataCheckActionOption(
-                            DataCheckActionCode.IMPUTE_COL,
-                            data_check_name=self.name,
-                            parameters={
-                                "impute_strategy": {
-                                    "parameter_type": DCAOParameterType.GLOBAL,
-                                    "type": "category",
-                                    "categories": ["mean", "most_frequent"]
-                                    if is_regression(self.problem_type)
-                                    else ["most_frequent"],
-                                    "default_value": "mean"
-                                    if is_regression(self.problem_type)
-                                    else "most_frequent",
-                                },
-                            },
-                            metadata={"is_target": True},
-                        ),
-                    ],
+                    action_options=action_options,
                 ).to_dict(),
             )
 
