@@ -86,35 +86,39 @@ class KNNImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
+        # Record original data
         X = infer_feature_types(X)
-
-        not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
         original_index = X.index
         original_schema = X.ww.schema
 
+        # separate out just the columns we are imputing
+        X_t = X[self._cols_to_impute]
         if not self._cols_to_impute:
+            not_all_null_cols = [
+                col for col in X.columns if col not in self._all_null_cols
+            ]
             return X.ww[not_all_null_cols]
 
-        X_t = self._component_obj.transform(X[self._cols_to_impute])
+        # Transform the data
+        X_t = self._component_obj.transform(X_t)
         X_t = pd.DataFrame(X_t, columns=self._cols_to_impute)
 
+        # Reinit woodwork, maintaining original types where possible
+        imputed_schema = original_schema.get_subset_schema(self._cols_to_impute)
         new_ltypes = _get_new_logical_types_for_imputed_data(
             impute_strategy="knn",
-            original_schema=original_schema.get_subset_schema(self._cols_to_impute),
+            original_schema=imputed_schema,
         )
+        X_t.ww.init(schema=imputed_schema, logical_types=new_ltypes)
 
-        # Add back in natural language columns, unchanged
+        # Add back in the unchanged original natural language columns that we want to keep
         if len(self._natural_language_cols) > 0:
             X_t = woodwork.concat_columns([X_t, X.ww[self._natural_language_cols]])
-
-        X_t.ww.init(
-            schema=original_schema,
-            logical_types=new_ltypes,
-        )
+            # reorder columns to match original
+            X_t = X_t.ww[[col for col in original_schema.columns if col in X_t.columns]]
 
         if self._cols_to_impute:
             X_t.index = original_index
-
         return X_t
 
     def fit_transform(self, X, y=None):

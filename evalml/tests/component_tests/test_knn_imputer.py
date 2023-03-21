@@ -81,3 +81,16 @@ def test_knn_imputer_maintains_woodwork_types(imputer_test_data):
         for col, ltype in result.ww.logical_types.items()
         if col in int_nullable_cols
     } == {"Double"}
+
+
+def test_simple_imputer_with_all_null_and_nl_cols(
+    imputer_test_data,
+):
+    X = imputer_test_data.ww[["all nan", "natural language col", "int col"]]
+    X_copy = X.ww.copy()
+
+    imp = KNNImputer(number_neighbors=3)
+    imp.fit(X)
+
+    X_imputed = imp.transform(X)
+    pd.testing.assert_frame_equal(X_copy.ww.drop("all nan"), X_imputed)
