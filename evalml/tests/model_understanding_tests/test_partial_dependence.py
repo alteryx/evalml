@@ -3053,13 +3053,10 @@ def test_partial_dependence_with_nullable_types(
         grid_resolution=grid_resolution,
         features=int_col,
     )
-    assert len(part_dep["partial_dependence"]) == min(
+
+    assert len(part_dep) == min(
         grid_resolution,
-        len(X[int_col].dropna().unique()),
-    )
-    assert len(part_dep["feature_values"]) == min(
-        grid_resolution,
-        len(X[int_col].dropna().unique()),
+        len(X[int_col].unique()),
     )
     assert not part_dep.isnull().any(axis=None)
 
@@ -3080,8 +3077,7 @@ def test_partial_dependence_with_nullable_types(
         grid_resolution=grid_resolution,
         features="bool col nullable",
     )
-    assert len(part_dep["partial_dependence"]) == 2
-    assert len(part_dep["feature_values"]) == 2
+    assert len(part_dep) == 2
     assert not part_dep.isnull().any(axis=None)
 
     fast_part_dep = partial_dependence(
@@ -3102,7 +3098,7 @@ def test_partial_dependence_with_nullable_types(
 )
 @pytest.mark.parametrize(
     "grid_resolution",
-    [2, 10, 50],
+    [2, 10, 60],
 )
 def test_partial_dependence_grid_values_for_numeric_data(
     logistic_regression_binary_pipeline,
@@ -3124,7 +3120,8 @@ def test_partial_dependence_grid_values_for_numeric_data(
     grid_values = pd_values["feature_values"].to_list()
 
     # Confirm fractional values are only used as grid values for floating point data types
-    if numeric_ltype in ["Double", "AgeFractional"]:
+    # when there are fewer grid values than the length of X
+    if numeric_ltype in ["Double", "AgeFractional"] and len(X) > grid_resolution:
         assert any(val % 1 for val in grid_values)
     else:
         assert not any(val % 1 for val in grid_values)
