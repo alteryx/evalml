@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Pinned ipywidgets version under 8.0.5 :pr:`4097`
     * Documentation Changes
     * Testing Changes
         * Updated graphviz installation in GitHub workflows to fix windows nightlies :pr:`4088`
