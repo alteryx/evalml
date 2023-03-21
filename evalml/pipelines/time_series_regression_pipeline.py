@@ -219,12 +219,15 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             if "STL Decomposer" in list(
                 self.component_graph.component_instances.keys(),
             ):
+                residuals = self.estimator.predict(
+                    estimator_input,
+                )  # Get residual values
                 trend_pred_intervals = self.component_graph.component_instances[
                     "STL Decomposer"
                 ].get_trend_prediction_intervals(y, coverage=coverage)
                 for key, orig_pi_values in pred_intervals.items():
                     trans_pred_intervals[key] = pd.Series(
-                        orig_pi_values.values
+                        (orig_pi_values.values - residuals.values)
                         + trend_pred_intervals[key].values
                         + y.values,
                         index=orig_pi_values.index,
