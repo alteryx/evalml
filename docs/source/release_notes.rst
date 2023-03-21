@@ -6,6 +6,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Updated graphviz installation in GitHub workflows to fix windows nightlies :pr:`4088`
 
 .. warning::
 
