@@ -464,15 +464,10 @@ def test_decomposer_determine_periodicity(
     synthetic_data,
     generate_seasonal_data,
 ):
-    # --> failing for synthetic data when period is None and trend_degree is 1 - says the ac is 10??
     X, y = generate_seasonal_data(real_or_synthetic=synthetic_data)(
         period,
         trend_degree=trend_degree,
     )
-    if y_logical_type != "Double":
-        # Multiply by 1000 so we can convert to Integer, truncating the rest of the value
-        # while still mainlining trend, period, etc
-        y = y * 1000
     y = ww.init_series(y.astype(int), logical_type=y_logical_type)
 
     # Test that the seasonality can be determined if trend guess isn't spot on.
