@@ -209,32 +209,33 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             X_train=X_train,
             y_train=y_train,
         )
-        if self.estimator.model_family in self.NO_PREDS_PI_ESTIMATORS:
+        has_stl = "STL Decomposer" in list(
+            self.component_graph.component_instances.keys(),
+        )
+        if coverage is None:
+            coverage = [0.95]
+
+        if self.estimator.model_family in self.NO_PREDS_PI_ESTIMATORS and has_stl:
             pred_intervals = self.estimator.get_prediction_intervals(
                 X=estimator_input,
                 y=y,
                 coverage=coverage,
             )
             trans_pred_intervals = {}
-            if "STL Decomposer" in list(
-                self.component_graph.component_instances.keys(),
-            ):
-                residuals = self.estimator.predict(
-                    estimator_input,
-                )  # Get residual values
-                trend_pred_intervals = self.component_graph.component_instances[
-                    "STL Decomposer"
-                ].get_trend_prediction_intervals(y, coverage=coverage)
-                for key, orig_pi_values in pred_intervals.items():
-                    trans_pred_intervals[key] = pd.Series(
-                        (orig_pi_values.values - residuals.values)
-                        + trend_pred_intervals[key].values
-                        + y.values,
-                        index=orig_pi_values.index,
-                    )
-                return trans_pred_intervals
-            else:
-                return pred_intervals
+            residuals = self.estimator.predict(
+                estimator_input,
+            )  # Get residual values
+            trend_pred_intervals = self.get_component(
+                "STL Decomposer",
+            ).get_trend_prediction_intervals(y, coverage=coverage)
+            for key, orig_pi_values in pred_intervals.items():
+                trans_pred_intervals[key] = pd.Series(
+                    (orig_pi_values.values - residuals.values)
+                    + trend_pred_intervals[key].values
+                    + y.values,
+                    index=orig_pi_values.index,
+                )
+            return trans_pred_intervals
         else:
             predictions = self.predict_in_sample(
                 X=X,

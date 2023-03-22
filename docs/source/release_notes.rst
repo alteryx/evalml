@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Updated `pipeline.get_prediction_intervals()` to add trend prediction interval information from STL decomposer :pr:`4093`
     * Fixes
     * Changes
         * Pinned ipywidgets version under 8.0.5 :pr:`4097`

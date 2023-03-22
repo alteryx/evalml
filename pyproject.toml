@@ -27,7 +27,7 @@ maintainers = [
 ]
 keywords = ["data science", "machine learning", "optimization", "automl"]
 license = {file = "LICENSE"}
-requires-python = ">=3.8,<3.11"
+requires-python = ">=3.8,<4"
 dependencies = [
     "numpy >= 1.21.0",
     "pandas >= 1.5.0",
@@ -47,8 +47,8 @@ dependencies = [
     "nlp-primitives >= 2.9.0",
     "networkx >= 2.6",
     "plotly >= 5.0.0",
-    "kaleido >= 0.1.0, <= 0.2.1",
-    "ipywidgets >= 7.5",
+    "kaleido >= 0.1.0",
+    "ipywidgets >= 7.5, < 8.0.5",
     "xgboost >= 1.7.0",
     "catboost >= 1.1.1",
     "lightgbm >= 2.3.1",

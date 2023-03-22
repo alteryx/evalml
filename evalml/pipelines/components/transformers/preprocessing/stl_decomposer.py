@@ -389,7 +389,7 @@ class STLDecomposer(Decomposer):
                 result_dfs.append(_decompose_target(X, y[colname], None))
         return result_dfs
 
-    def get_trend_prediction_intervals(self, y, coverage=[0.95]):
+    def get_trend_prediction_intervals(self, y, coverage=None):
         """Calculate the prediction intervals for the trend data.
 
         Args:
@@ -400,6 +400,9 @@ class STLDecomposer(Decomposer):
         Returns:
             dict of pd.Series: dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
         """
+        if coverage is None:
+            coverage = [0.95]
+
         self._check_oos_past(y)
         alphas = [1 - val for val in coverage]
 
