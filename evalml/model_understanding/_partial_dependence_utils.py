@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import woodwork as ww
 from scipy.stats.mstats import mquantiles
+from woodwork.logical_types import Age, AgeNullable, Integer, IntegerNullable
 
 from evalml.exceptions import PartialDependenceError, PartialDependenceErrorCode
 from evalml.model_understanding._partial_dependence_fast_mode_utils import (
@@ -135,12 +136,16 @@ def _range_for_dates(X_dt, percentiles, grid_resolution):
         [X_dt - pd.Timestamp("1970-01-01")] // np.timedelta64(1, "s"),
     ).reshape(-1, 1)
     timestamps = pd.DataFrame(timestamps)
+    # Initialize Woodwork with Double logical type so that we can calculate grid values
+    # and not need to round the way we do with integer data since we're converting back to datetime
+    timestamps.ww.init(logical_types={0: "Double"})
     grid, values = _grid_from_X(
         timestamps,
         percentiles=percentiles,
         grid_resolution=grid_resolution,
         custom_range={},
     )
+    # Convert numeric grid values back to datetimes
     grid_dates = pd.to_datetime(pd.Series(grid.squeeze()), unit="s")
     return grid_dates
 
@@ -195,6 +200,14 @@ def _grid_from_X(X, percentiles, grid_resolution, custom_range):
                     num=grid_resolution,
                     endpoint=True,
                 )
+                if isinstance(
+                    X.ww.logical_types[feature],
+                    (Integer, IntegerNullable, Age, AgeNullable),
+                ):
+                    # np.linspace may have produced fractional grid values, which would conflict with
+                    # integer data when we insert them into X to calculate partial dependence.
+                    # Round the values to maintain the integer type.
+                    axis = axis.round()
         values.append(axis)
 
     return _cartesian(values), values
@@ -401,7 +414,7 @@ def _partial_dependence(
         if feature in custom_range
     }
     grid, values = _grid_from_X(
-        X.loc[:, features],
+        X.ww.loc[:, features],
         percentiles,
         grid_resolution,
         custom_range,

@@ -6,6 +6,7 @@ Release Notes
         * Fixed ensemble pipelines not working with ``generate_pipeline_example`` :pr:`4102`
     * Changes
         * Pinned ipywidgets version under 8.0.5 :pr:`4097`
+        * Calculated partial dependence grid values for integer data by rounding instead of truncating fractional values :pr:`4096`
     * Documentation Changes
     * Testing Changes
         * Updated graphviz installation in GitHub workflows to fix windows nightlies :pr:`4088`
