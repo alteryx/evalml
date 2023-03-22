@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed ensemble pipelines not working with ``generate_pipeline_example`` :pr:`4102`
     * Changes
         * Pinned ipywidgets version under 8.0.5 :pr:`4097`
     * Documentation Changes
