@@ -641,26 +641,37 @@ def generate_pipeline_code(element, features_path=None):
             element.__class__.__name__,
         ),
     )
-    try:
-        has_dfs = element.component_graph.get_component(DFSTransformer.name)
-    except ValueError:
-        has_dfs = False
-
+    if isinstance(
+        element.estimator,
+        (StackedEnsembleClassifier, StackedEnsembleRegressor),
+    ):
+        final_estimator = element.parameters[element.estimator.name]["final_estimator"]
+        code_strings.append(
+            "from {} import {}".format(
+                final_estimator.__class__.__module__,
+                final_estimator.__class__.__name__,
+            ),
+        )
+    has_dfs = any(isinstance(c, DFSTransformer) for c in element.component_graph)
     if has_dfs and not features_path:
         warnings.warn(
             "This pipeline contains a DFS Transformer but no `features_path` has been specified. Please add a `features_path` or the pipeline code will generate a pipeline that does not run DFS.",
         )
-
     has_dfs_and_features = has_dfs and features_path
     if has_dfs_and_features:
         features = ft.load_features(features_path)
-        if len(features) != len(element.parameters[DFSTransformer.name]["features"]):
+        dfs_features = None
+        for component in element.parameters:
+            if "DFS Transformer" in component:
+                dfs_features = element.parameters[component]["features"]
+                break
+        if len(features) != len(dfs_features):
             raise ValueError(
                 "Provided features in `features_path` do not match pipeline features. There is a different amount of features in the loaded features.",
             )
 
         for pipeline_feature, serialized_feature in zip(
-            element.parameters[DFSTransformer.name]["features"],
+            dfs_features,
             features,
         ):
             if (
@@ -676,8 +687,8 @@ def generate_pipeline_code(element, features_path=None):
     pipeline_code = "\n".join(code_strings)
     if has_dfs_and_features:
         pipeline_code = pipeline_code.replace(
-            "'DFS Transformer':{},",
-            "'DFS Transformer':{'features':features},",
+            "DFS Transformer':{},",
+            "DFS Transformer':{'features':features},",
         )
     current_dir = os.path.dirname(os.path.abspath(__file__))
     evalml_path = os.path.abspath(os.path.join(current_dir, "..", ".."))
@@ -733,7 +744,6 @@ pipeline.describe()
 df = ww.deserialize.from_disk(PATH_TO_TRAIN)
 y_train = df.ww[TARGET]
 X_train = df.ww.drop(TARGET)
-
 pipeline.fit(X_train, y_train)
 
 # You can now generate predictions as well as run model understanding.

@@ -709,7 +709,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         parameters_repr = ", ".join(
             [
                 f"'{component}':{{{repr_component(parameters)}}}"
-                if component != DFSTransformer.name
+                if DFSTransformer.name not in component
                 else f"'{component}':{{}}"
                 for component, parameters in self.parameters.items()
             ],
