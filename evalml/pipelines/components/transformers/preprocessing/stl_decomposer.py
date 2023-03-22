@@ -96,8 +96,14 @@ class STLDecomposer(Decomposer):
             model_kwargs=dict(order=(1, 1, 0), trend="t"),
             period=self.period,
         )
-        stlf_res = stlf.fit()
-        forecast = stlf_res.forecast(units_forward)
+        stlf = stlf.fit()
+        forecast = stlf.forecast(units_forward)
+
+        # Store forecast summary for use in calculating trend prediction intervals.
+        self.forecast_summary = stlf.get_prediction(
+            len(self.trend),
+            len(self.trend) + units_forward - 1,
+        )
 
         # Handle out-of-sample forecasts.  The forecast will have additional data
         # between the end of the in-sample data and the beginning of the
@@ -384,44 +390,27 @@ class STLDecomposer(Decomposer):
         return result_dfs
 
     def get_trend_prediction_intervals(self, y, coverage=[0.95]):
-        """Function to project the in-sample trend into the future."""
+        """Calculate the prediction intervals for the trend data.
+
+        Args:
+            y (pd.Series): Target data.
+            coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
+                prediction interval should be calculated for.
+
+        Returns:
+            dict of pd.Series: dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+        """
         self._check_oos_past(y)
         alphas = [1 - val for val in coverage]
 
-        index = self._choose_proper_index(y)
-
-        # Determine how many units forward to project by finding the difference,
-        # in index values, between the requested target and the fit data.
-        if isinstance(y.index, pd.DatetimeIndex):
-            units_forward = (
-                len(
-                    pd.date_range(
-                        start=self.trend.index[-1],
-                        end=y.index[-1],
-                        freq=self.frequency,
-                    ),
-                )
-                - 1
-            )
-        elif isinstance(y.index, RangeIndex) or y.index.is_numeric():
-            units_forward = int(y.index[-1] - index[-1])
-
-        # Model the trend and project it forward
-        stlf = STLForecast(
-            self.trend,
-            ARIMA,
-            model_kwargs=dict(order=(1, 1, 0), trend="t"),
-            period=self.period,
-        )
-        stlf_res = stlf.fit()
-        ps = stlf_res.get_prediction(
-            len(self.trend),
-            len(self.trend) + units_forward - 1,
-        )
+        if not self.forecast_summary or len(y) != len(
+            self.forecast_summary.predicted_mean,
+        ):
+            self._project_trend_and_seasonality(y)
 
         prediction_interval_result = {}
         for i, alpha in enumerate(alphas):
-            result = ps.summary_frame(alpha=alpha)
+            result = self.forecast_summary.summary_frame(alpha=alpha)
             overlapping_ind = [ind for ind in y.index if ind in result.index]
             prediction_interval_result[f"{coverage[i]}_lower"] = (
                 result["mean_ci_lower"] - result["mean"]
@@ -446,4 +435,5 @@ class STLDecomposer(Decomposer):
                 ] = prediction_interval_result[f"{coverage[i]}_upper"][-len(y) :]
                 prediction_interval_result[f"{coverage[i]}_lower"].index = y.index
                 prediction_interval_result[f"{coverage[i]}_upper"].index = y.index
+
         return prediction_interval_result
