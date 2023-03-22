@@ -749,7 +749,7 @@ pipeline.fit(X_train, y_train)
 # You can now generate predictions as well as run model understanding.
 df = ww.deserialize.from_disk(PATH_TO_HOLDOUT)
 y_holdout = df.ww[TARGET]
-X_holdout= df.ww.drop(TARGET)
+X_holdout = df.ww.drop(TARGET)
 """
     if not is_time_series(pipeline.problem_type):
         output_str += """

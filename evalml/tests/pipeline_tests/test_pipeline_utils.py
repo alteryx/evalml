@@ -954,8 +954,6 @@ def test_generate_pipeline_example(
     else:
         pipeline = aml.get_pipeline(2)
 
-    pipeline.fit(X_train_t, y_train)
-
     y_train.index = X_train_t.index
     y_test.index = X_test.index
     X_train_t.ww["target"] = y_train
@@ -1030,7 +1028,7 @@ def test_generate_pipeline_example(
         assert "predict(X_test, X_train=X_train, y_train=y_train)" in pipeline_example
     else:
         assert "predict(X_test)" in pipeline_example
-    # exec(pipeline_example)
+    exec(pipeline_example)
     assert os.path.exists(output_path)
 
 

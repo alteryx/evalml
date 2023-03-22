@@ -15,7 +15,12 @@ from evalml.exceptions.exceptions import (
     PipelineError,
     PipelineErrorCodeEnum,
 )
-from evalml.pipelines.components import ComponentBase, Estimator, Transformer
+from evalml.pipelines.components import (
+    ComponentBase,
+    DFSTransformer,
+    Estimator,
+    Transformer,
+)
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import (
     _schema_is_equal,
@@ -445,7 +450,10 @@ class ComponentGraph:
         if not fit:
             X_schema = (
                 self._return_non_engineered_features(X).ww.schema
-                if "DFS Transformer" in self.compute_order
+                if any(
+                    isinstance(c, DFSTransformer)
+                    for c in self.component_instances.values()
+                )
                 else X.ww.schema
             )
             if not _schema_is_equal(X_schema, self._input_types):
@@ -460,7 +468,10 @@ class ComponentGraph:
         else:
             self._input_types = (
                 self._return_non_engineered_features(X).ww.schema
-                if "DFS Transformer" in self.compute_order
+                if any(
+                    isinstance(c, DFSTransformer)
+                    for c in self.component_instances.values()
+                )
                 else X.ww.schema
             )
 
