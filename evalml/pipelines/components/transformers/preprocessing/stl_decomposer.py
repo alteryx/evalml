@@ -57,6 +57,8 @@ class STLDecomposer(Decomposer):
             )
             seasonal_smoother += 1
 
+        self.forecast_summary = None
+
         super().__init__(
             component_obj=None,
             random_seed=random_seed,
@@ -421,15 +423,14 @@ class STLDecomposer(Decomposer):
             prediction_interval_result[f"{coverage[i]}_upper"] = (
                 result["mean_ci_upper"] - result["mean"]
             )
-
-            if len(overlapping_ind) > 0:
+            if len(overlapping_ind) > 0:  # y.index is datetime
                 prediction_interval_result[
                     f"{coverage[i]}_lower"
                 ] = prediction_interval_result[f"{coverage[i]}_lower"][overlapping_ind]
                 prediction_interval_result[
                     f"{coverage[i]}_upper"
                 ] = prediction_interval_result[f"{coverage[i]}_upper"][overlapping_ind]
-            else:
+            else:  # y.index is not datetime (e.g. int)
                 prediction_interval_result[
                     f"{coverage[i]}_lower"
                 ] = prediction_interval_result[f"{coverage[i]}_lower"][-len(y) :]
