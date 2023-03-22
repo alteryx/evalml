@@ -1971,7 +1971,6 @@ def test_time_series_pipeline_get_prediction_intervals(
         coverage = [0.95]
 
     for cover_value in coverage:
-        # for key, pl_interval in pl_intervals.items():
         for key in [f"{cover_value}_lower", f"{cover_value}_upper"]:
             pl_interval = pl_intervals[key]
             if no_preds_pi_estimator and add_decomposer:
