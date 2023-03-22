@@ -512,11 +512,10 @@ def test_decomposer_determine_periodicity_nullable_type_incompatibility(
     nullable_ltype,
     generate_seasonal_data,
 ):
-    # --> update
-    """Testing that the nullable type incompatibility that caused us to add handling for ARIMARegressor
-    is still present in sktime's AutoARIMA component. If this test is causing the test suite to fail
-    because the code below no longer raises the expected ValueError, we should confirm that the nullable
-    types now work for our use case and remove the nullable type handling logic from ARIMARegressor.
+    """Testing that the nullable type incompatibility that caused us to add handling for the Decomposer
+    is still present in pandas. If this test is causing the test suite to fail
+    because the code below no longer raises the expected AssertionError, we should confirm that the nullable
+    types now work for our use case and remove the nullable type handling logic from Decomposer.determine_periodicity.
     """
     trend_degree = 2
     period = 7
