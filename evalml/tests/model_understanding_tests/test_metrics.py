@@ -320,10 +320,7 @@ def test_graph_precision_recall_curve_title_addition(X_y_binary, go):
 @pytest.mark.parametrize("dtype", ["int", "bool"])
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_roc_curve_binary(test_nullable, dtype, data_type, make_data_type):
-    if dtype == "int":
-        y_true = np.array([1, 1, 0, 0])
-    elif dtype == "bool":
-        y_true = np.array([1, 1, 0, 0]).astype(bool)
+    y_true = np.array([1, 1, 0, 0], dtype=dtype)
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
     y_true = make_data_type(data_type, y_true, nullable=test_nullable)
     y_predict_proba = make_data_type(data_type, y_predict_proba)
@@ -344,10 +341,10 @@ def test_roc_curve_binary(test_nullable, dtype, data_type, make_data_type):
     assert isinstance(roc_curve_data["tpr_rates"], np.ndarray)
     assert isinstance(roc_curve_data["thresholds"], np.ndarray)
 
-    y_true = np.array([1, 1, 0, 0])
+    y_true = np.array([1, 1, 0, 0], dtype=dtype)
     y_predict_proba = np.array([[0.9, 0.1], [0.6, 0.4], [0.65, 0.35], [0.2, 0.8]])
     y_predict_proba = make_data_type(data_type, y_predict_proba)
-    y_true = make_data_type(data_type, y_true)
+    y_true = make_data_type(data_type, y_true, nullable=test_nullable)
 
     roc_curve_data = roc_curve(y_true, y_predict_proba)[0]
     fpr_rates = roc_curve_data.get("fpr_rates")

@@ -48,7 +48,7 @@ dependencies = [
     "networkx >= 2.6",
     "plotly >= 5.0.0",
     "kaleido >= 0.1.0",
-    "ipywidgets >= 7.5",
+    "ipywidgets >= 7.5, < 8.0.5",
     "xgboost >= 1.7.0",
     "catboost >= 1.1.1",
     "lightgbm >= 2.3.1",
@@ -109,7 +109,7 @@ docs = [
     "myst-parser == 0.16.1",
 ]
 prophet = [
-    "prophet-prebuilt == 1.0.2",
+    "prophet >= 1.1.2",
 ]
 complete = [
     "evalml[prophet,updater]",

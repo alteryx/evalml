@@ -863,9 +863,12 @@ def test_classification_pipeline_encodes_targets(
     pl.fit(X_train, y_encoded_train)
     _, target_passed_to_estimator = mock_fit.call_args[0]
     # Check that target is converted to ints. Use .iloc[1:] because the first feature row has NaNs
+    # check_dtype=False because this is an int32 on windows machines, but we don't need that level of
+    # dtype precision, we just need some sort of integer here.
     assert_series_equal(
         target_passed_to_estimator,
         pl._encode_targets(y_encoded_train.iloc[2:]),
+        check_dtype=False,
     )
 
     # Check predict encodes target

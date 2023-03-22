@@ -2,6 +2,30 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+        * Pinned ipywidgets version under 8.0.5 :pr:`4097`
+    * Documentation Changes
+    * Testing Changes
+        * Updated graphviz installation in GitHub workflows to fix windows nightlies :pr:`4088`
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.71.0 Mar. 17, 2023***
+    * Fixes
+        * Fixed error in ``PipelineBase._supports_fast_permutation_importance`` with stacked ensemble pipelines :pr:`4083`
+
+**v0.70.0 Mar. 16, 2023**
+    * Changes
+        * Added Oversampler nullable type incompatibility in X :pr:`4068`
+        * Removed nullable handling from objective functions, ``roc_curve``, and ``correlation_matrix`` :pr:`4072`
+        * Transitioned from ``prophet-prebuilt`` to ``prophet`` directly :pr:`4045`
+
+**v0.69.0 Mar. 15, 2023**
+    * Enhancements
         * Move black to regular dependency and use it for ``generate_pipeline_code`` :pr:`4005`
         * Implement ``generate_pipeline_example`` :pr:`4023`
         * Add new downcast utils for component-specific nullable type handling and begin implementation on objective and component base classes :pr:`4024`
@@ -20,16 +44,11 @@ Release Notes
         * Capped max ``holidays`` version to 0.21 :pr:`4064`
         * Stop allowing ``knn`` as a boolean impute strategy :pr:`4058`
         * Capped ``nbsphinx`` at < 0.9.0 :pr:`4071`
-    * Documentation Changes
     * Testing Changes
         * Use ``release.yaml`` for performance tests on merge to main :pr:`4007`
         * Pin ``github-action-check-linked-issues`` at v1.4.5 :pr:`4042`
         * Updated tests to support Woodwork's object dtype inference for numeric columns :pr:`4066`
         * Updated ``TargetLeakageDataCheck`` tests to handle boolean targets properly :pr:`4066`
-
-.. warning::
-
-    **Breaking Changes**
 
 **v0.68.0 Feb. 15, 2023**
     * Enhancements

@@ -460,8 +460,10 @@ def pipelines_that_do_not_support_fast_permutation_importance():
     )
     pipeline_with_ensemble_dag = BinaryClassificationPipeline(
         component_graph={
-            "Imputer_1": ["Imputer", "X", "y"],
-            "Imputer_2": ["Imputer", "X", "y"],
+            "DFS Transformer_1": ["DFS Transformer", "X", "y"],
+            "DFS Transformer_2": ["DFS Transformer", "X", "y"],
+            "Imputer_1": ["Imputer", "DFS Transformer_1.x", "y"],
+            "Imputer_2": ["Imputer", "DFS Transformer_2.x", "y"],
             "OHE_1": ["One Hot Encoder", "Imputer_1.x", "y"],
             "OHE_2": ["One Hot Encoder", "Imputer_2.x", "y"],
             "DT_1": ["DateTime Featurizer", "OHE_1.x", "y"],

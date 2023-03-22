@@ -4935,7 +4935,6 @@ def test_automl_restricts_use_covariates_for_arima(
     hyperparams,
     automl_algo,
     AutoMLTestEnv,
-    is_using_windows,
 ):
     X, y = datasets.make_classification(
         n_samples=n_rows,
@@ -4993,7 +4992,6 @@ def test_automl_does_not_restrict_use_covariates_if_user_specified(
     hyperparams,
     automl_algo,
     AutoMLTestEnv,
-    is_using_windows,
     X_y_binary,
 ):
     X, y = X_y_binary
