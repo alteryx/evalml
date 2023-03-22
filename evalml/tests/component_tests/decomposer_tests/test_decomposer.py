@@ -5,6 +5,7 @@ import matplotlib
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 import evalml.exceptions
 from evalml.pipelines.components.transformers.preprocessing import (
@@ -439,6 +440,10 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
 
 
 @pytest.mark.parametrize(
+    "y_logical_type",
+    ["Double", "Integer", "Age", "IntegerNullable", "AgeNullable"],
+)
+@pytest.mark.parametrize(
     "decomposer_child_class",
     decomposer_list,
 )
@@ -451,6 +456,7 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
     ],
 )
 def test_decomposer_determine_periodicity(
+    y_logical_type,
     decomposer_child_class,
     period,
     trend_degree,
@@ -458,10 +464,16 @@ def test_decomposer_determine_periodicity(
     synthetic_data,
     generate_seasonal_data,
 ):
+    # --> failing for synthetic data when period is None and trend_degree is 1 - says the ac is 10??
     X, y = generate_seasonal_data(real_or_synthetic=synthetic_data)(
         period,
         trend_degree=trend_degree,
     )
+    if y_logical_type != "Double":
+        # Multiply by 1000 so we can convert to Integer, truncating the rest of the value
+        # while still mainlining trend, period, etc
+        y = y * 1000
+    y = ww.init_series(y.astype(int), logical_type=y_logical_type)
 
     # Test that the seasonality can be determined if trend guess isn't spot on.
     if not decomposer_picked_correct_degree:
@@ -474,6 +486,61 @@ def test_decomposer_determine_periodicity(
         assert ac is None
     else:
         assert 0.95 * period <= ac <= 1.05 * period
+
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    decomposer_list,
+)
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["IntegerNullable", "AgeNullable"],
+)
+@pytest.mark.parametrize(
+    "handle_incompatibility",
+    [
+        True,
+        pytest.param(
+            False,
+            marks=pytest.mark.xfail(strict=True, raises=AssertionError),
+        ),
+    ],
+)
+def test_decomposer_determine_periodicity_nullable_type_incompatibility(
+    decomposer_child_class,
+    handle_incompatibility,
+    nullable_ltype,
+    generate_seasonal_data,
+):
+    # --> update
+    """Testing that the nullable type incompatibility that caused us to add handling for ARIMARegressor
+    is still present in sktime's AutoARIMA component. If this test is causing the test suite to fail
+    because the code below no longer raises the expected ValueError, we should confirm that the nullable
+    types now work for our use case and remove the nullable type handling logic from ARIMARegressor.
+    """
+    trend_degree = 2
+    period = 7
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+        period,
+        trend_degree=trend_degree,
+    )
+
+    # Multiply by 1000 so we can convert to Integer, truncating the rest of the value
+    # while still mainlining trend, period, etc
+    y = y * 1000
+    y = ww.init_series(y.astype(int), logical_type=nullable_ltype)
+
+    if handle_incompatibility:
+        dec = decomposer_child_class(degree=trend_degree, period=period)
+        X, y = dec._handle_nullable_types(X, y)
+
+    numpy_float_data = pd.Series(range(len(y)), dtype="float64")
+    numpy_float_data.iloc[-1] = np.nan
+
+    subtracted_floats = y - numpy_float_data
+
+    dropped_nans = subtracted_floats.dropna()
+    assert len(dropped_nans) == len(y) - 1
 
 
 @pytest.mark.parametrize(
