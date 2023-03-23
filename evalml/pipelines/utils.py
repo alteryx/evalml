@@ -687,6 +687,8 @@ def generate_pipeline_code(element, features_path=None):
     pipeline_code = "\n".join(code_strings)
     if has_dfs_and_features:
         pipeline_code = pipeline_code.replace(
+            # this open single quote here and below is to match for
+            # DFS Transformers in pipelines with sub pipelines i.e default algo pipelines or ensemble pipelines.
             "DFS Transformer':{},",
             "DFS Transformer':{'features':features},",
         )
