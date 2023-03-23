@@ -526,16 +526,16 @@ def test_decomposer_determine_periodicity_nullable_type_incompatibility(
         dec = decomposer_child_class(degree=trend_degree, period=period)
         X, y = dec._handle_nullable_types(X, y)
 
-    numpy_float_data = pd.Series(range(len(y)), dtype="float64")
-    numpy_float_data.iloc[-1] = np.nan
-
-    subtracted_floats = y - numpy_float_data
+    # Introduce nans like we do in _detrend_on_fly by rolling y
+    moving_avg = 10
+    y_trend_estimate = y.rolling(moving_avg).mean().dropna()
+    subtracted_floats = y - y_trend_estimate
 
     # Pandas will not recognize the np.NaN value in a Float64 subtracted_floats
-    # and will not drop that null value, so calling _handle_nullable_types ensures
-    # that we stay in float64 and properly drop the null value
+    # and will not drop those null values, so calling _handle_nullable_types ensures
+    # that we stay in float64 and properly drop the null values
     dropped_nans = subtracted_floats.dropna()
-    assert len(dropped_nans) == len(y) - 1
+    assert len(dropped_nans) == len(y) - moving_avg + 1
 
 
 @pytest.mark.parametrize(
