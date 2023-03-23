@@ -519,9 +519,7 @@ def test_decomposer_determine_periodicity_nullable_type_incompatibility(
         trend_degree=trend_degree,
     )
 
-    # Multiply by 1000 so we can convert to Integer, truncating the rest of the value
-    # while still mainlining trend, period, etc
-    y = y * 1000
+    # Convert to Integer, truncating the rest of the value
     y = ww.init_series(y.astype(int), logical_type=nullable_ltype)
 
     if handle_incompatibility:
@@ -533,6 +531,9 @@ def test_decomposer_determine_periodicity_nullable_type_incompatibility(
 
     subtracted_floats = y - numpy_float_data
 
+    # Pandas will not recognize the np.NaN value in a Float64 subtracted_floats
+    # and will not drop that null value, so calling _handle_nullable_types ensures
+    # that we stay in float64 and properly drop the null value
     dropped_nans = subtracted_floats.dropna()
     assert len(dropped_nans) == len(y) - 1
 
