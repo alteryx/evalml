@@ -27,8 +27,7 @@ from evalml.pipelines.components import (
     NaturalLanguageFeaturizer,
     OneHotEncoder,
     ReplaceNullableTypes,
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
+    StackedEnsembleBase,
     StandardScaler,
     STLDecomposer,
     TargetImputer,
@@ -944,12 +943,12 @@ def test_generate_pipeline_example(
             pipeline = aml.get_pipeline(i)
             if isinstance(
                 pipeline.estimator,
-                (StackedEnsembleClassifier, StackedEnsembleRegressor),
+                StackedEnsembleBase,
             ):
                 break
         assert isinstance(
             pipeline.estimator,
-            (StackedEnsembleClassifier, StackedEnsembleRegressor),
+            StackedEnsembleBase,
         )
     else:
         pipeline = aml.get_pipeline(2)

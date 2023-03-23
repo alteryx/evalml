@@ -189,6 +189,13 @@ class ComponentGraph:
                 defaults[component.name] = component.default_parameters
         return defaults
 
+    @property
+    def has_dfs(self):
+        """Whether this component graph contains a DFSTransformer or not."""
+        return any(
+            isinstance(c, DFSTransformer) for c in self.component_instances.values()
+        )
+
     def instantiate(self, parameters=None):
         """Instantiates all uninstantiated components within the graph using the given parameters. An error will be raised if a component is already instantiated but the parameters dict contains arguments for that component.
 
@@ -450,10 +457,7 @@ class ComponentGraph:
         if not fit:
             X_schema = (
                 self._return_non_engineered_features(X).ww.schema
-                if any(
-                    isinstance(c, DFSTransformer)
-                    for c in self.component_instances.values()
-                )
+                if self.has_dfs
                 else X.ww.schema
             )
             if not _schema_is_equal(X_schema, self._input_types):
@@ -468,10 +472,7 @@ class ComponentGraph:
         else:
             self._input_types = (
                 self._return_non_engineered_features(X).ww.schema
-                if any(
-                    isinstance(c, DFSTransformer)
-                    for c in self.component_instances.values()
-                )
+                if self.has_dfs
                 else X.ww.schema
             )
 

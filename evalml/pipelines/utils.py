@@ -652,12 +652,11 @@ def generate_pipeline_code(element, features_path=None):
                 final_estimator.__class__.__name__,
             ),
         )
-    has_dfs = any(isinstance(c, DFSTransformer) for c in element.component_graph)
-    if has_dfs and not features_path:
+    if element.component_graph.has_dfs and not features_path:
         warnings.warn(
             "This pipeline contains a DFS Transformer but no `features_path` has been specified. Please add a `features_path` or the pipeline code will generate a pipeline that does not run DFS.",
         )
-    has_dfs_and_features = has_dfs and features_path
+    has_dfs_and_features = element.component_graph.has_dfs and features_path
     if has_dfs_and_features:
         features = ft.load_features(features_path)
         dfs_features = None
