@@ -7,6 +7,7 @@ Release Notes
         * Calculated partial dependence grid values for integer data by rounding instead of truncating fractional values :pr:`4096`
         * Remove unnecessary logic from imputer components prior to nullable type handling :pr:`4038`
         * Added calls to ``_handle_nullable_types`` in component fit, transform, and predict methods when needed :pr:`4046`
+        * Remove existing nullable type handling across AutoMLSearch to just use new handling :pr:`4085`
     * Documentation Changes
     * Testing Changes
 

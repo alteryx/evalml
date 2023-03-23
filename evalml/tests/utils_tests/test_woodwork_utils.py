@@ -18,7 +18,6 @@ from woodwork.logical_types import (
 from evalml.utils import (
     _convert_numeric_dataset_pandas,
     _schema_is_equal,
-    downcast_int_nullable_to_double,
     downcast_nullable_types,
     infer_feature_types,
 )
@@ -377,28 +376,6 @@ def test_downcast_nullable_types(ignore_null_cols):
     df.ww.init(logical_types=forced_ltypes)
 
     df_dc = downcast_nullable_types(df, ignore_null_cols=ignore_null_cols)
-
-    for col, ltype in df_dc.ww.logical_types.items():
-        assert str(ltype) == str(expected_ltypes[col])
-
-
-def test_downcast_int_nullable_to_double():
-    df = pd.DataFrame()
-    df["ints"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
-    df["ints_nullable"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] * 5
-    df["ints_nullable_with_nulls"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, pd.NA] * 5
-
-    expected_ltypes = {
-        "ints": Integer,
-        "ints_nullable": Double,
-        "ints_nullable_with_nulls": Double,
-    }
-
-    forced_ltypes = {
-        "ints_nullable": IntegerNullable,
-    }
-    df.ww.init(logical_types=forced_ltypes)
-    df_dc = downcast_int_nullable_to_double(df)
 
     for col, ltype in df_dc.ww.logical_types.items():
         assert str(ltype) == str(expected_ltypes[col])

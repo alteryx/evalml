@@ -168,7 +168,6 @@ class ExponentialSmoothingRegressor(Estimator):
         if coverage is None:
             coverage = [0.95]
         X, y = self._manage_woodwork(X, y)
-
         # Accesses the fitted statsmodels model within sktime
         # nsimulations represents how many steps should be simulated
         # repetitions represents the number of simulations that should be run (confusing, I know)
