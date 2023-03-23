@@ -3,6 +3,7 @@ import pandas as pd
 from woodwork.statistics_utils import infer_frequency
 
 from evalml.model_family import ModelFamily
+from evalml.pipelines.components import STLDecomposer
 from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
@@ -190,7 +191,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
 
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
-            y (pd.Series): Target data. Ignored.
+            y (pd.Series): Target data.
             X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features].
             y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
             coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
@@ -209,15 +210,32 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             X_train=X_train,
             y_train=y_train,
         )
-        if self.estimator.model_family in self.NO_PREDS_PI_ESTIMATORS:
+        has_stl = STLDecomposer.name in list(
+            self.component_graph.component_instances.keys(),
+        )
+        if coverage is None:
+            coverage = [0.95]
+
+        if self.estimator.model_family in self.NO_PREDS_PI_ESTIMATORS and has_stl:
             pred_intervals = self.estimator.get_prediction_intervals(
                 X=estimator_input,
                 y=y,
                 coverage=coverage,
             )
             trans_pred_intervals = {}
+            residuals = self.estimator.predict(
+                estimator_input,
+            )  # Get residual values
+            trend_pred_intervals = self.get_component(
+                "STL Decomposer",
+            ).get_trend_prediction_intervals(y, coverage=coverage)
             for key, orig_pi_values in pred_intervals.items():
-                trans_pred_intervals[key] = self.inverse_transform(orig_pi_values)
+                trans_pred_intervals[key] = pd.Series(
+                    (orig_pi_values.values - residuals.values)
+                    + trend_pred_intervals[key].values
+                    + y.values,
+                    index=orig_pi_values.index,
+                )
             return trans_pred_intervals
         else:
             predictions = self.predict_in_sample(

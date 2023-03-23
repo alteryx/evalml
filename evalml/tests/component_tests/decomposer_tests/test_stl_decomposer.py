@@ -346,3 +346,45 @@ def test_stl_decomposer_doesnt_modify_target_index(
 
     y_new = stl.inverse_transform(y_t)
     pd.testing.assert_index_equal(y_new.index, original_y_index)
+
+
+@pytest.mark.parametrize("index_type", ["datetime", "int"])
+@pytest.mark.parametrize("set_coverage", [True, False])
+def test_stl_decomposer_get_trend_prediction_intervals(
+    set_coverage,
+    index_type,
+    generate_seasonal_data,
+):
+    coverage = [0.75, 0.85, 0.95] if set_coverage else None
+    period = 7
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+        period=period,
+        freq_str="D",
+        set_time_index=True,
+    )
+    X_train = X[: 15 * period]
+    y_train = y[: 15 * period]
+
+    y_validate = y[15 * period :]
+
+    stl = STLDecomposer()
+    stl.fit(X_train, y_train)
+
+    def assert_pred_interval_coverage(pred_interval):
+        expected_coverage = [0.95] if coverage is None else coverage
+        for cover_value in expected_coverage:
+            for key in [f"{cover_value}_lower", f"{cover_value}_upper"]:
+                pd.testing.assert_index_equal(
+                    pred_interval[key].index,
+                    y_validate.index,
+                )
+
+    # Set y.index to be non-datetime
+    if index_type == "int":
+        y_validate.index = np.arange(len(X_train), len(y))
+
+    trend_pred_intervals = stl.get_trend_prediction_intervals(
+        y_validate,
+        coverage=coverage,
+    )
+    assert_pred_interval_coverage(trend_pred_intervals)

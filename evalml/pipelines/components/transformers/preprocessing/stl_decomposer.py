@@ -57,6 +57,8 @@ class STLDecomposer(Decomposer):
             )
             seasonal_smoother += 1
 
+        self.forecast_summary = None
+
         super().__init__(
             component_obj=None,
             random_seed=random_seed,
@@ -96,8 +98,14 @@ class STLDecomposer(Decomposer):
             model_kwargs=dict(order=(1, 1, 0), trend="t"),
             period=self.period,
         )
-        stlf_res = stlf.fit()
-        forecast = stlf_res.forecast(units_forward)
+        stlf = stlf.fit()
+        forecast = stlf.forecast(units_forward)
+
+        # Store forecast summary for use in calculating trend prediction intervals.
+        self.forecast_summary = stlf.get_prediction(
+            len(self.trend),
+            len(self.trend) + units_forward - 1,
+        )
 
         # Handle out-of-sample forecasts.  The forecast will have additional data
         # between the end of the in-sample data and the beginning of the
@@ -382,3 +390,45 @@ class STLDecomposer(Decomposer):
             for colname in y.columns:
                 result_dfs.append(_decompose_target(X, y[colname], None))
         return result_dfs
+
+    def get_trend_prediction_intervals(self, y, coverage=None):
+        """Calculate the prediction intervals for the trend data.
+
+        Args:
+            y (pd.Series): Target data.
+            coverage (list[float]): A list of floats between the values 0 and 1 that the upper and lower bounds of the
+                prediction interval should be calculated for.
+
+        Returns:
+            dict of pd.Series: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+        """
+        if coverage is None:
+            coverage = [0.95]
+
+        self._check_oos_past(y)
+        alphas = [1 - val for val in coverage]
+
+        if not self.forecast_summary or len(y) != len(
+            self.forecast_summary.predicted_mean,
+        ):
+            self._project_trend_and_seasonality(y)
+
+        prediction_interval_result = {}
+        for i, alpha in enumerate(alphas):
+            result = self.forecast_summary.summary_frame(alpha=alpha)
+            overlapping_ind = [ind for ind in y.index if ind in result.index]
+            intervals = pd.DataFrame(
+                {
+                    "lower": result["mean_ci_lower"] - result["mean"],
+                    "upper": result["mean_ci_upper"] - result["mean"],
+                },
+            )
+            if len(overlapping_ind) > 0:  # y.index is datetime
+                intervals = intervals.loc[overlapping_ind]
+            else:  # y.index is not datetime (e.g. int)
+                intervals = intervals[-len(y) :]
+                intervals.index = y.index
+            prediction_interval_result[f"{coverage[i]}_lower"] = intervals["lower"]
+            prediction_interval_result[f"{coverage[i]}_upper"] = intervals["upper"]
+
+        return prediction_interval_result
