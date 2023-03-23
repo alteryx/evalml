@@ -348,9 +348,11 @@ def test_stl_decomposer_doesnt_modify_target_index(
     pd.testing.assert_index_equal(y_new.index, original_y_index)
 
 
+@pytest.mark.parametrize("index_type", ["datetime", "int"])
 @pytest.mark.parametrize("set_coverage", [True, False])
 def test_stl_decomposer_get_trend_prediction_intervals(
     set_coverage,
+    index_type,
     generate_seasonal_data,
 ):
     coverage = [0.75, 0.85, 0.95] if set_coverage else None
@@ -377,14 +379,10 @@ def test_stl_decomposer_get_trend_prediction_intervals(
                     y_validate.index,
                 )
 
-    trend_pred_intervals = stl.get_trend_prediction_intervals(
-        y_validate,
-        coverage=coverage,
-    )
-    assert_pred_interval_coverage(trend_pred_intervals)
-
     # Set y.index to be non-datetime
-    y_validate = y_validate.reset_index(drop=True)
+    if index_type == "int":
+        y_validate.index = np.arange(len(X_train), len(y))
+
     trend_pred_intervals = stl.get_trend_prediction_intervals(
         y_validate,
         coverage=coverage,
