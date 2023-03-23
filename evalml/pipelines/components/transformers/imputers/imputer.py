@@ -1,10 +1,9 @@
 """Component that imputes missing data according to a specified imputation strategy."""
 import pandas as pd
-from woodwork import init_series
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import KNNImputer, SimpleImputer
-from evalml.utils import downcast_nullable_types, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 class Imputer(Transformer):
@@ -158,15 +157,17 @@ class Imputer(Transformer):
             return df
 
         X_no_all_null = X.ww.drop(self._all_null_cols)
+        original_schema = X_no_all_null.ww.schema
+        new_ltypes = None
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
             X_numeric = X.ww[self._numeric_cols.tolist()]
             imputed = self._numeric_imputer.transform(X_numeric)
-            for numeric_col in X_numeric.columns:
-                X_no_all_null.ww[numeric_col] = init_series(
-                    imputed[numeric_col],
-                    logical_type="Double",
-                )
+            X_no_all_null[X_numeric.columns] = imputed
+            # Numeric imputing may have changed logical types because of use of _get_new_logical_types_for_imputed_data
+            if imputed.ww.schema is None:
+                imputed.ww.init()
+            new_ltypes = imputed.ww.logical_types
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
             X_categorical = X.ww[self._categorical_cols.tolist()]
@@ -178,5 +179,5 @@ class Imputer(Transformer):
             imputed = self._boolean_imputer.transform(X_boolean)
             X_no_all_null[X_boolean.columns] = imputed
 
-        X_no_all_null = downcast_nullable_types(X_no_all_null, ignore_null_cols=False)
+        X_no_all_null.ww.init(schema=original_schema, logical_types=new_ltypes)
         return X_no_all_null

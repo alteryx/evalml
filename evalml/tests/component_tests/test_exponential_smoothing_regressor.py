@@ -216,6 +216,7 @@ def test_estimator_with_nullable_types(
     # Copy X to avoid X taking on any mutations from the internal _handle_nullable_types call
     comp.fit(X.ww.copy(), y)
     comp.predict(X.ww.copy())
+    comp.get_prediction_intervals(X.ww.copy())
 
 
 @pytest.mark.parametrize(

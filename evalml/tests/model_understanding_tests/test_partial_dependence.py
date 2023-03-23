@@ -3008,3 +3008,76 @@ def test_partial_dependence_dfs_transformer_does_not_calculate_feature_matrix(
     assert part_dep.feature_values.notnull().all()
     assert part_dep.partial_dependence.notnull().all()
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
+
+
+@pytest.mark.parametrize(
+    "nullable_y_ltype",
+    ["IntegerNullable", "AgeNullable", "BooleanNullable"],
+)
+@pytest.mark.parametrize(
+    "grid_resolution",
+    [2, 10],
+)
+@pytest.mark.parametrize(
+    "X_has_nans",
+    [True, False],
+)
+def test_partial_dependence_with_nullable_types(
+    nullable_type_test_data,
+    nullable_type_target,
+    linear_regression_pipeline,
+    logistic_regression_binary_pipeline,
+    nullable_y_ltype,
+    grid_resolution,
+    X_has_nans,
+):
+    y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
+    X = nullable_type_test_data(has_nans=X_has_nans)
+    X = X.ww.select(["IntegerNullable", "BooleanNullable"])
+
+    pipeline = linear_regression_pipeline
+    if nullable_y_ltype == "BooleanNullable":
+        pipeline = logistic_regression_binary_pipeline
+
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(
+        pipeline,
+        X,
+        grid_resolution=grid_resolution,
+        features="int col nullable",
+    )
+    assert len(part_dep["partial_dependence"]) == min(grid_resolution, 4)
+    assert len(part_dep["feature_values"]) == min(grid_resolution, 4)
+    assert not part_dep.isnull().any(axis=None)
+
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features="int col nullable",
+        grid_resolution=grid_resolution,
+        fast_mode=True,
+        X_train=X,
+        y_train=y,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
+
+    part_dep = partial_dependence(
+        pipeline,
+        X,
+        grid_resolution=grid_resolution,
+        features="bool col nullable",
+    )
+    assert len(part_dep["partial_dependence"]) == 2
+    assert len(part_dep["feature_values"]) == 2
+    assert not part_dep.isnull().any(axis=None)
+
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features="bool col nullable",
+        grid_resolution=grid_resolution,
+        fast_mode=True,
+        X_train=X,
+        y_train=y,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)

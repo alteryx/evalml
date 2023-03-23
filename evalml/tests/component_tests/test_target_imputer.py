@@ -128,7 +128,7 @@ def test_target_imputer_all_bool_return_original(data_type, make_data_type):
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_target_imputer_boolean_dtype(data_type, make_data_type):
     y = pd.Series([True, np.nan, False, np.nan, True], dtype="boolean")
-    y_expected = pd.Series([True, True, False, True, True], dtype="bool")
+    y_expected = pd.Series([True, True, False, True, True], dtype="boolean")
     y = make_data_type(data_type, y)
     imputer = TargetImputer()
     imputer.fit(None, y)
