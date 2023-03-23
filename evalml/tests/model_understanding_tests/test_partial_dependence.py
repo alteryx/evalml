@@ -3008,3 +3008,120 @@ def test_partial_dependence_dfs_transformer_does_not_calculate_feature_matrix(
     assert part_dep.feature_values.notnull().all()
     assert part_dep.partial_dependence.notnull().all()
     pd.testing.assert_frame_equal(part_dep, fast_part_dep)
+
+
+@pytest.mark.parametrize(
+    "nullable_y_ltype",
+    ["IntegerNullable", "AgeNullable", "BooleanNullable"],
+)
+@pytest.mark.parametrize(
+    "grid_resolution",
+    [2, 10, 50],
+)
+@pytest.mark.parametrize(
+    "use_int_null_many_values",
+    [True, False],
+)
+def test_partial_dependence_with_nullable_types(
+    nullable_type_test_data,
+    nullable_type_target,
+    linear_regression_pipeline,
+    logistic_regression_binary_pipeline,
+    nullable_y_ltype,
+    grid_resolution,
+    use_int_null_many_values,
+):
+    y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
+    X = nullable_type_test_data(has_nans=False)
+    X = X.ww.select(["numeric", "Boolean", "BooleanNullable"])
+
+    int_col = "int col nullable"
+    if use_int_null_many_values:
+        X.ww[int_col] = ww.init_series(
+            pd.Series(range(len(y))),
+            logical_type="IntegerNullable",
+        )
+
+    pipeline = linear_regression_pipeline
+    if nullable_y_ltype == "BooleanNullable":
+        pipeline = logistic_regression_binary_pipeline
+
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(
+        pipeline,
+        X,
+        grid_resolution=grid_resolution,
+        features=int_col,
+    )
+
+    assert len(part_dep) == min(
+        grid_resolution,
+        len(X[int_col].unique()),
+    )
+    assert not part_dep.isnull().any(axis=None)
+
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features=int_col,
+        grid_resolution=grid_resolution,
+        fast_mode=True,
+        X_train=X,
+        y_train=y,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
+
+    part_dep = partial_dependence(
+        pipeline,
+        X,
+        grid_resolution=grid_resolution,
+        features="bool col nullable",
+    )
+    assert len(part_dep) == 2
+    assert not part_dep.isnull().any(axis=None)
+
+    fast_part_dep = partial_dependence(
+        pipeline,
+        X,
+        features="bool col nullable",
+        grid_resolution=grid_resolution,
+        fast_mode=True,
+        X_train=X,
+        y_train=y,
+    )
+    pd.testing.assert_frame_equal(part_dep, fast_part_dep)
+
+
+@pytest.mark.parametrize(
+    "numeric_ltype",
+    ["IntegerNullable", "Integer", "Age", "AgeNullable", "AgeFractional", "Double"],
+)
+@pytest.mark.parametrize(
+    "grid_resolution",
+    [2, 10, 60],
+)
+def test_partial_dependence_grid_values_for_numeric_data(
+    logistic_regression_binary_pipeline,
+    numeric_ltype,
+    grid_resolution,
+):
+    y = ww.init_series(pd.Series([True, False] * 25), logical_type="Boolean")
+    X = pd.DataFrame({"col": pd.Series(range(len(y)))})
+    X.ww.init(logical_types={"col": numeric_ltype})
+
+    logistic_regression_binary_pipeline.fit(X, y)
+    pd_values = partial_dependence(
+        logistic_regression_binary_pipeline,
+        X,
+        grid_resolution=grid_resolution,
+        features="col",
+    )
+
+    grid_values = pd_values["feature_values"].to_list()
+
+    # Confirm fractional values are only used as grid values for floating point data types
+    # when there are fewer grid values than the length of X
+    if numeric_ltype in ["Double", "AgeFractional"] and len(X) > grid_resolution:
+        assert any(val % 1 for val in grid_values)
+    else:
+        assert not any(val % 1 for val in grid_values)
