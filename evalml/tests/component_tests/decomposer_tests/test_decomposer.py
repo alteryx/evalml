@@ -5,6 +5,7 @@ import matplotlib
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 import evalml.exceptions
 from evalml.pipelines.components.transformers.preprocessing import (
@@ -439,6 +440,10 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
 
 
 @pytest.mark.parametrize(
+    "y_logical_type",
+    ["Double", "Integer", "Age", "IntegerNullable", "AgeNullable"],
+)
+@pytest.mark.parametrize(
     "decomposer_child_class",
     decomposer_list,
 )
@@ -451,6 +456,7 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
     ],
 )
 def test_decomposer_determine_periodicity(
+    y_logical_type,
     decomposer_child_class,
     period,
     trend_degree,
@@ -462,6 +468,7 @@ def test_decomposer_determine_periodicity(
         period,
         trend_degree=trend_degree,
     )
+    y = ww.init_series(y.astype(int), logical_type=y_logical_type)
 
     # Test that the seasonality can be determined if trend guess isn't spot on.
     if not decomposer_picked_correct_degree:

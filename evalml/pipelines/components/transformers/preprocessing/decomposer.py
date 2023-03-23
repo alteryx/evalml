@@ -173,6 +173,8 @@ class Decomposer(Transformer):
             moving_avg = min(51, len(y) // 3)
             y_trend_estimate = y.rolling(moving_avg).mean().dropna()
             y_detrended = y - y_trend_estimate
+            if str(y_detrended.dtype) == "Float64":
+                y_detrended = y_detrended.astype("float64")
             return round(
                 y_detrended.dropna(),
                 10,
