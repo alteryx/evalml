@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Updated `pipeline.get_prediction_intervals()` to add trend prediction interval information from STL decomposer :pr:`4093`
     * Fixes
+        * Fixed ensemble pipelines not working with ``generate_pipeline_example`` :pr:`4102`
     * Changes
         * Pinned ipywidgets version under 8.0.5 :pr:`4097`
         * Calculated partial dependence grid values for integer data by rounding instead of truncating fractional values :pr:`4096`

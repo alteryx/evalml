@@ -72,6 +72,7 @@ from evalml.pipelines.components.transformers import (
     RFRegressorRFESelector,
 )
 from evalml.pipelines.components.ensemble import (
+    StackedEnsembleBase,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )

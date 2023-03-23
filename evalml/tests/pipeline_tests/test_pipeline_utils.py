@@ -27,6 +27,7 @@ from evalml.pipelines.components import (
     NaturalLanguageFeaturizer,
     OneHotEncoder,
     ReplaceNullableTypes,
+    StackedEnsembleBase,
     StandardScaler,
     STLDecomposer,
     TargetImputer,
@@ -848,8 +849,13 @@ def test_generate_code_pipeline_with_custom_components(get_black_config):
         ProblemTypes.TIME_SERIES_BINARY,
     ],
 )
+@pytest.mark.parametrize(
+    "ensembling",
+    [True, False],
+)
 def test_generate_pipeline_example(
     automl_type,
+    ensembling,
     tmpdir,
     AutoMLTestEnv,
     X_y_binary,
@@ -874,9 +880,9 @@ def test_generate_pipeline_example(
     problem_configuration = (
         {
             "time_index": "date",
-            "gap": 1,
-            "max_delay": 1,
-            "forecast_horizon": 3,
+            "gap": 0,
+            "max_delay": 2,
+            "forecast_horizon": 1,
         }
         if is_time_series(automl_type)
         else None
@@ -892,6 +898,7 @@ def test_generate_pipeline_example(
         y,
         problem_type=automl_type,
         test_size=0.2,
+        problem_configuration=problem_configuration,
     )
 
     X_train = pd.DataFrame(X_train)
@@ -909,23 +916,42 @@ def test_generate_pipeline_example(
         trans_primitives=["absolute"],
         return_types="all",
     )
+
+    X_train_t.index = y_train.index
     features_path = os.path.join(str(tmpdir), "features.json")
     ft.save_features(features, features_path)
-
+    ensembling = ensembling if not is_time_series(automl_type) else False
     aml = AutoMLSearch(
         X_train=X_train_t,
         y_train=y_train,
         problem_type=automl_type,
         optimize_thresholds=False,
-        max_iterations=5,
         problem_configuration=problem_configuration,
         features=features,
+        ensembling=ensembling,
     )
-    env = AutoMLTestEnv(automl_type)
-    with env.test_context(score_return_value={aml.objective.name: 1.0}):
-        aml.search()
 
-    pipeline = aml.get_pipeline(2)
+    if ensembling:
+        aml.search()
+    else:
+        env = AutoMLTestEnv(automl_type)
+        with env.test_context(score_return_value={aml.objective.name: 1.0}):
+            aml.search()
+
+    if ensembling:
+        for i in range(len(aml.full_rankings)):
+            pipeline = aml.get_pipeline(i)
+            if isinstance(
+                pipeline.estimator,
+                StackedEnsembleBase,
+            ):
+                break
+        assert isinstance(
+            pipeline.estimator,
+            StackedEnsembleBase,
+        )
+    else:
+        pipeline = aml.get_pipeline(2)
 
     y_train.index = X_train_t.index
     y_test.index = X_test.index
@@ -1001,7 +1027,6 @@ def test_generate_pipeline_example(
         assert "predict(X_test, X_train=X_train, y_train=y_train)" in pipeline_example
     else:
         assert "predict(X_test)" in pipeline_example
-
     exec(pipeline_example)
     assert os.path.exists(output_path)
 
