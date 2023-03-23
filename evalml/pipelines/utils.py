@@ -38,6 +38,7 @@ from evalml.pipelines.components import (  # noqa: F401
     RandomForestClassifier,
     ReplaceNullableTypes,
     SelectColumns,
+    StackedEnsembleBase,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
@@ -641,10 +642,7 @@ def generate_pipeline_code(element, features_path=None):
             element.__class__.__name__,
         ),
     )
-    if isinstance(
-        element.estimator,
-        (StackedEnsembleClassifier, StackedEnsembleRegressor),
-    ):
+    if isinstance(element.estimator, StackedEnsembleBase):
         final_estimator = element.parameters[element.estimator.name]["final_estimator"]
         code_strings.append(
             "from {} import {}".format(
