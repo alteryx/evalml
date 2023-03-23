@@ -400,7 +400,7 @@ class STLDecomposer(Decomposer):
                 prediction interval should be calculated for.
 
         Returns:
-            dict of pd.Series: dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+            dict of pd.Series: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
         """
         if coverage is None:
             coverage = [0.95]
@@ -417,27 +417,18 @@ class STLDecomposer(Decomposer):
         for i, alpha in enumerate(alphas):
             result = self.forecast_summary.summary_frame(alpha=alpha)
             overlapping_ind = [ind for ind in y.index if ind in result.index]
-            prediction_interval_result[f"{coverage[i]}_lower"] = (
-                result["mean_ci_lower"] - result["mean"]
-            )
-            prediction_interval_result[f"{coverage[i]}_upper"] = (
-                result["mean_ci_upper"] - result["mean"]
+            intervals = pd.DataFrame(
+                {
+                    "lower": result["mean_ci_lower"] - result["mean"],
+                    "upper": result["mean_ci_upper"] - result["mean"],
+                },
             )
             if len(overlapping_ind) > 0:  # y.index is datetime
-                prediction_interval_result[
-                    f"{coverage[i]}_lower"
-                ] = prediction_interval_result[f"{coverage[i]}_lower"][overlapping_ind]
-                prediction_interval_result[
-                    f"{coverage[i]}_upper"
-                ] = prediction_interval_result[f"{coverage[i]}_upper"][overlapping_ind]
+                intervals = intervals.loc[overlapping_ind]
             else:  # y.index is not datetime (e.g. int)
-                prediction_interval_result[
-                    f"{coverage[i]}_lower"
-                ] = prediction_interval_result[f"{coverage[i]}_lower"][-len(y) :]
-                prediction_interval_result[
-                    f"{coverage[i]}_upper"
-                ] = prediction_interval_result[f"{coverage[i]}_upper"][-len(y) :]
-                prediction_interval_result[f"{coverage[i]}_lower"].index = y.index
-                prediction_interval_result[f"{coverage[i]}_upper"].index = y.index
+                intervals = intervals[-len(y) :]
+                intervals.index = y.index
+            prediction_interval_result[f"{coverage[i]}_lower"] = intervals["lower"]
+            prediction_interval_result[f"{coverage[i]}_upper"] = intervals["upper"]
 
         return prediction_interval_result

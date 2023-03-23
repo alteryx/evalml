@@ -3,6 +3,7 @@ import pandas as pd
 from woodwork.statistics_utils import infer_frequency
 
 from evalml.model_family import ModelFamily
+from evalml.pipelines.components import STLDecomposer
 from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
@@ -209,7 +210,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             X_train=X_train,
             y_train=y_train,
         )
-        has_stl = "STL Decomposer" in list(
+        has_stl = STLDecomposer.name in list(
             self.component_graph.component_instances.keys(),
         )
         if coverage is None:
