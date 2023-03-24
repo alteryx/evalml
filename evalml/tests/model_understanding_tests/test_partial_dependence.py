@@ -3020,7 +3020,7 @@ def test_partial_dependence_dfs_transformer_does_not_calculate_feature_matrix(
 )
 @pytest.mark.parametrize(
     "use_int_null_many_values",
-     [True, False],
+    [True, False],
 )
 @pytest.mark.parametrize(
     "X_has_nans",
