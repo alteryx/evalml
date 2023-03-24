@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Add component-specific nullable type handling :pr:`4043`
     * Fixes
     * Changes
         * Calculated partial dependence grid values for integer data by rounding instead of truncating fractional values :pr:`4096`
