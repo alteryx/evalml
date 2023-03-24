@@ -58,7 +58,7 @@ def test_target_leakage_data_check_warnings():
     X["e"] = [0] * 30
     X.ww.init(logical_types={"d": "Boolean"})
 
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5)
+    leakage_check = TargetLeakageDataCheck(method="mutual_info", pct_corr_threshold=0.5)
     assert leakage_check.validate(X, y) == [
         DataCheckWarning(
             message="Columns 'a', 'b', 'c' are 50.0% or more correlated with the target",
@@ -82,7 +82,7 @@ def test_target_leakage_data_check_singular_warning():
     X["a"] = y * 3
     X["b"] = [0] * 30
 
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5)
+    leakage_check = TargetLeakageDataCheck(method="mutual_info", pct_corr_threshold=0.5)
     assert leakage_check.validate(X, y) == [
         DataCheckWarning(
             message="Column 'a' is 50.0% or more correlated with the target",
@@ -451,7 +451,10 @@ def test_target_leakage_data_check_input_formats_pearson():
     assert leakage_check.validate(X, y.values) == expected
 
 
-@pytest.mark.parametrize("measures", ["pearson", "spearman", "mutual_info", "max"])
+@pytest.mark.parametrize(
+    "measures",
+    ["pearson", "spearman", "mutual_info", "max", "all"],
+)
 def test_target_leakage_none_measures(measures):
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method=measures)
     y = pd.Series([1, 0, 1, 1] * 6 + [1])
@@ -498,7 +501,7 @@ def test_target_leakage_target_string():
     X["target"] = y / 10
     X["d"] = ~y
     X["e"] = [0, 1, 2, 3] * 10
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
+    leakage_check = TargetLeakageDataCheck(method="mutual_info", pct_corr_threshold=0.8)
 
     expected = [
         DataCheckWarning(
@@ -518,6 +521,29 @@ def test_target_leakage_target_string():
     assert leakage_check.validate(X, y) == expected
 
 
-def test_target_leakage_use_all():
-    with pytest.raises(ValueError, match="Cannot use 'all' as the method"):
-        TargetLeakageDataCheck(method="all")
+def test_target_leakage_target_string_all():
+    y = pd.Series([1, 0, 1, 1] * 10)
+    X = pd.DataFrame()
+    X["target_y"] = y * 3
+    X["target_y_y"] = y - 1
+    X["target"] = y / 10
+    X["d"] = ~y
+    X["e"] = [0, 1, 2, 3] * 10
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
+
+    expected = [
+        DataCheckWarning(
+            message="Columns 'target_y', 'target_y_y', 'target', 'd' are 80.0% or more correlated with the target",
+            data_check_name=target_leakage_data_check_name,
+            message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+            details={"columns": ["target_y", "target_y_y", "target", "d"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=target_leakage_data_check_name,
+                    metadata={"columns": ["target_y", "target_y_y", "target", "d"]},
+                ),
+            ],
+        ).to_dict(),
+    ]
+    assert leakage_check.validate(X, y) == expected
