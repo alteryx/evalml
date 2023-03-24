@@ -3,7 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Updated `pipeline.get_prediction_intervals()` to add trend prediction interval information from STL decomposer :pr:`4093`
-        * Added ``method=all`` support for ``TargetLeakageDataCheck`` :pr:``
+        * Added ``method=all`` support for ``TargetLeakageDataCheck`` :pr:`4106`
     * Fixes
         * Fixed ensemble pipelines not working with ``generate_pipeline_example`` :pr:`4102`
     * Changes

@@ -21,7 +21,7 @@ class TargetLeakageDataCheck(DataCheck):
 
     Args:
         pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
-        method (string): The method to determine correlation. Use 'max' for the maximum correlation, or for specific correlation metrics, use their name (ie 'mutual_info' for mutual information, 'pearson' for Pearson correlation, etc).
+        method (string): The method to determine correlation. Use 'all' or 'max' for the maximum correlation, or for specific correlation metrics, use their name (ie 'mutual_info' for mutual information, 'pearson' for Pearson correlation, etc).
             possible methods can be found in Woodwork's `config <https://woodwork.alteryx.com/en/stable/guides/setting_config_options.html?highlight=config#Viewing-Config-Settings>`_, under `correlation_metrics`.
             Defaults to 'all'.
     """
