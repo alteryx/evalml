@@ -101,8 +101,10 @@ class Oversampler(BaseSampler):
         if y is None:
             raise ValueError("y cannot be None")
         y_ww = infer_feature_types(y)
-        X_d, y_d = self._handle_nullable_types(X_ww, y_ww)
-        X_t, y_t = super().transform(X_d, y_d)
+        X_d, _ = self._handle_nullable_types(X_ww)
+        X_t, y_t = super().transform(X_d, y_ww)
+
+        # X_t will have the downcasted types, so convert back to the original schema
         X_t.ww.init(schema=original_schema)
 
         return X_t, y_t
