@@ -8,6 +8,7 @@ Release Notes
         * Remove unnecessary logic from imputer components prior to nullable type handling :pr:`4038`
         * Added calls to ``_handle_nullable_types`` in component fit, transform, and predict methods when needed :pr:`4046`
         * Remove existing nullable type handling across AutoMLSearch to just use new handling :pr:`4085`
+        * Handle nullable type incompatibility in ``Decomposer`` :pr:`4105`
     * Documentation Changes
     * Testing Changes
 
