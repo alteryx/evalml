@@ -1982,5 +1982,3 @@ def test_time_series_pipeline_get_prediction_intervals(
                     index=est_intervals[key].index,
                 )
                 assert_series_equal(expected_res, pl_interval)
-            else:
-                assert_series_equal(est_intervals[key], pl_interval)

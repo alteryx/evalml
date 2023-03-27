@@ -1,4 +1,5 @@
 """Pipeline base class for time series regression problems."""
+import numpy as np
 import pandas as pd
 from woodwork.statistics_utils import infer_frequency
 
@@ -238,15 +239,34 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
                 )
             return trans_pred_intervals
         else:
-            predictions = self.predict_in_sample(
+            future_vals = self.predict(
                 X=X,
-                y=y,
                 X_train=X_train,
                 y_train=y_train,
             )
-            return self.estimator.get_prediction_intervals(
-                X=estimator_input,
-                y=y,
-                coverage=coverage,
-                predictions=predictions,
+
+            predictions_train = self.predict_in_sample(
+                X=X_train,
+                y=y_train,
+                X_train=X_train,
+                y_train=y_train,
             )
+            residuals = y_train - predictions_train
+            std_residual = np.sqrt(np.sum(residuals ** 2) / len(residuals))
+
+
+            res_dict = {}
+            cov_to_mult = {.75: 1.15,.85:1.44, .95:1.96}
+            for cov in coverage:
+                lower = []
+                upper = []
+                multiplier = cov_to_mult[cov]
+                for counter, val in enumerate(future_vals):
+                    factor = multiplier * std_residual * np.sqrt(counter + 1)
+                    lower.append(val - factor)
+                    upper.append(val + factor)
+
+                res_dict[f"{cov}_lower"] = pd.Series(lower, name=f"{cov}_lower", index=future_vals.index)
+                res_dict[f"{cov}_upper"] = pd.Series(upper, name=f"{cov}_upper", index=future_vals.index)
+            return res_dict
+
