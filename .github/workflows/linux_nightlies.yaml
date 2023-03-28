@@ -1,6 +1,8 @@
 name: Nightly unit tests, linux
 
-on: [workflow_dispatch]
+on:
+  schedule:
+      - cron: '0 7 * * *'
 
 jobs:
   unit_tests:
