@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Allow ``InvalidTargetDataCheck`` to return a ``DROP_ROWS`` ``DataCheckActionOption`` :pr:`4116`
     * Fixes
     * Changes
         * Pinned ipywidgets version under 8.0.5 :pr:`4097`
