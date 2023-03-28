@@ -37,6 +37,10 @@ class InvalidTargetDataCheck(DataCheck):
         objective (str or ObjectiveBase): Name or instance of the objective class.
         n_unique (int): Number of unique target values to store when problem type is binary and target
             incorrectly has more than 2 unique values. Non-negative integer. If None, stores all unique values. Defaults to 100.
+        null_strategy (str, optional): The type of action option that should be returned if the target is partially null.
+            The options are `impute` (default) and `drop`.
+            `impute` - Will return a `DataCheckActionOption` for imputing the target column
+            `drop` - Will return a `DataCheckActionOption` for dropping the null rows in the target column,
     """
 
     multiclass_continuous_threshold = 0.05
@@ -244,7 +248,7 @@ class InvalidTargetDataCheck(DataCheck):
         elif null_rows.any():
             num_null_rows = null_rows.sum()
             pct_null_rows = null_rows.mean() * 100
-            rows_to_drop = null_rows.index.tolist()
+            rows_to_drop = null_rows.loc[null_rows].index.tolist()
 
             action_options = []
             impute_action_option = DataCheckActionOption(
@@ -267,15 +271,13 @@ class InvalidTargetDataCheck(DataCheck):
             drop_action_option = DataCheckActionOption(
                 DataCheckActionCode.DROP_ROWS,
                 data_check_name=self.name,
-                metadata={"rows": rows_to_drop},
+                metadata={"is_target": True, "rows": rows_to_drop},
             )
 
             if self.null_strategy.lower() == "impute":
                 action_options.append(impute_action_option)
             elif self.null_strategy.lower() == "drop":
                 action_options.append(drop_action_option)
-            elif self.null_strategy.lower() == "both":
-                action_options.extend([impute_action_option, drop_action_option])
 
             messages.append(
                 DataCheckError(
