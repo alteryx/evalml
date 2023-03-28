@@ -1866,11 +1866,13 @@ def test_dates_needed_for_prediction_range(
         )
 
 
+@pytest.mark.parametrize("set_coverage", [True, False])
 @pytest.mark.parametrize("add_decomposer", [True, False])
 @pytest.mark.parametrize("no_preds_pi_estimator", [True, False])
 def test_time_series_pipeline_get_prediction_intervals(
     no_preds_pi_estimator,
     add_decomposer,
+    set_coverage,
     ts_data_long,
 ):
     X, _, y = ts_data_long
@@ -1930,11 +1932,14 @@ def test_time_series_pipeline_get_prediction_intervals(
     X_validation, y_validation = X[limit + 1 :], y[limit + 1 :]
     pipeline.fit(X_train, y_train)
 
+    coverage = [0.75, 0.85, 0.95] if set_coverage else None
+
     pl_intervals = pipeline.get_prediction_intervals(
         X=X_validation,
         y=y_validation,
         X_train=X_train,
         y_train=y_train,
+        coverage=coverage,
     )
 
     predictions = pipeline.predict_in_sample(
@@ -1953,12 +1958,29 @@ def test_time_series_pipeline_get_prediction_intervals(
         X=features,
         y=y_validation,
         predictions=predictions,
+        coverage=coverage,
     )
 
-    for key, pl_interval in pl_intervals.items():
-        if not no_preds_pi_estimator:
-            assert_series_equal(est_intervals[key], pl_interval)
-        else:
-            est_interval = est_intervals[key]
-            inv_trans_interval = pipeline.inverse_transform(est_interval)
-            assert_series_equal(inv_trans_interval, pl_interval)
+    if no_preds_pi_estimator and add_decomposer:
+        trend_pred_intervals = pipeline.get_component(
+            "STL Decomposer",
+        ).get_trend_prediction_intervals(y_validation, coverage=coverage)
+        residuals = pipeline.estimator.predict(features)
+
+    if set_coverage is False:
+        coverage = [0.95]
+
+    for cover_value in coverage:
+        for key in [f"{cover_value}_lower", f"{cover_value}_upper"]:
+            pl_interval = pl_intervals[key]
+            if no_preds_pi_estimator and add_decomposer:
+                residual_pi = est_intervals[key] - residuals
+                expected_res = pd.Series(
+                    residual_pi.values
+                    + trend_pred_intervals[key].values
+                    + y_validation.values,
+                    index=est_intervals[key].index,
+                )
+                assert_series_equal(expected_res, pl_interval)
+            else:
+                assert_series_equal(est_intervals[key], pl_interval)

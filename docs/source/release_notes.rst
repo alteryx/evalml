@@ -5,15 +5,24 @@ Release Notes
         * Allow ``InvalidTargetDataCheck`` to return a ``DROP_ROWS`` ``DataCheckActionOption`` :pr:`4116`
     * Fixes
     * Changes
-        * Pinned ipywidgets version under 8.0.5 :pr:`4097`
     * Documentation Changes
     * Testing Changes
-        * Updated graphviz installation in GitHub workflows to fix windows nightlies :pr:`4088`
 
 .. warning::
 
     **Breaking Changes**
 
+
+**v0.72.0 Mar. 27, 2023**
+    * Enhancements
+        * Updated `pipeline.get_prediction_intervals()` to add trend prediction interval information from STL decomposer :pr:`4093`
+    * Fixes
+        * Fixed ensemble pipelines not working with ``generate_pipeline_example`` :pr:`4102`
+    * Changes
+        * Pinned ipywidgets version under 8.0.5 :pr:`4097`
+        * Calculated partial dependence grid values for integer data by rounding instead of truncating fractional values :pr:`4096`
+    * Testing Changes
+        * Updated graphviz installation in GitHub workflows to fix windows nightlies :pr:`4088`
 
 **v0.71.0 Mar. 17, 2023***
     * Fixes

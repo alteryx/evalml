@@ -28,6 +28,7 @@ from evalml.pipelines.components import (
     ExtraTreesRegressor,
     DecisionTreeClassifier,
     DecisionTreeRegressor,
+    StackedEnsembleBase,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     TimeSeriesFeaturizer,
