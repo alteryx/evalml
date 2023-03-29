@@ -2,6 +2,19 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+        * Fixed installation of prophet for linux nightly tests :pr:`4114`
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.72.0 Mar. 27, 2023**
+    * Enhancements
         * Updated `pipeline.get_prediction_intervals()` to add trend prediction interval information from STL decomposer :pr:`4093`
         * Added ``method=all`` support for ``TargetLeakageDataCheck`` :pr:`4106`
     * Fixes
@@ -9,14 +22,8 @@ Release Notes
     * Changes
         * Pinned ipywidgets version under 8.0.5 :pr:`4097`
         * Calculated partial dependence grid values for integer data by rounding instead of truncating fractional values :pr:`4096`
-    * Documentation Changes
     * Testing Changes
         * Updated graphviz installation in GitHub workflows to fix windows nightlies :pr:`4088`
-
-.. warning::
-
-    **Breaking Changes**
-
 
 **v0.71.0 Mar. 17, 2023***
     * Fixes
