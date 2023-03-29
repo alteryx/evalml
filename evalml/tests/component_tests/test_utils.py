@@ -3,7 +3,6 @@ import inspect
 import numpy as np
 import pandas as pd
 import pytest
-from pandas.testing import assert_frame_equal
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family import ModelFamily
@@ -16,16 +15,13 @@ from evalml.pipelines.components import ComponentBase, RandomForestClassifier
 from evalml.pipelines.components.utils import (
     _all_estimators,
     all_components,
-    drop_natural_language_columns,
     estimator_unable_to_handle_nans,
     handle_component_class,
     handle_float_categories_for_catboost,
     make_balancing_dictionary,
     scikit_learn_wrapped_estimator,
-    set_boolean_columns_to_integer,
 )
 from evalml.problem_types import ProblemTypes
-from evalml.utils.woodwork_utils import infer_feature_types
 
 binary = pd.Series([0] * 800 + [1] * 200)
 multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
@@ -243,81 +239,6 @@ def test_estimator_unable_to_handle_nans():
         match="`estimator_class` must have a `model_family` attribute.",
     ):
         estimator_unable_to_handle_nans("error")
-
-
-def test_drop_natural_languages():
-    X = pd.DataFrame(
-        {
-            "bool with nan": pd.Series(
-                [True, pd.NA, False, pd.NA, False],
-                dtype="boolean",
-            ),
-            "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
-            "natural language": pd.Series(["asdf", "fdsa", "a", "b", "c"]),
-        },
-    )
-    X = infer_feature_types(X)
-    X.ww.set_types(
-        logical_types={
-            "natural language": "natural_language",
-        },
-    )
-    X_t, dropped_cols = drop_natural_language_columns(X)
-    expected_dropped = ["natural language"]
-    assert expected_dropped == dropped_cols
-    assert len(X_t.columns) == 2
-    X_expected = pd.DataFrame(
-        {
-            "bool with nan": pd.Series(
-                [True, pd.NA, False, pd.NA, False],
-                dtype="boolean",
-            ),
-            "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
-        },
-    )
-    assert_frame_equal(X_expected, X_t)
-
-
-def test_set_boolean_columns_to_integer():
-    X = pd.DataFrame(
-        {
-            "bool with nan": pd.Series(
-                [True, pd.NA, False, pd.NA, False],
-                dtype="boolean",
-            ),
-            "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
-            "natural language": pd.Series(["asdf", "fdsa", "a", "b", "c"]),
-        },
-    )
-    X_e = pd.DataFrame(
-        {
-            "bool with nan": pd.Series(
-                [True, pd.NA, False, pd.NA, False],
-                dtype="boolean",
-            ),
-            "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
-        },
-    )
-    X_e = infer_feature_types(X_e)
-    X_e.ww.set_types(
-        logical_types={
-            "bool with nan": "IntegerNullable",
-            "bool no nan": "IntegerNullable",
-        },
-    )
-    X = infer_feature_types(X)
-    assert len(X.ww.select(["IntegerNullable"]) == 0)
-
-    X = set_boolean_columns_to_integer(X)
-
-    assert len(X.ww.select(["IntegerNullable"]).columns) == 2
-    assert len(X.ww.select(["IntegerNullable"]) == 5)
-
-    assert_frame_equal(
-        X.ww.select(["IntegerNullable"]),
-        X_e.ww.select(["IntegerNullable"]),
-        check_dtype=False,
-    )
 
 
 def test_handle_float_categories_for_catboost(categorical_floats_df):

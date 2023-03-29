@@ -3022,6 +3022,10 @@ def test_partial_dependence_dfs_transformer_does_not_calculate_feature_matrix(
     "use_int_null_many_values",
     [True, False],
 )
+@pytest.mark.parametrize(
+    "X_has_nans",
+    [True, False],
+)
 def test_partial_dependence_with_nullable_types(
     nullable_type_test_data,
     nullable_type_target,
@@ -3030,6 +3034,7 @@ def test_partial_dependence_with_nullable_types(
     nullable_y_ltype,
     grid_resolution,
     use_int_null_many_values,
+    X_has_nans,
 ):
     y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
     X = nullable_type_test_data(has_nans=False)

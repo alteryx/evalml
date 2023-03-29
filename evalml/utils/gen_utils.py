@@ -49,26 +49,6 @@ def import_or_raise(library, error_msg=None, warning=False):
             raise Exception(msg)
 
 
-def is_categorical_actually_boolean(df, df_col):
-    """Function to identify columns of a dataframe that contain True, False and null type.
-
-    The function is intended to be applied to columns that are identified as Categorical
-    by the Imputer/SimpleImputer.
-
-    Args:
-        df (pandas.DataFrame): Pandas dataframe with data.
-        df_col (str): The column to identify as basically a nullable Boolean.
-
-    Returns:
-        bool: Whether the column contains True, False and a null type.
-
-    """
-    unique_vals = df[df_col].unique()
-    return {True, False}.issubset(set(unique_vals)) and any(
-        isinstance(x, bool) for x in unique_vals
-    )
-
-
 def convert_to_seconds(input_str):
     """Converts a string describing a length of time to its length in seconds.
 

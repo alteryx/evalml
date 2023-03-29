@@ -1,5 +1,9 @@
 import pytest
-from woodwork.logical_types import AgeNullable, BooleanNullable, IntegerNullable
+from woodwork.logical_types import (
+    AgeNullable,
+    BooleanNullable,
+    IntegerNullable,
+)
 
 from evalml.utils import (
     _determine_downcast_type,

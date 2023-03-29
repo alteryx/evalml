@@ -507,7 +507,7 @@ def test_default_data_checks_null_rows():
         ).to_dict(),
         DataCheckError(
             message="Target is unsupported integer_nullable type. Valid Woodwork "
-            "logical types include: integer, double",
+            "logical types include: integer, double, age, age_fractional",
             data_check_name="TargetDistributionDataCheck",
             message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
             details={"unsupported_type": "integer_nullable"},

@@ -4,12 +4,12 @@ from functools import wraps
 import pandas as pd
 import woodwork as ww
 from sklearn.impute import SimpleImputer as SkImputer
-from woodwork.logical_types import Categorical, Integer, IntegerNullable
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import ComponentBaseMeta
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
+from evalml.utils.nullable_type_utils import _get_new_logical_types_for_imputed_data
 
 
 class TargetImputerMeta(ComponentBaseMeta):
@@ -93,9 +93,9 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
             raise TypeError("Provided target full of nulls.")
         y = y.to_frame()
 
-        # Convert all bool dtypes to category for fitting
+        # Return early if all the columns are bool dtype, which will never have null values
         if (y.dtypes == bool).all():
-            y = y.astype("category")
+            return y
 
         self._component_obj.fit(y)
         return self
@@ -117,33 +117,21 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         y_ww = infer_feature_types(y)
         y_df = y_ww.ww.to_frame()
 
-        # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
+        # Return early if all the columns are bool dtype, which will never have null values
         if (y_df.dtypes == bool).all():
             return X, y_ww
 
         transformed = self._component_obj.transform(y_df)
         y_t = pd.Series(transformed[:, 0], index=y_ww.index)
 
-        # TODO: Fix this after WW adds inference of object type booleans to BooleanNullable
-        # Iterate through categorical columns that might have been boolean and convert them back to boolean
-        if {True, False}.issubset(set(y_t.unique())) and isinstance(
-            y_ww.ww.logical_type,
-            Categorical,
-        ):
-            y_t = y_t.astype(bool)
-
-        new_logical_type = (
-            Integer
-            if isinstance(y_ww.ww.logical_type, IntegerNullable)
-            else y_ww.ww.logical_type
+        # Determine logical type to use - should match input data where possible
+        new_logical_type_dict = _get_new_logical_types_for_imputed_data(
+            self.parameters["impute_strategy"],
+            y_df.ww.schema,
         )
+        new_logical_type = list(new_logical_type_dict.values())[0]
 
-        y_t = ww.init_series(
-            y_t,
-            logical_type=new_logical_type,
-            semantic_tags=y_ww.ww.semantic_tags,
-        )
-        return X, y_t
+        return X, ww.init_series(y_t, logical_type=new_logical_type)
 
     def fit_transform(self, X, y):
         """Fits on and transforms the input target data.

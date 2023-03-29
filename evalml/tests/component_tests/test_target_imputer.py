@@ -127,8 +127,8 @@ def test_target_imputer_all_bool_return_original(data_type, make_data_type):
 
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_target_imputer_boolean_dtype(data_type, make_data_type):
-    y = pd.Series([True, np.nan, False, np.nan, True], dtype="category")
-    y_expected = pd.Series([True, True, False, True, True], dtype="category")
+    y = pd.Series([True, np.nan, False, np.nan, True], dtype="boolean")
+    y_expected = pd.Series([True, True, False, True, True], dtype="boolean")
     y = make_data_type(data_type, y)
     imputer = TargetImputer()
     imputer.fit(None, y)
@@ -153,7 +153,7 @@ def test_target_imputer_fit_transform_all_nan_empty(y):
 def test_target_imputer_numpy_input():
     y = np.array([np.nan, 0, 2])
     imputer = TargetImputer(impute_strategy="mean")
-    y_expected = pd.Series([1, 0, 2], dtype="int64")
+    y_expected = pd.Series([1, 0, 2], dtype="float64")
     _, y_t = imputer.fit_transform(None, y)
     assert y_expected.equals(y_t)
     np.testing.assert_almost_equal(y, np.array([np.nan, 0, 2]))
@@ -209,8 +209,8 @@ def test_target_imputer_with_none(y, y_expected):
             pd.Series(["b", "a", "a", "a"] * 4, dtype="category"),
         ),
         (
-            pd.Series([True, None, False, True], dtype="category"),
-            pd.Series([True, True, False, True], dtype="category"),
+            pd.Series([True, None, False, True], dtype="boolean"),
+            pd.Series([True, True, False, True], dtype="bool"),
         ),
         (
             pd.Series(["b", "a", "a", None] * 4),
@@ -265,3 +265,24 @@ def test_target_imputer_woodwork_custom_overrides_returned_by_components(
             assert type(y_t.ww.logical_type) == logical_type
         else:
             assert type(y_t.ww.logical_type) == Double
+
+
+@pytest.mark.parametrize("impute_strategy", ["mean", "median", "most_frequent"])
+def test_target_imputer_doesnt_truncate_imputed_ints(impute_strategy):
+    y = pd.Series([1, 2, 3, 3, pd.NA], dtype="Int64")
+    y = ww.init_series(y, logical_type="IntegerNullable")
+
+    imputer = TargetImputer(impute_strategy=impute_strategy)
+    imputer.fit(None, y)
+
+    _, y_t = imputer.transform(None, y)
+    expected_y_t = pd.Series(
+        imputer._component_obj.transform(y.ww.to_frame())[:, 0],
+        index=y.index,
+    )
+
+    if impute_strategy != "most_frequent":
+        # Confirm floating points are present
+        assert not (expected_y_t % 1 == 0).all()
+
+    assert_series_equal(y_t, expected_y_t, check_dtype=False)

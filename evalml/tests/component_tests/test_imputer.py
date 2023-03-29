@@ -11,11 +11,16 @@ from woodwork.logical_types import (
     BooleanNullable,
     Categorical,
     Double,
+    Integer,
+    IntegerNullable,
     NaturalLanguage,
 )
 
 from evalml.pipelines.components import Imputer
-from evalml.pipelines.components.transformers.imputers import KNNImputer, SimpleImputer
+from evalml.pipelines.components.transformers.imputers import (
+    KNNImputer,
+    SimpleImputer,
+)
 
 
 def test_invalid_strategy_parameters():
@@ -179,6 +184,7 @@ def test_categorical_and_numeric_input(imputer_test_data):
             "object col": pd.Series(["b", "b", "a", "c", "d"] * 4, dtype="category"),
             "float col": [0.1, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
+            "bool col 2": [True, False, False, True, True] * 4,
             "natural language col": pd.Series(
                 ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
                 dtype="string",
@@ -530,7 +536,7 @@ def test_imputer_bool_dtype_object(data_type, make_data_type):
     X = pd.DataFrame([True, np.nan, False, np.nan, True] * 4)
     X.ww.init(logical_types={0: BooleanNullable})
     y = pd.Series([1, 0, 0, 1, 0] * 4)
-    X_expected_arr = pd.DataFrame([True, True, False, True, True] * 4, dtype="bool")
+    X_expected_arr = pd.DataFrame([True, True, False, True, True] * 4, dtype="boolean")
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
     imputer = Imputer()
@@ -558,7 +564,7 @@ def test_imputer_multitype_with_one_bool(data_type, make_data_type):
         {
             "bool with nan": pd.Series(
                 [True, False, False, False, False] * 4,
-                dtype="bool",
+                dtype="boolean",
             ),
             "bool no nan": pd.Series(
                 [False, False, False, False, True] * 4,
@@ -576,6 +582,7 @@ def test_imputer_multitype_with_one_bool(data_type, make_data_type):
 
 
 def test_imputer_int_preserved():
+    # With mean impute strategy, the integer nullable column should become Double
     X = pd.DataFrame(pd.Series([1, 2, 11, np.nan]))
     imputer = Imputer(numeric_impute_strategy="mean")
     transformed = imputer.fit_transform(X)
@@ -587,6 +594,7 @@ def test_imputer_int_preserved():
         0: Double,
     }
 
+    # With mean impute strategy, the integer nullable column should become Double even if mean is an integer
     X = pd.DataFrame(pd.Series([1, 2, 3, np.nan]))
     imputer = Imputer(numeric_impute_strategy="mean")
     transformed = imputer.fit_transform(X)
@@ -599,6 +607,8 @@ def test_imputer_int_preserved():
         0: Double,
     }
 
+    # If no null values need to be imputed, integer column should be maintained
+    # even with mean impute strategy.
     X = pd.DataFrame(pd.Series([1, 2, 3, 4], dtype="int"))
     imputer = Imputer(numeric_impute_strategy="mean")
     transformed = imputer.fit_transform(X)
@@ -607,7 +617,7 @@ def test_imputer_int_preserved():
         pd.DataFrame(pd.Series([1, 2, 3, 4])),
         check_dtype=False,
     )
-    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Double}
+    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Integer}
 
 
 @pytest.mark.parametrize("null_type", ["pandas_na", "numpy_nan", "python_none"])
@@ -620,11 +630,13 @@ def test_imputer_bool_preserved(test_case, null_type):
         X = pd.DataFrame(pd.Series([True, False, True, null_type] * 4))
         X.ww.init(logical_types={0: BooleanNullable})
         expected = pd.DataFrame(
-            pd.Series([True, False, True, True] * 4, dtype="bool"),
+            pd.Series([True, False, True, True] * 4, dtype="boolean"),
         )
+        expected_ltype = BooleanNullable
     elif test_case == "boolean_without_null":
         X = pd.DataFrame(pd.Series([True, False, True, False] * 4))
         expected = pd.DataFrame(pd.Series([True, False, True, False] * 4))
+        expected_ltype = Boolean
     imputer = Imputer(categorical_impute_strategy="most_frequent")
     transformed = imputer.fit_transform(X)
     pd.testing.assert_frame_equal(
@@ -632,7 +644,7 @@ def test_imputer_bool_preserved(test_case, null_type):
         expected,
     )
     assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-        0: Boolean,
+        0: expected_ltype,
     }
 
 
@@ -682,7 +694,7 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
         "bool col": imputer_test_data[["bool col"]],
     }[data]
     logical_type = {
-        "Integer": Double,
+        "Integer": Integer,
         "Double": Double,
         "Categorical": Categorical,
         "NaturalLanguage": NaturalLanguage,
@@ -690,6 +702,8 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
     }[logical_type]
     if has_nan == "has_nan" and logical_type == Boolean:
         logical_type = BooleanNullable
+    elif has_nan == "has_nan" and logical_type == Integer:
+        logical_type = IntegerNullable
     y = pd.Series([1, 2, 1])
     try:
         X = X_df.copy()
@@ -705,15 +719,11 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     assert isinstance(transformed, pd.DataFrame)
-    if logical_type == BooleanNullable:
-        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            data: Boolean,
-        }
-    elif numeric_impute_strategy == "most_frequent":
-        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            data: logical_type,
-        }
-    elif logical_type in [Categorical, NaturalLanguage] or has_nan == "no_nans":
+    if (
+        logical_type in [Categorical, NaturalLanguage, BooleanNullable]
+        or has_nan == "no_nans"
+        or numeric_impute_strategy == "most_frequent"
+    ):
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             data: logical_type,
         }

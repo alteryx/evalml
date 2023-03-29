@@ -2,7 +2,13 @@ import numpy as np
 import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
-from woodwork.logical_types import Boolean, BooleanNullable, IntegerNullable
+from woodwork.logical_types import (
+    AgeFractional,
+    Boolean,
+    BooleanNullable,
+    Double,
+    IntegerNullable,
+)
 
 from evalml.pipelines.components import TimeSeriesImputer
 
@@ -129,6 +135,7 @@ def test_categorical_only_input(imputer_test_data):
             ),
             "bool col with nan": pd.Series(
                 [True, True, False, False, True] * 4,
+                dtype="bool",
             ),
         },
     )
@@ -147,6 +154,7 @@ def test_categorical_only_input(imputer_test_data):
     )
     expected["bool col with nan"] = pd.Series(
         [True, False, False, True, True] * 4,
+        dtype="bool",
     )
 
     imputer = TimeSeriesImputer(categorical_impute_strategy="backwards_fill")
@@ -159,7 +167,8 @@ def test_categorical_and_numeric_input(imputer_test_data):
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = TimeSeriesImputer()
     imputer.fit(X, y)
-    transformed, _ = imputer.transform(X, y)
+    # Copy X to avoid X taking on any mutations from the internal _handle_nullable_types call
+    transformed, _ = imputer.transform(X.ww.copy(), y)
     expected = pd.DataFrame(
         {
             "dates": pd.date_range("01-01-2022", periods=20),
@@ -171,6 +180,7 @@ def test_categorical_and_numeric_input(imputer_test_data):
             "object col": pd.Series(["b", "b", "a", "c", "d"] * 4, dtype="category"),
             "float col": [0.1, 1.0, 0.0, -2.0, 5.0] * 4,
             "bool col": [True, False, False, True, True] * 4,
+            "bool col 2": [True, False, False, True, True] * 4,
             "natural language col": pd.Series(
                 ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
                 dtype="string",
@@ -196,7 +206,8 @@ def test_categorical_and_numeric_input(imputer_test_data):
         numeric_impute_strategy="forwards_fill",
         categorical_impute_strategy="forwards_fill",
     )
-    transformed, _ = imputer.fit_transform(X, y)
+    # Copy X to avoid X taking on any mutations from the internal _handle_nullable_types call
+    transformed, _ = imputer.fit_transform(X.ww.copy(), y)
     expected["float with nan"] = [0.3, 1.0, 1.0, -1.0, 0.0] * 4
     assert_frame_equal(transformed, expected, check_dtype=False)
 
@@ -561,25 +572,63 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
 
 
 @pytest.mark.parametrize(
-    "nullable_ltype",
-    ["BooleanNullable", "IntegerNullable", "AgeNullable"],
+    "nullable_y_ltype, expected_imputed_y_ltype",
+    [
+        ("BooleanNullable", Double),
+        ("IntegerNullable", Double),
+        ("AgeNullable", AgeFractional),
+    ],
+)
+@pytest.mark.parametrize(
+    "numeric_impute_strategy",
+    ["forwards_fill", "backwards_fill", "interpolate"],
 )
 def test_imputer_can_take_in_nullable_types(
     nullable_type_test_data,
     nullable_type_target,
-    nullable_ltype,
+    numeric_impute_strategy,
+    nullable_y_ltype,
+    expected_imputed_y_ltype,
 ):
-    y = nullable_type_target(ltype=nullable_ltype, has_nans=True)
+    y = nullable_type_target(ltype=nullable_y_ltype, has_nans=True)
     X = nullable_type_test_data(has_nans=True)
-    # Only numeric imputing has interpolate as an option
-    X = X.ww.select("numeric")
+    # Drop the fully null columns since aren't relevant to the handle nullable types checks
+    X = X.ww.drop(["all nan", "all nan cat"])
 
-    imputer = TimeSeriesImputer(numeric_impute_strategy="interpolate")
-    imputer.fit(X, y)
-    X_imputed, y_imputed = imputer.transform(X, y)
+    cols_expected_to_change = X.ww.schema._filter_cols(
+        include=["IntegerNullable", "AgeNullable", "BooleanNullable"],
+    )
+    cols_expected_to_stay_the_same = X.ww.schema._filter_cols(
+        exclude=["IntegerNullable", "AgeNullable", "BooleanNullable"],
+    )
+
+    imputer = TimeSeriesImputer(
+        numeric_impute_strategy=numeric_impute_strategy,
+        target_impute_strategy="interpolate",
+    )
+    # Copy X to avoid X taking on any mutations from the internal _handle_nullable_types call
+    imputer.fit(X.ww.copy(), y)
+    X_imputed, y_imputed = imputer.transform(X.ww.copy(), y)
 
     assert not X_imputed.isnull().any().any()
     assert not y_imputed.isnull().any()
+
+    # Check that the types are as expected - when interpolate is used, we need fractional numeric ltypes
+    if numeric_impute_strategy == "interpolate":
+        expected_X_ltypes = {"AgeFractional", "Double", "Boolean"}
+    else:
+        expected_X_ltypes = {"Age", "Integer", "Boolean"}
+
+    assert X.ww.get_subset_schema(
+        cols_expected_to_stay_the_same,
+    ) == X_imputed.ww.get_subset_schema(cols_expected_to_stay_the_same)
+    assert {
+        str(ltype)
+        for col, ltype in X_imputed.ww.logical_types.items()
+        if col in cols_expected_to_change
+    } == expected_X_ltypes
+
+    assert isinstance(y_imputed.ww.logical_type, expected_imputed_y_ltype)
 
 
 @pytest.mark.parametrize(
