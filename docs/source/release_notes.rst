@@ -7,6 +7,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Fixed installation of prophet for linux nightly tests :pr:`4114`
 
 .. warning::
 
