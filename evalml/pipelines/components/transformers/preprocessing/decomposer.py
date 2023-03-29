@@ -34,6 +34,9 @@ class Decomposer(Transformer):
     modifies_target = True
     needs_fitting = True
     invalid_frequencies = []
+    # Incompatibility: https://github.com/alteryx/evalml/issues/4103
+    # TODO: Remove when support is added https://github.com/pandas-dev/pandas/issues/52127
+    _integer_nullable_incompatibilities = ["y"]
 
     def __init__(
         self,
@@ -148,6 +151,7 @@ class Decomposer(Transformer):
                 period is detected, returns None.
 
         """
+        X, y = cls._handle_nullable_types(cls, X, y)
 
         def _get_rel_max_from_acf(y):
             """Determines the relative maxima of the target's autocorrelation."""

@@ -34,7 +34,7 @@ def test_knn_imputer_ignores_natural_language(
     imputer_test_data,
     df_composition,
 ):
-    """Test to ensure that the simple imputer just passes through
+    """Test to ensure that the knn imputer just passes through
     natural language columns, unchanged.
     """
     if df_composition == "single_column":
@@ -56,12 +56,8 @@ def test_knn_imputer_ignores_natural_language(
     result = imputer.transform(X_df, y)
 
     if df_composition == "full_df":
-        X_df = X_df.astype(
-            {"int col": float},
-        )  # Convert to float as the imputer will do this as we're requesting KNN
-        result = result.astype(
-            {"int col": float},
-        )
+        # Update the other columns in result so that we can confirm the natural language column
+        # is unchanged
         X_df["float col"] = result["float col"]
         X_df["int col"] = result["int col"]
         assert_frame_equal(result, X_df)
@@ -85,3 +81,16 @@ def test_knn_imputer_maintains_woodwork_types(imputer_test_data):
         for col, ltype in result.ww.logical_types.items()
         if col in int_nullable_cols
     } == {"Double"}
+
+
+def test_knn_imputer_with_all_null_and_nl_cols(
+    imputer_test_data,
+):
+    X = imputer_test_data.ww[["all nan", "natural language col", "int col"]]
+    X_copy = X.ww.copy()
+
+    imp = KNNImputer(number_neighbors=3)
+    imp.fit(X)
+
+    X_imputed = imp.transform(X)
+    pd.testing.assert_frame_equal(X_copy.ww.drop("all nan"), X_imputed)

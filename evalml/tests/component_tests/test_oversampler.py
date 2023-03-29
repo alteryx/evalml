@@ -262,18 +262,39 @@ def test_samplers_perform_equally(
     np.testing.assert_equal(sorted(y_im), expected_y)
 
 
-def test_smoten_categorical_boolean(X_y_binary, im):
+@pytest.mark.parametrize("use_nullable", [True, False])
+def test_smoten_categorical_boolean(X_y_binary, im, use_nullable):
     X, y = X_y_binary
-    X.ww.set_types({0: "Categorical", 1: "Boolean"})
-    X = X.drop(range(2, len(X.columns)), axis=1)
+    bool_ltype = "BooleanNullable" if use_nullable else "Boolean"
+    # Set the 0 column of float values to be Categorical type
+    X.ww.set_types({0: "Categorical"})
+    # Add a Boolean column into X
+    X.ww[len(X.columns)] = ww.init_series(
+        pd.Series([True, False] * 50),
+        logical_type=bool_ltype,
+    )
+    X = X.ww.select(["Boolean", "BooleanNullable", "Categorical"])
+
     sn = Oversampler()
     _ = sn.fit_transform(X, y)
     assert sn.sampler == im.SMOTEN
 
 
-def test_smotenc_boolean_numeric(X_y_binary, im):
+@pytest.mark.parametrize("use_nullable_1", [True, False])
+@pytest.mark.parametrize("use_nullable_2", [True, False])
+def test_smotenc_boolean_numeric(X_y_binary, im, use_nullable_1, use_nullable_2):
+    bool_ltype_1 = "BooleanNullable" if use_nullable_1 else "Boolean"
+    bool_ltype_2 = "BooleanNullable" if use_nullable_2 else "Boolean"
     X, y = X_y_binary
-    X.ww.set_types({5: "Boolean", 12: "Boolean"})
+    # Add two boolean columns into X
+    X.ww[len(X.columns)] = ww.init_series(
+        pd.Series([True, False] * 50),
+        logical_type=bool_ltype_1,
+    )
+    X.ww[len(X.columns)] = ww.init_series(
+        pd.Series([True, False] * 50),
+        logical_type=bool_ltype_2,
+    )
     snc = Oversampler()
     _, _ = snc.fit_transform(X, y)
     assert snc.sampler == im.SMOTENC
@@ -303,6 +324,7 @@ def test_smotenc_category_features(X_y_binary):
     X["postal"] = np.arange(10001, 10001 + X.shape[0])
     X["country"] = np.arange(20001, 20001 + X.shape[0])
 
+    # Add different types of categorical data - boolean values, string categories, and postal codes
     X_ww = infer_feature_types(
         X,
         feature_types={
@@ -311,9 +333,13 @@ def test_smotenc_category_features(X_y_binary):
             "2": "Boolean",
         },
     )
+    X_ww.ww[str(len(X.columns))] = ww.init_series(
+        pd.Series([True, False] * 50),
+        logical_type="BooleanNullable",
+    )
     snc = Oversampler()
     _ = snc.fit_transform(X_ww, y)
-    assert snc.categorical_features == [20, 21, 2]
+    assert snc.categorical_features == [20, 21, 2, len(X.columns)]
 
 
 def test_smotenc_output_shape(X_y_binary):
@@ -450,6 +476,7 @@ def test_oversampler_handle_nullable_types(
     X = nullable_type_test_data(has_nans=False)
     # Oversampler can only handle numeric and boolean columns
     X = X.ww.select(include=["numeric", "Boolean", "BooleanNullable", "category"])
+    original_schema = X.ww.schema
     y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
 
     oversampler = Oversampler(sampling_ratio=0.5)
@@ -459,6 +486,9 @@ def test_oversampler_handle_nullable_types(
     # Confirm oversampling happened by checking the length increased
     assert len(X_t) > len(X)
     assert len(y_t) > len(y)
+
+    # Confirm the original types are maintained
+    assert original_schema == X_t.ww.schema
 
 
 @pytest.mark.parametrize(

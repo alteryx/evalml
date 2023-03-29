@@ -2,15 +2,10 @@
 import pandas as pd
 import woodwork
 from sklearn.impute import SimpleImputer as SkImputer
-from woodwork.logical_types import Double
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.pipelines.components.utils import (
-    drop_natural_language_columns,
-    set_boolean_columns_to_integer,
-)
 from evalml.utils import infer_feature_types
-from evalml.utils.gen_utils import is_categorical_actually_boolean
+from evalml.utils.nullable_type_utils import _get_new_logical_types_for_imputed_data
 
 
 class SimpleImputer(Transformer):
@@ -69,41 +64,40 @@ class SimpleImputer(Transformer):
         if set([lt.type_string for lt in X.ww.logical_types.values()]) == {
             "boolean",
             "categorical",
-        } and not all(
-            [
-                is_categorical_actually_boolean(X, col)
-                for col in X.ww.select("Categorical")
-            ],
-        ):
+        }:
             raise ValueError(
                 "SimpleImputer cannot handle dataframes with both boolean and categorical features.  Use Imputer instead.",
             )
 
         nan_ratio = X.isna().sum() / X.shape[0]
+
+        # Keep track of the different types of data in X
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
-
-        X, _ = drop_natural_language_columns(X)
-
-        # Convert any boolean columns to IntegerNullable, but keep track of the columns so they can be converted back
-        self._boolean_cols = list(
+        self._natural_language_cols = list(
             X.ww.select(
-                include=["Boolean", "BooleanNullable"],
+                "NaturalLanguage",
                 return_schema=True,
-            ).columns,
+            ).columns.keys(),
         )
-        # Make sure we're tracking Categorical columns that should be boolean as well
-        self._boolean_cols.extend(
-            [
-                col
-                for col in X.ww.select("Categorical")
-                if is_categorical_actually_boolean(X, col)
-            ],
-        )
-        X = set_boolean_columns_to_integer(X)
 
-        # If the Dataframe only had natural language columns, do nothing.
-        if X.shape[1] == 0:
+        # Only impute data that is not natural language columns or fully null
+        self._cols_to_impute = [
+            col
+            for col in X.columns
+            if col not in self._natural_language_cols and col not in self._all_null_cols
+        ]
+
+        # If there are no columns to impute, return early
+        if not self._cols_to_impute:
             return self
+
+        X = X[self._cols_to_impute]
+        if (X.dtypes == bool).all():
+            # Ensure that _component_obj still gets fit so that if any of the dtypes are different
+            # at transform, we've fit the component. This is needed because sklearn doesn't allow
+            # data with only bool dtype to be passed in.
+            X = X.astype("boolean")
+
         self._component_obj.fit(X, y)
         return self
 
@@ -117,43 +111,40 @@ class SimpleImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
+        # Record original data
         X = infer_feature_types(X)
         original_schema = X.ww.schema
-        X = set_boolean_columns_to_integer(X)
-
-        not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
         original_index = X.index
 
-        # Drop natural language columns and transform the other columns
-        X_t, natural_language_cols = drop_natural_language_columns(X)
-        if X_t.shape[1] == 0:
-            return X
-        not_all_null_or_natural_language_cols = [
-            col for col in not_all_null_cols if col not in natural_language_cols
-        ]
+        # separate out just the columns we are imputing
+        X_t = X[self._cols_to_impute]
+        if not self._cols_to_impute or (X_t.dtypes == bool).all():
+            # If there are no columns to impute or all columns to impute are bool dtype,
+            # which will never have null values, return the original data without any fully null columns
+            not_all_null_cols = [
+                col for col in X.columns if col not in self._all_null_cols
+            ]
+            return X.ww[not_all_null_cols]
 
+        # Transform the data
         X_t = self._component_obj.transform(X_t)
-        X_t = pd.DataFrame(X_t, columns=not_all_null_or_natural_language_cols)
+        X_t = pd.DataFrame(X_t, columns=self._cols_to_impute)
 
-        new_schema = original_schema.get_subset_schema(X_t.columns)
+        # Reinit woodwork, maintaining original types where possible
+        imputed_schema = original_schema.get_subset_schema(self._cols_to_impute)
+        new_logical_types = _get_new_logical_types_for_imputed_data(
+            impute_strategy=self.impute_strategy,
+            original_schema=imputed_schema,
+        )
+        X_t.ww.init(schema=imputed_schema, logical_types=new_logical_types)
 
-        # Iterate through previously saved boolean columns and convert them back to boolean
-        for col in self._boolean_cols:
-            X_t[col] = X_t[col].astype(bool)
+        # Add back in the unchanged original natural language columns that we want to keep
+        if len(self._natural_language_cols) > 0:
+            X_t = woodwork.concat_columns([X_t, X.ww[self._natural_language_cols]])
+            # reorder columns to match original
+            X_t = X_t.ww[[col for col in original_schema.columns if col in X_t.columns]]
 
-        # Convert Nullable Integers to Doubles for the "mean" and "median" strategies
-        if self.impute_strategy in ["mean", "median"]:
-            nullable_int_cols = X.ww.select(["IntegerNullable"], return_schema=True)
-            nullable_int_cols = [x for x in nullable_int_cols.columns.keys()]
-            for col in nullable_int_cols:
-                new_schema.set_types({col: Double})
-        X_t.ww.init(schema=new_schema)
-
-        # Add back in natural language columns, unchanged
-        if len(natural_language_cols) > 0:
-            X_t = woodwork.concat_columns([X_t, X[natural_language_cols]])
-
-        if not_all_null_or_natural_language_cols:
+        if self._cols_to_impute:
             X_t.index = original_index
         return X_t
 
