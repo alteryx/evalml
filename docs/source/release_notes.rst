@@ -10,6 +10,7 @@ Release Notes
         * Handled nullable type incompatibility in ``Decomposer`` :pr:`4105`, :pr:`4043`
     * Documentation Changes
     * Testing Changes
+        * Fixed installation of prophet for linux nightly tests :pr:`4114`
 
 .. warning::
 
