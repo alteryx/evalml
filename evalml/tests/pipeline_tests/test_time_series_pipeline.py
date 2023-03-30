@@ -1874,8 +1874,9 @@ def test_time_series_pipeline_get_prediction_intervals(
     add_decomposer,
     set_coverage,
     ts_data_long,
+    ts_data_quadratic_trend,
 ):
-    X, _, y = ts_data_long
+    X, y = ts_data_quadratic_trend
     component_graph = {
         "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
         "DateTime Featurizer": ["DateTime Featurizer", "Time Series Featurizer.x", "y"],
@@ -1948,6 +1949,20 @@ def test_time_series_pipeline_get_prediction_intervals(
         X_train,
         y_train,
     )
+
+    import matplotlib.pyplot as plt
+    if coverage is None:
+        coverages = [0.95]
+    else:
+        coverages = coverage
+    plt.plot(y, label="y")
+    plt.plot(predictions, label="predictions")
+    plt.plot(y_validation, label="y_val")
+    for cov in coverages:
+        plt.plot(pl_intervals[f"{cov}_upper"], label=f"{cov}_upper")
+        plt.plot(pl_intervals[f"{cov}_lower"], label=f"{cov}_lower")
+    plt.legend()
+    plt.show()
     features = pipeline.transform_all_but_final(
         X_validation,
         y_validation,

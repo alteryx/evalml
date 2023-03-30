@@ -250,10 +250,10 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
                 y=y_train,
                 X_train=X_train,
                 y_train=y_train,
+                calculating_residuals=True,
             )
             residuals = y_train - predictions_train
             std_residual = np.sqrt(np.sum(residuals ** 2) / len(residuals))
-
 
             res_dict = {}
             cov_to_mult = {.75: 1.15,.85:1.44, .95:1.96}
