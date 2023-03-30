@@ -4,6 +4,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from sktime.forecasting.arima import AutoARIMA as SKArima
 from sktime.forecasting.base import ForecastingHorizon
 
@@ -476,11 +477,15 @@ def test_arima_regressor_can_forecast_arbitrary_dates(use_covariates, ts_data):
     )
 
 
-def test_arima_regressor_nullable_handling():
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["IntegerNullable", "AgeNullable"],
+)
+def test_arima_regressor_with_nullable_types(nullable_ltype):
     X = pd.DataFrame()
     X["nums"] = pd.Series([i for i in range(100)], dtype="Int64")
     X.index = pd.date_range("1/1/21", periods=100)
-    X.ww.init(logical_types={"nums": "IntegerNullable"})
+    X.ww.init(logical_types={"nums": nullable_ltype})
 
     y = pd.Series([i for i in range(100)], dtype="Int64")
     y.index = pd.date_range("1/1/21", periods=100)
@@ -489,6 +494,7 @@ def test_arima_regressor_nullable_handling():
     X_test = X.ww.iloc[80:, :]
 
     y_train = y[:80]
+    y_train = ww.init_series(y_train, logical_type=nullable_ltype)
 
     arima_params = {
         "trend": None,
@@ -505,8 +511,10 @@ def test_arima_regressor_nullable_handling():
 
     evalml_arima = ARIMARegressor(**arima_params)
     evalml_arima.fit(X_train, y_train)
-    preds = evalml_arima.predict(X=X_test)
+    preds = evalml_arima.predict(X=X_test.ww.copy())
     assert not preds.isnull().any().any()
+    results_coverage = evalml_arima.get_prediction_intervals(X=X_test.ww.copy())
+    assert results_coverage
 
 
 @pytest.mark.parametrize(

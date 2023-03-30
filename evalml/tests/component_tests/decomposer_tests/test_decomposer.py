@@ -5,6 +5,7 @@ import matplotlib
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 import evalml.exceptions
 from evalml.pipelines.components.transformers.preprocessing import (
@@ -439,6 +440,10 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
 
 
 @pytest.mark.parametrize(
+    "y_logical_type",
+    ["Double", "Integer", "Age", "IntegerNullable", "AgeNullable"],
+)
+@pytest.mark.parametrize(
     "decomposer_child_class",
     decomposer_list,
 )
@@ -451,6 +456,7 @@ def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal
     ],
 )
 def test_decomposer_determine_periodicity(
+    y_logical_type,
     decomposer_child_class,
     period,
     trend_degree,
@@ -462,6 +468,7 @@ def test_decomposer_determine_periodicity(
         period,
         trend_degree=trend_degree,
     )
+    y = ww.init_series(y.astype(int), logical_type=y_logical_type)
 
     # Test that the seasonality can be determined if trend guess isn't spot on.
     if not decomposer_picked_correct_degree:
@@ -474,6 +481,61 @@ def test_decomposer_determine_periodicity(
         assert ac is None
     else:
         assert 0.95 * period <= ac <= 1.05 * period
+
+
+@pytest.mark.parametrize(
+    "decomposer_child_class",
+    decomposer_list,
+)
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["IntegerNullable", "AgeNullable"],
+)
+@pytest.mark.parametrize(
+    "handle_incompatibility",
+    [
+        True,
+        pytest.param(
+            False,
+            marks=pytest.mark.xfail(strict=True, raises=AssertionError),
+        ),
+    ],
+)
+def test_decomposer_determine_periodicity_nullable_type_incompatibility(
+    decomposer_child_class,
+    handle_incompatibility,
+    nullable_ltype,
+    generate_seasonal_data,
+):
+    """Testing that the nullable type incompatibility that caused us to add handling for the Decomposer
+    is still present in pandas. If this test is causing the test suite to fail
+    because the code below no longer raises the expected AssertionError, we should confirm that the nullable
+    types now work for our use case and remove the nullable type handling logic from Decomposer.determine_periodicity.
+    """
+    trend_degree = 2
+    period = 7
+    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+        period,
+        trend_degree=trend_degree,
+    )
+
+    # Convert to Integer, truncating the rest of the value
+    y = ww.init_series(y.astype(int), logical_type=nullable_ltype)
+
+    if handle_incompatibility:
+        dec = decomposer_child_class(degree=trend_degree, period=period)
+        X, y = dec._handle_nullable_types(X, y)
+
+    # Introduce nans like we do in _detrend_on_fly by rolling y
+    moving_avg = 10
+    y_trend_estimate = y.rolling(moving_avg).mean().dropna()
+    subtracted_floats = y - y_trend_estimate
+
+    # Pandas will not recognize the np.NaN value in a Float64 subtracted_floats
+    # and will not drop those null values, so calling _handle_nullable_types ensures
+    # that we stay in float64 and properly drop the null values
+    dropped_nans = subtracted_floats.dropna()
+    assert len(dropped_nans) == len(y) - moving_avg + 1
 
 
 @pytest.mark.parametrize(
