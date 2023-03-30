@@ -37,10 +37,10 @@ class InvalidTargetDataCheck(DataCheck):
         objective (str or ObjectiveBase): Name or instance of the objective class.
         n_unique (int): Number of unique target values to store when problem type is binary and target
             incorrectly has more than 2 unique values. Non-negative integer. If None, stores all unique values. Defaults to 100.
-        null_strategy (str, optional): The type of action option that should be returned if the target is partially null.
+        null_strategy (str): The type of action option that should be returned if the target is partially null.
             The options are `impute` (default) and `drop`.
-            `impute` - Will return a `DataCheckActionOption` for imputing the target column
-            `drop` - Will return a `DataCheckActionOption` for dropping the null rows in the target column,
+            `impute` - Will return a `DataCheckActionOption` for imputing the target column.
+            `drop` - Will return a `DataCheckActionOption` for dropping the null rows in the target column.
     """
 
     multiclass_continuous_threshold = 0.05
@@ -51,6 +51,10 @@ class InvalidTargetDataCheck(DataCheck):
         if n_unique is not None and n_unique <= 0:
             raise ValueError("`n_unique` must be a non-negative integer value.")
         self.n_unique = n_unique
+        if null_strategy is None or null_strategy.lower() not in ["impute", "drop"]:
+            raise ValueError(
+                "The acceptable values for 'null_strategy' are 'impute' and 'drop'.",
+            )
         self.null_strategy = null_strategy
 
     def validate(self, X, y):

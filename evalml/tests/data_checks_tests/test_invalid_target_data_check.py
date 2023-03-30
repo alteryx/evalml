@@ -34,6 +34,19 @@ def test_invalid_target_data_check_invalid_n_unique():
         )
 
 
+@pytest.mark.parametrize("null_strategy", ["null_strategy", None])
+def test_invalid_target_data_check_invalid_null_strategy(null_strategy):
+    with pytest.raises(
+        ValueError,
+        match="The acceptable values for 'null_strategy' are 'impute' and 'drop'.",
+    ):
+        InvalidTargetDataCheck(
+            "regression",
+            get_default_primary_search_objective("regression"),
+            null_strategy=null_strategy,
+        )
+
+
 def test_invalid_target_data_check_nan_error():
     X = pd.DataFrame({"col": [1, 2, 3]})
     invalid_targets_check = InvalidTargetDataCheck(
@@ -148,7 +161,7 @@ def test_invalid_target_y_none():
     ]
 
 
-@pytest.mark.parametrize("null_strategy", ["Impute", "DROP", "none"])
+@pytest.mark.parametrize("null_strategy", ["Impute", "DROP"])
 def test_invalid_target_data_null_strategies(null_strategy):
     invalid_targets_check = InvalidTargetDataCheck(
         "regression",
