@@ -34,7 +34,7 @@ def test_invalid_target_data_check_invalid_n_unique():
         )
 
 
-@pytest.mark.parametrize("null_strategy", ["null_strategy", None])
+@pytest.mark.parametrize("null_strategy", ["invalid", None])
 def test_invalid_target_data_check_invalid_null_strategy(null_strategy):
     with pytest.raises(
         ValueError,
