@@ -64,8 +64,8 @@ dependencies = [
     "tomli >= 2.0.1",
     "packaging >= 23.0",
     "black[jupyter] >= 22.3.0",
-    "holidays >= 0.13, < 0.21".
-    "mrmr-selection" >= 0.2.6"
+    "holidays >= 0.13, < 0.21",
+    "mrmr-selection >= 0.2.6",
 ]
 
 [project.urls]
