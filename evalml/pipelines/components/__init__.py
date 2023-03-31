@@ -70,6 +70,8 @@ from evalml.pipelines.components.transformers import (
     OrdinalEncoder,
     RFClassifierRFESelector,
     RFRegressorRFESelector,
+    MRMRRegressionFeatureSelector,
+    MRMRClassifierFeatureSelector,
 )
 from evalml.pipelines.components.ensemble import (
     StackedEnsembleBase,

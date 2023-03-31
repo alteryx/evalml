@@ -7,9 +7,9 @@ from evalml.automl.automl_algorithm.automl_algorithm import AutoMLAlgorithm
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     EmailFeaturizer,
+    MRMRClassifierFeatureSelector,
+    MRMRRegressionFeatureSelector,
     OneHotEncoder,
-    RFClassifierSelectFromModel,
-    RFRegressorSelectFromModel,
     URLFeaturizer,
 )
 from evalml.pipelines.components.transformers.column_selectors import (
@@ -218,11 +218,18 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         feature_selector = None
 
         if use_features:
+            # feature_selector = [
+            #     (
+            #         RFRegressorSelectFromModel
+            #         if is_regression(self.problem_type)
+            #         else RFClassifierSelectFromModel
+            #     ),
+            # ]
             feature_selector = [
                 (
-                    RFRegressorSelectFromModel
+                    MRMRRegressionFeatureSelector
                     if is_regression(self.problem_type)
-                    else RFClassifierSelectFromModel
+                    else MRMRClassifierFeatureSelector
                 ),
             ]
         else:
@@ -569,11 +576,13 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         ):
             if is_regression(self.problem_type):
                 self._selected_cols = pipeline.get_component(
-                    "RF Regressor Select From Model",
+                    # "RF Regressor Select From Model",
+                    "MRMR Regression Feature Selector",
                 ).get_names()
             else:
                 self._selected_cols = pipeline.get_component(
-                    "RF Classifier Select From Model",
+                    # "RF Classifier Select From Model",
+                    "MRMR Classifier Feature Selector",
                 ).get_names()
 
             self._parse_selected_categorical_features(pipeline)

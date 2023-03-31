@@ -12,3 +12,10 @@ from evalml.pipelines.components.transformers.feature_selection.recursive_featur
     RFClassifierRFESelector,
     RFRegressorRFESelector,
 )
+
+from evalml.pipelines.components.transformers.feature_selection.mrmr_classifier_feature_selector import (
+    MRMRClassifierFeatureSelector,
+)
+from evalml.pipelines.components.transformers.feature_selection.mrmr_regression_feature_selector import (
+    MRMRRegressionFeatureSelector,
+)
