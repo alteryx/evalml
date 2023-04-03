@@ -4,18 +4,22 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
-        * Removed unnecessary logic from imputer components prior to nullable type handling :pr:`4038`, :pr:`4043`
-        * Added calls to ``_handle_nullable_types`` in component fit, transform, and predict methods when needed :pr:`4046`, :pr:`4043`
-        * Removed existing nullable type handling across AutoMLSearch to just use new handling :pr:`4085`, :pr:`4043`
-        * Handled nullable type incompatibility in ``Decomposer`` :pr:`4105`, :pr:`4043`
     * Documentation Changes
     * Testing Changes
-        * Fixed installation of prophet for linux nightly tests :pr:`4114`
 
 .. warning::
 
     **Breaking Changes**
 
+
+**v0.73.0 Apr. 3, 2023**
+    * Changes
+        * Removed unnecessary logic from imputer components prior to nullable type handling :pr:`4038`, :pr:`4043`
+        * Added calls to ``_handle_nullable_types`` in component fit, transform, and predict methods when needed :pr:`4046`, :pr:`4043`
+        * Removed existing nullable type handling across AutoMLSearch to just use new handling :pr:`4085`, :pr:`4043`
+        * Handled nullable type incompatibility in ``Decomposer`` :pr:`4105`, :pr:`4043
+    * Testing Changes
+        * Fixed installation of prophet for linux nightly tests :pr:`4114`
 
 **v0.72.0 Mar. 27, 2023**
     * Enhancements
