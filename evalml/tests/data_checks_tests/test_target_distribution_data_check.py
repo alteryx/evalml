@@ -54,7 +54,7 @@ def test_target_distribution_data_check_unsupported_target_type(target_type):
     else:
         assert target_dist_check.validate(X, y) == [
             DataCheckError(
-                message=f"Target is unsupported {y.ww.logical_type.type_string} type. Valid Woodwork logical types include: integer, double",
+                message=f"Target is unsupported {y.ww.logical_type.type_string} type. Valid Woodwork logical types include: integer, double, age, age_fractional",
                 data_check_name=target_dist_check_name,
                 message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
                 details={"unsupported_type": y.ww.logical_type.type_string},

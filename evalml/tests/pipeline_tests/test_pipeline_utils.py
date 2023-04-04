@@ -26,7 +26,6 @@ from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     NaturalLanguageFeaturizer,
     OneHotEncoder,
-    ReplaceNullableTypes,
     StackedEnsembleBase,
     StandardScaler,
     STLDecomposer,
@@ -128,7 +127,7 @@ def test_make_pipeline(
             )
 
             if estimator_class.model_family != ModelFamily.CATBOOST and any(
-                column_name in ["url", "email", "categorical", "bool_null"]
+                column_name in ["url", "email", "categorical"]
                 for column_name in column_names
             ):
                 ohe = [OneHotEncoder]
@@ -149,9 +148,6 @@ def test_make_pipeline(
                 else []
             )
             drop_null = [DropColumns] if "all_null" in column_names else []
-            replace_null = (
-                [] if (column_names in [["email"], ["url"]]) else [ReplaceNullableTypes]
-            )
             natural_language_featurizer = (
                 [NaturalLanguageFeaturizer] if "text" in column_names else []
             )
@@ -169,7 +165,6 @@ def test_make_pipeline(
                 expected_components = (
                     dfs
                     + label_encoder
-                    + replace_null
                     + email_featurizer
                     + url_featurizer
                     + drop_null
@@ -187,7 +182,6 @@ def test_make_pipeline(
                 expected_components = (
                     dfs
                     + label_encoder
-                    + replace_null
                     + email_featurizer
                     + url_featurizer
                     + drop_null
@@ -1303,7 +1297,9 @@ def test_make_pipeline_from_multiple_graphs_with_sampler(X_y_binary):
         estimator=estimator,
         problem_type=ProblemTypes.BINARY,
     )
-    second_pipeline_sampler = "Pipeline w/ Label Encoder + Replace Nullable Types Transformer + Imputer + Undersampler Pipeline 2 - Undersampler.y"
+    second_pipeline_sampler = (
+        "Pipeline w/ Label Encoder + Imputer + Undersampler Pipeline 2 - Undersampler.y"
+    )
     assert (
         combined_pipeline.component_graph.get_inputs("Random Forest Classifier")[2]
         == second_pipeline_sampler
@@ -1345,14 +1341,13 @@ def test_make_pipeline_from_multiple_graphs_pre_pipeline_components(X_y_binary):
         pre_pipeline_components=pre_pipeline_components,
         sub_pipeline_names=sub_pipeline_names,
     )
-
     assert (
         combined_pipeline.component_graph.get_inputs("First Pipeline - Imputer")[0]
-        == "First Pipeline - Replace Nullable Types Transformer.x"
+        == "DFS Transformer.x"
     )
     assert (
         combined_pipeline.component_graph.get_inputs("Second Pipeline - Imputer")[0]
-        == "Second Pipeline - Replace Nullable Types Transformer.x"
+        == "DFS Transformer.x"
     )
 
 

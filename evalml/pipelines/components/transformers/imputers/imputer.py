@@ -1,11 +1,9 @@
 """Component that imputes missing data according to a specified imputation strategy."""
 import pandas as pd
-from woodwork import init_series
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import KNNImputer, SimpleImputer
-from evalml.utils import downcast_nullable_types, infer_feature_types
-from evalml.utils.gen_utils import is_categorical_actually_boolean
+from evalml.utils import infer_feature_types
 
 
 class Imputer(Transformer):
@@ -119,29 +117,24 @@ class Imputer(Transformer):
         )
         numeric_cols = list(X.ww.select(["numeric"], return_schema=True).columns)
 
-        # TODO: Remove this when columns with True/False/NaN are inferred properly as BooleanNullable.
-        # If columns with boolean values and NaN are included with normal categorical columns, columns
-        # with object dtypes are attempted to be cast to float64 with scikit-learn 1.1.  So we separate
-        # boolean and categorical into separate imputers.
-        for col in cat_cols:
-            if is_categorical_actually_boolean(X, col):
-                cat_cols.remove(col)
-                bool_cols.append(col)
-
         nan_ratio = X.isna().sum() / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
-        X_numerics = X[[col for col in numeric_cols if col not in self._all_null_cols]]
+        X_numerics = X.ww[
+            [col for col in numeric_cols if col not in self._all_null_cols]
+        ]
         if len(X_numerics.columns) > 0:
             self._numeric_imputer.fit(X_numerics, y)
             self._numeric_cols = X_numerics.columns
 
-        X_categorical = X[[col for col in cat_cols if col not in self._all_null_cols]]
+        X_categorical = X.ww[
+            [col for col in cat_cols if col not in self._all_null_cols]
+        ]
         if len(X_categorical.columns) > 0:
             self._categorical_imputer.fit(X_categorical, y)
             self._categorical_cols = X_categorical.columns
 
-        X_boolean = X[[col for col in bool_cols if col not in self._all_null_cols]]
+        X_boolean = X.ww[[col for col in bool_cols if col not in self._all_null_cols]]
         if len(X_boolean.columns) > 0:
             self._boolean_imputer.fit(X_boolean, y)
             self._boolean_cols = X_boolean.columns
@@ -164,15 +157,17 @@ class Imputer(Transformer):
             return df
 
         X_no_all_null = X.ww.drop(self._all_null_cols)
+        original_schema = X_no_all_null.ww.schema
+        new_ltypes = None
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
             X_numeric = X.ww[self._numeric_cols.tolist()]
             imputed = self._numeric_imputer.transform(X_numeric)
-            for numeric_col in X_numeric.columns:
-                X_no_all_null.ww[numeric_col] = init_series(
-                    imputed[numeric_col],
-                    logical_type="Double",
-                )
+            X_no_all_null[X_numeric.columns] = imputed
+            # Numeric imputing may have changed logical types because of use of _get_new_logical_types_for_imputed_data
+            if imputed.ww.schema is None:
+                imputed.ww.init()
+            new_ltypes = imputed.ww.logical_types
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
             X_categorical = X.ww[self._categorical_cols.tolist()]
@@ -184,5 +179,5 @@ class Imputer(Transformer):
             imputed = self._boolean_imputer.transform(X_boolean)
             X_no_all_null[X_boolean.columns] = imputed
 
-        X_no_all_null = downcast_nullable_types(X_no_all_null, ignore_null_cols=False)
+        X_no_all_null.ww.init(schema=original_schema, logical_types=new_ltypes)
         return X_no_all_null

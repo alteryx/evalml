@@ -2,20 +2,31 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+        * Removed unnecessary logic from imputer components prior to nullable type handling :pr:`4038`, :pr:`4043`
+        * Added calls to ``_handle_nullable_types`` in component fit, transform, and predict methods when needed :pr:`4046`, :pr:`4043`
+        * Removed existing nullable type handling across AutoMLSearch to just use new handling :pr:`4085`, :pr:`4043`
+        * Handled nullable type incompatibility in ``Decomposer`` :pr:`4105`, :pr:`4043`
+    * Documentation Changes
+    * Testing Changes
+        * Fixed installation of prophet for linux nightly tests :pr:`4114`
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.72.0 Mar. 27, 2023**
+    * Enhancements
         * Updated `pipeline.get_prediction_intervals()` to add trend prediction interval information from STL decomposer :pr:`4093`
     * Fixes
         * Fixed ensemble pipelines not working with ``generate_pipeline_example`` :pr:`4102`
     * Changes
         * Pinned ipywidgets version under 8.0.5 :pr:`4097`
         * Calculated partial dependence grid values for integer data by rounding instead of truncating fractional values :pr:`4096`
-    * Documentation Changes
     * Testing Changes
         * Updated graphviz installation in GitHub workflows to fix windows nightlies :pr:`4088`
-
-.. warning::
-
-    **Breaking Changes**
-
 
 **v0.71.0 Mar. 17, 2023***
     * Fixes
