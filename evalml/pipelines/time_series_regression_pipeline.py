@@ -204,9 +204,10 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         Raises:
             MethodPropertyNotFoundError: If the estimator does not support Time Series Regression as a problem type.
         """
+        X_no_datetime, y_no_datetime = self._drop_time_index(X, y)
         estimator_input = self.transform_all_but_final(
-            X,
-            y,
+            X_no_datetime,
+            y_no_datetime,
             X_train=X_train,
             y_train=y_train,
         )
