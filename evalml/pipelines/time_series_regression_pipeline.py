@@ -252,6 +252,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
                 y_train=y_train,
                 calculating_residuals=True,
             )
+            predictions_train.index = y_train.index
             residuals = y_train - predictions_train
             std_residual = np.sqrt(np.sum(residuals**2) / len(residuals))
 
