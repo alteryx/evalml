@@ -204,7 +204,6 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         Raises:
             MethodPropertyNotFoundError: If the estimator does not support Time Series Regression as a problem type.
         """
-        X, y = self._drop_time_index(X, y)
         estimator_input = self.transform_all_but_final(
             X,
             y,
@@ -253,10 +252,10 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
                 calculating_residuals=True,
             )
             residuals = y_train - predictions_train
-            std_residual = np.sqrt(np.sum(residuals ** 2) / len(residuals))
+            std_residual = np.sqrt(np.sum(residuals**2) / len(residuals))
 
             res_dict = {}
-            cov_to_mult = {.75: 1.15,.85:1.44, .95:1.96}
+            cov_to_mult = {0.75: 1.15, 0.85: 1.44, 0.95: 1.96}
             for cov in coverage:
                 lower = []
                 upper = []
@@ -266,7 +265,14 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
                     lower.append(val - factor)
                     upper.append(val + factor)
 
-                res_dict[f"{cov}_lower"] = pd.Series(lower, name=f"{cov}_lower", index=future_vals.index)
-                res_dict[f"{cov}_upper"] = pd.Series(upper, name=f"{cov}_upper", index=future_vals.index)
+                res_dict[f"{cov}_lower"] = pd.Series(
+                    lower,
+                    name=f"{cov}_lower",
+                    index=future_vals.index,
+                )
+                res_dict[f"{cov}_upper"] = pd.Series(
+                    upper,
+                    name=f"{cov}_upper",
+                    index=future_vals.index,
+                )
             return res_dict
-
