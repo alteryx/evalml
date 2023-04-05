@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Allow ``InvalidTargetDataCheck`` to return a ``DROP_ROWS`` ``DataCheckActionOption`` :pr:`4116`
     * Fixes
     * Changes
         * Removed unnecessary logic from imputer components prior to nullable type handling :pr:`4038`, :pr:`4043`
