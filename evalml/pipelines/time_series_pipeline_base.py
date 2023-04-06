@@ -167,6 +167,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 X.ww.set_time_index(None)
                 X.ww.set_index(self.time_index)
                 X = X.ww.drop(self.time_index)
+                X.index.freq = time_index.freq
             else:
                 X.set_index(time_index)
                 X = X.drop(self.time_index, axis=1)
@@ -174,7 +175,14 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             y.index.name = index_name
         return X, y
 
-    def transform_all_but_final(self, X, y=None, X_train=None, y_train=None, calculating_residuals=False):
+    def transform_all_but_final(
+        self,
+        X,
+        y=None,
+        X_train=None,
+        y_train=None,
+        calculating_residuals=False,
+    ):
         """Transforms the data by applying all pre-processing components.
 
         Args:
@@ -194,7 +202,11 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         X, y = self._convert_to_woodwork(X, y)
 
         empty_training_data = X_train.empty or y_train.empty
-        if empty_training_data or self.should_skip_featurization or calculating_residuals:
+        if (
+            empty_training_data
+            or self.should_skip_featurization
+            or calculating_residuals
+        ):
             features_holdout = super().transform_all_but_final(X, y)
         else:
             padded_features, padded_target = self._add_training_data_to_X_Y(
@@ -207,7 +219,15 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             features_holdout = features.ww.iloc[-len(y) :]
         return features_holdout
 
-    def predict_in_sample(self, X, y, X_train, y_train, objective=None, calculating_residuals=False):
+    def predict_in_sample(
+        self,
+        X,
+        y,
+        X_train,
+        y_train,
+        objective=None,
+        calculating_residuals=False,
+    ):
         """Predict on future data where the target is known, e.g. cross validation.
 
         Args:
@@ -232,7 +252,13 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         X, y = self._drop_time_index(X, y)
         X_train, y_train = self._drop_time_index(X_train, y_train)
         target = infer_feature_types(y)
-        features = self.transform_all_but_final(X, target, X_train, y_train, calculating_residuals=calculating_residuals)
+        features = self.transform_all_but_final(
+            X,
+            target,
+            X_train,
+            y_train,
+            calculating_residuals=calculating_residuals,
+        )
         predictions = self._estimator_predict(features)
         if not calculating_residuals:
             predictions.index = y.index
