@@ -7,9 +7,10 @@ class DataCheckMessage:
 
     Args:
         message (str): Message string.
-        data_check_name (str): Name of data check.
-        message_code (DataCheckMessageCode): Message code associated with message. Defaults to None.
-        details (dict): Additional useful information associated with the message. Defaults to None.
+        data_check_name (str): Name of the associated data check.
+        message_code (DataCheckMessageCode, optional): Message code associated with the message. Defaults to None.
+        details (dict, optional): Additional useful information associated with the message. Defaults to None.
+        action_options (list, optional): A list of `DataCheckActionOption`s associated with the message. Defaults to None.
     """
 
     message_type = None
