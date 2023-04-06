@@ -20,7 +20,11 @@ from evalml.pipelines import (
     TimeSeriesRegressionPipeline,
     TimeSeriesRegularizer,
 )
-from evalml.pipelines.components import DropColumns, DropRowsTransformer, TargetImputer
+from evalml.pipelines.components import (
+    DropColumns,
+    DropRowsTransformer,
+    TargetImputer,
+)
 from evalml.pipelines.components.transformers.imputers.per_column_imputer import (
     PerColumnImputer,
 )
@@ -218,7 +222,7 @@ def test_data_checks_impute_cols(problem_type):
         expected_pipeline_class = BinaryClassificationPipeline
         y_expected = ww.init_series(
             pd.Series([0, 1, 1, 1, 1]),
-            logical_type="Integer",
+            logical_type="IntegerNullable",
         )
 
     elif problem_type == "multiclass":
@@ -227,7 +231,7 @@ def test_data_checks_impute_cols(problem_type):
         expected_pipeline_class = MulticlassClassificationPipeline
         y_expected = ww.init_series(
             pd.Series([0, 1, 2, 2, 2]),
-            logical_type="Integer",
+            logical_type="IntegerNullable",
         )
 
     else:

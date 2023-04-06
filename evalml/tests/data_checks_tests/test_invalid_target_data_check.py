@@ -34,6 +34,19 @@ def test_invalid_target_data_check_invalid_n_unique():
         )
 
 
+@pytest.mark.parametrize("null_strategy", ["invalid", None])
+def test_invalid_target_data_check_invalid_null_strategy(null_strategy):
+    with pytest.raises(
+        ValueError,
+        match="The acceptable values for 'null_strategy' are 'impute' and 'drop'.",
+    ):
+        InvalidTargetDataCheck(
+            "regression",
+            get_default_primary_search_objective("regression"),
+            null_strategy=null_strategy,
+        )
+
+
 def test_invalid_target_data_check_nan_error():
     X = pd.DataFrame({"col": [1, 2, 3]})
     invalid_targets_check = InvalidTargetDataCheck(
@@ -146,6 +159,55 @@ def test_invalid_target_y_none():
             details={},
         ).to_dict(),
     ]
+
+
+@pytest.mark.parametrize("null_strategy", ["Impute", "DROP"])
+def test_invalid_target_data_null_strategies(null_strategy):
+    invalid_targets_check = InvalidTargetDataCheck(
+        "regression",
+        get_default_primary_search_objective("regression"),
+        null_strategy=null_strategy,
+    )
+
+    expected_action_options = []
+    impute_action_option = DataCheckActionOption(
+        DataCheckActionCode.IMPUTE_COL,
+        data_check_name=invalid_targets_data_check_name,
+        parameters={
+            "impute_strategy": {
+                "parameter_type": DCAOParameterType.GLOBAL,
+                "type": "category",
+                "categories": ["mean", "most_frequent"],
+                "default_value": "mean",
+            },
+        },
+        metadata={"is_target": True},
+    )
+    drop_action_option = DataCheckActionOption(
+        DataCheckActionCode.DROP_ROWS,
+        data_check_name=invalid_targets_data_check_name,
+        metadata={"is_target": True, "rows": [0, 3]},
+    )
+    if null_strategy.lower() == "impute":
+        expected_action_options.append(impute_action_option)
+    elif null_strategy.lower() == "drop":
+        expected_action_options.append(drop_action_option)
+
+    expected = [
+        DataCheckError(
+            message="2 row(s) (40.0%) of target values are null",
+            data_check_name=invalid_targets_data_check_name,
+            message_code=DataCheckMessageCode.TARGET_HAS_NULL,
+            details={"num_null_rows": 2, "pct_null_rows": 40.0},
+            action_options=expected_action_options,
+        ).to_dict(),
+    ]
+
+    y = pd.Series([None, 3.5, 2.8, None, 0])
+    X = pd.DataFrame({"col": range(len(y))})
+
+    messages = invalid_targets_check.validate(X, y)
+    assert messages == expected
 
 
 def test_invalid_target_data_input_formats():

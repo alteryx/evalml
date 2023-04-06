@@ -72,18 +72,48 @@ class Oversampler(BaseSampler):
         Returns:
             self
         """
-        X_ww, y_ww = self._prepare_data(X, y)
+        X_ww = infer_feature_types(X)
+        if y is None:
+            raise ValueError("y cannot be None")
+        y_ww = infer_feature_types(y)
+
         sampler_name = self._get_best_oversampler(X_ww)
         self.sampler = self.sampler_options[sampler_name]
 
         # get categorical features first, if necessary
         if sampler_name == "SMOTENC":
-            self._get_categorical(X)
-        super().fit(X, y)
+            self._get_categorical(X_ww)
+        super().fit(X_ww, y_ww)
         return self
 
+    def transform(self, X, y=None):
+        """Transforms the input data by Oversampling the data.
+
+        Args:
+            X (pd.DataFrame): Training features.
+            y (pd.Series): Target.
+
+        Returns:
+            pd.DataFrame, pd.Series: Transformed features and target.
+        """
+        X_ww = infer_feature_types(X)
+        original_schema = X_ww.ww.schema
+        if y is None:
+            raise ValueError("y cannot be None")
+        y_ww = infer_feature_types(y)
+        X_d, _ = self._handle_nullable_types(X_ww)
+        X_t, y_t = super().transform(X_d, y_ww)
+
+        # X_t will have the downcasted types, so convert back to the original schema
+        X_t.ww.init(schema=original_schema)
+
+        return X_t, y_t
+
     def _get_best_oversampler(self, X):
-        cat_cols = X.ww.select(["category", "boolean"]).columns
+        cat_cols = X.ww.select(
+            ["category", "boolean", "BooleanNullable"],
+            return_schema=True,
+        ).columns
         if len(cat_cols) == X.shape[1]:
             return "SMOTEN"
         elif not len(cat_cols):
@@ -101,7 +131,7 @@ class Oversampler(BaseSampler):
         ]
         # Grab boolean columns, since SMOTE considers these categorical as well
         for i, val in enumerate(X.ww.types["Logical Type"].items()):
-            if str(val[1]) == "Boolean":
+            if str(val[1]) in {"Boolean", "BooleanNullable"}:
                 self.categorical_features.append(i)
         self._parameters["categorical_features"] = self.categorical_features
 
@@ -115,7 +145,7 @@ class Oversampler(BaseSampler):
             y (pd.Series): Target.
         """
         sampler_class = self.sampler
-        _, y_pd = self._prepare_data(X, y)
+        y_pd = infer_feature_types(y)
         sampler_params = {
             k: v
             for k, v in self.parameters.items()
