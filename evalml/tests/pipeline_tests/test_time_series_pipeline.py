@@ -1,6 +1,7 @@
 import re
 from unittest.mock import patch
 
+import featuretools as ft
 import numpy as np
 import pandas as pd
 import pytest
@@ -1869,7 +1870,9 @@ def test_dates_needed_for_prediction_range(
 @pytest.mark.parametrize("set_coverage", [True, False])
 @pytest.mark.parametrize("add_decomposer", [True, False])
 @pytest.mark.parametrize("no_preds_pi_estimator", [True, False])
+@pytest.mark.parametrize("features", [True, False])
 def test_time_series_pipeline_get_prediction_intervals(
+    features,
     no_preds_pi_estimator,
     add_decomposer,
     set_coverage,
@@ -1877,56 +1880,114 @@ def test_time_series_pipeline_get_prediction_intervals(
     ts_data_quadratic_trend,
 ):
     X, y = ts_data_quadratic_trend
-    component_graph = {
-        "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
-        "DateTime Featurizer": ["DateTime Featurizer", "Time Series Featurizer.x", "y"],
-        "Drop NaN Rows Transformer": [
-            "Drop NaN Rows Transformer",
-            "DateTime Featurizer.x",
-            "y",
-        ],
-        "Regressor": [
-            "Exponential Smoothing Regressor"
-            if no_preds_pi_estimator
-            else "Linear Regressor",
-            "Drop NaN Rows Transformer.x",
-            "Drop NaN Rows Transformer.y",
-        ],
+    if features:
+        component_graph = {
+            "DFS Transformer": ["DFS Transformer", "X", "y"],
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
+                "DFS Transformer.x",
+                "y",
+            ],
+            "Regressor": [
+                "Exponential Smoothing Regressor"
+                if no_preds_pi_estimator
+                else "Linear Regressor",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
+            ],
+        }
+        if add_decomposer:
+            component_graph.update(
+                {
+                    "STL Decomposer": [
+                        "STL Decomposer",
+                        "DFS Transformer.x",
+                        "y",
+                    ],
+                    "Drop NaN Rows Transformer": [
+                        "Drop NaN Rows Transformer",
+                        "STL Decomposer.x",
+                        "STL Decomposer.y",
+                    ],
+                },
+            )
+
+    else:
+        component_graph = {
+            "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
+                "Time Series Featurizer.x",
+                "y",
+            ],
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
+                "DateTime Featurizer.x",
+                "y",
+            ],
+            "Regressor": [
+                "Exponential Smoothing Regressor"
+                if no_preds_pi_estimator
+                else "Linear Regressor",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
+            ],
+        }
+        if add_decomposer:
+            component_graph.update(
+                {
+                    "STL Decomposer": [
+                        "STL Decomposer",
+                        "Time Series Featurizer.x",
+                        "y",
+                    ],
+                    "DateTime Featurizer": [
+                        "DateTime Featurizer",
+                        "STL Decomposer.x",
+                        "STL Decomposer.y",
+                    ],
+                    "Drop NaN Rows Transformer": [
+                        "Drop NaN Rows Transformer",
+                        "DateTime Featurizer.x",
+                        "STL Decomposer.y",
+                    ],
+                },
+            )
+
+    pipeline_parameters = {
+        "pipeline": {
+            "gap": 1,
+            "max_delay": 10,
+            "time_index": "date",
+            "forecast_horizon": 7,
+            "random_seed": 0,
+        },
+        "Time Series Featurizer": {
+            "max_delay": 2,
+            "gap": 1,
+            "forecast_horizon": 10,
+            "time_index": "date",
+        },
     }
-    if add_decomposer:
-        component_graph.update(
-            {
-                "STL Decomposer": ["STL Decomposer", "Time Series Featurizer.x", "y"],
-                "DateTime Featurizer": [
-                    "DateTime Featurizer",
-                    "STL Decomposer.x",
-                    "STL Decomposer.y",
-                ],
-                "Drop NaN Rows Transformer": [
-                    "Drop NaN Rows Transformer",
-                    "DateTime Featurizer.x",
-                    "STL Decomposer.y",
-                ],
-            },
+    if features:
+        es = ft.EntitySet()
+        es.add_dataframe(
+            dataframe_name="X",
+            dataframe=X.copy(),
+            index="id",
+            make_index=True,
         )
+        features = ft.dfs(
+            entityset=es,
+            target_dataframe_name="X",
+            max_depth=1,
+            features_only=True,
+        )
+        pipeline_parameters["DFS Transformer"] = {"features": features}
 
     pipeline = TimeSeriesRegressionPipeline(
         component_graph=component_graph,
-        parameters={
-            "pipeline": {
-                "gap": 1,
-                "max_delay": 10,
-                "time_index": "date",
-                "forecast_horizon": 7,
-                "random_seed": 0,
-            },
-            "Time Series Featurizer": {
-                "max_delay": 2,
-                "gap": 1,
-                "forecast_horizon": 10,
-                "time_index": "date",
-            },
-        },
+        parameters=pipeline_parameters,
     )
     limit = int(np.floor(0.66 * len(X)))
     X_train, y_train = X[:limit], y[:limit]
@@ -1949,6 +2010,7 @@ def test_time_series_pipeline_get_prediction_intervals(
         X_train,
         y_train,
     )
+    X_validation, y_validation = pipeline._drop_time_index(X_validation, y_validation)
     features = pipeline.transform_all_but_final(
         X_validation,
         y_validation,
