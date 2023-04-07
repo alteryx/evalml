@@ -45,7 +45,7 @@ class InvalidTargetDataCheck(DataCheck):
 
     multiclass_continuous_threshold = 0.05
 
-    def __init__(self, problem_type, objective, n_unique=100, null_strategy="impute"):
+    def __init__(self, problem_type, objective, n_unique=100, null_strategy="drop"):
         self.problem_type = handle_problem_types(problem_type)
         self.objective = get_objective(objective)
         if n_unique is not None and n_unique <= 0:

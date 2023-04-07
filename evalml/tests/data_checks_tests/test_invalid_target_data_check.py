@@ -214,6 +214,7 @@ def test_invalid_target_data_input_formats():
     invalid_targets_check = InvalidTargetDataCheck(
         "binary",
         get_default_primary_search_objective("binary"),
+        null_strategy="impute",
     )
 
     # test empty pd.Series
@@ -736,6 +737,7 @@ def test_invalid_target_data_check_action_for_data_with_null(
     invalid_targets_check = InvalidTargetDataCheck(
         problem_type,
         get_default_primary_search_objective(problem_type),
+        null_strategy="impute",
     )
     expected = [
         DataCheckError(

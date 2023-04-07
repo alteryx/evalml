@@ -9,7 +9,7 @@ Release Notes
         * Added calls to ``_handle_nullable_types`` in component fit, transform, and predict methods when needed :pr:`4046`, :pr:`4043`
         * Removed existing nullable type handling across AutoMLSearch to just use new handling :pr:`4085`, :pr:`4043`
         * Handled nullable type incompatibility in ``Decomposer`` :pr:`4105`, :pr:`4043`
-        * Removed nullable type incompatibility handling for ARIMA and ExponentialSmoothingRegressor :pr:`4129`
+        * Changed the default value for ``null_strategy`` in ``InvalidTargetDataCheck`` to ``drop`` :pr:`4130`
     * Documentation Changes
     * Testing Changes
         * Fixed installation of prophet for linux nightly tests :pr:`4114`
