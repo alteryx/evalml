@@ -38,7 +38,7 @@ class InvalidTargetDataCheck(DataCheck):
         n_unique (int): Number of unique target values to store when problem type is binary and target
             incorrectly has more than 2 unique values. Non-negative integer. If None, stores all unique values. Defaults to 100.
         null_strategy (str): The type of action option that should be returned if the target is partially null.
-            The options are `impute` (default) and `drop`.
+            The options are `impute` and `drop` (default).
             `impute` - Will return a `DataCheckActionOption` for imputing the target column.
             `drop` - Will return a `DataCheckActionOption` for dropping the null rows in the target column.
     """
@@ -82,7 +82,7 @@ class InvalidTargetDataCheck(DataCheck):
 
             >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
             >>> y = pd.Series(["cat_1", "cat_2", "cat_1", "cat_2"])
-            >>> target_check = InvalidTargetDataCheck("regression", "R2")
+            >>> target_check = InvalidTargetDataCheck("regression", "R2", "impute")
             >>> assert target_check.validate(X, y) == [
             ...     {
             ...         "message": "Target is unsupported Unknown type. Valid Woodwork logical types include: integer, double, boolean, age, age_fractional, integer_nullable, boolean_nullable, age_nullable",
