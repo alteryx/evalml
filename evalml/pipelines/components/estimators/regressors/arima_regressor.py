@@ -65,13 +65,6 @@ class ARIMARegressor(Estimator):
     max_rows = 1000
     max_cols = 7
 
-    # ARIMARegressor doesn't support BooleanNullable not because of nullable type
-    # incompatibilities but because we do not handle their null values correctly
-    # https://github.com/alteryx/evalml/issues/4009
-    # IntegerNullable incompatibility: https://github.com/alteryx/evalml/issues/4015
-    # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4016
-    _integer_nullable_incompatibilities = ["X"]
-
     def __init__(
         self,
         time_index: Optional[Hashable] = None,
@@ -213,7 +206,6 @@ class ARIMARegressor(Estimator):
             ValueError: If y was not passed in.
         """
         X, y = self._manage_woodwork(X, y)
-        X, y = self._handle_nullable_types(X, y)
         if X is not None:
             X = X.ww.fillna(X.mean())
         if y is None:
