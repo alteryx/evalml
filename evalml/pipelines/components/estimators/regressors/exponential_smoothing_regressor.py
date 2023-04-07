@@ -45,11 +45,6 @@ class ExponentialSmoothingRegressor(Estimator):
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
     """[ProblemTypes.TIME_SERIES_REGRESSION]"""
 
-    # Incompatibility: https://github.com/alteryx/evalml/issues/3926
-    # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4016
-    _integer_nullable_incompatibilities = ["y"]
-    _boolean_nullable_incompatibilities = ["y"]
-
     def __init__(
         self,
         trend: Optional[str] = None,
@@ -118,8 +113,6 @@ class ExponentialSmoothingRegressor(Estimator):
         X, y = self._manage_woodwork(X, y)
         if y is None:
             raise ValueError("Exponential Smoothing Regressor requires y as input.")
-
-        X, y = self._handle_nullable_types(X, y)
 
         y = self._remove_datetime(y)
 
