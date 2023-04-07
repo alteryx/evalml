@@ -242,7 +242,7 @@ def test_data_checks_impute_cols(problem_type):
             pd.Series([0, 0.1, 0.2, 0.1, 0.1]),
             logical_type="double",
         )
-    data_check = InvalidTargetDataCheck(problem_type, objective)
+    data_check = InvalidTargetDataCheck(problem_type, objective, null_strategy="impute")
     data_checks_output = data_check.validate(None, y)
 
     action_pipeline = make_pipeline_from_data_check_output(

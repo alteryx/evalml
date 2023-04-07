@@ -16,7 +16,6 @@ from evalml.data_checks import (
     DataChecks,
     DataCheckWarning,
     DateTimeFormatDataCheck,
-    DCAOParameterType,
     DefaultDataChecks,
     InvalidTargetDataCheck,
     TargetDistributionDataCheck,
@@ -27,7 +26,6 @@ from evalml.exceptions import DataCheckInitError
 from evalml.problem_types import (
     ProblemTypes,
     is_classification,
-    is_regression,
     is_time_series,
 )
 
@@ -232,21 +230,10 @@ def get_expected_messages(problem_type):
             details={"num_null_rows": 1, "pct_null_rows": 20.0},
             action_options=[
                 DataCheckActionOption(
-                    DataCheckActionCode.IMPUTE_COL,
+                    DataCheckActionCode.DROP_ROWS,
                     data_check_name="InvalidTargetDataCheck",
-                    parameters={
-                        "impute_strategy": {
-                            "parameter_type": DCAOParameterType.GLOBAL,
-                            "type": "category",
-                            "categories": ["mean", "most_frequent"]
-                            if is_regression(problem_type)
-                            else ["most_frequent"],
-                            "default_value": "mean"
-                            if is_regression(problem_type)
-                            else "most_frequent",
-                        },
-                    },
-                    metadata={"is_target": True},
+                    parameters={},
+                    metadata={"is_target": True, "rows": [2]},
                 ),
             ],
         ).to_dict(),
@@ -478,17 +465,10 @@ def test_default_data_checks_null_rows():
             details={"num_null_rows": 1, "pct_null_rows": 20.0},
             action_options=[
                 DataCheckActionOption(
-                    DataCheckActionCode.IMPUTE_COL,
+                    DataCheckActionCode.DROP_ROWS,
                     data_check_name="InvalidTargetDataCheck",
-                    parameters={
-                        "impute_strategy": {
-                            "parameter_type": DCAOParameterType.GLOBAL,
-                            "type": "category",
-                            "categories": ["mean", "most_frequent"],
-                            "default_value": "mean",
-                        },
-                    },
-                    metadata={"is_target": True},
+                    parameters={},
+                    metadata={"is_target": True, "rows": [2]},
                 ),
             ],
         ).to_dict(),
