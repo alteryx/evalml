@@ -1911,7 +1911,6 @@ def test_time_series_pipeline_get_prediction_intervals(
                     ],
                 },
             )
-
     else:
         component_graph = {
             "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
@@ -2004,39 +2003,41 @@ def test_time_series_pipeline_get_prediction_intervals(
         coverage=coverage,
     )
 
-    predictions = pipeline.predict_in_sample(
-        X_validation,
-        y_validation,
-        X_train,
-        y_train,
-    )
-    X_validation, y_validation = pipeline._drop_time_index(X_validation, y_validation)
-    features = pipeline.transform_all_but_final(
-        X_validation,
-        y_validation,
-        X_train,
-        y_train,
-    )
-    est_intervals = pipeline.estimator.get_prediction_intervals(
-        X=features,
-        y=y_validation,
-        predictions=predictions,
-        coverage=coverage,
-    )
+    if set_coverage is False:
+        coverage = [0.95]
 
     if no_preds_pi_estimator and add_decomposer:
+        predictions = pipeline.predict_in_sample(
+            X_validation,
+            y_validation,
+            X_train,
+            y_train,
+        )
+        X_validation, y_validation = pipeline._drop_time_index(
+            X_validation,
+            y_validation,
+        )
+        features = pipeline.transform_all_but_final(
+            X_validation,
+            y_validation,
+            X_train,
+            y_train,
+        )
+        est_intervals = pipeline.estimator.get_prediction_intervals(
+            X=features,
+            y=y_validation,
+            predictions=predictions,
+            coverage=coverage,
+        )
+
         trend_pred_intervals = pipeline.get_component(
             "STL Decomposer",
         ).get_trend_prediction_intervals(y_validation, coverage=coverage)
         residuals = pipeline.estimator.predict(features)
 
-    if set_coverage is False:
-        coverage = [0.95]
-
-    for cover_value in coverage:
-        for key in [f"{cover_value}_lower", f"{cover_value}_upper"]:
-            pl_interval = pl_intervals[key]
-            if no_preds_pi_estimator and add_decomposer:
+        for cover_value in coverage:
+            for key in [f"{cover_value}_lower", f"{cover_value}_upper"]:
+                pl_interval = pl_intervals[key]
                 residual_pi = est_intervals[key] - residuals
                 expected_res = pd.Series(
                     residual_pi.values
@@ -2045,3 +2046,35 @@ def test_time_series_pipeline_get_prediction_intervals(
                     index=est_intervals[key].index,
                 )
                 assert_series_equal(expected_res, pl_interval)
+
+    if set_coverage:
+        pairs = [(0.75, 0.85), (0.85, 0.95)]
+        for pair in pairs:
+            assert all(
+                [
+                    narrower >= broader
+                    for narrower, broader in zip(
+                        pl_intervals[f"{pair[0]}_lower"],
+                        pl_intervals[f"{pair[1]}_lower"],
+                    )
+                ],
+            )
+            assert all(
+                [
+                    narrower <= broader
+                    for narrower, broader in zip(
+                        pl_intervals[f"{pair[0]}_upper"],
+                        pl_intervals[f"{pair[1]}_upper"],
+                    )
+                ],
+            )
+    for cover_value in coverage:
+        assert all(
+            [
+                lower < upper
+                for lower, upper in zip(
+                    pl_intervals[f"{cover_value}_lower"],
+                    pl_intervals[f"{cover_value}_upper"],
+                )
+            ],
+        )
