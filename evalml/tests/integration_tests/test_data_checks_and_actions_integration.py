@@ -297,3 +297,24 @@ def test_data_checks_suggests_drop_rows():
     X_t, y_t = action_pipeline.transform(X, y)
     assert_frame_equal(X_expected, X_t)
     assert_series_equal(y_expected, y_t)
+
+    y = pd.Series(np.concatenate([np.tile([0, 1], 49), [np.nan, np.nan]]))
+
+    data_check = InvalidTargetDataCheck("binary", "Log Loss Binary")
+    data_checks_output = data_check.validate(None, y)
+
+    action_pipeline = make_pipeline_from_data_check_output("binary", data_checks_output)
+    assert action_pipeline == BinaryClassificationPipeline(
+        component_graph={"Drop Rows Transformer": [DropRowsTransformer, "X", "y"]},
+        parameters={"Drop Rows Transformer": {"indices_to_drop": [98, 99]}},
+        random_seed=0,
+    )
+
+    X_expected = X.drop([98, 99])
+    X_expected.ww.init()
+    y_expected = y.drop([98, 99]).astype("Int64")
+
+    action_pipeline.fit(X, y)
+    X_t, y_t = action_pipeline.transform(X, y)
+    assert_frame_equal(X_expected, X_t)
+    assert_series_equal(y_expected, y_t)
