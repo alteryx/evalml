@@ -82,7 +82,7 @@ class InvalidTargetDataCheck(DataCheck):
 
             >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
             >>> y = pd.Series(["cat_1", "cat_2", "cat_1", "cat_2"])
-            >>> target_check = InvalidTargetDataCheck("regression", "R2", "impute")
+            >>> target_check = InvalidTargetDataCheck("regression", "R2", null_strategy="impute")
             >>> assert target_check.validate(X, y) == [
             ...     {
             ...         "message": "Target is unsupported Unknown type. Valid Woodwork logical types include: integer, double, boolean, age, age_fractional, integer_nullable, boolean_nullable, age_nullable",
