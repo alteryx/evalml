@@ -125,7 +125,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...         "level": "error",
             ...         "details": {
             ...             "columns": None,
-            ...             "rows": None,
+            ...             "rows": [1, 3],
             ...             "num_null_rows": 2,
             ...             "pct_null_rows": 50.0
             ...         },
