@@ -9,7 +9,6 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
-    downcast_int_nullable_to_double,
     import_or_raise,
     infer_feature_types,
 )
@@ -65,13 +64,6 @@ class ARIMARegressor(Estimator):
 
     max_rows = 1000
     max_cols = 7
-
-    # ARIMARegressor doesn't support BooleanNullable not because of nullable type
-    # incompatibilities but because we do not handle their null values correctly
-    # https://github.com/alteryx/evalml/issues/4009
-    # IntegerNullable incompatibility: https://github.com/alteryx/evalml/issues/4015
-    # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4016
-    _integer_nullable_incompatibilities = ["X"]
 
     def __init__(
         self,
@@ -213,10 +205,9 @@ class ARIMARegressor(Estimator):
         Raises:
             ValueError: If y was not passed in.
         """
-        if X is not None:
-            X = downcast_int_nullable_to_double(X)
-            X = X.fillna(X.mean())
         X, y = self._manage_woodwork(X, y)
+        if X is not None:
+            X = X.ww.fillna(X.mean())
         if y is None:
             raise ValueError("ARIMA Regressor requires y as input.")
 

@@ -45,11 +45,6 @@ class ExponentialSmoothingRegressor(Estimator):
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
     """[ProblemTypes.TIME_SERIES_REGRESSION]"""
 
-    # Incompatibility: https://github.com/alteryx/evalml/issues/3926
-    # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4016
-    _integer_nullable_incompatibilities = ["y"]
-    _boolean_nullable_incompatibilities = ["y"]
-
     def __init__(
         self,
         trend: Optional[str] = None,
@@ -166,7 +161,6 @@ class ExponentialSmoothingRegressor(Estimator):
         if coverage is None:
             coverage = [0.95]
         X, y = self._manage_woodwork(X, y)
-
         # Accesses the fitted statsmodels model within sktime
         # nsimulations represents how many steps should be simulated
         # repetitions represents the number of simulations that should be run (confusing, I know)

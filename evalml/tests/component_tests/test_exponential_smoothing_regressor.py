@@ -202,7 +202,7 @@ def test_predict_no_X_in_fit(
     "nullable_y_ltype",
     ["IntegerNullable", "AgeNullable", "BooleanNullable"],
 )
-def test_handle_nullable_types(
+def test_estimator_with_nullable_types(
     nullable_type_test_data,
     nullable_type_target,
     nullable_y_ltype,
@@ -213,53 +213,7 @@ def test_handle_nullable_types(
 
     comp = ExponentialSmoothingRegressor()
 
-    X_d, y_d = comp._handle_nullable_types(X, y)
-    comp.fit(X_d, y_d)
-    comp.predict(X_d)
-
-
-@pytest.mark.parametrize(
-    "nullable_y_ltype",
-    ["IntegerNullable", "AgeNullable", "BooleanNullable"],
-)
-@pytest.mark.parametrize(
-    "handle_incompatibility",
-    [
-        True,
-        pytest.param(
-            False,
-            marks=pytest.mark.xfail(strict=True, raises=ValueError),
-        ),
-    ],
-)
-def test_exponential_smoothing_regressor_nullable_type_incompatibility(
-    nullable_type_target,
-    nullable_type_test_data,
-    handle_incompatibility,
-    nullable_y_ltype,
-):
-    """Testing that the nullable type incompatibility that caused us to add handling for ExponentialSmoothingRegressor
-    is still present in sktime's ForecastingHorizon component. If this test is causing the test suite to fail
-    because the code below no longer raises the expected ValueError, we should confirm that the nullable
-    types now work for our use case and remove the nullable type handling logic from ExponentialSmoothingRegressor.
-    """
-    from sktime.forecasting.base import ForecastingHorizon
-    from sktime.forecasting.exp_smoothing import ExponentialSmoothing
-
-    y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
-    X = nullable_type_test_data(has_nans=False)
-    X = X.ww.select(include=["numeric", "Boolean", "BooleanNullable"])
-
-    if handle_incompatibility:
-        comp = ExponentialSmoothingRegressor()
-        X, y = comp._handle_nullable_types(X, y)
-
-    X_train = X.ww.iloc[:10, :]
-    X_test = X.ww.iloc[10:, :]
-    y_train = y[:10]
-
-    fh_ = ForecastingHorizon([i + 1 for i in range(len(X_test))], is_relative=True)
-
-    sk_comp = ExponentialSmoothing()
-    sk_comp.fit(X=X_train, y=y_train)
-    sk_comp.predict(fh=fh_)
+    # Copy X to avoid X taking on any mutations from the internal _handle_nullable_types call
+    comp.fit(X.ww.copy(), y)
+    comp.predict(X.ww.copy())
+    comp.get_prediction_intervals(X.ww.copy())

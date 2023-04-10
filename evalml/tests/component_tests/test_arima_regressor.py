@@ -4,8 +4,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-from sktime.forecasting.arima import AutoARIMA as SKArima
-from sktime.forecasting.base import ForecastingHorizon
+import woodwork as ww
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ARIMARegressor
@@ -476,11 +475,15 @@ def test_arima_regressor_can_forecast_arbitrary_dates(use_covariates, ts_data):
     )
 
 
-def test_arima_regressor_nullable_handling():
+@pytest.mark.parametrize(
+    "nullable_ltype",
+    ["IntegerNullable", "AgeNullable"],
+)
+def test_arima_regressor_with_nullable_types(nullable_ltype):
     X = pd.DataFrame()
     X["nums"] = pd.Series([i for i in range(100)], dtype="Int64")
     X.index = pd.date_range("1/1/21", periods=100)
-    X.ww.init(logical_types={"nums": "IntegerNullable"})
+    X.ww.init(logical_types={"nums": nullable_ltype})
 
     y = pd.Series([i for i in range(100)], dtype="Int64")
     y.index = pd.date_range("1/1/21", periods=100)
@@ -489,6 +492,7 @@ def test_arima_regressor_nullable_handling():
     X_test = X.ww.iloc[80:, :]
 
     y_train = y[:80]
+    y_train = ww.init_series(y_train, logical_type=nullable_ltype)
 
     arima_params = {
         "trend": None,
@@ -505,67 +509,7 @@ def test_arima_regressor_nullable_handling():
 
     evalml_arima = ARIMARegressor(**arima_params)
     evalml_arima.fit(X_train, y_train)
-    preds = evalml_arima.predict(X=X_test)
+    preds = evalml_arima.predict(X=X_test.ww.copy())
     assert not preds.isnull().any().any()
-
-
-@pytest.mark.parametrize(
-    "nullable_ltype",
-    ["IntegerNullable", "AgeNullable"],
-)
-@pytest.mark.parametrize(
-    "handle_incompatibility",
-    [
-        True,
-        pytest.param(
-            False,
-            marks=pytest.mark.xfail(strict=True, raises=ValueError),
-        ),
-    ],
-)
-def test_arima_nullable_type_incompatibility(
-    handle_incompatibility,
-    nullable_ltype,
-):
-    """Testing that the nullable type incompatibility that caused us to add handling for ARIMARegressor
-    is still present in sktime's AutoARIMA component. If this test is causing the test suite to fail
-    because the code below no longer raises the expected ValueError, we should confirm that the nullable
-    types now work for our use case and remove the nullable type handling logic from ARIMARegressor.
-    """
-    X = pd.DataFrame()
-    X["nums"] = pd.Series([i for i in range(100)], dtype="Int64")
-    X.index = pd.date_range("1/1/21", periods=100)
-    X.ww.init(logical_types={"nums": nullable_ltype})
-
-    y = pd.Series([i for i in range(100)], dtype="Int64")
-    y.index = pd.date_range("1/1/21", periods=100)
-
-    arima_params = {
-        "trend": None,
-        "start_p": 2,
-        "d": 0,
-        "start_q": 2,
-        "max_p": 5,
-        "max_d": 2,
-        "max_q": 5,
-        "seasonal": True,
-        "maxiter": 10,
-        "n_jobs": -1,
-    }
-
-    if handle_incompatibility:
-        evalml_arima = ARIMARegressor(**arima_params)
-        X, y = evalml_arima._handle_nullable_types(X, y)
-
-    X_train = X.ww.iloc[:80, :]
-    X_test = X.ww.iloc[80:, :]
-    y_train = y[:80]
-
-    # SKTime's AutoARIMA regressor cannot handle IntegerNullable type
-    sk_arima = SKArima(**arima_params)
-    fh_ = ForecastingHorizon(
-        [i + 1 for i in range(len(X_test))],
-        is_relative=True,
-    )
-    sk_arima.fit(y=y_train, X=X_train)
-    sk_arima.predict(fh=fh_, X=X_test)
+    results_coverage = evalml_arima.get_prediction_intervals(X=X_test.ww.copy())
+    assert results_coverage

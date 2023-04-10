@@ -151,3 +151,26 @@ def test_undersampler_sampling_dict_strings():
 
     assert len(new_X) == sum(expected_result.values())
     assert new_y.value_counts().to_dict() == expected_result
+
+
+@pytest.mark.parametrize(
+    "nullable_y_ltype",
+    ["IntegerNullable", "AgeNullable", "BooleanNullable"],
+)
+def test_undersampler_with_nullable_types(
+    nullable_type_test_data,
+    nullable_type_target,
+    nullable_y_ltype,
+):
+    X = nullable_type_test_data(has_nans=False)
+    # Undersampler can only handle numeric and boolean columns
+    X = X.ww.select(include=["numeric", "Boolean", "BooleanNullable"])
+    y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
+
+    oversampler = Undersampler(sampling_ratio_dict={0: 1, 1: 0.5})
+    oversampler.fit(X, y)
+    X_t, y_t = oversampler.transform(X, y)
+
+    # Confirm oversampling happened by checking the length increased
+    assert len(X_t) < len(X)
+    assert len(y_t) < len(y)
