@@ -547,3 +547,16 @@ def test_target_leakage_target_string_all():
         ).to_dict(),
     ]
     assert leakage_check.validate(X, y) == expected
+
+
+def test_target_leakage_target_all_matches_max():
+    y = pd.Series([1, 0, 1, 1] * 10)
+    X = pd.DataFrame()
+    X["target_y"] = y * 3
+    X["target_y_y"] = y - 1
+    X["target"] = y / 10
+    X["d"] = ~y
+    X["e"] = [0, 1, 2, 3] * 10
+    leakage_check_all = TargetLeakageDataCheck(pct_corr_threshold=0.8, method="all")
+    leakage_check_max = TargetLeakageDataCheck(pct_corr_threshold=0.8, method="max")
+    assert leakage_check_all.validate(X, y) == leakage_check_max.validate(X, y)
