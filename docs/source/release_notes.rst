@@ -12,12 +12,16 @@ Release Notes
     **Breaking Changes**
 
 
-**v0.73.0 Apr. 3, 2023**
+**v0.73.0 Apr. 10, 2023**
+    * Enhancements
+        * Allowed ``InvalidTargetDataCheck`` to return a ``DROP_ROWS`` ``DataCheckActionOption`` :pr:`4116`
+        * Implemented prediction intervals for non-time series native pipelines using the naïve method :pr:`4127`
     * Changes
         * Removed unnecessary logic from imputer components prior to nullable type handling :pr:`4038`, :pr:`4043`
         * Added calls to ``_handle_nullable_types`` in component fit, transform, and predict methods when needed :pr:`4046`, :pr:`4043`
         * Removed existing nullable type handling across AutoMLSearch to just use new handling :pr:`4085`, :pr:`4043`
         * Handled nullable type incompatibility in ``Decomposer`` :pr:`4105`, :pr:`4043
+        * Removed nullable type incompatibility handling for ARIMA and ExponentialSmoothingRegressor :pr:`4129`
     * Testing Changes
         * Fixed installation of prophet for linux nightly tests :pr:`4114`
 
