@@ -167,6 +167,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 X.ww.set_time_index(None)
                 X.ww.set_index(self.time_index)
                 X = X.ww.drop(self.time_index)
+                X.index.freq = time_index.freq
             else:
                 X.set_index(time_index)
                 X = X.drop(self.time_index, axis=1)
@@ -174,7 +175,14 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             y.index.name = index_name
         return X, y
 
-    def transform_all_but_final(self, X, y=None, X_train=None, y_train=None):
+    def transform_all_but_final(
+        self,
+        X,
+        y=None,
+        X_train=None,
+        y_train=None,
+        calculating_residuals=False,
+    ):
         """Transforms the data by applying all pre-processing components.
 
         Args:
@@ -182,6 +190,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             y (pd.Series): Targets corresponding to the pipeline targets.
             X_train (pd.DataFrame): Training data used to generate generates from past observations.
             y_train (pd.Series): Training targets used to generate features from past observations.
+            calculating_residuals (bool): Whether we're calling predict_in_sample to calculate the residuals.  This means
+                the X and y arguments are not future data, but actually the train data.
 
         Returns:
             pd.DataFrame: New transformed features.
@@ -192,7 +202,11 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         X, y = self._convert_to_woodwork(X, y)
 
         empty_training_data = X_train.empty or y_train.empty
-        if empty_training_data or self.should_skip_featurization:
+        if (
+            empty_training_data
+            or self.should_skip_featurization
+            or calculating_residuals
+        ):
             features_holdout = super().transform_all_but_final(X, y)
         else:
             padded_features, padded_target = self._add_training_data_to_X_Y(
@@ -205,7 +219,15 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             features_holdout = features.ww.iloc[-len(y) :]
         return features_holdout
 
-    def predict_in_sample(self, X, y, X_train, y_train, objective=None):
+    def predict_in_sample(
+        self,
+        X,
+        y,
+        X_train,
+        y_train,
+        objective=None,
+        calculating_residuals=False,
+    ):
         """Predict on future data where the target is known, e.g. cross validation.
 
         Args:
@@ -214,6 +236,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
             y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
             objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
+            calculating_residuals (bool): Whether we're calling predict_in_sample to calculate the residuals.  This means
+                the X and y arguments are not future data, but actually the train data.
 
         Returns:
             pd.Series: Estimated labels.
@@ -228,9 +252,16 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         X, y = self._drop_time_index(X, y)
         X_train, y_train = self._drop_time_index(X_train, y_train)
         target = infer_feature_types(y)
-        features = self.transform_all_but_final(X, target, X_train, y_train)
+        features = self.transform_all_but_final(
+            X,
+            target,
+            X_train,
+            y_train,
+            calculating_residuals=calculating_residuals,
+        )
         predictions = self._estimator_predict(features)
-        predictions.index = y.index
+        if len(predictions) == len(y):
+            predictions.index = y.index
         predictions = self.inverse_transform(predictions)
         predictions = predictions.rename(self.input_target_name)
         return infer_feature_types(predictions)

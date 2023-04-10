@@ -1,6 +1,7 @@
 import re
 from unittest.mock import patch
 
+import featuretools as ft
 import numpy as np
 import pandas as pd
 import pytest
@@ -1868,64 +1869,127 @@ def test_dates_needed_for_prediction_range(
 
 @pytest.mark.parametrize("set_coverage", [True, False])
 @pytest.mark.parametrize("add_decomposer", [True, False])
-@pytest.mark.parametrize("no_preds_pi_estimator", [True, False])
+@pytest.mark.parametrize("ts_native_estimator", [True, False])
+@pytest.mark.parametrize("featuretools_first", [True, False])
 def test_time_series_pipeline_get_prediction_intervals(
-    no_preds_pi_estimator,
+    featuretools_first,
+    ts_native_estimator,
     add_decomposer,
     set_coverage,
     ts_data_long,
+    ts_data_quadratic_trend,
 ):
-    X, _, y = ts_data_long
-    component_graph = {
-        "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
-        "DateTime Featurizer": ["DateTime Featurizer", "Time Series Featurizer.x", "y"],
-        "Drop NaN Rows Transformer": [
-            "Drop NaN Rows Transformer",
-            "DateTime Featurizer.x",
-            "y",
-        ],
-        "Regressor": [
-            "Exponential Smoothing Regressor"
-            if no_preds_pi_estimator
-            else "Linear Regressor",
-            "Drop NaN Rows Transformer.x",
-            "Drop NaN Rows Transformer.y",
-        ],
+    X, y = ts_data_quadratic_trend
+
+    # Test the case where we featurize via featuretools instead of our
+    # native transformers
+    if featuretools_first:
+        component_graph = {
+            "DFS Transformer": ["DFS Transformer", "X", "y"],
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
+                "DFS Transformer.x",
+                "y",
+            ],
+            "Regressor": [
+                "Exponential Smoothing Regressor"
+                if ts_native_estimator
+                else "Linear Regressor",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
+            ],
+        }
+        if add_decomposer:
+            component_graph.update(
+                {
+                    "STL Decomposer": [
+                        "STL Decomposer",
+                        "DFS Transformer.x",
+                        "y",
+                    ],
+                    "Drop NaN Rows Transformer": [
+                        "Drop NaN Rows Transformer",
+                        "STL Decomposer.x",
+                        "STL Decomposer.y",
+                    ],
+                },
+            )
+    else:
+        component_graph = {
+            "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
+                "Time Series Featurizer.x",
+                "y",
+            ],
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
+                "DateTime Featurizer.x",
+                "y",
+            ],
+            "Regressor": [
+                "Exponential Smoothing Regressor"
+                if ts_native_estimator
+                else "Linear Regressor",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
+            ],
+        }
+        if add_decomposer:
+            component_graph.update(
+                {
+                    "STL Decomposer": [
+                        "STL Decomposer",
+                        "Time Series Featurizer.x",
+                        "y",
+                    ],
+                    "DateTime Featurizer": [
+                        "DateTime Featurizer",
+                        "STL Decomposer.x",
+                        "STL Decomposer.y",
+                    ],
+                    "Drop NaN Rows Transformer": [
+                        "Drop NaN Rows Transformer",
+                        "DateTime Featurizer.x",
+                        "STL Decomposer.y",
+                    ],
+                },
+            )
+
+    pipeline_parameters = {
+        "pipeline": {
+            "gap": 1,
+            "max_delay": 10,
+            "time_index": "date",
+            "forecast_horizon": 7,
+            "random_seed": 0,
+        },
+        "Time Series Featurizer": {
+            "max_delay": 2,
+            "gap": 1,
+            "forecast_horizon": 10,
+            "time_index": "date",
+        },
     }
-    if add_decomposer:
-        component_graph.update(
-            {
-                "STL Decomposer": ["STL Decomposer", "Time Series Featurizer.x", "y"],
-                "DateTime Featurizer": [
-                    "DateTime Featurizer",
-                    "STL Decomposer.x",
-                    "STL Decomposer.y",
-                ],
-                "Drop NaN Rows Transformer": [
-                    "Drop NaN Rows Transformer",
-                    "DateTime Featurizer.x",
-                    "STL Decomposer.y",
-                ],
-            },
+    if featuretools_first:
+        es = ft.EntitySet()
+        es.add_dataframe(
+            dataframe_name="X",
+            dataframe=X.copy(),
+            index="id",
+            make_index=True,
         )
+        features = ft.dfs(
+            entityset=es,
+            target_dataframe_name="X",
+            max_depth=1,
+            features_only=True,
+        )
+        pipeline_parameters["DFS Transformer"] = {"features": features}
 
     pipeline = TimeSeriesRegressionPipeline(
         component_graph=component_graph,
-        parameters={
-            "pipeline": {
-                "gap": 1,
-                "max_delay": 10,
-                "time_index": "date",
-                "forecast_horizon": 7,
-                "random_seed": 0,
-            },
-            "Time Series Featurizer": {
-                "max_delay": 2,
-                "gap": 1,
-                "forecast_horizon": 10,
-                "time_index": "date",
-            },
-        },
+        parameters=pipeline_parameters,
     )
     limit = int(np.floor(0.66 * len(X)))
     X_train, y_train = X[:limit], y[:limit]
@@ -1942,38 +2006,43 @@ def test_time_series_pipeline_get_prediction_intervals(
         coverage=coverage,
     )
 
-    predictions = pipeline.predict_in_sample(
-        X_validation,
-        y_validation,
-        X_train,
-        y_train,
-    )
-    features = pipeline.transform_all_but_final(
-        X_validation,
-        y_validation,
-        X_train,
-        y_train,
-    )
-    est_intervals = pipeline.estimator.get_prediction_intervals(
-        X=features,
-        y=y_validation,
-        predictions=predictions,
-        coverage=coverage,
-    )
+    if set_coverage is False:
+        coverage = [0.95]
 
-    if no_preds_pi_estimator and add_decomposer:
+    # The time series native estimators are handled separately when they have
+    # a decomposer in the pipeline
+    if ts_native_estimator and add_decomposer:
+        predictions = pipeline.predict_in_sample(
+            X_validation,
+            y_validation,
+            X_train,
+            y_train,
+        )
+        X_validation, y_validation = pipeline._drop_time_index(
+            X_validation,
+            y_validation,
+        )
+        features = pipeline.transform_all_but_final(
+            X_validation,
+            y_validation,
+            X_train,
+            y_train,
+        )
+        est_intervals = pipeline.estimator.get_prediction_intervals(
+            X=features,
+            y=y_validation,
+            predictions=predictions,
+            coverage=coverage,
+        )
+
         trend_pred_intervals = pipeline.get_component(
             "STL Decomposer",
         ).get_trend_prediction_intervals(y_validation, coverage=coverage)
         residuals = pipeline.estimator.predict(features)
 
-    if set_coverage is False:
-        coverage = [0.95]
-
-    for cover_value in coverage:
-        for key in [f"{cover_value}_lower", f"{cover_value}_upper"]:
-            pl_interval = pl_intervals[key]
-            if no_preds_pi_estimator and add_decomposer:
+        for cover_value in coverage:
+            for key in [f"{cover_value}_lower", f"{cover_value}_upper"]:
+                pl_interval = pl_intervals[key]
                 residual_pi = est_intervals[key] - residuals
                 expected_res = pd.Series(
                     residual_pi.values
@@ -1982,5 +2051,35 @@ def test_time_series_pipeline_get_prediction_intervals(
                     index=est_intervals[key].index,
                 )
                 assert_series_equal(expected_res, pl_interval)
-            else:
-                assert_series_equal(est_intervals[key], pl_interval)
+
+    if set_coverage:
+        pairs = [(0.75, 0.85), (0.85, 0.95)]
+        for pair in pairs:
+            assert all(
+                [
+                    narrower >= broader
+                    for narrower, broader in zip(
+                        pl_intervals[f"{pair[0]}_lower"],
+                        pl_intervals[f"{pair[1]}_lower"],
+                    )
+                ],
+            )
+            assert all(
+                [
+                    narrower <= broader
+                    for narrower, broader in zip(
+                        pl_intervals[f"{pair[0]}_upper"],
+                        pl_intervals[f"{pair[1]}_upper"],
+                    )
+                ],
+            )
+    for cover_value in coverage:
+        assert all(
+            [
+                lower < upper
+                for lower, upper in zip(
+                    pl_intervals[f"{cover_value}_lower"],
+                    pl_intervals[f"{cover_value}_upper"],
+                )
+            ],
+        )

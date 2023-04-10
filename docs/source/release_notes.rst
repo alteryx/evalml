@@ -2,7 +2,8 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Allow ``InvalidTargetDataCheck`` to return a ``DROP_ROWS`` ``DataCheckActionOption`` :pr:`4116`
+        * Allowed ``InvalidTargetDataCheck`` to return a ``DROP_ROWS`` ``DataCheckActionOption`` :pr:`4116`
+        * Implemented prediction intervals for non-time series native pipelines using the naïve method :pr:`4127`
     * Fixes
     * Changes
         * Removed unnecessary logic from imputer components prior to nullable type handling :pr:`4038`, :pr:`4043`
