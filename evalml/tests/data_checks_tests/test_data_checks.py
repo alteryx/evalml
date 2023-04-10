@@ -227,7 +227,7 @@ def get_expected_messages(problem_type):
             message="1 row(s) (20.0%) of target values are null",
             data_check_name="InvalidTargetDataCheck",
             message_code=DataCheckMessageCode.TARGET_HAS_NULL,
-            details={"num_null_rows": 1, "pct_null_rows": 20.0},
+            details={"num_null_rows": 1, "pct_null_rows": 20.0, "rows": [2]},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
@@ -462,7 +462,7 @@ def test_default_data_checks_null_rows():
             message="1 row(s) (20.0%) of target values are null",
             data_check_name="InvalidTargetDataCheck",
             message_code=DataCheckMessageCode.TARGET_HAS_NULL,
-            details={"num_null_rows": 1, "pct_null_rows": 20.0},
+            details={"num_null_rows": 1, "pct_null_rows": 20.0, "rows": [2]},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
