@@ -38,14 +38,14 @@ class InvalidTargetDataCheck(DataCheck):
         n_unique (int): Number of unique target values to store when problem type is binary and target
             incorrectly has more than 2 unique values. Non-negative integer. If None, stores all unique values. Defaults to 100.
         null_strategy (str): The type of action option that should be returned if the target is partially null.
-            The options are `impute` (default) and `drop`.
+            The options are `impute` and `drop` (default).
             `impute` - Will return a `DataCheckActionOption` for imputing the target column.
             `drop` - Will return a `DataCheckActionOption` for dropping the null rows in the target column.
     """
 
     multiclass_continuous_threshold = 0.05
 
-    def __init__(self, problem_type, objective, n_unique=100, null_strategy="impute"):
+    def __init__(self, problem_type, objective, n_unique=100, null_strategy="drop"):
         self.problem_type = handle_problem_types(problem_type)
         self.objective = get_objective(objective)
         if n_unique is not None and n_unique <= 0:
@@ -82,7 +82,7 @@ class InvalidTargetDataCheck(DataCheck):
 
             >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
             >>> y = pd.Series(["cat_1", "cat_2", "cat_1", "cat_2"])
-            >>> target_check = InvalidTargetDataCheck("regression", "R2")
+            >>> target_check = InvalidTargetDataCheck("regression", "R2", null_strategy="impute")
             >>> assert target_check.validate(X, y) == [
             ...     {
             ...         "message": "Target is unsupported Unknown type. Valid Woodwork logical types include: integer, double, boolean, age, age_fractional, integer_nullable, boolean_nullable, age_nullable",
@@ -125,7 +125,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...         "level": "error",
             ...         "details": {
             ...             "columns": None,
-            ...             "rows": None,
+            ...             "rows": [1, 3],
             ...             "num_null_rows": 2,
             ...             "pct_null_rows": 50.0
             ...         },
@@ -294,6 +294,7 @@ class InvalidTargetDataCheck(DataCheck):
                     details={
                         "num_null_rows": num_null_rows,
                         "pct_null_rows": pct_null_rows,
+                        "rows": rows_to_drop,
                     },
                     action_options=action_options,
                 ).to_dict(),

@@ -198,7 +198,7 @@ def test_invalid_target_data_null_strategies(null_strategy):
             message="2 row(s) (40.0%) of target values are null",
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_HAS_NULL,
-            details={"num_null_rows": 2, "pct_null_rows": 40.0},
+            details={"num_null_rows": 2, "pct_null_rows": 40.0, "rows": [0, 3]},
             action_options=expected_action_options,
         ).to_dict(),
     ]
@@ -214,6 +214,7 @@ def test_invalid_target_data_input_formats():
     invalid_targets_check = InvalidTargetDataCheck(
         "binary",
         get_default_primary_search_objective("binary"),
+        null_strategy="impute",
     )
 
     # test empty pd.Series
@@ -233,7 +234,7 @@ def test_invalid_target_data_input_formats():
             message="3 row(s) (75.0%) of target values are null",
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_HAS_NULL,
-            details={"num_null_rows": 3, "pct_null_rows": 75},
+            details={"num_null_rows": 3, "pct_null_rows": 75, "rows": [0, 1, 2]},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
@@ -736,13 +737,14 @@ def test_invalid_target_data_check_action_for_data_with_null(
     invalid_targets_check = InvalidTargetDataCheck(
         problem_type,
         get_default_primary_search_objective(problem_type),
+        null_strategy="impute",
     )
     expected = [
         DataCheckError(
             message="3 row(s) (30.0%) of target values are null",
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_HAS_NULL,
-            details={"num_null_rows": 3, "pct_null_rows": 30.0},
+            details={"num_null_rows": 3, "pct_null_rows": 30.0, "rows": [0, 1, 2]},
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
