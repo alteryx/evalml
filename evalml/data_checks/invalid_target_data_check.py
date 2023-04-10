@@ -294,6 +294,7 @@ class InvalidTargetDataCheck(DataCheck):
                     details={
                         "num_null_rows": num_null_rows,
                         "pct_null_rows": pct_null_rows,
+                        "rows": rows_to_drop,
                     },
                     action_options=action_options,
                 ).to_dict(),
