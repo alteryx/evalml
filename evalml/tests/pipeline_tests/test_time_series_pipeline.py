@@ -1869,18 +1869,21 @@ def test_dates_needed_for_prediction_range(
 
 @pytest.mark.parametrize("set_coverage", [True, False])
 @pytest.mark.parametrize("add_decomposer", [True, False])
-@pytest.mark.parametrize("no_preds_pi_estimator", [True, False])
-@pytest.mark.parametrize("features", [True, False])
+@pytest.mark.parametrize("ts_native_estimator", [True, False])
+@pytest.mark.parametrize("featuretools_first", [True, False])
 def test_time_series_pipeline_get_prediction_intervals(
-    features,
-    no_preds_pi_estimator,
+    featuretools_first,
+    ts_native_estimator,
     add_decomposer,
     set_coverage,
     ts_data_long,
     ts_data_quadratic_trend,
 ):
     X, y = ts_data_quadratic_trend
-    if features:
+
+    # Test the case where we featurize via featuretools instead of our
+    # native transformers
+    if featuretools_first:
         component_graph = {
             "DFS Transformer": ["DFS Transformer", "X", "y"],
             "Drop NaN Rows Transformer": [
@@ -1890,7 +1893,7 @@ def test_time_series_pipeline_get_prediction_intervals(
             ],
             "Regressor": [
                 "Exponential Smoothing Regressor"
-                if no_preds_pi_estimator
+                if ts_native_estimator
                 else "Linear Regressor",
                 "Drop NaN Rows Transformer.x",
                 "Drop NaN Rows Transformer.y",
@@ -1926,7 +1929,7 @@ def test_time_series_pipeline_get_prediction_intervals(
             ],
             "Regressor": [
                 "Exponential Smoothing Regressor"
-                if no_preds_pi_estimator
+                if ts_native_estimator
                 else "Linear Regressor",
                 "Drop NaN Rows Transformer.x",
                 "Drop NaN Rows Transformer.y",
@@ -1968,7 +1971,7 @@ def test_time_series_pipeline_get_prediction_intervals(
             "time_index": "date",
         },
     }
-    if features:
+    if featuretools_first:
         es = ft.EntitySet()
         es.add_dataframe(
             dataframe_name="X",
@@ -2006,7 +2009,9 @@ def test_time_series_pipeline_get_prediction_intervals(
     if set_coverage is False:
         coverage = [0.95]
 
-    if no_preds_pi_estimator and add_decomposer:
+    # The time series native estimators are handled separately when they have
+    # a decomposer in the pipeline
+    if ts_native_estimator and add_decomposer:
         predictions = pipeline.predict_in_sample(
             X_validation,
             y_validation,
