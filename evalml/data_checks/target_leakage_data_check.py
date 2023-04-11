@@ -21,12 +21,12 @@ class TargetLeakageDataCheck(DataCheck):
 
     Args:
         pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
-        method (string): The method to determine correlation. Use 'max' for the maximum correlation, or for specific correlation metrics, use their name (ie 'mutual_info' for mutual information, 'pearson' for Pearson correlation, etc).
+        method (string): The method to determine correlation. Use 'all' or 'max' for the maximum correlation, or for specific correlation metrics, use their name (ie 'mutual_info' for mutual information, 'pearson' for Pearson correlation, etc).
             possible methods can be found in Woodwork's `config <https://woodwork.alteryx.com/en/stable/guides/setting_config_options.html?highlight=config#Viewing-Config-Settings>`_, under `correlation_metrics`.
-            Excludes 'all'. Defaults to 'mutual_info'.
+            Defaults to 'all'.
     """
 
-    def __init__(self, pct_corr_threshold=0.95, method="mutual_info"):
+    def __init__(self, pct_corr_threshold=0.95, method="all"):
         if pct_corr_threshold < 0 or pct_corr_threshold > 1:
             raise ValueError(
                 "pct_corr_threshold must be a float between 0 and 1, inclusive.",
@@ -36,10 +36,9 @@ class TargetLeakageDataCheck(DataCheck):
             raise ValueError(
                 f"Method '{method}' not in available correlation methods. Available methods include {methods}",
             )
-        if method == "all":
-            raise ValueError("Cannot use 'all' as the method")
         self.pct_corr_threshold = pct_corr_threshold
         self.method = method
+        self._method_to_check = "max" if method == "all" else method
 
     def _calculate_dependence(self, X, y):
         highly_corr_cols = []
@@ -60,7 +59,7 @@ class TargetLeakageDataCheck(DataCheck):
             [
                 corr_info["column_1"]
                 for corr_info in dep_corr
-                if abs(corr_info[self.method]) >= self.pct_corr_threshold
+                if abs(corr_info[self._method_to_check]) >= self.pct_corr_threshold
             ],
             key=lambda x: X2.columns.tolist().index(x),
         )
