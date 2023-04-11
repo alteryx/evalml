@@ -146,6 +146,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
             "percent_better_than_baseline_all_objectives",
             "percent_better_than_baseline",
             "ranking_score",
+            "ranking_additional_objectives",
             "holdout_score",
         }
         assert results["id"] == pipeline_id
@@ -170,6 +171,9 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
             results["ranking_score"]
             == pd.Series([fold["mean_cv_score"] for fold in results["cv_data"]]).mean()
         )
+        assert isinstance(results["ranking_additional_objectives"], dict)
+        for score in results["ranking_additional_objectives"].values():
+            assert score is not None
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
     assert "holdout_score" not in automl.rankings.columns

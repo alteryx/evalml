@@ -1327,23 +1327,27 @@ class AutoMLSearch:
         job_log.write_to_logger(self.logger)
         training_time = evaluation_results["training_time"]
         cv_data = evaluation_results["cv_data"]
-        cv_scores = evaluation_results["cv_scores"]
-        is_baseline = pipeline.model_family == ModelFamily.BASELINE
-        mean_cv_score = np.nan if len(cv_scores) == 1 else cv_scores.mean()
-        holdout_score = evaluation_results["holdout_score"]
-        if len(cv_scores) == 1 and holdout_score is None:
-            ranking_score = cv_scores[0]
-        elif holdout_score is None:
-            ranking_score = mean_cv_score
-        else:
-            ranking_score = holdout_score
-        cv_sd = cv_scores.std()
-
-        percent_better_than_baseline = {}
         mean_cv_all_objectives = self._get_mean_cv_scores_for_all_objectives(
             cv_data,
             self.objective_name_to_class,
         )
+        cv_scores = evaluation_results["cv_scores"]
+        is_baseline = pipeline.model_family == ModelFamily.BASELINE
+        mean_cv_score = np.nan if len(cv_scores) == 1 else cv_scores.mean()
+        holdout_score = evaluation_results["holdout_score"]
+        if holdout_score is None:
+            ranking_additional_objectives = mean_cv_all_objectives
+            if len(cv_scores) == 1 and holdout_score is None:
+                ranking_score = cv_scores[0]
+            else:
+                ranking_score = mean_cv_score
+        else:
+            holdout_scores = evaluation_results["holdout_scores"]
+            ranking_additional_objectives = dict(holdout_scores)
+            ranking_score = holdout_score
+        cv_sd = cv_scores.std()
+
+        percent_better_than_baseline = {}
         if is_baseline:
             self._baseline_cv_scores = mean_cv_all_objectives
         for obj_name in mean_cv_all_objectives:
@@ -1376,6 +1380,7 @@ class AutoMLSearch:
                 self.objective.name
             ],
             "ranking_score": ranking_score,
+            "ranking_additional_objectives": ranking_additional_objectives,
             "holdout_score": holdout_score,
         }
         self._pipelines_searched.update({pipeline_id: pipeline.clone()})
