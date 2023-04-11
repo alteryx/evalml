@@ -23,6 +23,7 @@ Release Notes
         * Handled nullable type incompatibility in ``Decomposer`` :pr:`4105`, :pr:`4043
         * Removed nullable type incompatibility handling for ARIMA and ExponentialSmoothingRegressor :pr:`4129`
         * Changed the default value for ``null_strategy`` in ``InvalidTargetDataCheck`` to ``drop`` :pr:`4131`
+        * Pinned sktime version to 0.17.0 for nullable types support :pr:`4137`
     * Testing Changes
         * Fixed installation of prophet for linux nightly tests :pr:`4114`
 
