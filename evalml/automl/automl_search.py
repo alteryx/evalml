@@ -1337,7 +1337,7 @@ class AutoMLSearch:
         holdout_score = evaluation_results["holdout_score"]
         if holdout_score is None:
             ranking_additional_objectives = mean_cv_all_objectives
-            if len(cv_scores) == 1 and holdout_score is None:
+            if len(cv_scores) == 1:
                 ranking_score = cv_scores[0]
             else:
                 ranking_score = mean_cv_score
