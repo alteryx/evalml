@@ -5432,7 +5432,7 @@ def test_ordinal_encoder_in_automl(
             assert "Ordinal Encoder" not in pipeline.name
 
 
-def test_holdout_set_rankings(caplog, AutoMLTestEnv):
+def test_holdout_set_results_and_rankings(caplog, AutoMLTestEnv):
     caplog.clear()
     X, y = datasets.make_classification(
         n_samples=AutoMLSearch._HOLDOUT_SET_MIN_ROWS,
@@ -5466,6 +5466,12 @@ def test_holdout_set_rankings(caplog, AutoMLTestEnv):
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={automl.objective.name: 1.0}):
         automl.search()
+
+    for results in automl.results["pipeline_results"].values():
+        assert (
+            results["ranking_additional_objectives"][automl.objective.name]
+            == results["holdout_score"]
+        )
 
     assert "holdout_score" in automl.rankings
     assert "holdout_score" in automl.full_rankings
