@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed usage of codecov after uploader deprecation :pr:`4144`
     * Changes
     * Documentation Changes
     * Testing Changes
