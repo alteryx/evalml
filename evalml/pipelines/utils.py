@@ -241,7 +241,7 @@ def _get_decomposer(X, y, problem_type, estimator_class, sampler_name=None):
                 y,
                 rel_max_order=order,
             )
-            if seasonal_period is not None:
+            if seasonal_period is not None and seasonal_period <= 1000:
                 components.append(STLDecomposer)
     return components
 
