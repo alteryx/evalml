@@ -218,6 +218,7 @@ def test_make_pipeline(
         ("YS", 6, True),
         ("Q", 4, True),
         ("Q", 2, False),
+        ("D", 1500, False),
         (None, None, False),
     ],
 )
