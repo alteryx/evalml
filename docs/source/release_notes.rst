@@ -5,6 +5,7 @@ Release Notes
     * Fixes
         * Fixed usage of codecov after uploader deprecation :pr:`4144`
     * Changes
+        * Capped size of seasonal period used for determining whether to include STLDecomposer in pipelines :pr:`4147`
     * Documentation Changes
     * Testing Changes
 
