@@ -72,6 +72,8 @@ from evalml.utils import get_time_index, infer_feature_types
 from evalml.utils.cli_utils import get_evalml_black_config
 from evalml.utils.gen_utils import contains_all_ts_parameters
 
+DECOMPOSER_PERIOD_CAP = 1000
+
 
 def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None):
     component = []
@@ -241,7 +243,7 @@ def _get_decomposer(X, y, problem_type, estimator_class, sampler_name=None):
                 y,
                 rel_max_order=order,
             )
-            if seasonal_period is not None and seasonal_period <= 1000:
+            if seasonal_period is not None and seasonal_period <= DECOMPOSER_PERIOD_CAP:
                 components.append(STLDecomposer)
     return components
 
