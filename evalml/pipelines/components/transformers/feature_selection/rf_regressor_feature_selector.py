@@ -1,7 +1,6 @@
 """Component that selects top features based on importance weights using a Random Forest regresor."""
-# from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from sklearn.feature_selection import SelectFromModel as SkSelect
-from sklearn.linear_model import ElasticNet as SKElasticNet
 from skopt.space import Real
 
 from evalml.pipelines.components.transformers.feature_selection.feature_selector import (
@@ -49,12 +48,21 @@ class RFRegressorSelectFromModel(FeatureSelector):
         **kwargs,
     ):
         parameters = {
-            "alpha": 0.0001,
-            "l1_ratio": 0.15,
-            "max_iter": 1000,
+            "number_features": number_features,
+            "n_estimators": n_estimators,
+            "max_depth": max_depth,
+            "percent_features": percent_features,
+            "threshold": threshold,
+            "n_jobs": n_jobs,
         }
         parameters.update(kwargs)
-        estimator = SKElasticNet(random_state=random_seed, **parameters)
+
+        estimator = SKRandomForestRegressor(
+            random_state=random_seed,
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            n_jobs=n_jobs,
+        )
         max_features = (
             max(1, int(percent_features * number_features)) if number_features else None
         )
@@ -62,8 +70,7 @@ class RFRegressorSelectFromModel(FeatureSelector):
             estimator=estimator,
             max_features=max_features,
             threshold=threshold,
-            # random_seed=0,
-            # **kwargs,
+            **kwargs,
         )
         super().__init__(
             parameters=parameters,
