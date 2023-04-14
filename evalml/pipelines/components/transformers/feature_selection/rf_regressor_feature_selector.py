@@ -1,11 +1,12 @@
 """Component that selects top features based on importance weights using a Random Forest regresor."""
+# from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from sklearn.feature_selection import SelectFromModel as SkSelect
+from sklearn.linear_model import ElasticNet as SKElasticNet
 from skopt.space import Real
 
 from evalml.pipelines.components.transformers.feature_selection.feature_selector import (
     FeatureSelector,
 )
-from evalml.utils.gen_utils import import_or_raise
 
 
 class RFRegressorSelectFromModel(FeatureSelector):
@@ -48,33 +49,12 @@ class RFRegressorSelectFromModel(FeatureSelector):
         **kwargs,
     ):
         parameters = {
-            "number_features": number_features,
-            "n_estimators": n_estimators,
-            "max_depth": max_depth,
-            "percent_features": percent_features,
-            "threshold": threshold,
-            "n_jobs": n_jobs,
+            "alpha": 0.0001,
+            "l1_ratio": 0.15,
+            "max_iter": 1000,
         }
         parameters.update(kwargs)
-
-        # estimator = SKRandomForestRegressor(
-        #     random_state=random_seed,
-        #     n_estimators=n_estimators,
-        #     max_depth=max_depth,
-        #     n_jobs=n_jobs,
-        # )
-
-        xgb_error_msg = (
-            "XGBoost is not installed. Please install using `pip install xgboost.`"
-        )
-        xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
-        estimator = xgb.XGBRegressor(
-            random_state=random_seed,
-            n_estimators=n_estimators,
-            max_depth=max_depth,
-            n_jobs=n_jobs,
-        )
-
+        estimator = SKElasticNet(random_state=random_seed, **parameters)
         max_features = (
             max(1, int(percent_features * number_features)) if number_features else None
         )
@@ -82,7 +62,8 @@ class RFRegressorSelectFromModel(FeatureSelector):
             estimator=estimator,
             max_features=max_features,
             threshold=threshold,
-            **kwargs,
+            # random_seed=0,
+            # **kwargs,
         )
         super().__init__(
             parameters=parameters,
