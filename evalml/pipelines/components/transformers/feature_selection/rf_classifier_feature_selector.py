@@ -1,11 +1,11 @@
 """Component that selects top features based on importance weights using a Random Forest classifier."""
-from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.feature_selection import SelectFromModel as SkSelect
 from skopt.space import Real
 
 from evalml.pipelines.components.transformers.feature_selection.feature_selector import (
     FeatureSelector,
 )
+from evalml.utils.gen_utils import import_or_raise
 
 
 class RFClassifierSelectFromModel(FeatureSelector):
@@ -57,7 +57,18 @@ class RFClassifierSelectFromModel(FeatureSelector):
         }
         parameters.update(kwargs)
 
-        estimator = SKRandomForestClassifier(
+        # estimator = SKRandomForestClassifier(
+        #     random_state=random_seed,
+        #     n_estimators=n_estimators,
+        #     max_depth=max_depth,
+        #     n_jobs=n_jobs,
+        # )
+
+        xgb_error_msg = (
+            "XGBoost is not installed. Please install using `pip install xgboost.`"
+        )
+        xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
+        estimator = xgb.XGBClassifier(
             random_state=random_seed,
             n_estimators=n_estimators,
             max_depth=max_depth,
