@@ -2,8 +2,23 @@
 from evalml import objectives
 from evalml.exceptions import ObjectiveCreationError, ObjectiveNotFoundError
 from evalml.objectives.objective_base import ObjectiveBase
-from evalml.problem_types import handle_problem_types
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils.gen_utils import _get_subclasses
+
+DEFAULT_RECOMMENDATION_OBJECTIVES = [
+    objectives.F1,
+    objectives.BalancedAccuracyBinary,
+    objectives.AUC,
+    objectives.LogLossBinary,
+    objectives.F1Macro,
+    objectives.BalancedAccuracyMulticlass,
+    objectives.LogLossMulticlass,
+    objectives.AUCMicro,
+    objectives.MSE,
+    objectives.MAE,
+    objectives.R2,
+    objectives.MedianAE,
+]
 
 
 def get_non_core_objectives():
@@ -214,3 +229,71 @@ def get_core_objectives(problem_type):
         and obj not in get_non_core_objectives()
     ]
     return objectives
+
+
+def get_default_objectives(problem_type, imbalanced=False):
+    """Get the default recommendation score metrics for the given problem type.
+
+    Args:
+        problem_type (str/ProblemType): Type of problem
+        imbalanced (boolean): For multiclass problems, if the classes are imbalanced. Defaults to False
+
+    Returns:
+        Set of string objective names that correspond to ObjectiveBase objectives
+    """
+    problem_type = handle_problem_types(problem_type)
+    objective_list = [
+        obj.name
+        for obj in DEFAULT_RECOMMENDATION_OBJECTIVES
+        if obj.is_defined_for_problem_type(problem_type)
+    ]
+
+    if problem_type == ProblemTypes.MULTICLASS and imbalanced:
+        objective_list.remove(objectives.AUCMicro.name)
+        objective_list.append(objectives.AUCWeighted.name)
+    if problem_type == ProblemTypes.REGRESSION:
+        objective_list.remove(objectives.MedianAE.name)
+    if problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        objective_list.remove(objectives.R2.name)
+
+    return set(objectives)
+
+
+def organize_objectives(include, exclude, problem_type, imbalanced=False):
+    """Given modifications to the default set of objectives, update the list.
+
+    Args:
+        include (list[str/ObjectiveBase]): A list of objectives to include beyond the defaults
+        exclude (list[str/ObjectiveBase]): A list of objectives to exclude from the defaults
+        problem_type (str/ProblemType): Type of problem
+        imbalanced (boolean): For multiclass problems, if the classes are imbalanced. Defaults to False
+
+    Returns:
+        List of string objective names that correspond to ObjectiveBase objectives
+    """
+    problem_type = handle_problem_types(problem_type)
+    default_objectives = get_default_objectives(problem_type, imbalanced)
+
+    include_objectives = []
+    exclude_objectives = []
+    for objective in include:
+        inc_obj = get_objective(objective)
+        if not inc_obj.is_defined_for_problem_type(problem_type):
+            raise ValueError(
+                f"Objective to include {inc_obj} is not defined for {problem_type}",
+            )
+        include_objectives.append(inc_obj)
+    for objective in exclude:
+        ex_obj = get_objective(objective)
+        if not ex_obj.is_defined_for_problem_type(problem_type):
+            raise ValueError(
+                f"Objective to exclude {ex_obj} is not defined for {problem_type}",
+            )
+        if ex_obj.name not in default_objectives:
+            raise ValueError(
+                f"Objective to exlude {ex_obj} is not in the default objectives {default_objectives}",
+            )
+        exclude_objectives.append(ex_obj)
+
+    default_objectives.update(set(include_objectives))
+    return default_objectives - set(exclude_objectives)
