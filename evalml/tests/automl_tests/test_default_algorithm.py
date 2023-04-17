@@ -140,15 +140,15 @@ def test_default_algorithm(
     problem_type = automl_type
     sampler_name = None
     algo = DefaultAlgorithm(X, y, problem_type, sampler_name, ensembling=True)
-    naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
+    naive_model_families = set([ModelFamily.RANDOM_FOREST])
 
     first_batch = algo.next_batch()
-    assert len(first_batch) == 2
+    assert len(first_batch) == 1
     assert {p.model_family for p in first_batch} == naive_model_families
     add_result(algo, first_batch)
 
     second_batch = algo.next_batch()
-    assert len(second_batch) == 2
+    assert len(second_batch) == 1
     assert {p.model_family for p in second_batch} == naive_model_families
     for pipeline in second_batch:
         assert pipeline.get_component(fs)
@@ -600,10 +600,10 @@ def test_default_algorithm_time_series(
         sampler_name,
         search_parameters=search_parameters,
     )
-    naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
+    naive_model_families = set([ModelFamily.RANDOM_FOREST])
 
     first_batch = algo.next_batch()
-    assert len(first_batch) == 2 if problem_type != "time series regression" else 4
+    assert len(first_batch) == 1 if problem_type != "time series regression" else 4
     assert {p.model_family for p in first_batch} == naive_model_families
     for pipeline in first_batch:
         assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
@@ -680,10 +680,10 @@ def test_default_algorithm_time_series_known_in_advance(
         sampler_name,
         search_parameters=search_parameters,
     )
-    naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
+    naive_model_families = set([ModelFamily.RANDOM_FOREST])
 
     first_batch = algo.next_batch()
-    assert len(first_batch) == 2
+    assert len(first_batch) == 1
     assert {p.model_family for p in first_batch} == naive_model_families
     for pipeline in first_batch:
         assert (

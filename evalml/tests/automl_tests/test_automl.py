@@ -261,9 +261,9 @@ def test_search_batch_times(caplog, X_y_binary, AutoMLTestEnv):
     assert isinstance(batch_times[3]["Total time of batch"], str)
 
     assert len(batch_times) == 3
-    assert len(batch_times[1]) == 3
-    assert len(batch_times[2]) == 3
-    assert len(batch_times[3]) == 7
+    assert len(batch_times[1]) == 2
+    assert len(batch_times[2]) == 2
+    assert len(batch_times[3]) == 8
 
     assert "Batch Time Stats" in out
     assert "Batch 1 time stats" in out
@@ -1781,14 +1781,14 @@ def test_pipelines_in_batch_return_nan(
 ):
     X, y = X_y_binary
     mock_rankings.side_effect = [
-        make_mock_rankings([0, 0, 0]),  # first batch
-        make_mock_rankings([0, 0, 0, 0, np.nan]),  # second batch
-        make_mock_rankings([0, 0, 0, 0, np.nan, np.nan, np.nan]),
+        make_mock_rankings([0, 0]),  # first batch
+        make_mock_rankings([0, 0, 0, np.nan]),  # second batch
+        make_mock_rankings([0, 0, 0, np.nan, np.nan, np.nan]),
     ]  # third batch, should raise error
     mock_full_rankings.side_effect = [
-        make_mock_rankings([0, 0, 0]),  # first batch
-        make_mock_rankings([0, 0, 0, 0, np.nan]),  # second batch
-        make_mock_rankings([0, 0, 0, 0, np.nan, np.nan, np.nan]),
+        make_mock_rankings([0, 0]),  # first batch
+        make_mock_rankings([0, 0, 0, np.nan]),  # second batch
+        make_mock_rankings([0, 0, 0, np.nan, np.nan, np.nan]),
     ]  # third batch, should raise error
     mock_next_batch.side_effect = [
         [
@@ -1834,14 +1834,14 @@ def test_pipelines_in_batch_return_none(
 ):
     X, y = X_y_binary
     mock_rankings.side_effect = [
-        make_mock_rankings([0, 0, 0]),  # first batch
-        make_mock_rankings([0, 0, 0, 0, None]),  # second batch
-        make_mock_rankings([0, 0, 0, 0, None, None, None]),
+        make_mock_rankings([0, 0]),  # first batch
+        make_mock_rankings([0, 0, 0, None]),  # second batch
+        make_mock_rankings([0, 0, 0, None, None, None]),
     ]  # third batch, should raise error
     mock_full_rankings.side_effect = [
-        make_mock_rankings([0, 0, 0]),  # first batch
-        make_mock_rankings([0, 0, 0, 0, None]),  # second batch
-        make_mock_rankings([0, 0, 0, 0, None, None, None]),
+        make_mock_rankings([0, 0]),  # first batch
+        make_mock_rankings([0, 0, 0, None]),  # second batch
+        make_mock_rankings([0, 0, 0, None, None, None]),
     ]  # third batch, should raise error
     mock_next_batch.side_effect = [
         [
@@ -2588,7 +2588,7 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(AutoMLTestEnv, X_y_
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
         automl.search()
 
-    assert len(automl.results["pipeline_results"]) == 3
+    assert len(automl.results["pipeline_results"]) == 2
 
 
 @pytest.mark.parametrize("max_batches", [-1, -10, -np.inf])
