@@ -270,6 +270,10 @@ def organize_objectives(include, exclude, problem_type, imbalanced=False):
 
     Returns:
         List of string objective names that correspond to ObjectiveBase objectives
+
+    Raises:
+        ValueError: If any objectives to include or exclude are not valid for the problem type
+        ValueError: If an objective to exclude is not in the default objectives
     """
     problem_type = handle_problem_types(problem_type)
     default_objectives = get_default_objectives(problem_type, imbalanced)
@@ -297,3 +301,72 @@ def organize_objectives(include, exclude, problem_type, imbalanced=False):
 
     default_objectives.update(set(include_objectives))
     return default_objectives - set(exclude_objectives)
+
+
+def normalize_objectives(objectives_to_normalize, max_objectives, min_objectives):
+    """Converts objectives from a [0, inf) scale to [0, 1] given a max and min for each objective.
+
+    Args:
+        objectives_to_normalize (dict[str,float]): A dictionary mapping objectives to values
+        max_objectives (dict[str,float]): The mapping of objectives to the maximum values for normalization
+        min_objectives (dict[str,float]): The mapping of objectives to the minimum values for normalization
+
+    Returns:
+        A dictionary mapping objective names to their new normalized values
+    """
+    normalized = {}
+    for objective_name, val in objectives_to_normalize.items():
+        max_val, min_val = (
+            max_objectives[objective_name],
+            min_objectives[objective_name],
+        )
+        normal = (val - min_val) / (max_val - min_val)
+        if get_objective(objective_name).lower_is_better:
+            normal = 1 - normal
+        normalized[objective_name] = normal
+    return normalized
+
+
+def recommendation_score(
+    objectives,
+    prioritized_objective=None,
+    prioritized_weight=0.5,
+):
+    """Computes a recommendation score for a model given scores for a group of objectives.
+
+    Args:
+        objectives (dict[str,float]): A dictionary mapping objectives to their values
+        prioritized_objective (str): An optional name of a priority objective that should be given heavier weight
+            than the other objectives contributing to the score. Defaults to None, where all objectives are
+            weighted equally.
+        prioritized_weight (float): The weight to attribute to the prioritized objective, if it exists.
+            Defaults to 0.5.
+
+    Returns:
+        A value between 0 and 100 representing how strongly we recommend a pipeline given a set of evaluated objectives
+
+    Raises:
+        ValueError: If the objective to prioritize is not in the known objectives, or if the priority weight is not
+            a float between 0 and 1.
+    """
+    priority_weight = 0
+    if prioritized_objective is not None:
+        if prioritized_objective not in objectives:
+            raise ValueError(
+                f"Prioritized objective {prioritized_objective} is not in the list of objectives, valid ones are {objectives.keys()}",
+            )
+        if not isinstance(prioritized_weight, float) or not (
+            0 < prioritized_weight < 1
+        ):
+            raise ValueError(
+                f"Given prioritized weight of {prioritized_weight} is invalid, should be a float between 0 and 1",
+            )
+        priority_val = objectives.pop(prioritized_objective)
+        priority_weight = priority_val * prioritized_weight
+    default_weight = 1 / len(objectives)
+
+    score_list = [
+        objective_value * default_weight for objective_value in objectives.values()
+    ]
+    score_sum = sum(score_list) + priority_weight
+    return 100 * score_sum
