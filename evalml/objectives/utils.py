@@ -256,16 +256,16 @@ def get_default_objectives(problem_type, imbalanced=False):
     if problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
         objective_list.remove(objectives.R2.name)
 
-    return set(objectives)
+    return set(objective_list)
 
 
-def organize_objectives(include, exclude, problem_type, imbalanced=False):
-    """Given modifications to the default set of objectives, update the list.
+def organize_objectives(problem_type, include=None, exclude=None, imbalanced=False):
+    """Generate objectives to consider, with optional modifications to the defaults.
 
     Args:
-        include (list[str/ObjectiveBase]): A list of objectives to include beyond the defaults
-        exclude (list[str/ObjectiveBase]): A list of objectives to exclude from the defaults
         problem_type (str/ProblemType): Type of problem
+        include (list[str/ObjectiveBase]): A list of objectives to include beyond the defaults. Defaults to None.
+        exclude (list[str/ObjectiveBase]): A list of objectives to exclude from the defaults. Defaults to None.
         imbalanced (boolean): For multiclass problems, if the classes are imbalanced. Defaults to False
 
     Returns:
@@ -280,24 +280,26 @@ def organize_objectives(include, exclude, problem_type, imbalanced=False):
 
     include_objectives = []
     exclude_objectives = []
-    for objective in include:
-        inc_obj = get_objective(objective)
-        if not inc_obj.is_defined_for_problem_type(problem_type):
-            raise ValueError(
-                f"Objective to include {inc_obj} is not defined for {problem_type}",
-            )
-        include_objectives.append(inc_obj)
-    for objective in exclude:
-        ex_obj = get_objective(objective)
-        if not ex_obj.is_defined_for_problem_type(problem_type):
-            raise ValueError(
-                f"Objective to exclude {ex_obj} is not defined for {problem_type}",
-            )
-        if ex_obj.name not in default_objectives:
-            raise ValueError(
-                f"Objective to exlude {ex_obj} is not in the default objectives {default_objectives}",
-            )
-        exclude_objectives.append(ex_obj)
+    if include is not None:
+        for objective in include:
+            inc_obj = get_objective(objective)
+            if not inc_obj.is_defined_for_problem_type(problem_type):
+                raise ValueError(
+                    f"Objective to include {inc_obj} is not defined for {problem_type}",
+                )
+            include_objectives.append(inc_obj.name)
+    if exclude is not None:
+        for objective in exclude:
+            ex_obj = get_objective(objective)
+            if not ex_obj.is_defined_for_problem_type(problem_type):
+                raise ValueError(
+                    f"Objective to exclude {ex_obj} is not defined for {problem_type}",
+                )
+            if ex_obj.name not in default_objectives:
+                raise ValueError(
+                    f"Cannot exclude objective {ex_obj} because it is not in the default objectives",
+                )
+            exclude_objectives.append(ex_obj.name)
 
     default_objectives.update(set(include_objectives))
     return default_objectives - set(exclude_objectives)
@@ -320,9 +322,12 @@ def normalize_objectives(objectives_to_normalize, max_objectives, min_objectives
             max_objectives[objective_name],
             min_objectives[objective_name],
         )
-        normal = (val - min_val) / (max_val - min_val)
-        if get_objective(objective_name).lower_is_better:
-            normal = 1 - normal
+        if max_val == min_val:
+            normal = 1
+        else:
+            normal = (val - min_val) / (max_val - min_val)
+            if not get_objective(objective_name).greater_is_better:
+                normal = 1 - normal
         normalized[objective_name] = normal
     return normalized
 
@@ -349,6 +354,7 @@ def recommendation_score(
         ValueError: If the objective to prioritize is not in the known objectives, or if the priority weight is not
             a float between 0 and 1.
     """
+    objectives = objectives.copy()  # Prevent mutation issues
     priority_weight = 0
     if prioritized_objective is not None:
         if prioritized_objective not in objectives:

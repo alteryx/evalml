@@ -1,3 +1,5 @@
+from math import isclose
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -13,11 +15,15 @@ from evalml.objectives import (
     get_all_objective_names,
     get_core_objective_names,
     get_core_objectives,
+    get_default_objectives,
     get_non_core_objectives,
     get_objective,
     get_optimization_objectives,
     get_ranking_objectives,
+    normalize_objectives,
+    organize_objectives,
     ranking_only_objectives,
+    recommendation_score,
 )
 from evalml.objectives.fraud_cost import FraudCost
 from evalml.objectives.objective_base import ObjectiveBase
@@ -232,3 +238,135 @@ def test_objectives_support_nullable_types(
 
     score = obj.score(y_true=y_true, y_predicted=y_pred, X=X)
     assert not pd.isna(score)
+
+
+def test_get_default_objectives():
+    objectives = get_default_objectives("binary")
+    expected_objectives = set(
+        ["F1", "Balanced Accuracy Binary", "AUC", "Log Loss Binary"],
+    )
+    assert objectives == expected_objectives
+
+    objectives = get_default_objectives("time series binary")
+    assert objectives == expected_objectives
+
+    objectives = get_default_objectives("multiclass", imbalanced=False)
+    expected_objectives = set(
+        [
+            "F1 Macro",
+            "Balanced Accuracy Multiclass",
+            "Log Loss Multiclass",
+            "AUC Micro",
+        ],
+    )
+    assert objectives == expected_objectives
+
+    objectives = get_default_objectives("time series multiclass", imbalanced=False)
+    assert objectives == expected_objectives
+    objectives = get_default_objectives("time series multiclass", imbalanced=True)
+    assert objectives == expected_objectives
+
+    objectives = get_default_objectives("multiclass", imbalanced=True)
+    assert objectives == set(
+        [
+            "F1 Macro",
+            "Balanced Accuracy Multiclass",
+            "Log Loss Multiclass",
+            "AUC Weighted",
+        ],
+    )
+
+    objectives = get_default_objectives("regression")
+    assert objectives == set(["MSE", "MAE", "R2"])
+
+    objectives = get_default_objectives("time series regression")
+    assert objectives == set(["MSE", "MAE", "MedianAE"])
+
+
+def test_organize_objectives_errors():
+    with pytest.raises(ValueError, match="Objective to include"):
+        organize_objectives("binary", include=["R2"])
+    with pytest.raises(ValueError, match="Objective to exclude"):
+        organize_objectives("time series multiclass", exclude=["Log Loss Binary"])
+    with pytest.raises(ValueError, match="Cannot exclude objective"):
+        organize_objectives("regression", exclude=["MedianAE"])
+
+
+def test_organize_objectives():
+    default_objectives = get_default_objectives("binary")
+    objectives = organize_objectives("binary")
+    assert objectives == default_objectives
+
+    objectives = organize_objectives("binary", include=["Precision"])
+    assert objectives == default_objectives.union({"Precision"})
+
+    objectives = organize_objectives(
+        "binary",
+        include=["Precision", "Recall"],
+        exclude=["F1"],
+    )
+    assert objectives == default_objectives.union({"Precision", "Recall"}) - {"F1"}
+
+
+def test_normalize_objectives():
+    def dict_float_equality(dict_1, dict_2):
+        for key, value in dict_1.items():
+            if key not in dict_2:
+                return False
+            if not isclose(value, dict_2[key]):
+                return False
+        return True
+
+    objectives_1 = {"Log Loss Binary": 0.3, "F1": 0.8}
+    objectives_2 = {"Log Loss Binary": 0.1, "F1": 0.7}
+
+    max_objectives = {"Log Loss Binary": 0.6, "F1": 0.9}
+    min_objectives = {"Log Loss Binary": 0.1, "F1": 0.5}
+
+    expected_1 = {"Log Loss Binary": 0.6, "F1": 0.75}
+    expected_2 = {"Log Loss Binary": 1.0, "F1": 0.5}
+
+    assert dict_float_equality(
+        normalize_objectives(objectives_1, max_objectives, min_objectives),
+        expected_1,
+    )
+    assert dict_float_equality(
+        normalize_objectives(objectives_2, max_objectives, min_objectives),
+        expected_2,
+    )
+
+    assert dict_float_equality(
+        normalize_objectives(objectives_1, max_objectives, max_objectives),
+        {"Log Loss Binary": 1.0, "F1": 1.0},
+    )
+
+
+def test_recommendation_score_errors():
+    objectives = {"MSE": 0.8, "MAE": 0.5, "MedianAE": 0.2}
+
+    with pytest.raises(ValueError, match="not in the list of objectives"):
+        recommendation_score(objectives, prioritized_objective="R2")
+    with pytest.raises(ValueError, match="should be a float between 0 and 1"):
+        recommendation_score(objectives, "MAE", 25)
+
+
+def test_recommendation_score():
+    objectives = {
+        "F1 Macro": 0.2,
+        "Balanced Accuracy Multiclass": 0.8,
+        "Log Loss Multiclass": 0.5,
+        "AUC Micro": 0.6,
+    }
+
+    score = recommendation_score(objectives)
+    assert score == 52.5
+
+    score = recommendation_score(objectives, prioritized_objective="AUC Micro")
+    assert score == 80
+
+    score = recommendation_score(
+        objectives,
+        prioritized_objective="AUC Micro",
+        prioritized_weight=0.8,
+    )
+    assert score == 98
