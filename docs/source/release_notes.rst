@@ -8,6 +8,7 @@ Release Notes
         * Fixed usage of codecov after uploader deprecation :pr:`4144`
         * Fixed issue where prediction intervals were becoming NaNs due to index errors :pr:`4154`
     * Changes
+        * Capped size of seasonal period used for determining whether to include STLDecomposer in pipelines :pr:`4147`
     * Documentation Changes
     * Testing Changes
 
