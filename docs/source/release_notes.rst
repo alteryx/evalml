@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Saved computed additional_objectives computed during search to AutoML object :pr:`4141`
+        * Remove extra naive pipelines :pr:`4142`
     * Fixes
         * Fixed usage of codecov after uploader deprecation :pr:`4144`
     * Changes
