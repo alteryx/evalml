@@ -6,6 +6,7 @@ Release Notes
         * Remove extra naive pipelines :pr:`4142`
     * Fixes
         * Fixed usage of codecov after uploader deprecation :pr:`4144`
+        * Fixed issue where prediction intervals were becoming NaNs due to index errors :pr:`4154`
     * Changes
     * Documentation Changes
     * Testing Changes
