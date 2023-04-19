@@ -359,14 +359,14 @@ def test_recommendation_score():
     }
 
     score = recommendation_score(objectives)
-    assert score == 52.5
+    assert isclose(score, 52.5)
 
     score = recommendation_score(objectives, prioritized_objective="AUC Micro")
-    assert score == 80
+    assert isclose(score, 55)
 
     score = recommendation_score(
         objectives,
         prioritized_objective="AUC Micro",
-        prioritized_weight=0.8,
+        prioritized_weight=0.7,
     )
-    assert score == 98
+    assert isclose(score, 57)

@@ -5480,3 +5480,30 @@ def test_holdout_set_results_and_rankings(caplog, AutoMLTestEnv):
         automl.rankings["ranking_score"],
         check_names=False,
     )
+
+
+def test_get_recommendation_scores(AutoMLTestEnv, X_y_binary):
+    X, y = X_y_binary
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+    )
+    automl.search()
+
+    scores = automl.get_recommendation_scores()
+    assert isinstance(scores, dict)
+    assert scores.keys() == automl.results["pipeline_results"].keys()
+
+    # check that the output scores are between 0 and 1
+    for score in scores.values():
+        assert 0 <= score <= 100
+
+    scores = automl.get_recommendation_scores(
+        include=["Precision", "MCC Binary"],
+        exclude=["F1"],
+        priority="Precision",
+        priority_weight=0.7,
+    )
+    for score in scores.values():
+        assert 0 <= score <= 100

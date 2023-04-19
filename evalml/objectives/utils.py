@@ -356,6 +356,7 @@ def recommendation_score(
     """
     objectives = objectives.copy()  # Prevent mutation issues
     priority_weight = 0
+    default_weight = 1 / len(objectives)
     if prioritized_objective is not None:
         if prioritized_objective not in objectives:
             raise ValueError(
@@ -369,7 +370,7 @@ def recommendation_score(
             )
         priority_val = objectives.pop(prioritized_objective)
         priority_weight = priority_val * prioritized_weight
-    default_weight = 1 / len(objectives)
+        default_weight = (1 - prioritized_weight) / len(objectives)
 
     score_list = [
         objective_value * default_weight for objective_value in objectives.values()

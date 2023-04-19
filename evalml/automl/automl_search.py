@@ -42,6 +42,9 @@ from evalml.objectives import (
     get_non_core_objectives,
     get_objective,
     get_optimization_objectives,
+    normalize_objectives,
+    organize_objectives,
+    recommendation_score,
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -431,6 +434,12 @@ class AutoMLSearch:
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
 
         holdout_set_size (float): The size of the holdout set that AutoML search will take for datasets larger than 500 rows. If set to 0, holdout set will not be taken regardless of number of rows. Must be between 0 and 1, exclusive. Defaults to 0.1.
+
+        use_recommendation (bool): Whether or not to use a recommendation score to rank pipelines instead of optimization objective. Defaults to False.
+
+        include_recommendation (list[str]): A list of objectives to include beyond the defaults in the recommendation score. Defaults to None.
+
+        exclude_recommendation (list[str]): A list of objectives to exclude from the defaults in the recommendation score. Defaults to None.
     """
 
     _MAX_NAME_LEN = 40
@@ -478,6 +487,9 @@ class AutoMLSearch:
         timing=False,
         exclude_featurizers=None,
         holdout_set_size=0,
+        use_recommendation=False,
+        include_recommendation=None,
+        exclude_recommendation=None,
     ):
         self.verbose = verbose
         if verbose:
@@ -520,6 +532,9 @@ class AutoMLSearch:
                 "Time series support in evalml is still in beta, which means we are still actively building "
                 "its core features. Please be mindful of that when running search().",
             )
+        self.use_recommendation = use_recommendation
+        self.include_recommendation = include_recommendation
+        self.exclude_recommendation = exclude_recommendation
         self.errors = {}
         self._SLEEP_TIME = 0.1
         self.tuner_class = tuner_class or SKOptTuner
@@ -1635,6 +1650,72 @@ class AutoMLSearch:
         rankings_df.sort_values("ranking_score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df
+
+    def get_recommendation_scores(
+        self,
+        include=None,
+        exclude=None,
+        priority=None,
+        priority_weight=0.5,
+    ):
+        """Calculates recommendation scores for all pipelines in the search results.
+
+        Args:
+            include (list[str/ObjectiveBase]): A list of objectives to include beyond the defaults. Defaults to None.
+            exclude (list[str/ObjectiveBase]): A list of objectives to exclude from the defaults. Defaults to None.
+            priority (str): An optional name of a priority objective that should be given heavier weight
+                than the other objectives contributing to the score. Defaults to None, where all objectives are
+                weighted equally.
+            priority_weight (float): The weight to attribute to the prioritized objective, if it exists.
+                Defaults to 0.5.
+
+        Returns:
+            A dictionary mapping pipeline IDs to recommendation scores
+        """
+
+        def _get_scores_and_max_min(objectives_to_evaluate):
+            all_scores = {}
+            max_scores = {objective: 0 for objective in objectives_to_evaluate}
+            min_scores = {objective: 0 for objective in objectives_to_evaluate}
+
+            for pl_id, pl_results in self._results["pipeline_results"].items():
+                ranking_results = pl_results["ranking_additional_objectives"]
+                for objective in objectives_to_evaluate:
+                    max_scores[objective] = max(
+                        max_scores[objective],
+                        ranking_results[objective],
+                    )
+                    min_scores[objective] = min(
+                        min_scores[objective],
+                        ranking_results[objective],
+                    )
+                all_scores[pl_id] = {
+                    objective: ranking_results[objective]
+                    for objective in objectives_to_evaluate
+                }
+            return all_scores, max_scores, min_scores
+
+        # TODO: add check for imbalance
+        imbalanced = False
+        objectives_to_evaluate = organize_objectives(
+            self.problem_type,
+            include,
+            exclude,
+            imbalanced,
+        )
+        all_scores, max_scores, min_scores = _get_scores_and_max_min(
+            objectives_to_evaluate,
+        )
+        recommendation_scores = {}
+        for pipeline_id, pipeline_scores in all_scores.items():
+            rescaled_scores = normalize_objectives(
+                pipeline_scores,
+                max_scores,
+                min_scores,
+            )
+            score = recommendation_score(rescaled_scores, priority, priority_weight)
+            recommendation_scores[pipeline_id] = score
+        return recommendation_scores
 
     @property
     def best_pipeline(self):
