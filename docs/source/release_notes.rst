@@ -2,13 +2,8 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Saved computed additional_objectives computed during search to AutoML object :pr:`4141`
-        * Remove extra naive pipelines :pr:`4142`
     * Fixes
-        * Fixed usage of codecov after uploader deprecation :pr:`4144`
-        * Fixed issue where prediction intervals were becoming NaNs due to index errors :pr:`4154`
     * Changes
-        * Capped size of seasonal period used for determining whether to include STLDecomposer in pipelines :pr:`4147`
     * Documentation Changes
     * Testing Changes
 
@@ -16,6 +11,16 @@ Release Notes
 
     **Breaking Changes**
 
+
+**v0.74.0 Apr. 18, 2023**
+    * Enhancements
+        * Saved computed additional_objectives computed during search to AutoML object :pr:`4141`
+        * Remove extra naive pipelines :pr:`4142`
+    * Fixes
+        * Fixed usage of codecov after uploader deprecation :pr:`4144`
+        * Fixed issue where prediction intervals were becoming NaNs due to index errors :pr:`4154`
+    * Changes
+        * Capped size of seasonal period used for determining whether to include STLDecomposer in pipelines :pr:`4147`
 
 **v0.73.0 Apr. 10, 2023**
     * Enhancements
