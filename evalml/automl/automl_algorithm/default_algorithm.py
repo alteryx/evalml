@@ -180,12 +180,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
     def _naive_estimators(self):
         if is_regression(self.problem_type):
             naive_estimators = [
-                "Elastic Net Regressor",
                 "Random Forest Regressor",
             ]
         else:
             naive_estimators = [
-                "Logistic Regression Classifier",
                 "Random Forest Classifier",
             ]
         estimators = [
