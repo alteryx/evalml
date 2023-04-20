@@ -320,7 +320,9 @@ def normalize_objectives(objectives_to_normalize, max_objectives, min_objectives
     for objective_name, val in objectives_to_normalize.items():
         objective_obj = get_objective(objective_name)
         # Only normalize objectives that are not bounded like percentages
-        if objective_obj.is_bounded_like_percentage:
+        # R2 also does not get normalized as it's essentially bounded like a percentage,
+        # and we want to penalize aggressively when R2 is negative
+        if objective_obj.is_bounded_like_percentage or objective_obj.name == "R2":
             normalized[objective_name] = val
             continue
         max_val, min_val = (

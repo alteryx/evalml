@@ -340,6 +340,19 @@ def test_normalize_objectives():
         {"Log Loss Binary": 1.0, "F1": 0.8},
     )
 
+    objectives_regression = {"MSE": 0.3, "R2": -1.4}
+    max_regression_objectives = {"MSE": 0.6, "R2": 0.9}
+    min_regression_objectives = {"MSE": 0.1, "R2": -1.4}
+
+    assert (
+        normalize_objectives(
+            objectives_regression,
+            max_regression_objectives,
+            min_regression_objectives,
+        )["R2"]
+        == -1.4
+    )
+
 
 def test_recommendation_score_errors():
     objectives = {"MSE": 0.8, "MAE": 0.5, "MedianAE": 0.2}

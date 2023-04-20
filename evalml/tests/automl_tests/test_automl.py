@@ -5490,6 +5490,7 @@ def test_get_recommendation_scores(X_y_binary):
         X_train=X,
         y_train=y,
         problem_type="binary",
+        use_recommendation=True,
     )
     automl.search()
 
@@ -5501,9 +5502,17 @@ def test_get_recommendation_scores(X_y_binary):
     for score in scores.values():
         assert 0 <= score <= 100
 
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        use_recommendation=True,
+        include_recommendation=["Precision", "MCC Binary"],
+        exclude_recommendation=["F1"],
+    )
+    automl.search()
+
     scores = automl.get_recommendation_scores(
-        include=["Precision", "MCC Binary"],
-        exclude=["F1"],
         priority="Precision",
         priority_weight=0.7,
     )
@@ -5584,6 +5593,31 @@ def test_recommendation_include_non_optimization(X_y_binary):
     assert get_objective("Recall") in automl.additional_objectives
 
 
+@pytest.mark.parametrize("imbalanced_data", [True, False])
+def test_use_recommendation_score_imbalanced(
+    imbalanced_data,
+    mock_imbalanced_data_X_y,
+    X_y_multi,
+):
+    if imbalanced_data:
+        X, y = mock_imbalanced_data_X_y("multiclass", "none", "small")
+        X = X[
+            :-300
+        ]  # Make the dataset more imbalanced, so that the data check flags it
+        y = y[:-300]
+    else:
+        X, y = X_y_multi
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="multiclass",
+        use_recommendation=True,
+    )
+    objectives = get_default_objectives("multiclass", imbalanced=imbalanced_data)
+    assert automl.recommendation_objectives == objectives
+
+
 def test_use_recommendation_score(AutoMLTestEnv, X_y_binary):
     X, y = X_y_binary
 
@@ -5626,36 +5660,3 @@ def test_use_recommendation_score(AutoMLTestEnv, X_y_binary):
     assert "recommendation_score" in automl.rankings
     custom_rankings = automl.rankings["recommendation_score"]
     assert all(default_rankings != custom_rankings)
-
-
-@patch("evalml.objectives.utils.recommendation_score")
-@pytest.mark.parametrize("imbalanced_data", [True, False])
-def test_use_recommendation_score_imbalanced(
-    mock_recommendation_score,
-    imbalanced_data,
-    AutoMLTestEnv,
-    mock_imbalanced_data_X_y,
-    X_y_multi,
-):
-    if imbalanced_data:
-        X, y = mock_imbalanced_data_X_y("multiclass", "none", "small")
-    else:
-        X, y = X_y_multi
-
-    automl = AutoMLSearch(
-        X_train=X,
-        y_train=y,
-        problem_type="multiclass",
-        use_recommendation=True,
-    )
-    env = AutoMLTestEnv("multiclass")
-    objectives = get_default_objectives("multiclass", imbalanced=imbalanced_data)
-    with env.test_context(
-        score_return_value={objective: 0.75 for objective in objectives},
-    ):
-        automl.search()
-    import pdb
-
-    pdb.set_trace()
-    automl.rankings
-    mock_recommendation_score.assert_called_with(objectives)

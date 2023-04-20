@@ -512,9 +512,6 @@ class AutoMLSearch:
                 "Must specify training data target values as a 1d vector using the y_train argument",
             )
 
-        self.X_train = infer_feature_types(X_train)
-        self.y_train = infer_feature_types(y_train)
-
         if X_holdout is not None and y_holdout is not None:
             self.passed_holdout_set = True
         elif X_holdout is None and y_holdout is None:
@@ -541,44 +538,6 @@ class AutoMLSearch:
                 "its core features. Please be mindful of that when running search().",
             )
 
-        def _is_imbalanced(X, y, problem_type):
-            if problem_type != ProblemTypes.MULTICLASS:
-                return False
-            imbalance_data_check = ClassImbalanceDataCheck()
-            results = imbalance_data_check.validate(X, y)
-            return bool(len(results))
-
-        recommendation_objectives = {}
-        if use_recommendation:
-            imbalanced = _is_imbalanced(self.X_train, self.y_train, self.problem_type)
-            default_objectives = get_default_objectives(problem_type)
-            if include_recommendation is not None:
-                if not isinstance(include_recommendation, list):
-                    raise ValueError(
-                        "Objectives to include from the recommendation score should be a list",
-                    )
-                for include_objective in include_recommendation:
-                    include_objective = get_objective(include_objective)
-                    if include_objective.name in default_objectives:
-                        self.logger.warning(
-                            f"Objective to include {include_objective} is already one of the default objectives being evaluated. No behavior will be changed.",
-                        )
-            if exclude_recommendation is not None and not isinstance(
-                exclude_recommendation,
-                list,
-            ):
-                raise ValueError(
-                    "Objectives to exclude from the recommendation score should be a list",
-                )
-            recommendation_objectives = organize_objectives(
-                self.problem_type,
-                include_recommendation,
-                exclude_recommendation,
-                imbalanced,
-            )
-        self.use_recommendation = use_recommendation
-        self.recommendation_objectives = recommendation_objectives
-
         self.errors = {}
         self._SLEEP_TIME = 0.1
         self.tuner_class = tuner_class or SKOptTuner
@@ -588,70 +547,6 @@ class AutoMLSearch:
         self.data_splitter = data_splitter
         self.optimize_thresholds = optimize_thresholds
         self.ensembling = ensembling
-        if objective == "auto":
-            objective = get_default_primary_search_objective(self.problem_type.value)
-        objective = get_objective(objective, return_instance=False)
-        self.objective = self._validate_objective(objective)
-        self.alternate_thresholding_objective = None
-        if (
-            is_binary(self.problem_type)
-            and self.optimize_thresholds
-            and self.objective.score_needs_proba
-        ):
-            self.alternate_thresholding_objective = get_objective(
-                alternate_thresholding_objective,
-                return_instance=True,
-            )
-        if (
-            self.alternate_thresholding_objective is not None
-            and self.alternate_thresholding_objective.score_needs_proba
-        ):
-            raise ValueError(
-                "Alternate thresholding objective must be a tuneable objective and cannot need probabilities!",
-            )
-        if self.data_splitter is not None and not issubclass(
-            self.data_splitter.__class__,
-            BaseCrossValidator,
-        ):
-            raise ValueError("Not a valid data splitter")
-        if not objective.is_defined_for_problem_type(self.problem_type):
-            raise ValueError(
-                "Given objective {} is not compatible with a {} problem.".format(
-                    self.objective.name,
-                    self.problem_type.value,
-                ),
-            )
-        if additional_objectives is None:
-            additional_objectives = get_optimization_objectives(self.problem_type)
-            # if our main objective is part of default set of objectives for problem_type, remove it
-            existing_main_objective = next(
-                (
-                    obj
-                    for obj in additional_objectives
-                    if obj.name == self.objective.name
-                ),
-                None,
-            )
-            if existing_main_objective is not None:
-                additional_objectives.remove(existing_main_objective)
-        else:
-            additional_objectives = [get_objective(o) for o in additional_objectives]
-        additional_objectives = [
-            self._validate_objective(obj) for obj in additional_objectives
-        ]
-        additional_objective_names = [
-            objective.name for objective in additional_objectives
-        ]
-        for recommendation_obj in self.recommendation_objectives:
-            if (
-                recommendation_obj not in additional_objective_names
-                and recommendation_obj != existing_main_objective.name
-            ):
-                additional_objectives.append(get_objective(recommendation_obj))
-        self.additional_objectives = additional_objectives
-        self.objective_name_to_class = {
-            o.name: o for o in [self.objective] + self.additional_objectives
-        }
 
         if not isinstance(max_time, (int, float, str, type(None))):
             raise TypeError(
@@ -719,7 +614,6 @@ class AutoMLSearch:
         self._baseline_cv_scores = {}
         self.show_batch_output = False
 
-        self._validate_problem_type()
         self.problem_configuration = self._validate_problem_configuration(
             problem_configuration,
         )
@@ -749,7 +643,10 @@ class AutoMLSearch:
                 self.logger.info(
                     f"Dataset size is too small to create holdout set. Minimum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X_train)} rows. Holdout set evaluation is disabled.",
                 )
+
         # Set holdout data in AutoML search if provided as parameter
+        self.X_train = infer_feature_types(X_train)
+        self.y_train = infer_feature_types(y_train)
         self.X_holdout = (
             infer_feature_types(X_holdout) if X_holdout is not None else None
         )
@@ -793,6 +690,111 @@ class AutoMLSearch:
                 self.search_parameters[ARIMARegressor.name] = {
                     "use_covariates": Categorical([False]),
                 }
+
+        def _is_imbalanced(X, y, problem_type):
+            if problem_type != ProblemTypes.MULTICLASS:
+                return False
+            imbalance_data_check = ClassImbalanceDataCheck()
+            results = imbalance_data_check.validate(X, y)
+            return bool(len(results))
+
+        recommendation_objectives = {}
+        if use_recommendation:
+            imbalanced = _is_imbalanced(self.X_train, self.y_train, self.problem_type)
+            default_objectives = get_default_objectives(problem_type)
+            if include_recommendation is not None:
+                if not isinstance(include_recommendation, list):
+                    raise ValueError(
+                        "Objectives to include from the recommendation score should be a list",
+                    )
+                for include_objective in include_recommendation:
+                    include_objective = get_objective(include_objective)
+                    if include_objective.name in default_objectives:
+                        self.logger.warning(
+                            f"Objective to include {include_objective} is already one of the default objectives being evaluated. No behavior will be changed.",
+                        )
+            if exclude_recommendation is not None and not isinstance(
+                exclude_recommendation,
+                list,
+            ):
+                raise ValueError(
+                    "Objectives to exclude from the recommendation score should be a list",
+                )
+            recommendation_objectives = organize_objectives(
+                self.problem_type,
+                include_recommendation,
+                exclude_recommendation,
+                imbalanced,
+            )
+        self.use_recommendation = use_recommendation
+        self.recommendation_objectives = recommendation_objectives
+
+        if objective == "auto":
+            objective = get_default_primary_search_objective(self.problem_type.value)
+        objective = get_objective(objective, return_instance=False)
+        self.objective = self._validate_objective(objective)
+        self.alternate_thresholding_objective = None
+        if (
+            is_binary(self.problem_type)
+            and self.optimize_thresholds
+            and self.objective.score_needs_proba
+        ):
+            self.alternate_thresholding_objective = get_objective(
+                alternate_thresholding_objective,
+                return_instance=True,
+            )
+        if (
+            self.alternate_thresholding_objective is not None
+            and self.alternate_thresholding_objective.score_needs_proba
+        ):
+            raise ValueError(
+                "Alternate thresholding objective must be a tuneable objective and cannot need probabilities!",
+            )
+        if self.data_splitter is not None and not issubclass(
+            self.data_splitter.__class__,
+            BaseCrossValidator,
+        ):
+            raise ValueError("Not a valid data splitter")
+        if not objective.is_defined_for_problem_type(self.problem_type):
+            raise ValueError(
+                "Given objective {} is not compatible with a {} problem.".format(
+                    self.objective.name,
+                    self.problem_type.value,
+                ),
+            )
+        if additional_objectives is None:
+            additional_objectives = get_optimization_objectives(self.problem_type)
+            # if our main objective is part of default set of objectives for problem_type, remove it
+            existing_main_objective = next(
+                (
+                    obj
+                    for obj in additional_objectives
+                    if obj.name == self.objective.name
+                ),
+                None,
+            )
+            if existing_main_objective is not None:
+                additional_objectives.remove(existing_main_objective)
+        else:
+            additional_objectives = [get_objective(o) for o in additional_objectives]
+        additional_objectives = [
+            self._validate_objective(obj) for obj in additional_objectives
+        ]
+        additional_objective_names = [
+            objective.name for objective in additional_objectives
+        ]
+        for recommendation_obj in self.recommendation_objectives:
+            if (
+                recommendation_obj not in additional_objective_names
+                and recommendation_obj != existing_main_objective.name
+            ):
+                additional_objectives.append(get_objective(recommendation_obj))
+        self.additional_objectives = additional_objectives
+        self.objective_name_to_class = {
+            o.name: o for o in [self.objective] + self.additional_objectives
+        }
+
+        self._validate_problem_type()
 
         self.search_iteration_plot = None
         self._interrupted = False
@@ -1701,10 +1703,7 @@ class AutoMLSearch:
 
         ranking_column = "ranking_score"
         if self.use_recommendation:
-            recommendation_scores = self.get_recommendation_scores(
-                self.include_recommendation,
-                self.exclude_recommendation,
-            )
+            recommendation_scores = self.get_recommendation_scores()
             ranking_column = "recommendation_score"
             ascending = False
             rankings_df.insert(
@@ -1719,16 +1718,12 @@ class AutoMLSearch:
 
     def get_recommendation_scores(
         self,
-        include=None,
-        exclude=None,
         priority=None,
         priority_weight=0.5,
     ):
         """Calculates recommendation scores for all pipelines in the search results.
 
         Args:
-            include (list[str/ObjectiveBase]): A list of objectives to include beyond the defaults. Defaults to None.
-            exclude (list[str/ObjectiveBase]): A list of objectives to exclude from the defaults. Defaults to None.
             priority (str): An optional name of a priority objective that should be given heavier weight
                 than the other objectives contributing to the score. Defaults to None, where all objectives are
                 weighted equally.
@@ -1747,7 +1742,11 @@ class AutoMLSearch:
             for pl_id, pl_results in self._results["pipeline_results"].items():
                 ranking_results = pl_results["ranking_additional_objectives"]
                 for objective in objectives_to_evaluate:
-                    if get_objective(objective).is_bounded_like_percentage:
+                    objective_obj = get_objective(objective)
+                    if (
+                        objective_obj.is_bounded_like_percentage
+                        or objective_obj.name == "R2"
+                    ):
                         continue
                     max_scores[objective] = max(
                         max_scores[objective],
