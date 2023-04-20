@@ -1752,10 +1752,17 @@ def mock_imbalanced_data_X_y():
             size (str): Either 'large' or 'small'. 'large' returns a dataset of size 21,000, while 'small' returns a size of 4200
         """
         multiplier = 5 if size == "large" else 1
+        if problem_type == "binary":
+            targets = [0] * 3500 + [1] * 700
+        else:
+            targets = [0] * 3000 + [1] * 600 + [2] * 600
+        targets *= multiplier
+        y = ww.init_series(pd.Series(targets))
+
         col_names = [f"col_{i}" for i in range(100)]
         # generate X to be all int values
         X_dict = {
-            col_name: [i % (j + 1) for i in range(1, 100)]
+            col_name: [i % (j + 1) for i in range(1, len(y) + 1)]
             for j, col_name in enumerate(col_names)
         }
         X = pd.DataFrame(X_dict)
@@ -1770,12 +1777,6 @@ def mock_imbalanced_data_X_y():
             )
         else:
             X.ww.init()
-        if problem_type == "binary":
-            targets = [0] * 3500 + [1] * 700
-        else:
-            targets = [0] * 3000 + [1] * 600 + [2] * 600
-        targets *= multiplier
-        y = ww.init_series(pd.Series(targets))
         return X, y
 
     return _imbalanced_data_X_y

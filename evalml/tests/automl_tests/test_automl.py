@@ -51,6 +51,7 @@ from evalml.objectives import (
 from evalml.objectives.utils import (
     get_all_objective_names,
     get_core_objectives,
+    get_default_objectives,
     get_non_core_objectives,
     get_objective,
 )
@@ -5482,7 +5483,7 @@ def test_holdout_set_results_and_rankings(caplog, AutoMLTestEnv):
     )
 
 
-def test_get_recommendation_scores(AutoMLTestEnv, X_y_binary):
+def test_get_recommendation_scores(X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(
         X_train=X,
@@ -5507,3 +5508,80 @@ def test_get_recommendation_scores(AutoMLTestEnv, X_y_binary):
     )
     for score in scores.values():
         assert 0 <= score <= 100
+
+
+def test_use_recommendation_score(AutoMLTestEnv, X_y_binary):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+    assert "recommendation_score" not in automl.rankings
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        use_recommendation=True,
+    )
+    env = AutoMLTestEnv("binary")
+    objectives = get_default_objectives("binary")
+    with env.test_context(
+        score_return_value={objective: 0.75 for objective in objectives},
+    ):
+        automl.search()
+    assert "recommendation_score" in automl.rankings
+    default_rankings = automl.rankings["recommendation_score"]
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        use_recommendation=True,
+        include_recommendation=["Precision"],
+        exclude_recommendation=["F1", "AUC"],
+    )
+    env = AutoMLTestEnv("binary")
+    objectives.update({"Precision"})
+    objectives = objectives - {"F1", "AUC"}
+    with env.test_context(
+        score_return_value={objective: 0.75 for objective in objectives},
+    ):
+        automl.search()
+    assert "recommendation_score" in automl.rankings
+    custom_rankings = automl.rankings["recommendation_score"]
+    assert all(default_rankings != custom_rankings)
+
+
+@patch("evalml.objectives.utils.recommendation_score")
+@pytest.mark.parametrize("imbalanced_data", [True, False])
+def test_use_recommendation_score_imbalanced(
+    mock_recommendation_score,
+    imbalanced_data,
+    AutoMLTestEnv,
+    mock_imbalanced_data_X_y,
+    X_y_multi,
+):
+    if imbalanced_data:
+        X, y = mock_imbalanced_data_X_y("multiclass", "none", "small")
+    else:
+        X, y = X_y_multi
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="multiclass",
+        use_recommendation=True,
+    )
+    env = AutoMLTestEnv("multiclass")
+    objectives = get_default_objectives("multiclass", imbalanced=imbalanced_data)
+    with env.test_context(
+        score_return_value={objective: 0.75 for objective in objectives},
+    ):
+        automl.search()
+    import pdb
+
+    pdb.set_trace()
+    automl.rankings
+    mock_recommendation_score.assert_called_with(objectives)

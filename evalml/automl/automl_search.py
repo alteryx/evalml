@@ -31,7 +31,11 @@ from evalml.automl.utils import (
     get_default_primary_search_objective,
     make_data_splitter,
 )
-from evalml.data_checks import DataCheckMessageType, DefaultDataChecks
+from evalml.data_checks import (
+    ClassImbalanceDataCheck,
+    DataCheckMessageType,
+    DefaultDataChecks,
+)
 from evalml.exceptions import (
     AutoMLSearchException,
     PipelineNotFoundError,
@@ -1712,8 +1716,14 @@ class AutoMLSearch:
                 }
             return all_scores, max_scores, min_scores
 
-        # TODO: add check for imbalance
-        imbalanced = False
+        def _is_imbalanced(X, y, problem_type):
+            if problem_type != ProblemTypes.MULTICLASS:
+                return False
+            imbalance_data_check = ClassImbalanceDataCheck()
+            results = imbalance_data_check.validate(X, y)
+            return bool(len(results))
+
+        imbalanced = _is_imbalanced(self.X_train, self.y_train, self.problem_type)
         objectives_to_evaluate = organize_objectives(
             self.problem_type,
             include,
