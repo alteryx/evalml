@@ -1647,7 +1647,22 @@ class AutoMLSearch:
             "search_order",
             pd.Series(self._results["search_order"]),
         )  # place search_order after pipeline_name
-        rankings_df.sort_values("ranking_score", ascending=ascending, inplace=True)
+
+        ranking_column = "ranking_score"
+        if self.use_recommendation:
+            recommendation_scores = self.get_recommendation_scores(
+                self.include_recommendation,
+                self.exclude_recommendation,
+            )
+            ranking_column = "recommendation_score"
+            ascending = False
+            rankings_df.insert(
+                3,
+                "recommendation_score",
+                pd.Series(recommendation_scores.values()),
+            )
+
+        rankings_df.sort_values(ranking_column, ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df
 
