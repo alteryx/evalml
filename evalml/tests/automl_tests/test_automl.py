@@ -35,6 +35,7 @@ from evalml.automl.utils import (
 )
 from evalml.exceptions import (
     AutoMLSearchException,
+    ObjectiveNotFoundError,
     ParameterNotUsedWarning,
     PipelineNotFoundError,
     PipelineNotYetFittedError,
@@ -5508,6 +5509,66 @@ def test_get_recommendation_scores(X_y_binary):
     )
     for score in scores.values():
         assert 0 <= score <= 100
+
+
+def test_recommendation_score_argument_errors(X_y_binary, caplog):
+    caplog.clear()
+    X, y = X_y_binary
+
+    with pytest.raises(
+        ValueError,
+        match="Objectives to include from the recommendation score should be a list",
+    ):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            use_recommendation=True,
+            include_recommendation="Not a list",
+        )
+    with pytest.raises(
+        ValueError,
+        match="Objectives to exclude from the recommendation score should be a list",
+    ):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            use_recommendation=True,
+            exclude_recommendation="Not a list",
+        )
+    with pytest.raises(ObjectiveNotFoundError, match="not a valid Objective!"):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            use_recommendation=True,
+            include_recommendation=["Does not exist"],
+        )
+    with pytest.raises(ValueError, match="not defined for binary"):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            use_recommendation=True,
+            include_recommendation=["R2"],
+        )
+    with pytest.raises(ValueError, match="Cannot exclude objective"):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            use_recommendation=True,
+            exclude_recommendation=["Precision"],
+        )
+    AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        use_recommendation=True,
+        include_recommendation=["F1"],
+    )
+    assert "already one of the default objectives" in caplog.text
 
 
 def test_use_recommendation_score(AutoMLTestEnv, X_y_binary):

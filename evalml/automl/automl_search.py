@@ -43,6 +43,7 @@ from evalml.exceptions import (
 )
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
+    get_default_objectives,
     get_non_core_objectives,
     get_objective,
     get_optimization_objectives,
@@ -511,6 +512,9 @@ class AutoMLSearch:
                 "Must specify training data target values as a 1d vector using the y_train argument",
             )
 
+        self.X_train = infer_feature_types(X_train)
+        self.y_train = infer_feature_types(y_train)
+
         if X_holdout is not None and y_holdout is not None:
             self.passed_holdout_set = True
         elif X_holdout is None and y_holdout is None:
@@ -536,9 +540,45 @@ class AutoMLSearch:
                 "Time series support in evalml is still in beta, which means we are still actively building "
                 "its core features. Please be mindful of that when running search().",
             )
+
+        def _is_imbalanced(X, y, problem_type):
+            if problem_type != ProblemTypes.MULTICLASS:
+                return False
+            imbalance_data_check = ClassImbalanceDataCheck()
+            results = imbalance_data_check.validate(X, y)
+            return bool(len(results))
+
+        recommendation_objectives = {}
+        if use_recommendation:
+            imbalanced = _is_imbalanced(self.X_train, self.y_train, self.problem_type)
+            default_objectives = get_default_objectives(problem_type)
+            if include_recommendation is not None:
+                if not isinstance(include_recommendation, list):
+                    raise ValueError(
+                        "Objectives to include from the recommendation score should be a list",
+                    )
+                for include_objective in include_recommendation:
+                    include_objective = get_objective(include_objective)
+                    if include_objective.name in default_objectives:
+                        self.logger.warning(
+                            f"Objective to include {include_objective} is already one of the default objectives being evaluated. No behavior will be changed.",
+                        )
+            if exclude_recommendation is not None and not isinstance(
+                exclude_recommendation,
+                list,
+            ):
+                raise ValueError(
+                    "Objectives to exclude from the recommendation score should be a list",
+                )
+            recommendation_objectives = organize_objectives(
+                self.problem_type,
+                include_recommendation,
+                exclude_recommendation,
+                imbalanced,
+            )
         self.use_recommendation = use_recommendation
-        self.include_recommendation = include_recommendation
-        self.exclude_recommendation = exclude_recommendation
+        self.recommendation_objectives = recommendation_objectives
+
         self.errors = {}
         self._SLEEP_TIME = 0.1
         self.tuner_class = tuner_class or SKOptTuner
@@ -701,8 +741,6 @@ class AutoMLSearch:
                     f"Dataset size is too small to create holdout set. Minimum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X_train)} rows. Holdout set evaluation is disabled.",
                 )
         # Set holdout data in AutoML search if provided as parameter
-        self.X_train = infer_feature_types(X_train)
-        self.y_train = infer_feature_types(y_train)
         self.X_holdout = (
             infer_feature_types(X_holdout) if X_holdout is not None else None
         )
@@ -1716,22 +1754,8 @@ class AutoMLSearch:
                 }
             return all_scores, max_scores, min_scores
 
-        def _is_imbalanced(X, y, problem_type):
-            if problem_type != ProblemTypes.MULTICLASS:
-                return False
-            imbalance_data_check = ClassImbalanceDataCheck()
-            results = imbalance_data_check.validate(X, y)
-            return bool(len(results))
-
-        imbalanced = _is_imbalanced(self.X_train, self.y_train, self.problem_type)
-        objectives_to_evaluate = organize_objectives(
-            self.problem_type,
-            include,
-            exclude,
-            imbalanced,
-        )
         all_scores, max_scores, min_scores = _get_scores_and_max_min(
-            objectives_to_evaluate,
+            self.recommendation_objectives,
         )
         recommendation_scores = {}
         for pipeline_id, pipeline_scores in all_scores.items():

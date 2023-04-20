@@ -171,7 +171,7 @@ def get_objective(objective, return_instance=False, **kwargs):
     if objective.lower() not in all_objectives_dict:
         raise ObjectiveNotFoundError(
             f"{objective} is not a valid Objective! "
-            "Use evalml.objectives.get_all_objective_names()"
+            "Use evalml.objectives.get_all_objective_names() "
             "to get a list of all valid objective names. ",
         )
 
