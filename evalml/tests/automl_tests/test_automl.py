@@ -5571,6 +5571,19 @@ def test_recommendation_score_argument_errors(X_y_binary, caplog):
     assert "already one of the default objectives" in caplog.text
 
 
+def test_recommendation_include_non_optimization(X_y_binary):
+    X, y = X_y_binary
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        use_recommendation=True,
+        include_recommendation=["Recall"],
+    )
+    assert "Recall" in automl.recommendation_objectives
+    assert get_objective("Recall") in automl.additional_objectives
+
+
 def test_use_recommendation_score(AutoMLTestEnv, X_y_binary):
     X, y = X_y_binary
 

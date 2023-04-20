@@ -639,6 +639,15 @@ class AutoMLSearch:
         additional_objectives = [
             self._validate_objective(obj) for obj in additional_objectives
         ]
+        additional_objective_names = [
+            objective.name for objective in additional_objectives
+        ]
+        for recommendation_obj in self.recommendation_objectives:
+            if (
+                recommendation_obj not in additional_objective_names
+                and recommendation_obj != existing_main_objective.name
+            ):
+                additional_objectives.append(get_objective(recommendation_obj))
         self.additional_objectives = additional_objectives
         self.objective_name_to_class = {
             o.name: o for o in [self.objective] + self.additional_objectives
