@@ -318,6 +318,11 @@ def normalize_objectives(objectives_to_normalize, max_objectives, min_objectives
     """
     normalized = {}
     for objective_name, val in objectives_to_normalize.items():
+        objective_obj = get_objective(objective_name)
+        # Only normalize objectives that are not bounded like percentages
+        if objective_obj.is_bounded_like_percentage:
+            normalized[objective_name] = val
+            continue
         max_val, min_val = (
             max_objectives[objective_name],
             min_objectives[objective_name],
@@ -326,7 +331,7 @@ def normalize_objectives(objectives_to_normalize, max_objectives, min_objectives
             normal = 1
         else:
             normal = (val - min_val) / (max_val - min_val)
-            if not get_objective(objective_name).greater_is_better:
+            if not objective_obj.greater_is_better:
                 normal = 1 - normal
         normalized[objective_name] = normal
     return normalized

@@ -323,8 +323,8 @@ def test_normalize_objectives():
     max_objectives = {"Log Loss Binary": 0.6, "F1": 0.9}
     min_objectives = {"Log Loss Binary": 0.1, "F1": 0.5}
 
-    expected_1 = {"Log Loss Binary": 0.6, "F1": 0.75}
-    expected_2 = {"Log Loss Binary": 1.0, "F1": 0.5}
+    expected_1 = {"Log Loss Binary": 0.6, "F1": 0.8}
+    expected_2 = {"Log Loss Binary": 1.0, "F1": 0.7}
 
     assert dict_float_equality(
         normalize_objectives(objectives_1, max_objectives, min_objectives),
@@ -337,7 +337,7 @@ def test_normalize_objectives():
 
     assert dict_float_equality(
         normalize_objectives(objectives_1, max_objectives, max_objectives),
-        {"Log Loss Binary": 1.0, "F1": 1.0},
+        {"Log Loss Binary": 1.0, "F1": 0.8},
     )
 
 

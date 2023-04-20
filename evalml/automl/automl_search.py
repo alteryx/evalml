@@ -1696,6 +1696,8 @@ class AutoMLSearch:
             for pl_id, pl_results in self._results["pipeline_results"].items():
                 ranking_results = pl_results["ranking_additional_objectives"]
                 for objective in objectives_to_evaluate:
+                    if get_objective(objective).is_bounded_like_percentage:
+                        continue
                     max_scores[objective] = max(
                         max_scores[objective],
                         ranking_results[objective],
