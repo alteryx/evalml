@@ -3161,6 +3161,12 @@ def test_automl_does_not_include_positive_only_objectives_by_default(
 @pytest.mark.parametrize("non_core_objective", get_non_core_objectives())
 def test_automl_validate_objective(non_core_objective, X_y_regression):
     X, y = X_y_regression
+    problem_configuration = {
+        "time_index": "Date",
+        "gap": 0,
+        "max_delay": 0,
+        "forecast_horizon": 2,
+    }
 
     with pytest.raises(ValueError, match="is not allowed in AutoML!"):
         AutoMLSearch(
@@ -3168,6 +3174,7 @@ def test_automl_validate_objective(non_core_objective, X_y_regression):
             y_train=y,
             problem_type=non_core_objective.problem_types[0],
             objective=non_core_objective.name,
+            problem_configuration=problem_configuration,
         )
 
     with pytest.raises(ValueError, match="is not allowed in AutoML!"):
@@ -3176,6 +3183,7 @@ def test_automl_validate_objective(non_core_objective, X_y_regression):
             y_train=y,
             problem_type=non_core_objective.problem_types[0],
             additional_objectives=[non_core_objective.name],
+            problem_configuration=problem_configuration,
         )
 
 

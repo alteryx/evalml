@@ -663,6 +663,11 @@ class AutoMLSearch:
                 "AutoMLSearch will use the holdout set to score and rank pipelines.",
             )
 
+        if self.data_splitter is not None and not issubclass(
+            self.data_splitter.__class__,
+            BaseCrossValidator,
+        ):
+            raise ValueError("Not a valid data splitter")
         default_data_splitter = make_data_splitter(
             self.X_train,
             self.y_train,
@@ -750,11 +755,6 @@ class AutoMLSearch:
             raise ValueError(
                 "Alternate thresholding objective must be a tuneable objective and cannot need probabilities!",
             )
-        if self.data_splitter is not None and not issubclass(
-            self.data_splitter.__class__,
-            BaseCrossValidator,
-        ):
-            raise ValueError("Not a valid data splitter")
         if not objective.is_defined_for_problem_type(self.problem_type):
             raise ValueError(
                 "Given objective {} is not compatible with a {} problem.".format(
