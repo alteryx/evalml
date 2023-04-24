@@ -5494,11 +5494,12 @@ def test_holdout_set_results_and_rankings(caplog, AutoMLTestEnv):
 
 def test_get_recommendation_scores(X_y_binary):
     X, y = X_y_binary
+
+    # Test that we can still get recommendation scores without setting use_recommendation
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type="binary",
-        use_recommendation=True,
     )
     automl.search()
 
@@ -5526,6 +5527,12 @@ def test_get_recommendation_scores(X_y_binary):
     )
     for score in scores.values():
         assert 0 <= score <= 100
+    for pipeline_id in scores.keys():
+        assert isinstance(pipeline_id, int)
+
+    scores = automl.get_recommendation_scores(use_pipeline_names=True)
+    for pipeline_name in scores.keys():
+        assert isinstance(pipeline_name, str)
 
 
 def test_recommendation_score_argument_errors(X_y_binary, caplog):

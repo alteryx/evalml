@@ -1720,6 +1720,7 @@ class AutoMLSearch:
         self,
         priority=None,
         priority_weight=0.5,
+        use_pipeline_names=False,
     ):
         """Calculates recommendation scores for all pipelines in the search results.
 
@@ -1729,6 +1730,8 @@ class AutoMLSearch:
                 weighted equally.
             priority_weight (float): The weight to attribute to the prioritized objective, if it exists.
                 Defaults to 0.5.
+            use_pipeline_names (bool): Whether or not to return the pipeline names instead of ids as the keys
+                to the recommendation score dictionary. Defaults to False.
 
         Returns:
             A dictionary mapping pipeline IDs to recommendation scores
@@ -1762,6 +1765,8 @@ class AutoMLSearch:
                 }
             return all_scores, max_scores, min_scores
 
+        if len(self.recommendation_objectives) == 0:
+            self.recommendation_objectives = get_default_objectives(self.problem_type)
         all_scores, max_scores, min_scores = _get_scores_and_max_min(
             self.recommendation_objectives,
         )
@@ -1774,6 +1779,11 @@ class AutoMLSearch:
             )
             score = recommendation_score(rescaled_scores, priority, priority_weight)
             recommendation_scores[pipeline_id] = score
+        if use_pipeline_names:
+            recommendation_scores = {
+                self.get_pipeline(pipeline_id).estimator.name: score
+                for pipeline_id, score in recommendation_scores.items()
+            }
         return recommendation_scores
 
     @property
