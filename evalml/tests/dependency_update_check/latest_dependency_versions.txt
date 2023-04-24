@@ -7,6 +7,7 @@ colorama==0.4.6
 dask==2023.4.0
 featuretools==1.25.0
 graphviz==0.20.1
+hijri-converter==2.3.0.post1
 holidays==0.20
 imbalanced-learn==0.10.1
 ipywidgets==8.0.4
