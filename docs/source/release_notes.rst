@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added optional ``recommendation_score`` to rank pipelines during AutoMLSearch :pr:`4156`
     * Fixes
     * Changes
     * Documentation Changes

@@ -5513,15 +5513,15 @@ def test_get_recommendation_scores(X_y_binary):
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
-        problem_type="binary",
+        problem_type="regression",
         use_recommendation=True,
-        include_recommendation=["Precision", "MCC Binary"],
-        exclude_recommendation=["F1"],
+        include_recommendation=["MedianAE", "MaxError"],
+        exclude_recommendation=["MAE"],
     )
     automl.search()
 
     scores = automl.get_recommendation_scores(
-        priority="Precision",
+        priority="MaxError",
         priority_weight=0.7,
     )
     for score in scores.values():

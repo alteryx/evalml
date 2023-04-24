@@ -311,10 +311,8 @@ def test_organize_objectives():
 def test_normalize_objectives():
     def dict_float_equality(dict_1, dict_2):
         for key, value in dict_1.items():
-            if key not in dict_2:
-                return False
-            if not isclose(value, dict_2[key]):
-                return False
+            assert key in dict_2
+            assert isclose(value, dict_2[key])
         return True
 
     objectives_1 = {"Log Loss Binary": 0.3, "F1": 0.8}
