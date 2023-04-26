@@ -43,7 +43,7 @@ from evalml.exceptions import (
 )
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
-    get_default_objectives,
+    get_default_recommendation_objectives,
     get_non_core_objectives,
     get_objective,
     get_optimization_objectives,
@@ -706,7 +706,7 @@ class AutoMLSearch:
         recommendation_objectives = {}
         if use_recommendation:
             imbalanced = _is_imbalanced(self.X_train, self.y_train, self.problem_type)
-            default_objectives = get_default_objectives(problem_type)
+            default_objectives = get_default_recommendation_objectives(problem_type)
             if include_recommendation is not None:
                 if not isinstance(include_recommendation, list):
                     raise ValueError(
@@ -1766,7 +1766,9 @@ class AutoMLSearch:
             return all_scores, max_scores, min_scores
 
         if len(self.recommendation_objectives) == 0:
-            self.recommendation_objectives = get_default_objectives(self.problem_type)
+            self.recommendation_objectives = get_default_recommendation_objectives(
+                self.problem_type,
+            )
         all_scores, max_scores, min_scores = _get_scores_and_max_min(
             self.recommendation_objectives,
         )

@@ -366,7 +366,7 @@ Objective Utils
     :nosignatures:
 
     evalml.objectives.get_all_objective_names
-    evalml.objectives.get_default_objectives
+    evalml.objectives.get_default_recommendation_objectives
     evalml.objectives.get_core_objectives
     evalml.objectives.get_core_objective_names
     evalml.objectives.get_non_core_objectives

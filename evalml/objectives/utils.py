@@ -231,7 +231,7 @@ def get_core_objectives(problem_type):
     return objectives
 
 
-def get_default_objectives(problem_type, imbalanced=False):
+def get_default_recommendation_objectives(problem_type, imbalanced=False):
     """Get the default recommendation score metrics for the given problem type.
 
     Args:
@@ -276,7 +276,7 @@ def organize_objectives(problem_type, include=None, exclude=None, imbalanced=Fal
         ValueError: If an objective to exclude is not in the default objectives
     """
     problem_type = handle_problem_types(problem_type)
-    default_objectives = get_default_objectives(problem_type, imbalanced)
+    default_objectives = get_default_recommendation_objectives(problem_type, imbalanced)
 
     include_objectives = []
     exclude_objectives = []

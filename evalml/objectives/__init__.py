@@ -51,7 +51,7 @@ from evalml.objectives.standard_metrics import (
 from evalml.objectives.utils import (
     get_objective,
     get_core_objectives,
-    get_default_objectives,
+    get_default_recommendation_objectives,
     get_all_objective_names,
     get_non_core_objectives,
     get_core_objective_names,

@@ -52,7 +52,7 @@ from evalml.objectives import (
 from evalml.objectives.utils import (
     get_all_objective_names,
     get_core_objectives,
-    get_default_objectives,
+    get_default_recommendation_objectives,
     get_non_core_objectives,
     get_objective,
 )
@@ -5507,7 +5507,7 @@ def test_get_recommendation_scores(X_y_binary):
     assert isinstance(scores, dict)
     assert scores.keys() == automl.results["pipeline_results"].keys()
 
-    # check that the output scores are between 0 and 1
+    # check that the output scores are between 0 and 100
     for score in scores.values():
         assert 0 <= score <= 100
 
@@ -5629,7 +5629,10 @@ def test_use_recommendation_score_imbalanced(
         problem_type="multiclass",
         use_recommendation=True,
     )
-    objectives = get_default_objectives("multiclass", imbalanced=imbalanced_data)
+    objectives = get_default_recommendation_objectives(
+        "multiclass",
+        imbalanced=imbalanced_data,
+    )
     assert automl.recommendation_objectives == objectives
 
 
@@ -5649,7 +5652,7 @@ def test_use_recommendation_score(AutoMLTestEnv, X_y_binary):
         use_recommendation=True,
     )
     env = AutoMLTestEnv("binary")
-    objectives = get_default_objectives("binary")
+    objectives = get_default_recommendation_objectives("binary")
     with env.test_context(
         score_return_value={objective: 0.75 for objective in objectives},
     ):

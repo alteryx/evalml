@@ -15,7 +15,7 @@ from evalml.objectives import (
     get_all_objective_names,
     get_core_objective_names,
     get_core_objectives,
-    get_default_objectives,
+    get_default_recommendation_objectives,
     get_non_core_objectives,
     get_objective,
     get_optimization_objectives,
@@ -240,17 +240,17 @@ def test_objectives_support_nullable_types(
     assert not pd.isna(score)
 
 
-def test_get_default_objectives():
-    objectives = get_default_objectives("binary")
+def test_get_default_recommendation_objectives():
+    objectives = get_default_recommendation_objectives("binary")
     expected_objectives = set(
         ["F1", "Balanced Accuracy Binary", "AUC", "Log Loss Binary"],
     )
     assert objectives == expected_objectives
 
-    objectives = get_default_objectives("time series binary")
+    objectives = get_default_recommendation_objectives("time series binary")
     assert objectives == expected_objectives
 
-    objectives = get_default_objectives("multiclass", imbalanced=False)
+    objectives = get_default_recommendation_objectives("multiclass", imbalanced=False)
     expected_objectives = set(
         [
             "F1 Macro",
@@ -261,12 +261,18 @@ def test_get_default_objectives():
     )
     assert objectives == expected_objectives
 
-    objectives = get_default_objectives("time series multiclass", imbalanced=False)
+    objectives = get_default_recommendation_objectives(
+        "time series multiclass",
+        imbalanced=False,
+    )
     assert objectives == expected_objectives
-    objectives = get_default_objectives("time series multiclass", imbalanced=True)
+    objectives = get_default_recommendation_objectives(
+        "time series multiclass",
+        imbalanced=True,
+    )
     assert objectives == expected_objectives
 
-    objectives = get_default_objectives("multiclass", imbalanced=True)
+    objectives = get_default_recommendation_objectives("multiclass", imbalanced=True)
     assert objectives == set(
         [
             "F1 Macro",
@@ -276,10 +282,10 @@ def test_get_default_objectives():
         ],
     )
 
-    objectives = get_default_objectives("regression")
+    objectives = get_default_recommendation_objectives("regression")
     assert objectives == set(["MSE", "MAE", "R2"])
 
-    objectives = get_default_objectives("time series regression")
+    objectives = get_default_recommendation_objectives("time series regression")
     assert objectives == set(["MSE", "MAE", "MedianAE"])
 
 
@@ -293,7 +299,7 @@ def test_organize_objectives_errors():
 
 
 def test_organize_objectives():
-    default_objectives = get_default_objectives("binary")
+    default_objectives = get_default_recommendation_objectives("binary")
     objectives = organize_objectives("binary")
     assert objectives == default_objectives
 
