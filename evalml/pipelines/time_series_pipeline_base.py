@@ -251,6 +251,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             )
         X, y = self._drop_time_index(X, y)
         X_train, y_train = self._drop_time_index(X_train, y_train)
+        X, y = self._ensure_correct_indices(X, y, X_train)
         target = infer_feature_types(y)
         features = self.transform_all_but_final(
             X,
@@ -265,6 +266,18 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         predictions = self.inverse_transform(predictions)
         predictions = predictions.rename(self.input_target_name)
         return infer_feature_types(predictions)
+
+    def _ensure_correct_indices(self, X_holdout, y_holdout, X_train):
+        """Ensures that X and y holdout's indices are the correct integer or time units w.r.t the training data.
+
+        For predict in sample where the holdout is known to follow the training data.
+        """
+        if X_train.index.is_numeric():
+            starting_index = X_train.index[-1] + 1 + self.gap
+            correct_index = range(starting_index, starting_index + len(y_holdout))
+            X_holdout.index = correct_index
+            y_holdout.index = correct_index
+        return X_holdout, y_holdout
 
     def _create_empty_series(self, y_train, size):
         return ww.init_series(
