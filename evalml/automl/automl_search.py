@@ -67,7 +67,6 @@ from evalml.utils.logger import (
     log_batch_times,
     log_subtitle,
     log_title,
-    time_elapsed,
 )
 
 
@@ -1167,8 +1166,7 @@ class AutoMLSearch:
                 batch_times[self._get_batch_number()] = pipeline_times
 
         self.search_duration = time.time() - self.progress.start_time
-        elapsed_time = time_elapsed(self.progress.start_time)
-        desc = f"\nSearch finished after {elapsed_time}"
+        desc = f"\nSearch finished after {self.search_duration:.2f} seconds"
         desc = desc.ljust(self._MAX_NAME_LEN)
         self.logger.info(desc)
 
