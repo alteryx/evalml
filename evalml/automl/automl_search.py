@@ -67,7 +67,6 @@ from evalml.utils.logger import (
     log_batch_times,
     log_subtitle,
     log_title,
-    time_elapsed,
 )
 
 
@@ -1126,8 +1125,8 @@ class AutoMLSearch:
                             cached_data,
                             job_log,
                         )
-                        pipeline_times[pipeline.name] = time_elapsed(
-                            start_pipeline_time,
+                        pipeline_times[pipeline.name] = (
+                            time.time() - start_pipeline_time
                         )
                         new_pipeline_ids.append(pipeline_id)
                         computations[current_computation_index] = (computation, True)
@@ -1163,12 +1162,11 @@ class AutoMLSearch:
                     f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}. Exception(s) raised: {error_msgs}. Check the 'errors' attribute of the AutoMLSearch object for a full breakdown of errors and tracebacks.",
                 )
             if len(pipeline_times) > 0:
-                pipeline_times["Total time of batch"] = time_elapsed(start_batch_time)
+                pipeline_times["Total time of batch"] = time.time() - start_batch_time
                 batch_times[self._get_batch_number()] = pipeline_times
 
         self.search_duration = time.time() - self.progress.start_time
-        elapsed_time = time_elapsed(self.progress.start_time)
-        desc = f"\nSearch finished after {elapsed_time}"
+        desc = f"\nSearch finished after {self.search_duration:.2f} seconds"
         desc = desc.ljust(self._MAX_NAME_LEN)
         self.logger.info(desc)
 

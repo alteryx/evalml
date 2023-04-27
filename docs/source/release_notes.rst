@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Changed per-pipeline timings to store as a float :pr:`4160`
     * Documentation Changes
     * Testing Changes
 
