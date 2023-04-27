@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed bug where resetting the holdout data indices would cause time series ``predict_in_sample`` to be wrong :pr:`4161`
     * Changes
     * Documentation Changes
     * Testing Changes
