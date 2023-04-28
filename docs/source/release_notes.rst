@@ -5,6 +5,7 @@ Release Notes
     * Fixes
     * Changes
         * Changed per-pipeline timings to store as a float :pr:`4160`
+        * Update Dask install commands in ``pyproject.toml`` :pr:`4164`
     * Documentation Changes
     * Testing Changes
 
