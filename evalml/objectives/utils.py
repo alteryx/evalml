@@ -346,13 +346,19 @@ def recommendation_score(
 ):
     """Computes a recommendation score for a model given scores for a group of objectives.
 
+    This recommendation score is a weighted average of the given objectives, by default all weighted equally. Passing
+    in a prioritized objective will weight that objective with the prioritized weight, and all other objectives will
+    split the remaining weight equally.
+
     Args:
-        objectives (dict[str,float]): A dictionary mapping objectives to their values
+        objectives (dict[str,float]): A dictionary mapping objectives to their values. Objectives should be a float between
+            0 and 1, where higher is better. If the objective does not represent score this way, scores should first be
+            normalized using the normalize_objectives function.
         prioritized_objective (str): An optional name of a priority objective that should be given heavier weight
             than the other objectives contributing to the score. Defaults to None, where all objectives are
             weighted equally.
-        prioritized_weight (float): The weight to attribute to the prioritized objective, if it exists.
-            Defaults to 0.5.
+        prioritized_weight (float): The weight (maximum of 1) to attribute to the prioritized objective, if it exists.
+            Should be between 0 and 1. Defaults to 0.5.
 
     Returns:
         A value between 0 and 100 representing how strongly we recommend a pipeline given a set of evaluated objectives

@@ -5636,14 +5636,30 @@ def test_use_recommendation_score_imbalanced(
     assert automl.recommendation_objectives == objectives
 
 
-def test_use_recommendation_score(AutoMLTestEnv, X_y_binary):
+@pytest.mark.parametrize("use_recommendation", [False, True])
+def test_use_recommendation_score(AutoMLTestEnv, X_y_binary, use_recommendation):
     X, y = X_y_binary
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        use_recommendation=use_recommendation,
+    )
     env = AutoMLTestEnv("binary")
-    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+    objectives = get_default_recommendation_objectives("binary")
+    with env.test_context(
+        score_return_value={objective: 0.75 for objective in objectives},
+    ):
         automl.search()
-    assert "recommendation_score" not in automl.rankings
+    if not use_recommendation:
+        assert "recommendation_score" not in automl.rankings
+    else:
+        assert "recommendation_score" in automl.rankings
+
+
+def test_recommendation_score_include_exclude(AutoMLTestEnv, X_y_binary):
+    X, y = X_y_binary
 
     automl = AutoMLSearch(
         X_train=X,
@@ -5657,7 +5673,6 @@ def test_use_recommendation_score(AutoMLTestEnv, X_y_binary):
         score_return_value={objective: 0.75 for objective in objectives},
     ):
         automl.search()
-    assert "recommendation_score" in automl.rankings
     default_rankings = automl.rankings["recommendation_score"]
 
     automl = AutoMLSearch(
@@ -5668,13 +5683,11 @@ def test_use_recommendation_score(AutoMLTestEnv, X_y_binary):
         include_recommendation=["Precision"],
         exclude_recommendation=["F1", "AUC"],
     )
-    env = AutoMLTestEnv("binary")
     objectives.update({"Precision"})
     objectives = objectives - {"F1", "AUC"}
     with env.test_context(
         score_return_value={objective: 0.75 for objective in objectives},
     ):
         automl.search()
-    assert "recommendation_score" in automl.rankings
     custom_rankings = automl.rankings["recommendation_score"]
     assert all(default_rankings != custom_rankings)
