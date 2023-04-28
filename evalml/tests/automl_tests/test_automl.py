@@ -258,9 +258,9 @@ def test_search_batch_times(caplog, X_y_binary, AutoMLTestEnv):
     assert isinstance(list(batch_times.keys())[0], int)
     assert isinstance(batch_times[1], dict)
     assert isinstance(list(batch_times[1].keys())[0], str)
-    assert isinstance(batch_times[1]["Total time of batch"], str)
-    assert isinstance(batch_times[2]["Total time of batch"], str)
-    assert isinstance(batch_times[3]["Total time of batch"], str)
+    assert isinstance(batch_times[1]["Total time of batch"], float)
+    assert isinstance(batch_times[2]["Total time of batch"], float)
+    assert isinstance(batch_times[3]["Total time of batch"], float)
 
     assert len(batch_times) == 3
     assert len(batch_times[1]) == 2

@@ -70,6 +70,9 @@ def log_batch_times(logger, batch_times):
         log_subtitle(logger, subtitle)
         for pipeline_name in batch_times[batch_number]:
             logger.info(
-                "\n" + pipeline_name + ": " + batch_times[batch_number][pipeline_name],
+                "\n"
+                + pipeline_name
+                + ": "
+                + f"{batch_times[batch_number][pipeline_name]:.2f} seconds",
             )
         logger.info("")
