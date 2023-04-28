@@ -1,2 +1,1 @@
 setuptools>=45.1.0
-ipython<8.12.1

@@ -83,7 +83,7 @@ test = [
     "pytest-timeout == 1.4.2",
     "pytest-cov == 2.10.1",
     "nbval == 0.9.3",
-    "IPython >= 8.10.0",
+    "IPython >= 8.10.0, <8.12.1",
     "PyYAML == 5.4",
     "coverage[toml] >= 6.4",
 ]
