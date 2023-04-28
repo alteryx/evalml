@@ -343,6 +343,7 @@ def recommendation_score(
     objectives,
     prioritized_objective=None,
     prioritized_weight=0.5,
+    custom_weights=None,
 ):
     """Computes a recommendation score for a model given scores for a group of objectives.
 
@@ -359,6 +360,10 @@ def recommendation_score(
             weighted equally.
         prioritized_weight (float): The weight (maximum of 1) to attribute to the prioritized objective, if it exists.
             Should be between 0 and 1. Defaults to 0.5.
+        custom_weights (dict[str,float]): A dictionary mapping objective names to corresponding weights between 0 and 1.
+            If all objectives are listed, should add up to 1. If a subset of objectives are listed, should add up to less
+            than 1, and remaining weight will be evenly distributed between the remaining objectives. Should not be used
+            at the same time as prioritized_objective.
 
     Returns:
         A value between 0 and 100 representing how strongly we recommend a pipeline given a set of evaluated objectives
@@ -366,8 +371,15 @@ def recommendation_score(
     Raises:
         ValueError: If the objective to prioritize is not in the known objectives, or if the priority weight is not
             a float between 0 and 1.
+        TODO: add more
     """
     objectives = objectives.copy()  # Prevent mutation issues
+
+    if prioritized_objective is not None and custom_weights is not None:
+        raise ValueError(
+            "Cannot set both prioritized_objective and custom_weights in recommendation score",
+        )
+
     priority_weight = 0
     default_weight = 1 / len(objectives)
     if prioritized_objective is not None:
@@ -384,6 +396,19 @@ def recommendation_score(
         priority_val = objectives.pop(prioritized_objective)
         priority_weight = priority_val * prioritized_weight
         default_weight = (1 - prioritized_weight) / len(objectives)
+
+    if custom_weights is not None:
+        for objective, objective_weight in custom_weights.items():
+            if objective not in objectives:
+                raise ValueError(
+                    f"Custom weighted objective {objective} does not have a corresponding score",
+                )
+            objective_val = objectives.pop(objective)
+            priority_weight += objective_weight * objective_val
+        default_weight = 0
+        if len(objectives) > 0:
+            remaining_weight = 1 - sum(custom_weights.values())
+            default_weight = remaining_weight / len(objectives)
 
     score_list = [
         objective_value * default_weight for objective_value in objectives.values()

@@ -365,18 +365,37 @@ def test_recommendation_score_errors():
         recommendation_score(objectives, prioritized_objective="R2")
     with pytest.raises(ValueError, match="should be a float between 0 and 1"):
         recommendation_score(objectives, "MAE", 25)
+    with pytest.raises(
+        ValueError,
+        match="Cannot set both prioritized_objective and custom_weights",
+    ):
+        recommendation_score(
+            objectives,
+            prioritized_objective="MAE",
+            custom_weights={"MedianAE": 0.4},
+        )
+    with pytest.raises(ValueError, match="does not have a corresponding score"):
+        recommendation_score(objectives, custom_weights={"R2": 0.7})
 
 
-def test_recommendation_score():
-    objectives = {
+@pytest.fixture(scope="module")
+def test_objectives():
+    return {
         "F1 Macro": 0.2,
         "Balanced Accuracy Multiclass": 0.8,
         "Log Loss Multiclass": 0.5,
         "AUC Micro": 0.6,
     }
 
+
+def test_recommendation_score_defaults(test_objectives):
+    objectives = test_objectives
     score = recommendation_score(objectives)
     assert isclose(score, 52.5)
+
+
+def test_recommendation_score_priority(test_objectives):
+    objectives = test_objectives
 
     score = recommendation_score(objectives, prioritized_objective="AUC Micro")
     assert isclose(score, 55)
@@ -387,3 +406,21 @@ def test_recommendation_score():
         prioritized_weight=0.7,
     )
     assert isclose(score, 57)
+
+
+def test_recommendation_score_custom_weights(test_objectives):
+    objectives = test_objectives
+
+    score = recommendation_score(objectives, custom_weights={"AUC Micro": 0.7})
+    assert isclose(score, 57)
+
+    score = recommendation_score(
+        objectives,
+        custom_weights={
+            "F1 Macro": 0.4,
+            "Balanced Accuracy Multiclass": 0.3,
+            "Log Loss Multiclass": 0.2,
+            "AUC Micro": 0.1,
+        },
+    )
+    assert isclose(score, 48)
