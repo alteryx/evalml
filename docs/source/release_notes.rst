@@ -3,11 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Fixed bug where resetting the holdout data indices would cause time series ``predict_in_sample`` to be wrong :pr:`4161`
     * Changes
-        * Changed per-pipeline timings to store as a float :pr:`4160`
-        * Update Dask install commands in ``pyproject.toml`` :pr:`4164`
-        * Capped `IPython` version to < 8.12.1 for readthedocs and plotly compatibility :pr:`3987`
     * Documentation Changes
     * Testing Changes
 
@@ -15,6 +11,14 @@ Release Notes
 
     **Breaking Changes**
 
+
+**v0.75.0 May. 01, 2023**
+    * Fixes
+        * Fixed bug where resetting the holdout data indices would cause time series ``predict_in_sample`` to be wrong :pr:`4161`
+    * Changes
+        * Changed per-pipeline timings to store as a float :pr:`4160`
+        * Update Dask install commands in ``pyproject.toml`` :pr:`4164`
+        * Capped `IPython` version to < 8.12.1 for readthedocs and plotly compatibility :pr:`3987`
 
 **v0.74.0 Apr. 18, 2023**
     * Enhancements
