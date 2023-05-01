@@ -393,9 +393,7 @@ def recommendation_score(
             raise ValueError(
                 f"Given prioritized weight of {prioritized_weight} is invalid, should be a float between 0 and 1",
             )
-        priority_val = objectives.pop(prioritized_objective)
-        priority_weight = priority_val * prioritized_weight
-        default_weight = (1 - prioritized_weight) / len(objectives)
+        custom_weights = {prioritized_objective: prioritized_weight}
 
     if custom_weights is not None:
         for objective, objective_weight in custom_weights.items():
