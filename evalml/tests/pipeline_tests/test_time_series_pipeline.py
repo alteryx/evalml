@@ -668,6 +668,69 @@ def test_predict_and_predict_in_sample_with_time_index(
     assert (preds_in_sample.index == target.iloc[20:].index).all()
 
 
+def test_predict_in_sample_index_error(ts_data):
+    X_train, X_holdout, y_train = ts_data(
+        problem_type="time series regression",
+        train_target_index_dt=False,
+        train_features_index_dt=False,
+        no_features=True,
+    )
+    y_holdout = y_train[-len(X_holdout) :]
+    problem_configuration = {
+        "max_delay": 2,
+        "gap": 0,
+        "forecast_horizon": 5,
+        "time_index": "date",
+    }
+
+    pipeline = TimeSeriesRegressionPipeline(
+        component_graph={
+            "Imputer": ["Imputer", "X", "y"],
+            "Time Series Featurizer": ["Time Series Featurizer", "Imputer.x", "y"],
+            "STL Decomposer": ["STL Decomposer", "Time Series Featurizer.x", "y"],
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
+                "Time Series Featurizer.x",
+                "STL Decomposer.y",
+            ],
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
+                "DateTime Featurizer.x",
+                "STL Decomposer.y",
+            ],
+            "Extra Trees Regressor": [
+                "Extra Trees Regressor",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
+            ],
+        },
+        parameters={
+            "pipeline": problem_configuration,
+            "Time Series Featurizer": problem_configuration,
+        },
+    )
+    pipeline.fit(X_train, y_train)
+
+    preds_in_sample = pipeline.predict_in_sample(
+        X_holdout,
+        y_holdout,
+        X_train=X_train,
+        y_train=y_train,
+    )
+
+    y_reset_holdout = y_holdout.reset_index(drop=True)
+    X_reset_holdout = X_holdout.reset_index(drop=True)
+    X_reset_holdout.ww.init(schema=X_holdout.ww.schema)
+    preds_in_sample_reset = pipeline.predict_in_sample(
+        X_reset_holdout,
+        y_reset_holdout,
+        X_train=X_train,
+        y_train=y_train,
+    )
+
+    assert_series_equal(preds_in_sample, preds_in_sample_reset)
+
+
 @pytest.mark.parametrize("only_use_y", [False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize(
