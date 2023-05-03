@@ -369,9 +369,8 @@ def recommendation_score(
         A value between 0 and 100 representing how strongly we recommend a pipeline given a set of evaluated objectives
 
     Raises:
-        ValueError: If the objective to prioritize is not in the known objectives, or if the priority weight is not
+        ValueError: If the objective(s) to prioritize are not in the known objectives, or if the priority weight(s) are not
             a float between 0 and 1.
-        TODO: add more
     """
     objectives = objectives.copy()  # Prevent mutation issues
 
