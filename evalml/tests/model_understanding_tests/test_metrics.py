@@ -9,6 +9,7 @@ from sklearn.preprocessing import label_binarize
 
 from evalml.exceptions import NoPositiveLabelException
 from evalml.model_understanding.metrics import (
+    check_distribution,
     confusion_matrix,
     graph_confusion_matrix,
     graph_precision_recall_curve,
@@ -631,3 +632,22 @@ def test_jupyter_graph_check(
         graph_roc_curve(y, y_pred_proba)
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
+
+
+@pytest.mark.parametrize(
+    "problem_type",
+    ["binary", "multiclass", "regression", "time series regression"],
+)
+@pytest.mark.parametrize("expected_distribution", ["matching", "not matching"])
+def test_check_distribution(problem_type, expected_distribution):
+    y_true = pd.Series(np.random.normal(size=500))
+    if expected_distribution == "matching":
+        y_pred = pd.Series(np.random.normal(size=500))
+    else:
+        y_pred = pd.Series([-2] * 500)
+
+    result = check_distribution(y_true, y_pred, problem_type)
+    if expected_distribution == "matching":
+        assert result == 1
+    else:
+        assert result == 0
