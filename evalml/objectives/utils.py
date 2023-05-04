@@ -342,7 +342,6 @@ def normalize_objectives(objectives_to_normalize, max_objectives, min_objectives
 def recommendation_score(
     objectives,
     prioritized_objective=None,
-    prioritized_weight=0.5,
     custom_weights=None,
 ):
     """Computes a recommendation score for a model given scores for a group of objectives.
@@ -355,11 +354,9 @@ def recommendation_score(
         objectives (dict[str,float]): A dictionary mapping objectives to their values. Objectives should be a float between
             0 and 1, where higher is better. If the objective does not represent score this way, scores should first be
             normalized using the normalize_objectives function.
-        prioritized_objective (str): An optional name of a priority objective that should be given heavier weight
-            than the other objectives contributing to the score. Defaults to None, where all objectives are
+        prioritized_objective (str): An optional name of a priority objective that should be given heavier weight (50% of the
+            total) than the other objectives contributing to the score. Defaults to None, where all objectives are
             weighted equally.
-        prioritized_weight (float): The weight (maximum of 1) to attribute to the prioritized objective, if it exists.
-            Should be between 0 and 1. Defaults to 0.5.
         custom_weights (dict[str,float]): A dictionary mapping objective names to corresponding weights between 0 and 1.
             If all objectives are listed, should add up to 1. If a subset of objectives are listed, should add up to less
             than 1, and remaining weight will be evenly distributed between the remaining objectives. Should not be used
@@ -369,7 +366,7 @@ def recommendation_score(
         A value between 0 and 100 representing how strongly we recommend a pipeline given a set of evaluated objectives
 
     Raises:
-        ValueError: If the objective(s) to prioritize are not in the known objectives, or if the priority weight(s) are not
+        ValueError: If the objective(s) to prioritize are not in the known objectives, or if the custom weight(s) are not
             a float between 0 and 1.
     """
     objectives = objectives.copy()  # Prevent mutation issues
@@ -386,19 +383,17 @@ def recommendation_score(
             raise ValueError(
                 f"Prioritized objective {prioritized_objective} is not in the list of objectives, valid ones are {objectives.keys()}",
             )
-        if not isinstance(prioritized_weight, float) or not (
-            0 < prioritized_weight < 1
-        ):
-            raise ValueError(
-                f"Given prioritized weight of {prioritized_weight} is invalid, should be a float between 0 and 1",
-            )
-        custom_weights = {prioritized_objective: prioritized_weight}
+        custom_weights = {prioritized_objective: 0.5}
 
     if custom_weights is not None:
         for objective, objective_weight in custom_weights.items():
             if objective not in objectives:
                 raise ValueError(
                     f"Custom weighted objective {objective} does not have a corresponding score",
+                )
+            if objective_weight <= 0 or objective_weight >= 1:
+                raise ValueError(
+                    f"Custom weight {objective_weight} for {objective} is not a valid float between 0 and 1",
                 )
             objective_val = objectives.pop(objective)
             priority_weight += objective_weight * objective_val

@@ -363,8 +363,8 @@ def test_recommendation_score_errors():
 
     with pytest.raises(ValueError, match="not in the list of objectives"):
         recommendation_score(objectives, prioritized_objective="R2")
-    with pytest.raises(ValueError, match="should be a float between 0 and 1"):
-        recommendation_score(objectives, "MAE", 25)
+    with pytest.raises(ValueError, match="is not a valid float between 0 and 1"):
+        recommendation_score(objectives, custom_weights={"MAE": 25})
     with pytest.raises(
         ValueError,
         match="Cannot set both prioritized_objective and custom_weights",
@@ -388,24 +388,18 @@ def test_objectives():
     }
 
 
-def test_recommendation_score_defaults(test_objectives):
+@pytest.mark.parametrize(
+    "priority_objective, expected_score",
+    [(None, 52.5), ("AUC Micro", 55)],
+)
+def test_recommendation_score_default_and_priority(
+    test_objectives,
+    priority_objective,
+    expected_score,
+):
     objectives = test_objectives
-    score = recommendation_score(objectives)
-    assert isclose(score, 52.5)
-
-
-def test_recommendation_score_priority(test_objectives):
-    objectives = test_objectives
-
-    score = recommendation_score(objectives, prioritized_objective="AUC Micro")
-    assert isclose(score, 55)
-
-    score = recommendation_score(
-        objectives,
-        prioritized_objective="AUC Micro",
-        prioritized_weight=0.7,
-    )
-    assert isclose(score, 57)
+    score = recommendation_score(objectives, prioritized_objective=priority_objective)
+    assert isclose(score, expected_score)
 
 
 def test_recommendation_score_custom_weights(test_objectives):
