@@ -5523,7 +5523,6 @@ def test_get_recommendation_scores(X_y_binary):
 
     scores = automl.get_recommendation_scores(
         priority="MaxError",
-        priority_weight=0.7,
     )
     for score in scores.values():
         assert 0 <= score <= 100

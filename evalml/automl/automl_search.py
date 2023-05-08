@@ -1717,18 +1717,15 @@ class AutoMLSearch:
     def get_recommendation_scores(
         self,
         priority=None,
-        priority_weight=0.5,
         custom_weights=None,
         use_pipeline_names=False,
     ):
         """Calculates recommendation scores for all pipelines in the search results.
 
         Args:
-            priority (str): An optional name of a priority objective that should be given heavier weight
+            priority (str): An optional name of a priority objective that should be given heavier weight (of 0.5)
                 than the other objectives contributing to the score. Defaults to None, where all objectives are
                 weighted equally.
-            priority_weight (float): The weight to attribute to the prioritized objective, if it exists.
-                Defaults to 0.5.
             custom_weights (dict[str,float]): A dictionary mapping objective names to corresponding weights between 0 and 1.
                 Should not be used at the same time as prioritized_objective. Defaults to None.
             use_pipeline_names (bool): Whether or not to return the pipeline names instead of ids as the keys
@@ -1783,7 +1780,6 @@ class AutoMLSearch:
             score = recommendation_score(
                 rescaled_scores,
                 priority,
-                priority_weight,
                 custom_weights,
             )
             recommendation_scores[pipeline_id] = score
