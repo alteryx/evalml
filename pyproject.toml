@@ -29,7 +29,7 @@ keywords = ["data science", "machine learning", "optimization", "automl"]
 license = {file = "LICENSE"}
 requires-python = ">=3.8,<4"
 dependencies = [
-    "numpy >= 1.21.0",
+    "numpy >= 1.21.0, <=1.23.5",
     "pandas >= 1.5.0",
     "scipy >= 1.5.0",
     "scikit-learn >= 1.2.2",
