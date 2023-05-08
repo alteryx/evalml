@@ -8,8 +8,6 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.8"
-  commands:
-    - apt-get install graphviz
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
