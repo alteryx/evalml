@@ -9,6 +9,11 @@ sphinx:
   configuration: docs/source/conf.py
   fail_on_warning: false
 
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.8"
+
 # Build documentation with MkDocs
 #mkdocs:
 #  configuration: mkdocs.yml
