@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Capped numpy at <=1.23.5 as a temporary measure for SHAP :pr:`4172`
+        * Updated our readthedocs recipe to reenable builds :pr:`4177`
     * Changes
     * Documentation Changes
     * Testing Changes
