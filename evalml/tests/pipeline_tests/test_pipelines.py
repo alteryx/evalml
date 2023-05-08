@@ -1,3 +1,4 @@
+import io
 import os
 import pickle
 import re
@@ -132,8 +133,22 @@ def test_serialization(X_y_binary, tmpdir, logistic_regression_binary_pipeline):
     path = os.path.join(str(tmpdir), "pipe.pkl")
     pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
+
+    # test with file
+
     pipeline.save(path)
     assert pipeline.score(X, y, ["precision"]) == PipelineBase.load(path).score(
+        X,
+        y,
+        ["precision"],
+    )
+
+    # test with BytesIO
+
+    with open(path, "rb") as f:
+        file_contents = f.read()
+    bytes_io_obj = io.BytesIO(file_contents)
+    assert pipeline.score(X, y, ["precision"]) == PipelineBase.load(bytes_io_obj).score(
         X,
         y,
         ["precision"],
