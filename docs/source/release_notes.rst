@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Added optional ``recommendation_score`` to rank pipelines during AutoMLSearch :pr:`4156`
     * Fixes
+        * Capped numpy at <=1.23.5 as a temporary measure for SHAP :pr:`4172`
     * Changes
     * Documentation Changes
     * Testing Changes
