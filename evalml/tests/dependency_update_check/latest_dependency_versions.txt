@@ -30,7 +30,7 @@ scipy==1.9.1
 seaborn==0.12.2
 shap==0.41.0
 sktime==0.17.0
-statsmodels==0.13.5
+statsmodels==0.14.0
 texttable==1.6.7
 tomli==2.0.1
 vowpalwabbit==9.8.0
