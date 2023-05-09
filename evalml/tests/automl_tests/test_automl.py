@@ -35,6 +35,7 @@ from evalml.automl.utils import (
 )
 from evalml.exceptions import (
     AutoMLSearchException,
+    ObjectiveNotFoundError,
     ParameterNotUsedWarning,
     PipelineNotFoundError,
     PipelineNotYetFittedError,
@@ -51,6 +52,7 @@ from evalml.objectives import (
 from evalml.objectives.utils import (
     get_all_objective_names,
     get_core_objectives,
+    get_default_recommendation_objectives,
     get_non_core_objectives,
     get_objective,
 )
@@ -3159,6 +3161,12 @@ def test_automl_does_not_include_positive_only_objectives_by_default(
 @pytest.mark.parametrize("non_core_objective", get_non_core_objectives())
 def test_automl_validate_objective(non_core_objective, X_y_regression):
     X, y = X_y_regression
+    problem_configuration = {
+        "time_index": "Date",
+        "gap": 0,
+        "max_delay": 0,
+        "forecast_horizon": 2,
+    }
 
     with pytest.raises(ValueError, match="is not allowed in AutoML!"):
         AutoMLSearch(
@@ -3166,6 +3174,7 @@ def test_automl_validate_objective(non_core_objective, X_y_regression):
             y_train=y,
             problem_type=non_core_objective.problem_types[0],
             objective=non_core_objective.name,
+            problem_configuration=problem_configuration,
         )
 
     with pytest.raises(ValueError, match="is not allowed in AutoML!"):
@@ -3174,6 +3183,7 @@ def test_automl_validate_objective(non_core_objective, X_y_regression):
             y_train=y,
             problem_type=non_core_objective.problem_types[0],
             additional_objectives=[non_core_objective.name],
+            problem_configuration=problem_configuration,
         )
 
 
@@ -5480,3 +5490,203 @@ def test_holdout_set_results_and_rankings(caplog, AutoMLTestEnv):
         automl.rankings["ranking_score"],
         check_names=False,
     )
+
+
+def test_get_recommendation_scores(X_y_binary):
+    X, y = X_y_binary
+
+    # Test that we can still get recommendation scores without setting use_recommendation
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+    )
+    automl.search()
+
+    scores = automl.get_recommendation_scores()
+    assert isinstance(scores, dict)
+    assert scores.keys() == automl.results["pipeline_results"].keys()
+
+    # check that the output scores are between 0 and 100
+    for score in scores.values():
+        assert 0 <= score <= 100
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="regression",
+        use_recommendation=True,
+        include_recommendation=["MedianAE", "MaxError"],
+        exclude_recommendation=["MAE"],
+    )
+    automl.search()
+
+    scores = automl.get_recommendation_scores(
+        priority="MaxError",
+    )
+    for score in scores.values():
+        assert 0 <= score <= 100
+    for pipeline_id in scores.keys():
+        assert isinstance(pipeline_id, int)
+
+    scores = automl.get_recommendation_scores(use_pipeline_names=True)
+    for pipeline_name in scores.keys():
+        assert isinstance(pipeline_name, str)
+
+
+def test_recommendation_score_argument_errors(X_y_binary, caplog):
+    caplog.clear()
+    X, y = X_y_binary
+
+    with pytest.raises(
+        ValueError,
+        match="Objectives to include from the recommendation score should be a list",
+    ):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            use_recommendation=True,
+            include_recommendation="Not a list",
+        )
+    with pytest.raises(
+        ValueError,
+        match="Objectives to exclude from the recommendation score should be a list",
+    ):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            use_recommendation=True,
+            exclude_recommendation="Not a list",
+        )
+    with pytest.raises(ObjectiveNotFoundError, match="not a valid Objective!"):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            use_recommendation=True,
+            include_recommendation=["Does not exist"],
+        )
+    with pytest.raises(ValueError, match="not defined for binary"):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            use_recommendation=True,
+            include_recommendation=["R2"],
+        )
+    with pytest.raises(ValueError, match="Cannot exclude objective"):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            use_recommendation=True,
+            exclude_recommendation=["Precision"],
+        )
+    AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        use_recommendation=True,
+        include_recommendation=["F1"],
+    )
+    assert "already one of the default objectives" in caplog.text
+
+
+def test_recommendation_include_non_optimization(X_y_binary):
+    X, y = X_y_binary
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        use_recommendation=True,
+        include_recommendation=["Recall"],
+    )
+    assert "Recall" in automl.recommendation_objectives
+    assert get_objective("Recall") in automl.additional_objectives
+
+
+@pytest.mark.parametrize("imbalanced_data", [True, False])
+def test_use_recommendation_score_imbalanced(
+    imbalanced_data,
+    mock_imbalanced_data_X_y,
+    X_y_multi,
+):
+    if imbalanced_data:
+        X, y = mock_imbalanced_data_X_y("multiclass", "none", "small")
+        X = X[
+            :-300
+        ]  # Make the dataset more imbalanced, so that the data check flags it
+        y = y[:-300]
+    else:
+        X, y = X_y_multi
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="multiclass",
+        use_recommendation=True,
+    )
+    objectives = get_default_recommendation_objectives(
+        "multiclass",
+        imbalanced=imbalanced_data,
+    )
+    assert automl.recommendation_objectives == objectives
+
+
+@pytest.mark.parametrize("use_recommendation", [False, True])
+def test_use_recommendation_score(AutoMLTestEnv, X_y_binary, use_recommendation):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        use_recommendation=use_recommendation,
+    )
+    env = AutoMLTestEnv("binary")
+    objectives = get_default_recommendation_objectives("binary")
+    with env.test_context(
+        score_return_value={objective: 0.75 for objective in objectives},
+    ):
+        automl.search()
+    if not use_recommendation:
+        assert "recommendation_score" not in automl.rankings
+    else:
+        assert "recommendation_score" in automl.rankings
+
+
+def test_recommendation_score_include_exclude(AutoMLTestEnv, X_y_binary):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        use_recommendation=True,
+    )
+    env = AutoMLTestEnv("binary")
+    objectives = get_default_recommendation_objectives("binary")
+    with env.test_context(
+        score_return_value={objective: 0.75 for objective in objectives},
+    ):
+        automl.search()
+    default_rankings = automl.rankings["recommendation_score"]
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        use_recommendation=True,
+        include_recommendation=["Precision"],
+        exclude_recommendation=["F1", "AUC"],
+    )
+    objectives.update({"Precision"})
+    objectives = objectives - {"F1", "AUC"}
+    with env.test_context(
+        score_return_value={objective: 0.75 for objective in objectives},
+    ):
+        automl.search()
+    custom_rankings = automl.rankings["recommendation_score"]
+    assert all(default_rankings != custom_rankings)

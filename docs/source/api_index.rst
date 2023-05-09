@@ -366,13 +366,17 @@ Objective Utils
     :nosignatures:
 
     evalml.objectives.get_all_objective_names
+    evalml.objectives.get_default_recommendation_objectives
     evalml.objectives.get_core_objectives
     evalml.objectives.get_core_objective_names
     evalml.objectives.get_non_core_objectives
     evalml.objectives.get_objective
     evalml.objectives.get_optimization_objectives
     evalml.objectives.get_ranking_objectives
+    evalml.objectives.normalize_objectives
+    evalml.objectives.organize_objectives
     evalml.objectives.ranking_only_objectives
+    evalml.objectives.recommendation_score
 
 
 Problem Types
