@@ -5,6 +5,7 @@ Release Notes
         * Added ``check_distribution`` function for determining if the predicted distribution matches the true one :pr:`4173`
     * Fixes
         * Capped numpy at <=1.23.5 as a temporary measure for SHAP :pr:`4172`
+        * Updated our readthedocs recipe to reenable builds :pr:`4177`
     * Changes
     * Documentation Changes
     * Testing Changes
