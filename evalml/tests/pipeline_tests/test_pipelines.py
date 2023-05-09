@@ -1,6 +1,8 @@
+import io
 import os
 import pickle
 import re
+from typing import Union
 from unittest.mock import patch
 
 import cloudpickle
@@ -127,13 +129,26 @@ def test_required_fields():
         TestPipelineWithoutComponentGraph(parameters={})
 
 
-def test_serialization(X_y_binary, tmpdir, logistic_regression_binary_pipeline):
+@pytest.mark.parametrize("filetype", ["str", "BytesIO"])
+def test_serialization(
+    X_y_binary, tmpdir, logistic_regression_binary_pipeline, filetype
+):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), "pipe.pkl")
     pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
+
     pipeline.save(path)
-    assert pipeline.score(X, y, ["precision"]) == PipelineBase.load(path).score(
+    data_path: Union[str, io.BytesIO]
+
+    data_path = path
+
+    if filetype == "BytesIO":
+        with open(path, "rb") as f:
+            file_contents = f.read()
+        data_path = io.BytesIO(file_contents)
+
+    assert pipeline.score(X, y, ["precision"]) == PipelineBase.load(data_path).score(
         X,
         y,
         ["precision"],

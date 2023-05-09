@@ -7,6 +7,8 @@ import sys
 import traceback
 from abc import ABC, abstractmethod
 from collections import OrderedDict
+from io import BytesIO
+from typing import Union
 
 import cloudpickle
 import numpy as np
@@ -628,15 +630,18 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             cloudpickle.dump(self, f, protocol=pickle_protocol)
 
     @staticmethod
-    def load(file_path):
+    def load(file_path: Union[str, BytesIO]):
         """Loads pipeline at file path.
 
         Args:
-            file_path (str): Location to load file.
+            file_path (str|BytesIO): load filepath or a BytesIO object.
 
         Returns:
             PipelineBase object
         """
+        if isinstance(file_path, BytesIO):
+            return cloudpickle.load(file_path)
+
         with open(file_path, "rb") as f:
             return cloudpickle.load(f)
 
