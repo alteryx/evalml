@@ -634,7 +634,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Loads pipeline at file path.
 
         Args:
-            file_path (str|BytesIO): load file path or a BytesIO object.
+            file_path (str|BytesIO): load filepath or a BytesIO object.
 
         Returns:
             PipelineBase object
