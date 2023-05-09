@@ -51,10 +51,14 @@ from evalml.objectives.standard_metrics import (
 from evalml.objectives.utils import (
     get_objective,
     get_core_objectives,
+    get_default_recommendation_objectives,
     get_all_objective_names,
     get_non_core_objectives,
     get_core_objective_names,
     get_optimization_objectives,
     get_ranking_objectives,
+    normalize_objectives,
+    organize_objectives,
     ranking_only_objectives,
+    recommendation_score,
 )
