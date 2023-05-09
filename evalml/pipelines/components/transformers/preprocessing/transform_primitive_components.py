@@ -73,8 +73,16 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
         es = self._make_entity_set(X_ww)
         features = ft.calculate_feature_matrix(features=self._features, entityset=es)
 
+        # ltypes = features.ww.logical_types
+        # # CatBoost has an issue with categoricals with string categories:
+        # # https://github.com/catboost/catboost/issues/1965
+        # # Which will pop up if these categorical features are left with string categories,
+        # # so convert them to object until the bug is fixed.
+        # features = features.astype(object, copy=False)
+        # features.ww.init(logical_types=ltypes)
+
         features.index = X_ww.index
-        features.ww.init(logical_types={col_: "categorical" for col_ in features})
+        # features.ww.init(logical_types={col_: "categorical" for col_ in features})
 
         X_ww = X_ww.ww.drop(self._columns)
         X_ww = ww.concat_columns([X_ww, features])
