@@ -2,11 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Added optional ``recommendation_score`` to rank pipelines during AutoMLSearch :pr:`4156`
-        * Added BytesIO support to PipelinBase.load() :pr:`4179`
     * Fixes
-        * Capped numpy at <=1.23.5 as a temporary measure for SHAP :pr:`4172`
-        * Updated our readthedocs recipe to reenable builds :pr:`4177`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -14,6 +10,15 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+
+
+**v0.76.0 May. 09, 2023**
+    * Enhancements
+        * Added optional ``recommendation_score`` to rank pipelines during AutoMLSearch :pr:`4156`
+        * Added BytesIO support to PipelinBase.load() :pr:`4179`
+    * Fixes
+        * Capped numpy at <=1.23.5 as a temporary measure for SHAP :pr:`4172`
+        * Updated our readthedocs recipe to reenable builds :pr:`4177`
 
 
 **v0.75.0 May. 01, 2023**
