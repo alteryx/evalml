@@ -11,6 +11,7 @@ from evalml.model_understanding.visualizations import (
     t_sne,
 )
 from evalml.model_understanding.metrics import (
+    check_distribution,
     confusion_matrix,
     graph_confusion_matrix,
     graph_precision_recall_curve,

@@ -1401,6 +1401,7 @@ class AutoMLSearch:
         is_baseline = pipeline.model_family == ModelFamily.BASELINE
         mean_cv_score = np.nan if len(cv_scores) == 1 else cv_scores.mean()
         holdout_score = evaluation_results["holdout_score"]
+        distribution_result = evaluation_results["distribution_result"]
         if holdout_score is None:
             ranking_additional_objectives = mean_cv_all_objectives
             if len(cv_scores) == 1:
@@ -1448,6 +1449,7 @@ class AutoMLSearch:
             "ranking_score": ranking_score,
             "ranking_additional_objectives": ranking_additional_objectives,
             "holdout_score": holdout_score,
+            "distribution_result": distribution_result,
         }
         self._pipelines_searched.update({pipeline_id: pipeline.clone()})
 
@@ -1763,6 +1765,14 @@ class AutoMLSearch:
                 }
             return all_scores, max_scores, min_scores
 
+        def _get_distribution_penalty(pipeline_id):
+            distribution_result = self._results["pipeline_results"][pipeline_id][
+                "distribution_result"
+            ]
+            if distribution_result is None or distribution_result == 1:
+                return 0
+            return 50
+
         if len(self.recommendation_objectives) == 0:
             self.recommendation_objectives = get_default_recommendation_objectives(
                 self.problem_type,
@@ -1782,7 +1792,8 @@ class AutoMLSearch:
                 priority,
                 custom_weights,
             )
-            recommendation_scores[pipeline_id] = score
+            penalty = _get_distribution_penalty(pipeline_id)
+            recommendation_scores[pipeline_id] = max(score - penalty, 0)
         if use_pipeline_names:
             recommendation_scores = {
                 self.get_pipeline(pipeline_id).estimator.name: score

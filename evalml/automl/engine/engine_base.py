@@ -15,11 +15,13 @@ from evalml.automl.utils import (
     tune_binary_threshold,
 )
 from evalml.exceptions import PipelineScoreError
+from evalml.model_understanding import check_distribution
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_binary,
     is_classification,
+    is_time_series,
 )
 
 
@@ -366,6 +368,19 @@ def train_and_score_pipeline(
             y_train=full_y_train,
             y_score=y_holdout,
         )
+        if is_time_series(automl_config.problem_type):
+            y_pred = stored_pipeline.predict(
+                X_holdout,
+                X_train=full_X_train,
+                y_train=full_y_train,
+            )
+        else:
+            y_pred = stored_pipeline.predict(X_holdout)
+        distribution_result = check_distribution(
+            y_holdout,
+            y_pred,
+            automl_config.problem_type,
+        )
         logger.info(
             f"\tFinished holdout set scoring - {automl_config.objective.name}: {holdout_score:.3f}",
         )
@@ -379,6 +394,7 @@ def train_and_score_pipeline(
             "cv_score_mean": cv_score_mean,
             "holdout_score": None if not use_holdout else holdout_score,
             "holdout_scores": None if not use_holdout else holdout_scores,
+            "distribution_result": None if not use_holdout else distribution_result,
         },
         "cached_data": pipeline_cache,
         "pipeline": stored_pipeline,
