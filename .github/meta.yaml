@@ -24,7 +24,7 @@ outputs:
         - pip
         - setuptools ==58.0.4
       run:
-        - numpy >=1.21.0, <=1.23.5
+        - numpy >=1.21.0
         - pandas >=1.5.0
         - dask >=2022.2.0, !=2022.10.1
         - scipy >=1.5.0
@@ -34,7 +34,7 @@ outputs:
         - colorama >=0.4.4
         - cloudpickle >=1.5.0
         - click>=8.0.0
-        - shap >=0.40.0
+        - shap @ git+https://github.com/chukarsten/shap.git@remove_numpy_aliases
         - texttable >=1.6.2
         - woodwork >=0.22.0
         - featuretools>=1.16.0

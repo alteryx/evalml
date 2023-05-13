@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Updated dependency for SHAP to forked SHAP in order to unblock further numpy upgrades :pr:`4174`
     * Changes
     * Documentation Changes
     * Testing Changes
