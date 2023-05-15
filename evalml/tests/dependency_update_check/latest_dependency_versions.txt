@@ -28,7 +28,7 @@ scikit-learn==1.2.2
 scikit-optimize==0.9.0
 scipy==1.9.1
 seaborn==0.12.2
-shap @ git+https://github.com/chukarsten/shap.git
+shap @ git+https://github.com/chukarsten/shap.git@master
 sktime==0.17.0
 statsmodels==0.14.0
 texttable==1.6.7
