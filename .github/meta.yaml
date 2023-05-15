@@ -10,6 +10,7 @@ source:
 
 build:
   number: 2
+  script: python -m pip install 'shap @ git+https://github.com/chukarsten/shap.git'
 
 outputs:
   - name: evalml-core
@@ -34,9 +35,6 @@ outputs:
         - colorama >=0.4.4
         - cloudpickle >=1.5.0
         - click>=8.0.0
-        - pip
-        - pip:
-          - git+https://github.com/chukarsten/shap.git
         - texttable >=1.6.2
         - woodwork >=0.22.0
         - featuretools>=1.16.0
