@@ -10,7 +10,6 @@ source:
 
 build:
   number: 2
-  script: python -m pip install 'shap @ git+https://github.com/chukarsten/shap.git'
 
 outputs:
   - name: evalml-core
@@ -48,6 +47,7 @@ outputs:
         - black[jupyter] >=22.3.0
         - holidays <0.21, >=0.13
         - distributed >=2022.2.0, !=2022.10.1
+      script: python -m pip install 'shap @ git+https://github.com/chukarsten/shap.git'
     test:
       imports:
         - evalml
