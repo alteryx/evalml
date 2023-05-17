@@ -1733,7 +1733,7 @@ class AutoMLSearch:
             for objective in self.recommendation_objectives
         }
         distribution_penalty = self._get_distribution_penalty(pipeline_id)
-        if distribution_penalty > 0:
+        if distribution_penalty < 1:
             rec_objectives["distribution_penalty"] = distribution_penalty
         return rec_objectives
 
@@ -1742,7 +1742,7 @@ class AutoMLSearch:
             "distribution_result"
         ]
         if distribution_result is None or distribution_result == 1:
-            return 0
+            return 1
         return 0.75
 
     def get_recommendation_scores(
