@@ -1716,6 +1716,35 @@ class AutoMLSearch:
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df
 
+    def get_recommendation_score_breakdown(self, pipeline_id):
+        """Reports the scores for the objectives used in the given pipeline's recommendation score calculation.
+
+        Args:
+            pipeline_id (int): The id of the pipeline to get the recommendation score breakdown for.
+
+        Returns:
+            dict: A dictionary of the scores for each objective used in the recommendation score calculation.
+        """
+        all_objectives = self._results["pipeline_results"][pipeline_id][
+            "ranking_additional_objectives"
+        ]
+        rec_objectives = {
+            objective: all_objectives[objective]
+            for objective in self.recommendation_objectives
+        }
+        distribution_penalty = self._get_distribution_penalty(pipeline_id)
+        if distribution_penalty > 0:
+            rec_objectives["distribution_penalty"] = distribution_penalty
+        return rec_objectives
+
+    def _get_distribution_penalty(self, pipeline_id):
+        distribution_result = self._results["pipeline_results"][pipeline_id][
+            "distribution_result"
+        ]
+        if distribution_result is None or distribution_result == 1:
+            return 0
+        return 0.75
+
     def get_recommendation_scores(
         self,
         priority=None,
@@ -1765,14 +1794,6 @@ class AutoMLSearch:
                 }
             return all_scores, max_scores, min_scores
 
-        def _get_distribution_penalty(pipeline_id):
-            distribution_result = self._results["pipeline_results"][pipeline_id][
-                "distribution_result"
-            ]
-            if distribution_result is None or distribution_result == 1:
-                return 0
-            return 50
-
         if len(self.recommendation_objectives) == 0:
             self.recommendation_objectives = get_default_recommendation_objectives(
                 self.problem_type,
@@ -1792,8 +1813,8 @@ class AutoMLSearch:
                 priority,
                 custom_weights,
             )
-            penalty = _get_distribution_penalty(pipeline_id)
-            recommendation_scores[pipeline_id] = max(score - penalty, 0)
+            penalty = self._get_distribution_penalty(pipeline_id)
+            recommendation_scores[pipeline_id] = score * penalty
         if use_pipeline_names:
             recommendation_scores = {
                 self.get_pipeline(pipeline_id).estimator.name: score
