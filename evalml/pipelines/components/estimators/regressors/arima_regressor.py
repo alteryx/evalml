@@ -286,6 +286,7 @@ class ARIMARegressor(Estimator):
                     index=range(num_rows_diff),
                 ).fillna(0)
                 X_ = pd.concat([filler, X], ignore_index=True)
+                X_.ww.init(schema=X.ww.schema)
             else:
                 X_ = X
             y_pred_intervals = self._component_obj.predict_interval(
