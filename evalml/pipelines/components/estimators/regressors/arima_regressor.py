@@ -281,7 +281,11 @@ class ARIMARegressor(Estimator):
                 # pmdarima requires the number of covariate rows to equal the length of the total number of periods (X.shape[0] == fh_[-1]) if covariates are used.
                 # We circument this by adding arbitrary rows to the start of X since sktime discards these values when predicting.
                 num_rows_diff = fh_[-1] - X.shape[0]
-                X_ = pd.concat([X.head(num_rows_diff), X], ignore_index=True)
+                filler = pd.DataFrame(
+                    columns=X.columns,
+                    index=range(num_rows_diff),
+                ).fillna(0)
+                X_ = pd.concat([filler, X], ignore_index=True)
             else:
                 X_ = X
             y_pred_intervals = self._component_obj.predict_interval(
