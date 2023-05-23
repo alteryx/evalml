@@ -1714,6 +1714,26 @@ class AutoMLSearch:
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df
 
+    def get_recommendation_score_breakdown(self, pipeline_id):
+        """Reports the scores for the objectives used in the given pipeline's recommendation score calculation.
+
+        Note that these scores are reported in their raw form, not scaled to be between 0 and 1.
+
+        Args:
+            pipeline_id (int): The id of the pipeline to get the recommendation score breakdown for.
+
+        Returns:
+            dict: A dictionary of the scores for each objective used in the recommendation score calculation.
+        """
+        all_objectives = self._results["pipeline_results"][pipeline_id][
+            "ranking_additional_objectives"
+        ]
+        rec_objectives = {
+            objective: all_objectives[objective]
+            for objective in self.recommendation_objectives
+        }
+        return rec_objectives
+
     def get_recommendation_scores(
         self,
         priority=None,
