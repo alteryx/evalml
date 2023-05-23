@@ -119,6 +119,7 @@ def test_match_indices(ts_data):
         datetime_feature=False,
         no_features=False,
         test_features_index_dt=False,
+        match_indices=False,
     )
 
     assert not X_train.index.equals(y_train.index)
@@ -271,6 +272,7 @@ def test_fit_predict_sk_failure(
         datetime_feature,
         no_features,
         test_features_index_dt,
+        match_indices=False,
     )
 
     a_clf = AutoARIMA(maxiter=10)
