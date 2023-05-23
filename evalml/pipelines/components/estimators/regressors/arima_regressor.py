@@ -3,7 +3,7 @@ from typing import Dict, Hashable, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_numeric_dtype
+from pandas.api.types import is_integer_dtype
 from skopt.space import Integer
 
 from evalml.model_family import ModelFamily
@@ -166,7 +166,7 @@ class ARIMARegressor(Estimator):
                 freq=X.index.freq,
             )
             units_diff = len(dates_diff) - 1
-        elif is_numeric_dtype(type(X.index[0])) and is_numeric_dtype(
+        elif is_integer_dtype(type(X.index[0])) and is_integer_dtype(
             type(self.last_X_index),
         ):
             units_diff = X.index[0] - self.last_X_index
