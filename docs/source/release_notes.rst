@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed small errors in ``ARIMARegressor`` implementation :pr:`4186`
     * Changes
     * Documentation Changes
     * Testing Changes
