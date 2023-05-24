@@ -1725,6 +1725,10 @@ class AutoMLSearch:
         Returns:
             dict: A dictionary of the scores for each objective used in the recommendation score calculation.
         """
+        if len(self.recommendation_objectives) == 0:
+            self.recommendation_objectives = get_default_recommendation_objectives(
+                self.problem_type,
+            )
         all_objectives = self._results["pipeline_results"][pipeline_id][
             "ranking_additional_objectives"
         ]

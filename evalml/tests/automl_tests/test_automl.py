@@ -55,6 +55,7 @@ from evalml.objectives.utils import (
     get_default_recommendation_objectives,
     get_non_core_objectives,
     get_objective,
+    get_optimization_objectives,
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -5490,6 +5491,38 @@ def test_holdout_set_results_and_rankings(caplog, AutoMLTestEnv):
         automl.rankings["ranking_score"],
         check_names=False,
     )
+
+
+def test_get_recommendation_score_breakdown(X_y_regression, AutoMLTestEnv):
+    X, y = X_y_regression
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="regression",
+    )
+
+    objectives = get_default_recommendation_objectives("regression")
+    all_objectives = get_optimization_objectives("regression")
+
+    env = AutoMLTestEnv("regression")
+    with env.test_context(
+        score_return_value={objective.name: 0.75 for objective in all_objectives},
+    ):
+        automl.search()
+
+    breakdown = automl.get_recommendation_score_breakdown(3)
+    assert isinstance(breakdown, dict)
+    # Should not have all objectives, just the recommendation ones
+    assert (
+        breakdown.keys()
+        != automl.results["pipeline_results"][3]["ranking_additional_objectives"]
+    )
+    assert breakdown.keys() == objectives
+
+    # check that the output scores are not normalized, even though the recommendation scores are
+    for score in breakdown.values():
+        assert score == 0.75
 
 
 def test_get_recommendation_scores(X_y_binary):
