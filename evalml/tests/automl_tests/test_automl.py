@@ -5493,19 +5493,20 @@ def test_holdout_set_results_and_rankings(caplog, AutoMLTestEnv):
     )
 
 
-def test_get_recommendation_score_breakdown(X_y_regression, AutoMLTestEnv):
-    X, y = X_y_regression
+@pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
+def test_get_recommendation_score_breakdown(problem_type, X_y_binary, AutoMLTestEnv):
+    X, y = X_y_binary
 
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
-        problem_type="regression",
+        problem_type=problem_type,
     )
 
-    objectives = get_default_recommendation_objectives("regression")
-    all_objectives = get_optimization_objectives("regression")
+    objectives = get_default_recommendation_objectives(problem_type)
+    all_objectives = get_optimization_objectives(problem_type)
 
-    env = AutoMLTestEnv("regression")
+    env = AutoMLTestEnv(problem_type)
     with env.test_context(
         score_return_value={objective.name: 0.75 for objective in all_objectives},
     ):
