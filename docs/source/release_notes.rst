@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``get_recommendation_score_breakdown`` function for insight on the recommendation score :pr:`4188`
     * Fixes
     * Changes
     * Documentation Changes
