@@ -640,6 +640,7 @@ def test_jupyter_graph_check(
 )
 @pytest.mark.parametrize("expected_distribution", ["matching", "not matching"])
 def test_check_distribution(problem_type, expected_distribution):
+    np.random.seed(0)
     y_true = pd.Series(np.random.normal(size=500))
     if expected_distribution == "matching":
         y_pred = pd.Series(np.random.normal(size=500))
