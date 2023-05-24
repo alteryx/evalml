@@ -119,6 +119,7 @@ def test_match_indices(ts_data):
         datetime_feature=False,
         no_features=False,
         test_features_index_dt=False,
+        match_indices=False,
     )
 
     assert not X_train.index.equals(y_train.index)
@@ -271,6 +272,7 @@ def test_fit_predict_sk_failure(
         datetime_feature,
         no_features,
         test_features_index_dt,
+        match_indices=False,
     )
 
     a_clf = AutoARIMA(maxiter=10)
@@ -473,6 +475,38 @@ def test_arima_regressor_can_forecast_arbitrary_dates(use_covariates, ts_data):
     assert (
         arima.predict(X_test).tail(5).tolist() == arima.predict(X_test_last_5).tolist()
     )
+
+
+@pytest.mark.parametrize("use_covariates", [True, False])
+def test_arima_regressor_can_forecast_arbitrary_dates_past_holdout(
+    use_covariates,
+    ts_data,
+):
+    X, _, y = ts_data(
+        train_features_index_dt=False,
+        train_target_index_dt=False,
+    )
+
+    # Create a training and testing set that are not continuous
+    X_train, X_test, y_train, _ = split_data(
+        X,
+        y,
+        problem_type="time series regression",
+        test_size=0.1,
+        random_seed=0,
+    )
+    X_train, _, y_train, _ = split_data(
+        X_train,
+        y_train,
+        problem_type="time series regression",
+        test_size=0.4,
+        random_seed=0,
+    )
+
+    arima = ARIMARegressor(use_covariates=use_covariates)
+    arima.fit(X_train, y_train)
+
+    arima.predict(X_test)
 
 
 @pytest.mark.parametrize(

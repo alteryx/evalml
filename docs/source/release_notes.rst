@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Added ``check_distribution`` function for determining if the predicted distribution matches the true one :pr:`4184`
     * Fixes
+        * Fixed small errors in ``ARIMARegressor`` implementation :pr:`4186`
     * Changes
     * Documentation Changes
     * Testing Changes
