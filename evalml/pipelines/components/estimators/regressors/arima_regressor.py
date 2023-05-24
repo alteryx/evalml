@@ -3,6 +3,7 @@ from typing import Dict, Hashable, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_integer_dtype
 from skopt.space import Integer
 
 from evalml.model_family import ModelFamily
@@ -154,24 +155,25 @@ class ARIMARegressor(Estimator):
         from sktime.forecasting.base import ForecastingHorizon
 
         # we can only calculate the difference if the indices are of the same type
-        if isinstance(X.index[0], type(self.last_X_index)):
+        units_diff = 1
+        if isinstance(X.index[0], type(self.last_X_index)) and isinstance(
+            X.index,
+            pd.DatetimeIndex,
+        ):
+            dates_diff = pd.date_range(
+                start=self.last_X_index,
+                end=X.index[0],
+                freq=X.index.freq,
+            )
+            units_diff = len(dates_diff) - 1
+        elif is_integer_dtype(type(X.index[0])) and is_integer_dtype(
+            type(self.last_X_index),
+        ):
             units_diff = X.index[0] - self.last_X_index
-            if isinstance(X.index, pd.DatetimeIndex):
-                dates_diff = pd.date_range(
-                    start=self.last_X_index,
-                    end=X.index[0],
-                    freq=X.index.freq,
-                )
-                units_diff = len(dates_diff) - 1
-            fh_ = ForecastingHorizon(
-                [units_diff + i for i in range(len(X))],
-                is_relative=True,
-            )
-        else:
-            fh_ = ForecastingHorizon(
-                [i + 1 for i in range(len(X))],
-                is_relative=True,
-            )
+        fh_ = ForecastingHorizon(
+            [units_diff + i for i in range(len(X))],
+            is_relative=True,
+        )
         return fh_
 
     def _get_sp(self, X: pd.DataFrame) -> int:
@@ -213,7 +215,7 @@ class ARIMARegressor(Estimator):
 
         sp = self._get_sp(X)
         self._component_obj.sp = sp
-        self.last_X_index = X.index[-1] if X is not None else y.index
+        self.last_X_index = X.index[-1] if X is not None else y.index[-1]
 
         X = self._remove_datetime(X, features=True)
 
@@ -279,7 +281,12 @@ class ARIMARegressor(Estimator):
                 # pmdarima requires the number of covariate rows to equal the length of the total number of periods (X.shape[0] == fh_[-1]) if covariates are used.
                 # We circument this by adding arbitrary rows to the start of X since sktime discards these values when predicting.
                 num_rows_diff = fh_[-1] - X.shape[0]
-                X_ = pd.concat([X.head(num_rows_diff), X], ignore_index=True)
+                filler = pd.DataFrame(
+                    columns=X.columns,
+                    index=range(num_rows_diff),
+                ).fillna(0)
+                X_ = pd.concat([filler, X], ignore_index=True)
+                X_.ww.init(schema=X.ww.schema)
             else:
                 X_ = X
             y_pred_intervals = self._component_obj.predict_interval(
