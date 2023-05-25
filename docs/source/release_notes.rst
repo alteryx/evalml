@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``get_recommendation_score_breakdown`` function for insight on the recommendation score :pr:`4188`
     * Fixes
         * Fixed small errors in ``ARIMARegressor`` implementation :pr:`4186`
     * Changes
