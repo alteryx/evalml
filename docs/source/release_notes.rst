@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``check_distribution`` function for determining if the predicted distribution matches the true one :pr:`4184`
         * Added ``get_recommendation_score_breakdown`` function for insight on the recommendation score :pr:`4188`
     * Fixes
         * Fixed small errors in ``ARIMARegressor`` implementation :pr:`4186`

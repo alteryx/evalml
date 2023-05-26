@@ -3,6 +3,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
+from scipy.stats import chisquare, kstest, wilcoxon
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from sklearn.metrics import precision_recall_curve as sklearn_precision_recall_curve
@@ -11,6 +12,7 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils.multiclass import unique_labels
 
 from evalml.exceptions import NoPositiveLabelException
+from evalml.problem_types import is_classification, is_regression, is_time_series
 from evalml.utils import import_or_raise, infer_feature_types, jupyter_check
 
 
@@ -360,3 +362,34 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
         ),
     )
     return _go.Figure(layout=layout, data=graph_data)
+
+
+def check_distribution(y_true, y_pred, problem_type, threshold=0.1):
+    """Determines if the distribution of the predicted data is likely to match that of the ground truth data.
+
+    Will use a different statistical test based on the given problem type:
+    - Classification (Binary or Multiclass) - chi squared test
+    - Regression - Kolmogorov-Smirnov test
+    - Time Series Regression  - Wilcoxon signed-rank test
+    Args:
+        y_true (pd.Series): The ground truth data.
+        y_pred (pd.Series): Predictions from a pipeline.
+        problem_type (str or ProblemType): The pipeline's problem type, used to determine the method.
+        threshold (float): The threshold for the p value where we choose to accept or reject the null hypothesis.
+            Should be between 0 and 1, non-inclusive. Defaults to 0.1.
+
+    Returns:
+        int: 0 if the distribution of predicted values is not likely to match the true distribution, 1 if it is.
+    """
+    if is_classification(problem_type):
+        true_value_counts = y_true.value_counts()
+        pred_value_counts = y_pred.value_counts()
+        # Prevents an error in the baseline case where only one class is predicted
+        if len(true_value_counts) != len(pred_value_counts):
+            return 0
+        p_value = chisquare(pred_value_counts, f_exp=true_value_counts).pvalue
+    elif is_time_series(problem_type):
+        p_value = wilcoxon(y_true, y_pred).pvalue
+    elif is_regression(problem_type):
+        p_value = kstest(y_true, y_pred).pvalue
+    return 0 if p_value < threshold else 1
