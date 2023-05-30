@@ -14,12 +14,15 @@ class IDColumnsDataCheck(DataCheck):
 
     Args:
         id_threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0.
+        exclude_time_index (bool): If True, the column set as the time index will not be
+            included in the data check. Default is False.
     """
 
-    def __init__(self, id_threshold=1.0):
+    def __init__(self, id_threshold=1.0, exclude_time_index=False):
         if id_threshold < 0 or id_threshold > 1:
             raise ValueError("id_threshold must be a float between 0 and 1, inclusive.")
         self.id_threshold = id_threshold
+        self.exclude_time_index  = exclude_time_index
 
     def validate(self, X, y=None):
         """Check if any of the features are likely to be ID columns. Currently performs a number of simple checks.
@@ -168,6 +171,8 @@ class IDColumnsDataCheck(DataCheck):
         """
         messages = []
         X = infer_feature_types(X)
+        if X.ww.time_index and self.exclude_time_index:
+            X = X.ww.select(exclude="time_index")
 
         col_names = [col for col in X.columns]
         cols_named_id = [
