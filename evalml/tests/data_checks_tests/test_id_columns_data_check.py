@@ -97,6 +97,7 @@ def test_id_columns_strings():
         "Id": ["z", "y", "x", "a"],
         "col_5": ["0", "0", "1", "2"],
         "col_6": [0.1, 0.2, 0.3, 0.4],
+        "col_7": ["2023-01-01", "2023-01-02", "2023-01-03", "2023-01-04"],
     }
     X = pd.DataFrame.from_dict(X_dict)
     X.ww.init(
@@ -106,6 +107,7 @@ def test_id_columns_strings():
             "Id": "categorical",
             "col_5": "categorical",
         },
+        time_index="col_7",
     )
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
     assert id_cols_check.validate(X) == [
