@@ -15,10 +15,10 @@ class IDColumnsDataCheck(DataCheck):
     Args:
         id_threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0.
         exclude_time_index (bool): If True, the column set as the time index will not be
-            included in the data check. Default is False.
+            included in the data check. Default is True.
     """
 
-    def __init__(self, id_threshold=1.0, exclude_time_index=False):
+    def __init__(self, id_threshold=1.0, exclude_time_index=True):
         if id_threshold < 0 or id_threshold > 1:
             raise ValueError("id_threshold must be a float between 0 and 1, inclusive.")
         self.id_threshold = id_threshold
