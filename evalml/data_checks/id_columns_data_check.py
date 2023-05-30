@@ -22,7 +22,7 @@ class IDColumnsDataCheck(DataCheck):
         if id_threshold < 0 or id_threshold > 1:
             raise ValueError("id_threshold must be a float between 0 and 1, inclusive.")
         self.id_threshold = id_threshold
-        self.exclude_time_index  = exclude_time_index
+        self.exclude_time_index = exclude_time_index
 
     def validate(self, X, y=None):
         """Check if any of the features are likely to be ID columns. Currently performs a number of simple checks.
