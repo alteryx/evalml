@@ -56,7 +56,7 @@ def allowed_model_families(problem_type):
     return list(set([e.model_family for e in estimators]))
 
 
-def get_estimators(problem_type, model_families=None):
+def get_estimators(problem_type, model_families=None, exclude_model_families=[]):
     """Returns the estimators allowed for a particular problem type.
 
     Can also optionally filter by a list of model types.
@@ -64,6 +64,7 @@ def get_estimators(problem_type, model_families=None):
     Args:
         problem_type (ProblemTypes or str): Problem type to filter for.
         model_families (list[ModelFamily] or list[str]): Model families to filter for.
+        exclude_model_families (list[ModelFamily]): A list of model families to exclude from the results.
 
     Returns:
         list[class]: A list of estimator subclasses.
@@ -95,6 +96,8 @@ def get_estimators(problem_type, model_families=None):
             handle_problem_types(supported_pt)
             for supported_pt in estimator_class.supported_problem_types
         ]:
+            continue
+        if estimator_class.model_family in exclude_model_families:
             continue
         if estimator_class.model_family not in model_families:
             continue

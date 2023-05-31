@@ -71,6 +71,8 @@ from evalml.pipelines.components import (
     DecisionTreeClassifier,
     EmailFeaturizer,
     NaturalLanguageFeaturizer,
+    RandomForestClassifier,
+    SelectColumns,
     TimeSeriesFeaturizer,
     URLFeaturizer,
 )
@@ -5230,6 +5232,72 @@ def test_exclude_featurizers_errors(X_y_binary):
             exclude_featurizers=[
                 "TimeSeriesFeaturizer",
             ],
+        )
+
+
+@pytest.mark.parametrize("automl_algorithm", ["default", "iterative"])
+def test_exclude_model_families(
+    automl_algorithm,
+    X_y_binary,
+    AutoMLTestEnv,
+):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type=ProblemTypes.BINARY,
+        automl_algorithm=automl_algorithm,
+        exclude_model_families=[ModelFamily.RANDOM_FOREST],
+    )
+
+    env = AutoMLTestEnv(ProblemTypes.BINARY)
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+
+    pipelines = [
+        automl.get_pipeline(i) for i in range(len(automl.results["pipeline_results"]))
+    ]
+
+    for pl in pipelines:
+        # Accounts for case in default algorithm where we only exclude Random Forest for third batch
+        # (e.g. only after feature selection occurs).
+        if (
+            automl_algorithm == "default"
+            and RandomForestClassifier.name in pl.component_graph.compute_order
+        ):
+            assert SelectColumns.name not in pl.component_graph.compute_order
+        else:
+            assert RandomForestClassifier.name not in pl.component_graph.compute_order
+
+
+def test_exclude_model_families_error(
+    X_y_binary,
+):
+    X, y = X_y_binary
+
+    match_text = "`exclude_model_families` must be passed in the form of a list."
+    with pytest.raises(
+        ValueError,
+        match=match_text,
+    ):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type=ProblemTypes.BINARY,
+            exclude_model_families=ModelFamily.RANDOM_FOREST,
+        )
+
+    match_text = "All values in `exclude_model_families` must be of type `ModelFamily`."
+    with pytest.raises(
+        ValueError,
+        match=match_text,
+    ):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type=ProblemTypes.BINARY,
+            exclude_model_families=[ModelFamily.RANDOM_FOREST, "XGBoost"],
         )
 
 

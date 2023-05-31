@@ -437,6 +437,8 @@ class AutoMLSearch:
         exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipelines built by search.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
 
+        exclude_model_families (list[ModelFamily]): A list of model families to exclude from the estimators used when building pipelines. For default algorithm, this only excludes estimators in the non-naive batches.
+
         holdout_set_size (float): The size of the holdout set that AutoML search will take for datasets larger than 500 rows. If set to 0, holdout set will not be taken regardless of number of rows. Must be between 0 and 1, exclusive. Defaults to 0.1.
 
         use_recommendation (bool): Whether or not to use a recommendation score to rank pipelines instead of optimization objective. Defaults to False.
@@ -490,6 +492,7 @@ class AutoMLSearch:
         verbose=False,
         timing=False,
         exclude_featurizers=None,
+        exclude_model_families=None,
         holdout_set_size=0,
         use_recommendation=False,
         include_recommendation=None,
@@ -841,6 +844,18 @@ class AutoMLSearch:
                 )
         self.exclude_featurizers = exclude_featurizers or []
 
+        if exclude_model_families:
+            if not isinstance(exclude_model_families, list):
+                raise ValueError(
+                    "`exclude_model_families` must be passed in the form of a list.",
+                )
+            if not all(isinstance(x, ModelFamily) for x in exclude_model_families):
+                raise ValueError(
+                    "All values in `exclude_model_families` must be of type `ModelFamily`.",
+                )
+
+        self.exclude_model_families = exclude_model_families or []
+
         if is_classification(self.problem_type):
             self._sampler_name = self.sampler_method
             if self.sampler_method == "auto":
@@ -912,6 +927,7 @@ class AutoMLSearch:
                 features=features,
                 verbose=self.verbose,
                 exclude_featurizers=self.exclude_featurizers,
+                exclude_model_families=self.exclude_model_families,
             )
         elif automl_algorithm == "default":
             self.automl_algorithm = DefaultAlgorithm(
@@ -929,6 +945,7 @@ class AutoMLSearch:
                 verbose=self.verbose,
                 n_jobs=self.n_jobs,
                 exclude_featurizers=self.exclude_featurizers,
+                exclude_model_families=self.exclude_model_families,
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")

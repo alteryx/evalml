@@ -75,6 +75,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
         exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipelines built by DefaultAlgorithm.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
+        exclude_model_families (list[ModelFamily]): A list of model families to exclude from the estimators used when building pipelines. For default algorithm, this only excludes estimators in the non-naive batches.
     """
 
     def __init__(
@@ -96,6 +97,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         features=None,
         verbose=False,
         exclude_featurizers=None,
+        exclude_model_families=None,
     ):
         super().__init__(
             allowed_pipelines=[],
@@ -125,6 +127,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.features = features
         self.ensembling = ensembling
         self.exclude_featurizers = exclude_featurizers or []
+        self.exclude_model_families = exclude_model_families or []
 
         # TODO remove on resolution of 3186
         if is_time_series(self.problem_type) and self.ensembling:
@@ -194,7 +197,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
     def _non_naive_estimators(self):
         return [
             est
-            for est in get_estimators(self.problem_type)
+            for est in get_estimators(
+                self.problem_type,
+                exclude_model_families=self.exclude_model_families,
+            )
             if est not in self._naive_estimators()
         ]
 
