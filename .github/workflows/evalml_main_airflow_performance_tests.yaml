@@ -14,8 +14,8 @@ jobs:
       fail-fast: true
     steps:
       - name: Generate ISO timestamp
-          run: |
-            echo "TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3NZ")" >> $GITHUB_ENV
+        run: |
+          echo "TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3NZ")" >> $GITHUB_ENV
       - name: Checkout evalml
         uses: actions/checkout@v3
         with:
