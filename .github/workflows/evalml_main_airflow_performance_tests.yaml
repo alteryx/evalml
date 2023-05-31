@@ -13,9 +13,9 @@ jobs:
     strategy:
       fail-fast: true
     steps:
-      - name: Generate ISO timestamp
+      - name: Generate default ISO timestamp
         run: |
-          echo "TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3NZ")" >> $GITHUB_ENV
+          echo "DEFAULT_TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3NZ")" >> $GITHUB_ENV
       - name: Checkout evalml
         uses: actions/checkout@v3
         with:
@@ -53,10 +53,12 @@ jobs:
                   "username": "${{ secrets.AIRFLOW_USER }}",
                   "author": "${{ github.event.head_commit.author.name }}"
                 },
-            "logical_date": "${{ env.TIMESTAMP }}",
-            "dag_run_id": "api_evalml_automl_run_tests_generate_report_default_${{ env.TIMESTAMP }}"
+            "logical_date": "${{ env.DEFAULT_TIMESTAMP }}",
+            "dag_run_id": "api_evalml_automl_run_tests_generate_report_default_${{ env.DEFAULT_TIMESTAMP }}"
           }'
-
+      - name: Generate iterative ISO timestamp
+        run: |
+          echo "ITERATIVE_TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3NZ")" >> $GITHUB_ENV
       - name: Run iterative algorithm performance test
         id: current_iterative
         run: | 
@@ -83,6 +85,6 @@ jobs:
                   "username": "${{ secrets.AIRFLOW_USER }}",
                   "author": "${{ github.event.head_commit.author.name }}"
                 },
-            "logical_date": "${{ env.TIMESTAMP }}",
-            "dag_run_id": "api_evalml_automl_run_tests_generate_report_iterative_${{ env.TIMESTAMP }}"
+            "logical_date": "${{ env.ITERATIVE_TIMESTAMP }}",
+            "dag_run_id": "api_evalml_automl_run_tests_generate_report_iterative_${{ env.ITERATIVE_TIMESTAMP }}"
           }'
