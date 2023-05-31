@@ -65,7 +65,7 @@ jobs:
           --header 'Content-Type: application/json' \
           --data-raw '{
             "conf": {
-                  "description": "${{ steps.get_hashes.outputs.current_hash }}_iterative ),
+                  "description": "${{ steps.get_hashes.outputs.current_hash }}_iterative )",
                   "lg_branch": "lg_baton_airflow",
                   "n_trials": 1,
                   "pytest_args": {
