@@ -631,6 +631,14 @@ def test_get_estimators():
     with pytest.raises(KeyError):
         get_estimators(problem_type="Not A Valid Problem Type")
 
+    match_text = "Both `model_families` and `excluded_model_families` cannot be set."
+    with pytest.raises(ValueError, match=match_text):
+        get_estimators(
+            ProblemTypes.REGRESSION,
+            model_family=[ModelFamily.RANDOM_FOREST],
+            exclude_model_family=[ModelFamily.XGBOOST],
+        )
+
 
 def test_generate_code_pipeline_errors():
     with pytest.raises(ValueError, match="Element must be a pipeline instance"):
