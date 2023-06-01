@@ -1050,7 +1050,7 @@ def test_default_algorithm_allowed_graphs_and_families_both_set_error(
 ):
     X, y = X_y_binary
     error_text = (
-        "Both `allowed_model_families` and `exclude_model_families` cannot be set."
+        "Both `allowed_model_families` and `excluded_model_families` cannot be set."
     )
     with pytest.raises(ValueError, match=error_text):
         DefaultAlgorithm(

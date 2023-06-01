@@ -56,7 +56,7 @@ def allowed_model_families(problem_type):
     return list(set([e.model_family for e in estimators]))
 
 
-def get_estimators(problem_type, model_families=None, exclude_model_families=[]):
+def get_estimators(problem_type, model_families=None, excluded_model_families=[]):
     """Returns the estimators allowed for a particular problem type.
 
     Can also optionally filter by a list of model types.
@@ -64,7 +64,7 @@ def get_estimators(problem_type, model_families=None, exclude_model_families=[])
     Args:
         problem_type (ProblemTypes or str): Problem type to filter for.
         model_families (list[ModelFamily] or list[str]): Model families to filter for.
-        exclude_model_families (list[ModelFamily]): A list of model families to exclude from the results.
+        excluded_model_families (list[ModelFamily]): A list of model families to exclude from the results.
 
     Returns:
         list[class]: A list of estimator subclasses.
@@ -73,9 +73,9 @@ def get_estimators(problem_type, model_families=None, exclude_model_families=[])
         TypeError: If the model_families parameter is not a list.
         RuntimeError: If a model family is not valid for the problem type.
     """
-    if model_families is not None and exclude_model_families is not None:
+    if model_families is not None and excluded_model_families is not None:
         raise ValueError(
-            "Both `model_families` and `exclude_model_families` cannot be set.",
+            "Both `model_families` and `excluded_model_families` cannot be set.",
         )
     if model_families is not None and not isinstance(model_families, list):
         raise TypeError("model_families parameter is not a list.")
@@ -85,6 +85,9 @@ def get_estimators(problem_type, model_families=None, exclude_model_families=[])
 
     model_families = [
         handle_model_family(model_family) for model_family in model_families
+    ]
+    excluded_model_families = [
+        handle_model_family(model_family) for model_family in excluded_model_families
     ]
     all_model_families = allowed_model_families(problem_type)
     for model_family in model_families:
@@ -101,7 +104,7 @@ def get_estimators(problem_type, model_families=None, exclude_model_families=[])
             for supported_pt in estimator_class.supported_problem_types
         ]:
             continue
-        if estimator_class.model_family in exclude_model_families:
+        if estimator_class.model_family in excluded_model_families:
             continue
         if estimator_class.model_family not in model_families:
             continue

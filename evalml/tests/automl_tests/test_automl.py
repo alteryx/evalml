@@ -5236,7 +5236,7 @@ def test_exclude_featurizers_errors(X_y_binary):
 
 
 @pytest.mark.parametrize("automl_algorithm", ["default", "iterative"])
-def test_exclude_model_families(
+def test_excluded_model_families(
     automl_algorithm,
     X_y_binary,
     AutoMLTestEnv,
@@ -5248,7 +5248,7 @@ def test_exclude_model_families(
         y_train=y,
         problem_type=ProblemTypes.BINARY,
         automl_algorithm=automl_algorithm,
-        exclude_model_families=[ModelFamily.RANDOM_FOREST],
+        excluded_model_families=[ModelFamily.RANDOM_FOREST],
     )
 
     env = AutoMLTestEnv(ProblemTypes.BINARY)
@@ -5271,12 +5271,12 @@ def test_exclude_model_families(
             assert RandomForestClassifier.name not in pl.component_graph.compute_order
 
 
-def test_exclude_model_families_error(
+def test_excluded_model_families_error(
     X_y_binary,
 ):
     X, y = X_y_binary
 
-    match_text = "`exclude_model_families` must be passed in the form of a list."
+    match_text = "`excluded_model_families` must be passed in the form of a list."
     with pytest.raises(
         ValueError,
         match=match_text,
@@ -5285,10 +5285,12 @@ def test_exclude_model_families_error(
             X_train=X,
             y_train=y,
             problem_type=ProblemTypes.BINARY,
-            exclude_model_families=ModelFamily.RANDOM_FOREST,
+            excluded_model_families=ModelFamily.RANDOM_FOREST,
         )
 
-    match_text = "All values in `exclude_model_families` must be of type `ModelFamily`."
+    match_text = (
+        "All values in `excluded_model_families` must be of type `ModelFamily`."
+    )
     with pytest.raises(
         ValueError,
         match=match_text,
@@ -5297,7 +5299,7 @@ def test_exclude_model_families_error(
             X_train=X,
             y_train=y,
             problem_type=ProblemTypes.BINARY,
-            exclude_model_families=[ModelFamily.RANDOM_FOREST, "XGBoost"],
+            excluded_model_families=[ModelFamily.RANDOM_FOREST, "XGBoost"],
         )
 
 
@@ -5822,9 +5824,9 @@ def test_automl_allowed_graphs_and_families_both_set_error(
             excluded_model_families=[ModelFamily.XGBOOST],
         )
 
-        error_text = (
-            "Both `allowed_model_families` and `exclude_model_families` cannot be set."
-        )
+    error_text = (
+        "Both `allowed_model_families` and `excluded_model_families` cannot be set."
+    )
     with pytest.raises(ValueError, match=error_text):
         AutoMLSearch(
             X_train=X,

@@ -366,7 +366,7 @@ def test_get_estimators(example_graph):
     with pytest.raises(ValueError, match="Cannot get estimators until"):
         component_graph.get_estimators()
 
-    match_text = "Both `model_families` and `exclude_model_families` cannot be set."
+    match_text = "Both `model_families` and `excluded_model_families` cannot be set."
     with pytest.raises(ValueError, match=match_text):
         component_graph.get_estimators(
             ProblemTypes.REGRESSION,

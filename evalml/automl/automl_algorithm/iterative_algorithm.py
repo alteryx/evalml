@@ -68,7 +68,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
         exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipelines built by IterativeAlgorithm.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
-        exclude_model_families (list[ModelFamily]): A list of model families to exclude from the estimators used when building pipelines.
+        excluded_model_families (list[ModelFamily]): A list of model families to exclude from the estimators used when building pipelines.
     """
 
     def __init__(
@@ -94,7 +94,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         features=None,
         verbose=False,
         exclude_featurizers=None,
-        exclude_model_families=None,
+        excluded_model_families=None,
     ):
         self.X = infer_feature_types(X)
         self.y = infer_feature_types(y)
@@ -130,24 +130,24 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._set_additional_pipeline_params()
         self.exclude_featurizers = exclude_featurizers
 
-        if allowed_component_graphs is not None:
-            if allowed_model_families is not None:
+        if allowed_component_graphs not in (None, []):
+            if allowed_model_families not in (None, []):
                 raise ValueError(
                     "Both `allowed_model_families` and `allowed_component_graphs` cannot be set.",
                 )
-            if exclude_model_families is not None:
+            if excluded_model_families not in (None, []):
                 raise ValueError(
-                    "Both `exclude_model_families` and `allowed_component_graphs` cannot be set.",
+                    "Both `excluded_model_families` and `allowed_component_graphs` cannot be set.",
                 )
         self.allowed_component_graphs = allowed_component_graphs
 
-        if allowed_model_families is not None and exclude_model_families is not None:
+        if allowed_model_families is not None and excluded_model_families is not None:
             raise ValueError(
-                "Both `allowed_model_families` and `exclude_model_families` cannot be set.",
+                "Both `allowed_model_families` and `excluded_model_families` cannot be set.",
             )
 
         self.allowed_model_families = allowed_model_families
-        self.exclude_model_families = exclude_model_families or []
+        self.excluded_model_families = excluded_model_families or []
 
         super().__init__(
             allowed_pipelines=self.allowed_pipelines,
@@ -171,7 +171,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             allowed_estimators = get_estimators(
                 self.problem_type,
                 model_families=self.allowed_model_families,
-                exclude_model_families=self.exclude_model_families,
+                excluded_model_families=self.excluded_model_families,
             )
             allowed_estimators = self._filter_estimators(
                 allowed_estimators,

@@ -437,7 +437,7 @@ class AutoMLSearch:
         exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipelines built by search.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
 
-        exclude_model_families (list[ModelFamily]): A list of model families to exclude from the estimators used when building pipelines. For default algorithm, this only excludes estimators in the non-naive batches.
+        excluded_model_families (list[ModelFamily]): A list of model families to exclude from the estimators used when building pipelines. For default algorithm, this only excludes estimators in the non-naive batches.
 
         holdout_set_size (float): The size of the holdout set that AutoML search will take for datasets larger than 500 rows. If set to 0, holdout set will not be taken regardless of number of rows. Must be between 0 and 1, exclusive. Defaults to 0.1.
 
@@ -468,7 +468,7 @@ class AutoMLSearch:
         data_splitter=None,
         allowed_component_graphs=None,
         allowed_model_families=None,
-        exclude_model_families=None,
+        excluded_model_families=None,
         features=None,
         start_iteration_callback=None,
         add_result_callback=None,
@@ -604,9 +604,9 @@ class AutoMLSearch:
                 raise ValueError(
                     "Both `allowed_model_families` and `allowed_component_graphs` cannot be set.",
                 )
-            if exclude_model_families is not None:
+            if excluded_model_families is not None:
                 raise ValueError(
-                    "Both `exclude_model_families` and `allowed_component_graphs` cannot be set.",
+                    "Both `excluded_model_families` and `allowed_component_graphs` cannot be set.",
                 )
 
             if not isinstance(allowed_component_graphs, dict):
@@ -619,9 +619,9 @@ class AutoMLSearch:
                         "Every component graph passed must be of type list, dictionary, or ComponentGraph!",
                     )
 
-        if allowed_model_families is not None and exclude_model_families is not None:
+        if allowed_model_families is not None and excluded_model_families is not None:
             raise ValueError(
-                "Both `allowed_model_families` and `exclude_model_families` cannot be set.",
+                "Both `allowed_model_families` and `excluded_model_families` cannot be set.",
             )
 
         self.allowed_component_graphs = allowed_component_graphs
@@ -859,17 +859,17 @@ class AutoMLSearch:
                 )
         self.exclude_featurizers = exclude_featurizers or []
 
-        if exclude_model_families:
-            if not isinstance(exclude_model_families, list):
+        if excluded_model_families:
+            if not isinstance(excluded_model_families, list):
                 raise ValueError(
-                    "`exclude_model_families` must be passed in the form of a list.",
+                    "`excluded_model_families` must be passed in the form of a list.",
                 )
-            if not all(isinstance(x, ModelFamily) for x in exclude_model_families):
+            if not all(isinstance(x, ModelFamily) for x in excluded_model_families):
                 raise ValueError(
-                    "All values in `exclude_model_families` must be of type `ModelFamily`.",
+                    "All values in `excluded_model_families` must be of type `ModelFamily`.",
                 )
 
-        self.exclude_model_families = exclude_model_families or []
+        self.excluded_model_families = excluded_model_families or []
 
         if is_classification(self.problem_type):
             self._sampler_name = self.sampler_method
@@ -928,7 +928,7 @@ class AutoMLSearch:
                 sampler_name=self._sampler_name,
                 allowed_component_graphs=self.allowed_component_graphs,
                 allowed_model_families=self.allowed_model_families,
-                exclude_model_families=self.exclude_model_families,
+                excluded_model_families=self.excluded_model_families,
                 max_iterations=self.max_iterations,
                 max_batches=self.max_batches,
                 tuner_class=self.tuner_class,
@@ -951,7 +951,7 @@ class AutoMLSearch:
                 problem_type=self.problem_type,
                 sampler_name=self._sampler_name,
                 allowed_model_families=self.allowed_model_families,
-                exclude_model_families=self.exclude_model_families,
+                excluded_model_families=self.excluded_model_families,
                 tuner_class=self.tuner_class,
                 random_seed=self.random_seed,
                 search_parameters=internal_search_parameters,

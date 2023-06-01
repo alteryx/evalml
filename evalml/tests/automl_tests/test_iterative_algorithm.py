@@ -1169,7 +1169,7 @@ def test_iterative_algorithm_allowed_graphs_and_families_both_set_error(
         )
 
         error_text = (
-            "Both `allowed_model_families` and `exclude_model_families` cannot be set."
+            "Both `allowed_model_families` and `excluded_model_families` cannot be set."
         )
     with pytest.raises(ValueError, match=error_text):
         IterativeAlgorithm(
