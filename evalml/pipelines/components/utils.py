@@ -82,6 +82,8 @@ def get_estimators(problem_type, model_families=None, excluded_model_families=No
     problem_type = handle_problem_types(problem_type)
     if model_families is None:
         model_families = allowed_model_families(problem_type)
+    if excluded_model_families is None:
+        excluded_model_families = []
 
     model_families = [
         handle_model_family(model_family) for model_family in model_families
