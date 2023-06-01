@@ -78,6 +78,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         problem_type,
         sampler_name=None,
         allowed_model_families=None,
+        excluded_model_families=None,
         allowed_component_graphs=None,
         max_batches=None,
         max_iterations=None,
@@ -94,7 +95,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         features=None,
         verbose=False,
         exclude_featurizers=None,
-        excluded_model_families=None,
     ):
         self.X = infer_feature_types(X)
         self.y = infer_feature_types(y)
@@ -141,7 +141,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 )
         self.allowed_component_graphs = allowed_component_graphs
 
-        if allowed_model_families is not None and excluded_model_families is not None:
+        if allowed_model_families not in (None, []) and excluded_model_families not in (
+            None,
+            [],
+        ):
             raise ValueError(
                 "Both `allowed_model_families` and `excluded_model_families` cannot be set.",
             )

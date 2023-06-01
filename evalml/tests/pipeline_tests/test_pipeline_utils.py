@@ -636,7 +636,7 @@ def test_get_estimators():
         get_estimators(
             ProblemTypes.REGRESSION,
             model_family=[ModelFamily.RANDOM_FOREST],
-            exclude_model_family=[ModelFamily.XGBOOST],
+            excluded_model_family=[ModelFamily.XGBOOST],
         )
 
 
