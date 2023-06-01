@@ -468,6 +468,7 @@ class AutoMLSearch:
         data_splitter=None,
         allowed_component_graphs=None,
         allowed_model_families=None,
+        exclude_model_families=None,
         features=None,
         start_iteration_callback=None,
         add_result_callback=None,
@@ -492,7 +493,6 @@ class AutoMLSearch:
         verbose=False,
         timing=False,
         exclude_featurizers=None,
-        exclude_model_families=None,
         holdout_set_size=0,
         use_recommendation=False,
         include_recommendation=None,
@@ -600,6 +600,15 @@ class AutoMLSearch:
         self.n_jobs = n_jobs
 
         if allowed_component_graphs is not None:
+            if allowed_model_families is not None:
+                raise ValueError(
+                    "Both `allowed_model_families` and `allowed_component_graphs` cannot be set.",
+                )
+            if exclude_model_families is not None:
+                raise ValueError(
+                    "Both `exclude_model_families` and `allowed_component_graphs` cannot be set.",
+                )
+
             if not isinstance(allowed_component_graphs, dict):
                 raise ValueError(
                     "Parameter allowed_component_graphs must be either None or a dictionary!",
@@ -609,6 +618,12 @@ class AutoMLSearch:
                     raise ValueError(
                         "Every component graph passed must be of type list, dictionary, or ComponentGraph!",
                     )
+
+        if allowed_model_families is not None and exclude_model_families is not None:
+            raise ValueError(
+                "Both `allowed_model_families` and `exclude_model_families` cannot be set.",
+            )
+
         self.allowed_component_graphs = allowed_component_graphs
         self.allowed_model_families = allowed_model_families
         self.allow_long_running_models = allow_long_running_models
@@ -913,6 +928,7 @@ class AutoMLSearch:
                 sampler_name=self._sampler_name,
                 allowed_component_graphs=self.allowed_component_graphs,
                 allowed_model_families=self.allowed_model_families,
+                exclude_model_families=self.exclude_model_families,
                 max_iterations=self.max_iterations,
                 max_batches=self.max_batches,
                 tuner_class=self.tuner_class,
@@ -927,7 +943,6 @@ class AutoMLSearch:
                 features=features,
                 verbose=self.verbose,
                 exclude_featurizers=self.exclude_featurizers,
-                exclude_model_families=self.exclude_model_families,
             )
         elif automl_algorithm == "default":
             self.automl_algorithm = DefaultAlgorithm(
@@ -935,6 +950,8 @@ class AutoMLSearch:
                 y=self.y_train,
                 problem_type=self.problem_type,
                 sampler_name=self._sampler_name,
+                allowed_model_families=self.allowed_model_families,
+                exclude_model_families=self.exclude_model_families,
                 tuner_class=self.tuner_class,
                 random_seed=self.random_seed,
                 search_parameters=internal_search_parameters,
@@ -945,7 +962,6 @@ class AutoMLSearch:
                 verbose=self.verbose,
                 n_jobs=self.n_jobs,
                 exclude_featurizers=self.exclude_featurizers,
-                exclude_model_families=self.exclude_model_families,
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")

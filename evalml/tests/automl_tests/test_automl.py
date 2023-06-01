@@ -5792,3 +5792,44 @@ def test_recommendation_score_include_exclude(AutoMLTestEnv, X_y_binary):
         automl.search()
     custom_rankings = automl.rankings["recommendation_score"]
     assert all(default_rankings != custom_rankings)
+
+
+def test_automl_allowed_graphs_and_families_both_set_error(
+    X_y_binary,
+):
+    X, y = X_y_binary
+    error_text = (
+        "Both `allowed_model_families` and `allowed_component_graphs` cannot be set."
+    )
+    with pytest.raises(ValueError, match=error_text):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            allowed_component_graphs=[{"Imputer": ["X", "y"]}],
+            allowed_model_families=[ModelFamily.XGBOOST],
+        )
+
+    error_text = (
+        "Both `excluded_model_families` and `allowed_component_graphs` cannot be set."
+    )
+    with pytest.raises(ValueError, match=error_text):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            allowed_component_graphs=[{"Imputer": ["X", "y"]}],
+            excluded_model_families=[ModelFamily.XGBOOST],
+        )
+
+        error_text = (
+            "Both `allowed_model_families` and `exclude_model_families` cannot be set."
+        )
+    with pytest.raises(ValueError, match=error_text):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            allowed_model_families=[ModelFamily.RANDOM_FOREST],
+            excluded_model_families=[ModelFamily.XGBOOST],
+        )

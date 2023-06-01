@@ -25,6 +25,7 @@ from evalml.exceptions import (
     PipelineError,
     PipelineErrorCodeEnum,
 )
+from evalml.model_family import ModelFamily
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
@@ -42,7 +43,7 @@ from evalml.pipelines.components import (
     Transformer,
     Undersampler,
 )
-from evalml.problem_types import is_classification
+from evalml.problem_types import ProblemTypes, is_classification
 from evalml.utils import infer_feature_types
 
 
@@ -364,6 +365,14 @@ def test_get_estimators(example_graph):
     component_graph = ComponentGraph(example_graph)
     with pytest.raises(ValueError, match="Cannot get estimators until"):
         component_graph.get_estimators()
+
+    match_text = "Both `model_families` and `exclude_model_families` cannot be set."
+    with pytest.raises(ValueError, match=match_text):
+        component_graph.get_estimators(
+            ProblemTypes.REGRESSION,
+            model_family=[ModelFamily.RANDOM_FOREST],
+            exclude_model_family=[ModelFamily.XGBOOST],
+        )
 
     component_graph.instantiate()
     assert component_graph.get_estimators() == [

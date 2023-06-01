@@ -101,7 +101,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.problem_type = problem_type
         self.random_seed = random_seed
         self.sampler_name = sampler_name
-        self.allowed_model_families = allowed_model_families
         self.pipelines_per_batch = pipelines_per_batch
         self.n_jobs = n_jobs
         self.number_features = number_features
@@ -128,9 +127,26 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.allowed_pipelines = []
 
         self.features = features
-        self.allowed_component_graphs = allowed_component_graphs
         self._set_additional_pipeline_params()
         self.exclude_featurizers = exclude_featurizers
+
+        if allowed_component_graphs is not None:
+            if allowed_model_families is not None:
+                raise ValueError(
+                    "Both `allowed_model_families` and `allowed_component_graphs` cannot be set.",
+                )
+            if exclude_model_families is not None:
+                raise ValueError(
+                    "Both `exclude_model_families` and `allowed_component_graphs` cannot be set.",
+                )
+        self.allowed_component_graphs = allowed_component_graphs
+
+        if allowed_model_families is not None and exclude_model_families is not None:
+            raise ValueError(
+                "Both `allowed_model_families` and `exclude_model_families` cannot be set.",
+            )
+
+        self.allowed_model_families = allowed_model_families
         self.exclude_model_families = exclude_model_families or []
 
         super().__init__(
