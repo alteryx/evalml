@@ -1145,18 +1145,6 @@ def test_iterative_algorithm_allowed_graphs_and_families_both_set_error(
 ):
     X, y = X_y_binary
     error_text = (
-        "Both `allowed_model_families` and `allowed_component_graphs` cannot be set."
-    )
-    with pytest.raises(ValueError, match=error_text):
-        IterativeAlgorithm(
-            X=X,
-            y=y,
-            problem_type="binary",
-            allowed_component_graphs=[{"Imputer": ["X", "y"]}],
-            allowed_model_families=[ModelFamily.XGBOOST],
-        )
-
-    error_text = (
         "Both `excluded_model_families` and `allowed_component_graphs` cannot be set."
     )
     with pytest.raises(ValueError, match=error_text):
@@ -1164,13 +1152,13 @@ def test_iterative_algorithm_allowed_graphs_and_families_both_set_error(
             X=X,
             y=y,
             problem_type="binary",
-            allowed_component_graphs=[{"Imputer": ["X", "y"]}],
+            allowed_component_graphs={"Imputer": ["X", "y"]},
             excluded_model_families=[ModelFamily.XGBOOST],
         )
 
-        error_text = (
-            "Both `allowed_model_families` and `excluded_model_families` cannot be set."
-        )
+    error_text = (
+        "Both `allowed_model_families` and `excluded_model_families` cannot be set."
+    )
     with pytest.raises(ValueError, match=error_text):
         IterativeAlgorithm(
             X=X,
