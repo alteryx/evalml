@@ -97,7 +97,7 @@ def test_id_columns_strings():
         "Id": ["z", "y", "x", "a"],
         "col_5": ["0", "0", "1", "2"],
         "col_6": [0.1, 0.2, 0.3, 0.4],
-        "col_7": ["2023-01-01", "2023-01-02", "2023-01-03", "2023-01-04"],
+        "col_7_id": ["2023-01-01", "2023-01-02", "2023-01-03", "2023-01-04"],
     }
     X = pd.DataFrame.from_dict(X_dict)
     X.ww.init(
@@ -107,9 +107,9 @@ def test_id_columns_strings():
             "Id": "categorical",
             "col_5": "categorical",
         },
-        time_index="col_7",
+        time_index="col_7_id",
     )
-    id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
+    id_cols_check = IDColumnsDataCheck(id_threshold=0.95, exclude_time_index=True)
     assert id_cols_check.validate(X) == [
         DataCheckWarning(
             message="Columns 'Id', 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
@@ -121,6 +121,23 @@ def test_id_columns_strings():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     metadata={"columns": ["Id", "col_2", "col_3_id"]},
+                ),
+            ],
+        ).to_dict(),
+    ]
+
+    id_cols_check = IDColumnsDataCheck(id_threshold=0.95, exclude_time_index=False)
+    assert id_cols_check.validate(X) == [
+        DataCheckWarning(
+            message="Columns 'Id', 'col_2', 'col_3_id', 'col_7_id' are 95.0% or more likely to be an ID column",
+            data_check_name=id_data_check_name,
+            message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+            details={"columns": ["Id", "col_2", "col_3_id", "col_7_id"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["Id", "col_2", "col_3_id", "col_7_id"]},
                 ),
             ],
         ).to_dict(),
