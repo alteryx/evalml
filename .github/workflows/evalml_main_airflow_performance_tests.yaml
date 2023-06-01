@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - OSSAIR-107_airflow_github_action
 
 jobs:
   performance_tests:

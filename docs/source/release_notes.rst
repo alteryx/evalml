@@ -9,6 +9,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Run looking glass performance tests on merge via Airflow :pr:`4198`
 
 .. warning::
 
