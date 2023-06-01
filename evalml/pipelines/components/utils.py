@@ -73,7 +73,7 @@ def get_estimators(problem_type, model_families=None, excluded_model_families=No
         TypeError: If the model_families parameter is not a list.
         RuntimeError: If a model family is not valid for the problem type.
     """
-    if model_families is not None and excluded_model_families is not None:
+    if model_families not in (None, []) and excluded_model_families not in (None, []):
         raise ValueError(
             "Both `model_families` and `excluded_model_families` cannot be set.",
         )
