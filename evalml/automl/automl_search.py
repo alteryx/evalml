@@ -600,10 +600,6 @@ class AutoMLSearch:
         self.n_jobs = n_jobs
 
         if allowed_component_graphs is not None:
-            if allowed_model_families is not None:
-                raise ValueError(
-                    "Both `allowed_model_families` and `allowed_component_graphs` cannot be set.",
-                )
             if excluded_model_families is not None:
                 raise ValueError(
                     "Both `excluded_model_families` and `allowed_component_graphs` cannot be set.",
@@ -619,7 +615,10 @@ class AutoMLSearch:
                         "Every component graph passed must be of type list, dictionary, or ComponentGraph!",
                     )
 
-        if allowed_model_families is not None and excluded_model_families is not None:
+        if allowed_model_families not in (None, []) and excluded_model_families not in (
+            None,
+            [],
+        ):
             raise ValueError(
                 "Both `allowed_model_families` and `excluded_model_families` cannot be set.",
             )

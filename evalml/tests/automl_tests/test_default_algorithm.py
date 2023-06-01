@@ -1059,4 +1059,5 @@ def test_default_algorithm_allowed_graphs_and_families_both_set_error(
             problem_type="binary",
             allowed_model_families=[ModelFamily.RANDOM_FOREST],
             excluded_model_families=[ModelFamily.XGBOOST],
+            sampler_name=None,
         )

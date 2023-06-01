@@ -132,7 +132,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.ensembling = ensembling
         self.exclude_featurizers = exclude_featurizers or []
 
-        if allowed_model_families is not None and excluded_model_families is not None:
+        if allowed_model_families not in (None, []) and excluded_model_families not in (
+            None,
+            [],
+        ):
             raise ValueError(
                 "Both `allowed_model_families` and `excluded_model_families` cannot be set.",
             )

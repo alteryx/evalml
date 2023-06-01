@@ -635,7 +635,7 @@ def test_get_estimators():
     with pytest.raises(ValueError, match=match_text):
         get_estimators(
             ProblemTypes.REGRESSION,
-            model_family=[ModelFamily.RANDOM_FOREST],
+            model_families=[ModelFamily.RANDOM_FOREST],
             excluded_model_family=[ModelFamily.XGBOOST],
         )
 

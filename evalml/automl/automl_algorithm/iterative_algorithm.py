@@ -131,10 +131,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.exclude_featurizers = exclude_featurizers
 
         if allowed_component_graphs not in (None, []):
-            if allowed_model_families not in (None, []):
-                raise ValueError(
-                    "Both `allowed_model_families` and `allowed_component_graphs` cannot be set.",
-                )
             if excluded_model_families not in (None, []):
                 raise ValueError(
                     "Both `excluded_model_families` and `allowed_component_graphs` cannot be set.",
