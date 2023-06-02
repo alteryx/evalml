@@ -35,7 +35,6 @@ jobs:
           --data-raw '{
             "conf": {
                   "description": "${{ env.CURRENT_HASH }}_default )",
-                  "lg_branch": "lg_baton_airflow",
                   "n_trials": 1,
                   "pytest_args": {
                       "automl-algo": "default",
@@ -67,7 +66,6 @@ jobs:
           --data-raw '{
             "conf": {
                   "description": "${{ env.CURRENT_HASH }}_iterative )",
-                  "lg_branch": "lg_baton_airflow",
                   "n_trials": 1,
                   "pytest_args": {
                       "automl-algo": "iterative",
