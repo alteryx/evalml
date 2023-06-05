@@ -615,10 +615,7 @@ class AutoMLSearch:
                         "Every component graph passed must be of type list, dictionary, or ComponentGraph!",
                     )
 
-        if allowed_model_families not in (None, []) and excluded_model_families not in (
-            None,
-            [],
-        ):
+        if allowed_model_families is not None and excluded_model_families is not None:
             raise ValueError(
                 "Both `allowed_model_families` and `excluded_model_families` cannot be set.",
             )

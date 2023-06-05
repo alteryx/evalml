@@ -130,23 +130,20 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._set_additional_pipeline_params()
         self.exclude_featurizers = exclude_featurizers
 
-        if allowed_component_graphs not in (None, []):
-            if excluded_model_families not in (None, []):
+        if allowed_component_graphs is not None:
+            if excluded_model_families is not None:
                 raise ValueError(
                     "Both `excluded_model_families` and `allowed_component_graphs` cannot be set.",
                 )
         self.allowed_component_graphs = allowed_component_graphs
 
-        if allowed_model_families not in (None, []) and excluded_model_families not in (
-            None,
-            [],
-        ):
+        if allowed_model_families is not None and excluded_model_families is not None:
             raise ValueError(
                 "Both `allowed_model_families` and `excluded_model_families` cannot be set.",
             )
 
         self.allowed_model_families = allowed_model_families
-        self.excluded_model_families = excluded_model_families or []
+        self.excluded_model_families = excluded_model_families
 
         super().__init__(
             allowed_pipelines=self.allowed_pipelines,
