@@ -43,6 +43,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
             to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
             this parameter will be ignored.
+        excluded_model_families (list[ModelFamily]): A list of model families to exclude from the estimators used when building pipelines.
         allowed_component_graphs (dict): A dictionary of lists or ComponentGraphs indicating the component graphs allowed in the search.
             The format should follow { "Name_0": [list_of_components], "Name_1": [ComponentGraph(...)] }
 
@@ -68,7 +69,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
         exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipelines built by IterativeAlgorithm.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
-        excluded_model_families (list[ModelFamily]): A list of model families to exclude from the estimators used when building pipelines.
     """
 
     def __init__(

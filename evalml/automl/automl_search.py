@@ -868,7 +868,7 @@ class AutoMLSearch:
                     "All values in `excluded_model_families` must be of type `ModelFamily`.",
                 )
 
-        self.excluded_model_families = excluded_model_families or []
+        self.excluded_model_families = excluded_model_families
 
         if is_classification(self.problem_type):
             self._sampler_name = self.sampler_method
