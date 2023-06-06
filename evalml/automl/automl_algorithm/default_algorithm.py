@@ -75,6 +75,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
         exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipelines built by DefaultAlgorithm.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
+        allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
+            model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
+            to `multiclass` or `regression` depending on the problem type.
+        excluded_model_families (list[ModelFamily]): A list of model families to exclude from the estimators used when building pipelines. For default algorithm, this only excludes estimators in the non-naive batches.
     """
 
     def __init__(
@@ -83,6 +87,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         y,
         problem_type,
         sampler_name,
+        allowed_model_families=None,
+        excluded_model_families=None,
         tuner_class=None,
         random_seed=0,
         search_parameters=None,
@@ -99,6 +105,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
     ):
         super().__init__(
             allowed_pipelines=[],
+            allowed_model_families=allowed_model_families,
+            excluded_model_families=excluded_model_families,
+            allowed_component_graphs=None,
             search_parameters=search_parameters,
             tuner_class=None,
             random_seed=random_seed,
@@ -125,6 +134,14 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.features = features
         self.ensembling = ensembling
         self.exclude_featurizers = exclude_featurizers or []
+
+        if allowed_model_families is not None and excluded_model_families is not None:
+            raise ValueError(
+                "Both `allowed_model_families` and `excluded_model_families` cannot be set.",
+            )
+
+        self.allowed_model_families = allowed_model_families
+        self.excluded_model_families = excluded_model_families
 
         # TODO remove on resolution of 3186
         if is_time_series(self.problem_type) and self.ensembling:
@@ -194,7 +211,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
     def _non_naive_estimators(self):
         return [
             est
-            for est in get_estimators(self.problem_type)
+            for est in get_estimators(
+                self.problem_type,
+                model_families=self.allowed_model_families,
+                excluded_model_families=self.excluded_model_families,
+            )
             if est not in self._naive_estimators()
         ]
 

@@ -1043,3 +1043,21 @@ def test_exclude_featurizers_default_algorithm(
             for pl in pipelines
         ],
     )
+
+
+def test_default_algorithm_allowed_graphs_and_families_both_set_error(
+    X_y_binary,
+):
+    X, y = X_y_binary
+    error_text = (
+        "Both `allowed_model_families` and `excluded_model_families` cannot be set."
+    )
+    with pytest.raises(ValueError, match=error_text):
+        DefaultAlgorithm(
+            X=X,
+            y=y,
+            problem_type="binary",
+            allowed_model_families=[ModelFamily.RANDOM_FOREST],
+            excluded_model_families=[ModelFamily.XGBOOST],
+            sampler_name=None,
+        )

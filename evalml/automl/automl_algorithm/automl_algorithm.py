@@ -34,6 +34,9 @@ class AutoMLAlgorithm(ABC):
     def __init__(
         self,
         allowed_pipelines=None,
+        allowed_model_families=None,
+        excluded_model_families=None,
+        allowed_component_graphs=None,
         search_parameters=None,
         tuner_class=None,
         text_in_ensembling=False,
@@ -56,6 +59,21 @@ class AutoMLAlgorithm(ABC):
         self._pipeline_number = 0
         self._batch_number = 0
         self._default_max_batches = 1
+
+        if allowed_component_graphs is not None:
+            if excluded_model_families is not None:
+                raise ValueError(
+                    "Both `excluded_model_families` and `allowed_component_graphs` cannot be set.",
+                )
+        self.allowed_component_graphs = allowed_component_graphs
+
+        if allowed_model_families is not None and excluded_model_families is not None:
+            raise ValueError(
+                "Both `allowed_model_families` and `excluded_model_families` cannot be set.",
+            )
+
+        self.allowed_model_families = allowed_model_families
+        self.excluded_model_families = excluded_model_families
 
     @abstractmethod
     def next_batch(self):
