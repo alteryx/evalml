@@ -1,0 +1,87 @@
+name: Run looking glass performance tests via Airflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  performance_tests:
+    name: Run looking glass performance tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+    steps:
+      - name: Generate default ISO timestamp
+        run: |
+          echo "DEFAULT_TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3NZ")" >> $GITHUB_ENV
+      - name: Checkout evalml
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: Get commit hashes
+        id: get_hashes
+        run: |
+          echo "CURRENT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "Latest commit hash: ${{ env.CURRENT_HASH }}"
+          echo "PREVIOUS_HASH=$(git rev-parse --short HEAD~1)" >> $GITHUB_ENV
+          echo "Previous commit hash: ${{ env.PREVIOUS_HASH }}"
+      - name: Run default algorithm performance test
+        id: current_default
+        run: | 
+          curl --location --request POST '${{ secrets.AIRFLOW_BASE_URL }}dags/evalml_automl_run_tests_generate_report/dagRuns' \
+          -u '${{ secrets.AIRFLOW_USER }}:${{ secrets.AIRFLOW_PASS }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+            "conf": {
+                  "description": "${{ env.CURRENT_HASH }}_default )",
+                  "n_trials": 1,
+                  "pytest_args": {
+                      "automl-algo": "default",
+                      "ensembling": false,
+                      "max-batches": 0,
+                      "max-iterations": 0,
+                      "holdout-size": 0.5,
+                      "pred-vs-actual": false
+                  },
+                  "python_version": "3.8",
+                  "scenarios_yaml": "release.yaml",
+                  "evalml_branch_previous": "${{ env.PREVIOUS_HASH }}",
+                  "evalml_branch_new": "${{ env.CURRENT_HASH }}",
+                  "username": "${{ secrets.AIRFLOW_USER }}",
+                  "author": "${{ github.event.head_commit.author.name }}"
+                },
+            "logical_date": "${{ env.DEFAULT_TIMESTAMP }}",
+            "dag_run_id": "api_evalml_automl_run_tests_generate_report_default_${{ env.DEFAULT_TIMESTAMP }}"
+          }'
+      - name: Generate iterative ISO timestamp
+        run: |
+          echo "ITERATIVE_TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3NZ")" >> $GITHUB_ENV
+      - name: Run iterative algorithm performance test
+        id: current_iterative
+        run: | 
+          curl --location --request POST '${{ secrets.AIRFLOW_BASE_URL }}dags/evalml_automl_run_tests_generate_report/dagRuns' \
+          -u '${{ secrets.AIRFLOW_USER }}:${{ secrets.AIRFLOW_PASS }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+            "conf": {
+                  "description": "${{ env.CURRENT_HASH }}_iterative )",
+                  "n_trials": 1,
+                  "pytest_args": {
+                      "automl-algo": "iterative",
+                      "ensembling": false,
+                      "max-batches": 0,
+                      "max-iterations": 0,
+                      "holdout-size": 0.5,
+                      "pred-vs-actual": false
+                  },
+                  "python_version": "3.8",
+                  "scenarios_yaml": "release.yaml",
+                  "evalml_branch_previous": "${{ env.PREVIOUS_HASH }}",
+                  "evalml_branch_new": "${{ env.CURRENT_HASH }}",
+                  "username": "${{ secrets.AIRFLOW_USER }}",
+                  "author": "${{ github.event.head_commit.author.name }}"
+                },
+            "logical_date": "${{ env.ITERATIVE_TIMESTAMP }}",
+            "dag_run_id": "api_evalml_automl_run_tests_generate_report_iterative_${{ env.ITERATIVE_TIMESTAMP }}"
+          }'
