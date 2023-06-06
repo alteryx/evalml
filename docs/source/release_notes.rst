@@ -6,6 +6,7 @@ Release Notes
         * Added ``get_recommendation_score_breakdown`` function for insight on the recommendation score :pr:`4188`
     * Fixes
         * Fixed small errors in ``ARIMARegressor`` implementation :pr:`4186`
+        * Fixed ``get_forecast_period`` to properly handle ``gap`` parameter :pr:`4200`
     * Changes
     * Documentation Changes
     * Testing Changes
