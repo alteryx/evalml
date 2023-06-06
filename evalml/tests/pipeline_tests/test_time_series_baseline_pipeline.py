@@ -107,9 +107,9 @@ def test_time_series_get_forecast_period(forecast_horizon, gap, numeric_idx, ts_
     clf.fit(X, y)
     result = clf.get_forecast_period(X)
 
-    assert result.size == forecast_horizon + gap
-    assert all(result.index == range(len(X), len(X) + forecast_horizon + gap))
-    assert result.iloc[0] == X.iloc[-1]["date"] + np.timedelta64(1, clf.frequency)
+    assert result.size == forecast_horizon
+    assert all(result.index == range(len(X), len(X) + forecast_horizon))
+    assert result.iloc[0] == X.iloc[-1]["date"] + np.timedelta64(1 + gap, clf.frequency)
     assert np.issubdtype(result.dtype, np.datetime64)
     assert result.name == "date"
 

@@ -142,10 +142,9 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             pd.date_range(
                 start=first_date,
                 periods=self.forecast_horizon
-                + self.gap
                 + 1,  # Add additional period to account for dropping first date row
                 freq=self.frequency,
-            ),
+            ).shift(self.gap),
         )
 
         # Generate numerical index
