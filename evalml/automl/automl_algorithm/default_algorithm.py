@@ -105,6 +105,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
     ):
         super().__init__(
             allowed_pipelines=[],
+            allowed_model_families=allowed_model_families,
+            excluded_model_families=excluded_model_families,
+            allowed_component_graphs=None,
             search_parameters=search_parameters,
             tuner_class=None,
             random_seed=random_seed,
