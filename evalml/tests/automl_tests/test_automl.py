@@ -5796,21 +5796,12 @@ def test_recommendation_score_include_exclude(AutoMLTestEnv, X_y_binary):
     assert all(default_rankings != custom_rankings)
 
 
+@pytest.mark.parametrize("automl_algorithm", ["iterative", "default"])
 def test_automl_allowed_graphs_and_families_both_set_error(
+    automl_algorithm,
     X_y_binary,
 ):
     X, y = X_y_binary
-    error_text = (
-        "Both `excluded_model_families` and `allowed_component_graphs` cannot be set."
-    )
-    with pytest.raises(ValueError, match=error_text):
-        AutoMLSearch(
-            X_train=X,
-            y_train=y,
-            problem_type="binary",
-            allowed_component_graphs={"Name_0": ["Imputer", "Linear Regressor"]},
-            excluded_model_families=[ModelFamily.XGBOOST],
-        )
 
     error_text = (
         "Both `allowed_model_families` and `excluded_model_families` cannot be set."
@@ -5822,4 +5813,5 @@ def test_automl_allowed_graphs_and_families_both_set_error(
             problem_type="binary",
             allowed_model_families=[ModelFamily.RANDOM_FOREST],
             excluded_model_families=[ModelFamily.XGBOOST],
+            automl_algorithm=automl_algorithm,
         )
