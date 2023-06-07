@@ -119,7 +119,7 @@ def test_time_series_get_forecast_predictions(forecast_horizon, gap, ts_data):
     X, _, y = ts_data(problem_type=ProblemTypes.TIME_SERIES_REGRESSION)
 
     X_train, y_train = X.iloc[:15], y.iloc[:15]
-    X_validation = X.iloc[15 : (15 + gap + forecast_horizon)]
+    X_validation = X.iloc[15 + gap : (15 + gap + forecast_horizon)]
 
     clf = TimeSeriesRegressionPipeline(
         component_graph={
@@ -166,5 +166,4 @@ def test_time_series_get_forecast_predictions(forecast_horizon, gap, ts_data):
     clf.fit(X_train, y_train)
     forecast_preds = clf.get_forecast_predictions(X=X_train, y=y_train)
     X_val_preds = clf.predict(X_validation, X_train=X_train, y_train=y_train)
-
     assert_series_equal(forecast_preds, X_val_preds)

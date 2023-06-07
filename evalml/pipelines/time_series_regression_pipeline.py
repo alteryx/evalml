@@ -114,7 +114,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             ValueError: If pipeline is not trained.
 
         Returns:
-            pd.Series: Datetime periods out to `forecast_horizon + gap`.
+            pd.Series: Datetime periods from `gap` to `forecast_horizon + gap`.
 
         Example:
             >>> X = pd.DataFrame({'date': pd.date_range(start='1-1-2022', periods=10, freq='D'), 'feature': range(10, 20)})
@@ -164,7 +164,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             y (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
 
         Returns:
-            Predictions out to `forecast_horizon + gap` periods.
+            Predictions from `gap` periods out to `forecast_horizon + gap` periods.
         """
         X, y = self._convert_to_woodwork(X, y)
         pred_dates = pd.DataFrame(self.get_forecast_period(X))
