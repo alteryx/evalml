@@ -1,4 +1,6 @@
 """Data check that checks if any of the features are likely to be ID columns."""
+import uuid
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckActionCode,
@@ -7,6 +9,20 @@ from evalml.data_checks import (
     DataCheckWarning,
 )
 from evalml.utils import infer_feature_types
+
+
+def is_valid_uuid(value):
+    """Check if value is a valid UUID.
+
+    Args:
+        value (str): Value to be checked for being a valid UUID
+    """
+    try:
+        uuid.UUID(str(value))
+
+        return True
+    except ValueError:
+        return False
 
 
 class IDColumnsDataCheck(DataCheck):
@@ -180,12 +196,26 @@ class IDColumnsDataCheck(DataCheck):
         ]  # columns whose name is "id"
         id_cols = {col: 0.95 for col in cols_named_id}
 
-        for dtypes in [["Double"], ["Integer", "IntegerNullable", "Categorical"]]:
+        for dtypes in [
+            ["Unknown"],
+            ["Double"],
+            ["Integer", "IntegerNullable", "Categorical"],
+        ]:
             X_temp = X.ww.select(include=dtypes)
             check_all_unique = X_temp.nunique() == len(X_temp)
             cols_with_all_unique = check_all_unique[
                 check_all_unique
             ].index.tolist()  # columns whose values are all unique
+
+            # Identify UUIDs
+            if dtypes == ["Unknown"]:
+                cols_with_all_unique = [
+                    col
+                    for col in cols_with_all_unique
+                    if all(
+                        X_temp[col].apply(lambda x: is_valid_uuid(x)),
+                    )  # Parse out columns that contain all `integer` values
+                ]
 
             # Temporary solution for downstream instances of integers being mapped to doubles.
             # Will be removed when resolved.

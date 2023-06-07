@@ -141,7 +141,12 @@ def get_test_data_with_or_without_primary_key():
 
         elif input_type == "string":
             X_dict = {
-                "col_1_id": ["a", "b", "c", "d"],
+                "col_1_id": [
+                    "2025136d-086d-4b27-b53c-4b25355491f4",
+                    "e75e6915-0048-4278-9306-974fe769758a",
+                    "7d7880b5-97b2-4f7d-8f3d-47b2628b6100",
+                    "7faa2b3a-a87d-4287-8ab8-6feae2de3f2c",
+                ],
                 "col_2": ["w", "x", "y", "z"],
                 "col_3_id": [
                     "123456789012345",
