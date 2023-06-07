@@ -114,7 +114,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             ValueError: If pipeline is not trained.
 
         Returns:
-            pd.Series: Datetime periods out to `forecast_horizon + gap`.
+            pd.Series: Datetime periods from `gap` to `forecast_horizon + gap`.
 
         Example:
             >>> X = pd.DataFrame({'date': pd.date_range(start='1-1-2022', periods=10, freq='D'), 'feature': range(10, 20)})
@@ -128,7 +128,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             >>> pipeline.fit(X, y)
             pipeline = TimeSeriesRegressionPipeline(component_graph={'Linear Regressor': ['Linear Regressor', 'X', 'y']}, parameters={'Linear Regressor':{'fit_intercept': True, 'n_jobs': -1}, 'pipeline':{'gap': 1, 'max_delay': 1, 'forecast_horizon': 2, 'time_index': 'date'}}, random_seed=0)
             >>> dates = pipeline.get_forecast_period(X)
-            >>> expected = pd.Series(pd.date_range(start='2022-01-11', periods=(gap + forecast_horizon), freq='D'), name='date', index=[10, 11, 12])
+            >>> expected = pd.Series(pd.date_range(start='2022-01-11', periods=forecast_horizon, freq='D').shift(gap), name='date', index=[10, 11])
             >>> assert dates.equals(expected)
         """
         if not self._is_fitted:
@@ -142,10 +142,9 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             pd.date_range(
                 start=first_date,
                 periods=self.forecast_horizon
-                + self.gap
                 + 1,  # Add additional period to account for dropping first date row
                 freq=self.frequency,
-            ),
+            ).shift(self.gap),
         )
 
         # Generate numerical index
@@ -165,7 +164,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             y (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
 
         Returns:
-            Predictions out to `forecast_horizon + gap` periods.
+            Predictions from `gap` periods out to `forecast_horizon + gap` periods.
         """
         X, y = self._convert_to_woodwork(X, y)
         pred_dates = pd.DataFrame(self.get_forecast_period(X))
