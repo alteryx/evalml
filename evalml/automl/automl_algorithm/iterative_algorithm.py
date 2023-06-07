@@ -43,6 +43,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
             to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
             this parameter will be ignored.
+        excluded_model_families (list[ModelFamily]): A list of model families to exclude from the estimators used when building pipelines.
         allowed_component_graphs (dict): A dictionary of lists or ComponentGraphs indicating the component graphs allowed in the search.
             The format should follow { "Name_0": [list_of_components], "Name_1": [ComponentGraph(...)] }
 
@@ -77,6 +78,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         problem_type,
         sampler_name=None,
         allowed_model_families=None,
+        excluded_model_families=None,
         allowed_component_graphs=None,
         max_batches=None,
         max_iterations=None,
@@ -99,7 +101,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.problem_type = problem_type
         self.random_seed = random_seed
         self.sampler_name = sampler_name
-        self.allowed_model_families = allowed_model_families
         self.pipelines_per_batch = pipelines_per_batch
         self.n_jobs = n_jobs
         self.number_features = number_features
@@ -126,12 +127,14 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.allowed_pipelines = []
 
         self.features = features
-        self.allowed_component_graphs = allowed_component_graphs
         self._set_additional_pipeline_params()
         self.exclude_featurizers = exclude_featurizers
 
         super().__init__(
             allowed_pipelines=self.allowed_pipelines,
+            allowed_model_families=allowed_model_families,
+            excluded_model_families=excluded_model_families,
+            allowed_component_graphs=allowed_component_graphs,
             search_parameters=self.search_parameters,
             tuner_class=tuner_class,
             text_in_ensembling=self.text_in_ensembling,
@@ -151,7 +154,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             self.logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(
                 self.problem_type,
-                self.allowed_model_families,
+                model_families=self.allowed_model_families,
+                excluded_model_families=self.excluded_model_families,
             )
             allowed_estimators = self._filter_estimators(
                 allowed_estimators,

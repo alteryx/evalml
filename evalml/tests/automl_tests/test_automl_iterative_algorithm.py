@@ -1143,3 +1143,21 @@ def test_get_ensembler_input_pipelines(X_y_binary, AutoMLTestEnv):
     error_text = "Pipeline ID 500 is not a valid ensemble pipeline"
     with pytest.raises(ValueError, match=error_text):
         automl.get_ensembler_input_pipelines(500)
+
+
+def test_automl_allowed_graphs_and_families_both_set_error_iterative(
+    X_y_binary,
+):
+    X, y = X_y_binary
+    error_text = (
+        "Both `excluded_model_families` and `allowed_component_graphs` cannot be set."
+    )
+    with pytest.raises(ValueError, match=error_text):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            allowed_component_graphs={"Name_0": ["Imputer", "Linear Regressor"]},
+            excluded_model_families=[ModelFamily.XGBOOST],
+            automl_algorithm="iterative",
+        )

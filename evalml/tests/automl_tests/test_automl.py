@@ -71,6 +71,8 @@ from evalml.pipelines.components import (
     DecisionTreeClassifier,
     EmailFeaturizer,
     NaturalLanguageFeaturizer,
+    RandomForestClassifier,
+    SelectColumns,
     TimeSeriesFeaturizer,
     URLFeaturizer,
 )
@@ -5233,6 +5235,74 @@ def test_exclude_featurizers_errors(X_y_binary):
         )
 
 
+@pytest.mark.parametrize("automl_algorithm", ["default", "iterative"])
+def test_excluded_model_families(
+    automl_algorithm,
+    X_y_binary,
+    AutoMLTestEnv,
+):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type=ProblemTypes.BINARY,
+        automl_algorithm=automl_algorithm,
+        excluded_model_families=[ModelFamily.RANDOM_FOREST],
+    )
+
+    env = AutoMLTestEnv(ProblemTypes.BINARY)
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+
+    pipelines = [
+        automl.get_pipeline(i) for i in range(len(automl.results["pipeline_results"]))
+    ]
+
+    for pl in pipelines:
+        # Accounts for case in default algorithm where we only exclude Random Forest for third batch
+        # (e.g. only after feature selection occurs).
+        if (
+            automl_algorithm == "default"
+            and RandomForestClassifier.name in pl.component_graph.compute_order
+        ):
+            assert SelectColumns.name not in pl.component_graph.compute_order
+        else:
+            assert RandomForestClassifier.name not in pl.component_graph.compute_order
+
+
+def test_excluded_model_families_error(
+    X_y_binary,
+):
+    X, y = X_y_binary
+
+    match_text = "`excluded_model_families` must be passed in the form of a list."
+    with pytest.raises(
+        ValueError,
+        match=match_text,
+    ):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type=ProblemTypes.BINARY,
+            excluded_model_families=ModelFamily.RANDOM_FOREST,
+        )
+
+    match_text = (
+        "All values in `excluded_model_families` must be of type `ModelFamily`."
+    )
+    with pytest.raises(
+        ValueError,
+        match=match_text,
+    ):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type=ProblemTypes.BINARY,
+            excluded_model_families=[ModelFamily.RANDOM_FOREST, "XGBoost"],
+        )
+
+
 def test_init_holdout_set(X_y_binary, caplog):
     X, y = X_y_binary
     X_train, X_holdout, y_train, y_holdout = split_data(X, y, "binary")
@@ -5724,3 +5794,24 @@ def test_recommendation_score_include_exclude(AutoMLTestEnv, X_y_binary):
         automl.search()
     custom_rankings = automl.rankings["recommendation_score"]
     assert all(default_rankings != custom_rankings)
+
+
+@pytest.mark.parametrize("automl_algorithm", ["iterative", "default"])
+def test_automl_allowed_graphs_and_families_both_set_error(
+    automl_algorithm,
+    X_y_binary,
+):
+    X, y = X_y_binary
+
+    error_text = (
+        "Both `allowed_model_families` and `excluded_model_families` cannot be set."
+    )
+    with pytest.raises(ValueError, match=error_text):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            allowed_model_families=[ModelFamily.RANDOM_FOREST],
+            excluded_model_families=[ModelFamily.XGBOOST],
+            automl_algorithm=automl_algorithm,
+        )
