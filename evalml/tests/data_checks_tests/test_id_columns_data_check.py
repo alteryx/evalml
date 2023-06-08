@@ -298,9 +298,9 @@ def test_identified_first_col_primary_key(
     ]
 
 
-def test_text_primary_key(text_id_data):
+def test_text_primary_key(employee_satisfaction_data):
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
-    assert id_cols_check.validate(text_id_data) == [
+    assert id_cols_check.validate(employee_satisfaction_data) == [
         DataCheckWarning(
             message="The first column 'emp_id' is likely to be the primary key",
             data_check_name=id_data_check_name,

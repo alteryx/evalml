@@ -53,8 +53,11 @@ from evalml.problem_types import (
     is_regression,
     is_time_series,
 )
+from evalml.tests.file_utils import get_datasets_dir
 from evalml.utils import infer_feature_types
 from evalml.utils.cli_utils import get_evalml_black_config
+
+datasets_dir: Path = Path(get_datasets_dir())
 
 
 def pytest_configure(config):
@@ -103,13 +106,14 @@ def graphviz():
     return graphviz
 
 
+@pytest.fixture(scope="session")
+def employee_satisfaction_filepath():
+    return str(datasets_dir / "employee_satisfaction_ML_demo_dataset.csv")
+
+
 @pytest.fixture
-def text_id_data():
-    path = (
-        Path(__file__).parent.absolute()
-        / "data/employee_satisfaction_ML_demo_dataset.csv"
-    )
-    data = pd.read_csv(path)
+def employee_satisfaction_data(employee_satisfaction_filepath):
+    data = pd.read_csv(employee_satisfaction_filepath)
     return data
 
 
