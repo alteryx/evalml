@@ -103,6 +103,13 @@ def graphviz():
 
 
 @pytest.fixture
+def text_id_data():
+    path = "/Users/pranav.simha/Alteryx/evalml/evalml/tests/data/employee_satisfaction_ML_demo_dataset.csv"
+    data = pd.read_csv(path)
+    return data
+
+
+@pytest.fixture
 def get_test_data_with_or_without_primary_key():
     def _get_test_data_with_primary_key(input_type, has_primary_key):
         X = None

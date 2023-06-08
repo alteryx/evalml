@@ -197,25 +197,14 @@ class IDColumnsDataCheck(DataCheck):
         id_cols = {col: 0.95 for col in cols_named_id}
 
         for dtypes in [
-            ["Unknown"],
             ["Double"],
-            ["Integer", "IntegerNullable", "Categorical"],
+            ["Integer", "IntegerNullable", "Categorical", "Unknown"],
         ]:
             X_temp = X.ww.select(include=dtypes)
             check_all_unique = X_temp.nunique() == len(X_temp)
             cols_with_all_unique = check_all_unique[
                 check_all_unique
             ].index.tolist()  # columns whose values are all unique
-
-            # Identify UUIDs
-            if dtypes == ["Unknown"]:
-                cols_with_all_unique = [
-                    col
-                    for col in cols_with_all_unique
-                    if all(
-                        X_temp[col].apply(lambda x: is_valid_uuid(x)),
-                    )  # Parse out columns that contain all `integer` values
-                ]
 
             # Temporary solution for downstream instances of integers being mapped to doubles.
             # Will be removed when resolved.

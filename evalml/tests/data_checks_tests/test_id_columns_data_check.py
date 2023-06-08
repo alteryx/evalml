@@ -298,6 +298,25 @@ def test_identified_first_col_primary_key(
     ]
 
 
+def test_text_primary_key(text_id_data):
+    id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
+    assert id_cols_check.validate(text_id_data) == [
+        DataCheckWarning(
+            message="The first column 'emp_id' is likely to be the primary key",
+            data_check_name=id_data_check_name,
+            message_code=DataCheckMessageCode.HAS_ID_FIRST_COLUMN,
+            details={"columns": ["emp_id"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.SET_FIRST_COL_ID,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["emp_id"]},
+                ),
+            ],
+        ).to_dict(),
+    ]
+
+
 @pytest.mark.parametrize(
     "input_type",
     ["integer", "integer_nullable", "string", "double"],
