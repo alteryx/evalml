@@ -21,7 +21,7 @@ nlp-primitives==2.11.0
 numpy==1.23.5
 packaging==23.1
 pandas==1.5.3
-plotly==5.14.1
+plotly==5.15.0
 pmdarima==2.0.3
 pyzmq==25.1.0
 scikit-learn==1.2.2
