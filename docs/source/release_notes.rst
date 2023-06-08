@@ -21,7 +21,7 @@ Release Notes
         * Added option to exclude time index in ``IDColumnsDataCheck`` :pr:`4194`
     * Fixes
         * Fixed small errors in ``ARIMARegressor`` implementation :pr:`4186`
-        * Fixed ``get_forecast_period`` to properly handle ``gap`` parameter :pr:`4200
+        * Fixed ``get_forecast_period`` to properly handle ``gap`` parameter :pr:`4200`
     * Changes
     * Documentation Changes
     * Testing Changes
