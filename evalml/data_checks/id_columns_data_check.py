@@ -1,5 +1,4 @@
 """Data check that checks if any of the features are likely to be ID columns."""
-import uuid
 
 from evalml.data_checks import (
     DataCheck,
@@ -9,20 +8,6 @@ from evalml.data_checks import (
     DataCheckWarning,
 )
 from evalml.utils import infer_feature_types
-
-
-def is_valid_uuid(value):
-    """Check if value is a valid UUID.
-
-    Args:
-        value (str): Value to be checked for being a valid UUID
-    """
-    try:
-        uuid.UUID(str(value))
-
-        return True
-    except ValueError:
-        return False
 
 
 class IDColumnsDataCheck(DataCheck):
