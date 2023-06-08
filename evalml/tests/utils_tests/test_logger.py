@@ -97,7 +97,7 @@ def test_time_elapsed(mock_time, time_passed, answer):
 
 @pytest.mark.parametrize(
     "type_, allowed_families, number_, number_min_dep",
-    [("binary", None, 8, 5), ("multiclass", 2, 2, 2), ("regression", 3, 3, 3)],
+    [("binary", None, 8, 5), ("multiclass", 1, 1, 2), ("regression", 2, 2, 3)],
 )
 @pytest.mark.parametrize("verbose", [True, False])
 def test_pipeline_count(
@@ -127,23 +127,22 @@ def test_pipeline_count(
             automl_algorithm="iterative",
         )
     else:
-        if allowed_families == 2:
+        if allowed_families == 1:
             _ = AutoMLSearch(
                 X_train=X,
                 y_train=y,
                 problem_type=type_,
-                allowed_model_families=["random_forest", "decision_tree"],
+                allowed_model_families=["random_forest"],
                 verbose=verbose,
                 automl_algorithm="iterative",
             )
-        elif allowed_families == 3:
+        elif allowed_families == 2:
             _ = AutoMLSearch(
                 X_train=X,
                 y_train=y,
                 problem_type=type_,
                 allowed_model_families=[
                     "random_forest",
-                    "decision_tree",
                     "extra_trees",
                 ],
                 verbose=verbose,

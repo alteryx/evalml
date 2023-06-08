@@ -595,7 +595,7 @@ def test_make_pipeline_samplers(
 
 
 def test_get_estimators():
-    assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 8
+    assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 6
     assert (
         len(
             get_estimators(
@@ -605,7 +605,7 @@ def test_get_estimators():
         )
         == 2
     )
-    assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 8
+    assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 6
     assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 7
 
     assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[])) == 0

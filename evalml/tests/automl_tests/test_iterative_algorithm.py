@@ -730,11 +730,9 @@ def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary):
         extra_dep_estimators = [
             "XGBoost Regressor",
             "LightGBM Regressor",
-            "CatBoost Regressor",
         ]
         core_estimators = [
             "Random Forest Regressor",
-            "Decision Tree Regressor",
             "Extra Trees Regressor",
         ]
     else:
@@ -742,11 +740,9 @@ def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary):
         extra_dep_estimators = [
             "XGBoost Classifier",
             "LightGBM Classifier",
-            "CatBoost Classifier",
         ]
         core_estimators = [
             "Random Forest Classifier",
-            "Decision Tree Classifier",
             "Extra Trees Classifier",
         ]
     assert (
@@ -762,11 +758,9 @@ def test_iterative_algorithm_first_batch_order_param(X_y_binary):
     estimator_family_order = [
         ModelFamily.RANDOM_FOREST,
         ModelFamily.LINEAR_MODEL,
-        ModelFamily.DECISION_TREE,
         ModelFamily.EXTRA_TREES,
         ModelFamily.XGBOOST,
         ModelFamily.LIGHTGBM,
-        ModelFamily.CATBOOST,
     ]
     algo = IterativeAlgorithm(
         X=X,
@@ -844,7 +838,7 @@ def test_iterative_algorithm_sampling_params(
         (10, []),
         (75, []),
         (100, ["Elastic Net Classifier", "XGBoost Classifier"]),
-        (160, ["Elastic Net Classifier", "XGBoost Classifier", "CatBoost Classifier"]),
+        (160, ["Elastic Net Classifier", "XGBoost Classifier"]),
     ],
 )
 def test_iterative_algorithm_allow_long_running_models(

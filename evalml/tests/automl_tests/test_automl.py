@@ -68,7 +68,6 @@ from evalml.pipelines import (
 from evalml.pipelines.components import (
     ARIMARegressor,
     DateTimeFeaturizer,
-    DecisionTreeClassifier,
     EmailFeaturizer,
     NaturalLanguageFeaturizer,
     RandomForestClassifier,
@@ -268,7 +267,7 @@ def test_search_batch_times(caplog, X_y_binary, AutoMLTestEnv):
     assert len(batch_times) == 3
     assert len(batch_times[1]) == 2
     assert len(batch_times[2]) == 2
-    assert len(batch_times[3]) == 8
+    assert len(batch_times[3]) == 6
 
     assert "Batch Time Stats" in out
     assert "Batch 1 time stats" in out
@@ -3274,7 +3273,7 @@ def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
     X, y = X_y_multi
     hyperparams = {
         "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent"])},
-        "Decision Tree Classifier": {
+        "Random Forest Classifier": {
             "max_depth": Integer(1, 2),
             "ccp_alpha": Real(0.1, 0.5),
         },
@@ -3284,7 +3283,7 @@ def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
         y_train=y,
         problem_type="multiclass",
         search_parameters=hyperparams,
-        allowed_model_families=[ModelFamily.DECISION_TREE],
+        allowed_model_families=[ModelFamily.RANDOM_FOREST],
         n_jobs=1,
     )
     env = AutoMLTestEnv("multiclass")
@@ -3298,9 +3297,9 @@ def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
             )
         if "Decision Tree Classifier" in row["parameters"]:
             assert (
-                0.1 < row["parameters"]["Decision Tree Classifier"]["ccp_alpha"] < 0.5
+                0.1 < row["parameters"]["Random Forest Classifier"]["ccp_alpha"] < 0.5
             )
-            assert row["parameters"]["Decision Tree Classifier"]["max_depth"] == 1
+            assert row["parameters"]["Random Forest Classifier"]["max_depth"] == 1
 
 
 @pytest.mark.parametrize("random_seed", [0, 1, 9])
@@ -4696,8 +4695,8 @@ def test_search_parameters_held_automl(
             "cg": {
                 "Imputer": ["Imputer", "X", "y"],
                 "Label Encoder": ["Label Encoder", "Imputer.x", "y"],
-                "Decision Tree Classifier": [
-                    "Decision Tree Classifier",
+                "Random Forest Classifier": [
+                    "Random Forest Classifier",
                     "Label Encoder.x",
                     "Label Encoder.y",
                 ],
@@ -4720,8 +4719,8 @@ def test_search_parameters_held_automl(
                     "Label Encoder.x",
                     "Label Encoder.y",
                 ],
-                "Decision Tree Classifier": [
-                    "Decision Tree Classifier",
+                "Random Forest Classifier": [
+                    "Random Forest Classifier",
                     "DateTime Featurizer.x",
                     "Label Encoder.y",
                 ],
@@ -4745,7 +4744,7 @@ def test_search_parameters_held_automl(
         max_batches=batches,
     )
     aml.search()
-    estimator_args = inspect.getargspec(DecisionTreeClassifier)
+    estimator_args = inspect.getargspec(RandomForestClassifier)
     # estimator_args[0] gives the parameter names, while [3] gives the associated values
     # estimator_args[0][i + 1] to skip 'self' in the estimator
     # we do len - 1 in order to skip the random seed, which isn't present in the row['parameters']
@@ -4757,8 +4756,8 @@ def test_search_parameters_held_automl(
     found_dtc = False
     for _, row in sorted_full_rank.iterrows():
         # we check the initial decision tree classifier parameters.
-        if "Decision Tree Classifier" in row["parameters"]:
-            assert expected_params == row["parameters"]["Decision Tree Classifier"]
+        if "Random Forest Classifier" in row["parameters"]:
+            assert expected_params == row["parameters"]["Random Forest Classifier"]
             found_dtc = True
             break
     assert found_dtc
