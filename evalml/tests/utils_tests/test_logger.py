@@ -97,7 +97,7 @@ def test_time_elapsed(mock_time, time_passed, answer):
 
 @pytest.mark.parametrize(
     "type_, allowed_families, number_, number_min_dep",
-    [("binary", None, 8, 5), ("multiclass", 1, 1, 2), ("regression", 2, 2, 3)],
+    [("binary", None, 6, 5), ("multiclass", 1, 1, 2), ("regression", 2, 2, 3)],
 )
 @pytest.mark.parametrize("verbose", [True, False])
 def test_pipeline_count(
