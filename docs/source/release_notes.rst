@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Text columns can be identified as a perfect match as an id column :pr:`4203`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -20,8 +21,7 @@ Release Notes
         * Added option to exclude time index in ``IDColumnsDataCheck`` :pr:`4194`
     * Fixes
         * Fixed small errors in ``ARIMARegressor`` implementation :pr:`4186`
-        * Fixed ``get_forecast_period`` to properly handle ``gap`` parameter :pr:`4200`
-        * Text columns can be identified as a perfect match as an id column :pr:`4203`
+        * Fixed ``get_forecast_period`` to properly handle ``gap`` parameter :pr:`4200
     * Changes
     * Documentation Changes
     * Testing Changes
