@@ -2,6 +2,7 @@ import contextlib
 import os
 import sys
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import PropertyMock, patch
 
 import numpy as np
@@ -104,7 +105,10 @@ def graphviz():
 
 @pytest.fixture
 def text_id_data():
-    path = "/Users/pranav.simha/Alteryx/evalml/evalml/tests/data/employee_satisfaction_ML_demo_dataset.csv"
+    path = (
+        Path(__file__).parent.absolute()
+        / "data/employee_satisfaction_ML_demo_dataset.csv"
+    )
     data = pd.read_csv(path)
     return data
 
