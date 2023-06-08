@@ -107,9 +107,9 @@ def test_time_series_get_forecast_period(forecast_horizon, gap, numeric_idx, ts_
     clf.fit(X, y)
     result = clf.get_forecast_period(X)
 
-    assert result.size == forecast_horizon + gap
-    assert all(result.index == range(len(X), len(X) + forecast_horizon + gap))
-    assert result.iloc[0] == X.iloc[-1]["date"] + np.timedelta64(1, clf.frequency)
+    assert result.size == forecast_horizon
+    assert all(result.index == range(len(X), len(X) + forecast_horizon))
+    assert result.iloc[0] == X.iloc[-1]["date"] + np.timedelta64(1 + gap, clf.frequency)
     assert np.issubdtype(result.dtype, np.datetime64)
     assert result.name == "date"
 
@@ -119,7 +119,7 @@ def test_time_series_get_forecast_predictions(forecast_horizon, gap, ts_data):
     X, _, y = ts_data(problem_type=ProblemTypes.TIME_SERIES_REGRESSION)
 
     X_train, y_train = X.iloc[:15], y.iloc[:15]
-    X_validation = X.iloc[15 : (15 + gap + forecast_horizon)]
+    X_validation = X.iloc[15 + gap : (15 + gap + forecast_horizon)]
 
     clf = TimeSeriesRegressionPipeline(
         component_graph={
@@ -166,5 +166,4 @@ def test_time_series_get_forecast_predictions(forecast_horizon, gap, ts_data):
     clf.fit(X_train, y_train)
     forecast_preds = clf.get_forecast_predictions(X=X_train, y=y_train)
     X_val_preds = clf.predict(X_validation, X_train=X_train, y_train=y_train)
-
     assert_series_equal(forecast_preds, X_val_preds)
