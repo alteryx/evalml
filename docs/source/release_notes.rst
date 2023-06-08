@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Remove Decision Tree and CatBoost Estimators from AutoML search :pr:`4205`
     * Documentation Changes
     * Testing Changes
 
