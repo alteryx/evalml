@@ -21,6 +21,7 @@ Release Notes
     * Fixes
         * Fixed small errors in ``ARIMARegressor`` implementation :pr:`4186`
         * Fixed ``get_forecast_period`` to properly handle ``gap`` parameter :pr:`4200`
+        * Text columns can be identified as a perfect match as an id column :pr:`4203`
     * Changes
     * Documentation Changes
     * Testing Changes
