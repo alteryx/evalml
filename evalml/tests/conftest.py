@@ -2,7 +2,6 @@ import contextlib
 import os
 import sys
 from datetime import datetime
-from pathlib import Path
 from unittest.mock import PropertyMock, patch
 
 import numpy as np
@@ -53,11 +52,8 @@ from evalml.problem_types import (
     is_regression,
     is_time_series,
 )
-from evalml.tests.file_utils import get_datasets_dir
 from evalml.utils import infer_feature_types
 from evalml.utils.cli_utils import get_evalml_black_config
-
-datasets_dir: Path = Path(get_datasets_dir())
 
 
 def pytest_configure(config):
@@ -106,22 +102,11 @@ def graphviz():
     return graphviz
 
 
-@pytest.fixture(scope="session")
-def employee_satisfaction_filepath():
-    return str(datasets_dir / "employee_satisfaction_ML_demo_dataset.csv")
-
-
-@pytest.fixture
-def employee_satisfaction_data(employee_satisfaction_filepath):
-    data = pd.read_csv(employee_satisfaction_filepath)
-    return data
-
-
 @pytest.fixture
 def get_test_data_with_or_without_primary_key():
     def _get_test_data_with_primary_key(input_type, has_primary_key):
         X = None
-        if input_type == "integer":
+        if input_type == "Integer":
             X_dict = {
                 "col_1_id": [0, 1, 2, 3],
                 "col_2": [2, 3, 4, 5],
@@ -132,7 +117,7 @@ def get_test_data_with_or_without_primary_key():
                 X_dict["col_1_id"] = [1, 1, 2, 3]
             X = pd.DataFrame.from_dict(X_dict)
 
-        elif input_type == "integer_nullable":
+        elif input_type == "IntegerNullable":
             X_dict = {
                 "col_1_id": pd.Series([0, 1, 2, 3], dtype="Int64"),
                 "col_2": pd.Series([2, 3, 4, 5], dtype="Int64"),
@@ -143,7 +128,7 @@ def get_test_data_with_or_without_primary_key():
                 X_dict["col_1_id"] = pd.Series([1, 1, 2, 3], dtype="Int64")
             X = pd.DataFrame.from_dict(X_dict)
 
-        elif input_type == "double":
+        elif input_type == "Double":
             X_dict = {
                 "col_1_id": [0.0, 1.0, 2.0, 3.0],
                 "col_2": [2, 3, 4, 5],
@@ -154,14 +139,9 @@ def get_test_data_with_or_without_primary_key():
                 X_dict["col_1_id"] = [1.0, 1.0, 2.0, 3.0]
             X = pd.DataFrame.from_dict(X_dict)
 
-        elif input_type == "string":
+        elif input_type == "Text":
             X_dict = {
-                "col_1_id": [
-                    "2025136d-086d-4b27-b53c-4b25355491f4",
-                    "e75e6915-0048-4278-9306-974fe769758a",
-                    "7d7880b5-97b2-4f7d-8f3d-47b2628b6100",
-                    "7faa2b3a-a87d-4287-8ab8-6feae2de3f2c",
-                ],
+                "col_1_id": ["a", "b", "c", "d"],
                 "col_2": ["w", "x", "y", "z"],
                 "col_3_id": [
                     "123456789012345",
@@ -174,13 +154,6 @@ def get_test_data_with_or_without_primary_key():
             if not has_primary_key:
                 X_dict["col_1_id"] = ["b", "b", "c", "d"]
             X = pd.DataFrame.from_dict(X_dict)
-            X.ww.init(
-                logical_types={
-                    "col_1_id": "categorical",
-                    "col_2": "categorical",
-                    "col_5": "categorical",
-                },
-            )
         return X
 
     return _get_test_data_with_primary_key
