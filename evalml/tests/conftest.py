@@ -154,6 +154,29 @@ def get_test_data_with_or_without_primary_key():
             if not has_primary_key:
                 X_dict["col_1_id"] = ["b", "b", "c", "d"]
             X = pd.DataFrame.from_dict(X_dict)
+
+        elif input_type == "Categorical":
+            X_dict = {
+                "col_1_id": ["a", "b", "c", "d"],
+                "col_2": ["w", "x", "y", "z"],
+                "col_3_id": [
+                    "123456789012345",
+                    "234567890123456",
+                    "3456789012345678",
+                    "45678901234567",
+                ],
+                "col_5": ["0", "0", "1", "2"],
+            }
+            if not has_primary_key:
+                X_dict["col_1_id"] = ["b", "b", "c", "d"]
+            X = pd.DataFrame.from_dict(X_dict)
+            X.ww.init(
+                logical_types={
+                    "col_1_id": "categorical",
+                    "col_2": "categorical",
+                    "col_5": "categorical",
+                },
+            )
         return X
 
     return _get_test_data_with_primary_key
