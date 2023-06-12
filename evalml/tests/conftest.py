@@ -139,7 +139,7 @@ def get_test_data_with_or_without_primary_key():
                 X_dict["col_1_id"] = [1.0, 1.0, 2.0, 3.0]
             X = pd.DataFrame.from_dict(X_dict)
 
-        elif input_type == "Text":
+        elif input_type == "Unknown":
             X_dict = {
                 "col_1_id": ["a", "b", "c", "d"],
                 "col_2": ["w", "x", "y", "z"],

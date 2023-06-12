@@ -183,7 +183,7 @@ class IDColumnsDataCheck(DataCheck):
 
         for types in [
             ["Double"],
-            ["Integer", "IntegerNullable", "Categorical", "Text", "Unknown"],
+            ["Integer", "IntegerNullable", "Categorical", "Unknown"],
         ]:
             X_temp = X.ww.select(include=types)
             check_all_unique = X_temp.nunique() == len(X_temp)
