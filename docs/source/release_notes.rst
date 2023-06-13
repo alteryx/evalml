@@ -3,7 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Text columns can be identified as a perfect match as an id column :pr:`4203`
+        * `IDColumnDataCheck` now works with Unknown data type :pr:`4203`
     * Changes
     * Documentation Changes
     * Testing Changes
