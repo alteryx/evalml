@@ -3273,9 +3273,9 @@ def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
     X, y = X_y_multi
     hyperparams = {
         "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent"])},
-        "Random Forest Classifier": {
+        "XGBoost Classifier": {
             "max_depth": Integer(1, 2),
-            "ccp_alpha": Real(0.1, 0.5),
+            "eta": Real(0.01, 0.5),
         },
     }
     automl = AutoMLSearch(
@@ -3283,7 +3283,7 @@ def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
         y_train=y,
         problem_type="multiclass",
         search_parameters=hyperparams,
-        allowed_model_families=[ModelFamily.RANDOM_FOREST],
+        allowed_model_families=[ModelFamily.XGBOOST],
         n_jobs=1,
     )
     env = AutoMLTestEnv("multiclass")
@@ -3295,11 +3295,9 @@ def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
                 row["parameters"]["Imputer"]["numeric_impute_strategy"]
                 == "most_frequent"
             )
-        if "Decision Tree Classifier" in row["parameters"]:
-            assert (
-                0.1 < row["parameters"]["Random Forest Classifier"]["ccp_alpha"] < 0.5
-            )
-            assert row["parameters"]["Random Forest Classifier"]["max_depth"] == 1
+        if "XGBoost Classifier" in row["parameters"]:
+            assert 0.1 < row["parameters"]["XGBoost Classifier"]["eta"] < 0.5
+            assert row["parameters"]["XGBoost Classifier"]["max_depth"] == 1
 
 
 @pytest.mark.parametrize("random_seed", [0, 1, 9])
