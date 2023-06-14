@@ -94,8 +94,6 @@ def test_allowed_model_families():
         ModelFamily.RANDOM_FOREST,
         ModelFamily.LINEAR_MODEL,
         ModelFamily.EXTRA_TREES,
-        ModelFamily.DECISION_TREE,
-        ModelFamily.CATBOOST,
         ModelFamily.XGBOOST,
         ModelFamily.LIGHTGBM,
     ]
@@ -115,9 +113,9 @@ def test_all_estimators(
     is_using_conda,
 ):
     if is_using_conda:
-        n_estimators = 17
+        n_estimators = 13
     else:
-        n_estimators = 18
+        n_estimators = 14
     assert len(_all_estimators_used_in_search()) == n_estimators
 
 
@@ -131,7 +129,10 @@ def test_required_fields():
 
 @pytest.mark.parametrize("filetype", ["str", "BytesIO"])
 def test_serialization(
-    X_y_binary, tmpdir, logistic_regression_binary_pipeline, filetype
+    X_y_binary,
+    tmpdir,
+    logistic_regression_binary_pipeline,
+    filetype,
 ):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), "pipe.pkl")

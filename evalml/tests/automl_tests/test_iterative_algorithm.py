@@ -730,11 +730,9 @@ def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary):
         extra_dep_estimators = [
             "XGBoost Regressor",
             "LightGBM Regressor",
-            "CatBoost Regressor",
         ]
         core_estimators = [
             "Random Forest Regressor",
-            "Decision Tree Regressor",
             "Extra Trees Regressor",
         ]
     else:
@@ -742,11 +740,9 @@ def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary):
         extra_dep_estimators = [
             "XGBoost Classifier",
             "LightGBM Classifier",
-            "CatBoost Classifier",
         ]
         core_estimators = [
             "Random Forest Classifier",
-            "Decision Tree Classifier",
             "Extra Trees Classifier",
         ]
     assert (
@@ -762,11 +758,9 @@ def test_iterative_algorithm_first_batch_order_param(X_y_binary):
     estimator_family_order = [
         ModelFamily.RANDOM_FOREST,
         ModelFamily.LINEAR_MODEL,
-        ModelFamily.DECISION_TREE,
         ModelFamily.EXTRA_TREES,
         ModelFamily.XGBOOST,
         ModelFamily.LIGHTGBM,
-        ModelFamily.CATBOOST,
     ]
     algo = IterativeAlgorithm(
         X=X,
@@ -780,7 +774,6 @@ def test_iterative_algorithm_first_batch_order_param(X_y_binary):
     final_estimators = [
         "XGBoost Classifier",
         "LightGBM Classifier",
-        "CatBoost Classifier",
     ]
     assert (
         estimators_in_first_batch
@@ -788,7 +781,6 @@ def test_iterative_algorithm_first_batch_order_param(X_y_binary):
             "Random Forest Classifier",
             "Elastic Net Classifier",
             "Logistic Regression Classifier",
-            "Decision Tree Classifier",
             "Extra Trees Classifier",
         ]
         + final_estimators
@@ -844,7 +836,7 @@ def test_iterative_algorithm_sampling_params(
         (10, []),
         (75, []),
         (100, ["Elastic Net Classifier", "XGBoost Classifier"]),
-        (160, ["Elastic Net Classifier", "XGBoost Classifier", "CatBoost Classifier"]),
+        (160, ["Elastic Net Classifier", "XGBoost Classifier"]),
     ],
 )
 def test_iterative_algorithm_allow_long_running_models(
@@ -891,7 +883,7 @@ def test_iterative_algorithm_allow_long_running_models(
 @pytest.mark.parametrize("allow_long_running_models", [True, False])
 @pytest.mark.parametrize(
     "length,models_missing",
-    [(10, 0), (75, 0), (100, 2), (160, 3)],
+    [(10, 0), (75, 0), (100, 2), (160, 2)],
 )
 def test_iterative_algorithm_allow_long_running_models_problem(
     length,
