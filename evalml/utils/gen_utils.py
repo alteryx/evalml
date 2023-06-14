@@ -218,6 +218,10 @@ _not_used_in_automl = {
     "VowpalWabbitBinaryClassifier",
     "VowpalWabbitMulticlassClassifier",
     "VowpalWabbitRegressor",
+    "DecisionTreeClassifier",
+    "DecisionTreeRegressor",
+    "CatBoostRegressor",
+    "CatBoostClassifier",
 }
 
 

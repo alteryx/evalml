@@ -1267,7 +1267,7 @@ def test_automl_passes_allow_long_running_models(
     if allow_long_running_models or unique == 10:
         assert "Dropping estimators" not in caplog.text
         return
-    estimators = ["Elastic Net Classifier", "CatBoost Classifier", "XGBoost Classifier"]
+    estimators = ["Elastic Net Classifier", "XGBoost Classifier"]
 
     assert "Dropping estimators {}".format(", ".join(sorted(estimators))) in caplog.text
 
