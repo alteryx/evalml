@@ -1,4 +1,5 @@
 """Data check that checks if any of the features are likely to be ID columns."""
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckActionCode,
@@ -180,8 +181,11 @@ class IDColumnsDataCheck(DataCheck):
         ]  # columns whose name is "id"
         id_cols = {col: 0.95 for col in cols_named_id}
 
-        for dtypes in [["Double"], ["Integer", "IntegerNullable", "Categorical"]]:
-            X_temp = X.ww.select(include=dtypes)
+        for types in [
+            ["Double"],
+            ["Integer", "IntegerNullable", "Categorical", "Unknown"],
+        ]:
+            X_temp = X.ww.select(include=types)
             check_all_unique = X_temp.nunique() == len(X_temp)
             cols_with_all_unique = check_all_unique[
                 check_all_unique
@@ -189,7 +193,7 @@ class IDColumnsDataCheck(DataCheck):
 
             # Temporary solution for downstream instances of integers being mapped to doubles.
             # Will be removed when resolved.
-            if dtypes == ["Double"]:
+            if types == ["Double"]:
                 cols_with_all_unique = [
                     col
                     for col in cols_with_all_unique

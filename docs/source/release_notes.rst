@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * `IDColumnsDataCheck` now works with Unknown data type :pr:`4203`
     * Changes
     * Documentation Changes
     * Testing Changes

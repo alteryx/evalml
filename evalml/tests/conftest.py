@@ -106,7 +106,7 @@ def graphviz():
 def get_test_data_with_or_without_primary_key():
     def _get_test_data_with_primary_key(input_type, has_primary_key):
         X = None
-        if input_type == "integer":
+        if input_type == "Integer":
             X_dict = {
                 "col_1_id": [0, 1, 2, 3],
                 "col_2": [2, 3, 4, 5],
@@ -117,7 +117,7 @@ def get_test_data_with_or_without_primary_key():
                 X_dict["col_1_id"] = [1, 1, 2, 3]
             X = pd.DataFrame.from_dict(X_dict)
 
-        elif input_type == "integer_nullable":
+        elif input_type == "IntegerNullable":
             X_dict = {
                 "col_1_id": pd.Series([0, 1, 2, 3], dtype="Int64"),
                 "col_2": pd.Series([2, 3, 4, 5], dtype="Int64"),
@@ -128,7 +128,7 @@ def get_test_data_with_or_without_primary_key():
                 X_dict["col_1_id"] = pd.Series([1, 1, 2, 3], dtype="Int64")
             X = pd.DataFrame.from_dict(X_dict)
 
-        elif input_type == "double":
+        elif input_type == "Double":
             X_dict = {
                 "col_1_id": [0.0, 1.0, 2.0, 3.0],
                 "col_2": [2, 3, 4, 5],
@@ -139,7 +139,23 @@ def get_test_data_with_or_without_primary_key():
                 X_dict["col_1_id"] = [1.0, 1.0, 2.0, 3.0]
             X = pd.DataFrame.from_dict(X_dict)
 
-        elif input_type == "string":
+        elif input_type == "Unknown":
+            X_dict = {
+                "col_1_id": ["a", "b", "c", "d"],
+                "col_2": ["w", "x", "y", "z"],
+                "col_3_id": [
+                    "123456789012345",
+                    "234567890123456",
+                    "3456789012345678",
+                    "45678901234567",
+                ],
+                "col_5": ["0", "0", "1", "2"],
+            }
+            if not has_primary_key:
+                X_dict["col_1_id"] = ["b", "b", "c", "d"]
+            X = pd.DataFrame.from_dict(X_dict)
+
+        elif input_type == "Categorical":
             X_dict = {
                 "col_1_id": ["a", "b", "c", "d"],
                 "col_2": ["w", "x", "y", "z"],

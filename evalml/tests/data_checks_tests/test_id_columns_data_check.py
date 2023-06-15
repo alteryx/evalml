@@ -227,7 +227,7 @@ def test_id_cols_data_check_input_formats(logical_type):
 
 @pytest.mark.parametrize(
     "input_type",
-    ["integer", "integer_nullable", "string", "double"],
+    ["Integer", "IntegerNullable", "Unknown", "Double", "Categorical"],
 )
 def test_identified_first_col_primary_key(
     input_type,
@@ -300,7 +300,7 @@ def test_identified_first_col_primary_key(
 
 @pytest.mark.parametrize(
     "input_type",
-    ["integer", "integer_nullable", "string", "double"],
+    ["Integer", "IntegerNullable", "Unknown", "Double", "Categorical"],
 )
 def test_unidentified_first_col_primary_key(
     input_type,
@@ -312,7 +312,7 @@ def test_unidentified_first_col_primary_key(
     )
 
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
-    if input_type == "string":
+    if input_type in ["Unknown", "Categorical"]:
         order = ["col_2", "col_3_id", "col_1_id"]
     else:
         order = ["col_2", "col_1_id", "col_3_id"]
@@ -335,13 +335,15 @@ def test_unidentified_first_col_primary_key(
     ]
 
     X = X.rename(columns={"col_1_id": "col_1"})
-    if input_type == "integer":
+    if input_type == "Integer":
         X.at[0, "col_1"] = 0
-    elif input_type == "integer_nullable":
+    elif input_type == "IntegerNullable":
         X.at[0, "col_1"] = 0
-    elif input_type == "double":
+    elif input_type == "Double":
         X.at[0, "col_1"] = 0.0
-    elif input_type == "string":
+    elif input_type == "Unknown":
+        X.at[0, "col_1"] = "a"
+    elif input_type == "Categorical":
         X["col_1"] = X["col_1"].cat.add_categories("a")
         X.at[0, "col_1"] = "a"
 
