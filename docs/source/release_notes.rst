@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Add run_feature_selection to AutoMLSearch and Default Algorithm :pr:`4210`
     * Fixes
         * `IDColumnsDataCheck` now works with Unknown data type :pr:`4203`
     * Changes
