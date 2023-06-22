@@ -72,6 +72,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         allow_long_running_models (bool): Whether or not to allow longer-running models for large multiclass problems. If False and no pipelines, component graphs, or model families are provided,
             AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass targets and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
         features (list)[FeatureBase]: List of features to run DFS on in AutoML pipelines. Defaults to None. Features will only be computed if the columns used by the feature exist in the input and if the feature has not been computed yet.
+        run_feature_selection (bool): If True, will run a separate feature selection pipeline and only use selected features in subsequent batches.
+            If False, will use all of the features for every pipeline. Only used for default algorithm.
         verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
         exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipelines built by DefaultAlgorithm.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
@@ -100,6 +102,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         num_long_pipelines_per_batch=10,
         allow_long_running_models=False,
         features=None,
+        run_feature_selection=True,
         verbose=False,
         exclude_featurizers=None,
     ):
@@ -132,6 +135,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self._X_with_cat_cols = None
         self._X_without_cat_cols = None
         self.features = features
+        self.run_feature_selection = run_feature_selection
         self.ensembling = ensembling
         self.exclude_featurizers = exclude_featurizers or []
 
@@ -384,7 +388,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 if pipeline.name not in self._tuners:
                     self._create_tuner(pipeline)
 
-                select_parameters = self._create_select_parameters()
                 parameters = (
                     self._tuners[pipeline.name].get_starting_parameters(
                         self._hyperparameters,
@@ -394,7 +397,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     else self._tuners[pipeline.name].propose()
                 )
                 parameters = self._transform_parameters(pipeline, parameters)
-                parameters.update(select_parameters)
+                if self.run_feature_selection:
+                    select_parameters = self._create_select_parameters()
+                    parameters.update(select_parameters)
                 next_batch.append(
                     pipeline.new(parameters=parameters, random_seed=self.random_seed),
                 )
@@ -449,7 +454,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             if self._batch_number == 0:
                 next_batch = self._create_naive_pipelines()
             elif self._batch_number == 1:
-                next_batch = self._create_naive_pipelines(use_features=True)
+                next_batch = self._create_naive_pipelines(
+                    use_features=self.run_feature_selection,
+                )
             elif self._batch_number == 2:
                 next_batch = self._create_fast_final()
             elif self.batch_number == 3:
@@ -484,7 +491,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             if self._batch_number == 0:
                 next_batch = self._create_naive_pipelines()
             elif self._batch_number == 1:
-                next_batch = self._create_naive_pipelines(use_features=True)
+                next_batch = self._create_naive_pipelines(
+                    use_features=self.run_feature_selection,
+                )
             elif self._batch_number == 2:
                 next_batch = self._create_fast_final()
             elif self.batch_number == 3:
@@ -622,14 +631,22 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         # Should be category, not categorical so that we make sure to exclude
         # all logical types with the "category" tag
         numeric_exclude_types = ["category", "EmailAddress", "URL"]
-        if self._X_with_cat_cols is None or self._X_without_cat_cols is None:
+        if (
+            self.run_feature_selection
+            and self._X_with_cat_cols is None
+            or self._X_without_cat_cols is None
+        ):
             self._X_without_cat_cols = self.X.ww.select(
                 exclude=numeric_exclude_types,
             )
 
             self._X_with_cat_cols = self.X.ww[self._selected_cat_cols]
 
-        if self._selected_cat_cols and self._selected_cols:
+        if (
+            self.run_feature_selection
+            and self._selected_cat_cols
+            and self._selected_cols
+        ):
             self._split = True
 
             categorical_pipeline_parameters = {
@@ -699,7 +716,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 pre_pipeline_components=pre_pipeline_components,
                 post_pipelines_components=post_pipelines_components,
             )
-        elif self._selected_cat_cols and not self._selected_cols:
+        elif (
+            self.run_feature_selection
+            and self._selected_cat_cols
+            and not self._selected_cols
+        ):
             categorical_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cat_cols},
             }
@@ -715,7 +736,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 exclude_featurizers=self.exclude_featurizers,
             )
             return categorical_pipeline
-        else:
+        elif self.run_feature_selection:
             numeric_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cols},
             }
@@ -731,3 +752,14 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 exclude_featurizers=self.exclude_featurizers,
             )
             return numeric_pipeline
+
+        else:
+            pipeline = make_pipeline(
+                self.X,
+                self.y,
+                estimator,
+                self.problem_type,
+                sampler_name=self.sampler_name,
+                exclude_featurizers=self.exclude_featurizers,
+            )
+            return pipeline

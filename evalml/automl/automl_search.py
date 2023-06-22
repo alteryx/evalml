@@ -364,6 +364,9 @@ class AutoMLSearch:
             Features will only be computed if the columns used by the feature exist in the search input
             and if the feature itself is not in search input. If features is an empty list, the DFS Transformer will not be included in pipelines.
 
+        run_feature_selection (bool): If True, will run a separate feature selection pipeline and only use selected features in subsequent batches.
+            If False, will use all of the features for every pipeline. Only used for default algorithm, setting is no-op for iterative algorithm.
+
         data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
 
         tuner_class: The tuner class to use. Defaults to SKOptTuner.
@@ -470,6 +473,7 @@ class AutoMLSearch:
         allowed_model_families=None,
         excluded_model_families=None,
         features=None,
+        run_feature_selection=True,
         start_iteration_callback=None,
         add_result_callback=None,
         error_callback=None,
@@ -811,7 +815,6 @@ class AutoMLSearch:
             internal_search_parameters.update(
                 {"DFS Transformer": {"features": self.features}},
             )
-
         self.sampler_method = sampler_method
         self.sampler_balanced_ratio = sampler_balanced_ratio
         self._sampler_name = None
@@ -844,6 +847,7 @@ class AutoMLSearch:
                     "For time series problems, if TimeSeriesFeaturizer is excluded, must also exclude DatetimeFeaturizer",
                 )
         self.exclude_featurizers = exclude_featurizers or []
+        self.run_feature_selection = run_feature_selection
 
         if excluded_model_families:
             if not isinstance(excluded_model_families, list):
@@ -944,6 +948,7 @@ class AutoMLSearch:
                 text_in_ensembling=text_in_ensembling,
                 allow_long_running_models=allow_long_running_models,
                 features=features,
+                run_feature_selection=run_feature_selection,
                 ensembling=self.ensembling,
                 verbose=self.verbose,
                 n_jobs=self.n_jobs,
