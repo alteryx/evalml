@@ -1061,3 +1061,51 @@ def test_default_algorithm_allowed_graphs_and_families_both_set_error(
             excluded_model_families=[ModelFamily.XGBOOST],
             sampler_name=None,
         )
+
+
+@pytest.mark.parametrize("run_feature_selection", [True, False])
+def test_default_algorithm_run_feature_selection(run_feature_selection, X_y_binary):
+    X, y = X_y_binary
+    algo_selection = DefaultAlgorithm(
+        X=X,
+        y=y,
+        problem_type="binary",
+        allowed_model_families=[
+            ModelFamily.RANDOM_FOREST,
+            ModelFamily.XGBOOST,
+            ModelFamily.LINEAR_MODEL,
+        ],
+        run_feature_selection=run_feature_selection,
+        sampler_name=None,
+    )
+
+    batches = [algo_selection.next_batch() for _ in range(0, 3)]
+
+    assert algo_selection.run_feature_selection is run_feature_selection
+
+    for i, batch in enumerate(batches):
+        for pipeline in batch:
+            if run_feature_selection:
+                if i == 0:
+                    assert "RF Classifier Select From Model" not in list(
+                        pipeline.component_graph.component_dict.keys(),
+                    )
+                    assert "Select Columns Transformer" not in list(
+                        pipeline.component_graph.component_dict.keys(),
+                    )
+                elif i == 1:
+                    assert "RF Classifier Select From Model" in list(
+                        pipeline.component_graph.component_dict.keys(),
+                    )
+                else:
+                    assert "Select Columns Transformer" in list(
+                        pipeline.component_graph.component_dict.keys(),
+                    )
+            else:
+                for pipeline in batch:
+                    assert "RF Classifier Select From Model" not in list(
+                        pipeline.component_graph.component_dict.keys(),
+                    )
+                    assert "Select Columns Transformer" not in list(
+                        pipeline.component_graph.component_dict.keys(),
+                    )
