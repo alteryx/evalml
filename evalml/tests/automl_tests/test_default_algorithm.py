@@ -1085,15 +1085,8 @@ def test_default_algorithm_run_feature_selection(run_feature_selection, X_y_bina
 
     for i, batch in enumerate(batches):
         for pipeline in batch:
-            if run_feature_selection:
-                if i == 0:
-                    assert "RF Classifier Select From Model" not in list(
-                        pipeline.component_graph.component_dict.keys(),
-                    )
-                    assert "Select Columns Transformer" not in list(
-                        pipeline.component_graph.component_dict.keys(),
-                    )
-                elif i == 1:
+            if run_feature_selection and i > 0:
+                if i == 1:
                     assert "RF Classifier Select From Model" in list(
                         pipeline.component_graph.component_dict.keys(),
                     )
@@ -1102,10 +1095,9 @@ def test_default_algorithm_run_feature_selection(run_feature_selection, X_y_bina
                         pipeline.component_graph.component_dict.keys(),
                     )
             else:
-                for pipeline in batch:
-                    assert "RF Classifier Select From Model" not in list(
-                        pipeline.component_graph.component_dict.keys(),
-                    )
-                    assert "Select Columns Transformer" not in list(
-                        pipeline.component_graph.component_dict.keys(),
-                    )
+                assert "RF Classifier Select From Model" not in list(
+                    pipeline.component_graph.component_dict.keys(),
+                )
+                assert "Select Columns Transformer" not in list(
+                    pipeline.component_graph.component_dict.keys(),
+                )
