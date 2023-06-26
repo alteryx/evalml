@@ -181,7 +181,7 @@ Components represent a step in a pipeline.
 
 .. autoapisummary::
 
-    evalml.pipelines.ComponentBase
+    evalml.pipelines.components.ComponentBase
     evalml.pipelines.Transformer
     evalml.pipelines.Estimator
 
