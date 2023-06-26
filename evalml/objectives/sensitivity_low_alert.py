@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class SensitivityLowAlert(BinaryClassificationObjective):
-    """Create instance of SensitivityLowAlert.
+    """Sensitivity at Low Alert Rates.
 
     Args:
         alert_rate (float): percentage of top scores to classify as high risk.
