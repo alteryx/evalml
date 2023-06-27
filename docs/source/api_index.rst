@@ -307,7 +307,6 @@ Metrics
     evalml.model_understanding.calculate_permutation_importance_one_column
     evalml.model_understanding.confusion_matrix
     evalml.model_understanding.find_confusion_matrix_per_thresholds
-    evalml.model_understanding.get_influential_features
     evalml.model_understanding.get_linear_coefficients
     evalml.model_understanding.get_prediction_vs_actual_data
     evalml.model_understanding.get_prediction_vs_actual_over_time_data
