@@ -313,9 +313,10 @@ Metrics
     evalml.model_understanding.normalize_confusion_matrix
     evalml.model_understanding.partial_dependence
     evalml.model_understanding.precision_recall_curve
-    evalml.model_understanding.readable_explanation
     evalml.model_understanding.roc_curve
     evalml.model_understanding.t_sne
+    evalml.model_understanding.feature_explanations.get_influential_features
+    evalml.model_understanding.feature_explanations.readable_explanation
 
 
 Visualization Methods
