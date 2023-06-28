@@ -7,6 +7,7 @@ Release Notes
         * `IDColumnsDataCheck` now works with Unknown data type :pr:`4203`
     * Changes
     * Documentation Changes
+        * Updated API reference :pr:`4213`
     * Testing Changes
 
 .. warning::
