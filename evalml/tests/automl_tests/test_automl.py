@@ -266,8 +266,7 @@ def test_search_batch_times(caplog, X_y_binary, AutoMLTestEnv):
 
     assert len(batch_times) == 3
     assert len(batch_times[1]) == 2
-    assert len(batch_times[2]) == 2
-    assert len(batch_times[3]) == 6
+    assert len(batch_times[2]) == 6
 
     assert "Batch Time Stats" in out
     assert "Batch 1 time stats" in out
@@ -363,11 +362,11 @@ def test_pipeline_limits(
         automl.search()
     out = caplog.text
     if verbose:
-        assert "Using default limit of max_batches=3." in out
-        assert "Searching up to 3 batches for a total of" in out
+        assert "Using default limit of max_batches=2." in out
+        assert "Searching up to 2 batches for a total of" in out
     else:
-        assert "Using default limit of max_batches=3." not in out
-        assert "Searching up to 3 batches for a total of" not in out
+        assert "Using default limit of max_batches=2." not in out
+        assert "Searching up to 2 batches for a total of" not in out
     assert len(automl.results["pipeline_results"]) > 0
 
     caplog.clear()
@@ -1785,12 +1784,12 @@ def test_pipelines_in_batch_return_nan(
 ):
     X, y = X_y_binary
     mock_rankings.side_effect = [
-        make_mock_rankings([0, 0]),  # first batch
+        # make_mock_rankings([0, 0]),  # first batch
         make_mock_rankings([0, 0, 0, np.nan]),  # second batch
         make_mock_rankings([0, 0, 0, np.nan, np.nan, np.nan]),
     ]  # third batch, should raise error
     mock_full_rankings.side_effect = [
-        make_mock_rankings([0, 0]),  # first batch
+        # make_mock_rankings([0, 0]),  # first batch
         make_mock_rankings([0, 0, 0, np.nan]),  # second batch
         make_mock_rankings([0, 0, 0, np.nan, np.nan, np.nan]),
     ]  # third batch, should raise error
@@ -1805,7 +1804,7 @@ def test_pipelines_in_batch_return_nan(
         X_train=X,
         y_train=y,
         problem_type="binary",
-        max_batches=3,
+        max_batches=2,
         allowed_component_graphs={"Name": [dummy_classifier_estimator_class]},
         n_jobs=1,
     )

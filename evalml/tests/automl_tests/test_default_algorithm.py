@@ -40,7 +40,7 @@ def test_default_algorithm_init(X_y_binary):
     assert algo.allowed_pipelines == []
     assert algo.verbose is True
     assert algo.ensembling is False
-    assert algo.default_max_batches == 3
+    assert algo.default_max_batches == 2
 
     algo = DefaultAlgorithm(
         X,
@@ -59,7 +59,7 @@ def test_default_algorithm_init(X_y_binary):
         verbose=True,
         ensembling=True,
     )
-    assert algo.default_max_batches == 4
+    assert algo.default_max_batches == 3
 
 
 def test_default_algorithm_search_parameters_error(X_y_binary):
@@ -145,14 +145,9 @@ def test_default_algorithm(
     first_batch = algo.next_batch()
     assert len(first_batch) == 1
     assert {p.model_family for p in first_batch} == naive_model_families
-    add_result(algo, first_batch)
-
-    second_batch = algo.next_batch()
-    assert len(second_batch) == 1
-    assert {p.model_family for p in second_batch} == naive_model_families
-    for pipeline in second_batch:
+    for pipeline in first_batch:
         assert pipeline.get_component(fs)
-    add_result(algo, second_batch)
+    add_result(algo, first_batch)
 
     if split == "split" or split == "numeric-only":
         assert algo._selected_cols == non_categorical_columns
@@ -1085,8 +1080,8 @@ def test_default_algorithm_run_feature_selection(run_feature_selection, X_y_bina
 
     for i, batch in enumerate(batches):
         for pipeline in batch:
-            if run_feature_selection and i > 0:
-                if i == 1:
+            if run_feature_selection:
+                if i == 0:
                     assert "RF Classifier Select From Model" in list(
                         pipeline.component_graph.component_dict.keys(),
                     )

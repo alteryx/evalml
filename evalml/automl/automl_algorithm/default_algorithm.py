@@ -169,11 +169,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
     def default_max_batches(self):
         """Returns the number of max batches AutoMLSearch should run by default."""
         if self.ensembling:
-            return 4
+            return 3
         elif is_time_series(self.problem_type):
             return 2  # we do not run feature selection for time series
         else:
-            return 3
+            return 2
 
     def num_pipelines_per_batch(self, batch_number):
         """Return the number of pipelines in the nth batch.
@@ -184,17 +184,17 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         Returns:
             int: number of pipelines in the given batch.
         """
-        if batch_number == 0 or batch_number == 1:
+        if batch_number == 0:
             return len(self._naive_estimators())
-        elif batch_number == 2:
+        elif batch_number == 1:
             return len(self._non_naive_estimators())
         if self.ensembling:
-            if batch_number % 2 != 0:
+            if batch_number % 2 == 0:
                 return 1
-            elif batch_number == 4:
+            elif batch_number == 3:
                 return self.num_long_explore_pipelines * self.top_n
         else:
-            if batch_number == 3:
+            if batch_number == 2:
                 return self.num_long_explore_pipelines * self.top_n
         return self.num_long_pipelines_per_batch * self.top_n
 
@@ -452,20 +452,18 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         """
         if self.ensembling:
             if self._batch_number == 0:
-                next_batch = self._create_naive_pipelines()
-            elif self._batch_number == 1:
                 next_batch = self._create_naive_pipelines(
                     use_features=self.run_feature_selection,
                 )
-            elif self._batch_number == 2:
+            elif self._batch_number == 1:
                 next_batch = self._create_fast_final()
-            elif self.batch_number == 3:
+            elif self.batch_number == 2:
                 next_batch = self._create_ensemble(
                     self._pipeline_parameters.get("Label Encoder", {}),
                 )
-            elif self.batch_number == 4:
+            elif self.batch_number == 3:
                 next_batch = self._create_long_exploration(n=self.top_n)
-            elif self.batch_number % 2 != 0:
+            elif self.batch_number % 2 == 0:
                 next_batch = self._create_ensemble(
                     self._pipeline_parameters.get("Label Encoder", {}),
                 )
@@ -489,14 +487,12 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 )
         else:
             if self._batch_number == 0:
-                next_batch = self._create_naive_pipelines()
-            elif self._batch_number == 1:
                 next_batch = self._create_naive_pipelines(
                     use_features=self.run_feature_selection,
                 )
-            elif self._batch_number == 2:
+            elif self._batch_number == 1:
                 next_batch = self._create_fast_final()
-            elif self.batch_number == 3:
+            elif self.batch_number == 2:
                 next_batch = self._create_long_exploration(n=self.top_n)
             else:
                 next_batch = self._create_n_pipelines(
@@ -583,7 +579,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         """
         cached_data = cached_data or {}
         if pipeline.model_family != ModelFamily.ENSEMBLE:
-            if self.batch_number >= 3:
+            if self.batch_number >= 2:
                 super().add_result(
                     score_to_minimize,
                     pipeline,
@@ -591,7 +587,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 )
 
         if (
-            self.batch_number == 2
+            self.batch_number == 1
             and self._selected_cols is None
             and not is_time_series(self.problem_type)
         ):
