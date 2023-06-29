@@ -859,7 +859,7 @@ class SMAPE(TimeSeriesRegressionObjective):
     Example:
         >>> y_true = pd.Series([1.5, 2, 3, 1, 0.5, 1, 2.5, 2.5, 1, 0.5, 2])
         >>> y_pred = pd.Series([1.5, 2.5, 2, 1, 0.5, 1, 3, 2.25, 0.75, 0.25, 1.75])
-        >>> np.testing.assert_almost_equal(MAPE().objective_function(y_true, y_pred), 15.9848484)
+        >>> np.testing.assert_almost_equal(SMAPE().objective_function(y_true, y_pred), 18.13652589)
     """
 
     name = "Symmetric Mean Absolute Percentage Error"
@@ -873,7 +873,7 @@ class SMAPE(TimeSeriesRegressionObjective):
         """Objective function for mean absolute percentage error for time series regression."""
         if (y_true == 0).any():
             raise ValueError(
-                "Mean Absolute Percentage Error cannot be used when "
+                "Symmetric Mean Absolute Percentage Error cannot be used when "
                 "targets contain the value 0.",
             )
         if isinstance(y_true, pd.Series):
