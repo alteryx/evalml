@@ -1784,12 +1784,12 @@ def test_pipelines_in_batch_return_nan(
 ):
     X, y = X_y_binary
     mock_rankings.side_effect = [
-        # make_mock_rankings([0, 0]),  # first batch
+        make_mock_rankings([0, 0]),  # first batch
         make_mock_rankings([0, 0, 0, np.nan]),  # second batch
         make_mock_rankings([0, 0, 0, np.nan, np.nan, np.nan]),
     ]  # third batch, should raise error
     mock_full_rankings.side_effect = [
-        # make_mock_rankings([0, 0]),  # first batch
+        make_mock_rankings([0, 0]),  # first batch
         make_mock_rankings([0, 0, 0, np.nan]),  # second batch
         make_mock_rankings([0, 0, 0, np.nan, np.nan, np.nan]),
     ]  # third batch, should raise error
@@ -1805,6 +1805,7 @@ def test_pipelines_in_batch_return_nan(
         y_train=y,
         problem_type="binary",
         max_batches=2,
+        automl_algorithm="iterative",
         allowed_component_graphs={"Name": [dummy_classifier_estimator_class]},
         n_jobs=1,
     )
@@ -1818,7 +1819,10 @@ def test_pipelines_in_batch_return_nan(
             automl.search()
     assert len(automl.errors) > 0
     for pipeline_name, pipeline_error in automl.errors.items():
-        assert "Label Encoder" in pipeline_error["Parameters"]
+        assert (
+            "Label Encoder" in pipeline_error["Parameters"]
+            or "Mock Classifier" in pipeline_error["Parameters"]
+        )
         assert isinstance(pipeline_error["Exception"], TypeError)
         assert "line" in pipeline_error["Traceback"]
 
@@ -1858,6 +1862,7 @@ def test_pipelines_in_batch_return_none(
         y_train=y,
         problem_type="binary",
         max_batches=3,
+        automl_algorithm="iterative",
         allowed_component_graphs={"Name": [dummy_classifier_estimator_class]},
         n_jobs=1,
     )
@@ -4291,7 +4296,7 @@ def test_component_and_pipeline_warnings_surface_in_search(
             X_train=X,
             y_train=y,
             problem_type="regression",
-            search_parameters={"Decision Tree Classifier": {"max_depth": 1}},
+            search_parameters={"Random Forest Classifier": {"max_depth": 1}},
             max_batches=1,
             verbose=verbose,
         )

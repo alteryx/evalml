@@ -853,7 +853,9 @@ def test_default_algorithm_add_result_cache(X_y_binary):
     )
 
     cache = {"some_cache_key": "some_cache_value"}
-    # initial batch contains one of each pipeline, with default parameters
+    # initial batch contains feature selection pipeline, so we call and discard
+    _ = algo.next_batch()
+    # second batch contains one of each pipeline, with default parameters
     next_batch = algo.next_batch()
     scores = np.arange(0, len(next_batch))
     for pipeline_num, (score, pipeline) in enumerate(zip(scores, next_batch)):
