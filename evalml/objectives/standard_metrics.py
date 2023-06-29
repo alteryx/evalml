@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn import metrics
 from sklearn.preprocessing import label_binarize
-from sktime.performance_metrics.forecasting import MeanAbsolutePercentageError
+from sktime.performance_metrics.forecasting import MeanAbsolutePercentageError, MeanAbsoluteScaledError
 
 from evalml.objectives.binary_classification_objective import (
     BinaryClassificationObjective,
@@ -825,6 +825,53 @@ class MAE(RegressionObjective):
             y_predicted,
             sample_weight=sample_weight,
         )
+
+
+class MASE(TimeSeriesRegressionObjective):
+    """Mean absolute percentage error for time series regression. Scaled by 100 to return a percentage.
+
+    Only valid for nonzero inputs. Otherwise, will throw a ValueError.
+
+    Example:
+        >>> y_true = pd.Series([1.5, 2, 3, 1, 0.5, 1, 2.5, 2.5, 1, 0.5, 2])
+        >>> y_pred = pd.Series([1.5, 2.5, 2, 1, 0.5, 1, 3, 2.25, 0.75, 0.25, 1.75])
+        >>> np.testing.assert_almost_equal(MASE().objective_function(y_true, y_pred, y_train), 15.9848484)
+    """
+
+    name = "Mean Absolute Scaled Error"
+    greater_is_better = False
+    score_needs_proba = False
+    perfect_score = 0.0
+    is_bounded_like_percentage = False  # Range [0, Inf)
+    expected_range = [0, float("inf")]
+
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train,
+        X=None,
+        sample_weight=None,
+    ):
+        """Objective function for mean absolute percentage error for time series regression."""
+        if (y_true == 0).any():
+            raise ValueError(
+                "Mean Absolute Scaled Error cannot be used when "
+                "targets contain the value 0.",
+            )
+        if isinstance(y_true, pd.Series):
+            y_true = y_true.to_numpy()
+        if isinstance(y_predicted, pd.Series):
+            y_predicted = y_predicted.to_numpy()
+        if isinstance(y_train, pd.Series):
+            y_train = y_train.to_numpy()
+        mase = MeanAbsoluteScaledError()
+        return mase(y_true, y_predicted, y_train=y_train) * 100
+
+    @classproperty
+    def positive_only(self):
+        """If True, this objective is only valid for positive data."""
+        return True
 
 
 class MAPE(TimeSeriesRegressionObjective):

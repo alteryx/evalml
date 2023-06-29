@@ -15,6 +15,7 @@ from evalml.objectives.standard_metrics import (
     AUC,
     F1,
     MAE,
+    MASE,
     MAPE,
     SMAPE,
     MSE,
