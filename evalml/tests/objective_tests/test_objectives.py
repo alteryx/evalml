@@ -111,21 +111,21 @@ def test_get_core_objectives_types():
     assert len(get_core_objectives(ProblemTypes.MULTICLASS)) == 13
     assert len(get_core_objectives(ProblemTypes.BINARY)) == 8
     assert len(get_core_objectives(ProblemTypes.REGRESSION)) == 7
-    assert len(get_core_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 7
+    assert len(get_core_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 8
 
 
 def test_get_optimization_objectives_types():
     assert len(get_optimization_objectives(ProblemTypes.MULTICLASS)) == 13
     assert len(get_optimization_objectives(ProblemTypes.BINARY)) == 8
     assert len(get_optimization_objectives(ProblemTypes.REGRESSION)) == 7
-    assert len(get_optimization_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 7
+    assert len(get_optimization_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 8
 
 
 def test_get_ranking_objectives_types():
     assert len(get_ranking_objectives(ProblemTypes.MULTICLASS)) == 16
     assert len(get_ranking_objectives(ProblemTypes.BINARY)) == 9
     assert len(get_ranking_objectives(ProblemTypes.REGRESSION)) == 9
-    assert len(get_ranking_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 10
+    assert len(get_ranking_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 11
 
 
 def test_optimization_excludes_ranking():
@@ -135,7 +135,7 @@ def test_optimization_excludes_ranking():
 
 
 def test_get_time_series_objectives_types(time_series_objectives):
-    assert len(time_series_objectives) == 10
+    assert len(time_series_objectives) == 11
 
 
 def test_objective_outputs(
