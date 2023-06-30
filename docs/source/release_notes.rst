@@ -28,6 +28,7 @@ Release Notes
 
     **Breaking Changes**
         * Removed Decision Tree and CatBoost Estimators from AutoML search :pr:`4205`
+        * Removed first batch from default algorithm :pr:`4215`
 
 
 **v0.77.0 Jun. 07, 2023**
