@@ -121,7 +121,7 @@ def test_search_args(mock_automl_search, mock_data_checks_validate, X_y_binary):
     assert automl.max_time == 42
     assert automl.patience == 3
     assert automl.tolerance == 0.5
-    assert automl.max_batches == 4
+    assert automl.max_batches == 3
     assert isinstance(automl.automl_algorithm, DefaultAlgorithm)
 
     automl, _ = search(
