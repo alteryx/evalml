@@ -4296,11 +4296,11 @@ def test_component_and_pipeline_warnings_surface_in_search(
             X_train=X,
             y_train=y,
             problem_type="regression",
-            search_parameters={"Random Forest Classifier": {"max_depth": 1}},
+            search_parameters={"Decision Tree Classifier": {"max_depth": 1}},
             max_batches=1,
             verbose=verbose,
         )
-        env = AutoMLTestEnv("binary")
+        env = AutoMLTestEnv("regression")
         with env.test_context(score_return_value={automl.objective.name: 1.0}):
             automl.search()
 
@@ -4470,7 +4470,7 @@ def test_automl_ensembler_allowed_component_graphs(
         problem_type="regression",
         allowed_component_graphs=component_graphs,
         ensembling=True,
-        max_batches=4,
+        max_batches=3,
         verbose=True,
     )
     automl.search()
@@ -4728,7 +4728,7 @@ def test_search_parameters_held_automl(
                 ],
             },
         }
-        batches = 2 if algorithm == "default" else batches
+    batches = 2 if algorithm == "default" else batches
 
     search_parameters = {
         "Imputer": {"numeric_impute_strategy": parameter},

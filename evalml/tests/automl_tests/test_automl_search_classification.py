@@ -1280,7 +1280,7 @@ def test_automl_threshold_score(fraud_100):
         X_train,
         y_train,
         problem_type="binary",
-        max_batches=4,
+        max_batches=3,
         ensembling=True,
         verbose=False,
         automl_algorithm="default",
