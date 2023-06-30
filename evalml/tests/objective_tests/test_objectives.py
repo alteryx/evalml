@@ -27,7 +27,7 @@ from evalml.objectives import (
 )
 from evalml.objectives.fraud_cost import FraudCost
 from evalml.objectives.objective_base import ObjectiveBase
-from evalml.objectives.standard_metrics import MAPE
+from evalml.objectives.standard_metrics import MAPE, SMAPE
 from evalml.objectives.utils import _all_objectives_dict
 from evalml.problem_types import ProblemTypes
 
@@ -229,9 +229,9 @@ def test_objectives_support_nullable_types(
     if isinstance(obj, FraudCost):
         # FraudCost needs an "amount" column
         X = pd.DataFrame({"amount": [100, 5, 250, 89] * 5})
-    elif isinstance(obj, MAPE):
+    elif isinstance(obj, (MAPE, SMAPE)):
         if isinstance(y_true.ww.logical_type, BooleanNullable):
-            pytest.skip("MAPE doesn't support inputs containing 0")
+            pytest.skip("MAPE and SMAPE doesn't support inputs containing 0")
         # Replace numeric inputs containing 0
         y_true = y_true.ww.replace({0: 10})
         y_pred = y_pred.replace({0: 10})
