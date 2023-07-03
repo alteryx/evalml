@@ -1804,7 +1804,7 @@ def test_pipelines_in_batch_return_nan(
         X_train=X,
         y_train=y,
         problem_type="binary",
-        max_batches=2,
+        max_batches=3,
         automl_algorithm="iterative",
         allowed_component_graphs={"Name": [dummy_classifier_estimator_class]},
         n_jobs=1,

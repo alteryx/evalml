@@ -170,8 +170,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         """Returns the number of max batches AutoMLSearch should run by default."""
         if self.ensembling:
             return 3
-        elif is_time_series(self.problem_type):
-            return 2  # we do not run feature selection for time series
         else:
             return 2
 
