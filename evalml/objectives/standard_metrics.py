@@ -848,12 +848,18 @@ class MASE(TimeSeriesRegressionObjective):
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Objective function for mean absolute percentage error for time series regression."""
+        y_train = y_true
+        if (y_train == 0).all():
+            raise ValueError(
+                "Mean Absolute Scaled Error cannot be used when "
+                "all targets contain the value 0.",
+            )
         if isinstance(y_true, pd.Series):
             y_true = y_true.to_numpy()
         if isinstance(y_predicted, pd.Series):
             y_predicted = y_predicted.to_numpy()
         mase = MeanAbsoluteScaledError()
-        return mase(y_true, y_predicted, y_train=y_true) * 100
+        return mase(y_true, y_predicted, y_train=y_train) * 100
 
     @classproperty
     def positive_only(self):

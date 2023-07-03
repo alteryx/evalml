@@ -725,6 +725,9 @@ def test_mase_time_series_model():
     s3_actual = np.array([1, 2, 4, 2, 1, 2])
     s3_predicted = np.array([0, 2, 2, 1, 3, 2])
 
+    s4_actual = np.array([0, 0, 0, 0, 0, 0])
+    s4_predicted = np.array([0, 2, 2, 1, 3, 2])
+
     assert obj.score(s1_actual, s1_predicted) == pytest.approx(7 / 6 * 100)
     assert obj.score(s2_actual, s2_predicted) == pytest.approx((14 / 4) / 2 * 100)
     assert obj.score(s3_actual, s3_predicted) == pytest.approx(5 / 7 * 100)
@@ -736,6 +739,13 @@ def test_mase_time_series_model():
         pd.Series(s2_actual, index=range(10, 14)),
         pd.Series(s2_predicted, index=range(20, 24)),
     ) == pytest.approx((14 / 4) / 2 * 100)
+
+    with pytest.raises(
+        ValueError,
+        match="Mean Absolute Scaled Error cannot be used when "
+        "all targets contain the value 0.",
+    ):
+        obj.score(s4_actual, s4_predicted)
 
 
 def test_mape_time_series_model():
