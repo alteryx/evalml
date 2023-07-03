@@ -231,7 +231,7 @@ def test_objectives_support_nullable_types(
         X = pd.DataFrame({"amount": [100, 5, 250, 89] * 5})
     elif isinstance(obj, (MAPE, SMAPE)):
         if isinstance(y_true.ww.logical_type, BooleanNullable):
-            pytest.skip("MAPE and SMAPE doesn't support inputs containing 0")
+            pytest.skip("MAPE and SMAPE don't support inputs containing 0")
         # Replace numeric inputs containing 0
         y_true = y_true.ww.replace({0: 10})
         y_pred = y_pred.replace({0: 10})

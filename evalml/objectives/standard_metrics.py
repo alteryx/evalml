@@ -866,15 +866,15 @@ class SMAPE(TimeSeriesRegressionObjective):
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
-    is_bounded_like_percentage = False  # Range [0, Inf)
-    expected_range = [0, float("inf")]
+    is_bounded_like_percentage = False  # Range [0, 200]
+    expected_range = [0, 200]
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Objective function for mean absolute percentage error for time series regression."""
-        if (y_true == 0).any():
+        if ((abs(y_true) + abs(y_predicted)) == 0).any():
             raise ValueError(
                 "Symmetric Mean Absolute Percentage Error cannot be used when "
-                "targets contain the value 0.",
+                "true and predicted targets both contain the value 0.",
             )
         if isinstance(y_true, pd.Series):
             y_true = y_true.to_numpy()
