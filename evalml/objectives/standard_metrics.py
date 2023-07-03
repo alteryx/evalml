@@ -866,7 +866,7 @@ class SMAPE(TimeSeriesRegressionObjective):
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
-    is_bounded_like_percentage = False  # Range [0, 200]
+    is_bounded_like_percentage = True  # Range [0, 200]
     expected_range = [0, 200]
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
