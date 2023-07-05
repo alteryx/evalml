@@ -743,7 +743,7 @@ def test_mase_time_series_model():
     with pytest.raises(
         ValueError,
         match="Mean Absolute Scaled Error cannot be used when "
-        "all targets contain the value 0.",
+        "all training targets contain the value 0.",
     ):
         obj.score(s4_actual, s4_predicted)
 
