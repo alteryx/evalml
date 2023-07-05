@@ -860,7 +860,7 @@ class MASE(TimeSeriesRegressionObjective):
             y_true = y_true.to_numpy()
         if isinstance(y_predicted, pd.Series):
             y_predicted = y_predicted.to_numpy()
-        if isinstance(y_predicted, pd.Series):
+        if isinstance(y_train, pd.Series):
             y_train = y_train.to_numpy()
         mase = MeanAbsoluteScaledError()
         return mase(y_true, y_predicted, y_train=y_train) * 100
