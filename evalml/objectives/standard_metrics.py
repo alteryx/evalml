@@ -833,10 +833,9 @@ class MASE(TimeSeriesRegressionObjective):
     Only valid for nonzero inputs. Otherwise, will throw a ValueError.
 
     Example:
-        >>> y_train = np.array([5, 0.5, 4, 6, 3, 5, 2])
-        >>> y_true = np.array([3, -0.5, 2, 7, 2])
-        >>> y_pred = np.array([2.5, 0.0, 2, 8, 1.25])
-        >>> np.testing.assert_almost_equal(MASE().objective_function(y_true, y_pred, y_train), 18.333333333333335)
+        >>> y_true = pd.Series([1.5, 2, 3, 1, 0.5, 1, 2.5, 2.5, 1, 0.5, 2])
+        >>> y_pred = pd.Series([1.5, 2.5, 2, 1, 0.5, 1, 3, 2.25, 0.75, 0.25, 1.75])
+        >>> np.testing.assert_almost_equal(MAPE().objective_function(y_true, y_pred), 15.9848484)
     """
 
     name = "Mean Absolute Scaled Error"
@@ -848,8 +847,7 @@ class MASE(TimeSeriesRegressionObjective):
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Objective function for mean absolute percentage error for time series regression."""
-        y_train = y_true
-        if (y_train == 0).all():
+        if (y_true == 0).all():
             raise ValueError(
                 "Mean Absolute Scaled Error cannot be used when "
                 "all targets contain the value 0.",
@@ -859,7 +857,7 @@ class MASE(TimeSeriesRegressionObjective):
         if isinstance(y_predicted, pd.Series):
             y_predicted = y_predicted.to_numpy()
         mase = MeanAbsoluteScaledError()
-        return mase(y_true, y_predicted, y_train=y_train) * 100
+        return mase(y_true, y_predicted, y_train=y_true) * 100
 
     @classproperty
     def positive_only(self):
