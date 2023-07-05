@@ -16,6 +16,7 @@ from evalml.objectives.standard_metrics import (
     F1,
     MAE,
     MAPE,
+    SMAPE,
     MSE,
     MeanSquaredLogError,
     R2,

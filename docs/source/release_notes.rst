@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Add run_feature_selection to AutoMLSearch and Default Algorithm :pr:`4210`
+        * Added ``SMAPE`` to the standard metrics for time series problems :pr:`4220`
     * Fixes
         * `IDColumnsDataCheck` now works with Unknown data type :pr:`4203`
     * Changes

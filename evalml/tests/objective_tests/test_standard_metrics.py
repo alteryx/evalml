@@ -8,6 +8,7 @@ from evalml.objectives import (
     F1,
     MAPE,
     MSE,
+    SMAPE,
     AccuracyBinary,
     AccuracyMulticlass,
     BalancedAccuracyBinary,
@@ -709,6 +710,44 @@ def test_mape_time_series_model():
         pd.Series(s2_actual, index=range(10, 14)),
         pd.Series(s2_predicted, index=range(20, 24)),
     ) == pytest.approx(8 / 4 * 100)
+
+
+def test_smape_time_series_model():
+    obj = SMAPE()
+
+    s1_actual = np.array([0, 0, 1, 1, 1, 1, 2, 0, 2])
+    s1_predicted = np.array([0, 1, 0, 1, 1, 2, 1, 2, 0])
+
+    s2_actual = np.array([-1, -2, 1, 3])
+    s2_predicted = np.array([1, 2, -1, -3])
+
+    s3_actual = np.array([1, 2, 4, 2, 1, 2])
+    s3_predicted = np.array([0, 2, 2, 0, 3, 2])
+
+    s4_actual = np.array([0, 2, 0, 2, 1, 2])
+    s4_predicted = np.array([1, 2, 2, 1, 3, 2])
+
+    with pytest.raises(
+        ValueError,
+        match="Symmetric Mean Absolute Percentage Error cannot be used when "
+        "true and predicted targets both contain the value 0.",
+    ):
+        obj.score(s1_actual, s1_predicted)
+    assert obj.score(s2_actual, s2_predicted) == pytest.approx(8 / 4 * 100)
+    assert obj.score(s3_actual, s3_predicted) == pytest.approx((17 / 6) / 3 * 100)
+    assert obj.score(s4_actual, s4_predicted) == pytest.approx((17 / 6) / 3 * 100)
+    assert obj.score(
+        pd.Series(s3_actual, index=range(-12, -6)),
+        s3_predicted,
+    ) == pytest.approx((17 / 6) / 3 * 100)
+    assert obj.score(
+        pd.Series(s2_actual, index=range(10, 14)),
+        pd.Series(s2_predicted, index=range(20, 24)),
+    ) == pytest.approx(8 / 4 * 100)
+    assert obj.score(
+        pd.Series(s4_actual, index=range(-12, -6)),
+        s4_predicted,
+    ) == pytest.approx((17 / 6) / 3 * 100)
 
 
 @pytest.mark.parametrize("objective_class", _all_objectives_dict().values())

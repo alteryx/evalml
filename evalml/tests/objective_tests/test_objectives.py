@@ -27,7 +27,7 @@ from evalml.objectives import (
 )
 from evalml.objectives.fraud_cost import FraudCost
 from evalml.objectives.objective_base import ObjectiveBase
-from evalml.objectives.standard_metrics import MAPE
+from evalml.objectives.standard_metrics import MAPE, SMAPE
 from evalml.objectives.utils import _all_objectives_dict
 from evalml.problem_types import ProblemTypes
 
@@ -111,21 +111,21 @@ def test_get_core_objectives_types():
     assert len(get_core_objectives(ProblemTypes.MULTICLASS)) == 13
     assert len(get_core_objectives(ProblemTypes.BINARY)) == 8
     assert len(get_core_objectives(ProblemTypes.REGRESSION)) == 7
-    assert len(get_core_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 7
+    assert len(get_core_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 8
 
 
 def test_get_optimization_objectives_types():
     assert len(get_optimization_objectives(ProblemTypes.MULTICLASS)) == 13
     assert len(get_optimization_objectives(ProblemTypes.BINARY)) == 8
     assert len(get_optimization_objectives(ProblemTypes.REGRESSION)) == 7
-    assert len(get_optimization_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 7
+    assert len(get_optimization_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 8
 
 
 def test_get_ranking_objectives_types():
     assert len(get_ranking_objectives(ProblemTypes.MULTICLASS)) == 16
     assert len(get_ranking_objectives(ProblemTypes.BINARY)) == 9
     assert len(get_ranking_objectives(ProblemTypes.REGRESSION)) == 9
-    assert len(get_ranking_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 10
+    assert len(get_ranking_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 11
 
 
 def test_optimization_excludes_ranking():
@@ -135,7 +135,7 @@ def test_optimization_excludes_ranking():
 
 
 def test_get_time_series_objectives_types(time_series_objectives):
-    assert len(time_series_objectives) == 10
+    assert len(time_series_objectives) == 11
 
 
 def test_objective_outputs(
@@ -229,9 +229,9 @@ def test_objectives_support_nullable_types(
     if isinstance(obj, FraudCost):
         # FraudCost needs an "amount" column
         X = pd.DataFrame({"amount": [100, 5, 250, 89] * 5})
-    elif isinstance(obj, MAPE):
+    elif isinstance(obj, (MAPE, SMAPE)):
         if isinstance(y_true.ww.logical_type, BooleanNullable):
-            pytest.skip("MAPE doesn't support inputs containing 0")
+            pytest.skip("MAPE and SMAPE don't support inputs containing 0")
         # Replace numeric inputs containing 0
         y_true = y_true.ww.replace({0: 10})
         y_pred = y_pred.replace({0: 10})

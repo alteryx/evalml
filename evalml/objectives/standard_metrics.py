@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn import metrics
 from sklearn.preprocessing import label_binarize
+from sktime.performance_metrics.forecasting import MeanAbsolutePercentageError
 
 from evalml.objectives.binary_classification_objective import (
     BinaryClassificationObjective,
@@ -843,6 +844,45 @@ class MAPE(TimeSeriesRegressionObjective):
             y_predicted = y_predicted.to_numpy()
         scaled_difference = (y_true - y_predicted) / y_true
         return np.abs(scaled_difference).mean() * 100
+
+    @classproperty
+    def positive_only(self):
+        """If True, this objective is only valid for positive data."""
+        return True
+
+
+class SMAPE(TimeSeriesRegressionObjective):
+    """Mean absolute percentage error for time series regression. Scaled by 100 to return a percentage.
+
+    Only valid for nonzero inputs. Otherwise, will throw a ValueError.
+
+    Example:
+        >>> y_true = pd.Series([1.5, 2, 3, 1, 0.5, 1, 2.5, 2.5, 1, 0.5, 2])
+        >>> y_pred = pd.Series([1.5, 2.5, 2, 1, 0.5, 1, 3, 2.25, 0.75, 0.25, 1.75])
+        >>> np.testing.assert_almost_equal(SMAPE().objective_function(y_true, y_pred), 18.13652589)
+    """
+
+    name = "Symmetric Mean Absolute Percentage Error"
+    greater_is_better = False
+    score_needs_proba = False
+    perfect_score = 0.0
+    is_bounded_like_percentage = True  # Range [0, 200]
+    expected_range = [0, 200]
+
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        """Objective function for mean absolute percentage error for time series regression."""
+        if ((abs(y_true) + abs(y_predicted)) == 0).any():
+            raise ValueError(
+                "Symmetric Mean Absolute Percentage Error cannot be used when "
+                "true and predicted targets both contain the value 0.",
+            )
+        if isinstance(y_true, pd.Series):
+            y_true = y_true.to_numpy()
+        if isinstance(y_predicted, pd.Series):
+            y_predicted = y_predicted.to_numpy()
+
+        smape = MeanAbsolutePercentageError(symmetric=True)
+        return smape(y_true, y_predicted) * 100
 
     @classproperty
     def positive_only(self):
