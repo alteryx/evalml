@@ -833,12 +833,13 @@ class MAE(RegressionObjective):
 class MASE(TimeSeriesRegressionObjective):
     """Mean absolute scaled error for time series regression.
 
-    Only valid for nonzero inputs. Otherwise, will throw a ValueError.
+    Only valid if there exists a nonzero input in y_train. Otherwise, will throw a ValueError.
 
     Example:
         >>> y_true = np.array([3, -0.5, 2, 7, 2])
+        >>> y_train = np.array([3, -0.5, 2, 7, 2])
         >>> y_pred = np.array([2.5, 0.0, 2, 8, 1.25])
-        >>> np.testing.assert_almost_equal(MASE().objective_function(y_true, y_pred, y_true), 0.1375)
+        >>> np.testing.assert_almost_equal(MASE().objective_function(y_true, y_pred, y_train), 0.1375)
     """
 
     name = "Mean Absolute Scaled Error"
@@ -864,11 +865,6 @@ class MASE(TimeSeriesRegressionObjective):
             y_train = y_train.to_numpy()
         mase = MeanAbsoluteScaledError()
         return mase(y_true, y_predicted, y_train=y_train)
-
-    @classproperty
-    def positive_only(self):
-        """If True, this objective is only valid for positive data."""
-        return True
 
 
 class MAPE(TimeSeriesRegressionObjective):
@@ -899,11 +895,6 @@ class MAPE(TimeSeriesRegressionObjective):
         mape = MeanAbsolutePercentageError()
         return mape(y_true, y_predicted) * 100
 
-    @classproperty
-    def positive_only(self):
-        """If True, this objective is only valid for positive data."""
-        return True
-
 
 class SMAPE(TimeSeriesRegressionObjective):
     """Symmetric mean absolute percentage error for time series regression. Scaled by 100 to return a percentage.
@@ -933,11 +924,6 @@ class SMAPE(TimeSeriesRegressionObjective):
 
         smape = MeanAbsolutePercentageError(symmetric=True)
         return smape(y_true, y_predicted) * 100
-
-    @classproperty
-    def positive_only(self):
-        """If True, this objective is only valid for positive data."""
-        return True
 
 
 class MSE(RegressionObjective):
