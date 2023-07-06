@@ -831,7 +831,7 @@ class MAE(RegressionObjective):
 
 
 class MASE(TimeSeriesRegressionObjective):
-    """Mean absolute scaled error for time series regression. Scaled by 100 to return a percentage.
+    """Mean absolute scaled error for time series regression.
 
     Only valid for nonzero inputs. Otherwise, will throw a ValueError.
 
