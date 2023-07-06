@@ -1048,6 +1048,7 @@ class MASE(TimeSeriesRegressionObjective):
     Example:
         >>> y_train = np.array([5, 0.5, 4, 6, 3, 5, 2])
         >>> y_true = np.array([3, -0.5, 2, 7, 2])
+        >>> y_train = np.array([3, -0.5, 2, 7, 2])
         >>> y_pred = np.array([2.5, 0.0, 2, 8, 1.25])
         >>> np.testing.assert_almost_equal(MASE().objective_function(y_true, y_pred, y_train), 18.333333333333335)
     """
