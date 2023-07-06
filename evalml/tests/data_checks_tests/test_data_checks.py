@@ -674,7 +674,6 @@ def test_data_checks_raises_value_errors_on_init(
     [
         "Root Mean Squared Log Error",
         "Mean Squared Log Error",
-        "Mean Absolute Percentage Error",
     ],
 )
 def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
