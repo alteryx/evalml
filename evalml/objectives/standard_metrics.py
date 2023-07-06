@@ -1048,7 +1048,6 @@ class MASE(TimeSeriesRegressionObjective):
     Example:
         >>> y_train = np.array([5, 0.5, 4, 6, 3, 5, 2])
         >>> y_true = np.array([3, -0.5, 2, 7, 2])
-        >>> y_train = np.array([3, -0.5, 2, 7, 2])
         >>> y_pred = np.array([2.5, 0.0, 2, 8, 1.25])
         >>> np.testing.assert_almost_equal(MASE().objective_function(y_true, y_pred, y_train), 18.333333333333335)
     """
@@ -1060,15 +1059,9 @@ class MASE(TimeSeriesRegressionObjective):
     is_bounded_like_percentage = False  # Range [0, Inf)
     expected_range = [0, float("inf")]
 
-    def objective_function(
-        self,
-        y_true,
-        y_predicted,
-        y_train,
-        X=None,
-        sample_weight=None,
-    ):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Objective function for mean absolute scaled error for time series regression."""
+        y_train = y_true
         if (y_train == 0).all():
             raise ValueError(
                 "Mean Absolute Scaled Error cannot be used when "
@@ -1076,6 +1069,11 @@ class MASE(TimeSeriesRegressionObjective):
             )
         mase = MeanAbsoluteScaledError()
         return mase(y_true, y_predicted, y_train=y_train)
+
+    @classproperty
+    def positive_only(self):
+        """If True, this objective is only valid for positive data."""
+        return True
 
 
 class MAPE(TimeSeriesRegressionObjective):
@@ -1132,16 +1130,9 @@ class SMAPE(TimeSeriesRegressionObjective):
     is_bounded_like_percentage = True  # Range [0, 200]
     expected_range = [0, 200]
 
-    def objective_function(
-        self,
-        y_true,
-        y_predicted,
-        y_train=None,
-        X=None,
-        sample_weight=None,
-    ):
-        """Objective function for mean absolute percentage error for time series regression."""
-        if 0 in (abs(y_true) + abs(y_predicted)).values:
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        """Objective function for symmetric mean absolute percentage error for time series regression."""
+        if ((abs(y_true) + abs(y_predicted)) == 0).any():
             raise ValueError(
                 "Symmetric Mean Absolute Percentage Error cannot be used when "
                 "true and predicted targets both contain the value 0.",
