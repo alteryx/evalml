@@ -61,12 +61,20 @@ class ObjectiveBase(ABC):
 
     @classmethod
     @abstractmethod
-    def objective_function(cls, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        cls,
+        y_true,
+        y_predicted,
+        y_train,
+        X=None,
+        sample_weight=None,
+    ):
         """Computes the relative value of the provided predictions compared to the actual labels, according a specified metric.
 
         Args:
             y_predicted (pd.Series): Predicted values of length [n_samples]
             y_true (pd.Series): Actual class labels of length [n_samples]
+            y_train (pd.Series): Observed training values of length [n_samples]
             X (pd.DataFrame or np.ndarray): Extra data of shape [n_samples, n_features] necessary to calculate score
             sample_weight (pd.DataFrame or np.ndarray): Sample weights used in computing objective value result
 
@@ -79,12 +87,13 @@ class ObjectiveBase(ABC):
         """If True, this objective is only valid for positive data. Defaults to False."""
         return False
 
-    def score(self, y_true, y_predicted, X=None, sample_weight=None):
+    def score(self, y_true, y_predicted, y_train=None, X=None, sample_weight=None):
         """Returns a numerical score indicating performance based on the differences between the predicted and actual values.
 
         Args:
             y_predicted (pd.Series): Predicted values of length [n_samples]
             y_true (pd.Series): Actual class labels of length [n_samples]
+            y_train (pd.Series): Observed training values of length [n_samples]
             X (pd.DataFrame or np.ndarray): Extra data of shape [n_samples, n_features] necessary to calculate score
             sample_weight (pd.DataFrame or np.ndarray): Sample weights used in computing objective value result
 
@@ -95,10 +104,13 @@ class ObjectiveBase(ABC):
             X = self._standardize_input_type(X)
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)
+        if y_train is not None:
+            y_train = self._standardize_input_type(y_train)
         self.validate_inputs(y_true, y_predicted)
         return self.objective_function(
             y_true,
             y_predicted,
+            y_train,
             X=X,
             sample_weight=sample_weight,
         )

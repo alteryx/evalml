@@ -39,7 +39,14 @@ class AccuracyBinary(BinaryClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for accuracy score for binary classification."""
         return metrics.accuracy_score(y_true, y_predicted, sample_weight=sample_weight)
 
@@ -60,7 +67,14 @@ class AccuracyMulticlass(MulticlassClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for accuracy score for multiclass classification."""
         return metrics.accuracy_score(y_true, y_predicted, sample_weight=sample_weight)
 
@@ -81,7 +95,14 @@ class BalancedAccuracyBinary(BinaryClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for accuracy score for balanced accuracy for binary classification."""
         return metrics.balanced_accuracy_score(
             y_true,
@@ -106,7 +127,14 @@ class BalancedAccuracyMulticlass(MulticlassClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for accuracy score for balanced accuracy for multiclass classification."""
         return metrics.balanced_accuracy_score(
             y_true,
@@ -131,7 +159,14 @@ class F1(BinaryClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for F1 score for binary classification."""
         return metrics.f1_score(
             y_true,
@@ -157,7 +192,14 @@ class F1Micro(MulticlassClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for F1 score for multiclass classification."""
         return metrics.f1_score(
             y_true,
@@ -184,7 +226,14 @@ class F1Macro(MulticlassClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for F1 score for multiclass classification using macro averaging."""
         return metrics.f1_score(
             y_true,
@@ -211,7 +260,14 @@ class F1Weighted(MulticlassClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for F1 score for multiclass classification using weighted averaging."""
         return metrics.f1_score(
             y_true,
@@ -238,7 +294,14 @@ class Precision(BinaryClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for precision score for binary classification."""
         return metrics.precision_score(
             y_true,
@@ -264,7 +327,14 @@ class PrecisionMicro(MulticlassClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for precision score for binary classification using micro-averaging."""
         return metrics.precision_score(
             y_true,
@@ -291,7 +361,14 @@ class PrecisionMacro(MulticlassClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for precision score for multiclass classification using macro-averaging."""
         return metrics.precision_score(
             y_true,
@@ -318,7 +395,14 @@ class PrecisionWeighted(MulticlassClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for precision score for multiclass classification using weighted averaging."""
         return metrics.precision_score(
             y_true,
@@ -345,7 +429,14 @@ class Recall(BinaryClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for recall score for binary classification."""
         return metrics.recall_score(
             y_true,
@@ -371,7 +462,14 @@ class RecallMicro(MulticlassClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for recall score for multiclass classification using micro-averaging."""
         return metrics.recall_score(
             y_true,
@@ -398,7 +496,14 @@ class RecallMacro(MulticlassClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for recall score for multiclass classification using macro-averaging."""
         return metrics.recall_score(
             y_true,
@@ -425,7 +530,14 @@ class RecallWeighted(MulticlassClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for recall score for multiclass classification using weighted averaging."""
         return metrics.recall_score(
             y_true,
@@ -452,7 +564,14 @@ class AUC(BinaryClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for AUC score for binary classification."""
         return metrics.roc_auc_score(y_true, y_predicted, sample_weight=sample_weight)
 
@@ -478,7 +597,14 @@ class AUCMicro(MulticlassClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for AUC score for multiclass classification using micro-averaging."""
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
         return metrics.roc_auc_score(
@@ -510,7 +636,14 @@ class AUCMacro(MulticlassClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for AUC score for multiclass classification using macro-averaging."""
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
         return metrics.roc_auc_score(
@@ -542,7 +675,14 @@ class AUCWeighted(MulticlassClassificationObjective):
     is_bounded_like_percentage = True
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for AUC Score for multiclass classification using weighted averaging."""
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
         return metrics.roc_auc_score(
@@ -569,7 +709,14 @@ class Gini(BinaryClassificationObjective):
     is_bounded_like_percentage = False
     expected_range = [-1, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for Gini coefficient for binary classification."""
         auc = metrics.roc_auc_score(y_true, y_predicted, sample_weight=sample_weight)
         return 2 * auc - 1
@@ -591,7 +738,14 @@ class LogLossBinary(BinaryClassificationObjective):
     is_bounded_like_percentage = False  # Range [0, Inf)
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for log loss for binary classification."""
         return metrics.log_loss(y_true, y_predicted, sample_weight=sample_weight)
 
@@ -617,7 +771,14 @@ class LogLossMulticlass(MulticlassClassificationObjective):
     is_bounded_like_percentage = False  # Range [0, Inf)
     expected_range = [0, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for log loss for multiclass classification."""
         return metrics.log_loss(y_true, y_predicted, sample_weight=sample_weight)
 
@@ -638,7 +799,14 @@ class MCCBinary(BinaryClassificationObjective):
     is_bounded_like_percentage = False  # Range [-1, 1]
     expected_range = [-1, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for Matthews correlation coefficient for binary classification."""
         with warnings.catch_warnings():
             # catches runtime warning when dividing by 0.0
@@ -666,7 +834,14 @@ class MCCMulticlass(MulticlassClassificationObjective):
     is_bounded_like_percentage = False  # Range [-1, 1]
     expected_range = [-1, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for Matthews correlation coefficient for multiclass classification."""
         with warnings.catch_warnings():
             # catches runtime warning when dividing by 0.0
@@ -694,7 +869,14 @@ class RootMeanSquaredError(RegressionObjective):
     is_bounded_like_percentage = False  # Range [0, Inf)
     expected_range = [0, float("inf")]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for root mean squared error for regression."""
         return metrics.mean_squared_error(
             y_true,
@@ -722,7 +904,14 @@ class RootMeanSquaredLogError(RegressionObjective):
     is_bounded_like_percentage = False  # Range [0, Inf)
     expected_range = [0, float("inf")]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for root mean squared log error for regression."""
 
         def rmsle(y_true, y_pred):
@@ -770,7 +959,14 @@ class MeanSquaredLogError(RegressionObjective):
     is_bounded_like_percentage = False  # Range [0, Inf)
     expected_range = [0, float("inf")]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for mean squared log error for regression."""
         return metrics.mean_squared_log_error(
             y_true,
@@ -800,7 +996,14 @@ class R2(RegressionObjective):
     is_bounded_like_percentage = False  # Range (-Inf, 1]
     expected_range = [-1, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for coefficient of determination for regression."""
         return metrics.r2_score(y_true, y_predicted, sample_weight=sample_weight)
 
@@ -821,7 +1024,14 @@ class MAE(RegressionObjective):
     is_bounded_like_percentage = False  # Range [0, Inf)
     expected_range = [0, float("inf")]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for mean absolute error for regression."""
         return metrics.mean_absolute_error(
             y_true,
@@ -849,9 +1059,15 @@ class MASE(TimeSeriesRegressionObjective):
     is_bounded_like_percentage = False  # Range [0, Inf)
     expected_range = [0, float("inf")]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for mean absolute scaled error for time series regression."""
-        y_train = y_true
         if (y_train == 0).all():
             raise ValueError(
                 "Mean Absolute Scaled Error cannot be used when "
@@ -880,7 +1096,14 @@ class MAPE(TimeSeriesRegressionObjective):
     is_bounded_like_percentage = False  # Range [0, Inf)
     expected_range = [0, float("inf")]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for mean absolute percentage error for time series regression."""
         if 0 in y_true.values:
             raise ValueError(
@@ -909,7 +1132,14 @@ class SMAPE(TimeSeriesRegressionObjective):
     is_bounded_like_percentage = True  # Range [0, 200]
     expected_range = [0, 200]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for symmetric mean absolute percentage error for time series regression."""
         if ((abs(y_true) + abs(y_predicted)) == 0).any():
             raise ValueError(
@@ -936,7 +1166,14 @@ class MSE(RegressionObjective):
     is_bounded_like_percentage = False  # Range [0, Inf)
     expected_range = [0, float("inf")]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for mean squared error for regression."""
         return metrics.mean_squared_error(
             y_true,
@@ -961,7 +1198,14 @@ class MedianAE(RegressionObjective):
     is_bounded_like_percentage = False  # Range [0, Inf)
     expected_range = [0, float("inf")]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for median absolute error for regression."""
         return metrics.median_absolute_error(
             y_true,
@@ -986,7 +1230,14 @@ class MaxError(RegressionObjective):
     is_bounded_like_percentage = False  # Range [0, Inf)
     expected_range = [0, float("inf")]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for maximum residual error for regression."""
         # Multiseries time series regression
         if isinstance(y_true, pd.DataFrame):
@@ -1017,7 +1268,14 @@ class ExpVariance(RegressionObjective):
     is_bounded_like_percentage = False  # Range (-Inf, 1]
     expected_range = [float("-inf"), 1]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for explained variance score for regression."""
         return metrics.explained_variance_score(
             y_true,
