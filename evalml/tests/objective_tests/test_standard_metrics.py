@@ -730,19 +730,6 @@ def test_mase_time_series_model():
     s4_actual = np.array([0, 0, 0, 0, 0, 0])
     s4_predicted = np.array([0, 2, 2, 1, 3, 2])
 
-<<<<<<< HEAD
-    assert obj.score(s1_actual, s1_predicted, s1_actual) == pytest.approx(7 / 6)
-    assert obj.score(s2_actual, s2_predicted, s2_actual) == pytest.approx((14 / 4) / 2)
-    assert obj.score(s3_actual, s3_predicted, s3_actual) == pytest.approx(5 / 7)
-    # assert obj.score(
-    #     pd.Series(s3_actual, index=range(-12, -6)),
-    #     s3_predicted,
-    # ) == pytest.approx(5 / 7)
-    # assert obj.score(
-    #     pd.Series(s2_actual, index=range(10, 14)),
-    #     pd.Series(s2_predicted, index=range(20, 24)),
-    # ) == pytest.approx((14 / 4) / 2)
-=======
     assert obj.score(s1_actual, s1_predicted) == pytest.approx(7 / 6)
     assert obj.score(s2_actual, s2_predicted) == pytest.approx((14 / 4) / 2)
     assert obj.score(s3_actual, s3_predicted) == pytest.approx(5 / 7)
@@ -754,7 +741,6 @@ def test_mase_time_series_model():
         pd.Series(s2_actual, index=range(10, 14)),
         pd.Series(s2_predicted, index=range(20, 24)),
     ) == pytest.approx((14 / 4) / 2)
->>>>>>> eb03fa5c (remove *100 and fix comments)
 
     with pytest.raises(
         ValueError,

@@ -108,8 +108,8 @@ class ObjectiveBase(ABC):
             y_train = self._standardize_input_type(y_train)
         self.validate_inputs(y_true, y_predicted)
         return self.objective_function(
-            y_true=y_true,
-            y_predicted=y_predicted,
+            y_true,
+            y_predicted,
             y_train=y_train,
             X=X,
             sample_weight=sample_weight,
