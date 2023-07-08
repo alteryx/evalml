@@ -65,7 +65,7 @@ class ObjectiveBase(ABC):
         cls,
         y_true,
         y_predicted,
-        y_train=None,
+        y_train=y_train,
         X=None,
         sample_weight=None,
     ):

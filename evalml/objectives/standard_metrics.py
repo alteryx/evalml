@@ -1060,9 +1060,15 @@ class MASE(TimeSeriesRegressionObjective):
     is_bounded_like_percentage = False  # Range [0, Inf)
     expected_range = [0, float("inf")]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for mean absolute scaled error for time series regression."""
-        y_train = y_true
         if (y_train == 0).all():
             raise ValueError(
                 "Mean Absolute Scaled Error cannot be used when "
@@ -1126,7 +1132,14 @@ class SMAPE(TimeSeriesRegressionObjective):
     is_bounded_like_percentage = True  # Range [0, 200]
     expected_range = [0, 200]
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Objective function for symmetric mean absolute percentage error for time series regression."""
         if ((abs(y_true) + abs(y_predicted)) == 0).any():
             raise ValueError(
