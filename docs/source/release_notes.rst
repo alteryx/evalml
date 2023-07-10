@@ -7,6 +7,11 @@ Release Notes
     * Documentation Changes
     * Testing Changes
 
+.. warning::
+
+    **Breaking Changes**
+
+
 **v0.78.0 Jul. 10, 2023**
     * Enhancements
         * Add run_feature_selection to AutoMLSearch and Default Algorithm :pr:`4210`
