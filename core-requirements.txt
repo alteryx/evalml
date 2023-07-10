@@ -1,4 +1,4 @@
-numpy>=1.21.0, <=1.23.5
+numpy>=1.21.0
 pandas>=1.5.0
 scipy>=1.5.0
 scikit-learn>=1.2.1
@@ -7,7 +7,7 @@ pyzmq>=20.0.0
 colorama>=0.4.4
 cloudpickle>=1.5.0
 click>=8.0.0
-shap>=0.40.0
+shap>=0.42.0
 statsmodels>=0.12.2
 texttable>=1.6.2
 woodwork>= 0.21.1
