@@ -2,6 +2,13 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+**v0.78.0 Jul. 10, 2023**
+    * Enhancements
         * Add run_feature_selection to AutoMLSearch and Default Algorithm :pr:`4210`
         * Added ``SMAPE`` to the standard metrics for time series problems :pr:`4220`
     * Fixes
@@ -10,7 +17,6 @@ Release Notes
         * Upgraded minimum SHAP version to 0.42.0 and unpinned numpy version :pr:`4228`
     * Documentation Changes
         * Updated API reference :pr:`4213`
-    * Testing Changes
 
 .. warning::
 
@@ -18,7 +24,7 @@ Release Notes
         * Removed Decision Tree and CatBoost Estimators from AutoML search :pr:`4205`
 
 
-**v0.77.0 June. 07, 2023**
+**v0.77.0 Jun. 07, 2023**
     * Enhancements
         * Added ``check_distribution`` function for determining if the predicted distribution matches the true one :pr:`4184`
         * Added ``get_recommendation_score_breakdown`` function for insight on the recommendation score :pr:`4188`
