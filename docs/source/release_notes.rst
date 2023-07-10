@@ -7,6 +7,7 @@ Release Notes
     * Fixes
         * `IDColumnsDataCheck` now works with Unknown data type :pr:`4203`
     * Changes
+        * Upgraded minimum SHAP version to 0.42.0 and unpinned numpy version :pr:`4228`
     * Documentation Changes
         * Updated API reference :pr:`4213`
     * Testing Changes
