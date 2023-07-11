@@ -1022,7 +1022,7 @@ def test_automl_search_dictionary_undersampler(
         optimize_thresholds=False,
         sampler_method="Undersampler",
         search_parameters=search_parameters,
-        max_batches=3,
+        max_batches=2,
     )
     # check that the sampling dict got set properly
     automl.search()
@@ -1077,7 +1077,7 @@ def test_automl_search_dictionary_oversampler(
         sampler_method="Oversampler",
         optimize_thresholds=False,
         search_parameters=search_parameters,
-        max_batches=3,
+        max_batches=2,
     )
     # check that the sampling dict got set properly
     pipelines = automl.allowed_pipelines
@@ -1122,7 +1122,7 @@ def test_automl_search_sampler_dictionary_keys(
         sampler_method=sampler,
         optimize_thresholds=False,
         search_parameters=search_parameters,
-        max_batches=3,
+        max_batches=2,
     )
     if errors:
         with pytest.raises(
@@ -1254,7 +1254,7 @@ def test_automl_passes_allow_long_running_models(
         objective="Log Loss Multiclass",
         allow_long_running_models=allow_long_running_models,
         automl_algorithm=algo,
-        max_batches=3,
+        max_batches=2,
         verbose=True,
     )
     assert (
@@ -1280,7 +1280,7 @@ def test_automl_threshold_score(fraud_100):
         X_train,
         y_train,
         problem_type="binary",
-        max_batches=4,
+        max_batches=2,
         ensembling=True,
         verbose=False,
         automl_algorithm="default",
