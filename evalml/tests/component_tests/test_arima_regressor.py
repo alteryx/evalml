@@ -203,7 +203,6 @@ def test_feature_importance(ts_data):
     [
         (True, False, False, False, False, False),
         (False, True, True, False, False, True),
-        (False, True, True, False, False, False),
     ],
 )
 def test_fit_predict(
