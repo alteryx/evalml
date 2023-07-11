@@ -721,13 +721,27 @@ class RootMeanSquaredLogError(RegressionObjective):
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Objective function for root mean squared log error for regression."""
-        return np.sqrt(
-            metrics.mean_squared_log_error(
-                y_true,
-                y_predicted,
-                sample_weight=sample_weight,
-            ),
-        )
+
+        def rmsle(y_true, y_pred):
+            return np.sqrt(
+                metrics.mean_squared_log_error(
+                    y_true,
+                    y_pred,
+                    sample_weight=sample_weight,
+                ),
+            )
+
+        # Multiseries time series regression
+        if isinstance(y_true, pd.DataFrame):
+            raw_rmsle = []
+            for i in range(len(y_true.columns)):
+                y_true_i = y_true.iloc[:, i]
+                y_predicted_i = y_predicted.iloc[:, i]
+                raw_rmsle.append(rmsle(y_true_i, y_predicted_i))
+            return np.mean(raw_rmsle)
+
+        # All univariate regression
+        return rmsle(y_true, y_predicted)
 
     @classproperty
     def positive_only(self):
