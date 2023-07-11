@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Unpinned sktime version :pr:`4214`
     * Documentation Changes
     * Testing Changes
 
