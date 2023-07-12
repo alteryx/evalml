@@ -5,6 +5,7 @@ Release Notes
         * Updated regression metrics to handle multioutput dataframes as well as single output series :pr:`4233`
     * Fixes
     * Changes
+        * Unpinned sktime version :pr:`4214`
     * Documentation Changes
     * Testing Changes
 
@@ -28,6 +29,7 @@ Release Notes
 
     **Breaking Changes**
         * Removed Decision Tree and CatBoost Estimators from AutoML search :pr:`4205`
+        * Removed first batch from default algorithm :pr:`4215`
 
 
 **v0.77.0 Jun. 07, 2023**

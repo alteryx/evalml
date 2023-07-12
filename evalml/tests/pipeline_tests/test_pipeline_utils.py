@@ -954,7 +954,7 @@ def test_generate_pipeline_example(
             StackedEnsembleBase,
         )
     else:
-        pipeline = aml.get_pipeline(2)
+        pipeline = aml.get_pipeline(1)
 
     y_train.index = X_train_t.index
     y_test.index = X_test.index

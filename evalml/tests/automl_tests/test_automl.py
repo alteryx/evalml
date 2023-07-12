@@ -266,8 +266,7 @@ def test_search_batch_times(caplog, X_y_binary, AutoMLTestEnv):
 
     assert len(batch_times) == 3
     assert len(batch_times[1]) == 2
-    assert len(batch_times[2]) == 2
-    assert len(batch_times[3]) == 6
+    assert len(batch_times[2]) == 6
 
     assert "Batch Time Stats" in out
     assert "Batch 1 time stats" in out
@@ -363,11 +362,11 @@ def test_pipeline_limits(
         automl.search()
     out = caplog.text
     if verbose:
-        assert "Using default limit of max_batches=3." in out
-        assert "Searching up to 3 batches for a total of" in out
+        assert "Using default limit of max_batches=2." in out
+        assert "Searching up to 2 batches for a total of" in out
     else:
-        assert "Using default limit of max_batches=3." not in out
-        assert "Searching up to 3 batches for a total of" not in out
+        assert "Using default limit of max_batches=2." not in out
+        assert "Searching up to 2 batches for a total of" not in out
     assert len(automl.results["pipeline_results"]) > 0
 
     caplog.clear()
@@ -1806,6 +1805,7 @@ def test_pipelines_in_batch_return_nan(
         y_train=y,
         problem_type="binary",
         max_batches=3,
+        automl_algorithm="iterative",
         allowed_component_graphs={"Name": [dummy_classifier_estimator_class]},
         n_jobs=1,
     )
@@ -1819,7 +1819,10 @@ def test_pipelines_in_batch_return_nan(
             automl.search()
     assert len(automl.errors) > 0
     for pipeline_name, pipeline_error in automl.errors.items():
-        assert "Label Encoder" in pipeline_error["Parameters"]
+        assert (
+            "Label Encoder" in pipeline_error["Parameters"]
+            or "Mock Classifier" in pipeline_error["Parameters"]
+        )
         assert isinstance(pipeline_error["Exception"], TypeError)
         assert "line" in pipeline_error["Traceback"]
 
@@ -1858,7 +1861,8 @@ def test_pipelines_in_batch_return_none(
         X_train=X,
         y_train=y,
         problem_type="binary",
-        max_batches=3,
+        max_batches=2,
+        automl_algorithm="iterative",
         allowed_component_graphs={"Name": [dummy_classifier_estimator_class]},
         n_jobs=1,
     )
@@ -2295,7 +2299,7 @@ def test_time_series_regression_with_parameters(ts_data):
         allowed_component_graphs={"Name_0": ["Imputer", "Linear Regressor"]},
         objective="auto",
         problem_configuration=problem_configuration,
-        max_batches=3,
+        max_batches=2,
     )
     assert (
         automl.automl_algorithm.search_parameters["pipeline"] == problem_configuration
@@ -2340,7 +2344,7 @@ def test_automl_accepts_component_graphs(graph_type, X_y_binary):
         problem_type="binary",
         allowed_component_graphs={"Dummy_Name": component_graph},
         objective="auto",
-        max_batches=3,
+        max_batches=2,
     )
     for pipeline_ in automl.allowed_pipelines:
         assert isinstance(pipeline_, BinaryClassificationPipeline)
@@ -4154,7 +4158,7 @@ def test_automl_drop_unknown_columns(columns, AutoMLTestEnv, X_y_binary, caplog)
         y_train=y,
         problem_type="binary",
         optimize_thresholds=False,
-        max_batches=3,
+        max_batches=2,
         verbose=True,
     )
     env = AutoMLTestEnv("binary")
@@ -4296,7 +4300,7 @@ def test_component_and_pipeline_warnings_surface_in_search(
             max_batches=1,
             verbose=verbose,
         )
-        env = AutoMLTestEnv("binary")
+        env = AutoMLTestEnv("regression")
         with env.test_context(score_return_value={automl.objective.name: 1.0}):
             automl.search()
 
@@ -4466,7 +4470,7 @@ def test_automl_ensembler_allowed_component_graphs(
         problem_type="regression",
         allowed_component_graphs=component_graphs,
         ensembling=True,
-        max_batches=4,
+        max_batches=3,
         verbose=True,
     )
     automl.search()
@@ -4569,7 +4573,7 @@ def test_automl_passes_known_in_advance_pipeline_parameters_to_all_pipelines(
         X_train=X,
         y_train=y,
         problem_type=problem_type,
-        max_batches=3,
+        max_batches=2,
         problem_configuration={
             "time_index": "date",
             "max_delay": 3,
@@ -4620,7 +4624,7 @@ def test_cv_ranking_scores(
         X_train=X,
         y_train=y,
         problem_type="binary",
-        max_batches=3,
+        max_batches=2,
         data_splitter=data_splitter,
         allowed_component_graphs={"Name": [dummy_classifier_estimator_class]},
         n_jobs=1,
@@ -4724,7 +4728,7 @@ def test_search_parameters_held_automl(
                 ],
             },
         }
-        batches = 2 if algorithm == "default" else batches
+    batches = 2 if algorithm == "default" else batches
 
     search_parameters = {
         "Imputer": {"numeric_impute_strategy": parameter},
@@ -4814,7 +4818,7 @@ def test_automl_accepts_features(
         y_train=y,
         problem_type="binary",
         optimize_thresholds=False,
-        max_batches=3,
+        max_batches=2,
         features=features,
         automl_algorithm=automl_algorithm,
     )
@@ -4858,7 +4862,7 @@ def test_automl_with_empty_features_list(
         y_train=y,
         problem_type="binary",
         optimize_thresholds=False,
-        max_batches=3,
+        max_batches=2,
         features=[],
         automl_algorithm=automl_algorithm,
     )
@@ -5071,7 +5075,7 @@ def test_default_algorithm_uses_n_jobs(X_y_binary, AutoMLTestEnv):
         X_train=X,
         y_train=y,
         problem_type="binary",
-        max_batches=3,
+        max_batches=2,
         automl_algorithm="default",
         n_jobs=2,
     )
@@ -5521,7 +5525,7 @@ def test_holdout_set_results_and_rankings(caplog, AutoMLTestEnv):
         X_train=X,
         y_train=y,
         problem_type="binary",
-        max_batches=3,
+        max_batches=2,
         automl_algorithm="default",
         verbose=True,
         holdout_set_size=0.1,

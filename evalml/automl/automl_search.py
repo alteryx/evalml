@@ -180,7 +180,7 @@ def search(
 
     max_batches = None
     if mode == "fast":
-        max_batches = 4  # corresponds to end of 'fast' mode
+        max_batches = 3  # corresponds to end of 'fast' mode
     elif mode == "long" and max_time:
         max_batches = 999  # defers to stopping criterion
     elif mode == "long" and max_time is None:
