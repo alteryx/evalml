@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Updated regression metrics to handle multioutput dataframes as well as single output series :pr:`4233`
     * Fixes
     * Changes
         * Unpinned sktime version :pr:`4214`

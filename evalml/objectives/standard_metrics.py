@@ -721,13 +721,27 @@ class RootMeanSquaredLogError(RegressionObjective):
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Objective function for root mean squared log error for regression."""
-        return np.sqrt(
-            metrics.mean_squared_log_error(
-                y_true,
-                y_predicted,
-                sample_weight=sample_weight,
-            ),
-        )
+
+        def rmsle(y_true, y_pred):
+            return np.sqrt(
+                metrics.mean_squared_log_error(
+                    y_true,
+                    y_pred,
+                    sample_weight=sample_weight,
+                ),
+            )
+
+        # Multiseries time series regression
+        if isinstance(y_true, pd.DataFrame):
+            raw_rmsles = []
+            for i in range(len(y_true.columns)):
+                y_true_i = y_true.iloc[:, i]
+                y_predicted_i = y_predicted.iloc[:, i]
+                raw_rmsles.append(rmsle(y_true_i, y_predicted_i))
+            return np.mean(raw_rmsles)
+
+        # All univariate regression
+        return rmsle(y_true, y_predicted)
 
     @classproperty
     def positive_only(self):
@@ -833,17 +847,13 @@ class MAPE(TimeSeriesRegressionObjective):
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Objective function for mean absolute percentage error for time series regression."""
-        if (y_true == 0).any():
+        if 0 in y_true.values:
             raise ValueError(
                 "Mean Absolute Percentage Error cannot be used when "
                 "targets contain the value 0.",
             )
-        if isinstance(y_true, pd.Series):
-            y_true = y_true.to_numpy()
-        if isinstance(y_predicted, pd.Series):
-            y_predicted = y_predicted.to_numpy()
-        scaled_difference = (y_true - y_predicted) / y_true
-        return np.abs(scaled_difference).mean() * 100
+        mape = MeanAbsolutePercentageError()
+        return mape(y_true, y_predicted) * 100
 
     @classproperty
     def positive_only(self):
@@ -871,15 +881,11 @@ class SMAPE(TimeSeriesRegressionObjective):
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Objective function for mean absolute percentage error for time series regression."""
-        if ((abs(y_true) + abs(y_predicted)) == 0).any():
+        if 0 in (abs(y_true) + abs(y_predicted)).values:
             raise ValueError(
                 "Symmetric Mean Absolute Percentage Error cannot be used when "
                 "true and predicted targets both contain the value 0.",
             )
-        if isinstance(y_true, pd.Series):
-            y_true = y_true.to_numpy()
-        if isinstance(y_predicted, pd.Series):
-            y_predicted = y_predicted.to_numpy()
 
         smape = MeanAbsolutePercentageError(symmetric=True)
         return smape(y_true, y_predicted) * 100
@@ -958,6 +964,16 @@ class MaxError(RegressionObjective):
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Objective function for maximum residual error for regression."""
+        # Multiseries time series regression
+        if isinstance(y_true, pd.DataFrame):
+            raw_max_errors = []
+            for i in range(len(y_true.columns)):
+                y_true_i = y_true.iloc[:, i]
+                y_predicted_i = y_predicted.iloc[:, i]
+                raw_max_errors.append(metrics.max_error(y_true_i, y_predicted_i))
+            return np.mean(raw_max_errors)
+
+        # All other regression problems
         return metrics.max_error(y_true, y_predicted)
 
 
