@@ -733,12 +733,12 @@ class RootMeanSquaredLogError(RegressionObjective):
 
         # Multiseries time series regression
         if isinstance(y_true, pd.DataFrame):
-            raw_rmsle = []
+            raw_rmsles = []
             for i in range(len(y_true.columns)):
                 y_true_i = y_true.iloc[:, i]
                 y_predicted_i = y_predicted.iloc[:, i]
-                raw_rmsle.append(rmsle(y_true_i, y_predicted_i))
-            return np.mean(raw_rmsle)
+                raw_rmsles.append(rmsle(y_true_i, y_predicted_i))
+            return np.mean(raw_rmsles)
 
         # All univariate regression
         return rmsle(y_true, y_predicted)
@@ -972,6 +972,16 @@ class MaxError(RegressionObjective):
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Objective function for maximum residual error for regression."""
+        # Multiseries time series regression
+        if isinstance(y_true, pd.DataFrame):
+            raw_max_errors = []
+            for i in range(len(y_true.columns)):
+                y_true_i = y_true.iloc[:, i]
+                y_predicted_i = y_predicted.iloc[:, i]
+                raw_max_errors.append(metrics.max_error(y_true_i, y_predicted_i))
+            return np.mean(raw_max_errors)
+
+        # All other regression problems
         return metrics.max_error(y_true, y_predicted)
 
 
