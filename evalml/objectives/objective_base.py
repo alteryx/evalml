@@ -144,14 +144,16 @@ class ObjectiveBase(ABC):
         if len(y_true) == 0:
             raise ValueError("Length of inputs is 0")
 
-        y_true_flat = y_true.to_numpy().flatten()
-        if np.isnan(y_true_flat).any() or np.isinf(y_true_flat).any():
+        if isinstance(y_true, pd.DataFrame):
+            y_true = y_true.to_numpy().flatten()
+        if np.isnan(y_true).any() or np.isinf(y_true).any():
             raise ValueError("y_true contains NaN or infinity")
 
-        y_pred_flat = y_predicted.to_numpy().flatten()
-        if np.isnan(y_pred_flat).any() or np.isinf(y_pred_flat).any():
+        if isinstance(y_predicted, pd.DataFrame):
+            y_predicted = y_predicted.to_numpy().flatten()
+        if np.isnan(y_predicted).any() or np.isinf(y_predicted).any():
             raise ValueError("y_predicted contains NaN or infinity")
-        if self.score_needs_proba and np.any([(y_pred_flat < 0) | (y_pred_flat > 1)]):
+        if self.score_needs_proba and np.any([(y_predicted < 0) | (y_predicted > 1)]):
             raise ValueError(
                 "y_predicted contains probability estimates not within [0, 1]",
             )
