@@ -31,6 +31,7 @@ from evalml.objectives import (
     RecallMacro,
     RecallMicro,
     RecallWeighted,
+    RegressionObjective,
     RootMeanSquaredError,
     RootMeanSquaredLogError,
 )
@@ -156,6 +157,34 @@ def test_negative_with_log():
             match="Mean Squared Logarithmic Error cannot be used when targets contain negative values.",
         ):
             objective.score(y_true, y_predicted)
+
+
+@pytest.mark.parametrize("objective_class", _all_objectives_dict().values())
+def test_regression_handles_dataframes(objective_class):
+    if not issubclass(objective_class, RegressionObjective):
+        pytest.skip("Skipping non-regression objective")
+
+    y_predicted = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+    y_true = pd.DataFrame({"a": [1, 2, 3], "b": [4, 6, 6]})
+
+    objective = objective_class()
+    score = objective.score(y_true, y_predicted)
+    assert isinstance(score, float)  # Output should be a float average
+
+
+@pytest.mark.parametrize("mismatch_dim", ["columns", "rows", "both"])
+def test_dataframe_different_dimensions(mismatch_dim):
+    y_predicted = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+    if mismatch_dim == "columns":
+        y_true = pd.DataFrame({"a": [1, 2, 3]})
+    if mismatch_dim == "rows":
+        y_true = pd.DataFrame({"a": [1, 2], "b": [4, 6]})
+    else:
+        y_true = pd.DataFrame({"a": [1, 2]})
+
+    objective = MAPE()
+    with pytest.raises(ValueError, match="Inputs have mismatched dimensions"):
+        objective.score(y_true, y_predicted)
 
 
 def test_binary_more_than_two_unique_values():

@@ -847,7 +847,7 @@ class MAPE(TimeSeriesRegressionObjective):
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Objective function for mean absolute percentage error for time series regression."""
-        if (y_true == 0).any():
+        if 0 in y_true.values:
             raise ValueError(
                 "Mean Absolute Percentage Error cannot be used when "
                 "targets contain the value 0.",
@@ -881,7 +881,7 @@ class SMAPE(TimeSeriesRegressionObjective):
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Objective function for mean absolute percentage error for time series regression."""
-        if ((abs(y_true) + abs(y_predicted)) == 0).any():
+        if 0 in (abs(y_true) + abs(y_predicted)).values:
             raise ValueError(
                 "Symmetric Mean Absolute Percentage Error cannot be used when "
                 "true and predicted targets both contain the value 0.",

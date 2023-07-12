@@ -143,9 +143,11 @@ class ObjectiveBase(ABC):
             )
         if len(y_true) == 0:
             raise ValueError("Length of inputs is 0")
-        if np.isnan(y_true).any() or np.isinf(y_true).any():
+
+        y_true_flat = y_true.to_numpy().flatten()
+        if np.isnan(y_true_flat).any() or np.isinf(y_true_flat).any():
             raise ValueError("y_true contains NaN or infinity")
-        # y_predicted could be a 1d vector (predictions) or a 2d vector (classifier predicted probabilities)
+
         y_pred_flat = y_predicted.to_numpy().flatten()
         if np.isnan(y_pred_flat).any() or np.isinf(y_pred_flat).any():
             raise ValueError("y_predicted contains NaN or infinity")
