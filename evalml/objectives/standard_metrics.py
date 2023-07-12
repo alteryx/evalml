@@ -852,12 +852,8 @@ class MAPE(TimeSeriesRegressionObjective):
                 "Mean Absolute Percentage Error cannot be used when "
                 "targets contain the value 0.",
             )
-        if isinstance(y_true, pd.Series):
-            y_true = y_true.to_numpy()
-        if isinstance(y_predicted, pd.Series):
-            y_predicted = y_predicted.to_numpy()
-        scaled_difference = (y_true - y_predicted) / y_true
-        return np.abs(scaled_difference).mean() * 100
+        mape = MeanAbsolutePercentageError()
+        return mape(y_true, y_predicted) * 100
 
     @classproperty
     def positive_only(self):
@@ -890,10 +886,6 @@ class SMAPE(TimeSeriesRegressionObjective):
                 "Symmetric Mean Absolute Percentage Error cannot be used when "
                 "true and predicted targets both contain the value 0.",
             )
-        if isinstance(y_true, pd.Series):
-            y_true = y_true.to_numpy()
-        if isinstance(y_predicted, pd.Series):
-            y_predicted = y_predicted.to_numpy()
 
         smape = MeanAbsolutePercentageError(symmetric=True)
         return smape(y_true, y_predicted) * 100
