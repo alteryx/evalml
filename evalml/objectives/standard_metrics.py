@@ -1068,11 +1068,7 @@ class MASE(TimeSeriesRegressionObjective):
         sample_weight=None,
     ):
         """Objective function for mean absolute scaled error for time series regression."""
-<<<<<<< HEAD
         if (y_train.values == 0).all():
-=======
-        if (y_train == 0).all():
->>>>>>> 15e8aa01 (add y_train)
             raise ValueError(
                 "Mean Absolute Scaled Error cannot be used when "
                 "all training targets contain the value 0.",
@@ -1136,7 +1132,6 @@ class SMAPE(TimeSeriesRegressionObjective):
     is_bounded_like_percentage = True  # Range [0, 200]
     expected_range = [0, 200]
 
-<<<<<<< HEAD
     def objective_function(
         self,
         y_true,
@@ -1145,9 +1140,6 @@ class SMAPE(TimeSeriesRegressionObjective):
         X=None,
         sample_weight=None,
     ):
-=======
-    def objective_function(self, y_true, y_predicted, y_train=None, X=None, sample_weight=None):
->>>>>>> 15e8aa01 (add y_train)
         """Objective function for mean absolute percentage error for time series regression."""
         if 0 in (abs(y_true) + abs(y_predicted)).values:
             raise ValueError(
