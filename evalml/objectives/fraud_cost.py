@@ -40,8 +40,8 @@ class FraudCost(BinaryClassificationObjective):
         self,
         y_true,
         y_predicted,
+        X,
         y_train=None,
-        X=None,
         sample_weight=None,
     ):
         """Calculate amount lost to fraud per transaction given predictions, true values, and dataframe with transaction amount.
@@ -59,8 +59,7 @@ class FraudCost(BinaryClassificationObjective):
         Raises:
             ValueError: If amount_col is not a valid column in the input data.
         """
-        if X is not None:
-            X = self._standardize_input_type(X)
+        X = self._standardize_input_type(X)
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)
         self.validate_inputs(y_true, y_predicted)
