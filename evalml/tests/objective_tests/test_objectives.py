@@ -202,17 +202,17 @@ def test_get_objectives_all_expected_ranges(obj):
 
 @pytest.mark.parametrize("obj", [obj for obj in _all_objectives_dict().values()])
 @pytest.mark.parametrize(
-    "nullable_y_true_ltype",
+    "nullable_ltype",
     ["BooleanNullable", "IntegerNullable", "AgeNullable"],
 )
 def test_objectives_support_nullable_types(
-    nullable_y_true_ltype,
+    nullable_ltype,
     obj,
     nullable_type_target,
 ):
-    y_true = nullable_type_target(ltype=nullable_y_true_ltype, has_nans=False)
+    y_true = nullable_type_target(ltype=nullable_ltype, has_nans=False)
     y_pred = pd.Series([0, 1, 0, 1, 1] * 4, dtype="int64")
-    y_train = None
+    y_train = nullable_type_target(ltype=nullable_ltype, has_nans=False)
     X = None
 
     # Instantiate objective with any needed parameters
@@ -237,7 +237,10 @@ def test_objectives_support_nullable_types(
         y_true = y_true.ww.replace({0: 10})
         y_pred = y_pred.replace({0: 10})
     elif isinstance(obj, MASE):
-        y_train = pd.Series([0, 1, 0, 1, 1] * 4, dtype="int64")
+        if isinstance(y_train.ww.logical_type, BooleanNullable):
+            pytest.skip("MASE doesn't support inputs containing all 0")
+        # Replace numeric inputs containing 0
+        y_train = y_train.ww.replace({0: 10})
 
     score = obj.score(y_true=y_true, y_predicted=y_pred, y_train=y_train, X=X)
     assert not pd.isna(score)
