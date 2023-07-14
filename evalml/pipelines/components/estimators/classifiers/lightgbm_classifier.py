@@ -84,11 +84,6 @@ class LightGBMClassifier(Estimator):
     SEED_MAX = SEED_BOUNDS.max_bound
     """SEED_BOUNDS.max_bound"""
 
-    # Incompatibility: https://github.com/alteryx/evalml/issues/3924
-    # TODO: Remove when support is added https://github.com/alteryx/evalml/issues/4017
-    _integer_nullable_incompatibilities = ["X", "y"]
-    _boolean_nullable_incompatibilities = ["X"]
-
     def __init__(
         self,
         boosting_type="gbdt",
@@ -191,9 +186,8 @@ class LightGBMClassifier(Estimator):
         X = infer_feature_types(X)
         if y is not None:
             y = infer_feature_types(y)
-        X_d, y_d = self._handle_nullable_types(X, y)
-        X_encoded = self._encode_categories(X_d, fit=True)
-        y_encoded = self._encode_labels(y_d)
+        X_encoded = self._encode_categories(X, fit=True)
+        y_encoded = self._encode_labels(y)
         self._component_obj.fit(X_encoded, y_encoded)
         return self
 
@@ -207,8 +201,7 @@ class LightGBMClassifier(Estimator):
             pd.DataFrame: Predicted values.
         """
         X_encoded = self._encode_categories(X)
-        X_d, _ = self._handle_nullable_types(X_encoded)
-        predictions = super().predict(X_d)
+        predictions = super().predict(X_encoded)
         if not self._label_encoder:
             return predictions
         predictions = self._label_encoder.inverse_transform(
@@ -226,5 +219,4 @@ class LightGBMClassifier(Estimator):
             pd.DataFrame: Predicted probability values.
         """
         X_encoded = self._encode_categories(X)
-        X_d, _ = self._handle_nullable_types(X_encoded)
-        return super().predict_proba(X_d)
+        return super().predict_proba(X_encoded)

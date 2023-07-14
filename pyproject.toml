@@ -52,7 +52,7 @@ dependencies = [
     "ipywidgets >= 7.5, < 8.0.5",
     "xgboost >= 1.7.0",
     "catboost >= 1.1.1",
-    "lightgbm >= 2.3.1",
+    "lightgbm >= 4.0.0",
     "matplotlib >= 3.3.3",
     "graphviz >= 0.13; platform_system!='Windows'",
     "seaborn >= 0.11.1",
