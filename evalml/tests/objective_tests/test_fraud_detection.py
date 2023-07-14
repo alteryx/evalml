@@ -129,13 +129,13 @@ def test_fraud_objective_score():
     out = fraud_cost.decision_function(y_predicted, 0.45)
     assert isinstance(out, pd.Series)
     pd.testing.assert_series_equal(out, y_true, check_dtype=False, check_names=False)
-    score = fraud_cost.score(y_true=y_true, y_pred=out, X=extra_columns)
+    score = fraud_cost.score(y_true=y_true, y_predicted=out, X=extra_columns)
     assert score == 0.0
 
     out = fraud_cost.decision_function(y_predicted.to_numpy(), 0.45)
     assert isinstance(out, pd.Series)
     pd.testing.assert_series_equal(out, y_true, check_names=False)
-    score = fraud_cost.score(y_true=y_true, y_pred=out, X=extra_columns)
+    score = fraud_cost.score(y_true=y_true, y_predicted=out, X=extra_columns)
     assert score == 0.0
 
     # testing with other types of inputs
@@ -143,7 +143,7 @@ def test_fraud_objective_score():
     extra_columns = pd.DataFrame({"value": [100, 5, 250]})
     out = fraud_cost.decision_function(y_predicted, 0.45)
     pd.testing.assert_series_equal(out, y_true, check_names=False)
-    score = fraud_cost.score(y_true=y_true, y_pred=out, X=extra_columns)
+    score = fraud_cost.score(y_true=y_true, y_predicted=out, X=extra_columns)
     assert score == 0.0
 
     y_predicted = pd.Series([0.2, 0.01, 0.01])
@@ -152,7 +152,7 @@ def test_fraud_objective_score():
     expected_y_pred = pd.Series([True, False, False])
     out = fraud_cost.decision_function(y_predicted, 0.1)
     pd.testing.assert_series_equal(out, expected_y_pred, check_names=False)
-    score = fraud_cost.score(y_true=y_true, y_pred=out, X=extra_columns)
+    score = fraud_cost.score(y_true=y_true, y_predicted=out, X=extra_columns)
     assert score == 0.255
 
 
@@ -166,7 +166,7 @@ def test_fraud_objective_score_list():
     out = fraud_cost.decision_function(y_predicted, 0.45)
     assert isinstance(out, pd.Series)
     pd.testing.assert_series_equal(out, pd.Series(y_true), check_names=False)
-    score = fraud_cost.score(y_true=y_true, y_pred=out, X=extra_columns)
+    score = fraud_cost.score(y_true=y_true, y_predicted=out, X=extra_columns)
     assert score == 0.0
 
 
@@ -181,5 +181,5 @@ def test_fraud_objective_one_prediction_penalty(predictions, score):
     extra_columns = pd.DataFrame({"value": [100, 5, 250]})
 
     out = fraud_cost.decision_function(y_predicted, 0.45)
-    scores = fraud_cost.score(y_true=y_true, y_pred=out, X=extra_columns)
+    scores = fraud_cost.score(y_true=y_true, y_predicted=out, X=extra_columns)
     assert scores == score

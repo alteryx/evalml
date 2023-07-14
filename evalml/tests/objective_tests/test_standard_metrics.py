@@ -161,15 +161,17 @@ def test_negative_with_log():
 
 
 @pytest.mark.parametrize("objective_class", _all_objectives_dict().values())
+# @pytest.mark.parametrize("obj", [obj for obj in _all_objectives_dict().values()])
 def test_regression_handles_dataframes(objective_class):
     if not issubclass(objective_class, RegressionObjective):
         pytest.skip("Skipping non-regression objective")
 
     y_predicted = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
     y_true = pd.DataFrame({"a": [1, 2, 3], "b": [4, 6, 6]})
+    y_train = pd.DataFrame({"a": [1, 2, 3], "b": [4, 6, 6]})
 
     objective = objective_class()
-    score = objective.score(y_true, y_predicted)
+    score = objective.score(y_true, y_predicted, y_train=y_train)
     assert isinstance(score, float)  # Output should be a float average
 
 
