@@ -334,11 +334,21 @@ def ts_data():
         freq="D",
         problem_type="time series regression",
         match_indices=True,
+        n_series=1,
     ):
         X = pd.DataFrame(index=[i + 1 for i in range(50)])
         dates = pd.date_range("1/1/21", periods=50, freq=freq)
         feature = pd.Series([1, 4, 2] * 10 + [3, 1] * 10, index=X.index)
-        y = pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5)
+        if n_series > 1:
+            y_cols = []
+            for i in range(1, n_series + 1):
+                y_cols.append(
+                    pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5, name=f"series_{i}")
+                    * i,
+                )
+            y = pd.DataFrame(y_cols).T
+        else:
+            y = pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5)
         if match_indices:
             y.index = X.index
 
@@ -371,7 +381,8 @@ def ts_data():
         if X_train is not None:
             X_train.ww.init(logical_types=logical_types)
         X_test.ww.init(logical_types=logical_types)
-        y_train.ww.init(logical_type="integer")
+        if n_series == 1:
+            y_train.ww.init(logical_type="integer")
 
         return X_train, X_test, y_train
 
@@ -393,6 +404,7 @@ def create_mock_pipeline(
                 ModelFamily.DECISION_TREE,
                 ModelFamily.VOWPAL_WABBIT,
                 ModelFamily.PROPHET,
+                ModelFamily.VARMAX,
             ]
             and "Elastic Net" not in estimator.name
         )

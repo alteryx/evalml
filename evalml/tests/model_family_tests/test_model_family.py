@@ -22,6 +22,7 @@ def correct_model_families():
         ModelFamily.PROPHET,
         ModelFamily.VOWPAL_WABBIT,
         ModelFamily.NONE,
+        ModelFamily.VARMAX,
     ]
     yield correct_model_families
 
@@ -44,6 +45,7 @@ def test_handle_string(correct_model_families):
         "prophet",
         "vowpal_wabbit",
         "none",
+        "VARMAX",
     ]
     for model_family in zip(model_families, correct_model_families):
         assert handle_model_family(model_family[0]) == model_family[1]

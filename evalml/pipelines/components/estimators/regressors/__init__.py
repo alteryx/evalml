@@ -42,6 +42,9 @@ from evalml.pipelines.components.estimators.regressors.exponential_smoothing_reg
 from evalml.pipelines.components.estimators.regressors.arima_regressor import (
     ARIMARegressor,
 )
+from evalml.pipelines.components.estimators.regressors.varmax_regressor import (
+    VARMAXRegressor,
+)
 from evalml.pipelines.components.estimators.regressors.vowpal_wabbit_regressor import (
     VowpalWabbitRegressor,
 )

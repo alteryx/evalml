@@ -30,6 +30,7 @@ from evalml.pipelines.components.estimators.regressors import (
     SVMRegressor,
     ExponentialSmoothingRegressor,
     ARIMARegressor,
+    VARMAXRegressor,
     ProphetRegressor,
     VowpalWabbitRegressor,
 )

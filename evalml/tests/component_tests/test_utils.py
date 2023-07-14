@@ -97,6 +97,7 @@ all_requirements_set = set(
         "Vowpal Wabbit Regressor",
         "XGBoost Classifier",
         "XGBoost Regressor",
+        "VARMAX Regressor",
     ],
 )
 not_supported_in_conda = set(

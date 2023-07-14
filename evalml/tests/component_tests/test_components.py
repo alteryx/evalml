@@ -67,6 +67,7 @@ from evalml.pipelines.components import (
     TimeSeriesRegularizer,
     Transformer,
     Undersampler,
+    VARMAXRegressor,
     XGBoostClassifier,
     XGBoostRegressor,
 )
@@ -1359,13 +1360,17 @@ def test_serialization(
         TimeSeriesRegularizer,
         PolynomialDecomposer,
         STLDecomposer,
+        VARMAXRegressor,
     ]
 
     print("Testing serialization of component {}".format(component_class.name))
     component = helper_functions.safe_init_component_with_njobs_1(component_class)
     if component_class in requires_time_index:
         component = component_class(time_index="date")
-        X, _, y = ts_data()
+        if component.is_multiseries:
+            X, _, y = ts_data(n_series=3)
+        else:
+            X, _, y = ts_data()
     else:
         X, y = X_y_binary
 
