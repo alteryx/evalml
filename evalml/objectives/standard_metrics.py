@@ -1140,8 +1140,8 @@ class SMAPE(TimeSeriesRegressionObjective):
         X=None,
         sample_weight=None,
     ):
-        """Objective function for symmetric mean absolute percentage error for time series regression."""
-        if ((abs(y_true) + abs(y_predicted)) == 0).any():
+        """Objective function for mean absolute percentage error for time series regression."""
+        if 0 in (abs(y_true) + abs(y_predicted)).values:
             raise ValueError(
                 "Symmetric Mean Absolute Percentage Error cannot be used when "
                 "true and predicted targets both contain the value 0.",
