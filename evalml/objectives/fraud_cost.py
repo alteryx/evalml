@@ -36,12 +36,20 @@ class FraudCost(BinaryClassificationObjective):
         self.fraud_payout_percentage = fraud_payout_percentage
         self.amount_col = amount_col
 
-    def objective_function(self, y_true, y_predicted, X, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Calculate amount lost to fraud per transaction given predictions, true values, and dataframe with transaction amount.
 
         Args:
             y_predicted (pd.Series): Predicted fraud labels.
             y_true (pd.Series): True fraud labels.
+            y_train (pd.Series): Training lables.
             X (pd.DataFrame): Data with transaction amounts.
             sample_weight (pd.DataFrame): Ignored.
 
@@ -51,7 +59,8 @@ class FraudCost(BinaryClassificationObjective):
         Raises:
             ValueError: If amount_col is not a valid column in the input data.
         """
-        X = self._standardize_input_type(X)
+        if X is not None:
+            X = self._standardize_input_type(X)
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)
         self.validate_inputs(y_true, y_predicted)
