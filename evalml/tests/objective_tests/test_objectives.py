@@ -27,7 +27,7 @@ from evalml.objectives import (
 )
 from evalml.objectives.fraud_cost import FraudCost
 from evalml.objectives.objective_base import ObjectiveBase
-from evalml.objectives.standard_metrics import MAPE, SMAPE
+from evalml.objectives.standard_metrics import MAPE, MASE, SMAPE
 from evalml.objectives.utils import _all_objectives_dict
 from evalml.problem_types import ProblemTypes
 
@@ -212,6 +212,7 @@ def test_objectives_support_nullable_types(
 ):
     y_true = nullable_type_target(ltype=nullable_y_true_ltype, has_nans=False)
     y_pred = pd.Series([0, 1, 0, 1, 1] * 4, dtype="int64")
+    y_train = None
     X = None
 
     # Instantiate objective with any needed parameters
@@ -235,8 +236,10 @@ def test_objectives_support_nullable_types(
         # Replace numeric inputs containing 0
         y_true = y_true.ww.replace({0: 10})
         y_pred = y_pred.replace({0: 10})
+    elif isinstance(obj, MASE):
+        y_train = pd.Series([0, 1, 0, 1, 1] * 4, dtype="int64")
 
-    score = obj.score(y_true=y_true, y_predicted=y_pred, X=X)
+    score = obj.score(y_true=y_true, y_predicted=y_pred, y_train=y_train, X=X)
     assert not pd.isna(score)
 
 
