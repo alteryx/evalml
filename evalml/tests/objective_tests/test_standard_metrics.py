@@ -718,36 +718,29 @@ def test_mcc_catches_warnings():
 def test_mase_time_series_model():
     obj = MASE()
 
-    s1_actual = np.array([0, 1, 1, 1, 1, 2, 0, 2])
-    s1_predicted = np.array([1, 0, 1, 1, 2, 1, 2, 0])
+    s1_actual = np.array([0, 1, 0, 1, 2, 0])
+    s1_predicted = np.array([0, 2, 2, 1, 3, 2])
+    s1_train = np.array([0, 0, 0, 0, 0, 0])
 
     s2_actual = np.array([-1, -2, 1, 3])
     s2_predicted = np.array([1, 2, -1, -3])
+    s2_train = np.array([-1, 2, 1, 1])
 
     s3_actual = np.array([1, 2, 4, 2, 1, 2])
     s3_predicted = np.array([0, 2, 2, 1, 3, 2])
-
-    s4_actual = np.array([0, 0, 0, 0, 0, 0])
-    s4_predicted = np.array([0, 2, 2, 1, 3, 2])
-
-    assert obj.score(s1_actual, s1_predicted, s1_actual) == pytest.approx(7 / 6)
-    assert obj.score(s2_actual, s2_predicted, s2_actual) == pytest.approx((14 / 4) / 2)
-    assert obj.score(s3_actual, s3_predicted, s3_actual) == pytest.approx(5 / 7)
-    # assert obj.score(
-    #     pd.Series(s3_actual, index=range(-12, -6)),
-    #     s3_predicted,
-    # ) == pytest.approx(5 / 7)
-    # assert obj.score(
-    #     pd.Series(s2_actual, index=range(10, 14)),
-    #     pd.Series(s2_predicted, index=range(20, 24)),
-    # ) == pytest.approx((14 / 4) / 2)
+    s3_train = np.array([1, 1, 3, 2, 3, 1])
 
     with pytest.raises(
         ValueError,
         match="Mean Absolute Scaled Error cannot be used when "
         "all training targets contain the value 0.",
     ):
-        obj.score(s4_actual, s4_predicted, s4_actual)
+        obj.score(s1_actual, s1_predicted, s1_train)
+
+    assert obj.score(s2_actual, s2_predicted, s2_train) == pytest.approx(
+        (3 / 4) * (14 / 4),
+    )
+    assert obj.score(s3_actual, s3_predicted, s3_train) == pytest.approx(5 / 6)
 
 
 def test_mape_time_series_model():

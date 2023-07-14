@@ -1048,9 +1048,8 @@ class MASE(TimeSeriesRegressionObjective):
     Example:
         >>> y_train = np.array([5, 0.5, 4, 6, 3, 5, 2])
         >>> y_true = np.array([3, -0.5, 2, 7, 2])
-        >>> y_train = np.array([3, -0.5, 2, 7, 2])
         >>> y_pred = np.array([2.5, 0.0, 2, 8, 1.25])
-        >>> np.testing.assert_almost_equal(MASE().objective_function(y_true, y_pred, y_train), 18.333333333333335)
+        >>> np.testing.assert_almost_equal(MASE().objective_function(y_true, y_pred, y_train), 0.18333333333333335)
     """
 
     name = "Mean Absolute Scaled Error"
@@ -1141,7 +1140,7 @@ class SMAPE(TimeSeriesRegressionObjective):
         sample_weight=None,
     ):
         """Objective function for symmetric mean absolute percentage error for time series regression."""
-        if ((abs(y_true) + abs(y_predicted)) == 0).any():
+        if 0 in (abs(y_true) + abs(y_predicted)).values:
             raise ValueError(
                 "Symmetric Mean Absolute Percentage Error cannot be used when "
                 "true and predicted targets both contain the value 0.",

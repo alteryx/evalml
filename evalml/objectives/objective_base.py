@@ -65,7 +65,7 @@ class ObjectiveBase(ABC):
         cls,
         y_true,
         y_predicted,
-        y_train=y_train,
+        y_train=None,
         X=None,
         sample_weight=None,
     ):
@@ -102,10 +102,10 @@ class ObjectiveBase(ABC):
         """
         if X is not None:
             X = self._standardize_input_type(X)
-        y_true = self._standardize_input_type(y_true)
-        y_predicted = self._standardize_input_type(y_predicted)
         if y_train is not None:
             y_train = self._standardize_input_type(y_train)
+        y_true = self._standardize_input_type(y_true)
+        y_predicted = self._standardize_input_type(y_predicted)
         self.validate_inputs(y_true, y_predicted)
         return self.objective_function(
             y_true,
