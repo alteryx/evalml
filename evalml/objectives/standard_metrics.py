@@ -1068,7 +1068,7 @@ class MASE(TimeSeriesRegressionObjective):
         sample_weight=None,
     ):
         """Objective function for mean absolute scaled error for time series regression."""
-        if (y_train == 0).all():
+        if (y_train.values == 0).all():
             raise ValueError(
                 "Mean Absolute Scaled Error cannot be used when "
                 "all training targets contain the value 0.",
