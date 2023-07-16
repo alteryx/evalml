@@ -67,7 +67,6 @@ from evalml.pipelines.components import (
     TimeSeriesRegularizer,
     Transformer,
     Undersampler,
-    VARMAXRegressor,
     XGBoostClassifier,
     XGBoostRegressor,
 )
@@ -1017,9 +1016,9 @@ def test_components_can_be_used_for_partial_dependence_fast_mode():
     # Expected number is hardcoded so that this test will fail when new components are added
     # It should be len(all_native_components) - num_invalid_for_pd_fast_mode
     if ProphetRegressor not in all_native_components:
-        expected_num_valid_for_pd_fast_mode = 64
-    else:
         expected_num_valid_for_pd_fast_mode = 65
+    else:
+        expected_num_valid_for_pd_fast_mode = 66
     assert num_valid_for_pd_fast_mode == expected_num_valid_for_pd_fast_mode
 
 
@@ -1201,6 +1200,7 @@ def test_all_transformers_check_fit(component_class, X_y_binary, ts_data):
 def test_all_estimators_check_fit(
     X_y_binary,
     ts_data,
+    ts_multiseries_data,
     test_estimator_needs_fitting_false,
     helper_functions,
 ):
@@ -1226,12 +1226,17 @@ def test_all_estimators_check_fit(
             ProblemTypes.TIME_SERIES_REGRESSION
             in component_class.supported_problem_types
         ):
-            X, _, y = ts_data()
+            if component_class.is_multiseries:
+                X, _, y = ts_multiseries_data()
+            else:
+                X, _, y = ts_data()
         else:
             X, y = X_y_binary
 
         if component_class.__name__ == "ProphetRegressor":
             component = component_class(time_index="date")
+        elif component_class.__name__ == "VARMAXRegressor":
+            component = component_class(time_index="date", series_id="series_id")
         else:
             component = helper_functions.safe_init_component_with_njobs_1(
                 component_class,
@@ -1349,6 +1354,7 @@ def test_serialization(
     component_class,
     X_y_binary,
     ts_data,
+    ts_multiseries_data,
     tmpdir,
     helper_functions,
 ):
@@ -1360,22 +1366,17 @@ def test_serialization(
         TimeSeriesRegularizer,
         PolynomialDecomposer,
         STLDecomposer,
-        VARMAXRegressor,
     ]
 
-    print("Testing serialization of component {}".format(component_class.name))
     component = helper_functions.safe_init_component_with_njobs_1(component_class)
-    if component_class in requires_time_index:
+    if component.is_multiseries:
         component = component_class(time_index="date")
-        if component.is_multiseries:
-            X, _, y = ts_data(n_series=3)
-        else:
-            X, _, y = ts_data()
+        X, _, y = ts_multiseries_data()
+    elif component_class in requires_time_index:
+        component = component_class(time_index="date")
+        X, _, y = ts_data()
     else:
         X, y = X_y_binary
-
-    if component_class.is_multiseries:
-        y = pd.DataFrame({"target_a": y, "target_b": y})
 
     component.fit(X, y)
 
@@ -1731,6 +1732,7 @@ def test_estimator_fit_respects_custom_indices(
     X_y_binary,
     X_y_regression,
     ts_data,
+    ts_multiseries_data,
     helper_functions,
 ):
     supported_problem_types = estimator_class.supported_problem_types
@@ -1739,19 +1741,21 @@ def test_estimator_fit_respects_custom_indices(
     if ProblemTypes.REGRESSION in supported_problem_types:
         X, y = X_y_regression
     elif ProblemTypes.TIME_SERIES_REGRESSION in supported_problem_types:
-        X, _, y = ts_data(
-            train_features_index_dt=False,
-            train_target_index_dt=False,
-        )
+        if estimator_class.is_multiseries:
+            X, _, y = ts_multiseries_data(
+                train_features_index_dt=False,
+                train_target_index_dt=False,
+            )
+        else:
+            X, _, y = ts_data(
+                train_features_index_dt=False,
+                train_target_index_dt=False,
+            )
         ts_problem = True
     else:
         X, y = X_y_binary
 
     X = pd.DataFrame(X)
-    y = pd.Series(y)
-
-    if estimator_class.is_multiseries:
-        y = pd.DataFrame({"target_a": y, "target_b": y})
 
     if use_custom_index and ts_problem:
         X.index = pd.date_range("2020-10-01", periods=40)
@@ -1921,6 +1925,7 @@ def test_components_support_nullable_types(
     nullable_type_test_data,
     nullable_type_target,
     ts_data,
+    ts_multiseries_data,
     helper_functions,
 ):
     """Confirm that components without any nullable type incompatibilities can actually
@@ -1953,21 +1958,31 @@ def test_components_support_nullable_types(
     requires_all_numeric = [PCA, LinearDiscriminantAnalysis]
 
     component = helper_functions.safe_init_component_with_njobs_1(component_class)
-    if component_class in requires_time_index:
+    if component_class.is_multiseries or component_class in requires_time_index:
         component = component_class(time_index="date")
-
-        X, _, y = ts_data()
+        if component_class.is_multiseries:
+            X, _, y = ts_multiseries_data(
+                train_features_index_dt=False,
+                train_target_index_dt=False,
+            )
+        else:
+            X, _, y = ts_data()
         bool_col = ww.init_series(
             pd.Series([True, False] * 20, index=y.index),
             "BooleanNullable",
         )
-
-        if nullable_y_ltype == "BooleanNullable":
-            y = bool_col
-
-        # Add nullable types
-        X.ww.set_types(logical_types={"feature": "IntegerNullable"})
+        X.ww.init(
+            logical_types={
+                col: "IntegerNullable" if col != "date" else "datetime"
+                for col in X.columns
+            },
+        )
         X.ww["bool col"] = bool_col
+        if nullable_y_ltype == "BooleanNullable":
+            if component_class.is_multiseries:
+                y = pd.DataFrame({"target_a": bool_col, "target_b": ~bool_col})
+            else:
+                y = bool_col
     else:
         y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
         X = nullable_type_test_data(has_nans=False)

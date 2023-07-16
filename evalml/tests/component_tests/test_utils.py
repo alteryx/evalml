@@ -19,6 +19,7 @@ from evalml.pipelines.components.utils import (
     handle_component_class,
     handle_float_categories_for_catboost,
     make_balancing_dictionary,
+    match_indices,
     scikit_learn_wrapped_estimator,
 )
 from evalml.problem_types import ProblemTypes
@@ -290,3 +291,25 @@ def test_handle_float_categories_for_catboost_noop(
     X_t = handle_float_categories_for_catboost(X)
     pd.testing.assert_frame_equal(X, X_t)
     assert X.ww.schema == X_t.ww.schema
+
+
+@pytest.mark.parametrize("multiseries", [True, False])
+def test_match_indices(multiseries, ts_data, ts_multiseries_data):
+    if multiseries:
+        data_gen = ts_multiseries_data
+    else:
+        data_gen = ts_data
+    X_train, _, y_train = data_gen(
+        train_features_index_dt=False,
+        train_target_index_dt=False,
+        train_none=False,
+        datetime_feature=False,
+        no_features=False,
+        test_features_index_dt=False,
+        match_indices=False,
+    )
+
+    assert not X_train.index.equals(y_train.index)
+
+    X_, y_ = match_indices(X_train, y_train)
+    assert X_.index.equals(y_.index)

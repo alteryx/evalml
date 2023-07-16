@@ -42,12 +42,6 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         self.max_delay = self.pipeline_params["max_delay"]
         self.forecast_horizon = self.pipeline_params["forecast_horizon"]
         self.time_index = self.pipeline_params["time_index"]
-        self.series_id = (
-            self.pipeline_params["series_id"]
-            if "series_id" in self.pipeline_params
-            else None
-        )
-        self.is_multiseries = False if self.series_id is None else True
         self.frequency = None
         if self.time_index is None:
             raise ValueError("Parameter time_index cannot be None!")
