@@ -48,7 +48,7 @@ class CostBenefitMatrix(BinaryClassificationObjective):
         Args:
             y_predicted (pd.Series): Predicted labels.
             y_true (pd.Series): True labels.
-            y_train (pd.Series): Training lables.
+            y_train (pd.Series): Training labels.
             X (pd.DataFrame): Ignored.
             sample_weight (pd.DataFrame): Ignored.
 
