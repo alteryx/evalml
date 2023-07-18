@@ -1046,9 +1046,9 @@ class MASE(TimeSeriesRegressionObjective):
     Only valid if there exists a nonzero input in y_train. Otherwise, will throw a ValueError.
 
     Example:
-        >>> y_train = np.array([5, 0.5, 4, 6, 3, 5, 2])
-        >>> y_true = np.array([3, -0.5, 2, 7, 2])
-        >>> y_pred = np.array([2.5, 0.0, 2, 8, 1.25])
+        >>> y_train = pd.Series([5, 0.5, 4, 6, 3, 5, 2])
+        >>> y_true = pd.Series([3, -0.5, 2, 7, 2])
+        >>> y_pred = pd.Series([2.5, 0.0, 2, 8, 1.25])
         >>> np.testing.assert_almost_equal(MASE().objective_function(y_true, y_pred, y_train), 0.18333333333333335)
     """
 
@@ -1068,8 +1068,6 @@ class MASE(TimeSeriesRegressionObjective):
         sample_weight=None,
     ):
         """Objective function for mean absolute scaled error for time series regression."""
-        if isinstance(y_train, np.ndarray):
-            y_train = pd.Series(y_train)
         if (y_train.values == 0).all():
             raise ValueError(
                 "Mean Absolute Scaled Error cannot be used when "
