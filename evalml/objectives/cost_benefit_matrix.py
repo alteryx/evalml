@@ -35,12 +35,20 @@ class CostBenefitMatrix(BinaryClassificationObjective):
         self.false_positive = false_positive
         self.false_negative = false_negative
 
-    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        y_train=None,
+        X=None,
+        sample_weight=None,
+    ):
         """Calculates cost-benefit of the using the predicted and true values.
 
         Args:
             y_predicted (pd.Series): Predicted labels.
             y_true (pd.Series): True labels.
+            y_train (pd.Series): Ignored.
             X (pd.DataFrame): Ignored.
             sample_weight (pd.DataFrame): Ignored.
 

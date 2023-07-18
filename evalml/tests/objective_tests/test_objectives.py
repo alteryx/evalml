@@ -27,7 +27,7 @@ from evalml.objectives import (
 )
 from evalml.objectives.fraud_cost import FraudCost
 from evalml.objectives.objective_base import ObjectiveBase
-from evalml.objectives.standard_metrics import MAPE, SMAPE
+from evalml.objectives.standard_metrics import MAPE, MASE, SMAPE
 from evalml.objectives.utils import _all_objectives_dict
 from evalml.problem_types import ProblemTypes
 
@@ -111,21 +111,21 @@ def test_get_core_objectives_types():
     assert len(get_core_objectives(ProblemTypes.MULTICLASS)) == 13
     assert len(get_core_objectives(ProblemTypes.BINARY)) == 8
     assert len(get_core_objectives(ProblemTypes.REGRESSION)) == 7
-    assert len(get_core_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 8
+    assert len(get_core_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 9
 
 
 def test_get_optimization_objectives_types():
     assert len(get_optimization_objectives(ProblemTypes.MULTICLASS)) == 13
     assert len(get_optimization_objectives(ProblemTypes.BINARY)) == 8
     assert len(get_optimization_objectives(ProblemTypes.REGRESSION)) == 7
-    assert len(get_optimization_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 8
+    assert len(get_optimization_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 9
 
 
 def test_get_ranking_objectives_types():
     assert len(get_ranking_objectives(ProblemTypes.MULTICLASS)) == 16
     assert len(get_ranking_objectives(ProblemTypes.BINARY)) == 9
     assert len(get_ranking_objectives(ProblemTypes.REGRESSION)) == 9
-    assert len(get_ranking_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 11
+    assert len(get_ranking_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 12
 
 
 def test_optimization_excludes_ranking():
@@ -135,7 +135,7 @@ def test_optimization_excludes_ranking():
 
 
 def test_get_time_series_objectives_types(time_series_objectives):
-    assert len(time_series_objectives) == 11
+    assert len(time_series_objectives) == 12
 
 
 def test_objective_outputs(
@@ -202,16 +202,17 @@ def test_get_objectives_all_expected_ranges(obj):
 
 @pytest.mark.parametrize("obj", [obj for obj in _all_objectives_dict().values()])
 @pytest.mark.parametrize(
-    "nullable_y_true_ltype",
+    "nullable_ltype",
     ["BooleanNullable", "IntegerNullable", "AgeNullable"],
 )
 def test_objectives_support_nullable_types(
-    nullable_y_true_ltype,
+    nullable_ltype,
     obj,
     nullable_type_target,
 ):
-    y_true = nullable_type_target(ltype=nullable_y_true_ltype, has_nans=False)
+    y_true = nullable_type_target(ltype=nullable_ltype, has_nans=False)
     y_pred = pd.Series([0, 1, 0, 1, 1] * 4, dtype="int64")
+    y_train = nullable_type_target(ltype=nullable_ltype, has_nans=False)
     X = None
 
     # Instantiate objective with any needed parameters
@@ -235,8 +236,13 @@ def test_objectives_support_nullable_types(
         # Replace numeric inputs containing 0
         y_true = y_true.ww.replace({0: 10})
         y_pred = y_pred.replace({0: 10})
+    elif isinstance(obj, MASE):
+        if isinstance(y_train.ww.logical_type, BooleanNullable):
+            pytest.skip("MASE doesn't support inputs containing all 0")
+        # Replace numeric inputs containing 0
+        y_train = y_train.ww.replace({0: 10})
 
-    score = obj.score(y_true=y_true, y_predicted=y_pred, X=X)
+    score = obj.score(y_true=y_true, y_predicted=y_pred, y_train=y_train, X=X)
     assert not pd.isna(score)
 
 

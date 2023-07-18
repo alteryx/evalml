@@ -15,7 +15,10 @@ from evalml.data_checks import (
     InvalidTargetDataCheck,
 )
 from evalml.exceptions import DataCheckInitError
-from evalml.objectives import MAPE, SMAPE, MeanSquaredLogError, RootMeanSquaredLogError
+from evalml.objectives import (
+    MeanSquaredLogError,
+    RootMeanSquaredLogError,
+)
 from evalml.problem_types import ProblemTypes, is_binary, is_multiclass, is_regression
 from evalml.utils.woodwork_utils import numeric_and_boolean_ww
 
@@ -342,7 +345,6 @@ def test_invalid_target_data_check_n_unique(problem_type):
     [
         "Root Mean Squared Log Error",
         "Mean Squared Log Error",
-        "Mean Absolute Percentage Error",
     ],
 )
 def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_names(
@@ -397,7 +399,7 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_name
 
 @pytest.mark.parametrize(
     "objective",
-    [RootMeanSquaredLogError(), MeanSquaredLogError(), MAPE(), SMAPE()],
+    [RootMeanSquaredLogError(), MeanSquaredLogError()],
 )
 def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_instances(
     objective,
@@ -465,7 +467,6 @@ def test_invalid_target_data_check_invalid_labels_for_objectives(
     [
         "Root Mean Squared Log Error",
         "Mean Squared Log Error",
-        "Mean Absolute Percentage Error",
     ],
 )
 def test_invalid_target_data_check_valid_labels_for_nonnegative_objectives(objective):

@@ -36,12 +36,20 @@ class FraudCost(BinaryClassificationObjective):
         self.fraud_payout_percentage = fraud_payout_percentage
         self.amount_col = amount_col
 
-    def objective_function(self, y_true, y_predicted, X, sample_weight=None):
+    def objective_function(
+        self,
+        y_true,
+        y_predicted,
+        X,
+        y_train=None,
+        sample_weight=None,
+    ):
         """Calculate amount lost to fraud per transaction given predictions, true values, and dataframe with transaction amount.
 
         Args:
             y_predicted (pd.Series): Predicted fraud labels.
             y_true (pd.Series): True fraud labels.
+            y_train (pd.Series): Ignored.
             X (pd.DataFrame): Data with transaction amounts.
             sample_weight (pd.DataFrame): Ignored.
 

@@ -409,7 +409,9 @@ Regression Objectives
 
     evalml.objectives.ExpVariance
     evalml.objectives.MAE
+    evalml.objectives.MASE
     evalml.objectives.MAPE
+    evalml.objectives.SMAPE
     evalml.objectives.MSE
     evalml.objectives.MeanSquaredLogError
     evalml.objectives.MedianAE
