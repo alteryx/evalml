@@ -161,7 +161,6 @@ def test_negative_with_log():
 
 
 @pytest.mark.parametrize("objective_class", _all_objectives_dict().values())
-# @pytest.mark.parametrize("obj", [obj for obj in _all_objectives_dict().values()])
 def test_regression_handles_dataframes(objective_class):
     if not issubclass(objective_class, RegressionObjective):
         pytest.skip("Skipping non-regression objective")

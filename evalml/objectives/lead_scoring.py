@@ -38,7 +38,7 @@ class LeadScoring(BinaryClassificationObjective):
         Args:
             y_predicted (pd.Series): Predicted labels.
             y_true (pd.Series): True labels.
-            y_train (pd.Series): Training labels.
+            y_train (pd.Series): Ignored.
             X (pd.DataFrame): Ignored.
             sample_weight (pd.DataFrame): Ignored.
 

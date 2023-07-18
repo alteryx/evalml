@@ -1041,7 +1041,7 @@ class MAE(RegressionObjective):
 
 
 class MASE(TimeSeriesRegressionObjective):
-    """Mean absolute scaled error for time series regression. Scaled by 100 to return a percentage.
+    """Mean absolute scaled error for time series regression.
 
     Only valid if there exists a nonzero input in y_train. Otherwise, will throw a ValueError.
 
@@ -1068,12 +1068,9 @@ class MASE(TimeSeriesRegressionObjective):
         sample_weight=None,
     ):
         """Objective function for mean absolute scaled error for time series regression."""
-        # [0, 1, 1, 0] -- good
-        # [0, 0, 0, 0] -- bad
-
-        if (isinstance(y_train, pd.DataFrame) and (y_train.values == 0).all()) or (
-            isinstance(y_train, pd.Series) and (y_train == 0).all()
-        ):
+        if isinstance(y_train, np.ndarray):
+            y_train = pd.Series(y_train)
+        if (y_train.values == 0).all():
             raise ValueError(
                 "Mean Absolute Scaled Error cannot be used when "
                 "all training targets contain the value 0.",
