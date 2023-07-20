@@ -831,6 +831,22 @@ def X_y_regression():
 
 
 @pytest.fixture
+def X_y_multiseries_regression():
+    X, _ = datasets.make_regression(
+        n_samples=100,
+        n_features=20,
+        n_informative=3,
+        random_state=0,
+    )
+    y, _ = datasets.make_regression(n_samples=100, n_features=4)
+    X = pd.DataFrame(X)
+    X.ww.init(logical_types={col: "double" for col in X.columns})
+    y = pd.DataFrame(y)
+    y.ww.init(logical_types={col: "double" for col in y.columns})
+    return X, y
+
+
+@pytest.fixture
 def X_y_multi():
     X, y = datasets.make_classification(
         n_samples=100,

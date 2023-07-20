@@ -72,7 +72,7 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
         delay_columns = pd.DataFrame(
             np.zeros((self.start_delay, y.shape[1])),
             columns=self._series_names,
-            index=range(y.index[-1], self.start_delay + y.index[-1]),
+            index=range(y.index[-1] + 1, self.start_delay + y.index[-1] + 1),
         )
         y = pd.concat([y, delay_columns])
 
