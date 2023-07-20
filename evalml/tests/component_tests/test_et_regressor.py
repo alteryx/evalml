@@ -20,7 +20,7 @@ def test_problem_types():
 def test_fit_predict(X_y_regression):
     X, y = X_y_regression
 
-    sk_clf = SKExtraTreesRegressor(max_depth=6, random_state=0)
+    sk_clf = SKExtraTreesRegressor(max_depth=6, random_state=0, max_features="sqrt")
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
 

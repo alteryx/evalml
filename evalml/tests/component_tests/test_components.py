@@ -326,8 +326,8 @@ def test_describe_component():
     lr_classifier = LogisticRegressionClassifier()
     en_classifier = ElasticNetClassifier()
     en_regressor = ElasticNetRegressor()
-    et_classifier = ExtraTreesClassifier(n_estimators=10, max_features="auto")
-    et_regressor = ExtraTreesRegressor(n_estimators=10, max_features="auto")
+    et_classifier = ExtraTreesClassifier(n_estimators=10, max_features="sqrt")
+    et_regressor = ExtraTreesRegressor(n_estimators=10, max_features="sqrt")
     rf_classifier = RandomForestClassifier(n_estimators=10, max_depth=3)
     rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
     linear_regressor = LinearRegressor()
@@ -374,7 +374,7 @@ def test_describe_component():
         "name": "Extra Trees Classifier",
         "parameters": {
             "n_estimators": 10,
-            "max_features": "auto",
+            "max_features": "sqrt",
             "max_depth": 6,
             "min_samples_split": 2,
             "min_weight_fraction_leaf": 0.0,
@@ -385,7 +385,7 @@ def test_describe_component():
         "name": "Extra Trees Regressor",
         "parameters": {
             "n_estimators": 10,
-            "max_features": "auto",
+            "max_features": "sqrt",
             "max_depth": 6,
             "min_samples_split": 2,
             "min_weight_fraction_leaf": 0.0,
@@ -1615,7 +1615,7 @@ def test_generate_code():
 
     expected_code = (
         "from evalml.pipelines.components.estimators.regressors.et_regressor import ExtraTreesRegressor"
-        "\n\nextraTreesRegressor = ExtraTreesRegressor(**{'n_estimators': 50, 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_jobs': -1})"
+        "\n\nextraTreesRegressor = ExtraTreesRegressor(**{'n_estimators': 50, 'max_features': 'sqrt', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_jobs': -1})"
     )
     component_code = generate_component_code(ExtraTreesRegressor(n_estimators=50))
     assert component_code == expected_code
