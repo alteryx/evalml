@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 
+import matplotlib.pyplot as plt
 import pandas as pd
 from pandas import RangeIndex
 from statsmodels.tsa.arima.model import ARIMA
@@ -20,6 +21,7 @@ class STLDecomposer(Decomposer):
 
     Args:
         time_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
+        series_index(str): Specifies the name of the column in X that provides the series_id objects for multiseries. Defaults to None.
         degree (int): Not currently used.  STL 3x "degree-like" values.  None are able to be set at
             this time. Defaults to 1.
         period (int): The number of entries in the time series data that corresponds to one period of a
@@ -40,14 +42,17 @@ class STLDecomposer(Decomposer):
     def __init__(
         self,
         time_index: str = None,
+        series_index: str = None,
         degree: int = 1,  # Currently unused.
         period: int = None,
+        periods: int = None,
         seasonal_smoother: int = 7,
         random_seed: int = 0,
         **kwargs,
     ):
         self.logger = logging.getLogger(__name__)
-
+        self.series_index = series_index
+        self.periods = []
         # Programmatically adjust seasonal_smoother to fit underlying STL requirements,
         # that seasonal_smoother must be odd.
         if seasonal_smoother % 2 == 0:
@@ -158,35 +163,51 @@ class STLDecomposer(Decomposer):
             ValueError: If y is None.
             ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
-        self.original_index = y.index if y is not None else None
-        X, y = self._check_target(X, y)
-        self._map_dt_to_integer(self.original_index, y.index)
-
         # Warn for poor decomposition use with higher seasonal smoothers
         if self.seasonal_smoother > 14:
             self.logger.warning(
                 f"STLDecomposer may perform poorly on data with a high seasonal smoother ({self.seasonal_smoother}).",
             )
 
-        # Save the frequency of the fitted series for checking against transform data.
-        self.frequency = y.index.freqstr or pd.infer_freq(y.index)
+        # If there is not a series_index, add a new series_id column ranging from 0 to the size of the data frame
+        if self.series_index is None:
+            X.insert(0, "series_id", range(len(X)))
 
-        # Determine the period of the seasonal component
-        if self.period is None:
-            self.set_period(X, y)
+        # group the data by series_id
+        grouped_X = X.groupby(X[self.series_index])
+        # iterate through each id group
+        self.seasonality = []
+        self.trend = []
+        self.residual = []
+        for series_id, series_X in grouped_X:
+            series_y = y.reindex(series_X.index)
+            self.original_index = series_y.index if series_y is not None else None
 
-        stl = STL(y, seasonal=self.seasonal_smoother, period=self.period)
-        res = stl.fit()
-        self.seasonal = res.seasonal
-        self.period = stl.period
-        dist = len(y) % self.period
-        self.seasonality = (
-            self.seasonal[-(dist + self.period) : -dist]
-            if dist > 0
-            else self.seasonal[-self.period :]
-        )
-        self.trend = res.trend
-        self.residual = res.resid
+            series_X, series_y = self._check_target(series_X, series_y)
+            self._map_dt_to_integer(self.original_index, series_y.index)
+
+            # Save the frequency of the fitted series for checking against transform data.
+            self.frequency = series_y.index.freqstr or pd.infer_freq(series_y.index)
+
+            # Determine the period of the seasonal component
+            if self.period is None:
+                self.set_period(series_X, series_y)
+
+            stl = STL(series_y, seasonal=self.seasonal_smoother, period=self.period)
+            res = stl.fit()
+            self.seasonal = res.seasonal
+            self.period = stl.period
+
+            self.periods.append(self.period)
+
+            dist = len(series_y) % self.period
+            self.seasonality.append(
+                self.seasonal[-(dist + self.period) : -dist]
+                if dist > 0
+                else self.seasonal[-self.period :],
+            )
+            self.trend.append(res.trend)
+            self.residual.append(res.resid)
 
         return self
 
@@ -359,22 +380,22 @@ class STLDecomposer(Decomposer):
 
         def _decompose_target(X, y, fh):
             """Function to generate a single DataFrame with trend, seasonality and residual components."""
-            if len(y.index) == len(self.trend.index) and all(
-                y.index == self.trend.index,
+            if len(y.index) == len(self.trend[self.series_id].index) and all(
+                y.index == self.trend[self.series_id].index,
             ):
-                trend = self.trend
-                seasonal = self.seasonal
-                residual = self.residual
+                trend = self.trend[self.series_id]
+                seasonal = self.seasonal[self.series_id]
+                residual = self.residual[self.series_id]
             else:
                 # TODO: Do a better job cloning.
                 decomposer = STLDecomposer(
                     seasonal_smoother=self.seasonal_smoother,
-                    period=self.period,
+                    period=self.periods[self.series_id],
                 )
                 decomposer.fit(X, y)
-                trend = decomposer.trend
-                seasonal = decomposer.seasonal
-                residual = decomposer.residual
+                trend = decomposer.trend[self.series_id]
+                seasonal = decomposer.seasonal[self.series_id]
+                residual = decomposer.residual[self.series_id]
             return pd.DataFrame(
                 {
                     "signal": y,
@@ -432,3 +453,59 @@ class STLDecomposer(Decomposer):
             prediction_interval_result[f"{coverage[i]}_upper"] = intervals["upper"]
 
         return prediction_interval_result
+
+    # Overload the plot_decomposition fucntion to be able to plot multiple decompositions for multiseries
+    def plot_decomposition(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series,
+        show: bool = False,
+    ) -> list[tuple[plt.Figure, list]]:
+        """Plots the decomposition of the target signal.
+
+        Args:
+            X (pd.DataFrame): Input data with time series data in index.
+            y (pd.Series or pd.DataFrame): Target variable data provided as a Series for univariate problems or
+                a DataFrame for multivariate problems.
+            show (bool): Whether to display the plot or not. Defaults to False.
+
+        Returns:
+            matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]: The figure and axes that have the decompositions
+                plotted on them
+
+        """
+        # if self.series_index is None:
+        #     X.insert(0, 'series_id', range(len(X)))
+
+        # group the data by series_id
+        grouped_X = X.groupby(X[self.series_index])
+        # iterate through each id group
+        plot_info = []
+        # for series_id, series_X in grouped_X:
+        for s_index, (series_id, series_X) in enumerate(grouped_X):
+            print("Index: " + str(s_index))
+
+            self.series_id = s_index
+            # series_y = y.reindex(series_X.index)
+            series_y = y[series_X.index]
+
+            print(series_y)
+            decomposition_results = self.get_trend_dataframe(series_X, series_y)
+            fig, axs = plt.subplots(4)
+            fig.set_size_inches(18.5, 14.5)
+            axs[0].plot(decomposition_results[0]["signal"], "r")
+            axs[0].set_title("signal")
+            axs[1].plot(decomposition_results[0]["trend"], "b")
+            axs[1].set_title("trend")
+            axs[2].plot(decomposition_results[0]["seasonality"], "g")
+            axs[2].set_title("seasonality")
+            axs[3].plot(decomposition_results[0]["residual"], "y")
+            axs[3].set_title("residual")
+
+            fig.suptitle("Decomposition for Series {}".format(series_id))
+
+            plot_info.append((fig, axs))
+            plt.show(block=False)
+            # if show:  # pragma: no cover
+            #     plt.show(block=False)
+        return plot_info
