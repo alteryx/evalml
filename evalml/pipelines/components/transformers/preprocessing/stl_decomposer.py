@@ -45,14 +45,12 @@ class STLDecomposer(Decomposer):
         series_index: str = None,
         degree: int = 1,  # Currently unused.
         period: int = None,
-        periods: int = None,
         seasonal_smoother: int = 7,
         random_seed: int = 0,
         **kwargs,
     ):
         self.logger = logging.getLogger(__name__)
         self.series_index = series_index
-        self.periods = []
         # Programmatically adjust seasonal_smoother to fit underlying STL requirements,
         # that seasonal_smoother must be odd.
         if seasonal_smoother % 2 == 0:
@@ -86,7 +84,7 @@ class STLDecomposer(Decomposer):
             units_forward = (
                 len(
                     pd.date_range(
-                        start=self.trend.index[-1],
+                        start=self.trend[self.group_index].index[-1],
                         end=y.index[-1],
                         freq=self.frequency,
                     ),
@@ -98,18 +96,18 @@ class STLDecomposer(Decomposer):
 
         # Model the trend and project it forward
         stlf = STLForecast(
-            self.trend,
+            self.trend[self.group_index],
             ARIMA,
             model_kwargs=dict(order=(1, 1, 0), trend="t"),
-            period=self.period,
+            period=self.periods[self.group_index],
         )
         stlf = stlf.fit()
         forecast = stlf.forecast(units_forward)
 
         # Store forecast summary for use in calculating trend prediction intervals.
         self.forecast_summary = stlf.get_prediction(
-            len(self.trend),
-            len(self.trend) + units_forward - 1,
+            len(self.trend[self.group_index]),
+            len(self.trend[self.group_index]) + units_forward - 1,
         )
 
         # Handle out-of-sample forecasts.  The forecast will have additional data
@@ -132,8 +130,8 @@ class STLDecomposer(Decomposer):
 
         projected_seasonality = self._project_seasonal(
             y,
-            self.seasonality,
-            self.period,
+            self.seasonality[self.group_index],
+            self.periods[self.group_index],
             self.frequency,
         )
         return projected_trend, projected_seasonality
@@ -174,13 +172,15 @@ class STLDecomposer(Decomposer):
             X.insert(0, "series_id", range(len(X)))
 
         # group the data by series_id
-        grouped_X = X.groupby(X[self.series_index])
+        grouped_X = X.groupby(self.series_index)
         # iterate through each id group
+        self.seasonal = []
         self.seasonality = []
         self.trend = []
         self.residual = []
+        self.periods = []
         for series_id, series_X in grouped_X:
-            series_y = y.reindex(series_X.index)
+            series_y = y[series_X.index]
             self.original_index = series_y.index if series_y is not None else None
 
             series_X, series_y = self._check_target(series_X, series_y)
@@ -188,23 +188,25 @@ class STLDecomposer(Decomposer):
 
             # Save the frequency of the fitted series for checking against transform data.
             self.frequency = series_y.index.freqstr or pd.infer_freq(series_y.index)
-
             # Determine the period of the seasonal component
             if self.period is None:
                 self.set_period(series_X, series_y)
 
             stl = STL(series_y, seasonal=self.seasonal_smoother, period=self.period)
             res = stl.fit()
-            self.seasonal = res.seasonal
+            seasonal = res.seasonal
+            self.seasonal.append(seasonal)
             self.period = stl.period
 
             self.periods.append(self.period)
 
             dist = len(series_y) % self.period
             self.seasonality.append(
-                self.seasonal[-(dist + self.period) : -dist]
-                if dist > 0
-                else self.seasonal[-self.period :],
+                (
+                    seasonal[-(dist + self.period) : -dist]
+                    if dist > 0
+                    else seasonal[-self.period :],
+                ),
             )
             self.trend.append(res.trend)
             self.residual.append(res.resid)
@@ -243,11 +245,15 @@ class STLDecomposer(Decomposer):
         y_out_of_sample = pd.Series([])
 
         # For partially and wholly in-sample data, retrieve stored results.
-        if self.trend.index[0] <= y.index[0] <= self.trend.index[-1]:
-            y_in_sample = self.residual[y.index[0] : y.index[-1]]
+        if (
+            self.trend[self.group_index].index[0]
+            <= y.index[0]
+            <= self.trend[self.group_index].index[-1]
+        ):
+            y_in_sample = self.residual[self.group_index][y.index[0] : y.index[-1]]
 
         # For out of sample data....
-        if y.index[-1] > self.trend.index[-1]:
+        if y.index[-1] > self.trend[self.group_index].index[-1]:
             try:
                 # ...that is partially out of sample and partially in sample.
                 truncated_y = y[y.index.get_loc(self.trend.index[-1]) + 1 :]
@@ -307,14 +313,18 @@ class STLDecomposer(Decomposer):
                 else y_t.index[-1] + 1 * y_t.index.freq
             )
             trend = (
-                self.trend.reset_index(drop=True)[left_index:right_index]
+                self.trend[self.group_index].reset_index(drop=True)[
+                    left_index:right_index
+                ]
                 if isinstance(y_t.index, pd.RangeIndex) or y_t.index.is_numeric()
-                else self.trend[left_index:right_index]
+                else self.trend[self.group_index][left_index:right_index]
             )
             seasonal = (
-                self.seasonal.reset_index(drop=True)[left_index:right_index]
+                self.seasonal[self.group_index][self.group_index].reset_index(
+                    drop=True,
+                )[left_index:right_index]
                 if isinstance(y_t.index, pd.RangeIndex) or y_t.index.is_numeric()
-                else self.seasonal[left_index:right_index]
+                else self.seasonal[self.group_index][left_index:right_index]
             )
             y_in_sample = y_t + trend + seasonal
             y_in_sample = y_in_sample.dropna()
@@ -380,22 +390,22 @@ class STLDecomposer(Decomposer):
 
         def _decompose_target(X, y, fh):
             """Function to generate a single DataFrame with trend, seasonality and residual components."""
-            if len(y.index) == len(self.trend[self.series_id].index) and all(
-                y.index == self.trend[self.series_id].index,
+            if len(y.index) == len(self.trend[self.group_index].index) and all(
+                y.index == self.trend[self.group_index].index,
             ):
-                trend = self.trend[self.series_id]
-                seasonal = self.seasonal[self.series_id]
-                residual = self.residual[self.series_id]
+                trend = self.trend[self.group_index]
+                seasonal = self.seasonal[self.group_index]
+                residual = self.residual[self.group_index]
             else:
                 # TODO: Do a better job cloning.
                 decomposer = STLDecomposer(
                     seasonal_smoother=self.seasonal_smoother,
-                    period=self.periods[self.series_id],
+                    period=self.period,
                 )
                 decomposer.fit(X, y)
-                trend = decomposer.trend[self.series_id]
-                seasonal = decomposer.seasonal[self.series_id]
-                residual = decomposer.residual[self.series_id]
+                trend = decomposer.trend[self.group_index]
+                seasonal = decomposer.seasonal[self.group_index]
+                residual = decomposer.residual[self.group_index]
             return pd.DataFrame(
                 {
                     "signal": y,
@@ -474,26 +484,27 @@ class STLDecomposer(Decomposer):
                 plotted on them
 
         """
-        # if self.series_index is None:
-        #     X.insert(0, 'series_id', range(len(X)))
+        if self.series_index is None:
+            X.insert(0, "series_id", range(len(X)))
 
         # group the data by series_id
-        grouped_X = X.groupby(X[self.series_index])
+        grouped_X = X.groupby(self.series_index)
         # iterate through each id group
         plot_info = []
         # for series_id, series_X in grouped_X:
-        for s_index, (series_id, series_X) in enumerate(grouped_X):
-            print("Index: " + str(s_index))
-
-            self.series_id = s_index
-            # series_y = y.reindex(series_X.index)
+        for group_index, (series_id, series_X) in enumerate(grouped_X):
+            self.group_index = group_index
             series_y = y[series_X.index]
-
-            print(series_y)
+            print("Index: " + str(group_index))
             # will need to change later since 'freq' var needs to be mutable
             series_X.index = pd.DatetimeIndex(series_X["time_index"], freq="W-FRI")
 
             decomposition_results = self.get_trend_dataframe(series_X, series_y)
+            print("Seasonality: ")
+            print(self.seasonality)
+            print("\nTrend: ")
+            print(self.trend)
+
             fig, axs = plt.subplots(4)
             fig.set_size_inches(18.5, 14.5)
             axs[0].plot(decomposition_results[0]["signal"], "r")
@@ -508,7 +519,6 @@ class STLDecomposer(Decomposer):
             fig.suptitle("Decomposition for Series {}".format(series_id))
 
             plot_info.append((fig, axs))
-            plt.show(block=False)
-            # if show:  # pragma: no cover
-            #     plt.show(block=False)
+            if show:  # pragma: no cover
+                plt.show()
         return plot_info
