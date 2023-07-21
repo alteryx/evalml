@@ -490,6 +490,9 @@ class STLDecomposer(Decomposer):
             series_y = y[series_X.index]
 
             print(series_y)
+            # will need to change later since 'freq' var needs to be mutable
+            series_X.index = pd.DatetimeIndex(series_X["time_index"], freq="W-FRI")
+
             decomposition_results = self.get_trend_dataframe(series_X, series_y)
             fig, axs = plt.subplots(4)
             fig.set_size_inches(18.5, 14.5)
