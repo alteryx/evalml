@@ -7,6 +7,7 @@ Release Notes
     * Changes
         * Unpinned sktime version :pr:`4214`
         * Bumped minimum lightgbm version to 4.0.0 for nullable type handling :pr:`4237`
+        * Pinned scikit-learn version due to incompatibility with pinned imbalanced-learn :pr:`4248`
     * Documentation Changes
     * Testing Changes
 
