@@ -18,11 +18,10 @@ class DecisionTreeRegressor(Estimator):
                 - "friedman_mse", which uses mean squared error with Friedman"s improvement score for potential splits
                 - "absolute_error" for the mean absolute error, which minimizes the L1 loss using the median of each terminal node,
                 - "poisson" which uses reduction in Poisson deviance to find splits.
-        max_features (int, float or {"auto", "sqrt", "log2"}): The number of features to consider when looking for the best split:
+        max_features (int, float or {"sqrt", "log2"}): The number of features to consider when looking for the best split:
 
             - If int, then consider max_features features at each split.
             - If float, then max_features is a fraction and int(max_features * n_features) features are considered at each split.
-            - If "auto", then max_features=sqrt(n_features).
             - If "sqrt", then max_features=sqrt(n_features).
             - If "log2", then max_features=log2(n_features).
             - If None, then max_features = n_features.
@@ -43,12 +42,12 @@ class DecisionTreeRegressor(Estimator):
     name = "Decision Tree Regressor"
     hyperparameter_ranges = {
         "criterion": ["squared_error", "friedman_mse", "absolute_error"],
-        "max_features": ["auto", "sqrt", "log2"],
+        "max_features": ["sqrt", "log2"],
         "max_depth": Integer(4, 10),
     }
     """{
         "criterion": ["squared_error", "friedman_mse", "absolute_error"],
-        "max_features": ["auto", "sqrt", "log2"],
+        "max_features": ["sqrt", "log2"],
         "max_depth": Integer(4, 10),
     }"""
     model_family = ModelFamily.DECISION_TREE
@@ -65,7 +64,7 @@ class DecisionTreeRegressor(Estimator):
     def __init__(
         self,
         criterion="squared_error",
-        max_features="auto",
+        max_features="sqrt",
         max_depth=6,
         min_samples_split=2,
         min_weight_fraction_leaf=0.0,

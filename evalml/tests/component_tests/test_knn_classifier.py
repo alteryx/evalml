@@ -24,8 +24,8 @@ def test_fit_predict_binary(X_y_binary):
 
     sk_clf = SKKNeighborsClassifier()
     sk_clf.fit(X, y)
-    y_pred_sk = sk_clf.predict(X)
-    y_pred_proba_sk = sk_clf.predict_proba(X)
+    y_pred_sk = sk_clf.predict(X.to_numpy())
+    y_pred_proba_sk = sk_clf.predict_proba(X.to_numpy())
 
     clf = KNeighborsClassifier()
     fitted = clf.fit(X, y)
@@ -42,9 +42,9 @@ def test_fit_predict_multi(X_y_multi):
     X, y = X_y_multi
 
     sk_clf = SKKNeighborsClassifier()
-    sk_clf.fit(X, y)
-    y_pred_sk = sk_clf.predict(X)
-    y_pred_proba_sk = sk_clf.predict_proba(X)
+    sk_clf.fit(X.to_numpy(), y)
+    y_pred_sk = sk_clf.predict(X.to_numpy())
+    y_pred_proba_sk = sk_clf.predict_proba(X.to_numpy())
 
     clf = KNeighborsClassifier()
     clf.fit(X, y)

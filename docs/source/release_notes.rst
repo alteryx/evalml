@@ -7,6 +7,7 @@ Release Notes
     * Changes
         * Unpinned sktime version :pr:`4214`
         * Bumped minimum lightgbm version to 4.0.0 for nullable type handling :pr:`4237`
+        * Pinned scikit-learn version due to incompatibility with pinned imbalanced-learn :pr:`4248`
     * Documentation Changes
     * Testing Changes
 
@@ -19,6 +20,7 @@ Release Notes
     * Enhancements
         * Add run_feature_selection to AutoMLSearch and Default Algorithm :pr:`4210`
         * Added ``SMAPE`` to the standard metrics for time series problems :pr:`4220`
+        * Added ``MASE`` metric and ``y_train`` parameter to objectives :pr:`4221`
     * Fixes
         * `IDColumnsDataCheck` now works with Unknown data type :pr:`4203`
     * Changes

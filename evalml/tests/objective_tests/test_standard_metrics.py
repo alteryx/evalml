@@ -7,6 +7,7 @@ import pytest
 from evalml.objectives import (
     F1,
     MAPE,
+    MASE,
     MSE,
     SMAPE,
     AccuracyBinary,
@@ -166,9 +167,10 @@ def test_regression_handles_dataframes(objective_class):
 
     y_predicted = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
     y_true = pd.DataFrame({"a": [1, 2, 3], "b": [4, 6, 6]})
+    y_train = pd.DataFrame({"a": [1, 2, 3], "b": [4, 6, 6]})
 
     objective = objective_class()
-    score = objective.score(y_true, y_predicted)
+    score = objective.score(y_true, y_predicted, y_train=y_train)
     assert isinstance(score, float)  # Output should be a float average
 
 
@@ -710,6 +712,34 @@ def test_mcc_catches_warnings():
         MCCBinary().objective_function(y_true, y_predicted)
         MCCMulticlass().objective_function(y_true, y_predicted)
         assert len(record) == 0
+
+
+def test_mase_time_series_model():
+    obj = MASE()
+
+    s1_actual = np.array([0, 1, 0, 1, 2, 0])
+    s1_predicted = np.array([0, 2, 2, 1, 3, 2])
+    s1_train = np.array([0, 0, 0, 0, 0, 0])
+
+    s2_actual = np.array([-1, -2, 1, 3])
+    s2_predicted = np.array([1, 2, -1, -3])
+    s2_train = np.array([-1, 2, 1, 1])
+
+    s3_actual = np.array([1, 2, 4, 2, 1, 2])
+    s3_predicted = np.array([0, 2, 2, 1, 3, 2])
+    s3_train = np.array([1, 1, 3, 2, 3, 1])
+
+    with pytest.raises(
+        ValueError,
+        match="Mean Absolute Scaled Error cannot be used when "
+        "all training targets contain the value 0.",
+    ):
+        obj.score(s1_actual, s1_predicted, s1_train)
+
+    assert obj.score(s2_actual, s2_predicted, s2_train) == pytest.approx(
+        (3 / 4) * (14 / 4),
+    )
+    assert obj.score(s3_actual, s3_predicted, s3_train) == pytest.approx(5 / 6)
 
 
 def test_mape_time_series_model():
