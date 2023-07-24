@@ -75,7 +75,7 @@ class ComponentGraph:
         ...                                  'max_depth': 6,
         ...                                  'n_jobs': -1},
         ...     'Decision Tree Classifier': {'criterion': 'gini',
-        ...                                  'max_features': 'auto',
+        ...                                  'max_features': 'sqrt',
         ...                                  'max_depth': 6,
         ...                                  'min_samples_split': 2,
         ...                                  'min_weight_fraction_leaf': 0.0},

@@ -14,17 +14,15 @@ class DecisionTreeClassifier(Estimator):
         criterion ({"gini", "entropy"}): The function to measure the quality of a split.
             Supported criteria are "gini" for the Gini impurity and "entropy" for the information gain.
             Defaults to "gini".
-        max_features (int, float or {"auto", "sqrt", "log2"}): The number of features to consider when looking for the best split:
+        max_features (int, float or {"sqrt", "log2"}): The number of features to consider when looking for the best split:
 
             - If int, then consider max_features features at each split.
             - If float, then max_features is a fraction and int(max_features * n_features) features are considered at each split.
-            - If "auto", then max_features=sqrt(n_features).
             - If "sqrt", then max_features=sqrt(n_features).
             - If "log2", then max_features=log2(n_features).
             - If None, then max_features = n_features.
 
             The search for a split does not stop until at least one valid partition of the node samples is found, even if it requires to effectively inspect more than max_features features.
-            Defaults to "auto".
         max_depth (int): The maximum depth of the tree. Defaults to 6.
         min_samples_split (int or float): The minimum number of samples required to split an internal node:
 
@@ -40,12 +38,12 @@ class DecisionTreeClassifier(Estimator):
     name = "Decision Tree Classifier"
     hyperparameter_ranges = {
         "criterion": ["gini", "entropy"],
-        "max_features": ["auto", "sqrt", "log2"],
+        "max_features": ["sqrt", "log2"],
         "max_depth": Integer(4, 10),
     }
     """{
         "criterion": ["gini", "entropy"],
-        "max_features": ["auto", "sqrt", "log2"],
+        "max_features": ["sqrt", "log2"],
         "max_depth": Integer(4, 10),
     }"""
     model_family = ModelFamily.DECISION_TREE
@@ -66,7 +64,7 @@ class DecisionTreeClassifier(Estimator):
     def __init__(
         self,
         criterion="gini",
-        max_features="auto",
+        max_features="sqrt",
         max_depth=6,
         min_samples_split=2,
         min_weight_fraction_leaf=0.0,

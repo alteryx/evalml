@@ -22,7 +22,7 @@ def test_problem_types():
 def test_fit_predict_binary(X_y_binary):
     X, y = X_y_binary
 
-    sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0)
+    sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0, max_features="sqrt")
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
     y_pred_proba_sk = sk_clf.predict_proba(X)

@@ -333,7 +333,7 @@ def test_roc_curve_binary(test_nullable, dtype, data_type, make_data_type):
     auc_score = roc_curve_data.get("auc_score")
     fpr_expected = np.array([0, 0.5, 0.5, 1, 1])
     tpr_expected = np.array([0, 0, 0.5, 0.5, 1])
-    thresholds_expected = np.array([1.8, 0.8, 0.4, 0.35, 0.1])
+    thresholds_expected = np.array([np.inf, 0.8, 0.4, 0.35, 0.1])
     assert np.array_equal(fpr_expected, fpr_rates)
     assert np.array_equal(tpr_expected, tpr_rates)
     assert np.array_equal(thresholds_expected, thresholds)
@@ -354,7 +354,7 @@ def test_roc_curve_binary(test_nullable, dtype, data_type, make_data_type):
     auc_score = roc_curve_data.get("auc_score")
     fpr_expected = np.array([0, 0.5, 0.5, 1, 1])
     tpr_expected = np.array([0, 0, 0.5, 0.5, 1])
-    thresholds_expected = np.array([1.8, 0.8, 0.4, 0.35, 0.1])
+    thresholds_expected = np.array([np.inf, 0.8, 0.4, 0.35, 0.1])
     assert np.array_equal(fpr_expected, fpr_rates)
     assert np.array_equal(tpr_expected, tpr_rates)
     assert np.array_equal(thresholds_expected, thresholds)
@@ -384,9 +384,9 @@ def test_roc_curve_multiclass(data_type, make_data_type):
     fpr_expected = [[0, 0, 0, 1], [0, 0, 0, 0.25, 0.75, 1], [0, 0, 0, 0.5, 1]]
     tpr_expected = [[0, 0.5, 1, 1], [0, 0.5, 1, 1, 1, 1], [0, 0.5, 1, 1, 1]]
     thresholds_expected = [
-        [1.8, 0.8, 0.75, 0.05],
-        [1.4, 0.4, 0.33, 0.15, 0.1, 0.05],
-        [1.9, 0.9, 0.8, 0.3, 0.1],
+        [np.inf, 0.8, 0.75, 0.05],
+        [np.inf, 0.4, 0.33, 0.15, 0.1, 0.05],
+        [np.inf, 0.9, 0.8, 0.3, 0.1],
     ]
     auc_expected = [1, 1, 1]
 

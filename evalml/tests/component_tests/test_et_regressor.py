@@ -20,7 +20,7 @@ def test_problem_types():
 def test_fit_predict(X_y_regression):
     X, y = X_y_regression
 
-    sk_clf = SKExtraTreesRegressor(max_depth=6, random_state=0)
+    sk_clf = SKExtraTreesRegressor(max_depth=6, random_state=0, max_features="sqrt")
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
 
@@ -36,7 +36,12 @@ def test_feature_importance(X_y_regression):
     X, y = X_y_regression
 
     clf = ExtraTreesRegressor(n_jobs=1)
-    sk_clf = SKExtraTreesRegressor(max_depth=6, random_state=0, n_jobs=1)
+    sk_clf = SKExtraTreesRegressor(
+        max_depth=6,
+        random_state=0,
+        n_jobs=1,
+        max_features="sqrt",
+    )
     sk_clf.fit(X, y)
     sk_feature_importance = sk_clf.feature_importances_
 
