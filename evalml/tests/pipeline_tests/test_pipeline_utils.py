@@ -1418,9 +1418,11 @@ def test_unstack_multiseries(
 
 @pytest.mark.parametrize("include_series_id", [True, False])
 @pytest.mark.parametrize("series_id_name", [None, "SERIES"])
+@pytest.mark.parametrize("index_type", ["datetime", "int"])
 def test_stack_data(
     include_series_id,
     series_id_name,
+    index_type,
     multiseries_ts_data_stacked,
     multiseries_ts_data_unstacked,
 ):
@@ -1428,8 +1430,12 @@ def test_stack_data(
     _, y_stacked = multiseries_ts_data_stacked
 
     y_stacked.name = "target"
-    y_stacked.index = pd.date_range(start="1/1/2018", periods=20).repeat(5)
-    y_stacked.index.name = "date"
+
+    if index_type == "datetime":
+        y_stacked.index = pd.date_range(start="1/1/2018", periods=20).repeat(5)
+        y_stacked.index.name = "date"
+    else:
+        y = y.reset_index(drop=True)
 
     y_stacked_transformed = stack_data(
         y,
@@ -1449,3 +1455,11 @@ def test_stack_data(
 
     else:
         pd.testing.assert_series_equal(y_stacked, y_stacked_transformed)
+
+
+def test_stack_data_noop():
+    none_y = None
+    series_y = pd.Series(range(100))
+
+    assert stack_data(none_y) is None
+    pd.testing.assert_series_equal(stack_data(series_y), series_y)
