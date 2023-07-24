@@ -5,6 +5,7 @@ import warnings
 
 import black
 import featuretools as ft
+import pandas as pd
 from woodwork import logical_types
 
 from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
@@ -1348,3 +1349,62 @@ def rows_of_interest(
 
     preds_value_proba = preds_value_proba[preds_value_proba <= epsilon]
     return preds_value_proba.index.tolist()
+
+
+def unstack_multiseries(X, y, series_id, time_index, keep_time_in_index=True):
+    """Converts multiseries data with one series_id column and one target column to one target column per series id.
+
+    Args:
+        X (pd.DataFrame): Data of shape [n_samples, n_features].
+        y (pd.Series): Target data.
+        series_id (str): The column which identifies which series each row belongs to.
+        time_index (str): Specifies the name of the column in X that provides the datetime objects.
+        keep_time_in_index (bool): Whether to maintain the time index as the index of the returned dataframes. Defaults to True.
+            If set to false, will discard the time index information entirely.
+
+    Returns:
+        pd.DataFrame, pd.DataFrame: The unstacked X and y data.
+    """
+    # Save the target name so we can re-separate it
+    target_name = y.name
+    if target_name is None:
+        target_name = "target"
+        y.name = "target"
+
+    # Combine X and y to make it easier to unstack
+    full_dataset = pd.concat([X, y.set_axis(X.index)], axis=1)
+
+    # Get the total number of series, with their names
+    series_id_unique = full_dataset[series_id].unique()
+
+    # Perform the unstacking
+    X_unstacked_cols = []
+    y_unstacked_cols = []
+    for i in series_id_unique:
+        single_series = full_dataset[full_dataset[series_id] == i]
+
+        # Save the time_index for alignment
+        new_time_index = single_series[time_index]
+        for column_name in full_dataset.columns:
+            if column_name in [time_index, series_id]:
+                continue
+
+            new_column = single_series[column_name]
+            new_column.index = new_time_index
+            new_column.name = f"{column_name}_{i}"
+
+            if column_name == target_name:
+                y_unstacked_cols.append(new_column)
+            else:
+                X_unstacked_cols.append(new_column)
+
+    # Concatenate all the single series to reform dataframes
+    X_unstacked = pd.concat(X_unstacked_cols, axis=1)
+    y_unstacked = pd.concat(y_unstacked_cols, axis=1)
+
+    # Reset the axis if need be
+    if not keep_time_in_index:
+        X_unstacked.reset_index(drop=True, inplace=True)
+        y_unstacked.reset_index(drop=True, inplace=True)
+
+    return X_unstacked, y_unstacked
