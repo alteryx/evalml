@@ -20,15 +20,17 @@ def test_multiseries_time_series_baseline_gap_negative():
         MultiseriesTimeSeriesBaselineRegressor(gap=-1)
 
 
-def test_multiseries_time_series_baseline_estimator_y_is_none(
+def test_multiseries_time_series_baseline_estimator_invalid_y(
     X_y_multiseries_regression,
 ):
-    X, y = X_y_multiseries_regression
+    X, _ = X_y_multiseries_regression
 
     estimator = MultiseriesTimeSeriesBaselineRegressor(gap=0, forecast_horizon=2)
 
     with pytest.raises(ValueError, match="if y is None"):
         estimator.fit(X, None)
+    with pytest.raises(ValueError, match="y must be a DataFrame"):
+        estimator.fit(X, pd.Series(range(100)))
 
 
 def test_multiseries_time_series_baseline_lags(X_y_multiseries_regression):

@@ -19,7 +19,7 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    name = "Time Series Baseline Regressor"
+    name = "Multiseries Time Series Baseline Regressor"
     hyperparameter_ranges = {}
     """{}"""
     model_family = ModelFamily.BASELINE
@@ -67,7 +67,14 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
             raise ValueError(
                 "Cannot train Multiseries Time Series Baseline Regressor if y is None",
             )
+        if isinstance(y, pd.Series):
+            raise ValueError(
+                "y must be a DataFrame with multiple columns for Multiseries Time Series Baseline Regressor",
+            )
+        self._num_features = X.shape[1]
         self._series_names = y.columns
+        if not y.index.is_numeric():
+            y = y.reset_index(drop=True)
 
         delay_columns = pd.DataFrame(
             np.zeros((self.start_delay, y.shape[1])),
@@ -93,7 +100,8 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
             ValueError: If input y is None.
         """
         X = infer_feature_types(X)
-        self._num_features = X.shape[1]
+        if not X.index.is_numeric():
+            X = X.reset_index(drop=True)
 
         in_sample_delay = self._delayed_target[self._delayed_target.index.isin(X.index)]
 
