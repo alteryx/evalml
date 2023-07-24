@@ -1408,3 +1408,50 @@ def unstack_multiseries(X, y, series_id, time_index, keep_time_in_index=True):
         y_unstacked.reset_index(drop=True, inplace=True)
 
     return X_unstacked, y_unstacked
+
+
+def stack_data(data, include_series_id=False, series_id_name=None):
+    """Stacks the given DataFrame back into a single Series, or a DataFrame if include_series_id is True.
+
+    Should only be used for data that is expected to be a single series. To stack multiple unstacked columns,
+    call this function multiple times on the desired subsets.
+
+    Args:
+        data (pd.DataFrame): The data to stack.
+        include_series_id (bool): Whether or not to extract the series id and include it in a separate columns
+        series_id_name (str): If include_series_id is True, the series_id name to set for the column. The column
+            will be named 'series_id' if this parameter is None.
+
+    Returns:
+        pd.Series or pd.DataFrame: The data in stacked series form.
+    """
+    if data is None or isinstance(data, pd.Series):
+        return data
+
+    stacked_series = data.stack(0)
+
+    # Extract the original column name
+    series_id_with_name = stacked_series.index.droplevel()
+    stacked_series.name = "_".join(series_id_with_name[0].split("_")[:-1])
+
+    # If the index is the time index, keep it
+    if not data.index.is_numeric():
+        new_time_index = data.index.unique().repeat(len(data.columns))
+    # Otherwise, set it to unique integers
+    else:
+        new_time_index = pd.RangeIndex(
+            start=data.index[0],
+            stop=data.index[0] + len(stacked_series),
+        )
+    stacked_series = stacked_series.set_axis(new_time_index)
+
+    # Pull out the series id information, if requested
+    if include_series_id:
+        series_id_col = pd.Series(
+            series_id_with_name.map(lambda col_name: col_name.split("_")[-1]),
+            name=series_id_name or "series_id",
+            index=stacked_series.index,
+        )
+        stacked_series = pd.concat([series_id_col, stacked_series], axis=1)
+
+    return stacked_series
