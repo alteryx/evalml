@@ -190,8 +190,7 @@ class STLDecomposer(Decomposer):
             # Save the frequency of the fitted series for checking against transform data.
             self.frequency = series_y.index.freqstr or pd.infer_freq(series_y.index)
             # Determine the period of the seasonal component
-            if self.period is None:
-                self.set_period(series_X, series_y)
+            self.set_period(series_X, series_y)
 
             stl = STL(series_y, seasonal=self.seasonal_smoother, period=self.period)
             res = stl.fit()
@@ -481,25 +480,22 @@ class STLDecomposer(Decomposer):
 
         # group the data by series_id
         grouped_X = X.groupby(self.series_index)
-        # iterate through each id group
+
+        # Iterate through each series id
         plot_info = []
-        # for series_id, series_X in grouped_X:
         for group_index, (series_id, series_X) in enumerate(grouped_X):
             self.trend = self.trends[group_index]
             self.seasonality = self.seasonalities[group_index]
             self.seasonal = self.seasonals[group_index]
             self.residual = self.residuals[group_index]
 
-            # print("Seasonality: ")
-            # print(self.seasonality)
-            # print("Trend: ")
-            # print(self.trend)
-            # print("Residual: ")
-            # print(self.residual)
-
             series_y = y[series_X.index]
+
             # will need to change later since 'freq' var needs to be mutable
-            series_X.index = pd.DatetimeIndex(series_X["time_index"], freq="W-FRI")
+            series_X.index = pd.DatetimeIndex(
+                series_X[self.time_index],
+                freq=self.frequency,
+            )
 
             decomposition_results = self.get_trend_dataframe(series_X, series_y)
 
