@@ -178,12 +178,13 @@ class STLDecomposer(Decomposer):
         self.seasonalities = []
         self.trends = []
         self.residuals = []
-        self.periods = []
+
         for series_id, series_X in grouped_X:
-            series_y = y[series_X.index].copy()
+            series_y = y[series_X.index]
             self.original_index = series_y.index if series_y is not None else None
 
             series_X, series_y = self._check_target(series_X, series_y)
+
             self._map_dt_to_integer(self.original_index, series_y.index)
 
             # Save the frequency of the fitted series for checking against transform data.
@@ -194,23 +195,19 @@ class STLDecomposer(Decomposer):
 
             stl = STL(series_y, seasonal=self.seasonal_smoother, period=self.period)
             res = stl.fit()
-            seasonal = res.seasonal
-            self.seasonals.append(seasonal)
+            self.seasonals.append(res.seasonal)
             self.period = stl.period
-
-            self.periods.append(self.period)
 
             dist = len(series_y) % self.period
             self.seasonalities.append(
                 (
-                    seasonal[-(dist + self.period) : -dist]
+                    res.seasonal[-(dist + self.period) : -dist]
                     if dist > 0
-                    else seasonal[-self.period :],
+                    else res.seasonal[-self.period :],
                 ),
             )
             self.trends.append(res.trend)
             self.residuals.append(res.resid)
-
         return self
 
     def transform(
@@ -492,17 +489,19 @@ class STLDecomposer(Decomposer):
             self.seasonality = self.seasonalities[group_index]
             self.seasonal = self.seasonals[group_index]
             self.residual = self.residuals[group_index]
-            self.period = self.periods[group_index]
 
-            series_y = y[series_X.index].copy()
+            # print("Seasonality: ")
+            # print(self.seasonality)
+            # print("Trend: ")
+            # print(self.trend)
+            # print("Residual: ")
+            # print(self.residual)
+
+            series_y = y[series_X.index]
             # will need to change later since 'freq' var needs to be mutable
             series_X.index = pd.DatetimeIndex(series_X["time_index"], freq="W-FRI")
 
             decomposition_results = self.get_trend_dataframe(series_X, series_y)
-            # print("Seasonality: ")
-            # print(self.seasonality[group_index])
-            # print("\nTrend: ")
-            # print(self.trend[group_index])
 
             fig, axs = plt.subplots(4)
             fig.set_size_inches(18.5, 14.5)
