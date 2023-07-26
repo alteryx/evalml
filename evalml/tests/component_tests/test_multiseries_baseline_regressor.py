@@ -2,7 +2,10 @@ import pandas as pd
 import pytest
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components import MultiseriesTimeSeriesBaselineRegressor
+from evalml.pipelines.components import (
+    MultiseriesTimeSeriesBaselineRegressor,
+    TimeSeriesFeaturizer,
+)
 
 
 def test_multiseries_time_series_baseline_regressor_init():
@@ -36,24 +39,14 @@ def test_multiseries_time_series_baseline_estimator_invalid_y(
 def test_multiseries_time_series_baseline_lags(X_y_multiseries_regression):
     X, y = X_y_multiseries_regression
 
+    feat = TimeSeriesFeaturizer(time_index="index", gap=0, forecast_horizon=2)
+    feat.fit(X, y)
+    X_t = feat.transform(X, y)
+
     estimator = MultiseriesTimeSeriesBaselineRegressor(gap=0, forecast_horizon=2)
-    estimator.fit(X, y)
+    estimator.fit(X_t, y)
 
-    assert len(estimator._delayed_target) == len(y) + 2
-    assert (estimator._delayed_target.columns == y.columns).all()
-
-
-def test_multiseries_time_series_baseline_includes_future(X_y_multiseries_regression):
-    X, y = X_y_multiseries_regression
-
-    estimator = MultiseriesTimeSeriesBaselineRegressor(gap=1, forecast_horizon=2)
-    estimator.fit(X, y)
-
-    X_future = pd.DataFrame(columns=X.columns, index=range(len(X), len(X) + 10))
-    y_pred = estimator.predict(X_future)
-
-    pd.testing.assert_frame_equal(
-        y_pred[:3].reset_index(drop=True),
-        y[-3:].reset_index(drop=True),
-    )
-    assert (y_pred[3:] == 0).all().all()
+    pred = estimator.predict(X_t)
+    expected = y.shift(2)
+    expected.columns = [f"{col}_delay_2" for col in expected.columns]
+    pd.testing.assert_frame_equal(pred, expected)
