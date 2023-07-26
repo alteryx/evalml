@@ -1382,15 +1382,15 @@ def unstack_multiseries(
     # Perform the unstacking
     X_unstacked_cols = []
     y_unstacked_cols = []
-    for i in series_id_unique:
-        single_series = full_dataset[full_dataset[series_id] == i]
+    for s_id in series_id_unique:
+        single_series = full_dataset[full_dataset[series_id] == s_id]
 
         # Save the time_index for alignment
         new_time_index = single_series[time_index]
         for column_name in full_dataset.columns.drop([time_index, series_id]):
             new_column = single_series[column_name]
             new_column.index = new_time_index
-            new_column.name = f"{column_name}_{i}"
+            new_column.name = f"{column_name}_{s_id}"
 
             if column_name == target_name:
                 y_unstacked_cols.append(new_column)
