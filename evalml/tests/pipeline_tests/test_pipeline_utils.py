@@ -1378,7 +1378,7 @@ def test_make_pipeline_features_and_dfs(X_y_binary):
     assert "DFS Transformer" == pipeline.component_graph.compute_order[0]
 
 
-@pytest.mark.parametrize("target_name", [None, "Target_Data"])
+@pytest.mark.parametrize("target_name", ["target", "Target_Data"])
 @pytest.mark.parametrize("keep_time_in_index", [True, False])
 def test_unstack_multiseries(
     target_name,
@@ -1388,11 +1388,10 @@ def test_unstack_multiseries(
 ):
     X, y = multiseries_ts_data_stacked
     X_unstacked, y_unstacked = multiseries_ts_data_unstacked
-    if target_name:
-        y.name = target_name
-        y_unstacked.columns = [
-            f"{target_name}_{i}" for i in range(len(y_unstacked.columns))
-        ]
+    y.name = target_name
+    y_unstacked.columns = [
+        f"{target_name}_{i}" for i in range(len(y_unstacked.columns))
+    ]
     if not keep_time_in_index:
         X_unstacked.reset_index(drop=True, inplace=True)
         y_unstacked.reset_index(drop=True, inplace=True)
@@ -1402,6 +1401,7 @@ def test_unstack_multiseries(
         y,
         "series_id",
         "date",
+        target_name=target_name,
         keep_time_in_index=keep_time_in_index,
     )
     pd.testing.assert_frame_equal(

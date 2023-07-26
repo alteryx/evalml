@@ -1351,7 +1351,14 @@ def rows_of_interest(
     return preds_value_proba.index.tolist()
 
 
-def unstack_multiseries(X, y, series_id, time_index, keep_time_in_index=True):
+def unstack_multiseries(
+    X,
+    y,
+    series_id,
+    time_index,
+    target_name,
+    keep_time_in_index=True,
+):
     """Converts multiseries data with one series_id column and one target column to one target column per series id.
 
     Args:
@@ -1359,18 +1366,13 @@ def unstack_multiseries(X, y, series_id, time_index, keep_time_in_index=True):
         y (pd.Series): Target data.
         series_id (str): The column which identifies which series each row belongs to.
         time_index (str): Specifies the name of the column in X that provides the datetime objects.
+        target_name (str): The name of the target column.
         keep_time_in_index (bool): Whether to maintain the time index as the index of the returned dataframes. Defaults to True.
             If set to false, will discard the time index information entirely.
 
     Returns:
         pd.DataFrame, pd.DataFrame: The unstacked X and y data.
     """
-    # Save the target name so we can re-separate it
-    target_name = y.name
-    if target_name is None:
-        target_name = "target"
-        y.name = "target"
-
     # Combine X and y to make it easier to unstack
     full_dataset = pd.concat([X, y.set_axis(X.index)], axis=1)
 
@@ -1386,7 +1388,6 @@ def unstack_multiseries(X, y, series_id, time_index, keep_time_in_index=True):
         # Save the time_index for alignment
         new_time_index = single_series[time_index]
         for column_name in full_dataset.columns.drop([time_index, series_id]):
-
             new_column = single_series[column_name]
             new_column.index = new_time_index
             new_column.name = f"{column_name}_{i}"
