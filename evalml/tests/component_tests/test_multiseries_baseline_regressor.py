@@ -36,6 +36,16 @@ def test_multiseries_time_series_baseline_estimator_invalid_y(
         estimator.fit(X, pd.Series(range(100)))
 
 
+def test_multiseries_baseline_no_featurizer(X_y_multiseries_regression):
+    X, y = X_y_multiseries_regression
+
+    estimator = MultiseriesTimeSeriesBaselineRegressor(gap=0, forecast_horizon=2)
+    estimator.fit(X, y)
+
+    with pytest.raises(ValueError, match="is meant to be used in a pipeline with "):
+        estimator.predict(X)
+
+
 def test_multiseries_time_series_baseline_lags(X_y_multiseries_regression):
     X, y = X_y_multiseries_regression
 

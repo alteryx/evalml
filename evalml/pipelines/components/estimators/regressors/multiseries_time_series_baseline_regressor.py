@@ -85,7 +85,7 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
             pd.Series: Predicted values.
 
         Raises:
-            ValueError: If input y is None.
+            ValueError: If the lagged columns are not present in X.
         """
         X = infer_feature_types(X)
         feature_names = [
