@@ -71,19 +71,7 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
             raise ValueError(
                 "y must be a DataFrame with multiple columns for Multiseries Time Series Baseline Regressor",
             )
-        self._num_features = X.shape[1]
-        self._series_names = y.columns
-        if not y.index.is_numeric():
-            y = y.reset_index(drop=True)
-
-        delay_columns = pd.DataFrame(
-            np.zeros((self.start_delay, y.shape[1])),
-            columns=self._series_names,
-            index=range(y.index[-1] + 1, self.start_delay + y.index[-1] + 1),
-        )
-        y = pd.concat([y, delay_columns])
-
-        self._delayed_target = y.shift(self.start_delay, fill_value=0)
+        self._target_column_names = list(y.columns)
 
         return self
 
@@ -100,22 +88,16 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
             ValueError: If input y is None.
         """
         X = infer_feature_types(X)
-        if not X.index.is_numeric():
-            X = X.reset_index(drop=True)
-
-        in_sample_delay = self._delayed_target[self._delayed_target.index.isin(X.index)]
-
-        out_of_sample_delay = pd.DataFrame(columns=self._series_names)
-        out_of_sample_offset = X.index[-1] - self._delayed_target.index[-1]
-        if out_of_sample_offset > 0:
-            out_of_sample_delay = pd.DataFrame(
-                np.zeros((out_of_sample_offset, len(self._series_names))),
-                columns=self._series_names,
-                index=range(self._delayed_target.index[-1] + 1, X.index[-1] + 1),
+        feature_names = [
+            f"{col}_delay_{self.start_delay}" for col in self._target_column_names
+        ]
+        if not set(feature_names).issubset(set(X.columns)):
+            raise ValueError(
+                "Multiseries Time Series Baseline Regressor is meant to be used in a pipeline with "
+                "a Time Series Featurizer",
             )
-
-        y_pred = pd.concat([in_sample_delay, out_of_sample_delay])
-        return y_pred
+        self._num_features = X.shape[1]
+        return X.ww[feature_names]
 
     @property
     def feature_importance(self):
