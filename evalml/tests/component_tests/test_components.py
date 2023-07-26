@@ -40,6 +40,7 @@ from evalml.pipelines.components import (
     LinearDiscriminantAnalysis,
     LinearRegressor,
     LogisticRegressionClassifier,
+    MultiseriesTimeSeriesBaselineRegressor,
     NaturalLanguageFeaturizer,
     OneHotEncoder,
     Oversampler,
@@ -1210,6 +1211,7 @@ def test_all_estimators_check_fit(
             StackedEnsembleClassifier,
             StackedEnsembleRegressor,
             TimeSeriesBaselineEstimator,
+            MultiseriesTimeSeriesBaselineRegressor,
             VowpalWabbitBinaryClassifier,
             VowpalWabbitMulticlassClassifier,
             VowpalWabbitRegressor,
@@ -1224,8 +1226,6 @@ def test_all_estimators_check_fit(
             in component_class.supported_problem_types
         ):
             X, _, y = ts_data()
-            if component_class.is_multiseries:
-                y = pd.DataFrame({"target_a": y, "target_b": y})
         else:
             X, y = X_y_binary
 
@@ -1923,7 +1923,10 @@ def test_components_support_nullable_types(
     component is added that has nullable type incompatibilities, this should fail."""
     cannot_handle_boolean_target = [CatBoostRegressor]
 
-    if component_class == TimeSeriesBaselineEstimator:
+    if (
+        component_class == TimeSeriesBaselineEstimator
+        or component_class == MultiseriesTimeSeriesBaselineRegressor
+    ):
         pytest.skip(
             "Time Series Baseline Estimator can only be used within a Pipeline.",
         )
@@ -1968,9 +1971,6 @@ def test_components_support_nullable_types(
             X = X.ww.select(["numeric"])
         else:
             X = X.ww.select(["numeric", "Boolean", "BooleanNullable"])
-
-    if component.is_multiseries:
-        y = pd.DataFrame({"target_a": y, "target_b": y})
 
     component.fit(X, y)
     if issubclass(component_class, Estimator):

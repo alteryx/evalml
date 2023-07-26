@@ -72,6 +72,7 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
                 "y must be a DataFrame with multiple columns for Multiseries Time Series Baseline Regressor",
             )
         self._target_column_names = list(y.columns)
+        self._num_features = X.shape[1]
 
         return self
 
@@ -96,7 +97,6 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
                 "Multiseries Time Series Baseline Regressor is meant to be used in a pipeline with "
                 "a Time Series Featurizer",
             )
-        self._num_features = X.shape[1]
         return X.ww[feature_names]
 
     @property
