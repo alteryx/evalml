@@ -1385,9 +1385,7 @@ def unstack_multiseries(X, y, series_id, time_index, keep_time_in_index=True):
 
         # Save the time_index for alignment
         new_time_index = single_series[time_index]
-        for column_name in full_dataset.columns:
-            if column_name in [time_index, series_id]:
-                continue
+        for column_name in full_dataset.columns.drop([time_index, series_id]):
 
             new_column = single_series[column_name]
             new_column.index = new_time_index
