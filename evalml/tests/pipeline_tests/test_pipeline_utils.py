@@ -54,6 +54,8 @@ from evalml.pipelines.utils import (
     make_pipeline,
     make_pipeline_from_actions,
     rows_of_interest,
+    stack_data,
+    unstack_multiseries,
 )
 from evalml.problem_types import ProblemTypes, is_time_series
 
@@ -1374,3 +1376,90 @@ def test_make_pipeline_features_and_dfs(X_y_binary):
     )
 
     assert "DFS Transformer" == pipeline.component_graph.compute_order[0]
+
+
+@pytest.mark.parametrize("target_name", ["target", "Target_Data"])
+@pytest.mark.parametrize("keep_time_in_index", [True, False])
+def test_unstack_multiseries(
+    target_name,
+    keep_time_in_index,
+    multiseries_ts_data_stacked,
+    multiseries_ts_data_unstacked,
+):
+    X, y = multiseries_ts_data_stacked
+    X_unstacked, y_unstacked = multiseries_ts_data_unstacked
+    y.name = target_name
+    y_unstacked.columns = [
+        f"{target_name}_{i}" for i in range(len(y_unstacked.columns))
+    ]
+    if not keep_time_in_index:
+        X_unstacked.reset_index(drop=True, inplace=True)
+        y_unstacked.reset_index(drop=True, inplace=True)
+
+    X_unstacked_transformed, y_unstacked_transformed = unstack_multiseries(
+        X,
+        y,
+        "series_id",
+        "date",
+        target_name=target_name,
+        keep_time_in_index=keep_time_in_index,
+    )
+    pd.testing.assert_frame_equal(
+        X_unstacked.sort_index(axis=1),
+        X_unstacked_transformed.sort_index(axis=1),
+        check_freq=False,
+    )
+    pd.testing.assert_frame_equal(
+        y_unstacked,
+        y_unstacked_transformed,
+        check_freq=False,
+    )
+
+
+@pytest.mark.parametrize("include_series_id", [True, False])
+@pytest.mark.parametrize("series_id_name", [None, "SERIES"])
+@pytest.mark.parametrize("index_type", ["datetime", "int"])
+def test_stack_data(
+    include_series_id,
+    series_id_name,
+    index_type,
+    multiseries_ts_data_stacked,
+    multiseries_ts_data_unstacked,
+):
+    _, y = multiseries_ts_data_unstacked
+    _, y_stacked = multiseries_ts_data_stacked
+
+    y_stacked.name = "target"
+
+    if index_type == "datetime":
+        y_stacked.index = pd.date_range(start="1/1/2018", periods=20).repeat(5)
+        y_stacked.index.name = "date"
+    else:
+        y = y.reset_index(drop=True)
+
+    y_stacked_transformed = stack_data(
+        y,
+        include_series_id=include_series_id,
+        series_id_name=series_id_name,
+    )
+
+    if include_series_id:
+        series_id_name = series_id_name or "series_id"
+        series_id_col = pd.Series(
+            list(range(5)) * 20,
+            dtype="str",
+            index=y_stacked.index,
+        )
+        y_stacked = pd.DataFrame({series_id_name: series_id_col, "target": y_stacked})
+        pd.testing.assert_frame_equal(y_stacked, y_stacked_transformed)
+
+    else:
+        pd.testing.assert_series_equal(y_stacked, y_stacked_transformed)
+
+
+def test_stack_data_noop():
+    none_y = None
+    series_y = pd.Series(range(100))
+
+    assert stack_data(none_y) is None
+    pd.testing.assert_series_equal(stack_data(series_y), series_y)
