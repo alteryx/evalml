@@ -167,9 +167,12 @@ class STLDecomposer(Decomposer):
                 f"STLDecomposer may perform poorly on data with a high seasonal smoother ({self.seasonal_smoother}).",
             )
 
-        # If there is not a series_index, add a new series_id column ranging from 0 to the size of the data frame
-        if self.series_index is None:
-            X.insert(0, "series_id", range(len(X)))
+        # If there is not a series_index, give them one series id with the value 0
+        if "series_index" not in X.columns or self.series_index is None:
+            self.series_index = "series_index"
+            # X.insert(0, self.series_index, 0)
+            X[self.series_index] = 0
+            self.update_parameters({"series_index": self.series_index})
 
         # group the data by series_id
         grouped_X = X.groupby(self.series_index)
@@ -180,6 +183,7 @@ class STLDecomposer(Decomposer):
         self.residuals = []
 
         for series_id, series_X in grouped_X:
+
             series_y = y[series_X.index]
             self.original_index = series_y.index if series_y is not None else None
 
@@ -213,7 +217,7 @@ class STLDecomposer(Decomposer):
         self,
         X: pd.DataFrame,
         y: pd.Series = None,
-    ) -> tuple[pd.DataFrame, pd.Series]:
+    ) -> list(tuple[pd.DataFrame, pd.Series]):
         """Transforms the target data by removing the STL trend and seasonality.
 
         Uses an ARIMA model to project forward the addititve trend and removes it. Then, utilizes the first period's
@@ -225,48 +229,68 @@ class STLDecomposer(Decomposer):
             y (pd.Series): Target variable to detrend and deseasonalize.
 
         Returns:
-            tuple of pd.DataFrame, pd.Series: The input features are returned without modification. The target
+            list of tuple of pd.DataFrame, pd.Series: The list of input features are returned without modification. The target
                 variable y is detrended and deseasonalized.
 
         Raises:
             ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
-        if y is None:
-            return X, y
-        original_index = y.index
-        X, y = self._check_target(X, y)
-        self._check_oos_past(y)
+        # If there is not a series_index, give them one series id with the value 0
+        # if self.series_index is None:
+        #     self.series_index = "series_index"
+        #     X.insert(0, self.series_index, 0)
+        #     self.update_parameters({"series_index": self.series_index})
 
-        y_in_sample = pd.Series([])
-        y_out_of_sample = pd.Series([])
+        # group the data by series_id
+        grouped_X = X.groupby(self.series_index)
 
-        # For partially and wholly in-sample data, retrieve stored results.
-        if self.trend.index[0] <= y.index[0] <= self.trend.index[-1]:
-            y_in_sample = self.residual[y.index[0] : y.index[-1]]
+        features = []
+        for group_index, (series_id, series_X) in enumerate(grouped_X):
+            self.trend = self.trends[group_index]
+            self.seasonality = self.seasonalities[group_index]
+            self.seasonal = self.seasonals[group_index]
+            self.residual = self.residuals[group_index]
 
-        # For out of sample data....
-        if y.index[-1] > self.trend.index[-1]:
-            try:
-                # ...that is partially out of sample and partially in sample.
-                truncated_y = y[y.index.get_loc(self.trend.index[-1]) + 1 :]
-            except KeyError:
-                # ...that is entirely out of sample.
-                truncated_y = y
+            series_y = y[series_X.index]
+            if series_y is None:
+                return series_X, series_y
+            original_index = series_y.index
+            series_X, series_y = self._check_target(series_X, series_y)
+            self._check_oos_past(series_y)
 
-            (
-                projected_trend,
-                projected_seasonality,
-            ) = self._project_trend_and_seasonality(truncated_y)
+            y_in_sample = pd.Series([])
+            y_out_of_sample = pd.Series([])
 
-            y_out_of_sample = infer_feature_types(
-                pd.Series(
-                    truncated_y - projected_trend - projected_seasonality,
-                    index=truncated_y.index,
-                ),
-            )
-        y_t = y_in_sample.append(y_out_of_sample)
-        y_t.index = original_index
-        return X, y_t
+            # For partially and wholly in-sample data, retrieve stored results.
+            if self.trend.index[0] <= series_y.index[0] <= self.trend.index[-1]:
+                y_in_sample = self.residual[series_y.index[0] : series_y.index[-1]]
+
+            # For out of sample data....
+            if series_y.index[-1] > self.trend.index[-1]:
+                try:
+                    # ...that is partially out of sample and partially in sample.
+                    truncated_y = series_y[
+                        series_y.index.get_loc(self.trend.index[-1]) + 1 :
+                    ]
+                except KeyError:
+                    # ...that is entirely out of sample.
+                    truncated_y = series_y
+
+                (
+                    projected_trend,
+                    projected_seasonality,
+                ) = self._project_trend_and_seasonality(truncated_y)
+
+                y_out_of_sample = infer_feature_types(
+                    pd.Series(
+                        truncated_y - projected_trend - projected_seasonality,
+                        index=truncated_y.index,
+                    ),
+                )
+            y_t = y_in_sample.append(y_out_of_sample)
+            y_t.index = original_index
+            features.append((series_X, y_t))
+        return features
 
     def inverse_transform(self, y_t: pd.Series) -> tuple[pd.DataFrame, pd.Series]:
         """Adds back fitted trend and seasonality to target variable.
@@ -470,15 +494,13 @@ class STLDecomposer(Decomposer):
             show (bool): Whether to display the plot or not. Defaults to False.
 
         Returns:
-            matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]: The figure and axes that have the decompositions
+            list[matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]]: A list of the figure and axes that have the decompositions
                 plotted on them
 
         """
-        # If there is not a series_index, add a new series_id column ranging from 0 to the size of the data frame
-        if self.series_index is None:
-            X.insert(0, "series_id", range(len(X)))
+        # If there is not a series_index, give them one series id with the value 0
 
-        # group the data by series_id
+        # Group the data by series_id
         grouped_X = X.groupby(self.series_index)
 
         # Iterate through each series id
