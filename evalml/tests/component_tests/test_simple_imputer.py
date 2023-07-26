@@ -557,14 +557,14 @@ def test_simple_imputer_ignores_natural_language(
 
     if df_composition == "full_df":
         if numeric_impute_strategy == "mean" and has_nan == "has_nan":
-            ans = X_df.mean()
+            ans = X_df.mean(numeric_only=True)
             ans["natural language col"] = pd.NA
             X_df = X_df.astype(
                 {"int col": float},
             )
             X_df.iloc[-1, :] = ans
         elif numeric_impute_strategy == "median" and has_nan == "has_nan":
-            ans = X_df.median()
+            ans = X_df.median(numeric_only=True)
             ans["natural language col"] = pd.NA
             X_df = X_df.astype(
                 {"int col": float},

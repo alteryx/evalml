@@ -420,7 +420,7 @@ def test_more_top_n_unique_values():
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=random_seed)
     col_1_counts = col_1_counts.sort_values(
-        ["col_1"],
+        col_1_counts.iloc[:, 0].name,
         ascending=False,
         kind="mergesort",
     )
@@ -429,7 +429,7 @@ def test_more_top_n_unique_values():
     col_2_counts = X["col_2"].value_counts(dropna=False).to_frame()
     col_2_counts = col_2_counts.sample(frac=1, random_state=random_seed)
     col_2_counts = col_2_counts.sort_values(
-        ["col_2"],
+        col_2_counts.iloc[:, 0].name,
         ascending=False,
         kind="mergesort",
     )
@@ -466,7 +466,7 @@ def test_more_top_n_unique_values_large():
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=random_seed)
     col_1_counts = col_1_counts.sort_values(
-        ["col_1"],
+        col_1_counts.iloc[:, 0].name,
         ascending=False,
         kind="mergesort",
     )

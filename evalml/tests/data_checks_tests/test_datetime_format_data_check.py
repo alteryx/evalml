@@ -244,7 +244,7 @@ def test_datetime_format_data_check_multiple_errors():
         + ["2021-01-31", "2021-02-02", "2021-02-04"]
         + pd.date_range("2021-02-05", periods=90).tolist()
     )
-    X = pd.DataFrame({"dates": dates})
+    X = pd.DataFrame({"dates": dates}, dtype="datetime64[ns]")
     y = pd.Series(range(21))
     datetime_format_check = DateTimeFormatDataCheck(datetime_column="dates")
 
@@ -269,7 +269,7 @@ def test_datetime_format_data_check_multiple_errors():
         + ["2021-01-09", "2021-01-31", "2021-02-02", "2021-02-04"]
         + pd.date_range("2021-02-05", periods=90).tolist()
     )
-    X = pd.DataFrame({"dates": dates})
+    X = pd.DataFrame({"dates": dates}, dtype="datetime64[ns]")
 
     ww_payload = infer_frequency(
         X["dates"],
@@ -297,7 +297,7 @@ def test_datetime_format_data_check_multiple_errors():
         .drop("2021-01-10")
         .append(pd.date_range("2021-01-15", periods=86))
     )
-    X = pd.DataFrame({"dates": dates})
+    X = pd.DataFrame({"dates": dates}, dtype="datetime64[ns]")
 
     ww_payload = infer_frequency(
         X["dates"],
@@ -326,7 +326,7 @@ def test_datetime_format_data_check_multiple_errors():
         .append(pd.date_range("2021-01-30", periods=1))
         .append(pd.date_range("2021-01-31", periods=86, freq="2D"))
     )
-    X = pd.DataFrame({"dates": dates})
+    X = pd.DataFrame({"dates": dates}, dtype="datetime64[ns]")
 
     ww_payload = infer_frequency(
         X["dates"],
@@ -355,7 +355,7 @@ def test_datetime_format_data_check_multiple_errors():
         .append(pd.date_range("2021-01-30", periods=1))
         .append(pd.date_range("2021-01-31", periods=86, freq="2D"))
     )
-    X = pd.DataFrame({"dates": dates})
+    X = pd.DataFrame({"dates": dates}, dtype="datetime64[ns]")
 
     ww_payload = infer_frequency(
         X["dates"],
@@ -520,7 +520,7 @@ def test_datetime_many_duplicates_and_nans():
     dates = pd.Series(pd.date_range(start="1/1/2021", periods=76))
     nans = pd.Series([None] * 12)
     duplicates = pd.Series(pd.date_range(start="1/1/2021", periods=12))
-    dates = dates.append(nans).append(duplicates)
+    dates = pd.concat([dates, nans, duplicates])
 
     X = pd.DataFrame({"date": dates}, columns=["date"])
     X = X.reset_index(drop=True)

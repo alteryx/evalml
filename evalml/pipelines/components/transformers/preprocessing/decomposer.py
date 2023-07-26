@@ -151,7 +151,9 @@ class Decomposer(Transformer):
                 period is detected, returns None.
 
         """
-        X, y = cls._handle_nullable_types(cls, X, y)
+        # Only need to handle nullable types on pandas < 2. Kept for backwards compatibility with pandas 1.x.
+        if int(pd.__version__.split(".")[0]) < 2:
+            X, y = cls._handle_nullable_types(cls, X, y)
 
         def _get_rel_max_from_acf(y):
             """Determines the relative maxima of the target's autocorrelation."""
