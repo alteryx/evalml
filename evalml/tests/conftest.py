@@ -841,7 +841,7 @@ def X_y_multiseries_regression():
     y, _ = datasets.make_regression(n_samples=100, n_features=4)
     X = pd.DataFrame(X)
     X.ww.init(logical_types={col: "double" for col in X.columns})
-    y = pd.DataFrame(y)
+    y = pd.DataFrame(y, columns=[f"y_{i}" for i in range(y.shape[1])])
     y.ww.init(logical_types={col: "double" for col in y.columns})
     return X, y
 

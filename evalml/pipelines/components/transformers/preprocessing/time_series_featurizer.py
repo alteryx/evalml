@@ -124,12 +124,15 @@ class TimeSeriesFeaturizer(Transformer):
         """
         if self.time_index is None:
             raise ValueError("time_index cannot be None!")
-        self.statistically_significant_lags = self._find_significant_lags(
-            y,
-            conf_level=self.conf_level,
-            start_delay=self.start_delay,
-            max_delay=self.max_delay,
-        )
+        if isinstance(y, pd.DataFrame):
+            self.statistically_significant_lags = [self.start_delay]
+        else:
+            self.statistically_significant_lags = self._find_significant_lags(
+                y,
+                conf_level=self.conf_level,
+                start_delay=self.start_delay,
+                max_delay=self.max_delay,
+            )
         return self
 
     @staticmethod
@@ -215,6 +218,22 @@ class TimeSeriesFeaturizer(Transformer):
         )
         return data
 
+    def _delay_df(
+        self,
+        data,
+        cols_to_delay,
+        categorical_columns=None,
+        X_categorical=None,
+    ):
+        lagged_features = {}
+        for col_name in cols_to_delay:
+            col = data[col_name]
+            if categorical_columns and col_name in categorical_columns:
+                col = X_categorical[col_name]
+            for t in self.statistically_significant_lags:
+                lagged_features[f"{col_name}_delay_{t}"] = col.shift(t)
+        return lagged_features
+
     def _compute_delays(self, X_ww, y):
         """Computes the delayed features for numeric/categorical features in X and y.
 
@@ -234,33 +253,28 @@ class TimeSeriesFeaturizer(Transformer):
             ).columns,
         )
         categorical_columns = self._get_categorical_columns(X_ww)
-        cols_derived_from_categoricals = []
         lagged_features = {}
         if self.delay_features and len(X_ww) > 0:
             X_categorical = self._encode_X_while_preserving_index(
                 X_ww[categorical_columns],
             )
-            for col_name in cols_to_delay:
-                col = X_ww[col_name]
-                if col_name in categorical_columns:
-                    col = X_categorical[col_name]
-                for t in self.statistically_significant_lags:
-                    feature_name = f"{col_name}_delay_{t}"
-                    lagged_features[f"{col_name}_delay_{t}"] = col.shift(t)
-                    if col_name in categorical_columns:
-                        cols_derived_from_categoricals.append(feature_name)
+            lagged_features.update(
+                self._delay_df(X_ww, cols_to_delay, categorical_columns, X_categorical),
+            )
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:
-            if type(y.ww.logical_type) == logical_types.Categorical:
-                y = self._encode_y_while_preserving_index(y)
-            for t in self.statistically_significant_lags:
-                lagged_features[self.target_colname_prefix.format(t)] = y.shift(t)
+            if isinstance(y, pd.DataFrame):
+                lagged_features.update(self._delay_df(y, y.columns))
+            else:
+                if type(y.ww.logical_type) == logical_types.Categorical:
+                    y = self._encode_y_while_preserving_index(y)
+                for t in self.statistically_significant_lags:
+                    lagged_features[self.target_colname_prefix.format(t)] = y.shift(t)
         # Features created from categorical columns should no longer be categorical
-        lagged_features = pd.DataFrame(lagged_features)
+        lagged_features = pd.DataFrame(lagged_features, index=X_ww.index)
         lagged_features.ww.init(
             logical_types={col: "Double" for col in lagged_features.columns},
         )
-        lagged_features.index = X_ww.index
         return ww.concat_columns([X_ww, lagged_features])
 
     def transform(self, X, y=None):
