@@ -144,7 +144,7 @@ def test_cols():
             ),
         },
     )
-    assert_frame_equal(X_expected, X_t, check_less_precise=True)
+    assert_frame_equal(X_expected, X_t, rtol=1e-3)
 
     encoder = TargetEncoder(cols=["col_3"])
     encoder.fit(X, y)

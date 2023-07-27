@@ -472,8 +472,8 @@ def get_linear_coefficients(estimator, features=None):
     coef_.name = "Coefficients"
     coef_.index = features
     coef_ = coef_.sort_values()
-    coef_ = pd.Series(estimator._component_obj.intercept_, index=["Intercept"]).append(
-        coef_,
+    coef_ = pd.concat(
+        [pd.Series(estimator._component_obj.intercept_, index=["Intercept"]), coef_],
     )
 
     return coef_

@@ -219,11 +219,21 @@ def test_drop_all_columns(imputer_test_data):
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = X.drop(["all nan cat", "all nan"], axis=1)
-    assert_frame_equal(transformed, expected, check_dtype=False)
+    assert_frame_equal(
+        transformed,
+        expected,
+        check_column_type=False,
+        check_index_type=False,
+    )
 
     imputer = Imputer()
     transformed = imputer.fit_transform(X, y)
-    assert_frame_equal(transformed, expected, check_dtype=False)
+    assert_frame_equal(
+        transformed,
+        expected,
+        check_column_type=False,
+        check_index_type=False,
+    )
 
 
 def test_typed_imputer_numpy_input():
@@ -271,11 +281,21 @@ def test_imputer_empty_data(data_type, make_data_type):
     imputer = Imputer()
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
-    assert_frame_equal(transformed, expected, check_dtype=False)
+    assert_frame_equal(
+        transformed,
+        expected,
+        check_column_type=False,
+        check_index_type=False,
+    )
 
     imputer = Imputer()
     transformed = imputer.fit_transform(X, y)
-    assert_frame_equal(transformed, expected, check_dtype=False)
+    assert_frame_equal(
+        transformed,
+        expected,
+        check_column_type=False,
+        check_index_type=False,
+    )
 
 
 def test_imputer_does_not_reset_index():
@@ -508,7 +528,9 @@ def test_imputer_with_none_separated(
         for col in set(columns_dict["categoricals_only"]).intersection(
             set(X_test.columns),
         ):
-            expected_df[col].cat.add_categories(categorical_fill_value, inplace=True)
+            expected_df[col] = expected_df[col].cat.add_categories(
+                categorical_fill_value,
+            )
             expected_df[col].iloc[-1:] = categorical_fill_value
     if boolean_impute_strategy == "constant":
         for col in set(columns_dict["booleans_only"]).intersection(set(X_test.columns)):

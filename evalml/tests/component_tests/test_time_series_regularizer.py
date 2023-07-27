@@ -56,10 +56,13 @@ def assert_features_and_length_equal(
     dates_to_test = set(non_nan_X["dates"]) - ignore_dates
     rand_date = np.random.choice(list(dates_to_test), 5, replace=False)
     for each_date in rand_date:
-        input_feat = X.loc[X["dates"] == each_date, set(X.columns) - {"dates"}].iloc[0]
+        input_feat = X.loc[
+            X["dates"] == each_date,
+            list(set(X.columns) - {"dates"}),
+        ].iloc[0]
         outout_feat = non_nan_X.loc[
             non_nan_X["dates"] == each_date,
-            set(non_nan_X.columns) - {"dates"},
+            list(set(non_nan_X.columns) - {"dates"}),
         ].iloc[0]
         pd.testing.assert_series_equal(
             pd.Series(input_feat.values),

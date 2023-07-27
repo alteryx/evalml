@@ -533,12 +533,12 @@ def test_class_imbalance_large_multiclass(test_size):
         [0] * 20 + [1] * 25 + [2] * 99 + [3] * 105 + [4] * 900 + [5] * 900,
     )
     y_multiclass_huge = pd.Series([i % 200 for i in range(100000)])
-    y_imbalanced_multiclass_huge = y_multiclass_huge.append(
-        pd.Series([200] * 10),
+    y_imbalanced_multiclass_huge = pd.concat(
+        [y_multiclass_huge, pd.Series([200] * 10)],
         ignore_index=True,
     )
-    y_imbalanced_multiclass_nan = y_multiclass_huge.append(
-        pd.Series([np.nan] * 10),
+    y_imbalanced_multiclass_nan = pd.concat(
+        [y_multiclass_huge, pd.Series([np.nan] * 10)],
         ignore_index=True,
     )
 
