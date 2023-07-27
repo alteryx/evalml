@@ -42,7 +42,7 @@ class STLDecomposer(Decomposer):
     def __init__(
         self,
         time_index: str = None,
-        series_index: str = None,
+        series_id: str = None,
         degree: int = 1,  # Currently unused.
         period: int = None,
         seasonal_smoother: int = 7,
@@ -50,7 +50,7 @@ class STLDecomposer(Decomposer):
         **kwargs,
     ):
         self.logger = logging.getLogger(__name__)
-        self.series_index = series_index
+        self.series_id = series_id
         # Programmatically adjust seasonal_smoother to fit underlying STL requirements,
         # that seasonal_smoother must be odd.
         if seasonal_smoother % 2 == 0:
@@ -168,22 +168,16 @@ class STLDecomposer(Decomposer):
             )
 
         # If there is not a series_index, give them one series id with the value 0
-        if "series_index" not in X.columns or self.series_index is None:
-            self.series_index = "series_index"
-            # X.insert(0, self.series_index, 0)
-            X[self.series_index] = 0
-            self.update_parameters({"series_index": self.series_index})
+        if self.series_id is None:
+            self.series_id = "series_id"
+            X[self.series_id] = 0
+            self.update_parameters({"series_id": self.series_id})
 
         # group the data by series_id
-        grouped_X = X.groupby(self.series_index)
+        grouped_X = X.groupby(self.series_id)
         # iterate through each id group
-        self.seasonals = []
-        self.seasonalities = []
-        self.trends = []
-        self.residuals = []
-
-        for series_id, series_X in grouped_X:
-
+        self.decompositions = {}
+        for id, series_X in grouped_X:
             series_y = y[series_X.index]
             self.original_index = series_y.index if series_y is not None else None
 
@@ -198,19 +192,26 @@ class STLDecomposer(Decomposer):
 
             stl = STL(series_y, seasonal=self.seasonal_smoother, period=self.period)
             res = stl.fit()
-            self.seasonals.append(res.seasonal)
-            self.period = stl.period
+
+            period = stl.period
 
             dist = len(series_y) % self.period
-            self.seasonalities.append(
+            seasonality = (
                 (
-                    res.seasonal[-(dist + self.period) : -dist]
+                    res.seasonal[-(dist + period) : -dist]
                     if dist > 0
-                    else res.seasonal[-self.period :],
+                    else res.seasonal[-period:],
                 ),
             )
-            self.trends.append(res.trend)
-            self.residuals.append(res.resid)
+
+            self.decompositions[id] = {
+                "seasonal": res.seasonal,
+                "seasonality": seasonality,
+                "trend": res.trend,
+                "residual": res.resid,
+                "period": period,
+            }
+
         return self
 
     def transform(
@@ -245,11 +246,12 @@ class STLDecomposer(Decomposer):
         grouped_X = X.groupby(self.series_index)
 
         features = []
-        for group_index, (series_id, series_X) in enumerate(grouped_X):
-            self.trend = self.trends[group_index]
-            self.seasonality = self.seasonalities[group_index]
-            self.seasonal = self.seasonals[group_index]
-            self.residual = self.residuals[group_index]
+        for id, series_X in grouped_X:
+            self.trend = self.decompositions[id]["trend"]
+            self.seasonality = self.decompositions[id]["seasonality"]
+            self.seasonal = self.decompositions[id]["seasonal"]
+            self.residual = self.decompositions[id]["residual"]
+            self.period = self.decompositions[id]["period"]
 
             series_y = y[series_X.index]
             if series_y is None:
@@ -494,22 +496,21 @@ class STLDecomposer(Decomposer):
             show (bool): Whether to display the plot or not. Defaults to False.
 
         Returns:
-            list[matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]]: A list of the figure and axes that have the decompositions
+            matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]: The figure and axes that have the decompositions
                 plotted on them
 
         """
-        # If there is not a series_index, give them one series id with the value 0
-
-        # Group the data by series_id
-        grouped_X = X.groupby(self.series_index)
+        # group the data by series_id
+        grouped_X = X.groupby(self.series_id)
 
         # Iterate through each series id
         plot_info = []
-        for group_index, (series_id, series_X) in enumerate(grouped_X):
-            self.trend = self.trends[group_index]
-            self.seasonality = self.seasonalities[group_index]
-            self.seasonal = self.seasonals[group_index]
-            self.residual = self.residuals[group_index]
+        for id, series_X in grouped_X:
+            self.trend = self.decompositions[id]["trend"]
+            self.seasonality = self.decompositions[id]["seasonality"]
+            self.seasonal = self.decompositions[id]["seasonal"]
+            self.residual = self.decompositions[id]["residual"]
+            self.period = self.decompositions[id]["period"]
 
             series_y = y[series_X.index]
 
@@ -532,7 +533,7 @@ class STLDecomposer(Decomposer):
             axs[3].plot(decomposition_results[0]["residual"], "y")
             axs[3].set_title("residual")
 
-            fig.suptitle("Decomposition for Series {}".format(series_id))
+            fig.suptitle("Decomposition for Series {}".format(id))
 
             plot_info.append((fig, axs))
 
