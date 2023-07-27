@@ -292,9 +292,8 @@ def test_decomposer_build_seasonal_signal(
     X, _, y = ts_data()
 
     # Change the date time index to start at the same time but have different frequency
-    y.set_axis(
+    y = y.set_axis(
         pd.date_range(start="2021-01-01", periods=len(y), freq=frequency),
-        inplace=True,
     )
 
     decomposer = decomposer_child_class(degree=2)
@@ -497,7 +496,12 @@ def test_decomposer_determine_periodicity(
         True,
         pytest.param(
             False,
-            marks=pytest.mark.xfail(strict=True, raises=AssertionError),
+            marks=pytest.mark.xfail(
+                condition=int(pd.__version__.split(".")[0]) < 2,
+                strict=True,
+                raises=AssertionError,
+                reason="pandas 1.x does not recognize np.Nan in Float64 subtracted_floats.",
+            ),
         ),
     ],
 )
@@ -749,11 +753,19 @@ def test_decomposer_inverse_transform(
                 output_inverse_y = decomposer.inverse_transform(y_t_new)
         else:
             output_inverse_y = decomposer.inverse_transform(y_t_new)
+            # Because output_inverse_y.index is int32 and y[y_t_new.index].index is int64 in windows,
+            # we need to test the indices equivalence separately.
             pd.testing.assert_series_equal(
                 y[y_t_new.index],
                 output_inverse_y,
                 check_exact=False,
+                check_index=False,
                 rtol=1.0e-1,
+            )
+            pd.testing.assert_index_equal(
+                y[y_t_new.index].index,
+                output_inverse_y.index,
+                exact=False,
             )
 
 

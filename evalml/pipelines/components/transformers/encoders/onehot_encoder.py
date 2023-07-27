@@ -152,7 +152,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                         random_state=self._initial_state,
                     )
                     value_counts = value_counts.sort_values(
-                        [col],
+                        value_counts.iloc[:, 0].name,
                         ascending=False,
                         kind="mergesort",
                     )

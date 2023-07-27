@@ -77,10 +77,10 @@ def test_datetime_featurizer_encodes_as_ints():
     # Test that changing encode_as_categories to True only changes the dtypes but not the values
     dt_with_cats = DateTimeFeaturizer(encode_as_categories=True)
     X_transformed_df = dt_with_cats.fit_transform(X)
-    expected["date_month"] = pd.Categorical([3, 2, 6, 7, 0])
-    expected["date_day_of_week"] = pd.Categorical([0, 3, 2, 1, 5])
+    expected["date_month"] = pd.Categorical([3, 2, 6, 7, 0]).astype("category")
+    expected["date_day_of_week"] = pd.Categorical([0, 3, 2, 1, 5]).astype("category")
 
-    assert_frame_equal(expected, X_transformed_df)
+    assert_frame_equal(expected, X_transformed_df, check_categorical=False)
     assert dt_with_cats.get_feature_names() == feature_names
 
     # Test that sequential calls to the same DateTimeFeaturizer work as expected by using the first dt we defined
@@ -250,7 +250,10 @@ def test_datetime_featurizer_no_datetime_cols():
 
 def test_datetime_featurizer_numpy_array_input():
     datetime_transformer = DateTimeFeaturizer()
-    X = np.array([["2007-02-03"], ["2016-06-07"], ["2020-05-19"]], dtype="datetime64")
+    X = np.array(
+        [["2007-02-03"], ["2016-06-07"], ["2020-05-19"]],
+        dtype="datetime64[ns]",
+    )
     datetime_transformer.fit(X)
     assert list(datetime_transformer.transform(X).columns) == [
         "0_year",

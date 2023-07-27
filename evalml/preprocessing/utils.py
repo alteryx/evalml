@@ -184,19 +184,17 @@ def target_distribution(targets):
 
     Examples:
         >>> y = pd.Series([1, 2, 4, 1, 3, 3, 1, 2])
-        >>> target_distribution(y)
+        >>> print(target_distribution(y).to_string())
         Targets
         1    37.50%
         2    25.00%
         3    25.00%
         4    12.50%
-        dtype: object
         >>> y = pd.Series([True, False, False, False, True])
-        >>> target_distribution(y)
+        >>> print(target_distribution(y).to_string())
         Targets
         False    60.00%
         True     40.00%
-        dtype: object
     """
     distribution = targets.value_counts() / len(targets)
     return distribution.mul(100).apply("{:.2f}%".format).rename_axis("Targets")

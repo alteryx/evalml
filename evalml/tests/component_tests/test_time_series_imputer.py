@@ -241,11 +241,21 @@ def test_imputer_drops_columns_with_all_nan(imputer_test_data):
     imputer.fit(X, y)
     transformed, _ = imputer.transform(X, y)
     expected = X.drop(["all nan cat", "all nan"], axis=1)
-    assert_frame_equal(transformed, expected, check_dtype=False)
+    assert_frame_equal(
+        transformed,
+        expected,
+        check_column_type=False,
+        check_index_type=False,
+    )
 
     imputer = TimeSeriesImputer()
     transformed, _ = imputer.fit_transform(X, y)
-    assert_frame_equal(transformed, expected, check_dtype=False)
+    assert_frame_equal(
+        transformed,
+        expected,
+        check_column_type=False,
+        check_index_type=False,
+    )
 
 
 def test_typed_imputer_numpy_input():
@@ -277,12 +287,17 @@ def test_imputer_empty_data(data_type, make_data_type):
     imputer = TimeSeriesImputer()
     imputer.fit(X, y)
     X_t, y_t = imputer.transform(X, y)
-    assert_frame_equal(X_t, X_expected, check_dtype=False)
+    assert_frame_equal(X_t, X_expected, check_column_type=False, check_index_type=False)
     assert_series_equal(y_t, y_expected, check_dtype=False)
 
     imputer = TimeSeriesImputer()
     transformed, _ = imputer.fit_transform(X, y)
-    assert_frame_equal(transformed, X_expected, check_dtype=False)
+    assert_frame_equal(
+        transformed,
+        X_expected,
+        check_column_type=False,
+        check_index_type=False,
+    )
 
 
 def test_imputer_does_not_reset_index():

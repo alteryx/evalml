@@ -396,7 +396,7 @@ class STLDecomposer(Decomposer):
                     index=truncated_y_t.index,
                 ),
             )
-        y = y_in_sample.append(y_out_of_sample)
+        y = pd.concat([y_in_sample, y_out_of_sample])
         y.index = original_index
         return y
 

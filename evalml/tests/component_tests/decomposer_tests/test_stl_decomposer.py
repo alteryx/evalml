@@ -181,12 +181,19 @@ def test_stl_decomposer_inverse_transform(
             ):
                 output_inverse_y = decomposer.inverse_transform(y_t_new)
         else:
+            # Because output_inverse_y.index is int32 and y[y_t_new.index].index is int64 in windows,
+            # we need to test the indices equivalence separately.
             output_inverse_y = decomposer.inverse_transform(y_t_new)
             pd.testing.assert_series_equal(
                 y[y_t_new.index],
                 output_inverse_y,
-                check_exact=False,
+                check_index=False,
                 rtol=1.0e-2,
+            )
+            pd.testing.assert_index_equal(
+                y[y_t_new.index].index,
+                output_inverse_y.index,
+                exact=False,
             )
 
 
