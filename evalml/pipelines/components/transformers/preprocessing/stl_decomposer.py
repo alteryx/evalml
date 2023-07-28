@@ -21,7 +21,7 @@ class STLDecomposer(Decomposer):
 
     Args:
         time_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
-        series_index(str): Specifies the name of the column in X that provides the series_id objects for multiseries. Defaults to None.
+        series_id (str): Specifies the name of the column in X that provides the series_id objects for multiseries. Defaults to None.
         degree (int): Not currently used.  STL 3x "degree-like" values.  None are able to be set at
             this time. Defaults to 1.
         period (int): The number of entries in the time series data that corresponds to one period of a
@@ -47,10 +47,12 @@ class STLDecomposer(Decomposer):
         period: int = None,
         seasonal_smoother: int = 7,
         random_seed: int = 0,
+        is_multiseries: bool = False,
         **kwargs,
     ):
         self.logger = logging.getLogger(__name__)
         self.series_id = series_id
+        self.is_multiseries = is_multiseries
         # Programmatically adjust seasonal_smoother to fit underlying STL requirements,
         # that seasonal_smoother must be odd.
         if seasonal_smoother % 2 == 0:
@@ -61,7 +63,10 @@ class STLDecomposer(Decomposer):
             seasonal_smoother += 1
 
         self.forecast_summary = None
-
+        # parameters = {
+        #     "series_id": series_id,
+        # }
+        # parameters.update(kwargs)
         super().__init__(
             component_obj=None,
             random_seed=random_seed,
@@ -167,15 +172,20 @@ class STLDecomposer(Decomposer):
                 f"STLDecomposer may perform poorly on data with a high seasonal smoother ({self.seasonal_smoother}).",
             )
 
-        # If there is not a series_index, give them one series id with the value 0
+        # If there is not a series_id, give them one series id with the value 0
         if self.series_id is None:
             self.series_id = "series_id"
             X[self.series_id] = 0
             self.update_parameters({"series_id": self.series_id})
+        else:
+            self.is_multiseries = True
 
-        # group the data by series_id
+        # Initialize the new "series_id" column in Woodwork
+        X.ww.init()
+
+        # Group the data by series_id
         grouped_X = X.groupby(self.series_id)
-        # iterate through each id group
+        # Iterate through each id group
         self.decompositions = {}
         for id, series_X in grouped_X:
             series_y = y[series_X.index]
@@ -195,7 +205,7 @@ class STLDecomposer(Decomposer):
 
             period = stl.period
 
-            dist = len(series_y) % self.period
+            dist = len(series_y) % period
             seasonality = (
                 (
                     res.seasonal[-(dist + period) : -dist]
@@ -218,7 +228,7 @@ class STLDecomposer(Decomposer):
         self,
         X: pd.DataFrame,
         y: pd.Series = None,
-    ) -> list(tuple[pd.DataFrame, pd.Series]):
+    ):
         """Transforms the target data by removing the STL trend and seasonality.
 
         Uses an ARIMA model to project forward the addititve trend and removes it. Then, utilizes the first period's
@@ -230,22 +240,18 @@ class STLDecomposer(Decomposer):
             y (pd.Series): Target variable to detrend and deseasonalize.
 
         Returns:
-            list of tuple of pd.DataFrame, pd.Series: The list of input features are returned without modification. The target
+            (Single series) pd.DataFrame, pd.Series: The list of input features are returned without modification. The target
+                variable y is detrended and deseasonalized.
+            (Multi series) pd.DataFrame, pd.Series: The list of input features are returned without modification. The target
                 variable y is detrended and deseasonalized.
 
         Raises:
             ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
-        # If there is not a series_index, give them one series id with the value 0
-        # if self.series_index is None:
-        #     self.series_index = "series_index"
-        #     X.insert(0, self.series_index, 0)
-        #     self.update_parameters({"series_index": self.series_index})
-
         # group the data by series_id
-        grouped_X = X.groupby(self.series_index)
+        grouped_X = X.groupby(self.series_id)
 
-        features = []
+        features = {}
         for id, series_X in grouped_X:
             self.trend = self.decompositions[id]["trend"]
             self.seasonality = self.decompositions[id]["seasonality"]
@@ -254,6 +260,7 @@ class STLDecomposer(Decomposer):
             self.period = self.decompositions[id]["period"]
 
             series_y = y[series_X.index]
+
             if series_y is None:
                 return series_X, series_y
             original_index = series_y.index
@@ -291,7 +298,12 @@ class STLDecomposer(Decomposer):
                 )
             y_t = y_in_sample.append(y_out_of_sample)
             y_t.index = original_index
-            features.append((series_X, y_t))
+
+            if not self.is_multiseries:
+                return series_X, y_t
+
+            features[id] = (series_X, y_t)
+
         return features
 
     def inverse_transform(self, y_t: pd.Series) -> tuple[pd.DataFrame, pd.Series]:
@@ -486,7 +498,7 @@ class STLDecomposer(Decomposer):
         X: pd.DataFrame,
         y: pd.Series,
         show: bool = False,
-    ) -> list[tuple[plt.Figure, list]]:
+    ):
         """Plots the decomposition of the target signal.
 
         Args:
@@ -496,15 +508,18 @@ class STLDecomposer(Decomposer):
             show (bool): Whether to display the plot or not. Defaults to False.
 
         Returns:
-            matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]: The figure and axes that have the decompositions
+            (Single series) matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]: The figure and axes that have the decompositions
                 plotted on them
+            (Multi series) dict[matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]]: A dictionary that maps the series id to
+                the figure and axes that have the decompositions plotted on them
+
 
         """
-        # group the data by series_id
+        # Group the data by series_id
         grouped_X = X.groupby(self.series_id)
 
         # Iterate through each series id
-        plot_info = []
+        plot_info = {}
         for id, series_X in grouped_X:
             self.trend = self.decompositions[id]["trend"]
             self.seasonality = self.decompositions[id]["seasonality"]
@@ -514,7 +529,6 @@ class STLDecomposer(Decomposer):
 
             series_y = y[series_X.index]
 
-            # will need to change later since 'freq' var needs to be mutable
             series_X.index = pd.DatetimeIndex(
                 series_X[self.time_index],
                 freq=self.frequency,
@@ -533,10 +547,13 @@ class STLDecomposer(Decomposer):
             axs[3].plot(decomposition_results[0]["residual"], "y")
             axs[3].set_title("residual")
 
-            fig.suptitle("Decomposition for Series {}".format(id))
-
-            plot_info.append((fig, axs))
+            if self.is_multiseries:
+                fig.suptitle("Decomposition for Series {}".format(id))
+                plot_info[id] = (fig, axs)
+            else:
+                plot_info = (fig, axs)
 
             if show:  # pragma: no cover
                 plt.show()
+
         return plot_info
