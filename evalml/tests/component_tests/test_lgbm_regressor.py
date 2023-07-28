@@ -118,7 +118,14 @@ def test_correct_args(mock_predict, X_y_regression):
 
     clf.predict(X)
     arg_X = mock_predict.call_args[0][0]
-    assert_frame_equal(X_expected, arg_X)
+    # Index type checking ignored so the test can pass on Windows
+    # X_expected is int32, arg_X is int64
+    assert_frame_equal(
+        X_expected,
+        arg_X,
+        check_index_type=False,
+        check_column_type=False,
+    )
 
 
 @patch("evalml.pipelines.components.estimators.estimator.Estimator.predict")

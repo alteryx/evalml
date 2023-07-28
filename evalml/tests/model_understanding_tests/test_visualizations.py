@@ -667,8 +667,11 @@ def test_linear_coefficients_output(estimator):
     assert list(output_.index) == ["Intercept", "Second", "Fourth", "First", "Third"]
     assert output_.shape[0] == X.shape[1] + 1
     assert (
-        pd.Series(est_._component_obj.intercept_, index=["Intercept"]).append(
-            pd.Series(est_.feature_importance).sort_values(),
+        pd.concat(
+            [
+                pd.Series(est_._component_obj.intercept_, index=["Intercept"]),
+                pd.Series(est_.feature_importance).sort_values(),
+            ],
         )
         == output_.values
     ).all()

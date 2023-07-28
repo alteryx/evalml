@@ -109,6 +109,7 @@ def test_oversample_imbalanced_binary(data_type, oversampler_type, make_data_typ
         value_counts,
         pd.Series([850, 850]),
         check_dtype=False,
+        check_names=False,
     )
 
     oversampler = Oversampler(sampling_ratio=1)

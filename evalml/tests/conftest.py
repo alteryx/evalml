@@ -1024,6 +1024,41 @@ def ts_data_seasonal_test():
 
 
 @pytest.fixture
+def multiseries_ts_data_stacked():
+    time_index = pd.date_range(start="1/1/2018", periods=20).repeat(5)
+    series_id = list(range(5)) * 20
+
+    X = pd.DataFrame(
+        {
+            "date": time_index,
+            "series_id": series_id,
+            "feature_a": range(100),
+            "feature_b": reversed(range(100)),
+        },
+    )
+    y = pd.Series(range(100))
+    return X, y
+
+
+@pytest.fixture
+def multiseries_ts_data_unstacked():
+    feature_a = pd.DataFrame({f"feature_a_{i}": range(i, 100, 5) for i in range(5)})
+    feature_b = pd.DataFrame(
+        {f"feature_b_{i}": range(99 - i, -1, -5) for i in range(5)},
+    )
+    X = pd.concat([feature_a, feature_b], axis=1)
+
+    y = pd.DataFrame({f"target_{i}": range(i, 100, 5) for i in range(5)})
+
+    X.index = pd.date_range(start="1/1/2018", periods=20)
+    X.index.name = "date"
+    y.index = pd.date_range(start="1/1/2018", periods=20)
+    y.index.name = "date"
+
+    return X, y
+
+
+@pytest.fixture
 def dummy_pipeline_hyperparameters():
     return {
         "Mock Classifier": {

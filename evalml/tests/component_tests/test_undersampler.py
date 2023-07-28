@@ -79,8 +79,9 @@ def test_undersampler_imbalanced_output(data_type, make_data_type):
     assert value_counts.values[1] / value_counts.values[0] == sampling_ratio
     pd.testing.assert_series_equal(
         value_counts,
-        pd.Series([600, 150], index=[1, 0]),
+        pd.Series([600, 150], index=[1, 0], name="count"),
         check_dtype=False,
+        check_names=False,
     )
 
     undersampler = Undersampler(sampling_ratio=sampling_ratio)
