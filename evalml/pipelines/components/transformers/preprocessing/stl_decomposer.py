@@ -63,10 +63,6 @@ class STLDecomposer(Decomposer):
             seasonal_smoother += 1
 
         self.forecast_summary = None
-        # parameters = {
-        #     "series_id": series_id,
-        # }
-        # parameters.update(kwargs)
         super().__init__(
             component_obj=None,
             random_seed=random_seed,
@@ -188,7 +184,13 @@ class STLDecomposer(Decomposer):
         # Iterate through each id group
         self.decompositions = {}
         for id, series_X in grouped_X:
-            series_y = y[series_X.index]
+
+            if y is None:
+                series_y = None
+            elif isinstance(series_X.index, pd.DatetimeIndex):
+                series_y = y[(series_X.reset_index(drop=True).index)]
+            else:
+                series_y = y[series_X.index]
             self.original_index = series_y.index if series_y is not None else None
 
             series_X, series_y = self._check_target(series_X, series_y)
@@ -203,24 +205,29 @@ class STLDecomposer(Decomposer):
             stl = STL(series_y, seasonal=self.seasonal_smoother, period=self.period)
             res = stl.fit()
 
-            period = stl.period
+            self.period = stl.period
 
-            dist = len(series_y) % period
-            seasonality = (
+            dist = len(series_y) % self.period
+            self.seasonal = res.seasonal
+            self.seasonality = (
                 (
-                    res.seasonal[-(dist + period) : -dist]
+                    res.seasonal[-(dist + self.period) : -dist]
                     if dist > 0
-                    else res.seasonal[-period:],
+                    else res.seasonal[-self.period :],
                 ),
             )
 
-            self.decompositions[id] = {
-                "seasonal": res.seasonal,
-                "seasonality": seasonality,
-                "trend": res.trend,
-                "residual": res.resid,
-                "period": period,
-            }
+            self.trend = res.trend
+            self.residual = res.resid
+
+            if self.is_multiseries:
+                self.decompositions[id] = {
+                    "seasonal": self.seasonal,
+                    "seasonality": self.seasonality,
+                    "trend": self.trend,
+                    "residual": self.resid,
+                    "period": self.period,
+                }
 
         return self
 
@@ -242,24 +249,31 @@ class STLDecomposer(Decomposer):
         Returns:
             (Single series) pd.DataFrame, pd.Series: The list of input features are returned without modification. The target
                 variable y is detrended and deseasonalized.
-            (Multi series) pd.DataFrame, pd.Series: The list of input features are returned without modification. The target
+            (Multi series) pd.DataFrame, pd.DataFrame: The list of input features are returned without modification. The target
                 variable y is detrended and deseasonalized.
 
         Raises:
             ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
+        if y is None:
+            return X, y
         # group the data by series_id
         grouped_X = X.groupby(self.series_id)
 
-        features = {}
+        features_list = []
+        detrending_list = []
         for id, series_X in grouped_X:
-            self.trend = self.decompositions[id]["trend"]
-            self.seasonality = self.decompositions[id]["seasonality"]
-            self.seasonal = self.decompositions[id]["seasonal"]
-            self.residual = self.decompositions[id]["residual"]
-            self.period = self.decompositions[id]["period"]
+            if self.is_multiseries:
+                self.trend = self.decompositions[id]["trend"]
+                self.seasonality = self.decompositions[id]["seasonality"]
+                self.seasonal = self.decompositions[id]["seasonal"]
+                self.residual = self.decompositions[id]["residual"]
+                self.period = self.decompositions[id]["period"]
 
-            series_y = y[series_X.index]
+            if isinstance(series_X.index, pd.DatetimeIndex):
+                series_y = y[(series_X.reset_index(drop=True).index)]
+            else:
+                series_y = y[series_X.index]
 
             if series_y is None:
                 return series_X, series_y
@@ -299,12 +313,18 @@ class STLDecomposer(Decomposer):
             y_t = y_in_sample.append(y_out_of_sample)
             y_t.index = original_index
 
+            # If it is a single series time series, return tuple[pd.DataFrame, pd.Series]
             if not self.is_multiseries:
                 return series_X, y_t
 
-            features[id] = (series_X, y_t)
+            features_list.append({id: series_X})
+            detrending_list.append({id: y_t})
 
-        return features
+        # Convert the list to a DataFrame
+        # For multiseries, return tuple[pd.DataFrame, pd.Dataframe] where each column is a series_id
+        features_df = pd.DataFrame(features_list)
+        detrending_df = pd.DataFrame(detrending_list)
+        return features_df, detrending_df
 
     def inverse_transform(self, y_t: pd.Series) -> tuple[pd.DataFrame, pd.Series]:
         """Adds back fitted trend and seasonality to target variable.
@@ -521,18 +541,23 @@ class STLDecomposer(Decomposer):
         # Iterate through each series id
         plot_info = {}
         for id, series_X in grouped_X:
-            self.trend = self.decompositions[id]["trend"]
-            self.seasonality = self.decompositions[id]["seasonality"]
-            self.seasonal = self.decompositions[id]["seasonal"]
-            self.residual = self.decompositions[id]["residual"]
-            self.period = self.decompositions[id]["period"]
+            if self.is_multiseries:
+                self.trend = self.decompositions[id]["trend"]
+                self.seasonality = self.decompositions[id]["seasonality"]
+                self.seasonal = self.decompositions[id]["seasonal"]
+                self.residual = self.decompositions[id]["residual"]
+                self.period = self.decompositions[id]["period"]
 
-            series_y = y[series_X.index]
+            if isinstance(series_X.index, pd.DatetimeIndex):
+                series_y = y[(series_X.reset_index(drop=True).index)]
+            else:
+                series_y = y[series_X.index]
 
-            series_X.index = pd.DatetimeIndex(
-                series_X[self.time_index],
-                freq=self.frequency,
-            )
+            if self.is_multiseries:
+                series_X.index = pd.DatetimeIndex(
+                    series_X[self.time_index],
+                    freq=self.frequency,
+                )
 
             decomposition_results = self.get_trend_dataframe(series_X, series_y)
 
