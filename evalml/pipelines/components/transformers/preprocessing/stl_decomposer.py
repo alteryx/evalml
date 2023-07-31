@@ -172,7 +172,6 @@ class STLDecomposer(Decomposer):
         if self.series_id is None:
             self.series_id = "series_id"
             X[self.series_id] = 0
-            self.update_parameters({"series_id": self.series_id})
         else:
             self.is_multiseries = True
 
@@ -204,17 +203,13 @@ class STLDecomposer(Decomposer):
 
             stl = STL(series_y, seasonal=self.seasonal_smoother, period=self.period)
             res = stl.fit()
-
-            self.period = stl.period
-
-            dist = len(series_y) % self.period
             self.seasonal = res.seasonal
+            self.period = stl.period
+            dist = len(series_y) % self.period
             self.seasonality = (
-                (
-                    res.seasonal[-(dist + self.period) : -dist]
-                    if dist > 0
-                    else res.seasonal[-self.period :],
-                ),
+                self.seasonal[-(dist + self.period) : -dist]
+                if dist > 0
+                else self.seasonal[-self.period :]
             )
 
             self.trend = res.trend
@@ -257,23 +252,28 @@ class STLDecomposer(Decomposer):
         """
         if y is None:
             return X, y
-        # group the data by series_id
-        grouped_X = X.groupby(self.series_id)
+
+        if not self.is_multiseries and X is not None:
+            self.series_id = "series_id"
+            X[self.series_id] = 0
+        # If X is None, create a series with id=0 and series_X=None
+        grouped_X = {0: X}.items() if X is None else X.groupby(self.series_id)
 
         features_list = []
         detrending_list = []
         for id, series_X in grouped_X:
             if self.is_multiseries:
-                self.trend = self.decompositions[id]["trend"]
                 self.seasonality = self.decompositions[id]["seasonality"]
+                self.trend = self.decompositions[id]["trend"]
                 self.seasonal = self.decompositions[id]["seasonal"]
                 self.residual = self.decompositions[id]["residual"]
                 self.period = self.decompositions[id]["period"]
-
-            if isinstance(series_X.index, pd.DatetimeIndex):
-                series_y = y[(series_X.reset_index(drop=True).index)]
+                if isinstance(series_X.index, pd.DatetimeIndex):
+                    series_y = y[(series_X.reset_index(drop=True).index)]
+                else:
+                    series_y = y[series_X.index]
             else:
-                series_y = y[series_X.index]
+                series_y = y
 
             if series_y is None:
                 return series_X, series_y
@@ -542,9 +542,9 @@ class STLDecomposer(Decomposer):
         plot_info = {}
         for id, series_X in grouped_X:
             if self.is_multiseries:
-                self.trend = self.decompositions[id]["trend"]
                 self.seasonality = self.decompositions[id]["seasonality"]
                 self.seasonal = self.decompositions[id]["seasonal"]
+                self.trend = self.decompositions[id]["trend"]
                 self.residual = self.decompositions[id]["residual"]
                 self.period = self.decompositions[id]["period"]
 
