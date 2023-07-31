@@ -53,6 +53,7 @@ from evalml.pipelines.utils import (
     is_regression,
     make_pipeline,
     make_pipeline_from_actions,
+    restack_X,
     rows_of_interest,
     stack_data,
     unstack_multiseries,
@@ -1463,3 +1464,14 @@ def test_stack_data_noop():
 
     assert stack_data(none_y) is None
     pd.testing.assert_series_equal(stack_data(series_y), series_y)
+
+
+def test_restack_X(multiseries_ts_data_stacked, multiseries_ts_data_unstacked):
+    X, _ = multiseries_ts_data_unstacked
+    X_expected, _ = multiseries_ts_data_stacked
+
+    X_transformed = restack_X(X, "series_id", "date")
+    pd.testing.assert_frame_equal(
+        X_expected.sort_index(axis=1),
+        X_transformed.sort_index(axis=1),
+    )

@@ -1026,7 +1026,7 @@ def ts_data_seasonal_test():
 @pytest.fixture
 def multiseries_ts_data_stacked():
     time_index = pd.date_range(start="1/1/2018", periods=20).repeat(5)
-    series_id = list(range(5)) * 20
+    series_id = pd.Series(list(range(5)) * 20, dtype="str")
 
     X = pd.DataFrame(
         {
@@ -1036,7 +1036,7 @@ def multiseries_ts_data_stacked():
             "feature_b": reversed(range(100)),
         },
     )
-    y = pd.Series(range(100))
+    y = pd.Series(range(100), name="target")
     return X, y
 
 
@@ -1047,13 +1047,9 @@ def multiseries_ts_data_unstacked():
         {f"feature_b_{i}": range(99 - i, -1, -5) for i in range(5)},
     )
     X = pd.concat([feature_a, feature_b], axis=1)
-
     y = pd.DataFrame({f"target_{i}": range(i, 100, 5) for i in range(5)})
 
-    X.index = pd.date_range(start="1/1/2018", periods=20)
-    X.index.name = "date"
-    y.index = pd.date_range(start="1/1/2018", periods=20)
-    y.index.name = "date"
+    X["date"] = pd.date_range(start="1/1/2018", periods=20)
 
     return X, y
 

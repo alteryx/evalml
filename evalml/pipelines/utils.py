@@ -1410,7 +1410,7 @@ def stack_data(data, include_series_id=False, series_id_name=None):
     """Stacks the given DataFrame back into a single Series, or a DataFrame if include_series_id is True.
 
     Should only be used for data that is expected to be a single series. To stack multiple unstacked columns,
-    call this function multiple times on the desired subsets.
+    use `restack_X`.
 
     Args:
         data (pd.DataFrame): The data to stack.
@@ -1453,7 +1453,17 @@ def stack_data(data, include_series_id=False, series_id_name=None):
     return stacked_series
 
 
-def _restack_X(X, series_id_name, time_index):
+def restack_X(X, series_id_name, time_index):
+    """Restacks the unstacked features into a single DataFrame.
+
+    Args:
+        X (pd.DataFrame): The unstacked features.
+        series_id_name (str): The name of the series id column.
+        time_index (str): The name of the time index column.
+
+    Returns:
+        pd.DataFrame: The restacked features.
+    """
     original_columns = set()
     series_ids = set()
     for col in X.columns:
@@ -1463,15 +1473,23 @@ def _restack_X(X, series_id_name, time_index):
         original_columns.add("_".join(separated_name[:-1]))
         series_ids.add(separated_name[-1])
 
-    restacked_X = [X[time_index].repeat(len(series_ids)).reset_index(drop=True)]
+    restacked_X = []
 
     for i, original_col in enumerate(original_columns):
+        # Only include the series id once (for the first column)
+        include_series_id = i == 0
         subset_X = [col for col in X.columns if original_col in col]
         restacked_X.append(
             stack_data(
                 X[subset_X],
-                include_series_id=True,
+                include_series_id=include_series_id,
                 series_id_name=series_id_name,
             ),
         )
-    return pd.concat(restacked_X, axis=1)
+    restacked_X = pd.concat(restacked_X, axis=1)
+
+    time_index_col = X[time_index].repeat(len(series_ids)).reset_index(drop=True)
+    time_index_col.index = restacked_X.index
+    restacked_X[time_index] = time_index_col
+
+    return restacked_X
