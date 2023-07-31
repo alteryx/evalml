@@ -54,8 +54,8 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
         """Fits multiseries time series baseline regressor to data.
 
         Args:
-            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
-            y (pd.Series): The target training data of length [n_samples].
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features * n_series].
+            y (pd.DataFrame): The target training data of shape [n_samples, n_features * n_series].
 
         Returns:
             self
@@ -83,7 +83,7 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
             X (pd.DataFrame): Data of shape [n_samples, n_features].
 
         Returns:
-            pd.Series: Predicted values.
+            pd.DataFrame: Predicted values.
 
         Raises:
             ValueError: If the lagged columns are not present in X.
