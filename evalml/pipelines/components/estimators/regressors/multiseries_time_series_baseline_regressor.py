@@ -4,6 +4,7 @@ import pandas as pd
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.transformers import TimeSeriesFeaturizer
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
@@ -61,7 +62,7 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
             self
 
         Raises:
-            ValueError: If input y is None.
+            ValueError: If input y is None or if y is not a DataFrame with multiple columns.
         """
         if y is None:
             raise ValueError(
@@ -90,7 +91,8 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
         """
         X = infer_feature_types(X)
         feature_names = [
-            f"{col}_delay_{self.start_delay}" for col in self._target_column_names
+            TimeSeriesFeaturizer.df_colname_prefix.format(col, self.start_delay)
+            for col in self._target_column_names
         ]
         if not set(feature_names).issubset(set(X.columns)):
             raise ValueError(
