@@ -24,9 +24,9 @@ def test_multiseries_time_series_baseline_gap_negative():
 
 
 def test_multiseries_time_series_baseline_estimator_invalid_y(
-    X_y_multiseries_regression,
+    multiseries_ts_data_unstacked,
 ):
-    X, _ = X_y_multiseries_regression
+    X, _ = multiseries_ts_data_unstacked
 
     estimator = MultiseriesTimeSeriesBaselineRegressor(gap=0, forecast_horizon=2)
 
@@ -36,8 +36,8 @@ def test_multiseries_time_series_baseline_estimator_invalid_y(
         estimator.fit(X, pd.Series(range(100)))
 
 
-def test_multiseries_baseline_no_featurizer(X_y_multiseries_regression):
-    X, y = X_y_multiseries_regression
+def test_multiseries_baseline_no_featurizer(multiseries_ts_data_unstacked):
+    X, y = multiseries_ts_data_unstacked
 
     estimator = MultiseriesTimeSeriesBaselineRegressor(gap=0, forecast_horizon=2)
     estimator.fit(X, y)
@@ -46,10 +46,10 @@ def test_multiseries_baseline_no_featurizer(X_y_multiseries_regression):
         estimator.predict(X)
 
 
-def test_multiseries_time_series_baseline_lags(X_y_multiseries_regression):
-    X, y = X_y_multiseries_regression
+def test_multiseries_time_series_baseline_lags(multiseries_ts_data_unstacked):
+    X, y = multiseries_ts_data_unstacked
 
-    feat = TimeSeriesFeaturizer(time_index="index", gap=0, forecast_horizon=2)
+    feat = TimeSeriesFeaturizer(time_index="date", gap=0, forecast_horizon=2)
     feat.fit(X, y)
     X_t = feat.transform(X, y)
 

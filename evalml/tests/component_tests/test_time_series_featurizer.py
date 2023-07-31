@@ -983,16 +983,15 @@ def test_delay_feature_transformer_works_for_non_numeric_ordinal_categories(ts_d
     assert set(X_t["cats_delay_1"].value_counts().to_dict().keys()) == {2.0, 0.0, 1.0}
 
 
-def test_featurizer_y_dataframe(X_y_multiseries_regression):
-    X, y = X_y_multiseries_regression
-    X.index = pd.date_range("2021-01-01", periods=X.shape[0])
+def test_featurizer_y_dataframe(multiseries_ts_data_unstacked):
+    X, y = multiseries_ts_data_unstacked
 
-    featurizer = TimeSeriesFeaturizer(time_index="index", gap=1, forecast_horizon=5)
+    featurizer = TimeSeriesFeaturizer(time_index="date", gap=1, forecast_horizon=5)
     featurizer.fit(X, y)
 
     assert featurizer.statistically_significant_lags == [6]
 
-    expected_y_cols = [f"y_{i}_delay_6" for i in range(y.shape[1])]
+    expected_y_cols = [f"target_{i}_delay_6" for i in range(y.shape[1])]
     X_t = featurizer.transform(X, y)
     for expected_y_col in expected_y_cols:
         assert expected_y_col in X_t.columns

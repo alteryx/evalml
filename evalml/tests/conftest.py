@@ -831,22 +831,6 @@ def X_y_regression():
 
 
 @pytest.fixture
-def X_y_multiseries_regression():
-    X, _ = datasets.make_regression(
-        n_samples=100,
-        n_features=20,
-        n_informative=3,
-        random_state=0,
-    )
-    y, _ = datasets.make_regression(n_samples=100, n_features=4)
-    X = pd.DataFrame(X)
-    X.ww.init(logical_types={col: "double" for col in X.columns})
-    y = pd.DataFrame(y, columns=[f"y_{i}" for i in range(y.shape[1])])
-    y.ww.init(logical_types={col: "double" for col in y.columns})
-    return X, y
-
-
-@pytest.fixture
 def X_y_multi():
     X, y = datasets.make_classification(
         n_samples=100,
@@ -1050,11 +1034,7 @@ def multiseries_ts_data_unstacked():
 
     y = pd.DataFrame({f"target_{i}": range(i, 100, 5) for i in range(5)})
 
-    X.index = pd.date_range(start="1/1/2018", periods=20)
-    X.index.name = "date"
-    y.index = pd.date_range(start="1/1/2018", periods=20)
-    y.index.name = "date"
-
+    X["date"] = pd.date_range(start="1/1/2018", periods=20)
     return X, y
 
 

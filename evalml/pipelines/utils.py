@@ -1357,7 +1357,6 @@ def unstack_multiseries(
     series_id,
     time_index,
     target_name,
-    keep_time_in_index=True,
 ):
     """Converts multiseries data with one series_id column and one target column to one target column per series id.
 
@@ -1367,8 +1366,6 @@ def unstack_multiseries(
         series_id (str): The column which identifies which series each row belongs to.
         time_index (str): Specifies the name of the column in X that provides the datetime objects.
         target_name (str): The name of the target column.
-        keep_time_in_index (bool): Whether to maintain the time index as the index of the returned dataframes. Defaults to True.
-            If set to false, will discard the time index information entirely.
 
     Returns:
         pd.DataFrame, pd.DataFrame: The unstacked X and y data.
@@ -1401,10 +1398,9 @@ def unstack_multiseries(
     X_unstacked = pd.concat(X_unstacked_cols, axis=1)
     y_unstacked = pd.concat(y_unstacked_cols, axis=1)
 
-    # Reset the axis if need be
-    if not keep_time_in_index:
-        X_unstacked.reset_index(drop=True, inplace=True)
-        y_unstacked.reset_index(drop=True, inplace=True)
+    # Reset the axes now that they've been unstacked, keep time info in X
+    X_unstacked = X_unstacked.reset_index()
+    y_unstacked = y_unstacked.reset_index(drop=True)
 
     return X_unstacked, y_unstacked
 
