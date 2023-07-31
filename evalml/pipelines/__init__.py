@@ -54,6 +54,9 @@ from evalml.pipelines.binary_classification_pipeline import BinaryClassification
 from evalml.pipelines.multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
 )
+from evalml.pipelines.multiseries_regression_pipeline import (
+    MultiseriesRegressionPipeline,
+)
 from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.pipelines.time_series_classification_pipelines import (
     TimeSeriesClassificationPipeline,

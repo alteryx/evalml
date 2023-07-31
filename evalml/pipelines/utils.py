@@ -1357,9 +1357,10 @@ def unstack_multiseries(
     series_id,
     time_index,
     target_name,
-    keep_time_in_index=True,
 ):
     """Converts multiseries data with one series_id column and one target column to one target column per series id.
+
+    Datetime information will be preserved only as a column in X.
 
     Args:
         X (pd.DataFrame): Data of shape [n_samples, n_features].
@@ -1367,8 +1368,6 @@ def unstack_multiseries(
         series_id (str): The column which identifies which series each row belongs to.
         time_index (str): Specifies the name of the column in X that provides the datetime objects.
         target_name (str): The name of the target column.
-        keep_time_in_index (bool): Whether to maintain the time index as the index of the returned dataframes. Defaults to True.
-            If set to false, will discard the time index information entirely.
 
     Returns:
         pd.DataFrame, pd.DataFrame: The unstacked X and y data.
@@ -1401,10 +1400,8 @@ def unstack_multiseries(
     X_unstacked = pd.concat(X_unstacked_cols, axis=1)
     y_unstacked = pd.concat(y_unstacked_cols, axis=1)
 
-    # Reset the axis if need be
-    if not keep_time_in_index:
-        X_unstacked.reset_index(drop=True, inplace=True)
-        y_unstacked.reset_index(drop=True, inplace=True)
+    X_unstacked.reset_index(inplace=True)
+    y_unstacked.reset_index(drop=True, inplace=True)
 
     return X_unstacked, y_unstacked
 
@@ -1454,3 +1451,27 @@ def stack_data(data, include_series_id=False, series_id_name=None):
         stacked_series = pd.concat([series_id_col, stacked_series], axis=1)
 
     return stacked_series
+
+
+def _restack_X(X, series_id_name, time_index):
+    original_columns = set()
+    series_ids = set()
+    for col in X.columns:
+        if col == time_index:
+            continue
+        separated_name = col.split("_")
+        original_columns.add("_".join(separated_name[:-1]))
+        series_ids.add(separated_name[-1])
+
+    restacked_X = [X[time_index].repeat(len(series_ids)).reset_index(drop=True)]
+
+    for i, original_col in enumerate(original_columns):
+        subset_X = [col for col in X.columns if original_col in col]
+        restacked_X.append(
+            stack_data(
+                X[subset_X],
+                include_series_id=True,
+                series_id_name=series_id_name,
+            ),
+        )
+    return pd.concat(restacked_X, axis=1)
