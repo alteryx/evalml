@@ -75,6 +75,7 @@ all_requirements_set = set(
         "Target Imputer",
         "Natural Language Featurizer",
         "Time Series Baseline Estimator",
+        "Multiseries Time Series Baseline Regressor",
         "Time Series Imputer",
         "Time Series Regularizer",
         "URL Featurizer",

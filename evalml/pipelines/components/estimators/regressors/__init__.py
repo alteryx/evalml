@@ -29,6 +29,9 @@ from evalml.pipelines.components.estimators.regressors.decision_tree_regressor i
 from evalml.pipelines.components.estimators.regressors.time_series_baseline_estimator import (
     TimeSeriesBaselineEstimator,
 )
+from evalml.pipelines.components.estimators.regressors.multiseries_time_series_baseline_regressor import (
+    MultiseriesTimeSeriesBaselineRegressor,
+)
 from evalml.pipelines.components.estimators.regressors.prophet_regressor import (
     ProphetRegressor,
 )

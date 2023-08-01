@@ -1379,10 +1379,8 @@ def test_make_pipeline_features_and_dfs(X_y_binary):
 
 
 @pytest.mark.parametrize("target_name", ["target", "Target_Data"])
-@pytest.mark.parametrize("keep_time_in_index", [True, False])
 def test_unstack_multiseries(
     target_name,
-    keep_time_in_index,
     multiseries_ts_data_stacked,
     multiseries_ts_data_unstacked,
 ):
@@ -1392,9 +1390,6 @@ def test_unstack_multiseries(
     y_unstacked.columns = [
         f"{target_name}_{i}" for i in range(len(y_unstacked.columns))
     ]
-    if not keep_time_in_index:
-        X_unstacked.reset_index(drop=True, inplace=True)
-        y_unstacked.reset_index(drop=True, inplace=True)
 
     X_unstacked_transformed, y_unstacked_transformed = unstack_multiseries(
         X,
@@ -1402,7 +1397,6 @@ def test_unstack_multiseries(
         "series_id",
         "date",
         target_name=target_name,
-        keep_time_in_index=keep_time_in_index,
     )
     pd.testing.assert_frame_equal(
         X_unstacked.sort_index(axis=1),
@@ -1418,11 +1412,9 @@ def test_unstack_multiseries(
 
 @pytest.mark.parametrize("include_series_id", [True, False])
 @pytest.mark.parametrize("series_id_name", [None, "SERIES"])
-@pytest.mark.parametrize("index_type", ["datetime", "int"])
 def test_stack_data(
     include_series_id,
     series_id_name,
-    index_type,
     multiseries_ts_data_stacked,
     multiseries_ts_data_unstacked,
 ):
@@ -1430,13 +1422,6 @@ def test_stack_data(
     _, y_stacked = multiseries_ts_data_stacked
 
     y_stacked.name = "target"
-
-    if index_type == "datetime":
-        y_stacked.index = pd.date_range(start="1/1/2018", periods=20).repeat(5)
-        y_stacked.index.name = "date"
-    else:
-        y = y.reset_index(drop=True)
-
     y_stacked_transformed = stack_data(
         y,
         include_series_id=include_series_id,

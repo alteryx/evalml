@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Updated regression metrics to handle multioutput dataframes as well as single output series :pr:`4233`
+        * Added baseline regressor for multiseries time series problems :pr:`4246`
         * Added stacking and unstacking utility functions to work with multiseries data :pr:`4250`
     * Fixes
         * Added support for pandas 2 :pr:`4216`

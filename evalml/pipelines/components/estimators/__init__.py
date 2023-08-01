@@ -25,6 +25,7 @@ from evalml.pipelines.components.estimators.regressors import (
     ExtraTreesRegressor,
     BaselineRegressor,
     TimeSeriesBaselineEstimator,
+    MultiseriesTimeSeriesBaselineRegressor,
     DecisionTreeRegressor,
     SVMRegressor,
     ExponentialSmoothingRegressor,

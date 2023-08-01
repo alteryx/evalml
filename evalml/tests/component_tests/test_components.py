@@ -40,6 +40,7 @@ from evalml.pipelines.components import (
     LinearDiscriminantAnalysis,
     LinearRegressor,
     LogisticRegressionClassifier,
+    MultiseriesTimeSeriesBaselineRegressor,
     NaturalLanguageFeaturizer,
     OneHotEncoder,
     Oversampler,
@@ -1015,9 +1016,9 @@ def test_components_can_be_used_for_partial_dependence_fast_mode():
     # Expected number is hardcoded so that this test will fail when new components are added
     # It should be len(all_native_components) - num_invalid_for_pd_fast_mode
     if ProphetRegressor not in all_native_components:
-        expected_num_valid_for_pd_fast_mode = 63
-    else:
         expected_num_valid_for_pd_fast_mode = 64
+    else:
+        expected_num_valid_for_pd_fast_mode = 65
     assert num_valid_for_pd_fast_mode == expected_num_valid_for_pd_fast_mode
 
 
@@ -1210,6 +1211,7 @@ def test_all_estimators_check_fit(
             StackedEnsembleClassifier,
             StackedEnsembleRegressor,
             TimeSeriesBaselineEstimator,
+            MultiseriesTimeSeriesBaselineRegressor,
             VowpalWabbitBinaryClassifier,
             VowpalWabbitMulticlassClassifier,
             VowpalWabbitRegressor,
@@ -1366,6 +1368,9 @@ def test_serialization(
         X, _, y = ts_data()
     else:
         X, y = X_y_binary
+
+    if component_class.is_multiseries:
+        y = pd.DataFrame({"target_a": y, "target_b": y})
 
     component.fit(X, y)
 
@@ -1740,6 +1745,9 @@ def test_estimator_fit_respects_custom_indices(
     X = pd.DataFrame(X)
     y = pd.Series(y)
 
+    if estimator_class.is_multiseries:
+        y = pd.DataFrame({"target_a": y, "target_b": y})
+
     if use_custom_index and ts_problem:
         X.index = pd.date_range("2020-10-01", periods=40)
         y.index = pd.date_range("2020-10-01", periods=40)
@@ -1915,7 +1923,10 @@ def test_components_support_nullable_types(
     component is added that has nullable type incompatibilities, this should fail."""
     cannot_handle_boolean_target = [CatBoostRegressor]
 
-    if component_class == TimeSeriesBaselineEstimator:
+    if (
+        component_class == TimeSeriesBaselineEstimator
+        or component_class == MultiseriesTimeSeriesBaselineRegressor
+    ):
         pytest.skip(
             "Time Series Baseline Estimator can only be used within a Pipeline.",
         )
