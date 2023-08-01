@@ -67,10 +67,9 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
         return self
 
     def _fit(self, X, y):
-        self.input_target_name = y.name
-
         from evalml.pipelines.utils import unstack_multiseries
 
+        self.input_target_name = y.name
         X_unstacked, y_unstacked = unstack_multiseries(
             X,
             y,
@@ -81,3 +80,55 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
 
         self.component_graph.fit(X_unstacked, y_unstacked)
         self.input_feature_names = self.component_graph.input_feature_names
+
+    def predict_in_sample(
+        self,
+        X,
+        y,
+        X_train,
+        y_train,
+        objective=None,
+        calculating_residuals=False,
+    ):
+        """Predict on future data where the target is known, e.g. cross validation.
+
+        Args:
+            X (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray): Future target of shape [n_samples]
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
+            objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
+            calculating_residuals (bool): Whether we're calling predict_in_sample to calculate the residuals.  This means
+                the X and y arguments are not future data, but actually the train data.
+
+        Returns:
+            pd.Series: Estimated labels.
+
+        Raises:
+            ValueError: If final component is not an Estimator.
+        """
+        from evalml.pipelines.utils import stack_data, unstack_multiseries
+
+        X_unstacked, y_unstacked = unstack_multiseries(
+            X,
+            y,
+            self.series_id,
+            self.time_index,
+            self.input_target_name,
+        )
+        X_train_unstacked, y_train_unstacked = unstack_multiseries(
+            X_train,
+            y_train,
+            self.series_id,
+            self.time_index,
+            self.input_target_name,
+        )
+        unstacked_predictions = super().predict_in_sample(
+            X_unstacked,
+            y_unstacked,
+            X_train_unstacked,
+            y_train_unstacked,
+            objective,
+            calculating_residuals,
+        )
+        return stack_data(unstacked_predictions)

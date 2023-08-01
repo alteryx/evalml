@@ -146,10 +146,13 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         padded_features = pd.concat(features_to_concat, axis=0).fillna(method="ffill")
         padded_target = pd.concat(targets_to_concat, axis=0).fillna(method="ffill")
         padded_features.ww.init(schema=X_train.ww.schema)
-        padded_target = ww.init_series(
-            padded_target,
-            logical_type=y_train.ww.logical_type,
-        )
+        if isinstance(padded_target, pd.Series):
+            padded_target = ww.init_series(
+                padded_target,
+                logical_type=y_train.ww.logical_type,
+            )
+        else:  # Multiseries case
+            padded_target.ww.init(schema=y_train.ww.schema)
         return padded_features, padded_target
 
     def _drop_time_index(self, X, y):
@@ -264,7 +267,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         if len(predictions) == len(y):
             predictions.index = y.index
         predictions = self.inverse_transform(predictions)
-        predictions = predictions.rename(self.input_target_name)
+        if isinstance(predictions, pd.Series):
+            predictions = predictions.rename(self.input_target_name)
         return infer_feature_types(predictions)
 
     def _ensure_correct_indices(self, X, y, X_train):
@@ -281,7 +285,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
     def _create_empty_series(self, y_train, size):
         return ww.init_series(
-            pd.Series([y_train.iloc[0]] * size),
+            pd.Series([y_train.iloc[0]] * size, name=y_train.name),
             logical_type=y_train.ww.logical_type,
         )
 

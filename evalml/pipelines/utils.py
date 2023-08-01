@@ -1450,6 +1450,9 @@ def stack_data(data, include_series_id=False, series_id_name=None):
         )
         stacked_series = pd.concat([series_id_col, stacked_series], axis=1)
 
+    import pdb
+
+    pdb.set_trace()
     return stacked_series
 
 
