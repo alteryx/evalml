@@ -99,7 +99,14 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
                 "Multiseries Time Series Baseline Regressor is meant to be used in a pipeline with "
                 "a Time Series Featurizer",
             )
-        return X.ww[feature_names]
+        delayed_features = X.ww[feature_names]
+
+        # Get the original column names, rather than the lagged column names
+        new_column_names = {
+            col_name: col_name.split("_delay_")[0] for col_name in feature_names
+        }
+
+        return delayed_features.ww.rename(columns=new_column_names)
 
     @property
     def feature_importance(self):
