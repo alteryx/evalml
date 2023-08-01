@@ -61,6 +61,8 @@ class TimeSeriesFeaturizer(Transformer):
     needs_fitting = True
     target_colname_prefix = "target_delay_{}"
     """target_delay_{}"""
+    df_colname_prefix = "{}_delay_{}"
+    """{}_delay_{}"""
 
     def __init__(
         self,
@@ -124,6 +126,8 @@ class TimeSeriesFeaturizer(Transformer):
         """
         if self.time_index is None:
             raise ValueError("time_index cannot be None!")
+
+        # For the multiseries case, where we only want the start delay lag for the baseline
         if isinstance(y, pd.DataFrame):
             self.statistically_significant_lags = [self.start_delay]
         else:
@@ -231,7 +235,9 @@ class TimeSeriesFeaturizer(Transformer):
             if categorical_columns and col_name in categorical_columns:
                 col = X_categorical[col_name]
             for t in self.statistically_significant_lags:
-                lagged_features[f"{col_name}_delay_{t}"] = col.shift(t)
+                lagged_features[self.df_colname_prefix.format(col_name, t)] = col.shift(
+                    t,
+                )
         return lagged_features
 
     def _compute_delays(self, X_ww, y):

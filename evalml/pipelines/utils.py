@@ -1400,8 +1400,9 @@ def unstack_multiseries(
     X_unstacked = pd.concat(X_unstacked_cols, axis=1)
     y_unstacked = pd.concat(y_unstacked_cols, axis=1)
 
-    X_unstacked.reset_index(inplace=True)
-    y_unstacked.reset_index(drop=True, inplace=True)
+    # Reset the axes now that they've been unstacked, keep time info in X
+    X_unstacked = X_unstacked.reset_index()
+    y_unstacked = y_unstacked.reset_index(drop=True)
 
     return X_unstacked, y_unstacked
 

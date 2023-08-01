@@ -1050,7 +1050,6 @@ def multiseries_ts_data_unstacked():
     y = pd.DataFrame({f"target_{i}": range(i, 100, 5) for i in range(5)})
 
     X["date"] = pd.date_range(start="1/1/2018", periods=20)
-
     return X, y
 
 
