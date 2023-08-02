@@ -21,6 +21,7 @@ from evalml.pipelines.components.estimators import (
     DecisionTreeClassifier,
     DecisionTreeRegressor,
     TimeSeriesBaselineEstimator,
+    MultiseriesTimeSeriesBaselineRegressor,
     KNeighborsClassifier,
     ProphetRegressor,
     SVMClassifier,

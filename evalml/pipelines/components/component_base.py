@@ -31,6 +31,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     # Referring to the pandas nullable dtypes; not just woodwork logical types
     _integer_nullable_incompatibilities = []
     _boolean_nullable_incompatibilities = []
+    is_multiseries = False
 
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         """Base class for all components.

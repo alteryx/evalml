@@ -28,7 +28,7 @@ outputs:
         - pandas >=1.5.0
         - dask >=2022.2.0, !=2022.10.1
         - scipy >=1.5.0
-        - scikit-learn >=1.2.2
+        - scikit-learn >=1.3.0
         - scikit-optimize >=0.9.0
         - statsmodels >=0.12.2
         - colorama >=0.4.4
@@ -78,8 +78,8 @@ outputs:
         - lightgbm >=4.0.0
         - lime >=0.2.0.1
         - python >=3.8.*
-        - imbalanced-learn >=0.9.1, <0.11.0
-        - sktime >=0.17.0
+        - imbalanced-learn >=0.11.0
+        - sktime >=0.21.0
         - pmdarima >=1.8.5
         - vowpalwabbit >=8.11.0
     test:

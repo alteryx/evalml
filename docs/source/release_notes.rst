@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Updated regression metrics to handle multioutput dataframes as well as single output series :pr:`4233`
+        * Added baseline regressor for multiseries time series problems :pr:`4246`
         * Added stacking and unstacking utility functions to work with multiseries data :pr:`4250`
         * Extend STLDecomposer to Support Multiseries :pr:`4253`
     * Fixes
@@ -10,6 +11,7 @@ Release Notes
     * Changes
         * Unpinned sktime version :pr:`4214`
         * Bumped minimum lightgbm version to 4.0.0 for nullable type handling :pr:`4237`
+        * Pinned scikit-learn version due to incompatibility with pinned imbalanced-learn :pr:`4248`
     * Documentation Changes
     * Testing Changes
 

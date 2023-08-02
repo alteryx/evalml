@@ -327,6 +327,7 @@ class STLDecomposer(Decomposer):
         detrending_df = pd.DataFrame(detrending_list)
         return features_df, detrending_df
 
+
     def inverse_transform(self, y_t: pd.Series) -> tuple[pd.DataFrame, pd.Series]:
         """Adds back fitted trend and seasonality to target variable.
 

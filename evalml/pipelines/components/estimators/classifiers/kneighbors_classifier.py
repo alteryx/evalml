@@ -1,11 +1,13 @@
 """K-Nearest Neighbors Classifier."""
 import numpy as np
+import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier as SKKNeighborsClassifier
 from skopt.space import Integer
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
+from evalml.utils import infer_feature_types
 
 
 class KNeighborsClassifier(Estimator):
@@ -92,6 +94,34 @@ class KNeighborsClassifier(Estimator):
             component_obj=knn_classifier,
             random_seed=random_seed,
         )
+
+    def predict(self, X: pd.DataFrame) -> pd.Series:
+        """Make predictions using selected features.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.Series: Predicted values.
+        """
+        predictions = self._component_obj.predict(X.to_numpy())
+        predictions = infer_feature_types(predictions)
+        predictions.index = X.index
+        return predictions
+
+    def predict_proba(self, X: pd.DataFrame) -> pd.Series:
+        """Make probability estimates for labels.
+
+        Args:
+            X (pd.DataFrame): Features.
+
+        Returns:
+            pd.Series: Probability estimates.
+        """
+        pred_proba = self._component_obj.predict_proba(X.to_numpy())
+        pred_proba = infer_feature_types(pred_proba)
+        pred_proba.index = X.index
+        return pred_proba
 
     @property
     def feature_importance(self):

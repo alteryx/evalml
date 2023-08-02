@@ -497,26 +497,18 @@ def test_oversampler_handle_nullable_types(
     ["IntegerNullable", "AgeNullable", "BooleanNullable"],
 )
 @pytest.mark.parametrize(
-    "im_oversampler",
-    [
-        im.SMOTENC(categorical_features=[0]),
-        im.SMOTEN(),
-    ],
-)
-@pytest.mark.parametrize(
     "handle_incompatibility",
     [
         True,
         pytest.param(
             False,
-            marks=pytest.mark.xfail(strict=True, raises=ValueError),
+            marks=pytest.mark.xfail(raises=TypeError),
         ),
     ],
 )
 def test_oversampler_nullable_type_incompatibility(
     nullable_type_test_data,
     handle_incompatibility,
-    im_oversampler,
     nullable_y_ltype,
 ):
     """Testing that the nullable type incompatibility that caused us to add handling for Oversampler
@@ -534,10 +526,7 @@ def test_oversampler_nullable_type_incompatibility(
         evalml_oversampler = Oversampler(sampling_ratio=0.5)
         X, y = evalml_oversampler._handle_nullable_types(X, y)
 
-    # We have to convert to `object` dtype with categorical columns
-    # because of the sklearn bug described by the test below this one
-    X["categorical col"] = X["categorical col"].astype("object")
-
+    im_oversampler = im.SMOTENC(categorical_features=[0])
     im_oversampler.fit_resample(X, y)
 
 
@@ -567,5 +556,5 @@ def test_oversampler_category_dtype_incompatibility(
     if handle_incompatibility:
         X["categorical col"] = X["categorical col"].astype("object")
 
-    im_oversampler = im.SMOTENC(categorical_features=[0])
+    im_oversampler = im.SMOTEN()
     im_oversampler.fit_resample(X, y)
