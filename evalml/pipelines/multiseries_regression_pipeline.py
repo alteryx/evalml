@@ -62,7 +62,6 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
         Raises:
             ValueError: If the target is not numeric.
         """
-        self.frequency = infer_frequency(X[self.time_index])
         self._fit(X, y)
         return self
 
@@ -77,6 +76,7 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
             self.time_index,
             self.input_target_name,
         )
+        self.frequency = infer_frequency(X_unstacked[self.time_index])
 
         self.component_graph.fit(X_unstacked, y_unstacked)
         self.input_feature_names = self.component_graph.input_feature_names
@@ -131,4 +131,8 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
             objective,
             calculating_residuals,
         )
-        return stack_data(unstacked_predictions)
+        stacked_predictions = stack_data(unstacked_predictions)
+
+        # Index will start at the unstacked index, so we need to reset it to the original index
+        stacked_predictions.index = X.index
+        return stacked_predictions

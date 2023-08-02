@@ -98,7 +98,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         """
         last_row_of_training = self.forecast_horizon + self.max_delay + self.gap
         gap_features = pd.DataFrame()
-        gap_target = pd.Series()
+        gap_target = pd.Series() if isinstance(y, pd.Series) else pd.DataFrame()
         if (
             are_datasets_separated_by_gap_time_index(
                 X_train,
