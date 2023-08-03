@@ -1379,7 +1379,6 @@ def test_make_pipeline_features_and_dfs(X_y_binary):
 
 
 @pytest.mark.parametrize("target_name", ["target", "Target_Data"])
-
 def test_unstack_multiseries(
     target_name,
     multiseries_ts_data_stacked,
@@ -1413,7 +1412,6 @@ def test_unstack_multiseries(
 
 @pytest.mark.parametrize("include_series_id", [True, False])
 @pytest.mark.parametrize("series_id_name", [None, "SERIES"])
-
 def test_stack_data(
     include_series_id,
     series_id_name,
