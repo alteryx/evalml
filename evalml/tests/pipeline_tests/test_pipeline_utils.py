@@ -1422,7 +1422,6 @@ def test_stack_data(
     _, y_stacked = multiseries_ts_data_stacked
 
     y_stacked.name = "target"
-
     y_stacked_transformed = stack_data(
         y,
         include_series_id=include_series_id,
