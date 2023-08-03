@@ -526,7 +526,6 @@ class STLDecomposer(Decomposer):
         # Iterate through each series id
         plot_info = {}
         for id in y.columns:
-            print(id)
             series_y = y[id]
 
             if self.is_multiseries:
