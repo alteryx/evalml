@@ -282,11 +282,17 @@ class TimeSeriesBinaryClassificationPipeline(
         return infer_feature_types(predictions)
 
     @staticmethod
-    def _score(X, y, predictions, objective):
+    def _score(X, y, predictions, objective, y_train=None):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score."""
         if predictions.ndim > 1:
             predictions = predictions.iloc[:, 1]
-        return TimeSeriesClassificationPipeline._score(X, y, predictions, objective)
+        return TimeSeriesClassificationPipeline._score(
+            X,
+            y,
+            predictions,
+            objective,
+            y_train,
+        )
 
 
 class TimeSeriesMulticlassClassificationPipeline(TimeSeriesClassificationPipeline):
