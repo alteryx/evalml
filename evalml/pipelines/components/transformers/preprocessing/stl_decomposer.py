@@ -295,7 +295,7 @@ class STLDecomposer(Decomposer):
                         index=truncated_y.index,
                     ),
                 )
-            y_t = y_in_sample.append(y_out_of_sample)
+            y_t = pd.concat([y_in_sample, y_out_of_sample])
             y_t.index = original_index
 
             # If it is a single series time series, return tuple[pd.DataFrame, pd.Series]
