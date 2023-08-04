@@ -7,6 +7,7 @@ Release Notes
         * Added stacking and unstacking utility functions to work with multiseries data :pr:`4250`
     * Fixes
         * Added support for pandas 2 :pr:`4216`
+        * Update s3 bucket for docs image :pr:`4260`
     * Changes
         * Unpinned sktime version :pr:`4214`
         * Bumped minimum lightgbm version to 4.0.0 for nullable type handling :pr:`4237`
