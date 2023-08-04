@@ -87,7 +87,7 @@ class BinaryClassificationPipeline(
         return super().predict_proba(X)
 
     @staticmethod
-    def _score(X, y, predictions, objective):
+    def _score(X, y, predictions, objective, y_train=None):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score."""
         if predictions.ndim > 1:
             predictions = predictions.iloc[:, 1]
