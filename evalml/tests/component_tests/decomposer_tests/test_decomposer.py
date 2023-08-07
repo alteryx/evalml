@@ -61,11 +61,32 @@ def test_decomposer_init_raises_error_if_degree_not_int(decomposer_child_class):
     "y_has_time_index",
     ["y_has_time_index", "y_doesnt_have_time_index"],
 )
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_decomposer_plot_decomposition(
     decomposer_child_class,
     y_has_time_index,
     generate_seasonal_data,
+    variateness,
+    multiseries_ts_data_unstacked,
 ):
+    if variateness == "univariate":
+        x = np.arange(0, 2 * np.pi, 0.01)
+        dts = pd.date_range(datetime.today(), periods=len(x))
+        X = pd.DataFrame({"x": x})
+        X = X.set_index(dts)
+        y = pd.Series(np.sin(x))
+    elif variateness == "multivariate":
+        if isinstance(decomposer_child_class(), PolynomialDecomposer):
+            pytest.skip(
+                "Skipping Decomposer because multiseries is not implemented for Polynomial Decomposer",
+            )
+        X, y = multiseries_ts_data_unstacked
     step = 0.01
     period = 9
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period, step)
@@ -101,15 +122,34 @@ def test_decomposer_plot_decomposition(
         "time_index_is_specified_but_wrong",
     ],
 )
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_decomposer_uses_time_index(
     decomposer_child_class,
     ts_data,
+    multiseries_ts_data_unstacked,
+    variateness,
     X_has_time_index,
     X_num_time_columns,
     y_has_time_index,
     time_index_specified,
 ):
-    X, _, y = ts_data()
+    if variateness == "univariate":
+        X, _, y = ts_data()
+    elif variateness == "multivariate":
+        if isinstance(decomposer_child_class(), PolynomialDecomposer):
+            pytest.skip(
+                "Skipping Decomposer because multiseries is not implemented for Polynomial Decomposer",
+            )
+        X, y = multiseries_ts_data_unstacked
+        X.index = X["date"]
+        y = y.set_axis(X.index)
+        X.ww.init()
 
     time_index_col_name = "date"
     assert isinstance(X.index, pd.DatetimeIndex)
@@ -345,6 +385,7 @@ def test_decomposer_projected_seasonality_integer_and_datetime(
     }[test_first_index]
 
     X, _, y = ts_data()
+
     datetime_index = pd.date_range(start="01-01-2002", periods=len(X), freq="M")
     if not has_freq:
         datetime_index.freq = None
@@ -393,11 +434,33 @@ def test_decomposer_projected_seasonality_integer_and_datetime(
     "decomposer_child_class",
     decomposer_list,
 )
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_decomposer_get_trend_dataframe_raises_errors(
     decomposer_child_class,
     ts_data,
+    multiseries_ts_data_unstacked,
+    variateness,
 ):
-    X, _, y = ts_data()
+    if variateness == "univariate":
+        X, _, y = ts_data()
+    elif variateness == "multivariate":
+        if isinstance(decomposer_child_class(), PolynomialDecomposer):
+            pytest.skip(
+                "Skipping Decomposer because multiseries is not implemented for Polynomial Decomposer",
+            )
+        X, y = multiseries_ts_data_unstacked
+        dts = pd.date_range("01-01-2000", periods=len(X), freq="MS")
+        datetime_index = pd.DatetimeIndex(dts)
+        X.index = datetime_index
+        y.index = datetime_index
+        X["date"] = dts
+
     dec = decomposer_child_class()
     dec.fit_transform(X, y)
 
@@ -546,15 +609,33 @@ def test_decomposer_determine_periodicity_nullable_type_incompatibility(
     "decomposer_child_class",
     decomposer_list,
 )
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 @pytest.mark.parametrize("fit_before_decompose", [True, False])
 def test_decomposer_get_trend_dataframe_error_not_fit(
     decomposer_child_class,
     ts_data,
+    multiseries_ts_data_unstacked,
+    variateness,
     fit_before_decompose,
 ):
-    X, _, y = ts_data()
+    if variateness == "univariate":
+        X, _, y = ts_data()
+    elif variateness == "multivariate":
+        if isinstance(decomposer_child_class(), PolynomialDecomposer):
+            pytest.skip(
+                "Skipping Decomposer because multiseries is not implemented for Polynomial Decomposer",
+            )
+        X, y = multiseries_ts_data_unstacked
+        X.index = X["date"]
+        X.index.freq = "D"
 
-    dec = decomposer_child_class()
+    dec = decomposer_child_class(time_index="date")
     if fit_before_decompose:
         dec.fit_transform(X, y)
         dec.get_trend_dataframe(X, y)
@@ -569,11 +650,28 @@ def test_decomposer_get_trend_dataframe_error_not_fit(
     "decomposer_child_class",
     decomposer_list,
 )
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_decomposer_transform_returns_same_when_y_none(
     decomposer_child_class,
     ts_data,
+    multiseries_ts_data_unstacked,
+    variateness,
 ):
-    X, _, y = ts_data()
+    if variateness == "univariate":
+        X, _, y = ts_data()
+    elif variateness == "multivariate":
+        if isinstance(decomposer_child_class(), PolynomialDecomposer):
+            pytest.skip(
+                "Skipping Decomposer because multiseries is not implemented for Polynomial Decomposer",
+            )
+        X, y = multiseries_ts_data_unstacked
+
     dec = decomposer_child_class().fit(X, y)
     X_t, y_t = dec.transform(X, None)
     pd.testing.assert_frame_equal(X, X_t)
@@ -584,11 +682,27 @@ def test_decomposer_transform_returns_same_when_y_none(
     "decomposer_child_class",
     decomposer_list,
 )
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_decomposer_raises_value_error_target_is_none(
     decomposer_child_class,
     ts_data,
+    multiseries_ts_data_unstacked,
+    variateness,
 ):
-    X, _, y = ts_data()
+    if variateness == "univariate":
+        X, _, y = ts_data()
+    elif variateness == "multivariate":
+        if isinstance(decomposer_child_class(), PolynomialDecomposer):
+            pytest.skip(
+                "Skipping Decomposer because multiseries is not implemented for Polynomial Decomposer",
+            )
+        X, y = multiseries_ts_data_unstacked
 
     with pytest.raises(ValueError, match="cannot be None for Decomposer!"):
         decomposer_child_class(degree=3).fit_transform(X, None)
@@ -606,11 +720,28 @@ def test_decomposer_raises_value_error_target_is_none(
     "decomposer_child_class",
     decomposer_list,
 )
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_decomposer_bad_target_index(
     decomposer_child_class,
     ts_data,
+    multiseries_ts_data_unstacked,
+    variateness,
 ):
-    X, _, y = ts_data()
+    if variateness == "univariate":
+        X, _, y = ts_data()
+    elif variateness == "multivariate":
+        if isinstance(decomposer_child_class(), PolynomialDecomposer):
+            pytest.skip(
+                "Skipping Decomposer because multiseries is not implemented for Polynomial Decomposer",
+            )
+        X, y = multiseries_ts_data_unstacked
+
     dec = decomposer_child_class()
     y.index = pd.CategoricalIndex(["cat_index" for x in range(len(y))])
     with pytest.raises(
@@ -801,8 +932,28 @@ def test_decomposer_doesnt_modify_target_index(
     "decomposer_child_class",
     decomposer_list,
 )
-def test_decomposer_monthly_begin_data(decomposer_child_class, ts_data):
-    X, _, y = ts_data()
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
+def test_decomposer_monthly_begin_data(
+    decomposer_child_class,
+    ts_data,
+    multiseries_ts_data_unstacked,
+    variateness,
+):
+    if variateness == "univariate":
+        X, _, y = ts_data()
+    elif variateness == "multivariate":
+        if isinstance(decomposer_child_class(), PolynomialDecomposer):
+            pytest.skip(
+                "Skipping Decomposer because multiseries is not implemented for Polynomial Decomposer",
+            )
+        X, y = multiseries_ts_data_unstacked
+
     dts = pd.date_range("01-01-2000", periods=len(X), freq="MS")
     datetime_index = pd.DatetimeIndex(dts)
     X.index = datetime_index

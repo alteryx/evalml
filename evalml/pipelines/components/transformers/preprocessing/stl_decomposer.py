@@ -500,34 +500,40 @@ class STLDecomposer(Decomposer):
         Returns:
             dict of pd.Series: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
         """
-        if coverage is None:
-            coverage = [0.95]
+        if isinstance(y, pd.Series):
+            y = y.to_frame()
 
-        self._check_oos_past(y)
-        alphas = [1 - val for val in coverage]
+        for id in y.columns:
+            y_series = y[id]
 
-        if not self.forecast_summary or len(y) != len(
-            self.forecast_summary.predicted_mean,
-        ):
-            self._project_trend_and_seasonality(y)
+            if coverage is None:
+                coverage = [0.95]
 
-        prediction_interval_result = {}
-        for i, alpha in enumerate(alphas):
-            result = self.forecast_summary.summary_frame(alpha=alpha)
-            overlapping_ind = [ind for ind in y.index if ind in result.index]
-            intervals = pd.DataFrame(
-                {
-                    "lower": result["mean_ci_lower"] - result["mean"],
-                    "upper": result["mean_ci_upper"] - result["mean"],
-                },
-            )
-            if len(overlapping_ind) > 0:  # y.index is datetime
-                intervals = intervals.loc[overlapping_ind]
-            else:  # y.index is not datetime (e.g. int)
-                intervals = intervals[-len(y) :]
-                intervals.index = y.index
-            prediction_interval_result[f"{coverage[i]}_lower"] = intervals["lower"]
-            prediction_interval_result[f"{coverage[i]}_upper"] = intervals["upper"]
+            self._check_oos_past(y_series)
+            alphas = [1 - val for val in coverage]
+
+            if not self.forecast_summary or len(y_series) != len(
+                self.forecast_summary.predicted_mean,
+            ):
+                self._project_trend_and_seasonality(y_series)
+
+            prediction_interval_result = {}
+            for i, alpha in enumerate(alphas):
+                result = self.forecast_summary.summary_frame(alpha=alpha)
+                overlapping_ind = [ind for ind in y_series.index if ind in result.index]
+                intervals = pd.DataFrame(
+                    {
+                        "lower": result["mean_ci_lower"] - result["mean"],
+                        "upper": result["mean_ci_upper"] - result["mean"],
+                    },
+                )
+                if len(overlapping_ind) > 0:  # y.index is datetime
+                    intervals = intervals.loc[overlapping_ind]
+                else:  # y.index is not datetime (e.g. int)
+                    intervals = intervals[-len(y_series) :]
+                    intervals.index = y_series.index
+                prediction_interval_result[f"{coverage[i]}_lower"] = intervals["lower"]
+                prediction_interval_result[f"{coverage[i]}_upper"] = intervals["upper"]
 
         return prediction_interval_result
 
@@ -560,6 +566,8 @@ class STLDecomposer(Decomposer):
         # Iterate through each series id
         plot_info = {}
         decomposition_results = self.get_trend_dataframe(X, y)
+        if isinstance(y, pd.Series):
+            y = y.to_frame()
 
         for id in y.columns:
             fig, axs = plt.subplots(4)
