@@ -181,30 +181,12 @@ def test_fit_predict_sk_failure(
 def test_different_time_units_out_of_sample(
     freq_str,
     freq_num,
-    multiseries_ts_data_unstacked,
+    ts_multiseries_data,
 ):
     from sktime.forecasting.base import ForecastingHorizon
     from sktime.forecasting.varmax import VARMAX
 
-    datetime_ = pd.date_range("1/1/1870", periods=20, freq=freq_num + freq_str)
-
-    X = pd.DataFrame(
-        range(20),
-        index=datetime_,
-    )
-    y = pd.DataFrame(
-        {
-            "target_0": pd.Series(
-                np.sin(np.linspace(-8 * np.pi, 8 * np.pi, 20)),
-                index=datetime_,
-            ),
-            "target_1": pd.Series(
-                np.sin(np.linspace(-4 * np.pi, 4 * np.pi, 20)),
-                index=datetime_,
-            ),
-        },
-    )
-
+    X, _, y = ts_multiseries_data(freq=freq_num + freq_str, datetime_feature=False)
     fh_ = ForecastingHorizon([i + 1 for i in range(len(y[15:]))], is_relative=True)
 
     a_clf = VARMAX(maxiter=10)
