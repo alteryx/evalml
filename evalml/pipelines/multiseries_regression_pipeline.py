@@ -16,6 +16,7 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
              An empty dictionary {} implies using all default values for component parameters. Pipeline-level
              parameters such as time_index, gap, and max_delay must be specified with the "pipeline" key. For example:
              Pipeline(parameters={"pipeline": {"time_index": "Date", "max_delay": 4, "gap": 2}}).
+        custom_name (str): Custom name for the pipeline. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     """
