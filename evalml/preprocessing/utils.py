@@ -2,7 +2,7 @@
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
-from evalml.pipelines.utils import restack_X, stack_data, unstack_multiseries
+from evalml.pipelines.utils import stack_data, stack_X, unstack_multiseries
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import is_classification, is_regression, is_time_series
 from evalml.utils import infer_feature_types
@@ -72,20 +72,15 @@ def split_multiseries_data(X, y, series_id, time_index, **kwargs):
         X_unstacked, y_unstacked, problem_type="time series regression", **kwargs
     )
 
-    X_train = restack_X(X_train_unstacked, series_id, time_index)
-    X_holdout = restack_X(X_holdout_unstacked, series_id, time_index)
+    X_train = stack_X(X_train_unstacked, series_id, time_index)
+    X_holdout = stack_X(
+        X_holdout_unstacked,
+        series_id,
+        time_index,
+        starting_index=X_train.index[-1] + 1,
+    )
     y_train = stack_data(y_train_unstacked)
-    y_holdout = stack_data(y_holdout_unstacked)
-
-    # Fix the holdout data indices, they'll be starting at the unstacked point instead of stacked
-    X_holdout.index = pd.RangeIndex(
-        start=X_train.index[-1] + 1,
-        stop=X_train.index[-1] + 1 + len(X_holdout),
-    )
-    y_holdout.index = pd.RangeIndex(
-        start=y_train.index[-1] + 1,
-        stop=y_train.index[-1] + 1 + len(y_holdout),
-    )
+    y_holdout = stack_data(y_holdout_unstacked, starting_index=y_train.index[-1] + 1)
 
     return X_train, X_holdout, y_train, y_holdout
 
