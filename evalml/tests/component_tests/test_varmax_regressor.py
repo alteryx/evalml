@@ -27,7 +27,7 @@ def test_problem_types():
 def test_model_instance(ts_multiseries_data):
     X, _, y = ts_multiseries_data(n_series=2)
     clf = VARMAXRegressor()
-    fitted = clf.fit(X, y["target_0"])
+    fitted = clf.fit(X, y)
     assert isinstance(fitted, VARMAXRegressor)
 
 
