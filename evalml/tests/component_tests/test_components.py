@@ -1235,8 +1235,6 @@ def test_all_estimators_check_fit(
 
         if component_class.__name__ == "ProphetRegressor":
             component = component_class(time_index="date")
-        elif component_class.__name__ == "VARMAXRegressor":
-            component = component_class(time_index="date", series_id="series_id")
         else:
             component = helper_functions.safe_init_component_with_njobs_1(
                 component_class,

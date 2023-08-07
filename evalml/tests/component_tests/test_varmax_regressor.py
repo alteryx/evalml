@@ -186,7 +186,24 @@ def test_different_time_units_out_of_sample(
     from sktime.forecasting.base import ForecastingHorizon
     from sktime.forecasting.varmax import VARMAX
 
-    X, y = multiseries_ts_data_unstacked
+    datetime_ = pd.date_range("1/1/1870", periods=20, freq=freq_num + freq_str)
+
+    X = pd.DataFrame(
+        range(20),
+        index=datetime_,
+    )
+    y = pd.DataFrame(
+        {
+            "target_0": pd.Series(
+                np.sin(np.linspace(-8 * np.pi, 8 * np.pi, 20)),
+                index=datetime_,
+            ),
+            "target_1": pd.Series(
+                np.sin(np.linspace(-4 * np.pi, 4 * np.pi, 20)),
+                index=datetime_,
+            ),
+        },
+    )
 
     fh_ = ForecastingHorizon([i + 1 for i in range(len(y[15:]))], is_relative=True)
 
