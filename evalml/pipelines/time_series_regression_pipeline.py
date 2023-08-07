@@ -102,6 +102,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             y_predicted,
             y_pred_proba=None,
             objectives=objectives,
+            y_train=y_train,
         )
 
     def get_forecast_period(self, X):
