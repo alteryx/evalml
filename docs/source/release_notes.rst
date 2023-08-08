@@ -5,6 +5,7 @@ Release Notes
         * Updated regression metrics to handle multioutput dataframes as well as single output series :pr:`4233`
         * Added baseline regressor for multiseries time series problems :pr:`4246`
         * Added stacking and unstacking utility functions to work with multiseries data :pr:`4250`
+        * Added multiseries regression pipeline class :pr:`4256`
     * Fixes
         * Added support for pandas 2 :pr:`4216`
         * Fixed bug where time series pipelines would fail due to MASE needing `y_train` when scoring :pr:`4258`

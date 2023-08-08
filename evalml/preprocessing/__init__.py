@@ -2,6 +2,7 @@
 from evalml.preprocessing.utils import (
     load_data,
     split_data,
+    split_multiseries_data,
     number_of_features,
     target_distribution,
 )

@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from evalml.preprocessing import split_data
+from evalml.preprocessing import split_data, split_multiseries_data
 from evalml.problem_types import (
     ProblemTypes,
     is_binary,
@@ -125,3 +125,34 @@ def test_split_data_ts(test, X_y_regression):
     assert len(X_test) == test_size
     assert len(y_train) == train_size
     assert len(y_test) == test_size
+
+
+def test_split_multiseries_data(multiseries_ts_data_stacked):
+    X, y = multiseries_ts_data_stacked
+
+    X_train_expected, X_holdout_expected = X[:-10], X[-10:]
+    y_train_expected, y_holdout_expected = y[:-10], y[-10:]
+
+    X_train, X_holdout, y_train, y_holdout = split_multiseries_data(
+        X,
+        y,
+        "series_id",
+        "date",
+    )
+
+    pd.testing.assert_frame_equal(
+        X_train.sort_index(axis=1),
+        X_train_expected.sort_index(axis=1),
+    )
+    pd.testing.assert_frame_equal(
+        X_holdout.sort_index(axis=1),
+        X_holdout_expected.sort_index(axis=1),
+    )
+    pd.testing.assert_series_equal(
+        y_train,
+        y_train_expected,
+    )
+    pd.testing.assert_series_equal(
+        y_holdout,
+        y_holdout_expected,
+    )
