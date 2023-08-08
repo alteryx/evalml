@@ -378,6 +378,73 @@ def ts_data():
     return _get_X_y
 
 
+@pytest.fixture
+def ts_multiseries_data():
+    def _get_X_y(
+        train_features_index_dt=True,
+        train_target_index_dt=True,
+        train_none=False,
+        datetime_feature=True,
+        no_features=False,
+        test_features_index_dt=True,
+        freq="D",
+        match_indices=True,
+        n_series=2,
+    ):
+        dates = pd.date_range("1/1/21", periods=50, freq=freq)
+        data = {}
+        if not no_features:
+            data.update(
+                {
+                    f"feature_a_{i}": range(i, 50 * n_series, n_series)
+                    for i in range(n_series)
+                },
+            )
+            data.update(
+                {
+                    f"feature_b_{i}": range((50 * n_series) - 1 - i, -1, -n_series)
+                    for i in range(n_series)
+                },
+            )
+        X = pd.DataFrame(data, index=[i + 1 for i in range(50)])
+        y = pd.DataFrame(
+            {f"target_{i}": np.random.rand(50) for i in range(n_series)},
+        )
+        if match_indices:
+            y.index = X.index
+
+        X_train = X.iloc[:40]
+        X_test = X.iloc[40:]
+        y_train = y.iloc[:40]
+        logical_types = {}
+
+        if train_features_index_dt:
+            X_train.index = dates[:40]
+        if train_target_index_dt:
+            y_train.index = dates[:40]
+        if test_features_index_dt:
+            X_test.index = dates[40:]
+        if datetime_feature:
+            X_train["date"] = pd.Series(
+                dates[:40].values,
+                index=X_train.index,
+            )
+            X_test["date"] = pd.Series(
+                dates[40:].values,
+                index=X_test.index,
+            )
+            logical_types["date"] = "datetime"
+        if train_none:
+            X_train = None
+        if X_train is not None:
+            X_train.ww.init(logical_types=logical_types)
+        X_test.ww.init(logical_types=logical_types)
+
+        return X_train, X_test, y_train
+
+    return _get_X_y
+
+
 def create_mock_pipeline(
     estimator,
     problem_type,
@@ -393,6 +460,7 @@ def create_mock_pipeline(
                 ModelFamily.DECISION_TREE,
                 ModelFamily.VOWPAL_WABBIT,
                 ModelFamily.PROPHET,
+                ModelFamily.VARMAX,
             ]
             and "Elastic Net" not in estimator.name
         )

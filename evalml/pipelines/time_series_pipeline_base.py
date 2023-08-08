@@ -64,6 +64,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         time_series_native_estimators = [
             "ARIMA Regressor",
             "Prophet Regressor",
+            "VARMAX Regressor",
         ]
         self.should_skip_featurization = (
             not datetime_featurizer_included

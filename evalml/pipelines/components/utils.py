@@ -1,6 +1,6 @@
 """Utility methods for EvalML components."""
 import inspect
-from typing import Dict, List
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -493,3 +493,42 @@ def handle_float_categories_for_catboost(X):
     X_t = X.astype(new_dtypes)
     X_t.ww.init(schema=original_schema)
     return X_t
+
+
+def match_indices(
+    X: pd.DataFrame,
+    y: pd.Series,
+) -> Tuple[pd.DataFrame, Union[pd.Series, pd.DataFrame]]:
+    """Matches index from the passed dataframe to the passed series.
+
+    Args:
+        X (pd.DataFrame): Dataframe to match index from.
+        y (pd.Series): Series to match the index to.
+
+    Returns: Tuple(pd.DataFrame, pd.Series): DataFrame and Series with matching indicies.
+    """
+    if X is not None:
+        if X.index.equals(y.index):
+            return X, y
+        else:
+            y.index = X.index
+    return X, y
+
+
+def convert_bool_to_double(data: pd.DataFrame):
+    """Converts all boolean columns in dataframe to doubles.
+
+    Args:
+        data (pd.DataFrame): Input dataframe.
+
+    Returns:
+        pd.DataFrame: Input dataframe with all boolean-valued columns converted to doubles.
+    """
+    data_ = data.ww.copy()
+    data_.ww.set_types(
+        {
+            col: "Double"
+            for col in data.ww.select(["Boolean"], return_schema=True).columns
+        },
+    )
+    return data_

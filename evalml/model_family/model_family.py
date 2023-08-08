@@ -41,6 +41,9 @@ class ModelFamily(Enum):
     ARIMA = "arima"
     """ARIMA model family."""
 
+    VARMAX = "varmax"
+    """VARMAX model family."""
+
     BASELINE = "baseline"
     """Baseline model family."""
 
@@ -69,6 +72,7 @@ class ModelFamily(Enum):
             ModelFamily.ENSEMBLE.name: "Ensemble",
             ModelFamily.EXPONENTIAL_SMOOTHING.name: "Exponential Smoothing",
             ModelFamily.ARIMA.name: "ARIMA",
+            ModelFamily.VARMAX.name: "VARMAX",
             ModelFamily.PROPHET.name: "Prophet",
             ModelFamily.NONE.name: "None",
         }

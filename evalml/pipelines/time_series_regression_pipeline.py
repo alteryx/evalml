@@ -50,6 +50,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         ModelFamily.ARIMA,
         ModelFamily.EXPONENTIAL_SMOOTHING,
         ModelFamily.PROPHET,
+        ModelFamily.VARMAX,
     ]
 
     """ProblemTypes.TIME_SERIES_REGRESSION"""
