@@ -275,23 +275,9 @@ def test_varmax_regressor_prediction_intervals_not_implemented_yet_error(
         clf.get_prediction_intervals(X_test)
 
 
-@pytest.mark.parametrize(
-    "use_covariates",
-    [
-        pytest.param(
-            True,
-            marks=pytest.mark.xfail(
-                reason="Currently, using covariates with VARMAX causes inconsistent results when predicting",
-            ),
-        ),
-        False,
-    ],
-)
-def test_varmax_regressor_can_forecast_arbitrary_dates(
-    use_covariates,
+def test_varmax_regressor_can_forecast_arbitrary_dates_no_covariates(
     ts_multiseries_data,
 ):
-    # TODO: Get consistent results when using covariates
     X, _, y = ts_multiseries_data(n_series=2)
 
     X_train, X_test, y_train, y_test = split_data(
@@ -304,7 +290,7 @@ def test_varmax_regressor_can_forecast_arbitrary_dates(
 
     X_test_last_5 = X_test.tail(5)
 
-    varmax = VARMAXRegressor(use_covariates=use_covariates)
+    varmax = VARMAXRegressor(use_covariates=False)
     varmax.fit(X_train, y_train)
 
     pd.testing.assert_frame_equal(

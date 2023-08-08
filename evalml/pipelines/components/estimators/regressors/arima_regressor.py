@@ -8,7 +8,7 @@ from skopt.space import Integer
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
-from evalml.pipelines.components.utils import match_indices
+from evalml.pipelines.components.utils import convert_bool_to_double, match_indices
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     import_or_raise,
@@ -209,12 +209,7 @@ class ARIMARegressor(Estimator):
         X = self._remove_datetime(X, features=True)
 
         if X is not None:
-            X.ww.set_types(
-                {
-                    col: "Double"
-                    for col in X.ww.select(["Boolean"], return_schema=True).columns
-                },
-            )
+            X = convert_bool_to_double(X)
         y = self._remove_datetime(y)
         X, y = match_indices(X, y)
 
@@ -227,12 +222,7 @@ class ARIMARegressor(Estimator):
     def _manage_types_and_forecast(self, X: pd.DataFrame) -> tuple:
         fh_ = self._set_forecast(X)
         X = X.ww.select(exclude=["Datetime"])
-        X.ww.set_types(
-            {
-                col: "Double"
-                for col in X.ww.select(["Boolean"], return_schema=True).columns
-            },
-        )
+        X = convert_bool_to_double(X)
         return X, fh_
 
     @staticmethod

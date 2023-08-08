@@ -513,3 +513,22 @@ def match_indices(
         else:
             y.index = X.index
     return X, y
+
+
+def convert_bool_to_double(data: pd.DataFrame):
+    """Converts all boolean columns in dataframe to doubles.
+
+    Args:
+        data (pd.DataFrame): Input dataframe.
+
+    Returns:
+        pd.DataFrame: Input dataframe with all boolean-valued columns converted to doubles.
+    """
+    data_ = data.ww.copy()
+    data_.ww.set_types(
+        {
+            col: "Double"
+            for col in data.ww.select(["Boolean"], return_schema=True).columns
+        },
+    )
+    return data_

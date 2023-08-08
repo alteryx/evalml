@@ -7,7 +7,7 @@ from skopt.space import Categorical, Integer
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
-from evalml.pipelines.components.utils import match_indices
+from evalml.pipelines.components.utils import convert_bool_to_double, match_indices
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     import_or_raise,
@@ -137,18 +137,8 @@ class VARMAXRegressor(Estimator):
             self.last_X_index = X.index[-1]
             X = X.ww.select(exclude=["Datetime"])
 
-            X.ww.set_types(
-                {
-                    col: "Double"
-                    for col in X.ww.select(["Boolean"], return_schema=True).columns
-                },
-            )
-            y.ww.set_types(
-                {
-                    col: "Double"
-                    for col in y.ww.select(["Boolean"], return_schema=True).columns
-                },
-            )
+            X = convert_bool_to_double(X)
+            y = convert_bool_to_double(y)
             X, y = match_indices(X, y)
 
             if not X.empty:
@@ -163,12 +153,7 @@ class VARMAXRegressor(Estimator):
     def _manage_types_and_forecast(self, X: pd.DataFrame) -> tuple:
         fh_ = self._set_forecast_horizon(X)
         X = X.ww.select(exclude=["Datetime"])
-        X.ww.set_types(
-            {
-                col: "Double"
-                for col in X.ww.select(["Boolean"], return_schema=True).columns
-            },
-        )
+        X = convert_bool_to_double(X)
         return X, fh_
 
     def predict(self, X: pd.DataFrame, y: Optional[pd.DataFrame] = None) -> pd.Series:

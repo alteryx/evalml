@@ -15,6 +15,7 @@ from evalml.pipelines.components import ComponentBase, RandomForestClassifier
 from evalml.pipelines.components.utils import (
     _all_estimators,
     all_components,
+    convert_bool_to_double,
     estimator_unable_to_handle_nans,
     handle_component_class,
     handle_float_categories_for_catboost,
@@ -313,3 +314,14 @@ def test_match_indices(multiseries, ts_data, ts_multiseries_data):
 
     X_, y_ = match_indices(X_train, y_train)
     assert X_.index.equals(y_.index)
+
+
+def test_convert_bool_to_double(ts_data):
+    X, _, y = ts_data()
+    X.ww["bool"] = pd.Series([True, False] * int(len(X) / 2), index=X.index)
+    res = convert_bool_to_double(X)
+    for col in res.columns:
+        if col != "bool":
+            assert res.ww["feature"].ww.logical_type == X.ww["feature"].ww.logical_type
+        else:
+            assert str(res.ww["bool"].ww.logical_type) == "Double"
