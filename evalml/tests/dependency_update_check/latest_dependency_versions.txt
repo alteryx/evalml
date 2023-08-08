@@ -5,6 +5,7 @@ click==8.1.6
 cloudpickle==2.2.1
 colorama==0.4.6
 dask==2023.5.0
+debugpy==1.6.7.post1
 distributed==2023.5.0
 featuretools==1.27.0
 graphviz==0.20.1
