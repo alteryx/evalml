@@ -471,9 +471,7 @@ class STLDecomposer(Decomposer):
                     "Provided DatetimeIndex of X should have an inferred frequency.",
                 )
 
-            # if it is multiseries, set the frequency and get values per series
             if len(y.columns) > 1:
-                X.index = pd.DatetimeIndex(X[self.time_index], freq=self.frequency)
                 self.seasonality = self.decompositions[id]["seasonality"]
                 self.seasonal = self.decompositions[id]["seasonal"]
                 self.trend = self.decompositions[id]["trend"]
@@ -563,12 +561,15 @@ class STLDecomposer(Decomposer):
         if isinstance(y, pd.Series):
             y = y.to_frame()
 
-        # Iterate through each series id
-        plot_info = {}
-        decomposition_results = self.get_trend_dataframe(X, y)
         if isinstance(y, pd.Series):
             y = y.to_frame()
 
+        plot_info = {}
+        if self.frequency and len(y.columns) > 1:
+            X.index = pd.DatetimeIndex(X[self.time_index], freq=self.frequency)
+        decomposition_results = self.get_trend_dataframe(X, y)
+
+        # Iterate through each series id
         for id in y.columns:
             fig, axs = plt.subplots(4)
             fig.set_size_inches(18.5, 14.5)

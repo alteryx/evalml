@@ -455,7 +455,7 @@ def test_decomposer_get_trend_dataframe_raises_errors(
                 "Skipping Decomposer because multiseries is not implemented for Polynomial Decomposer",
             )
         X, y = multiseries_ts_data_unstacked
-        dts = pd.date_range("01-01-2000", periods=len(X), freq="MS")
+        dts = pd.date_range("01-01-2000", periods=len(X))
         datetime_index = pd.DatetimeIndex(dts)
         X.index = datetime_index
         y.index = datetime_index
