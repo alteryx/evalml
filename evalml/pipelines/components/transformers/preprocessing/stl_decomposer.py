@@ -251,8 +251,6 @@ class STLDecomposer(Decomposer):
 
         if isinstance(y, pd.Series):
             y = y.to_frame()
-
-        features_list = []
         detrending_list = []
         # Iterate through each id group
         for id in y.columns:
@@ -306,14 +304,12 @@ class STLDecomposer(Decomposer):
             if len(y.columns) <= 1:
                 return X, y_t
 
-            features_list.append({id: X})
-            detrending_list.append({id: y_t})
+            detrending_list.append(y_t)
 
         # Convert the list to a DataFrame
         # For multiseries, return tuple[pd.DataFrame, pd.Dataframe] where each column is a series_id
-        features_df = pd.DataFrame(features_list)
-        detrending_df = pd.DataFrame(detrending_list)
-        return features_df, detrending_df
+        detrending_df = pd.DataFrame(detrending_list).T
+        return X, detrending_df
 
     def inverse_transform(self, y_t: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Adds back fitted trend and seasonality to target variable.
@@ -341,8 +337,7 @@ class STLDecomposer(Decomposer):
         if isinstance(y_t, pd.Series):
             y_t = y_t.to_frame()
 
-        y_in_sample_series = pd.Series([])
-        y_out_of_sample_series = pd.Series([])
+        y = []
         for id in y_t.columns:
             y_in_sample = pd.Series([])
             y_out_of_sample = pd.Series([])
@@ -373,7 +368,6 @@ class STLDecomposer(Decomposer):
                 )
                 y_in_sample = series_y + trend + seasonal
                 y_in_sample = y_in_sample.dropna()
-                y_in_sample_series = pd.concat([y_in_sample_series, y_in_sample])
 
             # For out of sample data....
             if series_y.index[-1] > index[-1]:
@@ -394,13 +388,29 @@ class STLDecomposer(Decomposer):
                         index=truncated_y_t.index,
                     ),
                 )
-                y_out_of_sample_series = pd.concat(
-                    [y_out_of_sample_series, y_out_of_sample],
-                )  # Corrected this line
+            y_series = pd.concat([y_in_sample, y_out_of_sample])
 
-        y = pd.concat([y_in_sample_series, y_out_of_sample_series])
-        y.index = original_index
-        return y
+        y.append(y_series)
+        y_df = pd.DataFrame(y).T
+        y_df.index = original_index
+        return y_df
+
+    def fit_transform(
+        self,
+        X: pd.DataFrame,
+        y: pd.DataFrame = None,
+    ) -> tuple[pd.DataFrame, pd.DataFrame]:
+        """Removes fitted trend and seasonality from target variable.
+
+        Args:
+            X (pd.DataFrame, optional): Ignored.
+            y (pd.Series): Target variable to detrend and deseasonalize.
+
+        Returns:
+            tuple of pd.DataFrame, pd.Series: The first element are the input features returned without modification.
+                The second element is the target variable y with the fitted trend removed.
+        """
+        return self.fit(X, y).transform(X, y)
 
     def get_trend_dataframe(self, X, y):
         """Return a list of dataframes with 4 columns: signal, trend, seasonality, residual.

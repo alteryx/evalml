@@ -2516,3 +2516,98 @@ def split_nullable_logical_types_by_compatibility():
         return compatible_ltypes, incompatible_ltypes
 
     return _split_nullable_logical_types_by_compatibility
+
+
+@pytest.fixture
+def generate_multiseries_seasonal_data():
+    """Function that returns data with a linear trend and a seasonal signal with specified period for multiseries."""
+
+    def generate_real_data(
+        period,
+        step=None,
+        num_periods=20,
+        scale=1,
+        seasonal_scale=1,
+        trend_degree=1,
+        freq_str="D",
+        set_time_index=False,
+    ):
+        X, y = load_weather()
+        y = y.set_axis(X["Date"]).asfreq(pd.infer_freq(X["Date"]))
+        y_ms = pd.DataFrame({f"target_{i}": y - i for i in range(2)})
+        X = X.set_index("Date").asfreq(pd.infer_freq(X["Date"]))
+        return X, y_ms
+
+    def generate_synthetic_data(
+        period,
+        step=None,
+        num_periods=20,
+        scale=1,
+        seasonal_scale=1,
+        trend_degree=1,
+        freq_str="D",
+        set_time_index=False,
+    ):
+        """Function to generate a sinusoidal signal with a polynomial trend.
+
+        Args:
+            period: The length, in units, of the seasonal signal.
+            step:
+            num_periods: How many periods of the seasonal signal to generate.
+            scale: The relative scale of the trend.  Setting it higher increases
+                the comparative strength of the trend.
+            seasonal_scale: The relative scale of the sinusoidal seasonality.
+                Setting it higher increases the comparative strength of the
+                trend.
+            trend_degree: The degree of the polynomial trend. 1 = linear, 2 =
+                quadratic, 3 = cubic.  Specific functional forms defined
+                below.
+            freq_str: The pandas frequency string used to define the unit of
+                time in the series time index.
+            set_time_index: Whether to set the time index with a pandas.
+                DatetimeIndex.
+
+        Returns:
+            X (pandas.DateFrame): A placeholder feature matrix.
+            y (pandas.Series): A synthetic, time series target Series.
+
+        """
+        if period is None:
+            x = np.arange(0, 1, 0.01)
+        elif step is not None:
+            freq = 2 * np.pi / period / step
+            x = np.arange(0, 1, step)
+        else:
+            freq = 2 * np.pi / period
+            x = np.arange(0, period * num_periods, 1)
+        dts = pd.date_range(datetime.today(), periods=len(x), freq=freq_str)
+        X = pd.DataFrame({"x": x})
+        X = X.set_index(dts)
+
+        y_ms_list = []
+        for i in range(2):
+            for j in range(5):
+                if trend_degree == 1:
+                    y_trend = pd.Series(scale * minmax_scale(x + 2))
+                elif trend_degree == 2:
+                    y_trend = pd.Series(scale * minmax_scale(x**2))
+                elif trend_degree == 3:
+                    y_trend = pd.Series(scale * minmax_scale((x - 5) ** 3 + x**2))
+                if period is not None:
+                    y_seasonal = pd.Series(seasonal_scale * np.sin(freq * x))
+                else:
+                    y_seasonal = pd.Series(np.zeros(len(x)))
+                y = y_trend + y_seasonal - i
+                if set_time_index:
+                    y = y.set_axis(dts)
+            y_ms_list.append(y)
+        y_ms = pd.DataFrame(y_ms_list).T
+        return X, y_ms
+
+    def _return_proper_func(real_or_synthetic):
+        if real_or_synthetic == "synthetic":
+            return generate_synthetic_data
+        elif real_or_synthetic == "real":
+            return generate_real_data
+
+    return _return_proper_func

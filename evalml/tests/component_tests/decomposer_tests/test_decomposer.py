@@ -767,21 +767,46 @@ def test_decomposer_bad_target_index(
         "partially-out-of-sample-in-past",
     ],
 )
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_decomposer_fit_transform_out_of_sample(
     decomposer_child_class,
+    variateness,
+    generate_multiseries_seasonal_data,
     generate_seasonal_data,
     transformer_fit_on_data,
 ):
     # Generate 10 periods (the default) of synthetic seasonal data
     period = 7
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=period,
-        freq_str="D",
-        set_time_index=True,
-        seasonal_scale=0.05,  # Increasing this value causes the decomposer to miscalculate trend
-    )
+    if variateness == "univariate":
+        X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+            period=period,
+            freq_str="D",
+            set_time_index=True,
+            seasonal_scale=0.05,  # Increasing this value causes the decomposer to miscalculate trend
+        )
+        subset_y = y[2 * period : 7 * period]
+    elif variateness == "multivariate":
+        if isinstance(decomposer_child_class(), PolynomialDecomposer):
+            pytest.skip(
+                "Skipping Decomposer because multiseries is not implemented for Polynomial Decomposer",
+            )
+        X, y = generate_multiseries_seasonal_data(real_or_synthetic="synthetic")(
+            period=period,
+            freq_str="D",
+            set_time_index=True,
+            seasonal_scale=0.05,  # Increasing this value causes the decomposer to miscalculate trend
+        )
+        subset_y = []
+        for id in y.columns:
+            subset_y.append(y[id][2 * period : 7 * period])
+        subset_y = pd.DataFrame(subset_y)
     subset_X = X[2 * period : 7 * period]
-    subset_y = y[2 * period : 7 * period]
 
     decomposer = decomposer_child_class(period=period)
     decomposer.fit(subset_X, subset_y)

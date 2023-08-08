@@ -41,8 +41,23 @@ def test_stl_decomposer_auto_sets_seasonal_smoother_to_odd():
     assert stl.seasonal_smoother == 5
 
 
-def test_stl_raises_warning_high_smoother(caplog, ts_data):
-    X, _, y = ts_data()
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
+def test_stl_raises_warning_high_smoother(
+    caplog,
+    ts_data,
+    multiseries_ts_data_unstacked,
+    variateness,
+):
+    if variateness == "univariate":
+        X, _, y = ts_data()
+    elif variateness == "multivariate":
+        X, y = multiseries_ts_data_unstacked
     stl = STLDecomposer(seasonal_smoother=101)
     stl.fit(X, y)
     assert "STLDecomposer may perform poorly" in caplog.text
@@ -91,17 +106,33 @@ def test_stl_sets_determined_period(
     ],
 )
 @pytest.mark.parametrize("trend_degree", [1, 2, 3])
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_stl_fit_transform_in_sample(
     period,
     freq,
     trend_degree,
     generate_seasonal_data,
+    generate_multiseries_seasonal_data,
+    variateness,
 ):
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period,
-        freq_str=freq,
-        trend_degree=trend_degree,
-    )
+    if variateness == "univariate":
+        X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+            period,
+            freq_str=freq,
+            trend_degree=trend_degree,
+        )
+    elif variateness == "multivariate":
+        X, y = generate_multiseries_seasonal_data(real_or_synthetic="synthetic")(
+            period,
+            freq_str=freq,
+            trend_degree=trend_degree,
+        )
 
     # Get the expected answer
     lin_reg = LinearRegression(fit_intercept=True)
@@ -115,15 +146,29 @@ def test_stl_fit_transform_in_sample(
 
     X_t, y_t = stl.fit_transform(X, y)
 
-    # Check to make sure STL detrended/deseasoned
-    pd.testing.assert_series_equal(
-        pd.Series(np.zeros(len(y_t))),
-        y_t,
-        check_exact=False,
-        check_index=False,
-        check_names=False,
-        atol=0.1,
-    )
+    if variateness == "univariate":
+        # Check to make sure STL detrended/deseasoned
+        pd.testing.assert_series_equal(
+            pd.Series(np.zeros(len(y_t))),
+            y_t,
+            check_exact=False,
+            check_index=False,
+            check_names=False,
+            atol=0.1,
+        )
+    elif variateness == "multivariate":
+        pd.testing.assert_series_equal(
+            pd.DataFrame(
+                np.zeros((len(y_t), len(y_t.columns))),
+                columns=y_t.columns,
+                index=y_t.index,
+            ),
+            y_t,
+            check_exact=False,
+            check_index=False,
+            check_names=False,
+            atol=0.1,
+        )
 
     # Check the trend to make sure STL worked properly
     pd.testing.assert_series_equal(
@@ -231,6 +276,7 @@ def test_stl_decomposer_inverse_transform(
 @pytest.mark.parametrize("fit_before_decompose", [True, False])
 def test_stl_decomposer_get_trend_dataframe(
     generate_seasonal_data,
+    generate_multiseries_seasonal_data,
     transformer_fit_on_data,
     fit_before_decompose,
     variateness,
@@ -313,13 +359,29 @@ def test_stl_decomposer_get_trend_dataframe(
                 ]
 
 
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_stl_decomposer_get_trend_dataframe_sets_time_index_internally(
     generate_seasonal_data,
+    generate_multiseries_seasonal_data,
+    variateness,
 ):
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=7,
-        set_time_index=False,
-    )
+    if variateness == "univariate":
+        X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+            period=7,
+            set_time_index=False,
+        )
+    elif variateness == "multivariate":
+        X, y = generate_multiseries_seasonal_data(real_or_synthetic="synthetic")(
+            period=7,
+            set_time_index=False,
+        )
+
     assert not isinstance(y.index, pd.DatetimeIndex)
 
     stl = STLDecomposer()
@@ -337,30 +399,60 @@ def test_stl_decomposer_get_trend_dataframe_sets_time_index_internally(
     "bad_frequency",
     ["T", "A"],
 )
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_unsupported_frequencies(
     bad_frequency,
     generate_seasonal_data,
+    generate_multiseries_seasonal_data,
+    variateness,
 ):
     """This test exists to highlight that even though the underlying statsmodels STL component won't work
     for minute or annual frequencies, we can still run these frequencies with automatic period detection.
     """
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=7,
-        freq_str=bad_frequency,
-    )
-
+    if variateness == "univariate":
+        X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+            period=7,
+            freq_str=bad_frequency,
+        )
+    elif variateness == "multivariate":
+        X, y = generate_multiseries_seasonal_data(real_or_synthetic="synthetic")(
+            period=7,
+            freq_str=bad_frequency,
+        )
     stl = STLDecomposer()
     X_t, y_t = stl.fit_transform(X, y)
     assert stl.period is not None
 
 
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_stl_decomposer_doesnt_modify_target_index(
     generate_seasonal_data,
+    generate_multiseries_seasonal_data,
+    variateness,
 ):
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=7,
-        set_time_index=False,
-    )
+    if variateness == "univariate":
+        X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+            period=7,
+            set_time_index=False,
+        )
+    elif variateness == "multivariate":
+        X, y = generate_multiseries_seasonal_data(real_or_synthetic="synthetic")(
+            period=7,
+            set_time_index=False,
+        )
+
     original_X_index = X.index
     original_y_index = y.index
 
