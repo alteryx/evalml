@@ -4,6 +4,7 @@ from typing import Dict, Hashable, List, Optional, Union
 import numpy as np
 import pandas as pd
 from skopt.space import Categorical, Integer
+from sktime.forecasting.base import ForecastingHorizon
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
@@ -92,8 +93,6 @@ class VARMAXRegressor(Estimator):
         )
 
     def _set_forecast_horizon(self, X: pd.DataFrame):
-        from sktime.forecasting.base import ForecastingHorizon
-
         # we can only calculate the difference if the indices are of the same type
         units_diff = 1
         if isinstance(X.index[0], type(self.last_X_index)):
