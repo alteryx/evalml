@@ -82,7 +82,6 @@ class VARMAXRegressor(Estimator):
 
         parameters["use_covariates"] = use_covariates
         parameters["time_index"] = time_index
-        parameters["random_state"] = random_seed
 
         self.use_covariates = use_covariates
         self.time_index = time_index
@@ -233,7 +232,7 @@ class VARMAXRegressor(Estimator):
             nsimulations=X.shape[0],
             repetitions=400,
             anchor="end",
-            random_state=self.parameters["random_state"],
+            random_state=self.random_seed,
             exog=X if self.use_covariates else None,
         )
         prediction_interval_result = {}

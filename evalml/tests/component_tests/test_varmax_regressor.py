@@ -260,21 +260,6 @@ def test_varmax_regressor_respects_use_covariates(
     assert "X" not in mock_predict.call_args.kwargs
 
 
-def test_varmax_regressor_prediction_intervals_not_implemented_yet_error(
-    ts_multiseries_data,
-):
-    X_train, X_test, y_train = ts_multiseries_data(n_series=2)
-
-    clf = VARMAXRegressor()
-
-    clf.fit(X_train, y_train)
-    with pytest.raises(
-        NotImplementedError,
-        match="VARMAX does not have prediction intervals implemented yet.",
-    ):
-        clf.get_prediction_intervals(X_test)
-
-
 def test_varmax_regressor_can_forecast_arbitrary_dates_no_covariates(
     ts_multiseries_data,
 ):
