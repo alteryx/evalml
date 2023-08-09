@@ -82,6 +82,7 @@ class VARMAXRegressor(Estimator):
 
         parameters["use_covariates"] = use_covariates
         parameters["time_index"] = time_index
+        parameters["random_state"] = random_seed
 
         self.use_covariates = use_covariates
         self.time_index = time_index
@@ -217,9 +218,43 @@ class VARMAXRegressor(Estimator):
         Returns:
             dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
         """
-        raise NotImplementedError(
-            "VARMAX does not have prediction intervals implemented yet.",
+        if coverage is None:
+            coverage = [0.95]
+
+        X, y = self._manage_woodwork(X, y)
+        if self.use_covariates:
+            X = X.ww.select(exclude=["Datetime"])
+            X = convert_bool_to_double(X)
+        # Accesses the fitted statsmodels model within sktime
+        # nsimulations represents how many steps should be simulated
+        # repetitions represents the number of simulations that should be run (confusing, I know)
+        # anchor represents where the simulations should start from (forecasting is done from the "end")
+        y_pred = self._component_obj._fitted_forecaster.simulate(
+            nsimulations=X.shape[0],
+            repetitions=400,
+            anchor="end",
+            random_state=self.parameters["random_state"],
+            exog=X if self.use_covariates else None,
         )
+        prediction_interval_result = {}
+        for series in self._component_obj._fitted_forecaster.model.endog_names:
+            series_result = {}
+            series_preds = y_pred[[col for col in y_pred.columns if series in col]]
+            for conf_int in coverage:
+                prediction_interval_lower = series_preds.quantile(
+                    q=round((1 - conf_int) / 2, 3),
+                    axis="columns",
+                )
+                prediction_interval_upper = series_preds.quantile(
+                    q=round((1 + conf_int) / 2, 3),
+                    axis="columns",
+                )
+                prediction_interval_lower.index = X.index
+                prediction_interval_upper.index = X.index
+                series_result[f"{conf_int}_lower"] = prediction_interval_lower
+                series_result[f"{conf_int}_upper"] = prediction_interval_upper
+            prediction_interval_result[series] = series_result
+        return prediction_interval_result
 
     @property
     def feature_importance(self) -> np.ndarray:
