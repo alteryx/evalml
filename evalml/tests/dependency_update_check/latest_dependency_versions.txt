@@ -1,6 +1,6 @@
 black==23.7.0
 catboost==1.2
-category-encoders==2.6.1
+category-encoders==2.5.1.post0
 click==8.1.6
 cloudpickle==2.2.1
 colorama==0.4.6
