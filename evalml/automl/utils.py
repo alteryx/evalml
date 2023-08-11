@@ -87,12 +87,14 @@ def make_data_splitter(
             raise ValueError(
                 "problem_configuration is required for time series problem types",
             )
+        series_id = problem_configuration.get("series_id")
         return TimeSeriesSplit(
             n_splits=n_splits,
             gap=problem_configuration.get("gap"),
             max_delay=problem_configuration.get("max_delay"),
             time_index=problem_configuration.get("time_index"),
             forecast_horizon=problem_configuration.get("forecast_horizon"),
+            n_series=len(X[series_id].unique()) if series_id is not None else None,
         )
     if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
         return TrainingValidationSplit(

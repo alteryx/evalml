@@ -59,6 +59,7 @@ class TimeSeriesSplit(BaseCrossValidator):
         gap=0,
         forecast_horizon=None,
         time_index=None,
+        n_series=None,
         n_splits=3,
     ):
         self.max_delay = max_delay
@@ -66,9 +67,15 @@ class TimeSeriesSplit(BaseCrossValidator):
         self.forecast_horizon = forecast_horizon if forecast_horizon else 1
         self.time_index = time_index
         self.n_splits = n_splits
+        self.n_series = n_series
+
+        test_size = self.forecast_horizon
+        if self.n_series is not None:
+            test_size = self.forecast_horizon * self.n_series
+
         self._splitter = SkTimeSeriesSplit(
             n_splits=n_splits,
-            test_size=forecast_horizon,
+            test_size=test_size,
         )
 
     def get_n_splits(self, X=None, y=None, groups=None):

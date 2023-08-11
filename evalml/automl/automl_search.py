@@ -403,6 +403,7 @@ class AutoMLSearch:
 
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
+            For multiseries time series problems, the values passed in should also include the name of a series_id column.
 
         train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
@@ -623,6 +624,10 @@ class AutoMLSearch:
 
         self.problem_configuration = self._validate_problem_configuration(
             problem_configuration,
+        )
+        self.is_multiseries = (
+            is_time_series(self.problem_type)
+            and "series_id" in self.problem_configuration
         )
         self._train_best_pipeline = train_best_pipeline
         self._best_pipeline = None
@@ -933,6 +938,7 @@ class AutoMLSearch:
                 features=features,
                 verbose=self.verbose,
                 exclude_featurizers=self.exclude_featurizers,
+                is_multiseries=self.is_multiseries,
             )
         elif automl_algorithm == "default":
             self.automl_algorithm = DefaultAlgorithm(
@@ -953,6 +959,7 @@ class AutoMLSearch:
                 verbose=self.verbose,
                 n_jobs=self.n_jobs,
                 exclude_featurizers=self.exclude_featurizers,
+                is_multiseries=self.is_multiseries,
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")
@@ -1355,6 +1362,7 @@ class AutoMLSearch:
             gap = self.problem_configuration["gap"]
             forecast_horizon = self.problem_configuration["forecast_horizon"]
             time_index = self.problem_configuration["time_index"]
+            series_id = self.problem_configuration.get("series_id", None)
             exclude_timeseries_featurizer = (
                 "TimeSeriesFeaturizer" in self.exclude_featurizers
             )
@@ -1364,6 +1372,8 @@ class AutoMLSearch:
                 forecast_horizon,
                 time_index,
                 exclude_timeseries_featurizer,
+                self.is_multiseries,
+                series_id,
             )
         return baseline
 

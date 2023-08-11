@@ -59,7 +59,7 @@ class VARMAXRegressor(Estimator):
         trend: Optional[str] = "c",
         random_seed: Union[int, float] = 0,
         maxiter: int = 10,
-        use_covariates: bool = True,
+        use_covariates: bool = False,
         **kwargs,
     ):
         self.preds_95_upper = None
