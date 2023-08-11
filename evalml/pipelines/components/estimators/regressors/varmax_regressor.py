@@ -215,13 +215,18 @@ class VARMAXRegressor(Estimator):
             predictions (pd.Series): Not used for VARMAX regressor.
 
         Returns:
-            dict: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+            dict[dict]: A dict of prediction intervals, where the dict is in the format {series_id: {coverage}_lower or {coverage}_upper}.
         """
         if coverage is None:
             coverage = [0.95]
 
         X, y = self._manage_woodwork(X, y)
-        if self.use_covariates:
+        use_exog = (
+            # If exogenous variables were used during training
+            self._component_obj._fitted_forecaster.model.exog is not None
+            and self.use_covariates
+        )
+        if use_exog:
             X = X.ww.select(exclude=["Datetime"])
             X = convert_bool_to_double(X)
         # Accesses the fitted statsmodels model within sktime
@@ -233,9 +238,10 @@ class VARMAXRegressor(Estimator):
             repetitions=400,
             anchor="end",
             random_state=self.random_seed,
-            exog=X if self.use_covariates else None,
+            exog=X if use_exog else None,
         )
         prediction_interval_result = {}
+        # Access the target column names (i.e. the series_id values) that the VARMAX component obj was fitted on
         for series in self._component_obj._fitted_forecaster.model.endog_names:
             series_result = {}
             series_preds = y_pred[[col for col in y_pred.columns if series in col]]

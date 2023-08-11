@@ -315,27 +315,29 @@ def test_varmax_regressor_can_forecast_arbitrary_dates_past_holdout(
     varmax.predict(X_test)
 
 
+@pytest.mark.parametrize("use_X_train", [True, False])
+@pytest.mark.parametrize("coverages", [None, [0.85], [0.95, 0.90, 0.85]])
 @pytest.mark.parametrize("use_covariates", [True, False])
-def test_varmax_regressor_prediction_intervals(use_covariates, ts_multiseries_data):
+def test_varmax_regressor_prediction_intervals(
+    use_covariates,
+    coverages,
+    use_X_train,
+    ts_multiseries_data,
+):
     X_train, X_test, y_train = ts_multiseries_data(no_features=not use_covariates)
 
     clf = VARMAXRegressor(use_covariates=use_covariates)
+    clf.fit(X=X_train if use_X_train else None, y=y_train)
 
-    clf.fit(X_train, y_train)
-    result_95 = clf.get_prediction_intervals(X_test)
+    # Check we are not using exogenous variables if use_covariates=False, even if X_test is passed.
+    if not use_covariates or not use_X_train:
+        with patch.object(
+            clf._component_obj._fitted_forecaster,
+            "simulate",
+        ) as mock_simulate:
+            clf.get_prediction_intervals(X_test, None, coverages)
+            assert mock_simulate.call_args[1]["exog"] is None
 
-    series_id_targets = list(result_95.keys())
-    for series in series_id_targets:
-        series_result_95 = result_95[series]
-        conf_ints = list(series_result_95.keys())
-        data = list(series_result_95.values())
-
-        assert len(conf_ints) == 2
-        assert len(data) == 2
-        assert conf_ints[0] == "0.95_lower"
-        assert conf_ints[1] == "0.95_upper"
-
-    coverages = [0.95, 0.90, 0.85]
     results_coverage = clf.get_prediction_intervals(X_test, None, coverages)
     predictions = clf.predict(X_test)
 
@@ -345,10 +347,10 @@ def test_varmax_regressor_prediction_intervals(use_covariates, ts_multiseries_da
         conf_ints = list(series_results_coverage.keys())
         data = list(series_results_coverage.values())
 
-        assert len(conf_ints) == 6
-        assert len(data) == 6
+        assert len(conf_ints) == (len(coverages) if coverages is not None else 1) * 2
+        assert len(data) == (len(coverages) if coverages is not None else 1) * 2
 
-        for interval in coverages:
+        for interval in coverages if coverages is not None else [0.95]:
             conf_int_lower = f"{interval}_lower"
             conf_int_upper = f"{interval}_upper"
 
