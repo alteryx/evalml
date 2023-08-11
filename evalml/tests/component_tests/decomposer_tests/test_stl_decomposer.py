@@ -134,19 +134,19 @@ def test_stl_fit_transform_in_sample(
             trend_degree=trend_degree,
         )
 
-    # Get the expected answer
-    lin_reg = LinearRegression(fit_intercept=True)
-    features = PolynomialFeatures(degree=trend_degree).fit_transform(
-        np.arange(X.shape[0]).reshape(-1, 1),
-    )
-    lin_reg.fit(features, y)
-    expected_trend = lin_reg.predict(features)
-
     stl = STLDecomposer(period=period)
 
     X_t, y_t = stl.fit_transform(X, y)
 
     if variateness == "univariate":
+        # Get the expected answer
+        lin_reg = LinearRegression(fit_intercept=True)
+        features = PolynomialFeatures(degree=trend_degree).fit_transform(
+            np.arange(X.shape[0]).reshape(-1, 1),
+        )
+        lin_reg.fit(features, y)
+        expected_trend = lin_reg.predict(features)
+
         # Check to make sure STL detrended/deseasoned
         pd.testing.assert_series_equal(
             pd.Series(np.zeros(len(y_t))),
@@ -156,29 +156,34 @@ def test_stl_fit_transform_in_sample(
             check_names=False,
             atol=0.1,
         )
-    elif variateness == "multivariate":
+        # Check the trend to make sure STL worked properly
         pd.testing.assert_series_equal(
-            pd.DataFrame(
-                np.zeros((len(y_t), len(y_t.columns))),
-                columns=y_t.columns,
-                index=y_t.index,
-            ),
-            y_t,
+            pd.Series(expected_trend),
+            pd.Series(stl.trend),
             check_exact=False,
             check_index=False,
             check_names=False,
-            atol=0.1,
+            atol=0.3,
         )
-
-    # Check the trend to make sure STL worked properly
-    pd.testing.assert_series_equal(
-        pd.Series(expected_trend),
-        pd.Series(stl.trend),
-        check_exact=False,
-        check_index=False,
-        check_names=False,
-        atol=0.3,
-    )
+    elif variateness == "multivariate":
+        # Get the expected answer
+        for id in y.columns:
+            y_series = y[id]
+            lin_reg = LinearRegression(fit_intercept=True)
+            features = PolynomialFeatures(degree=trend_degree).fit_transform(
+                np.arange(X.shape[0]).reshape(-1, 1),
+            )
+            lin_reg.fit(features, y_series)
+            expected_trend = lin_reg.predict(features)
+            # Check the trend to make sure STL worked properly
+            pd.testing.assert_series_equal(
+                pd.Series(expected_trend),
+                pd.Series(stl.decompositions[id]["trend"]),
+                check_exact=False,
+                check_index=False,
+                check_names=False,
+                atol=0.3,
+            )
 
     # Verify the X is not changed
     pd.testing.assert_frame_equal(X, X_t)
