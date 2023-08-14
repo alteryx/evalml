@@ -272,26 +272,10 @@ def test_varmax_regressor_respects_use_covariates(
     assert "X" not in mock_predict.call_args.kwargs
 
 
-def test_varmax_regressor_prediction_intervals_not_implemented_yet_error(
-    ts_multiseries_data,
-):
-    X_train, X_test, y_train = ts_multiseries_data(n_series=2)
-
-    clf = VARMAXRegressor()
-
-    clf.fit(X_train, y_train)
-    with pytest.raises(
-        NotImplementedError,
-        match="VARMAX does not have prediction intervals implemented yet.",
-    ):
-        clf.get_prediction_intervals(X_test)
-
-
 def test_varmax_regressor_can_forecast_arbitrary_dates_no_covariates(
     ts_multiseries_data,
 ):
     X, _, y = ts_multiseries_data(n_series=2)
-
     X_train, X_test, y_train, y_test = split_data(
         X,
         y,
@@ -341,3 +325,46 @@ def test_varmax_regressor_can_forecast_arbitrary_dates_past_holdout(
     varmax.fit(X_train, y_train)
 
     varmax.predict(X_test)
+
+
+@pytest.mark.parametrize("use_X_train", [True, False])
+@pytest.mark.parametrize("coverages", [None, [0.85], [0.95, 0.90, 0.85]])
+@pytest.mark.parametrize("use_covariates", [True, False])
+def test_varmax_regressor_prediction_intervals(
+    use_covariates,
+    coverages,
+    use_X_train,
+    ts_multiseries_data,
+):
+    X_train, X_test, y_train = ts_multiseries_data(no_features=not use_covariates)
+
+    clf = VARMAXRegressor(use_covariates=use_covariates)
+    clf.fit(X=X_train if use_X_train else None, y=y_train)
+
+    # Check we are not using exogenous variables if use_covariates=False, even if X_test is passed.
+    if not use_covariates or not use_X_train:
+        with patch.object(
+            clf._component_obj._fitted_forecaster,
+            "simulate",
+        ) as mock_simulate:
+            clf.get_prediction_intervals(X_test, None, coverages)
+            assert mock_simulate.call_args[1]["exog"] is None
+
+    results_coverage = clf.get_prediction_intervals(X_test, None, coverages)
+    predictions = clf.predict(X_test)
+
+    series_id_targets = list(results_coverage.keys())
+    for series in series_id_targets:
+        series_results_coverage = results_coverage[series]
+        conf_ints = list(series_results_coverage.keys())
+        data = list(series_results_coverage.values())
+
+        assert len(conf_ints) == (len(coverages) if coverages is not None else 1) * 2
+        assert len(data) == (len(coverages) if coverages is not None else 1) * 2
+
+        for interval in coverages if coverages is not None else [0.95]:
+            conf_int_lower = f"{interval}_lower"
+            conf_int_upper = f"{interval}_upper"
+
+            assert (series_results_coverage[conf_int_upper] > predictions[series]).all()
+            assert (predictions[series] > series_results_coverage[conf_int_lower]).all()

@@ -2,12 +2,25 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added support for prediction intervals for VARMAX regressor :pr:`4267`
+        * Integrated multiseries time series into AutoMLSearch :pr:`4270`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.79.0 Aug. 11, 2023**
+    * Enhancements
         * Updated regression metrics to handle multioutput dataframes as well as single output series :pr:`4233`
         * Added baseline regressor for multiseries time series problems :pr:`4246`
         * Added stacking and unstacking utility functions to work with multiseries data :pr:`4250`
         * Added multiseries regression pipeline class :pr:`4256`
         * Added multiseries VARMAX regressor :pr:`4238`
-        * Integrated multiseries time series into AutoMLSearch :pr:`4270`
     * Fixes
         * Added support for pandas 2 :pr:`4216`
         * Fixed bug where time series pipelines would fail due to MASE needing `y_train` when scoring :pr:`4258`
