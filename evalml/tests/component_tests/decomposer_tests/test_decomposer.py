@@ -802,24 +802,23 @@ def test_decomposer_fit_transform_out_of_sample(
             set_time_index=True,
             seasonal_scale=0.05,  # Increasing this value causes the decomposer to miscalculate trend
         )
-        subset_y = []
-        for id in y.columns:
-            subset_y.append(y[id][2 * period : 7 * period])
-        subset_y = pd.DataFrame(subset_y)
+        subset_y = y.loc[y.index[2 * period : 7 * period]]
+
     subset_X = X[2 * period : 7 * period]
 
     decomposer = decomposer_child_class(period=period)
     decomposer.fit(subset_X, subset_y)
 
     if transformer_fit_on_data == "in-sample":
-        output_X, output_y = decomposer.transform(subset_X, subset_y)
-        pd.testing.assert_series_equal(
-            pd.Series(np.zeros(len(output_y))).set_axis(subset_y.index),
-            output_y,
-            check_dtype=False,
-            check_names=False,
-            atol=0.2,
-        )
+        if variateness == "univariate":
+            output_X, output_y = decomposer.transform(subset_X, subset_y)
+            pd.testing.assert_series_equal(
+                pd.Series(np.zeros(len(output_y))).set_axis(subset_y.index),
+                output_y,
+                check_dtype=False,
+                check_names=False,
+                atol=0.2,
+            )
 
     if transformer_fit_on_data != "in-sample":
         y_new = build_test_target(
@@ -838,14 +837,23 @@ def test_decomposer_fit_transform_out_of_sample(
             ):
                 output_X, output_inverse_y = decomposer.transform(None, y_new)
         else:
-            output_X, output_y_t = decomposer.transform(None, y[y_new.index])
-
-            pd.testing.assert_series_equal(
-                pd.Series(np.zeros(len(output_y_t))).set_axis(y_new.index),
-                output_y_t,
-                check_exact=False,
-                atol=0.1,  # STLDecomposer is within atol=5.0e-4
-            )
+            if variateness == "univariate":
+                output_X, output_y_t = decomposer.transform(None, y[y_new.index])
+                pd.testing.assert_series_equal(
+                    pd.Series(np.zeros(len(output_y_t))).set_axis(y_new.index),
+                    output_y_t,
+                    check_exact=False,
+                    atol=0.1,  # STLDecomposer is within atol=5.0e-4
+                )
+            elif variateness == "mulivariate":
+                y_new = pd.DataFrame([y_new, y_new]).T
+                output_X, output_y_t = decomposer.transform(None, y[y_new.index])
+                pd.testing.assert_frame_equal(
+                    pd.Series(np.zeros(len(output_y_t))).set_axis(y_new.index),
+                    output_y_t,
+                    check_exact=False,
+                    atol=0.1,  # STLDecomposer is within atol=5.0e-4
+                )
 
 
 @pytest.mark.parametrize(
@@ -865,31 +873,67 @@ def test_decomposer_fit_transform_out_of_sample(
         "partially-out-of-sample-in-past",
     ],
 )
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_decomposer_inverse_transform(
     decomposer_child_class,
     index_type,
     generate_seasonal_data,
+    generate_multiseries_seasonal_data,
+    variateness,
     transformer_fit_on_data,
 ):
     # Generate 10 periods (the default) of synthetic seasonal data
     period = 7
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=period,
-        freq_str="D",
-        set_time_index=True,
-        seasonal_scale=0.05,
-    )
-    if index_type == "integer_index":
-        y = y.reset_index(drop=True)
+    if variateness == "univariate":
+        X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+            period=period,
+            freq_str="D",
+            set_time_index=True,
+            seasonal_scale=0.05,  # Increasing this value causes the decomposer to miscalculate trend
+        )
+        if index_type == "integer_index":
+            y = y.reset_index(drop=True)
+        subset_y = y[: 5 * period]
+    elif variateness == "multivariate":
+        if isinstance(decomposer_child_class(), PolynomialDecomposer):
+            pytest.skip(
+                "Skipping Decomposer because multiseries is not implemented for Polynomial Decomposer",
+            )
+        X, y = generate_multiseries_seasonal_data(real_or_synthetic="synthetic")(
+            period=period,
+            freq_str="D",
+            set_time_index=True,
+            seasonal_scale=0.05,  # Increasing this value causes the decomposer to miscalculate trend
+        )
+        if index_type == "integer_index":
+            y = y.reset_index(drop=True)
+        subset_y = y.loc[y.index[: 5 * period]]
+
     subset_X = X[: 5 * period]
-    subset_y = y[: 5 * period]
 
     decomposer = decomposer_child_class(period=period)
     output_X, output_y = decomposer.fit_transform(subset_X, subset_y)
 
     if transformer_fit_on_data == "in-sample":
         output_inverse_y = decomposer.inverse_transform(output_y)
-        pd.testing.assert_series_equal(subset_y, output_inverse_y, check_dtype=False)
+        if isinstance(decomposer, STLDecomposer):
+            pd.testing.assert_frame_equal(
+                pd.DataFrame(subset_y),
+                output_inverse_y,
+                check_dtype=False,
+            )
+        elif isinstance(decomposer, PolynomialDecomposer):
+            pd.testing.assert_series_equal(
+                pd.Series(subset_y),
+                output_inverse_y,
+                check_dtype=False,
+            )
 
     if transformer_fit_on_data != "in-sample":
         y_t_new = build_test_target(
@@ -898,6 +942,8 @@ def test_decomposer_inverse_transform(
             transformer_fit_on_data,
             to_test="inverse_transform",
         )
+        if variateness == "multivariate":
+            y_t_new = pd.DataFrame([y_t_new, y_t_new]).T
         if transformer_fit_on_data in [
             "out-of-sample-in-past",
             "partially-out-of-sample-in-past",
@@ -911,15 +957,23 @@ def test_decomposer_inverse_transform(
             output_inverse_y = decomposer.inverse_transform(y_t_new)
             # Because output_inverse_y.index is int32 and y[y_t_new.index].index is int64 in windows,
             # we need to test the indices equivalence separately.
-            pd.testing.assert_series_equal(
-                y[y_t_new.index],
-                output_inverse_y,
-                check_exact=False,
-                check_index=False,
-                rtol=1.0e-1,
-            )
+            if isinstance(decomposer, STLDecomposer):
+                pd.testing.assert_frame_equal(
+                    pd.DataFrame(y.loc[y_t_new.index]),
+                    output_inverse_y,
+                    check_exact=False,
+                    rtol=1.0e-1,
+                )
+            elif isinstance(decomposer, PolynomialDecomposer):
+                pd.testing.assert_series_equal(
+                    pd.Series(y[y_t_new.index]),
+                    output_inverse_y,
+                    check_exact=False,
+                    check_index=False,
+                    rtol=1.0e-1,
+                )
             pd.testing.assert_index_equal(
-                y[y_t_new.index].index,
+                y.loc[y_t_new.index].index,
                 output_inverse_y.index,
                 exact=False,
             )

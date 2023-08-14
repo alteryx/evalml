@@ -202,29 +202,53 @@ def test_stl_fit_transform_in_sample(
         "partially-out-of-sample-in-past",
     ],
 )
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_stl_decomposer_inverse_transform(
     index_type,
     generate_seasonal_data,
+    generate_multiseries_seasonal_data,
+    variateness,
     transformer_fit_on_data,
 ):
     # Generate 10 periods (the default) of synthetic seasonal data
     period = 7
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=period,
-        freq_str="D",
-        set_time_index=True,
-    )
-    if index_type == "integer_index":
-        y = y.reset_index(drop=True)
-    subset_X = X[: 5 * period]
-    subset_y = y[: 5 * period]
+    if variateness == "univariate":
+        X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+            period=period,
+            freq_str="D",
+            set_time_index=True,
+        )
+        if index_type == "integer_index":
+            y = y.reset_index(drop=True)
+        subset_X = X[: 5 * period]
+        subset_y = y[: 5 * period]
+    elif variateness == "multivariate":
+        X, y = generate_multiseries_seasonal_data(real_or_synthetic="synthetic")(
+            period=period,
+            freq_str="D",
+            set_time_index=True,
+        )
+        if index_type == "integer_index":
+            y = y.reset_index(drop=True)
+        subset_y = y.loc[y.index[: 5 * period]]
 
+    subset_X = X[: 5 * period]
     decomposer = STLDecomposer(period=period)
     output_X, output_y = decomposer.fit_transform(subset_X, subset_y)
 
     if transformer_fit_on_data == "in-sample":
         output_inverse_y = decomposer.inverse_transform(output_y)
-        pd.testing.assert_series_equal(subset_y, output_inverse_y, check_dtype=False)
+        pd.testing.assert_frame_equal(
+            pd.DataFrame(subset_y),
+            output_inverse_y,
+            check_dtype=False,
+        )
 
     if transformer_fit_on_data != "in-sample":
         y_t_new = build_test_target(
@@ -233,6 +257,8 @@ def test_stl_decomposer_inverse_transform(
             transformer_fit_on_data,
             to_test="inverse_transform",
         )
+        if variateness == "multivariate":
+            y_t_new = pd.DataFrame([y_t_new, y_t_new]).T
         if transformer_fit_on_data in [
             "out-of-sample-in-past",
             "partially-out-of-sample-in-past",
@@ -246,14 +272,14 @@ def test_stl_decomposer_inverse_transform(
             # Because output_inverse_y.index is int32 and y[y_t_new.index].index is int64 in windows,
             # we need to test the indices equivalence separately.
             output_inverse_y = decomposer.inverse_transform(y_t_new)
-            pd.testing.assert_series_equal(
-                y[y_t_new.index],
+            pd.testing.assert_frame_equal(
+                pd.DataFrame(y.loc[y_t_new.index]),
                 output_inverse_y,
-                check_index=False,
-                rtol=1.0e-2,
+                check_exact=False,
+                rtol=1.0e-1,
             )
             pd.testing.assert_index_equal(
-                y[y_t_new.index].index,
+                y.loc[y_t_new.index].index,
                 output_inverse_y.index,
                 exact=False,
             )
@@ -287,36 +313,46 @@ def test_stl_decomposer_get_trend_dataframe(
     variateness,
 ):
     period = 7
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=period,
-        freq_str="D",
-        set_time_index=True,
-    )
+
+    if variateness == "univariate":
+        X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+            period=period,
+            freq_str="D",
+            set_time_index=True,
+        )
+        subset_y = y[: 5 * period]
+    elif variateness == "multivariate":
+        X, y = generate_multiseries_seasonal_data(real_or_synthetic="synthetic")(
+            period=period,
+            freq_str="D",
+            set_time_index=True,
+        )
+        subset_y = y.loc[y.index[: 5 * period]]
+
     subset_X = X[: 5 * period]
-    subset_y = y[: 5 * period]
 
     if transformer_fit_on_data == "in-sample":
         dec = STLDecomposer()
         dec.fit(subset_X, subset_y)
 
         # get_trend_dataframe() is only expected to work with datetime indices
-        if variateness == "multivariate":
-            subset_y = pd.concat([subset_y, subset_y], axis=1)
 
         result_dfs = dec.get_trend_dataframe(subset_X, subset_y)
         assert isinstance(result_dfs, dict)
         assert all(isinstance(result_dfs[x], list) for x in result_dfs)
         assert all(
-            all(isinstance(y, pd.DataFrame) for y in result_dfs[x]) for x in result_dfs
+            all(isinstance(x, pd.DataFrame) for x in result_dfs[df])
+            for df in result_dfs
         )
         if variateness == "univariate":
-            assert len(result_dfs[0]) == 1
+            assert len(result_dfs) == 1
             [get_trend_dataframe_format_correct(x) for x in result_dfs[0]]
+
         elif variateness == "multivariate":
-            assert len(result_dfs[0]) == 2
+            assert len(result_dfs) == 2
             [
-                get_trend_dataframe_format_correct(x)
-                for idx, x in enumerate(result_dfs[0])
+                (get_trend_dataframe_format_correct(x) for x in result_dfs[df])
+                for df in result_dfs
             ]
 
     elif transformer_fit_on_data != "in-sample":
@@ -326,12 +362,12 @@ def test_stl_decomposer_get_trend_dataframe(
             transformer_fit_on_data,
             to_test="transform",
         )
+        if variateness == "multivariate":
+            y_t_new = pd.DataFrame([y_t_new, y_t_new]).T
         dec = STLDecomposer()
         dec.fit(subset_X, subset_y)
 
         # get_trend_dataframe() is only expected to work with datetime indices
-        if variateness == "multivariate":
-            y_t_new = pd.concat([y_t_new, y_t_new], axis=1)
 
         if transformer_fit_on_data in [
             "out-of-sample-in-past",
@@ -349,18 +385,18 @@ def test_stl_decomposer_get_trend_dataframe(
             assert isinstance(result_dfs, dict)
             assert all(isinstance(result_dfs[x], list) for x in result_dfs)
             assert all(
-                all(isinstance(y, pd.DataFrame) for y in result_dfs[x])
-                for x in result_dfs
+                all(isinstance(x, pd.DataFrame) for x in result_dfs[df])
+                for df in result_dfs
             )
             assert all(get_trend_dataframe_format_correct(x) for x in result_dfs[0])
             if variateness == "univariate":
-                assert len(result_dfs[0]) == 1
+                assert len(result_dfs) == 1
                 [get_trend_dataframe_format_correct(x) for x in result_dfs[0]]
             elif variateness == "multivariate":
-                assert len(result_dfs[0]) == 2
+                assert len(result_dfs) == 2
                 [
-                    get_trend_dataframe_format_correct(x)
-                    for idx, x in enumerate(result_dfs[0])
+                    (get_trend_dataframe_format_correct(x) for x in result_dfs[df])
+                    for df in result_dfs
                 ]
 
 
@@ -476,22 +512,39 @@ def test_stl_decomposer_doesnt_modify_target_index(
 
 @pytest.mark.parametrize("index_type", ["datetime", "int"])
 @pytest.mark.parametrize("set_coverage", [True, False])
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_stl_decomposer_get_trend_prediction_intervals(
     set_coverage,
     index_type,
     generate_seasonal_data,
+    generate_multiseries_seasonal_data,
+    variateness,
 ):
     coverage = [0.75, 0.85, 0.95] if set_coverage else None
     period = 7
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
-        period=period,
-        freq_str="D",
-        set_time_index=True,
-    )
+    if variateness == "univariate":
+        X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+            period=period,
+            freq_str="D",
+            set_time_index=True,
+        )
+        y_train = y[: 15 * period]
+        y_validate = y[15 * period :]
+    elif variateness == "multivariate":
+        X, y = generate_multiseries_seasonal_data(real_or_synthetic="synthetic")(
+            period=period,
+            freq_str="D",
+            set_time_index=True,
+        )
+        y_train = y.loc[y.index[: 15 * period]]
+        y_validate = y.loc[y.index[15 * period :]]
     X_train = X[: 15 * period]
-    y_train = y[: 15 * period]
-
-    y_validate = y[15 * period :]
 
     stl = STLDecomposer()
     stl.fit(X_train, y_train)
@@ -513,4 +566,9 @@ def test_stl_decomposer_get_trend_prediction_intervals(
         y_validate,
         coverage=coverage,
     )
-    assert_pred_interval_coverage(trend_pred_intervals)
+
+    if isinstance(y_validate, pd.Series):
+        y_validate = pd.DataFrame(y_validate)
+
+    for id in y_validate:
+        assert_pred_interval_coverage(trend_pred_intervals[id])

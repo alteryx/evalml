@@ -2463,62 +2463,6 @@ def generate_seasonal_data():
 
 
 @pytest.fixture
-def categorical_floats_df():
-    X = pd.DataFrame(
-        {
-            "double_int_cats": pd.Series([1.0, 2.0, 3.0, 4.0, 5.0] * 20),
-            "string_cats": pd.Series(["a", "b", "c", "d", "e"] * 20),
-            "int_cats": pd.Series([1, 2, 3, 4, 5] * 20),
-            "int_col": pd.Series([1, 2, 3, 4, 5] * 20),
-            "double_col": pd.Series([1.2, 2.3, 3.9, 4.1, 5.5] * 20),
-        },
-    )
-    X.ww.init(
-        logical_types={
-            "double_int_cats": "Categorical",
-            "string_cats": "Categorical",
-            "int_cats": "Categorical",
-            "int_col": "Integer",
-            "double_col": "Double",
-        },
-    )
-
-    return X
-
-
-@pytest.fixture
-def get_black_config():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    evalml_path = os.path.abspath(os.path.join(current_dir, "..", ".."))
-    black_config = get_evalml_black_config(evalml_path)
-    return black_config
-
-
-@pytest.fixture
-def split_nullable_logical_types_by_compatibility():
-    def _split_nullable_logical_types_by_compatibility(
-        int_null_incompatible,
-        bool_null_incompatible,
-    ):
-        incompatible_ltypes = []
-        compatible_ltypes = []
-        if int_null_incompatible:
-            incompatible_ltypes.append(IntegerNullable)
-            incompatible_ltypes.append(AgeNullable)
-        else:
-            compatible_ltypes.append(IntegerNullable)
-            compatible_ltypes.append(AgeNullable)
-        if bool_null_incompatible:
-            incompatible_ltypes.append(BooleanNullable)
-        else:
-            compatible_ltypes.append(BooleanNullable)
-
-        return compatible_ltypes, incompatible_ltypes
-
-    return _split_nullable_logical_types_by_compatibility
-
-
-@pytest.fixture
 def generate_multiseries_seasonal_data():
     """Function that returns data with a linear trend and a seasonal signal with specified period for multiseries."""
 
@@ -2597,7 +2541,7 @@ def generate_multiseries_seasonal_data():
                     y_seasonal = pd.Series(seasonal_scale * np.sin(freq * x))
                 else:
                     y_seasonal = pd.Series(np.zeros(len(x)))
-                y = y_trend + y_seasonal - i
+                y = y_trend + y_seasonal
                 if set_time_index:
                     y = y.set_axis(dts)
             y_ms_list.append(y)
@@ -2611,3 +2555,59 @@ def generate_multiseries_seasonal_data():
             return generate_real_data
 
     return _return_proper_func
+
+
+@pytest.fixture
+def categorical_floats_df():
+    X = pd.DataFrame(
+        {
+            "double_int_cats": pd.Series([1.0, 2.0, 3.0, 4.0, 5.0] * 20),
+            "string_cats": pd.Series(["a", "b", "c", "d", "e"] * 20),
+            "int_cats": pd.Series([1, 2, 3, 4, 5] * 20),
+            "int_col": pd.Series([1, 2, 3, 4, 5] * 20),
+            "double_col": pd.Series([1.2, 2.3, 3.9, 4.1, 5.5] * 20),
+        },
+    )
+    X.ww.init(
+        logical_types={
+            "double_int_cats": "Categorical",
+            "string_cats": "Categorical",
+            "int_cats": "Categorical",
+            "int_col": "Integer",
+            "double_col": "Double",
+        },
+    )
+
+    return X
+
+
+@pytest.fixture
+def get_black_config():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    evalml_path = os.path.abspath(os.path.join(current_dir, "..", ".."))
+    black_config = get_evalml_black_config(evalml_path)
+    return black_config
+
+
+@pytest.fixture
+def split_nullable_logical_types_by_compatibility():
+    def _split_nullable_logical_types_by_compatibility(
+        int_null_incompatible,
+        bool_null_incompatible,
+    ):
+        incompatible_ltypes = []
+        compatible_ltypes = []
+        if int_null_incompatible:
+            incompatible_ltypes.append(IntegerNullable)
+            incompatible_ltypes.append(AgeNullable)
+        else:
+            compatible_ltypes.append(IntegerNullable)
+            compatible_ltypes.append(AgeNullable)
+        if bool_null_incompatible:
+            incompatible_ltypes.append(BooleanNullable)
+        else:
+            compatible_ltypes.append(BooleanNullable)
+
+        return compatible_ltypes, incompatible_ltypes
+
+    return _split_nullable_logical_types_by_compatibility

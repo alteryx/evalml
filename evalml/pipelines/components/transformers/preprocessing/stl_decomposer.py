@@ -389,28 +389,15 @@ class STLDecomposer(Decomposer):
                     ),
                 )
             y_series = pd.concat([y_in_sample, y_out_of_sample])
+            # If it is a single series time series, return tuple[pd.DataFrame, pd.Series]
+            if len(y_t.columns) <= 1:
+                y_series.index = original_index
+                return y_series
 
-        y.append(y_series)
+            y.append(y_series)
         y_df = pd.DataFrame(y).T
         y_df.index = original_index
         return y_df
-
-    def fit_transform(
-        self,
-        X: pd.DataFrame,
-        y: pd.DataFrame = None,
-    ) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """Removes fitted trend and seasonality from target variable.
-
-        Args:
-            X (pd.DataFrame, optional): Ignored.
-            y (pd.Series): Target variable to detrend and deseasonalize.
-
-        Returns:
-            tuple of pd.DataFrame, pd.Series: The first element are the input features returned without modification.
-                The second element is the target variable y with the fitted trend removed.
-        """
-        return self.fit(X, y).transform(X, y)
 
     def get_trend_dataframe(self, X, y):
         """Return a list of dataframes with 4 columns: signal, trend, seasonality, residual.
@@ -495,6 +482,10 @@ class STLDecomposer(Decomposer):
                 for colname in series_y.columns:
                     result_dfs.append(_decompose_target(X, series_y[colname], None))
             series_results[id] = result_dfs
+
+            # only return the dictionary if single series
+            if len(y.columns) <= 1:
+                return result_dfs
         return series_results
 
     def get_trend_prediction_intervals(self, y, coverage=None):
@@ -511,6 +502,7 @@ class STLDecomposer(Decomposer):
         if isinstance(y, pd.Series):
             y = y.to_frame()
 
+        series_results = {}
         for id in y.columns:
             y_series = y[id]
 
@@ -542,8 +534,12 @@ class STLDecomposer(Decomposer):
                     intervals.index = y_series.index
                 prediction_interval_result[f"{coverage[i]}_lower"] = intervals["lower"]
                 prediction_interval_result[f"{coverage[i]}_upper"] = intervals["upper"]
+            series_results[id] = prediction_interval_result
 
-        return prediction_interval_result
+            # only return the dictionary if single series
+            if len(y.columns) <= 1:
+                return prediction_interval_result
+        return series_results
 
     # Overload the plot_decomposition fucntion to be able to plot multiple decompositions for multiseries
     def plot_decomposition(
