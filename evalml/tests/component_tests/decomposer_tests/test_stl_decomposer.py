@@ -169,6 +169,16 @@ def test_stl_fit_transform_in_sample(
     elif variateness == "multivariate":
         # Get the expected answer
         for id in y.columns:
+            # Check to make sure STL detrended/deseasoned
+            y_t_series = y_t[id]
+            pd.testing.assert_series_equal(
+                pd.Series(np.zeros(len(y_t_series))),
+                y_t_series,
+                check_exact=False,
+                check_index=False,
+                check_names=False,
+                atol=0.1,
+            )
             y_series = y[id]
             lin_reg = LinearRegression(fit_intercept=True)
             features = PolynomialFeatures(degree=trend_degree).fit_transform(
