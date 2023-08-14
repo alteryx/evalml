@@ -579,13 +579,16 @@ class STLDecomposer(Decomposer):
         for id in y.columns:
             fig, axs = plt.subplots(4)
             fig.set_size_inches(18.5, 14.5)
-            axs[0].plot(decomposition_results[id][0]["signal"], "r")
+
+            if len(y.columns) > 1:
+                decomposition_results = decomposition_results[id]
+            axs[0].plot(decomposition_results[0]["signal"], "r")
             axs[0].set_title("signal")
-            axs[1].plot(decomposition_results[id][0]["trend"], "b")
+            axs[1].plot(decomposition_results[0]["trend"], "b")
             axs[1].set_title("trend")
-            axs[2].plot(decomposition_results[id][0]["seasonality"], "g")
+            axs[2].plot(decomposition_results[0]["seasonality"], "g")
             axs[2].set_title("seasonality")
-            axs[3].plot(decomposition_results[id][0]["residual"], "y")
+            axs[3].plot(decomposition_results[0]["residual"], "y")
             axs[3].set_title("residual")
 
             if len(y.columns) > 1:

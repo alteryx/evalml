@@ -244,11 +244,18 @@ def test_stl_decomposer_inverse_transform(
 
     if transformer_fit_on_data == "in-sample":
         output_inverse_y = decomposer.inverse_transform(output_y)
-        pd.testing.assert_frame_equal(
-            pd.DataFrame(subset_y),
-            output_inverse_y,
-            check_dtype=False,
-        )
+        if variateness == "univariate":
+            pd.testing.assert_series_equal(
+                subset_y,
+                output_inverse_y,
+                check_dtype=False,
+            )
+        elif variateness == "mulitvariate":
+            pd.testing.assert_frame_equal(
+                pd.DataFrame(subset_y),
+                output_inverse_y,
+                check_dtype=False,
+            )
 
     if transformer_fit_on_data != "in-sample":
         y_t_new = build_test_target(
@@ -272,12 +279,21 @@ def test_stl_decomposer_inverse_transform(
             # Because output_inverse_y.index is int32 and y[y_t_new.index].index is int64 in windows,
             # we need to test the indices equivalence separately.
             output_inverse_y = decomposer.inverse_transform(y_t_new)
-            pd.testing.assert_frame_equal(
-                pd.DataFrame(y.loc[y_t_new.index]),
-                output_inverse_y,
-                check_exact=False,
-                rtol=1.0e-1,
-            )
+
+            if variateness == "univariate":
+                pd.testing.assert_series_equal(
+                    y[y_t_new.index],
+                    output_inverse_y,
+                    check_index=False,
+                    rtol=1.0e-2,
+                )
+            elif variateness == "mulitvariate":
+                pd.testing.assert_frame_equal(
+                    pd.DataFrame(y.loc[y_t_new.index]),
+                    output_inverse_y,
+                    check_exact=False,
+                    rtol=1.0e-1,
+                )
             pd.testing.assert_index_equal(
                 y.loc[y_t_new.index].index,
                 output_inverse_y.index,
@@ -338,17 +354,21 @@ def test_stl_decomposer_get_trend_dataframe(
         # get_trend_dataframe() is only expected to work with datetime indices
 
         result_dfs = dec.get_trend_dataframe(subset_X, subset_y)
-        assert isinstance(result_dfs, dict)
-        assert all(isinstance(result_dfs[x], list) for x in result_dfs)
-        assert all(
-            all(isinstance(x, pd.DataFrame) for x in result_dfs[df])
-            for df in result_dfs
-        )
+
         if variateness == "univariate":
+            assert isinstance(result_dfs, list)
+            assert all(isinstance(x, pd.DataFrame) for x in result_dfs)
+            assert all(get_trend_dataframe_format_correct(x) for x in result_dfs)
             assert len(result_dfs) == 1
-            [get_trend_dataframe_format_correct(x) for x in result_dfs[0]]
+            [get_trend_dataframe_format_correct(x) for x in result_dfs]
 
         elif variateness == "multivariate":
+            assert isinstance(result_dfs, dict)
+            assert all(isinstance(result_dfs[x], list) for x in result_dfs)
+            assert all(
+                all(isinstance(x, pd.DataFrame) for x in result_dfs[df])
+                for df in result_dfs
+            )
             assert len(result_dfs) == 2
             [
                 (get_trend_dataframe_format_correct(x) for x in result_dfs[df])
@@ -382,17 +402,23 @@ def test_stl_decomposer_get_trend_dataframe(
         else:
             result_dfs = dec.get_trend_dataframe(X.loc[y_t_new.index], y_t_new)
 
-            assert isinstance(result_dfs, dict)
-            assert all(isinstance(result_dfs[x], list) for x in result_dfs)
-            assert all(
-                all(isinstance(x, pd.DataFrame) for x in result_dfs[df])
-                for df in result_dfs
-            )
-            assert all(get_trend_dataframe_format_correct(x) for x in result_dfs[0])
             if variateness == "univariate":
+                assert isinstance(result_dfs, list)
+                assert all(isinstance(x, pd.DataFrame) for x in result_dfs)
+                assert all(get_trend_dataframe_format_correct(x) for x in result_dfs)
                 assert len(result_dfs) == 1
-                [get_trend_dataframe_format_correct(x) for x in result_dfs[0]]
+                [get_trend_dataframe_format_correct(x) for x in result_dfs]
             elif variateness == "multivariate":
+                assert isinstance(result_dfs, dict)
+                assert all(isinstance(result_dfs[x], list) for x in result_dfs)
+                assert all(
+                    all(isinstance(x, pd.DataFrame) for x in result_dfs[df])
+                    for df in result_dfs
+                )
+                assert all(
+                    (get_trend_dataframe_format_correct(x) for x in result_dfs[df])
+                    for df in result_dfs
+                )
                 assert len(result_dfs) == 2
                 [
                     (get_trend_dataframe_format_correct(x) for x in result_dfs[df])
@@ -429,11 +455,17 @@ def test_stl_decomposer_get_trend_dataframe_sets_time_index_internally(
     stl.fit(X, y)
     result_dfs = stl.get_trend_dataframe(X, y)
 
-    assert isinstance(result_dfs, dict)
-    assert all(isinstance(result_dfs[x], list) for x in result_dfs)
-    assert all(
-        all(isinstance(y, pd.DataFrame) for y in result_dfs[x]) for x in result_dfs
-    )
+    if variateness == "univariate":
+        assert isinstance(result_dfs, list)
+        assert all(isinstance(x, pd.DataFrame) for x in result_dfs)
+        assert all(get_trend_dataframe_format_correct(x) for x in result_dfs)
+    elif variateness == "mulitvariate":
+        assert isinstance(result_dfs, dict)
+        assert all(isinstance(result_dfs[x], list) for x in result_dfs)
+        assert all(
+            all(isinstance(x, pd.DataFrame) for x in result_dfs[df])
+            for df in result_dfs
+        )
 
 
 @pytest.mark.parametrize(
@@ -567,8 +599,8 @@ def test_stl_decomposer_get_trend_prediction_intervals(
         coverage=coverage,
     )
 
-    if isinstance(y_validate, pd.Series):
-        y_validate = pd.DataFrame(y_validate)
-
-    for id in y_validate:
-        assert_pred_interval_coverage(trend_pred_intervals[id])
+    if variateness == "univariate":
+        assert_pred_interval_coverage(trend_pred_intervals)
+    elif variateness == "multivariate":
+        for id in y_validate:
+            assert_pred_interval_coverage(trend_pred_intervals[id])

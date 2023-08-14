@@ -922,13 +922,17 @@ def test_decomposer_inverse_transform(
 
     if transformer_fit_on_data == "in-sample":
         output_inverse_y = decomposer.inverse_transform(output_y)
-        if isinstance(decomposer, STLDecomposer):
+        if isinstance(decomposer, STLDecomposer) and variateness == "multivariate":
             pd.testing.assert_frame_equal(
                 pd.DataFrame(subset_y),
                 output_inverse_y,
                 check_dtype=False,
             )
-        elif isinstance(decomposer, PolynomialDecomposer):
+        elif (
+            isinstance(decomposer, PolynomialDecomposer)
+            or isinstance(decomposer, STLDecomposer)
+            and variateness == "univariate"
+        ):
             pd.testing.assert_series_equal(
                 pd.Series(subset_y),
                 output_inverse_y,
@@ -957,14 +961,18 @@ def test_decomposer_inverse_transform(
             output_inverse_y = decomposer.inverse_transform(y_t_new)
             # Because output_inverse_y.index is int32 and y[y_t_new.index].index is int64 in windows,
             # we need to test the indices equivalence separately.
-            if isinstance(decomposer, STLDecomposer):
+            if isinstance(decomposer, STLDecomposer) and variateness == "multivariate":
                 pd.testing.assert_frame_equal(
                     pd.DataFrame(y.loc[y_t_new.index]),
                     output_inverse_y,
                     check_exact=False,
                     rtol=1.0e-1,
                 )
-            elif isinstance(decomposer, PolynomialDecomposer):
+            elif (
+                isinstance(decomposer, PolynomialDecomposer)
+                or isinstance(decomposer, STLDecomposer)
+                and variateness == "univariate"
+            ):
                 pd.testing.assert_series_equal(
                     pd.Series(y[y_t_new.index]),
                     output_inverse_y,
