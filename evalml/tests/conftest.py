@@ -2584,8 +2584,6 @@ def generate_multiseries_seasonal_data():
                     y_trend = pd.Series(scale * minmax_scale((x - 5) ** 3 + x**2))
                 if period is not None:
                     y_seasonal = pd.Series(seasonal_scale * np.sin(freq * x))
-                else:
-                    y_seasonal = pd.Series(np.zeros(len(x)))
                 y = y_trend + y_seasonal
                 if set_time_index:
                     y = y.set_axis(dts)

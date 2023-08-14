@@ -565,8 +565,7 @@ class STLDecomposer(Decomposer):
 
         plot_info = {}
         if self.frequency and self.time_index and len(y.columns) > 1:
-            if isinstance(X.index, int):
-                X.index = pd.DatetimeIndex(X[self.time_index], freq=self.frequency)
+            X.index = pd.DatetimeIndex(X[self.time_index], freq=self.frequency)
         decomposition_results = self.get_trend_dataframe(X, y)
 
         # Iterate through each series id

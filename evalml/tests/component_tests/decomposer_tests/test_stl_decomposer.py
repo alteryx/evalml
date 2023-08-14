@@ -1,3 +1,4 @@
+import matplotlib
 import numpy as np
 import pandas as pd
 import pytest
@@ -604,3 +605,39 @@ def test_stl_decomposer_get_trend_prediction_intervals(
     elif variateness == "multivariate":
         for id in y_validate:
             assert_pred_interval_coverage(trend_pred_intervals[id])
+
+
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
+def test_stl_decomposer_plot_decomposition(
+    ts_data,
+    multiseries_ts_data_unstacked,
+    variateness,
+):
+    if variateness == "univariate":
+        X, _, y = ts_data()
+    elif variateness == "multivariate":
+        X, y = multiseries_ts_data_unstacked
+        X.index = X["date"]
+        X.index.freq = "D"
+
+    dec = STLDecomposer(time_index="date")
+    dec.fit_transform(X, y)
+
+    if variateness == "univariate":
+        fig, axs = dec.plot_decomposition(X, y, show=False)
+        assert isinstance(fig, matplotlib.pyplot.Figure)
+        assert isinstance(axs, np.ndarray)
+        assert all([isinstance(ax, matplotlib.pyplot.Axes) for ax in axs])
+    elif variateness == "multivariate":
+        result_plots = dec.plot_decomposition(X, y, show=False)
+        for id in y.columns:
+            fig, axs = result_plots[id]
+            assert isinstance(fig, matplotlib.pyplot.Figure)
+            assert isinstance(axs, np.ndarray)
+            assert all([isinstance(ax, matplotlib.pyplot.Axes) for ax in axs])
