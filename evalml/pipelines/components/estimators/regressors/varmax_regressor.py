@@ -34,6 +34,8 @@ class VARMAXRegressor(Estimator):
             solely be based off of the datetimes and target values. Defaults to True.
     """
 
+    _N_REPETITIONS = 400
+
     name = "VARMAX Regressor"
     hyperparameter_ranges = {
         "p": Integer(0, 10),
@@ -235,7 +237,7 @@ class VARMAXRegressor(Estimator):
         # anchor represents where the simulations should start from (forecasting is done from the "end")
         y_pred = self._component_obj._fitted_forecaster.simulate(
             nsimulations=X.shape[0],
-            repetitions=400,
+            repetitions=self._N_REPETITIONS,
             anchor="end",
             random_state=self.random_seed,
             exog=X if use_exog else None,
