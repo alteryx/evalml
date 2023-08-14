@@ -250,7 +250,7 @@ def test_stl_decomposer_inverse_transform(
                 output_inverse_y,
                 check_dtype=False,
             )
-        elif variateness == "mulitvariate":
+        elif variateness == "multivariate":
             pd.testing.assert_frame_equal(
                 pd.DataFrame(subset_y),
                 output_inverse_y,
@@ -287,7 +287,7 @@ def test_stl_decomposer_inverse_transform(
                     check_index=False,
                     rtol=1.0e-2,
                 )
-            elif variateness == "mulitvariate":
+            elif variateness == "multivariate":
                 pd.testing.assert_frame_equal(
                     pd.DataFrame(y.loc[y_t_new.index]),
                     output_inverse_y,
@@ -459,7 +459,7 @@ def test_stl_decomposer_get_trend_dataframe_sets_time_index_internally(
         assert isinstance(result_dfs, list)
         assert all(isinstance(x, pd.DataFrame) for x in result_dfs)
         assert all(get_trend_dataframe_format_correct(x) for x in result_dfs)
-    elif variateness == "mulitvariate":
+    elif variateness == "multivariate":
         assert isinstance(result_dfs, dict)
         assert all(isinstance(result_dfs[x], list) for x in result_dfs)
         assert all(

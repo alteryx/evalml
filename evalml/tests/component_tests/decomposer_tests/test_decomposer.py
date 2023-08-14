@@ -72,33 +72,40 @@ def test_decomposer_plot_decomposition(
     decomposer_child_class,
     y_has_time_index,
     generate_seasonal_data,
+    generate_multiseries_seasonal_data,
     variateness,
-    multiseries_ts_data_unstacked,
 ):
+    step = 0.01
+    period = 9
     if variateness == "univariate":
-        x = np.arange(0, 2 * np.pi, 0.01)
-        dts = pd.date_range(datetime.today(), periods=len(x))
-        X = pd.DataFrame({"x": x})
-        X = X.set_index(dts)
-        y = pd.Series(np.sin(x))
+        X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period, step)
     elif variateness == "multivariate":
         if isinstance(decomposer_child_class(), PolynomialDecomposer):
             pytest.skip(
                 "Skipping Decomposer because multiseries is not implemented for Polynomial Decomposer",
             )
-        X, y = multiseries_ts_data_unstacked
-    step = 0.01
-    period = 9
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period, step)
+        X, y = generate_multiseries_seasonal_data(real_or_synthetic="synthetic")(
+            period,
+            step,
+        )
     if y_has_time_index == "y_has_time_index":
         y = y.set_axis(X.index)
 
     dec = decomposer_child_class(degree=1, period=period)
     dec.fit_transform(X, y)
-    fig, axs = dec.plot_decomposition(X, y, show=False)
-    assert isinstance(fig, matplotlib.pyplot.Figure)
-    assert isinstance(axs, np.ndarray)
-    assert all([isinstance(ax, matplotlib.pyplot.Axes) for ax in axs])
+
+    if variateness == "univariate":
+        fig, axs = dec.plot_decomposition(X, y, show=False)
+        assert isinstance(fig, matplotlib.pyplot.Figure)
+        assert isinstance(axs, np.ndarray)
+        assert all([isinstance(ax, matplotlib.pyplot.Axes) for ax in axs])
+    elif variateness == "multivariate":
+        result_plots = dec.plot_decomposition(X, y, show=False)
+        for id in y.columns:
+            fig, axs = result_plots[id]
+            assert isinstance(fig, matplotlib.pyplot.Figure)
+            assert isinstance(axs, np.ndarray)
+            assert all([isinstance(ax, matplotlib.pyplot.Axes) for ax in axs])
 
 
 @pytest.mark.parametrize(
@@ -845,11 +852,13 @@ def test_decomposer_fit_transform_out_of_sample(
                     check_exact=False,
                     atol=0.1,  # STLDecomposer is within atol=5.0e-4
                 )
-            elif variateness == "mulivariate":
+            elif variateness == "multivariate":
                 y_new = pd.DataFrame([y_new, y_new]).T
-                output_X, output_y_t = decomposer.transform(None, y[y_new.index])
+                output_X, output_y_t = decomposer.transform(None, y.loc[y_new.index])
                 pd.testing.assert_frame_equal(
-                    pd.Series(np.zeros(len(output_y_t))).set_axis(y_new.index),
+                    pd.DataFrame(
+                        [np.zeros(len(output_y_t)), np.zeros(len(output_y_t))],
+                    ).T.set_axis(y_new.index),
                     output_y_t,
                     check_exact=False,
                     atol=0.1,  # STLDecomposer is within atol=5.0e-4

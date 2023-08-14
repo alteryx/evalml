@@ -262,8 +262,6 @@ class STLDecomposer(Decomposer):
                 self.residual = self.decompositions[id]["residual"]
                 self.period = self.decompositions[id]["period"]
 
-            if series_y is None:
-                return X, series_y
             original_index = series_y.index
             X, series_y = self._check_target(X, series_y)
             self._check_oos_past(series_y)
@@ -478,9 +476,7 @@ class STLDecomposer(Decomposer):
             series_y = y[id]
             if isinstance(series_y, pd.Series):
                 result_dfs.append(_decompose_target(X, series_y, None))
-            elif isinstance(series_y, pd.DataFrame):
-                for colname in series_y.columns:
-                    result_dfs.append(_decompose_target(X, series_y[colname], None))
+
             series_results[id] = result_dfs
 
             # only return the dictionary if single series
@@ -567,12 +563,10 @@ class STLDecomposer(Decomposer):
         if isinstance(y, pd.Series):
             y = y.to_frame()
 
-        if isinstance(y, pd.Series):
-            y = y.to_frame()
-
         plot_info = {}
-        if self.frequency and len(y.columns) > 1:
-            X.index = pd.DatetimeIndex(X[self.time_index], freq=self.frequency)
+        if self.frequency and self.time_index and len(y.columns) > 1:
+            if isinstance(X.index, int):
+                X.index = pd.DatetimeIndex(X[self.time_index], freq=self.frequency)
         decomposition_results = self.get_trend_dataframe(X, y)
 
         # Iterate through each series id
@@ -580,17 +574,23 @@ class STLDecomposer(Decomposer):
             fig, axs = plt.subplots(4)
             fig.set_size_inches(18.5, 14.5)
 
+            for ax in axs:
+                ax.cla()
+
             if len(y.columns) > 1:
-                decomposition_results = decomposition_results[id]
-            axs[0].plot(decomposition_results[0]["signal"], "r")
+                results = decomposition_results[id]
+            else:
+                results = decomposition_results
+            axs[0].plot(results[0]["signal"], "r")
             axs[0].set_title("signal")
-            axs[1].plot(decomposition_results[0]["trend"], "b")
+            axs[1].plot(results[0]["trend"], "b")
             axs[1].set_title("trend")
-            axs[2].plot(decomposition_results[0]["seasonality"], "g")
+            axs[2].plot(results[0]["seasonality"], "g")
             axs[2].set_title("seasonality")
-            axs[3].plot(decomposition_results[0]["residual"], "y")
+            axs[3].plot(results[0]["residual"], "y")
             axs[3].set_title("residual")
 
+            # If multiseries, return a dictionary of tuples
             if len(y.columns) > 1:
                 fig.suptitle("Decomposition for Series {}".format(id))
                 plot_info[id] = (fig, axs)
