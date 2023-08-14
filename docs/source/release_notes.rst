@@ -19,6 +19,7 @@ Release Notes
         * Added stacking and unstacking utility functions to work with multiseries data :pr:`4250`
         * Added multiseries regression pipeline class :pr:`4256`
         * Added multiseries VARMAX regressor :pr:`4238`
+        * Added support for prediction intervals for VARMAX regressor :pr:`4267`
         * Extend STLDecomposer to Support Multiseries :pr:`4253`
     * Fixes
         * Added support for pandas 2 :pr:`4216`
