@@ -627,7 +627,7 @@ class AutoMLSearch:
         )
         self.is_multiseries = (
             is_time_series(self.problem_type)
-            and "series_id" in self.problem_configuration
+            and self.problem_configuration.get("series_id") is not None
         )
         self._train_best_pipeline = train_best_pipeline
         self._best_pipeline = None

@@ -1921,7 +1921,7 @@ class _AutoMLTestEnv:
         >>> # env.mock_score.assert_called_once()
     """
 
-    def __init__(self, problem_type):
+    def __init__(self, problem_type, is_multiseries=False):
         """Create a test environment.
 
         Args:
@@ -1940,8 +1940,10 @@ class _AutoMLTestEnv:
                 Set to None until the first computation is run in the test environment.
             mock_optimize_threshold (MagicMock): MagicMock corresponding to the BinaryClassificationObjective.optimize_threshold for the latest automl computation.
                 Set to None until the first computation is run in the test environment.
+            is_multiseries (bool): Whether the problem type is a multiseries time series problem.
         """
         self.problem_type = handle_problem_types(problem_type)
+        self.is_multiseries = is_multiseries
         self._mock_fit = None
         self._mock_tell = None
         self._mock_score = None
@@ -1953,6 +1955,8 @@ class _AutoMLTestEnv:
 
     @property
     def _pipeline_class(self):
+        if self.is_multiseries:
+            return "evalml.pipelines.MultiseriesRegressionPipeline"
         return {
             ProblemTypes.REGRESSION: "evalml.pipelines.RegressionPipeline",
             ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",

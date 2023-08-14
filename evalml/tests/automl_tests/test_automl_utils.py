@@ -70,11 +70,18 @@ def test_get_default_primary_search_objective():
 
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 @pytest.mark.parametrize("large_data", [False, True])
-def test_make_data_splitter_default(problem_type, large_data):
+@pytest.mark.parametrize("is_multiseries", [False, True])
+def test_make_data_splitter_default(problem_type, large_data, is_multiseries):
+    if is_multiseries and problem_type != ProblemTypes.TIME_SERIES_REGRESSION:
+        pytest.skip(
+            "Multiseries data is only supported for time series regression problems",
+        )
     n = 10
     if large_data:
         n = _LARGE_DATA_ROW_THRESHOLD + 1
     X = pd.DataFrame({"col_0": list(range(n)), "target": list(range(n))})
+    if is_multiseries:
+        X["series_id"] = pd.Series(range(n)) % 2
     y = X.pop("target")
 
     problem_configuration = None
@@ -88,6 +95,7 @@ def test_make_data_splitter_default(problem_type, large_data):
             "max_delay": 7,
             "time_index": "foo",
             "forecast_horizon": 4,
+            "series_id": "series_id" if is_multiseries else None,
         }
 
     data_splitter = make_data_splitter(
@@ -135,6 +143,10 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.forecast_horizon == 4
         assert data_splitter.time_index == "foo"
         assert data_splitter.is_cv
+        if is_multiseries:
+            assert data_splitter._splitter.test_size == 8
+        else:
+            assert data_splitter._splitter.test_size == 4
 
 
 @pytest.mark.parametrize(

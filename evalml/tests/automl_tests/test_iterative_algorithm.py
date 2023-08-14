@@ -65,22 +65,46 @@ def dummy_binary_pipeline_classes():
     return _method
 
 
+@pytest.mark.parametrize("problem_type", ["binary", "time series regression"])
 def test_iterative_algorithm_init(
+    problem_type,
     X_y_binary,
+    multiseries_ts_data_stacked,
 ):
-    X, y = X_y_binary
-    algo = IterativeAlgorithm(X=X, y=y, problem_type="binary")
+    X, y = X_y_binary if problem_type == "binary" else multiseries_ts_data_stacked
+    is_multiseries = problem_type == "time series regression"
+
+    search_parameters = {
+        "pipeline": {
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 3,
+            "delay_features": False,
+            "forecast_horizon": 10,
+            "series_id": "series_id",
+        },
+    }
+
+    algo = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type=problem_type,
+        is_multiseries=is_multiseries,
+        search_parameters=search_parameters,
+    )
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
     assert algo.default_max_batches == 1
-    estimators = get_estimators("binary")
+    estimators = get_estimators(problem_type, is_multiseries=is_multiseries)
     assert len(algo.allowed_pipelines) == len(
         [
             make_pipeline(
                 X,
                 y,
                 estimator,
-                "binary",
+                problem_type,
+                parameters=search_parameters,
+                is_multiseries=is_multiseries,
             )
             for estimator in estimators
         ],

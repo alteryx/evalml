@@ -61,6 +61,17 @@ def test_default_algorithm_init(X_y_binary):
     )
     assert algo.default_max_batches == 3
 
+    algo = DefaultAlgorithm(
+        X,
+        y,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        sampler_name,
+        verbose=True,
+        is_multiseries=True,
+    )
+    assert algo.is_multiseries is True
+    assert algo.default_max_batches == 1
+
 
 def test_default_algorithm_search_parameters_error(X_y_binary):
     X, y = X_y_binary
@@ -632,6 +643,47 @@ def test_default_algorithm_time_series(
     long_estimators = set([pipeline.estimator.name for pipeline in long_2])
     assert len(long_2) == 30 if problem_type != "time series regression" else 60
     assert len(long_estimators) == 3
+
+
+def test_default_algorithm_multiseries_time_series(
+    multiseries_ts_data_stacked,
+):
+    X, y = multiseries_ts_data_stacked
+    problem_type = "time series regression"
+    sampler_name = None
+
+    search_parameters = {
+        "pipeline": {
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 3,
+            "delay_features": False,
+            "forecast_horizon": 10,
+            "series_id": "series_id",
+        },
+    }
+
+    algo = DefaultAlgorithm(
+        X,
+        y,
+        problem_type,
+        sampler_name,
+        search_parameters=search_parameters,
+        is_multiseries=True,
+    )
+
+    first_batch = algo.next_batch()
+    assert len(first_batch) == 1
+    pipeline = first_batch[0]
+    assert pipeline.model_family == ModelFamily.VARMAX
+    assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
+
+    add_result(algo, first_batch)
+
+    long_explore = algo.next_batch()
+    long_estimators = set([pipeline.estimator.name for pipeline in long_explore])
+    assert len(long_explore) == 50
+    assert len(long_estimators) == 1
 
 
 @pytest.mark.parametrize(

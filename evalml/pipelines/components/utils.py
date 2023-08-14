@@ -533,20 +533,27 @@ def match_indices(
     return X, y
 
 
-def convert_bool_to_double(data: pd.DataFrame):
-    """Converts all boolean columns in dataframe to doubles.
+def convert_bool_to_double(
+    data: pd.DataFrame,
+    include_ints: bool = False,
+) -> pd.DataFrame:
+    """Converts all boolean columns in dataframe to doubles. If include_ints, converts all integer columns to doubles as well.
 
     Args:
         data (pd.DataFrame): Input dataframe.
+        include_ints (bool): If True, converts all integer columns to doubles as well. Defaults to False.
 
     Returns:
         pd.DataFrame: Input dataframe with all boolean-valued columns converted to doubles.
     """
     data_ = data.ww.copy()
+    relevant_dtypes = ["Boolean"]
+    if include_ints:
+        relevant_dtypes.append("Integer")
     data_.ww.set_types(
         {
             col: "Double"
-            for col in data.ww.select(["Boolean"], return_schema=True).columns
+            for col in data.ww.select(relevant_dtypes, return_schema=True).columns
         },
     )
     return data_

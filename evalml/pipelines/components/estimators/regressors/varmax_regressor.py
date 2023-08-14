@@ -131,13 +131,13 @@ class VARMAXRegressor(Estimator):
 
         if y is None:
             raise ValueError("VARMAX Regressor requires y as input.")
+        y = convert_bool_to_double(y, include_ints=True)
 
         if X is not None and self.use_covariates:
             self.last_X_index = X.index[-1]
             X = X.ww.select(exclude=["Datetime"])
 
             X = convert_bool_to_double(X)
-            y = convert_bool_to_double(y)
             X, y = match_indices(X, y)
 
             if not X.empty:
