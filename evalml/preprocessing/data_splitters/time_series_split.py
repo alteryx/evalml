@@ -69,9 +69,9 @@ class TimeSeriesSplit(BaseCrossValidator):
         self.n_splits = n_splits
         self.n_series = n_series
 
-        test_size = self.forecast_horizon
+        test_size = forecast_horizon
         if self.n_series is not None:
-            test_size = self.forecast_horizon * self.n_series
+            test_size = forecast_horizon * self.n_series
 
         self._splitter = SkTimeSeriesSplit(
             n_splits=n_splits,

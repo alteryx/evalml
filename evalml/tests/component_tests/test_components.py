@@ -67,6 +67,7 @@ from evalml.pipelines.components import (
     TimeSeriesRegularizer,
     Transformer,
     Undersampler,
+    VARMAXRegressor,
     XGBoostClassifier,
     XGBoostRegressor,
 )
@@ -1929,7 +1930,7 @@ def test_components_support_nullable_types(
     """Confirm that components without any nullable type incompatibilities can actually
     use all the nullable types in X and y in fit and predict/transform. If a new
     component is added that has nullable type incompatibilities, this should fail."""
-    cannot_handle_boolean_target = [CatBoostRegressor]
+    cannot_handle_boolean_target = [CatBoostRegressor, VARMAXRegressor]
 
     if (
         component_class == TimeSeriesBaselineEstimator
@@ -1952,6 +1953,7 @@ def test_components_support_nullable_types(
         TimeSeriesRegularizer,
         PolynomialDecomposer,
         STLDecomposer,
+        VARMAXRegressor,
     ]
     requires_all_numeric = [PCA, LinearDiscriminantAnalysis]
 
