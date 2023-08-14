@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.79.0 Aug. 11, 2023**
+    * Enhancements
         * Updated regression metrics to handle multioutput dataframes as well as single output series :pr:`4233`
         * Added baseline regressor for multiseries time series problems :pr:`4246`
         * Added stacking and unstacking utility functions to work with multiseries data :pr:`4250`
