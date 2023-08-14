@@ -1,4 +1,5 @@
 import io
+import math
 import os
 import pickle
 import re
@@ -1045,6 +1046,47 @@ def test_score_with_objective_that_requires_predict_proba(
             "Invalid objective Precision specified for problem type regression"
             in e.message
         )
+    mock_predict.assert_called()
+
+
+@patch("evalml.pipelines.components.Estimator.predict")
+@patch("evalml.pipelines.components.Estimator.fit")
+def test_score_with_objective_that_requires_y_train(
+    mock_fit,
+    mock_predict,
+    dummy_time_series_regression_pipeline_class,
+    generate_seasonal_data,
+):
+    X, y = generate_seasonal_data(real_or_synthetic="real")(period=10)
+    X = X.reset_index()
+
+    split = math.floor(0.9 * len(X))
+    X_train, X_holdout = X.iloc[:split], X.iloc[split:]
+    y_train, y_holdout = y.iloc[:split], y.iloc[split:]
+
+    parameters = {
+        "pipeline": {
+            "max_delay": 0,
+            "gap": 2,
+            "forecast_horizon": 2,
+            "time_index": "Date",
+        },
+    }
+
+    mock_regression_pipeline = dummy_time_series_regression_pipeline_class(
+        parameters=parameters,
+    )
+
+    mock_predict.return_value = pd.Series([1] * len(y_holdout))
+
+    mock_regression_pipeline.fit(X_train, y_train)
+    mock_regression_pipeline.score(
+        X_holdout,
+        y_holdout,
+        ["mean absolute scaled error"],
+        X_train=X_train,
+        y_train=y_train,
+    )
     mock_predict.assert_called()
 
 

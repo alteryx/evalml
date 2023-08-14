@@ -58,5 +58,4 @@ def test_multiseries_time_series_baseline_lags(multiseries_ts_data_unstacked):
 
     pred = estimator.predict(X_t)
     expected = y.shift(2)
-    expected.columns = [f"{col}_delay_2" for col in expected.columns]
     pd.testing.assert_frame_equal(pred, expected)

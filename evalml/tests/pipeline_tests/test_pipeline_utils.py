@@ -55,6 +55,7 @@ from evalml.pipelines.utils import (
     make_pipeline_from_actions,
     rows_of_interest,
     stack_data,
+    stack_X,
     unstack_multiseries,
 )
 from evalml.problem_types import ProblemTypes, is_time_series
@@ -1412,9 +1413,11 @@ def test_unstack_multiseries(
 
 @pytest.mark.parametrize("include_series_id", [True, False])
 @pytest.mark.parametrize("series_id_name", [None, "SERIES"])
+@pytest.mark.parametrize("starting_index", [None, 1, 132])
 def test_stack_data(
     include_series_id,
     series_id_name,
+    starting_index,
     multiseries_ts_data_stacked,
     multiseries_ts_data_unstacked,
 ):
@@ -1426,7 +1429,11 @@ def test_stack_data(
         y,
         include_series_id=include_series_id,
         series_id_name=series_id_name,
+        starting_index=starting_index,
     )
+
+    if starting_index is not None:
+        y_stacked.index = y_stacked.index + starting_index
 
     if include_series_id:
         series_id_name = series_id_name or "series_id"
@@ -1448,3 +1455,22 @@ def test_stack_data_noop():
 
     assert stack_data(none_y) is None
     pd.testing.assert_series_equal(stack_data(series_y), series_y)
+
+
+@pytest.mark.parametrize("starting_index", [None, 1, 132])
+def test_stack_X(
+    starting_index,
+    multiseries_ts_data_stacked,
+    multiseries_ts_data_unstacked,
+):
+    X, _ = multiseries_ts_data_unstacked
+    X_expected, _ = multiseries_ts_data_stacked
+
+    if starting_index is not None:
+        X_expected.index = X_expected.index + starting_index
+
+    X_transformed = stack_X(X, "series_id", "date", starting_index=starting_index)
+    pd.testing.assert_frame_equal(
+        X_expected.sort_index(axis=1),
+        X_transformed.sort_index(axis=1),
+    )

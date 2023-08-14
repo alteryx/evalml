@@ -351,10 +351,18 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
 
     @staticmethod
-    def _score(X, y, predictions, objective):
-        return objective.score(y, predictions, X=X)
+    def _score(X, y, predictions, objective, y_train=None):
+        return objective.score(y, predictions, X=X, y_train=y_train)
 
-    def _score_all_objectives(self, X, y, y_pred, y_pred_proba, objectives):
+    def _score_all_objectives(
+        self,
+        X,
+        y,
+        y_pred,
+        y_pred_proba,
+        objectives,
+        y_train=None,
+    ):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
 
         Will raise a PipelineScoreError if any objectives fail.
@@ -366,6 +374,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             y_pred_proba (pd.Dataframe, pd.Series, None): The predicted probabilities for classification problems.
                 Will be a DataFrame for multiclass problems and Series otherwise. Will be None for regression problems.
             objectives (list): List of objectives to score.
+            y_train (pd.Series or None): Training labels. Only used for time series, otherwise ignored.
 
         Returns:
             dict: Ordered dictionary with objectives and their scores.
@@ -390,6 +399,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                     y,
                     y_pred_proba if objective.score_needs_proba else y_pred,
                     objective,
+                    y_train,
                 )
                 scored_successfully.update({objective.name: score})
             except Exception as e:

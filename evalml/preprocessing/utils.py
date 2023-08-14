@@ -2,6 +2,7 @@
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
+from evalml.pipelines.utils import stack_data, stack_X, unstack_multiseries
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import is_classification, is_regression, is_time_series
 from evalml.utils import infer_feature_types
@@ -40,6 +41,48 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         print(target_distribution(y))
 
     return infer_feature_types(X), infer_feature_types(y)
+
+
+def split_multiseries_data(X, y, series_id, time_index, **kwargs):
+    """Split stacked multiseries data into train and test sets. Unstacked data can use `split_data`.
+
+    Args:
+        X (pd.DataFrame): The input training data of shape [n_samples*n_series, n_features].
+        y (pd.Series): The target training targets of length [n_samples*n_series].
+        series_id (str): Name of column containing series id.
+        time_index (str): Name of column containing time index.
+        **kwargs: Additional keyword arguments to pass to the split_data function.
+
+    Returns:
+        pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and test sets.
+    """
+    X_unstacked, y_unstacked = unstack_multiseries(
+        X,
+        y,
+        series_id,
+        time_index,
+        y.name,
+    )
+    (
+        X_train_unstacked,
+        X_holdout_unstacked,
+        y_train_unstacked,
+        y_holdout_unstacked,
+    ) = split_data(
+        X_unstacked, y_unstacked, problem_type="time series regression", **kwargs
+    )
+
+    X_train = stack_X(X_train_unstacked, series_id, time_index)
+    X_holdout = stack_X(
+        X_holdout_unstacked,
+        series_id,
+        time_index,
+        starting_index=X_train.index[-1] + 1,
+    )
+    y_train = stack_data(y_train_unstacked)
+    y_holdout = stack_data(y_holdout_unstacked, starting_index=y_train.index[-1] + 1)
+
+    return X_train, X_holdout, y_train, y_holdout
 
 
 def split_data(

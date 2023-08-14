@@ -5,9 +5,11 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer_dtype
 from skopt.space import Integer
+from sktime.forecasting.base import ForecastingHorizon
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.utils import convert_bool_to_double, match_indices
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     import_or_raise,
@@ -139,21 +141,7 @@ class ARIMARegressor(Estimator):
 
         return data_no_dt
 
-    def _match_indices(
-        self,
-        X: pd.DataFrame,
-        y: pd.Series,
-    ) -> Tuple[pd.DataFrame, pd.Series]:
-        if X is not None:
-            if X.index.equals(y.index):
-                return X, y
-            else:
-                y.index = X.index
-        return X, y
-
     def _set_forecast(self, X: pd.DataFrame):
-        from sktime.forecasting.base import ForecastingHorizon
-
         # we can only calculate the difference if the indices are of the same type
         units_diff = 1
         if isinstance(X.index[0], type(self.last_X_index)) and isinstance(
@@ -220,14 +208,9 @@ class ARIMARegressor(Estimator):
         X = self._remove_datetime(X, features=True)
 
         if X is not None:
-            X.ww.set_types(
-                {
-                    col: "Double"
-                    for col in X.ww.select(["Boolean"], return_schema=True).columns
-                },
-            )
+            X = convert_bool_to_double(X)
         y = self._remove_datetime(y)
-        X, y = self._match_indices(X, y)
+        X, y = match_indices(X, y)
 
         if X is not None and not X.empty and self.use_covariates:
             self._component_obj.fit(y=y, X=X)
@@ -238,12 +221,7 @@ class ARIMARegressor(Estimator):
     def _manage_types_and_forecast(self, X: pd.DataFrame) -> tuple:
         fh_ = self._set_forecast(X)
         X = X.ww.select(exclude=["Datetime"])
-        X.ww.set_types(
-            {
-                col: "Double"
-                for col in X.ww.select(["Boolean"], return_schema=True).columns
-            },
-        )
+        X = convert_bool_to_double(X)
         return X, fh_
 
     @staticmethod

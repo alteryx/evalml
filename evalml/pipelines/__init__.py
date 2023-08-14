@@ -38,6 +38,7 @@ from evalml.pipelines.components import (
     SVMRegressor,
     ExponentialSmoothingRegressor,
     ARIMARegressor,
+    VARMAXRegressor,
     ProphetRegressor,
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
@@ -53,6 +54,9 @@ from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline
 from evalml.pipelines.multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
+)
+from evalml.pipelines.multiseries_regression_pipeline import (
+    MultiseriesRegressionPipeline,
 )
 from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.pipelines.time_series_classification_pipelines import (

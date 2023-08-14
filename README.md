@@ -1,5 +1,5 @@
 <p align="center">
-<img width=50% src="https://evalml-web-images.s3.amazonaws.com/evalml_horizontal.svg" alt="EvalML" />
+<img width=50% src="https://alteryx-oss-web-images.s3.amazonaws.com/evalml_horizontal.svg" alt="EvalML" />
 </p>
 
 <p align="center">

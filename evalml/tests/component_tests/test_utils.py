@@ -15,10 +15,12 @@ from evalml.pipelines.components import ComponentBase, RandomForestClassifier
 from evalml.pipelines.components.utils import (
     _all_estimators,
     all_components,
+    convert_bool_to_double,
     estimator_unable_to_handle_nans,
     handle_component_class,
     handle_float_categories_for_catboost,
     make_balancing_dictionary,
+    match_indices,
     scikit_learn_wrapped_estimator,
 )
 from evalml.problem_types import ProblemTypes
@@ -97,6 +99,7 @@ all_requirements_set = set(
         "Vowpal Wabbit Regressor",
         "XGBoost Classifier",
         "XGBoost Regressor",
+        "VARMAX Regressor",
     ],
 )
 not_supported_in_conda = set(
@@ -289,3 +292,36 @@ def test_handle_float_categories_for_catboost_noop(
     X_t = handle_float_categories_for_catboost(X)
     pd.testing.assert_frame_equal(X, X_t)
     assert X.ww.schema == X_t.ww.schema
+
+
+@pytest.mark.parametrize("multiseries", [True, False])
+def test_match_indices(multiseries, ts_data, ts_multiseries_data):
+    if multiseries:
+        data_gen = ts_multiseries_data
+    else:
+        data_gen = ts_data
+    X_train, _, y_train = data_gen(
+        train_features_index_dt=False,
+        train_target_index_dt=False,
+        train_none=False,
+        datetime_feature=False,
+        no_features=False,
+        test_features_index_dt=False,
+        match_indices=False,
+    )
+
+    assert not X_train.index.equals(y_train.index)
+
+    X_, y_ = match_indices(X_train, y_train)
+    assert X_.index.equals(y_.index)
+
+
+def test_convert_bool_to_double(ts_data):
+    X, _, y = ts_data()
+    X.ww["bool"] = pd.Series([True, False] * int(len(X) / 2), index=X.index)
+    res = convert_bool_to_double(X)
+    for col in res.columns:
+        if col != "bool":
+            assert res.ww["feature"].ww.logical_type == X.ww["feature"].ww.logical_type
+        else:
+            assert str(res.ww["bool"].ww.logical_type) == "Double"

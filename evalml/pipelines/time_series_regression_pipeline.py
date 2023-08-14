@@ -50,6 +50,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         ModelFamily.ARIMA,
         ModelFamily.EXPONENTIAL_SMOOTHING,
         ModelFamily.PROPHET,
+        ModelFamily.VARMAX,
     ]
 
     """ProblemTypes.TIME_SERIES_REGRESSION"""
@@ -102,6 +103,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             y_predicted,
             y_pred_proba=None,
             objectives=objectives,
+            y_train=y_train,
         )
 
     def get_forecast_period(self, X):

@@ -111,24 +111,6 @@ def test_remove_datetime(
     assert not isinstance(y_train_no_dt.index, pd.DatetimeIndex)
 
 
-def test_match_indices(ts_data):
-    X_train, _, y_train = ts_data(
-        train_features_index_dt=False,
-        train_target_index_dt=False,
-        train_none=False,
-        datetime_feature=False,
-        no_features=False,
-        test_features_index_dt=False,
-        match_indices=False,
-    )
-
-    assert not X_train.index.equals(y_train.index)
-
-    clf = ARIMARegressor()
-    X_, y_ = clf._match_indices(X_train, y_train)
-    assert X_.index.equals(y_.index)
-
-
 def test_set_forecast(ts_data):
     from sktime.forecasting.base import ForecastingHorizon
 
