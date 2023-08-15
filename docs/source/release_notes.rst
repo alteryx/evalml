@@ -3,7 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Fixed Data Checks errors
+        * Fixed Data Checks errors :pr:`4274`
     * Changes
     * Documentation Changes
     * Testing Changes
