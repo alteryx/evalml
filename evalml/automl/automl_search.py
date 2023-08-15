@@ -656,6 +656,14 @@ class AutoMLSearch:
                     f"Dataset size is too small to create holdout set. Minimum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X_train)} rows. Holdout set evaluation is disabled.",
                 )
 
+        # For multiseries problems, we need to mke sure that the data is primarily ordered by the time_index rather than the series_id
+        if self.is_multiseries:
+            time_index = self.problem_configuration.get("time_index")
+            series_id = self.problem_configuration.get("series_id")
+            X_train = X_train.sort_values([time_index, series_id])
+            y_train = y_train[X_train.index].reset_index(drop=True)
+            X_train = X_train.reset_index(drop=True)
+
         # Set holdout data in AutoML search if provided as parameter
         self.X_train = infer_feature_types(X_train)
         self.y_train = infer_feature_types(y_train)

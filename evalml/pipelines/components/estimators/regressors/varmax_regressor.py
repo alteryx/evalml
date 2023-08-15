@@ -84,6 +84,7 @@ class VARMAXRegressor(Estimator):
 
         parameters["use_covariates"] = use_covariates
         parameters["time_index"] = time_index
+        parameters.update({"p": p, "q": q})
 
         self.use_covariates = use_covariates
         self.time_index = time_index

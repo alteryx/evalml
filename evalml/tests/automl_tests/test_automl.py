@@ -4716,6 +4716,34 @@ def test_cv_ranking_scores_time_series(
     assert cv_vals[0] == validation_vals[0]
 
 
+def test_cv_split_multiseries_order(multiseries_ts_data_stacked, AutoMLTestEnv):
+    X, _ = multiseries_ts_data_stacked
+    # Can't use range() to generate y data for VARMAX, as the y columns will be linearly dependent
+    y = pd.Series(
+        (random.randint(0, 100) for _ in range(len(X))),
+        name="target",
+    )
+    # Dates ordered by series means if we do a time series split, we'll have separate series in train and test
+    X = X.sort_values(["series_id"])
+    y = y[X.index].reset_index(drop=True)
+    X = X.reset_index(drop=True)
+    problem_configuration = {
+        "time_index": "date",
+        "gap": 0,
+        "max_delay": 0,
+        "forecast_horizon": 6,
+        "series_id": "series_id",
+    }
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="time series regression",
+        problem_configuration=problem_configuration,
+        n_jobs=1,
+    )
+    automl.search()
+
+
 @pytest.mark.parametrize("algorithm,batches", [("iterative", 2), ("default", 3)])
 @pytest.mark.parametrize(
     "parameter,expected",
