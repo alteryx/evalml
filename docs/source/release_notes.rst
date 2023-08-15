@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed Data Checks errors
     * Changes
     * Documentation Changes
     * Testing Changes
