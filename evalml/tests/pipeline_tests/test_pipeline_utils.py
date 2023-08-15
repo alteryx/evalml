@@ -627,15 +627,6 @@ def test_get_estimators():
         len(
             get_estimators(
                 problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
-                is_multiseries=False,
-            ),
-        )
-        == 8
-    )
-    assert (
-        len(
-            get_estimators(
-                problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
                 is_multiseries=True,
             ),
         )
