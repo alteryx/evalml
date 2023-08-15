@@ -1979,10 +1979,7 @@ def test_components_support_nullable_types(
         )
         X.ww["bool col"] = bool_col
         if nullable_y_ltype == "BooleanNullable":
-            if component_class.is_multiseries:
-                y = pd.DataFrame({"target_a": bool_col, "target_b": ~bool_col})
-            else:
-                y = bool_col
+            y = bool_col
     else:
         y = nullable_type_target(ltype=nullable_y_ltype, has_nans=False)
         X = nullable_type_test_data(has_nans=False)

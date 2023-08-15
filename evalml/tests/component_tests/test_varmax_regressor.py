@@ -272,6 +272,18 @@ def test_varmax_regressor_respects_use_covariates(
     assert "X" not in mock_predict.call_args.kwargs
 
 
+@patch("sktime.forecasting.varmax.VARMAX.fit")
+def test_varmax_regressor_X_datetime_only(mock_fit, multiseries_ts_data_unstacked):
+    X, y = multiseries_ts_data_unstacked
+    X.ww.init()
+    X = X.ww.select(include=["Datetime"])
+
+    clf = VARMAXRegressor(use_covariates=True)
+    clf.fit(X, y)
+
+    assert "X" not in mock_fit.call_args.kwargs
+
+
 def test_varmax_regressor_can_forecast_arbitrary_dates_no_covariates(
     ts_multiseries_data,
 ):
