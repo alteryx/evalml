@@ -24,6 +24,7 @@ def correct_problem_types():
         ProblemTypes.TIME_SERIES_REGRESSION,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     ]
     yield correct_problem_types
 
@@ -36,6 +37,7 @@ def test_handle_string(correct_problem_types):
         ProblemTypes.TIME_SERIES_REGRESSION,
         "time series binary",
         "time series multiclass",
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     ]
     for problem_type in zip(problem_types, correct_problem_types):
         assert handle_problem_types(problem_type[0]) == problem_type[1]
@@ -154,6 +156,7 @@ def test_all_problem_types():
         ProblemTypes.TIME_SERIES_REGRESSION,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     ]
     assert ProblemTypes.all_problem_types == expected
 
