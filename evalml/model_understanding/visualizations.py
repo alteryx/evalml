@@ -379,7 +379,7 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, X_train, y_train, da
                 "dates": dates.reset_index(drop=True),
                 "target": y.reset_index(drop=True),
                 "prediction": prediction.reset_index(drop=True),
-                "seriesID": X["series_id"],
+                "series_id": X["series_id"],
             },
         )
     else:
@@ -438,20 +438,20 @@ def graph_prediction_vs_actual_over_time(
         dates,
     )
     if single_series is not None:
-        single_data = data[data["seriesID"] == single_series]
+        single_data = data[data["series_id"] == single_series]
         data = [
             _go.Scatter(
                 x=single_data["dates"],
                 y=single_data["target"],
                 mode="lines+markers",
-                name="Target",
+                name=f"Series {single_series}: Target",
                 line=dict(color="#1f77b4"),
             ),
             _go.Scatter(
                 x=single_data["dates"],
                 y=single_data["prediction"],
                 mode="lines+markers",
-                name="Prediction",
+                name=f"Series {single_series}: Prediction",
                 line=dict(color="#d62728"),
             ),
         ]
@@ -464,10 +464,10 @@ def graph_prediction_vs_actual_over_time(
         return _go.Figure(data=data, layout=layout)
 
     elif pipeline.series_id is not None:
-        all_series_id = data["seriesID"].unique()
+        all_series_id = data["series_id"].unique()
         temp_data = []
         for id in all_series_id:
-            single_data = data[data["seriesID"] == id]
+            single_data = data[data["series_id"] == id]
             temp_data.append(
                 _go.Scatter(
                     x=single_data["dates"],
