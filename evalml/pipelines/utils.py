@@ -1401,6 +1401,7 @@ def unstack_multiseries(
     # Perform the unstacking
     X_unstacked_cols = []
     y_unstacked_cols = []
+    new_time_index = None
     for s_id in series_id_unique:
         single_series = full_dataset[full_dataset[series_id] == s_id]
 
@@ -1417,8 +1418,11 @@ def unstack_multiseries(
                 X_unstacked_cols.append(new_column)
 
     # Concatenate all the single series to reform dataframes
-    X_unstacked = pd.concat(X_unstacked_cols, axis=1)
     y_unstacked = pd.concat(y_unstacked_cols, axis=1)
+    if len(X_unstacked_cols) == 0:
+        X_unstacked = pd.DataFrame(index=y_unstacked.index)
+    else:
+        X_unstacked = pd.concat(X_unstacked_cols, axis=1)
 
     # Reset the axes now that they've been unstacked, keep time info in X
     X_unstacked = X_unstacked.reset_index()
@@ -1477,7 +1481,7 @@ def stack_data(data, include_series_id=False, series_id_name=None, starting_inde
     return stacked_series
 
 
-def stack_X(X, series_id_name, time_index, starting_index=None):
+def stack_X(X, series_id_name, time_index, starting_index=None, series_id_values=None):
     """Restacks the unstacked features into a single DataFrame.
 
     Args:
@@ -1486,20 +1490,28 @@ def stack_X(X, series_id_name, time_index, starting_index=None):
         time_index (str): The name of the time index column.
         starting_index (int): The starting index to use for the stacked DataFrame. If None, the starting index
             will match that of the input data. Defaults to None.
+        series_id_values (set): The unique values of a series ID, used to generate the index. If None, values will
+            be generated from X column values. Defaults to None.
 
     Returns:
         pd.DataFrame: The restacked features.
     """
     original_columns = set()
-    series_ids = set()
+    series_ids = series_id_values or set()
     for col in X.columns:
         if col == time_index:
             continue
         separated_name = col.split("_")
         original_columns.add("_".join(separated_name[:-1]))
-        series_ids.add(separated_name[-1])
+        if series_id_values is None:
+            series_ids.add(separated_name[-1])
 
     restacked_X = []
+
+    if len(series_ids) == 0:
+        raise ValueError(
+            "Unable to stack X as X had no exogenous variables and `series_id_values` is None.",
+        )
 
     for i, original_col in enumerate(original_columns):
         # Only include the series id once (for the first column)
@@ -1513,10 +1525,25 @@ def stack_X(X, series_id_name, time_index, starting_index=None):
                 starting_index=starting_index,
             ),
         )
-    restacked_X = pd.concat(restacked_X, axis=1)
-
     time_index_col = X[time_index].repeat(len(series_ids)).reset_index(drop=True)
-    time_index_col.index = restacked_X.index
-    restacked_X[time_index] = time_index_col
+
+    if len(restacked_X) == 0:
+        start_index = starting_index or X.index[0]
+        stacked_index = pd.RangeIndex(
+            start=start_index,
+            stop=start_index + len(time_index_col),
+        )
+        time_index_col.index = stacked_index
+        restacked_X = pd.DataFrame(
+            {
+                time_index: time_index_col,
+                series_id_name: sorted(list(series_ids)) * len(X),
+            },
+            index=stacked_index,
+        )
+    else:
+        restacked_X = pd.concat(restacked_X, axis=1)
+        time_index_col.index = restacked_X.index
+        restacked_X[time_index] = time_index_col
 
     return restacked_X
