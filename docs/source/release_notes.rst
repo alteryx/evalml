@@ -3,9 +3,9 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Fixed Data Checks errors :pr:`4274`
     * Changes
     * Documentation Changes
+        * Removed erroneous warnings from Data Checks User Guide page :pr:`4274`
     * Testing Changes
 
 .. warning::
