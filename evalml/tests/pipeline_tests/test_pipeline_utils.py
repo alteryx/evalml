@@ -58,7 +58,7 @@ from evalml.pipelines.utils import (
     stack_X,
     unstack_multiseries,
 )
-from evalml.problem_types import ProblemTypes, is_time_series
+from evalml.problem_types import ProblemTypes, is_multiseries, is_time_series
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -87,28 +87,21 @@ from evalml.problem_types import ProblemTypes, is_time_series
         ("nullable_types", ["numerical", "int_null", "bool_null", "age_null"]),
     ],
 )
-@pytest.mark.parametrize("is_multiseries", [False, True])
 def test_make_pipeline(
     problem_type,
     input_type,
     features,
     test_description,
     column_names,
-    is_multiseries,
     get_test_data_from_configuration,
     multiseries_ts_data_stacked,
 ):
-    if is_multiseries and problem_type != ProblemTypes.TIME_SERIES_REGRESSION:
-        pytest.skip("Multiseries only supported for time series regression")
     X, y = get_test_data_from_configuration(
         input_type,
         problem_type,
         column_names=column_names,
     )
-    estimators = get_estimators(
-        problem_type=problem_type,
-        is_multiseries=is_multiseries,
-    )
+    estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
     for estimator_class in estimators:
         if problem_type in estimator_class.supported_problem_types:
@@ -120,7 +113,9 @@ def test_make_pipeline(
                         "gap": 1,
                         "max_delay": 1,
                         "forecast_horizon": 3,
-                        "series_id": "series_id" if is_multiseries else None,
+                        "series_id": "series_id"
+                        if is_multiseries(problem_type)
+                        else None,
                     },
                 }
 
@@ -131,7 +126,6 @@ def test_make_pipeline(
                 problem_type,
                 parameters,
                 features=features,
-                is_multiseries=is_multiseries,
             )
             assert isinstance(pipeline, pipeline_class)
             label_encoder = [LabelEncoder] if is_classification(problem_type) else []
@@ -175,7 +169,7 @@ def test_make_pipeline(
             )
 
             if is_time_series(problem_type):
-                if is_multiseries:
+                if is_multiseries(problem_type):
                     expected_components = dfs + [estimator_class]
                 else:
                     expected_components = (
@@ -623,11 +617,11 @@ def test_get_estimators():
     )
     assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 6
     assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 5
+    assert len(get_estimators(problem_type=ProblemTypes.TIME_SERIES_REGRESSION)) == 8
     assert (
         len(
             get_estimators(
-                problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
-                is_multiseries=True,
+                problem_type=ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
             ),
         )
         == 1

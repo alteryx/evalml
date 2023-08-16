@@ -67,6 +67,7 @@ from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
+    is_multiseries,
     is_regression,
     is_time_series,
 )
@@ -273,7 +274,6 @@ def _get_preprocessing_components(
     sampler_name=None,
     exclude_featurizers=None,
     include_decomposer=True,
-    is_multiseries=False,
 ):
     """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
@@ -287,12 +287,11 @@ def _get_preprocessing_components(
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
         include_decomposer (bool): For time series regression problems, whether or not to include a decomposer in the generated pipeline.
             Defaults to True.
-        is_multiseries (bool): Whether or not the problem is a multiseries time series problem. Defaults to False.
 
     Returns:
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
-    if is_multiseries:
+    if is_multiseries(problem_type):
         return []
 
     if is_time_series(problem_type):
@@ -354,7 +353,7 @@ def _get_preprocessing_components(
     return components
 
 
-def _get_pipeline_base_class(problem_type, is_multiseries=False):
+def _get_pipeline_base_class(problem_type):
     """Returns pipeline base class for problem_type."""
     problem_type = handle_problem_types(problem_type)
     if problem_type == ProblemTypes.BINARY:
@@ -364,13 +363,13 @@ def _get_pipeline_base_class(problem_type, is_multiseries=False):
     elif problem_type == ProblemTypes.REGRESSION:
         return RegressionPipeline
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
-        if is_multiseries:
-            return MultiseriesRegressionPipeline
         return TimeSeriesRegressionPipeline
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
         return TimeSeriesBinaryClassificationPipeline
-    else:
+    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         return TimeSeriesMulticlassClassificationPipeline
+    else:
+        return MultiseriesRegressionPipeline
 
 
 def _make_pipeline_time_series(
@@ -384,7 +383,6 @@ def _make_pipeline_time_series(
     exclude_featurizers=None,
     include_decomposer=True,
     features=False,
-    is_multiseries=False,
 ):
     """Make a pipeline for time series problems.
 
@@ -407,7 +405,6 @@ def _make_pipeline_time_series(
         include_decomposer (bool): For time series regression problems, whether or not to include a decomposer in the generated pipeline.
             Defaults to True.
         features (bool): Whether to add a DFSTransformer component to this pipeline.
-        is_multiseries (bool): Whether or not the problem is a multiseries time series problem. Defaults to False.
 
     Returns:
         PipelineBase: TimeSeriesPipeline
@@ -428,7 +425,6 @@ def _make_pipeline_time_series(
         sampler_name,
         exclude_featurizers,
         include_decomposer,
-        is_multiseries,
     )
 
     dfs_transformer = [DFSTransformer] if features else []
@@ -448,7 +444,7 @@ def _make_pipeline_time_series(
     component_graph = PipelineBase._make_component_dict_from_component_list(
         preprocessing_components,
     )
-    base_class = _get_pipeline_base_class(problem_type, is_multiseries)
+    base_class = _get_pipeline_base_class(problem_type)
     pipeline = base_class(component_graph, parameters=parameters)
     if X_known_in_advance is not None:
         # We can't specify a time series problem type because then the known-in-advance
@@ -518,7 +514,6 @@ def make_pipeline(
     features=False,
     exclude_featurizers=None,
     include_decomposer=True,
-    is_multiseries=False,
 ):
     """Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
@@ -540,7 +535,6 @@ def make_pipeline(
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
         include_decomposer (bool): For time series regression problems, whether or not to include a decomposer in the generated pipeline.
             Defaults to True.
-        is_multiseries (bool): Whether or not the problem is a multiseries time series problem. Defaults to False.
 
     Returns:
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator.
@@ -553,7 +547,7 @@ def make_pipeline(
 
     if estimator:
         problem_type = handle_problem_types(problem_type)
-        if estimator not in get_estimators(problem_type, is_multiseries=is_multiseries):
+        if estimator not in get_estimators(problem_type):
             raise ValueError(
                 f"{estimator.name} is not a valid estimator for problem type",
             )
@@ -574,7 +568,6 @@ def make_pipeline(
             exclude_featurizers,
             include_decomposer,
             features,
-            is_multiseries,
         )
     else:
         preprocessing_components = _get_preprocessing_components(
@@ -1218,7 +1211,6 @@ def make_timeseries_baseline_pipeline(
     forecast_horizon,
     time_index,
     exclude_featurizer=False,
-    is_multiseries=False,
     series_id=None,
 ):
     """Make a baseline pipeline for time series regression problems.
@@ -1230,7 +1222,6 @@ def make_timeseries_baseline_pipeline(
         time_index (str): Column name of time_index parameter.
         exclude_featurizer (bool): Whether or not to exclude the TimeSeriesFeaturizer from
             the baseline graph. Defaults to False.
-        is_multiseries (bool): Whether or not the problem is a multiseries time series problem. Defaults to False.
         series_id (str): Column name of series_id parameter. Only used for multiseries time series. Defaults to None.
 
     Returns:
@@ -1250,13 +1241,14 @@ def make_timeseries_baseline_pipeline(
             TimeSeriesBinaryClassificationPipeline,
             "Time Series Baseline Binary Pipeline",
         ),
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION: (
+            MultiseriesRegressionPipeline,
+            "Multiseries Time Series Baseline Pipeline",
+        ),
     }[problem_type]
-    if is_multiseries:
-        pipeline_class = MultiseriesRegressionPipeline
-        pipeline_name = "Multiseries Time Series Baseline Pipeline"
     baseline_estimator_name = (
         "Multiseries Time Series Baseline Regressor"
-        if is_multiseries
+        if is_multiseries(problem_type)
         else "Time Series Baseline Estimator"
     )
     component_graph = [baseline_estimator_name]
@@ -1272,7 +1264,7 @@ def make_timeseries_baseline_pipeline(
             "forecast_horizon": forecast_horizon,
         },
     }
-    if is_multiseries:
+    if is_multiseries(problem_type):
         parameters["pipeline"]["series_id"] = series_id
     if not exclude_featurizer:
         component_graph = ["Time Series Featurizer"] + component_graph

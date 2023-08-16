@@ -48,10 +48,9 @@ class VARMAXRegressor(Estimator):
         "trend": Categorical(['n', 'c', 't', 'ct']),
     }"""
     model_family = ModelFamily.VARMAX
-    is_multiseries = True
     """ModelFamily.VARMAX"""
-    supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
-    """[ProblemTypes.TIME_SERIES_REGRESSION]"""
+    supported_problem_types = [ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION]
+    """[ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION]"""
 
     def __init__(
         self,

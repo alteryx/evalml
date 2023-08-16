@@ -65,6 +65,7 @@ from evalml.problem_types import (
     handle_problem_types,
     is_binary,
     is_classification,
+    is_multiseries,
     is_time_series,
 )
 from evalml.tuners import SKOptTuner
@@ -625,10 +626,6 @@ class AutoMLSearch:
         self.problem_configuration = self._validate_problem_configuration(
             problem_configuration,
         )
-        self.is_multiseries = (
-            is_time_series(self.problem_type)
-            and self.problem_configuration.get("series_id") is not None
-        )
         self._train_best_pipeline = train_best_pipeline
         self._best_pipeline = None
         self._searched = False
@@ -657,7 +654,7 @@ class AutoMLSearch:
                 )
 
         # For multiseries problems, we need to mke sure that the data is primarily ordered by the time_index rather than the series_id
-        if self.is_multiseries:
+        if is_multiseries(self.problem_type):
             time_index = self.problem_configuration.get("time_index")
             series_id = self.problem_configuration.get("series_id")
             X_train = X_train.sort_values([time_index, series_id])
@@ -946,7 +943,6 @@ class AutoMLSearch:
                 features=features,
                 verbose=self.verbose,
                 exclude_featurizers=self.exclude_featurizers,
-                is_multiseries=self.is_multiseries,
             )
         elif automl_algorithm == "default":
             self.automl_algorithm = DefaultAlgorithm(
@@ -967,7 +963,6 @@ class AutoMLSearch:
                 verbose=self.verbose,
                 n_jobs=self.n_jobs,
                 exclude_featurizers=self.exclude_featurizers,
-                is_multiseries=self.is_multiseries,
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")
@@ -1068,6 +1063,13 @@ class AutoMLSearch:
             is_valid, msg = contains_all_ts_parameters(problem_configuration)
             if not is_valid:
                 raise ValueError(msg)
+            if (
+                is_multiseries(self.problem_type)
+                and "series_id" not in problem_configuration
+            ):
+                raise ValueError(
+                    "Must provide 'series_id' column in problem_configuration for multiseries time series problems.",
+                )
         return problem_configuration or {}
 
     def _handle_keyboard_interrupt(self):
@@ -1380,7 +1382,6 @@ class AutoMLSearch:
                 forecast_horizon,
                 time_index,
                 exclude_timeseries_featurizer,
-                self.is_multiseries,
                 series_id,
             )
         return baseline

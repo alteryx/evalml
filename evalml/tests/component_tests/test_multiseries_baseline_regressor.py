@@ -6,12 +6,15 @@ from evalml.pipelines.components import (
     MultiseriesTimeSeriesBaselineRegressor,
     TimeSeriesFeaturizer,
 )
+from evalml.problem_types import ProblemTypes
 
 
 def test_multiseries_time_series_baseline_regressor_init():
     baseline = MultiseriesTimeSeriesBaselineRegressor()
     assert baseline.model_family == ModelFamily.BASELINE
-    assert baseline.is_multiseries
+    assert baseline.supported_problem_types == [
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
+    ]
     assert baseline.start_delay == 2
 
     baseline = MultiseriesTimeSeriesBaselineRegressor(gap=2, forecast_horizon=5)

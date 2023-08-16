@@ -85,6 +85,7 @@ from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
+    is_multiseries,
     is_time_series,
 )
 from evalml.tests.automl_tests.parallel_tests.test_automl_dask import engine_strs
@@ -2284,22 +2285,28 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         )
 
 
-@pytest.mark.parametrize("is_multiseries", [True, False])
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
+    ],
+)
 def test_time_series_regression_with_parameters(
-    is_multiseries,
+    problem_type,
     ts_data,
     multiseries_ts_data_stacked,
 ):
     X, _, y = ts_data()
     X.index.name = "date"
-    if is_multiseries:
+    if is_multiseries(problem_type):
         X, y = multiseries_ts_data_stacked
     problem_configuration = {
         "time_index": "date",
         "gap": 1,
         "max_delay": 0,
         "forecast_horizon": 2,
-        "series_id": "series_id" if is_multiseries else None,
+        "series_id": "series_id" if is_multiseries(problem_type) else None,
     }
     automl = AutoMLSearch(
         X_train=X,
@@ -4016,7 +4023,7 @@ def test_automl_baseline_pipeline_predictions_and_scores(problem_type):
     [
         problem_type
         for problem_type in ProblemTypes.all_problem_types
-        if is_time_series(problem_type)
+        if is_time_series(problem_type) and not is_multiseries(problem_type)
     ],
 )
 def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_type):
@@ -4083,7 +4090,7 @@ def test_automl_multiseries_baseline_generation(multiseries_ts_data_stacked):
     automl = AutoMLSearch(
         X,
         y,
-        problem_type="time series regression",
+        problem_type="multiseries time series regression",
         problem_configuration={
             "time_index": "date",
             "gap": 0,
@@ -4224,20 +4231,17 @@ def test_automl_drop_unknown_columns(columns, AutoMLTestEnv, X_y_binary, caplog)
         ProblemTypes.TIME_SERIES_REGRESSION,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     ],
 )
-@pytest.mark.parametrize("is_multiseries", [False, True])
 def test_data_splitter_gives_pipelines_same_data(
     automl_type,
-    is_multiseries,
     AutoMLTestEnv,
     X_y_binary,
     X_y_multi,
     X_y_regression,
     multiseries_ts_data_stacked,
 ):
-    if is_multiseries and automl_type != ProblemTypes.TIME_SERIES_REGRESSION:
-        pytest.skip("Multiseries only supported for time series regression")
     problem_configuration = None
     if automl_type == ProblemTypes.BINARY:
         X, y = X_y_binary
@@ -4249,20 +4253,25 @@ def test_data_splitter_gives_pipelines_same_data(
         problem_configuration = {
             "gap": 1,
             "max_delay": 1,
-            "time_index": 0 if not is_multiseries else "date",
+            "time_index": 0,
             "forecast_horizon": 2,
-            "series_id": "series_id" if is_multiseries else None,
         }
-        if is_multiseries:
-            X, _ = multiseries_ts_data_stacked
-            # Can't use range() to generate y data for VARMAX, as the y columns will be linearly dependent
-            y = pd.Series(
-                (random.randint(0, 100) for _ in range(len(X))),
-                name="target",
-            )
-        else:
-            X, y = X_y_regression
-            X.index = pd.DatetimeIndex(pd.date_range("01-01-2022", periods=len(X)))
+        X, y = X_y_regression
+        X.index = pd.DatetimeIndex(pd.date_range("01-01-2022", periods=len(X)))
+    elif automl_type == ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION:
+        problem_configuration = {
+            "gap": 1,
+            "max_delay": 1,
+            "time_index": "date",
+            "forecast_horizon": 2,
+            "series_id": "series_id",
+        }
+        X, _ = multiseries_ts_data_stacked
+        # Can't use range() to generate y data for VARMAX, as the y columns will be linearly dependent
+        y = pd.Series(
+            (random.randint(0, 100) for _ in range(len(X))),
+            name="target",
+        )
     else:
         problem_configuration = {
             "gap": 1,
@@ -4281,7 +4290,7 @@ def test_data_splitter_gives_pipelines_same_data(
         problem_configuration=problem_configuration,
     )
     n_splits = automl.data_splitter.n_splits
-    env = AutoMLTestEnv(automl_type, is_multiseries=is_multiseries)
+    env = AutoMLTestEnv(automl_type)
     with env.test_context(score_return_value={automl.objective.name: 1.0}):
         automl.search()
     n_pipelines_evaluated = len(automl.results["pipeline_results"])
@@ -5183,15 +5192,17 @@ def test_exclude_featurizers(
     problem_type,
     input_type,
     get_test_data_from_configuration,
+    multiseries_ts_data_stacked,
     AutoMLTestEnv,
 ):
     parameters = {}
     if is_time_series(problem_type):
         parameters = {
-            "time_index": "dates",
+            "time_index": "date" if is_multiseries(problem_type) else "dates",
             "gap": 1,
             "max_delay": 1,
             "forecast_horizon": 1,
+            "series_id": "series_id" if is_multiseries(problem_type) else None,
         }
 
     X, y = get_test_data_from_configuration(
@@ -5199,6 +5210,8 @@ def test_exclude_featurizers(
         problem_type,
         column_names=["dates", "text", "email", "url"],
     )
+    if is_multiseries(problem_type):
+        X, y = multiseries_ts_data_stacked
 
     automl = AutoMLSearch(
         X_train=X,

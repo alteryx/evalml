@@ -25,12 +25,11 @@ class MultiseriesTimeSeriesBaselineRegressor(Estimator):
     """{}"""
     model_family = ModelFamily.BASELINE
     """ModelFamily.BASELINE"""
-    is_multiseries = True
     supported_problem_types = [
-        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     ]
     """[
-        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     ]"""
 
     def __init__(self, gap=1, forecast_horizon=1, random_seed=0, **kwargs):
