@@ -4,7 +4,6 @@ from __future__ import annotations
 import logging
 from typing import Union
 
-import matplotlib.pyplot as plt
 import pandas as pd
 from pandas import RangeIndex
 from statsmodels.tsa.arima.model import ARIMA
@@ -569,67 +568,3 @@ class STLDecomposer(Decomposer):
             if len(y.columns) <= 1:
                 return prediction_interval_result
         return series_results
-
-    # Overload the plot_decomposition fucntion to be able to plot multiple decompositions for multiseries
-    def plot_decomposition(
-        self,
-        X: pd.DataFrame,
-        y: pd.DataFrame,
-        show: bool = False,
-    ):
-        """Plots the decomposition of the target signal.
-
-        Args:
-            X (pd.DataFrame): Input data with time series data in index.
-            y (pd.Series or pd.DataFrame): Target variable data provided as a Series for univariate problems or
-                a DataFrame for multivariate problems.
-            show (bool): Whether to display the plot or not. Defaults to False.
-
-        Returns:
-            (Single series) matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]: The figure and axes that have the decompositions
-                plotted on them
-            (Multi series) dict[matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]]: A dictionary that maps the series id to
-                the figure and axes that have the decompositions plotted on them
-
-
-        """
-        if isinstance(y, pd.Series):
-            y = y.to_frame()
-
-        plot_info = {}
-        if self.frequency and self.time_index and len(y.columns) > 1:
-            X.index = pd.DatetimeIndex(X[self.time_index], freq=self.frequency)
-        decomposition_results = self.get_trend_dataframe(X, y)
-
-        # Iterate through each series id
-        for id in y.columns:
-            fig, axs = plt.subplots(4)
-            fig.set_size_inches(18.5, 14.5)
-
-            for ax in axs:
-                ax.cla()
-
-            if len(y.columns) > 1:
-                results = decomposition_results[id]
-            else:
-                results = decomposition_results
-            axs[0].plot(results[0]["signal"], "r")
-            axs[0].set_title("signal")
-            axs[1].plot(results[0]["trend"], "b")
-            axs[1].set_title("trend")
-            axs[2].plot(results[0]["seasonality"], "g")
-            axs[2].set_title("seasonality")
-            axs[3].plot(results[0]["residual"], "y")
-            axs[3].set_title("residual")
-
-            # If multiseries, return a dictionary of tuples
-            if len(y.columns) > 1:
-                fig.suptitle("Decomposition for Series {}".format(id))
-                plot_info[id] = (fig, axs)
-            else:
-                plot_info = (fig, axs)
-
-            if show:  # pragma: no cover
-                plt.show()
-
-        return plot_info
