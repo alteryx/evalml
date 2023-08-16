@@ -2291,9 +2291,9 @@ def test_time_series_regression_with_parameters(
     multiseries_ts_data_stacked,
 ):
     X, _, y = ts_data()
+    X.index.name = "date"
     if is_multiseries:
         X, y = multiseries_ts_data_stacked
-    X.index.name = "date"
     problem_configuration = {
         "time_index": "date",
         "gap": 1,
