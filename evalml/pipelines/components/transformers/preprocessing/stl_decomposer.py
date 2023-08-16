@@ -211,12 +211,12 @@ class STLDecomposer(Decomposer):
             self.seasonals[id] = res.seasonal
             self.periods[id] = stl.period
             dist = len(series_y) % stl.period
-            self.seasonalities[id] = (
+            seasonality = (
                 res.seasonal[-(dist + stl.period) : -dist]
                 if dist > 0
                 else res.seasonal[-stl.period :]
             )
-
+            self.seasonalities[id] = seasonality
             self.trends[id] = res.trend
             self.residuals[id] = res.resid
 
@@ -256,10 +256,16 @@ class STLDecomposer(Decomposer):
         for id in y.columns:
             series_y = y[id]
 
-            seasonality = self.seasonalities[id]
-            trend = self.trends[id]
-            residual = self.residuals[id]
-            period = self.periods[id]
+            if len(y.columns) > 1:
+                seasonality = self.seasonalities[id]
+                trend = self.trends[id]
+                residual = self.residuals[id]
+                period = self.periods[id]
+            else:
+                seasonality = list(self.seasonalities.values())[0]
+                trend = list(self.trends.values())[0]
+                residual = list(self.residuals.values())[0]
+                period = list(self.periods.values())[0]
 
             original_index = series_y.index
             X, series_y = self._check_target(X, series_y)
@@ -348,9 +354,15 @@ class STLDecomposer(Decomposer):
             series_y = y_t[id]
 
             index = self._choose_proper_index(series_y)
-            old_trend = self.trends[id]
-            old_seasonal = self.seasonals[id]
-            period = self.periods[id]
+
+            if len(y_t.columns) > 1:
+                old_trend = self.trends[id]
+                old_seasonal = self.seasonals[id]
+                period = self.periods[id]
+            else:
+                old_trend = list(self.trends.values())[0]
+                old_seasonal = list(self.seasonals.values())[0]
+                period = list(self.periods.values())[0]
             # For partially and wholly in-sample data, retrieve stored results.
             if index[0] <= series_y.index[0] <= index[-1]:
                 left_index = series_y.index[0]
@@ -480,10 +492,16 @@ class STLDecomposer(Decomposer):
                     "Provided DatetimeIndex of X should have an inferred frequency.",
                 )
 
-            seasonal = self.seasonals[id]
-            trend = self.trends[id]
-            residual = self.residuals[id]
-            period = self.periods[id]
+            if len(y.columns) > 1:
+                seasonal = self.seasonals[id]
+                trend = self.trends[id]
+                residual = self.residuals[id]
+                period = self.periods[id]
+            else:
+                seasonal = list(self.seasonals.values())[0]
+                trend = list(self.trends.values())[0]
+                residual = list(self.residuals.values())[0]
+                period = list(self.periods.values())[0]
 
             series_y = y[id]
             if isinstance(series_y, pd.Series):
@@ -532,9 +550,14 @@ class STLDecomposer(Decomposer):
             self._check_oos_past(y_series)
             alphas = [1 - val for val in coverage]
 
-            trend = self.trends[id]
-            seasonality = self.seasonalities[id]
-            period = self.periods[id]
+            if len(y.columns) > 1:
+                trend = self.trends[id]
+                seasonality = self.seasonalities[id]
+                period = self.periods[id]
+            else:
+                trend = list(self.trends.values())[0]
+                seasonality = list(self.seasonalities.values())[0]
+                period = list(self.periods.values())[0]
             if not self.forecast_summary or len(y_series) != len(
                 self.forecast_summary.predicted_mean,
             ):
