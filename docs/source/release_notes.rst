@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Extended STLDecomposer to Support Multiseries :pr:`4253`
     * Fixes
     * Changes
     * Documentation Changes
@@ -20,7 +21,6 @@ Release Notes
         * Added multiseries regression pipeline class :pr:`4256`
         * Added multiseries VARMAX regressor :pr:`4238`
         * Added support for prediction intervals for VARMAX regressor :pr:`4267`
-        * Extend STLDecomposer to Support Multiseries :pr:`4253`
     * Fixes
         * Added support for pandas 2 :pr:`4216`
         * Fixed bug where time series pipelines would fail due to MASE needing `y_train` when scoring :pr:`4258`

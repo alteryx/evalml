@@ -284,7 +284,10 @@ def test_decomposer_prefers_users_time_index(
             X_t, y_t = dec.fit_transform(X, y)
     else:
         X_t, y_t = dec.fit_transform(X, y)
-        assert all(dec.trend.index.values == expected_values)
+        if isinstance(dec, STLDecomposer):
+            assert all(dec.trends[0].index.values == expected_values)
+        elif isinstance(dec, PolynomialDecomposer):
+            assert all(dec.trend.index.values == expected_values)
 
 
 @pytest.mark.parametrize(

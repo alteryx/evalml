@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Union
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -77,7 +78,7 @@ class STLDecomposer(Decomposer):
             **kwargs,
         )
 
-    def _project_trend(self, y):
+    def _project_trend(self, y, trend, period):
         """Function to project the in-sample trend into the future."""
         self._check_oos_past(y)
 
@@ -89,7 +90,7 @@ class STLDecomposer(Decomposer):
             units_forward = (
                 len(
                     pd.date_range(
-                        start=self.trend.index[-1],
+                        start=trend.index[-1],
                         end=y.index[-1],
                         freq=self.frequency,
                     ),
@@ -101,18 +102,18 @@ class STLDecomposer(Decomposer):
 
         # Model the trend and project it forward
         stlf = STLForecast(
-            self.trend,
+            trend,
             ARIMA,
             model_kwargs=dict(order=(1, 1, 0), trend="t"),
-            period=self.period,
+            period=period,
         )
         stlf = stlf.fit()
         forecast = stlf.forecast(units_forward)
 
         # Store forecast summary for use in calculating trend prediction intervals.
         self.forecast_summary = stlf.get_prediction(
-            len(self.trend),
-            len(self.trend) + units_forward - 1,
+            len(trend),
+            len(trend) + units_forward - 1,
         )
 
         # Handle out-of-sample forecasts.  The forecast will have additional data
@@ -129,19 +130,23 @@ class STLDecomposer(Decomposer):
             fore.index = y.index
             return fore
 
-    def _project_trend_and_seasonality(self, y):
+    def _project_trend_and_seasonality(self, y, trend, seasonality, periodicity):
         """Function to project both trend and seasonality forward into the future."""
-        projected_trend = self._project_trend(y)
+        projected_trend = self._project_trend(y, trend, periodicity)
 
         projected_seasonality = self._project_seasonal(
             y,
-            self.seasonality,
-            self.period,
+            seasonality,
+            periodicity,
             self.frequency,
         )
         return projected_trend, projected_seasonality
 
-    def fit(self, X: pd.DataFrame, y: pd.DataFrame = None) -> STLDecomposer:
+    def fit(
+        self,
+        X: pd.DataFrame,
+        y: Union[pd.Series, pd.DataFrame] = None,
+    ) -> STLDecomposer:
         """Fits the STLDecomposer and determine the seasonal signal.
 
         Instantiates a statsmodels STL decompose object with the component's stored
@@ -176,57 +181,53 @@ class STLDecomposer(Decomposer):
         if isinstance(y, pd.Series):
             y = y.to_frame()
 
-        # If there is a series_id in stacked data or more than one column in unstacked data, set multiseries to true
-        is_multiseries = False
-        if self.series_id or len(y.columns) > 1:
-            is_multiseries = True
+        self.original_index = y.index if y is not None else None
 
+        X, y = self._check_target(X, y)
+
+        self._map_dt_to_integer(self.original_index, y.index)
+
+        # Save the frequency of the fitted series for checking against transform data.
+        self.frequency = y.index.freqstr or pd.infer_freq(y.index)
         # Iterate through each id group
-        self.decompositions = {}
+        self.seasonals = {}
+        self.periods = {}
+        self.seasonalities = {}
+        self.trends = {}
+        self.residuals = {}
         for id in y.columns:
             series_y = y[id]
-            self.original_index = series_y.index if series_y is not None else None
 
-            X, series_y = self._check_target(X, series_y)
-
-            self._map_dt_to_integer(self.original_index, series_y.index)
-
-            # Save the frequency of the fitted series for checking against transform data.
-            self.frequency = series_y.index.freqstr or pd.infer_freq(series_y.index)
             # Determine the period of the seasonal component
-            if is_multiseries or self.period is None:
+            if id not in self.periods or self.period is None:
                 self.set_period(X, series_y)
+                self.periods[id] = self.period
 
-            stl = STL(series_y, seasonal=self.seasonal_smoother, period=self.period)
+            stl = STL(
+                series_y,
+                seasonal=self.seasonal_smoother,
+                period=self.periods[id],
+            )
             res = stl.fit()
-            self.seasonal = res.seasonal
-            self.period = stl.period
-            dist = len(series_y) % self.period
-            self.seasonality = (
-                self.seasonal[-(dist + self.period) : -dist]
+            self.seasonals[id] = res.seasonal
+            self.periods[id] = stl.period
+            dist = len(series_y) % stl.period
+            self.seasonalities[id] = (
+                res.seasonal[-(dist + stl.period) : -dist]
                 if dist > 0
-                else self.seasonal[-self.period :]
+                else res.seasonal[-stl.period :]
             )
 
-            self.trend = res.trend
-            self.residual = res.resid
-
-            if is_multiseries:
-                self.decompositions[id] = {
-                    "seasonal": self.seasonal,
-                    "seasonality": self.seasonality,
-                    "trend": self.trend,
-                    "residual": self.residual,
-                    "period": self.period,
-                }
+            self.trends[id] = res.trend
+            self.residuals[id] = res.resid
 
         return self
 
     def transform(
         self,
         X: pd.DataFrame,
-        y: pd.DataFrame = None,
-    ):
+        y: Union[pd.Series, pd.DataFrame] = None,
+    ) -> Union[tuple[pd.DataFrame, pd.Series], tuple[pd.DataFrame, pd.DataFrame]]:
         """Transforms the target data by removing the STL trend and seasonality.
 
         Uses an ARIMA model to project forward the addititve trend and removes it. Then, utilizes the first period's
@@ -255,12 +256,11 @@ class STLDecomposer(Decomposer):
         # Iterate through each id group
         for id in y.columns:
             series_y = y[id]
-            if len(y.columns) > 1:
-                self.seasonality = self.decompositions[id]["seasonality"]
-                self.trend = self.decompositions[id]["trend"]
-                self.seasonal = self.decompositions[id]["seasonal"]
-                self.residual = self.decompositions[id]["residual"]
-                self.period = self.decompositions[id]["period"]
+
+            seasonality = self.seasonalities[id]
+            trend = self.trends[id]
+            residual = self.residuals[id]
+            period = self.periods[id]
 
             original_index = series_y.index
             X, series_y = self._check_target(X, series_y)
@@ -270,15 +270,15 @@ class STLDecomposer(Decomposer):
             y_out_of_sample = pd.Series([])
 
             # For partially and wholly in-sample data, retrieve stored results.
-            if self.trend.index[0] <= series_y.index[0] <= self.trend.index[-1]:
-                y_in_sample = self.residual[series_y.index[0] : series_y.index[-1]]
+            if trend.index[0] <= series_y.index[0] <= trend.index[-1]:
+                y_in_sample = residual[series_y.index[0] : series_y.index[-1]]
 
             # For out of sample data....
-            if series_y.index[-1] > self.trend.index[-1]:
+            if series_y.index[-1] > trend.index[-1]:
                 try:
                     # ...that is partially out of sample and partially in sample.
                     truncated_y = series_y[
-                        series_y.index.get_loc(self.trend.index[-1]) + 1 :
+                        series_y.index.get_loc(trend.index[-1]) + 1 :
                     ]
                 except KeyError:
                     # ...that is entirely out of sample.
@@ -287,7 +287,12 @@ class STLDecomposer(Decomposer):
                 (
                     projected_trend,
                     projected_seasonality,
-                ) = self._project_trend_and_seasonality(truncated_y)
+                ) = self._project_trend_and_seasonality(
+                    truncated_y,
+                    trend,
+                    seasonality,
+                    period,
+                )
 
                 y_out_of_sample = infer_feature_types(
                     pd.Series(
@@ -309,7 +314,10 @@ class STLDecomposer(Decomposer):
         detrending_df = pd.DataFrame(detrending_list).T
         return X, detrending_df
 
-    def inverse_transform(self, y_t: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    def inverse_transform(
+        self,
+        y_t: Union[pd.Series, pd.DataFrame],
+    ) -> Union[pd.Series, pd.DataFrame]:
         """Adds back fitted trend and seasonality to target variable.
 
         The STL trend is projected to cover the entire requested target range, then added back into the signal. Then,
@@ -319,8 +327,7 @@ class STLDecomposer(Decomposer):
             y_t (pd.Series or pd.DataFrame): Target variable.
 
         Returns:
-            tuple of pd.DataFrame, pd.DataFrame: The first element are the input features returned without modification.
-                The second element is the target variable y with the trend and seasonality added back in.
+            pd.Series or pd.DataFrame: The target variable y with the trend and seasonality added back in.
 
         Raises:
             ValueError: If y is None.
@@ -342,7 +349,9 @@ class STLDecomposer(Decomposer):
             series_y = y_t[id]
 
             index = self._choose_proper_index(series_y)
-
+            old_trend = self.trends[id]
+            old_seasonal = self.seasonals[id]
+            period = self.periods[id]
             # For partially and wholly in-sample data, retrieve stored results.
             if index[0] <= series_y.index[0] <= index[-1]:
                 left_index = series_y.index[0]
@@ -353,16 +362,16 @@ class STLDecomposer(Decomposer):
                     else series_y.index[-1] + 1 * series_y.index.freq
                 )
                 trend = (
-                    self.trend.reset_index(drop=True)[left_index:right_index]
+                    old_trend.reset_index(drop=True)[left_index:right_index]
                     if isinstance(series_y.index, pd.RangeIndex)
                     or series_y.index.is_numeric()
-                    else self.trend[left_index:right_index]
+                    else old_trend[left_index:right_index]
                 )
                 seasonal = (
-                    self.seasonal.reset_index(drop=True)[left_index:right_index]
+                    old_seasonal.reset_index(drop=True)[left_index:right_index]
                     if isinstance(series_y.index, pd.RangeIndex)
                     or series_y.index.is_numeric()
-                    else self.seasonal[left_index:right_index]
+                    else old_seasonal[left_index:right_index]
                 )
                 y_in_sample = series_y + trend + seasonal
                 y_in_sample = y_in_sample.dropna()
@@ -378,7 +387,12 @@ class STLDecomposer(Decomposer):
                 (
                     projected_trend,
                     projected_seasonality,
-                ) = self._project_trend_and_seasonality(truncated_y_t)
+                ) = self._project_trend_and_seasonality(
+                    truncated_y_t,
+                    old_trend,
+                    old_seasonal,
+                    period,
+                )
 
                 y_out_of_sample = infer_feature_types(
                     pd.Series(
@@ -406,9 +420,10 @@ class STLDecomposer(Decomposer):
                 a DataFrame for multivariate problems.
 
         Returns:
-            list of pd.DataFrame: Each DataFrame contains the columns "signal", "trend", "seasonality" and "residual,"
+            (Single series) list of pd.DataFrame: Each DataFrame contains the columns "signal", "trend", "seasonality" and "residual,"
                 with the latter 3 column values being the decomposed elements of the target data.  The "signal" column
                 is simply the input target signal but reindexed with a datetime index to match the input features.
+            (Multi series) dictionary of lists: Series id maps to a list of pd.DataFrames that each contain the columns "signal", "trend", "seasonality" and "residual"
 
         Raises:
             TypeError: If X does not have time-series data in the index.
@@ -426,24 +441,24 @@ class STLDecomposer(Decomposer):
 
         self._check_oos_past(y)
 
-        def _decompose_target(X, y, fh):
+        def _decompose_target(X, y, fh, trend, seasonal, residual, period, id):
             """Function to generate a single DataFrame with trend, seasonality and residual components."""
-            if len(y.index) == len(self.trend.index) and all(
-                y.index == self.trend.index,
+            if len(y.index) == len(trend.index) and all(
+                y.index == trend.index,
             ):
-                trend = self.trend
-                seasonal = self.seasonal
-                residual = self.residual
+                trend = trend
+                seasonal = seasonal
+                residual = residual
             else:
                 # TODO: Do a better job cloning.
                 decomposer = STLDecomposer(
                     seasonal_smoother=self.seasonal_smoother,
-                    period=self.period,
+                    period=period,
                 )
                 decomposer.fit(X, y)
-                trend = decomposer.trend
-                seasonal = decomposer.seasonal
-                residual = decomposer.residual
+                trend = decomposer.trends[id]
+                seasonal = decomposer.seasonals[id]
+                residual = decomposer.residuals[id]
             return pd.DataFrame(
                 {
                     "signal": y,
@@ -466,16 +481,25 @@ class STLDecomposer(Decomposer):
                     "Provided DatetimeIndex of X should have an inferred frequency.",
                 )
 
-            if len(y.columns) > 1:
-                self.seasonality = self.decompositions[id]["seasonality"]
-                self.seasonal = self.decompositions[id]["seasonal"]
-                self.trend = self.decompositions[id]["trend"]
-                self.residual = self.decompositions[id]["residual"]
-                self.period = self.decompositions[id]["period"]
+            seasonal = self.seasonals[id]
+            trend = self.trends[id]
+            residual = self.residuals[id]
+            period = self.periods[id]
 
             series_y = y[id]
             if isinstance(series_y, pd.Series):
-                result_dfs.append(_decompose_target(X, series_y, None))
+                result_dfs.append(
+                    _decompose_target(
+                        X,
+                        series_y,
+                        None,
+                        trend,
+                        seasonal,
+                        residual,
+                        period,
+                        id,
+                    ),
+                )
 
             series_results[id] = result_dfs
 
@@ -493,25 +517,34 @@ class STLDecomposer(Decomposer):
                 prediction interval should be calculated for.
 
         Returns:
-            dict of pd.Series: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+            (Single series) dict of pd.Series: Prediction intervals, keys are in the format {coverage}_lower or {coverage}_upper.
+            (Multi series) dict of dict of pd.Series: Each series id maps to a dictionary of prediction intervals
         """
         if isinstance(y, pd.Series):
             y = y.to_frame()
+
+        if coverage is None:
+            coverage = [0.95]
 
         series_results = {}
         for id in y.columns:
             y_series = y[id]
 
-            if coverage is None:
-                coverage = [0.95]
-
             self._check_oos_past(y_series)
             alphas = [1 - val for val in coverage]
 
+            trend = self.trends[id]
+            seasonality = self.seasonalities[id]
+            period = self.periods[id]
             if not self.forecast_summary or len(y_series) != len(
                 self.forecast_summary.predicted_mean,
             ):
-                self._project_trend_and_seasonality(y_series)
+                self._project_trend_and_seasonality(
+                    y_series,
+                    trend,
+                    seasonality,
+                    period,
+                )
 
             prediction_interval_result = {}
             for i, alpha in enumerate(alphas):

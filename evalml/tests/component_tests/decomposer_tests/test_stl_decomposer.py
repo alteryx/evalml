@@ -160,7 +160,7 @@ def test_stl_fit_transform_in_sample(
         # Check the trend to make sure STL worked properly
         pd.testing.assert_series_equal(
             pd.Series(expected_trend),
-            pd.Series(stl.trend),
+            pd.Series(stl.trends[0]),
             check_exact=False,
             check_index=False,
             check_names=False,
@@ -189,7 +189,7 @@ def test_stl_fit_transform_in_sample(
             # Check the trend to make sure STL worked properly
             pd.testing.assert_series_equal(
                 pd.Series(expected_trend),
-                pd.Series(stl.decompositions[id]["trend"]),
+                pd.Series(stl.trends[id]),
                 check_exact=False,
                 check_index=False,
                 check_names=False,
