@@ -373,16 +373,34 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, X_train, y_train, da
     dates = infer_feature_types(dates)
     prediction = pipeline.predict_in_sample(X, y, X_train=X_train, y_train=y_train)
 
-    return pd.DataFrame(
-        {
-            "dates": dates.reset_index(drop=True),
-            "target": y.reset_index(drop=True),
-            "prediction": prediction.reset_index(drop=True),
-        },
-    )
+    if pipeline.series_id is not None:
+        return pd.DataFrame(
+            {
+                "dates": dates.reset_index(drop=True),
+                "target": y.reset_index(drop=True),
+                "prediction": prediction.reset_index(drop=True),
+                "seriesID": X["series_id"],
+            },
+        )
+    else:
+        return pd.DataFrame(
+            {
+                "dates": dates.reset_index(drop=True),
+                "target": y.reset_index(drop=True),
+                "prediction": prediction.reset_index(drop=True),
+            },
+        )
 
 
-def graph_prediction_vs_actual_over_time(pipeline, X, y, X_train, y_train, dates):
+def graph_prediction_vs_actual_over_time(
+    pipeline,
+    X,
+    y,
+    X_train,
+    y_train,
+    dates,
+    single_series=None,
+):
     """Plot the target values and predictions against time on the x-axis.
 
     Args:
@@ -392,6 +410,7 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, X_train, y_train, dates
         X_train (pd.DataFrame): Data the pipeline was trained on.
         y_train (pd.Series): Target values for training data.
         dates (pd.Series): Dates corresponding to target values and predictions.
+        single_series (str): The single series that will be plotted from multiseries. Defaults to None
 
     Returns:
         plotly.Figure: Showing the prediction vs actual over time.
@@ -418,6 +437,62 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, X_train, y_train, dates
         y_train,
         dates,
     )
+    if single_series is not None:
+        single_data = data[data["seriesID"] == single_series]
+        data = [
+            _go.Scatter(
+                x=single_data["dates"],
+                y=single_data["target"],
+                mode="lines+markers",
+                name="Target",
+                line=dict(color="#1f77b4"),
+            ),
+            _go.Scatter(
+                x=single_data["dates"],
+                y=single_data["prediction"],
+                mode="lines+markers",
+                name="Prediction",
+                line=dict(color="#d62728"),
+            ),
+        ]
+        # Let plotly pick the best date format.
+        layout = _go.Layout(
+            title={"text": "Prediction vs Target over time"},
+            xaxis={"title": "Time"},
+            yaxis={"title": "Target Values and Predictions"},
+        )
+        return _go.Figure(data=data, layout=layout)
+
+    elif pipeline.series_id is not None:
+        all_series_id = data["seriesID"].unique()
+        temp_data = []
+        for id in all_series_id:
+            single_data = data[data["seriesID"] == id]
+            temp_data.append(
+                _go.Scatter(
+                    x=single_data["dates"],
+                    y=single_data["target"],
+                    mode="lines+markers",
+                    name=f"Series {id}: Target",
+                    # line=dict(color="#1f77b4"),
+                ),
+            )
+            temp_data.append(
+                _go.Scatter(
+                    x=single_data["dates"],
+                    y=single_data["prediction"],
+                    mode="lines+markers",
+                    name=f"Series {id}: Prediction",
+                    # line=dict(color="#d62728"),
+                ),
+            )
+        # Let plotly pick the best date format.
+        layout = _go.Layout(
+            title={"text": "Prediction vs Target over time"},
+            xaxis={"title": "Time"},
+            yaxis={"title": "Target Values and Predictions"},
+        )
+        return _go.Figure(data=temp_data, layout=layout)
 
     data = [
         _go.Scatter(
