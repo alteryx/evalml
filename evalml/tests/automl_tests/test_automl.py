@@ -2322,6 +2322,28 @@ def test_time_series_regression_with_parameters(
     )
 
 
+def test_multiseries_time_series_parameters_missing_series_id(
+    multiseries_ts_data_stacked,
+):
+    X, y = multiseries_ts_data_stacked
+    problem_configuration = {
+        "time_index": "date",
+        "gap": 1,
+        "max_delay": 0,
+        "forecast_horizon": 2,
+    }
+    with pytest.raises(
+        ValueError,
+        match="Must provide 'series_id' column in problem_configuration",
+    ):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="multiseries time series regression",
+            problem_configuration=problem_configuration,
+        )
+
+
 @pytest.mark.parametrize("graph_type", ["dict", "cg"])
 def test_automl_accepts_component_graphs(graph_type, X_y_binary):
     X, y = X_y_binary
