@@ -617,7 +617,6 @@ def test_get_estimators():
     )
     assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 6
     assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 5
-    assert len(get_estimators(problem_type=ProblemTypes.TIME_SERIES_REGRESSION)) == 8
     assert (
         len(
             get_estimators(

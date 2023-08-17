@@ -164,7 +164,12 @@ def test_all_problem_types():
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_type_checks(problem_type):
     assert is_regression(problem_type) == (
-        problem_type in [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
+        problem_type
+        in [
+            ProblemTypes.REGRESSION,
+            ProblemTypes.TIME_SERIES_REGRESSION,
+            ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
+        ]
     )
     assert is_binary(problem_type) == (
         problem_type in [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
@@ -187,5 +192,6 @@ def test_type_checks(problem_type):
             ProblemTypes.TIME_SERIES_BINARY,
             ProblemTypes.TIME_SERIES_MULTICLASS,
             ProblemTypes.TIME_SERIES_REGRESSION,
+            ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
         ]
     )

@@ -20,7 +20,7 @@ def test_model_family():
 
 def test_problem_types():
     assert set(VARMAXRegressor.supported_problem_types) == {
-        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     }
 
 
