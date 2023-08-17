@@ -87,6 +87,7 @@ def is_regression(problem_type):
     return handle_problem_types(problem_type) in [
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     ]
 
 
@@ -165,4 +166,20 @@ def is_time_series(problem_type):
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
         ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     ]
+
+
+def is_multiseries(problem_type):
+    """Determines if the provided problem_type is a multiseries time series problem type.
+
+    Args:
+        problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+
+    Returns:
+        bool: Whether or not the provided problem_type is a multiseries time series problem type.
+    """
+    return (
+        handle_problem_types(problem_type)
+        == ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION
+    )

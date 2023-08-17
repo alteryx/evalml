@@ -1227,10 +1227,12 @@ def test_all_estimators_check_fit(
             ProblemTypes.TIME_SERIES_REGRESSION
             in component_class.supported_problem_types
         ):
-            if component_class.is_multiseries:
-                X, _, y = ts_multiseries_data()
-            else:
-                X, _, y = ts_data()
+            X, _, y = ts_data()
+        elif (
+            ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION
+            in component_class.supported_problem_types
+        ):
+            X, _, y = ts_multiseries_data()
         else:
             X, y = X_y_binary
 
@@ -1366,9 +1368,13 @@ def test_serialization(
         PolynomialDecomposer,
         STLDecomposer,
     ]
+    requires_multiseries_data = [
+        MultiseriesTimeSeriesBaselineRegressor,
+        VARMAXRegressor,
+    ]
 
     component = helper_functions.safe_init_component_with_njobs_1(component_class)
-    if component.is_multiseries:
+    if component_class in requires_multiseries_data:
         component = component_class(time_index="date")
         X, _, y = ts_multiseries_data()
     elif component_class in requires_time_index:
@@ -1740,16 +1746,16 @@ def test_estimator_fit_respects_custom_indices(
     if ProblemTypes.REGRESSION in supported_problem_types:
         X, y = X_y_regression
     elif ProblemTypes.TIME_SERIES_REGRESSION in supported_problem_types:
-        if estimator_class.is_multiseries:
-            X, _, y = ts_multiseries_data(
-                train_features_index_dt=False,
-                train_target_index_dt=False,
-            )
-        else:
-            X, _, y = ts_data(
-                train_features_index_dt=False,
-                train_target_index_dt=False,
-            )
+        X, _, y = ts_data(
+            train_features_index_dt=False,
+            train_target_index_dt=False,
+        )
+        ts_problem = True
+    elif ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION in supported_problem_types:
+        X, _, y = ts_multiseries_data(
+            train_features_index_dt=False,
+            train_target_index_dt=False,
+        )
         ts_problem = True
     else:
         X, y = X_y_binary
@@ -1956,11 +1962,12 @@ def test_components_support_nullable_types(
         VARMAXRegressor,
     ]
     requires_all_numeric = [PCA, LinearDiscriminantAnalysis]
+    requires_multiseries_data = [VARMAXRegressor]
 
     component = helper_functions.safe_init_component_with_njobs_1(component_class)
-    if component_class.is_multiseries or component_class in requires_time_index:
+    if component_class in requires_time_index:
         component = component_class(time_index="date")
-        if component_class.is_multiseries:
+        if component_class in requires_multiseries_data:
             X, _, y = ts_multiseries_data(
                 train_features_index_dt=False,
                 train_target_index_dt=False,

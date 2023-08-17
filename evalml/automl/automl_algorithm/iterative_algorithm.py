@@ -69,7 +69,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
         exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipelines built by IterativeAlgorithm.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
-        is_multiseries (bool): Whether or not the problem is a multiseries time series problem. Defaults to False.
     """
 
     def __init__(
@@ -96,7 +95,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         features=None,
         verbose=False,
         exclude_featurizers=None,
-        is_multiseries=False,
     ):
         self.X = infer_feature_types(X)
         self.y = infer_feature_types(y)
@@ -131,7 +129,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.features = features
         self._set_additional_pipeline_params()
         self.exclude_featurizers = exclude_featurizers
-        self.is_multiseries = is_multiseries
 
         super().__init__(
             allowed_pipelines=self.allowed_pipelines,
@@ -159,7 +156,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 self.problem_type,
                 model_families=self.allowed_model_families,
                 excluded_model_families=self.excluded_model_families,
-                is_multiseries=self.is_multiseries,
             )
             allowed_estimators = self._filter_estimators(
                 allowed_estimators,
@@ -188,7 +184,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         ).get("known_in_advance", None),
                         features=self.features,
                         exclude_featurizers=self.exclude_featurizers,
-                        is_multiseries=self.is_multiseries,
                     )
                     for estimator in allowed_estimators
                 ]
@@ -212,7 +207,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                             features=self.features,
                             exclude_featurizers=self.exclude_featurizers,
                             include_decomposer=False,
-                            is_multiseries=self.is_multiseries,
                         )
                         for estimator in allowed_estimators
                     ]

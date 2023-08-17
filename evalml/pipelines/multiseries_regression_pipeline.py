@@ -21,9 +21,9 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
 
     """
 
-    problem_type = ProblemTypes.TIME_SERIES_REGRESSION
+    problem_type = ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION
 
-    """ProblemTypes.TIME_SERIES_REGRESSION"""
+    """ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION"""
 
     def __init__(
         self,

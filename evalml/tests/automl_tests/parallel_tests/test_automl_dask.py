@@ -6,7 +6,13 @@ from evalml.automl import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.engine import CFEngine, DaskEngine, SequentialEngine
-from evalml.problem_types import ProblemTypes, is_binary, is_multiclass, is_time_series
+from evalml.problem_types import (
+    ProblemTypes,
+    is_binary,
+    is_multiclass,
+    is_multiseries,
+    is_time_series,
+)
 from evalml.tests.automl_tests.dask_test_utils import (
     DaskPipelineFast,
     DaskPipelineSlow,
@@ -285,9 +291,12 @@ def test_score_pipelines_passes_X_train_y_train(
     engine_str,
     X_y_based_on_pipeline_or_problem_type,
     ts_data,
+    multiseries_ts_data_stacked,
     AutoMLTestEnv,
 ):
-    if is_time_series(problem_type):
+    if is_multiseries(problem_type):
+        X, y = multiseries_ts_data_stacked
+    elif is_time_series(problem_type):
         X, _, y = ts_data(problem_type=problem_type)
     else:
         X, y = X_y_based_on_pipeline_or_problem_type(problem_type)
@@ -310,6 +319,7 @@ def test_score_pipelines_passes_X_train_y_train(
             "gap": 0,
             "forecast_horizon": 1,
             "max_delay": 1,
+            "series_id": "series_id" if is_multiseries(problem_type) else None,
         },
         engine=engine_str,
     )

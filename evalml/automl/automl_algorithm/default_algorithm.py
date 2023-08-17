@@ -25,7 +25,7 @@ from evalml.pipelines.utils import (
     _make_pipeline_from_multiple_graphs,
     make_pipeline,
 )
-from evalml.problem_types import is_regression, is_time_series
+from evalml.problem_types import is_multiseries, is_regression, is_time_series
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
@@ -81,7 +81,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
             to `multiclass` or `regression` depending on the problem type.
         excluded_model_families (list[ModelFamily]): A list of model families to exclude from the estimators used when building pipelines. For default algorithm, this only excludes estimators in the non-naive batches.
-        is_multiseries (bool): Whether or not the problem is a multiseries time series problem. Defaults to False.
     """
 
     def __init__(
@@ -106,7 +105,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         run_feature_selection=True,
         verbose=False,
         exclude_featurizers=None,
-        is_multiseries=False,
     ):
         super().__init__(
             allowed_pipelines=[],
@@ -140,7 +138,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.run_feature_selection = run_feature_selection
         self.ensembling = ensembling
         self.exclude_featurizers = exclude_featurizers or []
-        self.is_multiseries = is_multiseries
 
         if allowed_model_families is not None and excluded_model_families is not None:
             raise ValueError(
@@ -173,7 +170,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         """Returns the number of max batches AutoMLSearch should run by default."""
         if self.ensembling:
             return 3
-        elif self.is_multiseries:
+        elif is_multiseries(self.problem_type):
             return 1
         else:
             return 2
@@ -222,7 +219,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 self.problem_type,
                 model_families=self.allowed_model_families,
                 excluded_model_families=self.excluded_model_families,
-                is_multiseries=self.is_multiseries,
             )
             if est not in self._naive_estimators()
         ]
@@ -271,7 +267,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 ),
                 features=self.features,
                 exclude_featurizers=self.exclude_featurizers,
-                is_multiseries=self.is_multiseries,
             )
             for estimator in estimators
         ]
@@ -300,7 +295,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     features=self.features,
                     exclude_featurizers=self.exclude_featurizers,
                     include_decomposer=False,
-                    is_multiseries=self.is_multiseries,
                 )
                 for estimator in estimators
             ]
@@ -440,7 +434,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     ),
                     features=self.features,
                     exclude_featurizers=self.exclude_featurizers,
-                    is_multiseries=self.is_multiseries,
                 )
                 for estimator in estimators
             ]
@@ -484,7 +477,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             # Skip the naive batch for multiseries time series
             batch = (
                 self._batch_number
-                if not self.is_multiseries
+                if not is_multiseries(self.problem_type)
                 else self._batch_number + 1
             )
             if batch == 0:
@@ -679,7 +672,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 extra_components_before=[SelectColumns],
                 use_estimator=False,
                 exclude_featurizers=self.exclude_featurizers,
-                is_multiseries=self.is_multiseries,
             )
 
             numeric_pipeline = make_pipeline(
@@ -693,7 +685,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 extra_components_after=[SelectColumns],
                 use_estimator=False,
                 exclude_featurizers=self.exclude_featurizers,
-                is_multiseries=self.is_multiseries,
             )
             pre_pipeline_components = (
                 {"DFS Transformer": ["DFS Transformer", "X", "y"]}
@@ -745,7 +736,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 extra_components_before=[SelectColumns],
                 features=self.features,
                 exclude_featurizers=self.exclude_featurizers,
-                is_multiseries=self.is_multiseries,
             )
             return categorical_pipeline
         elif self.run_feature_selection:
@@ -762,7 +752,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 extra_components_after=[SelectColumns],
                 features=self.features,
                 exclude_featurizers=self.exclude_featurizers,
-                is_multiseries=self.is_multiseries,
             )
             return numeric_pipeline
 
@@ -774,6 +763,5 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 self.problem_type,
                 sampler_name=self.sampler_name,
                 exclude_featurizers=self.exclude_featurizers,
-                is_multiseries=self.is_multiseries,
             )
             return pipeline

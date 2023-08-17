@@ -14,7 +14,7 @@ from evalml.model_family.utils import ModelFamily, handle_model_family
 from evalml.pipelines.components.component_base import ComponentBase
 from evalml.pipelines.components.estimators.estimator import Estimator
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.problem_types import ProblemTypes, handle_problem_types, is_time_series
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_importable_subclasses
 
 
@@ -56,18 +56,10 @@ def allowed_model_families(problem_type):
     return list(set([e.model_family for e in estimators]))
 
 
-def _filter_multiseries_estimators(estimators, is_multiseries):
-    if is_multiseries:
-        return [estimator for estimator in estimators if estimator.is_multiseries]
-    else:
-        return [estimator for estimator in estimators if not estimator.is_multiseries]
-
-
 def get_estimators(
     problem_type,
     model_families=None,
     excluded_model_families=None,
-    is_multiseries=False,
 ):
     """Returns the estimators allowed for a particular problem type.
 
@@ -77,7 +69,6 @@ def get_estimators(
         problem_type (ProblemTypes or str): Problem type to filter for.
         model_families (list[ModelFamily] or list[str]): Model families to filter for.
         excluded_model_families (list[ModelFamily]): A list of model families to exclude from the results.
-        is_multiseries (bool): Whether to return only estimators that support multiseries data.
 
     Returns:
         list[class]: A list of estimator subclasses.
@@ -124,11 +115,6 @@ def get_estimators(
         if estimator_class.model_family not in model_families:
             continue
         estimator_classes.append(estimator_class)
-    if is_time_series(problem_type):
-        estimator_classes = _filter_multiseries_estimators(
-            estimator_classes,
-            is_multiseries,
-        )
     return estimator_classes
 
 

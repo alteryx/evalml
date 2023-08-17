@@ -49,6 +49,7 @@ def get_default_primary_search_objective(problem_type):
         "time series regression": "MedianAE",
         "time series binary": "Log Loss Binary",
         "time series multiclass": "Log Loss Multiclass",
+        "multiseries time series regression": "MedianAE",
     }[problem_type.value]
     return get_objective(objective_name, return_instance=True)
 
