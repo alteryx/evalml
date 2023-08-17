@@ -2535,7 +2535,6 @@ def generate_multiseries_seasonal_data():
 
     def generate_synthetic_data(
         period,
-        step=None,
         num_periods=20,
         scale=1,
         seasonal_scale=1,
@@ -2547,7 +2546,6 @@ def generate_multiseries_seasonal_data():
 
         Args:
             period: The length, in units, of the seasonal signal.
-            step:
             num_periods: How many periods of the seasonal signal to generate.
             scale: The relative scale of the trend.  Setting it higher increases
                 the comparative strength of the trend.

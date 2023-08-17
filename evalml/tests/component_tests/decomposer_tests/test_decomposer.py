@@ -86,7 +86,6 @@ def test_decomposer_plot_decomposition(
             )
         X, y = generate_multiseries_seasonal_data(real_or_synthetic="synthetic")(
             period,
-            step,
         )
     if y_has_time_index == "y_has_time_index":
         y = y.set_axis(X.index)
