@@ -1493,7 +1493,7 @@ def test_stack_X(
 
         with pytest.raises(
             ValueError,
-            match="Unable to stack X as X had no exogenous variables and `series_id_values` is None.",
+            match="X has no exogenous variables and `series_id_values` is None.",
         ):
             stack_X(X, "series_id", "date", starting_index=starting_index)
 
