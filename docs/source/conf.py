@@ -336,7 +336,6 @@ def setup(app):
             "/home/docs/.ipython/profile_default/startup/",
         )
         shutil.copy("set-headers.py", "/home/docs/.ipython/profile_default/startup")
-        shutil.copy("set-imports.py", "/home/docs/.ipython/profile_default/startup/")
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_js_file(
         "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js",
