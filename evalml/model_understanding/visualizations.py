@@ -445,11 +445,15 @@ def graph_prediction_vs_actual_over_time(
         dates,
     )
 
-    if pipeline.series_id is not None:  # change to if problemtype == multiseries later
+    if pipeline.series_id is not None:  # change to if ismultiseries() later
         id_list = (
             [single_series] if single_series is not None else data["series_id"].unique()
         )
-        fig = subplots.make_subplots(rows=len(id_list), cols=1)
+        fig = subplots.make_subplots(
+            rows=len(id_list),
+            cols=1,
+            subplot_titles=[f"Series: {id}" for id in id_list],
+        )
         for curr_count, id in enumerate(id_list):
             curr_df = data[data["series_id"] == id]
             fig.append_trace(
@@ -457,7 +461,7 @@ def graph_prediction_vs_actual_over_time(
                     x=curr_df["dates"],
                     y=curr_df["target"],
                     mode="lines+markers",
-                    name=f"Series {id} Target",
+                    name=f"Series {id}: Target",
                 ),
                 row=curr_count + 1,
                 col=1,
@@ -467,21 +471,25 @@ def graph_prediction_vs_actual_over_time(
                     x=curr_df["dates"],
                     y=curr_df["prediction"],
                     mode="lines+markers",
-                    name=f"Series {id} Prediction",
+                    name=f"Series {id}: Prediction",
                 ),
                 row=curr_count + 1,
                 col=1,
             )
+            fig.update_xaxes(title_text="Time")
+            fig.update_yaxes(title_text=y.name)
         if single_series is not None:
             fig.update_layout(
                 height=600,
                 width=1000,
                 title_text=f"Graph for Series {single_series}",
+                xaxis_title="Time",
+                yaxis_title=y.name,
             )
         else:
             fig.update_layout(
-                height=500 + (len(id_list)) * 100,
-                width=1000,
+                height=600 + (len(id_list)) * 200,
+                width=1500,
                 title_text="Graph for Multiseries",
             )
         return fig
