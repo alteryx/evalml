@@ -1493,7 +1493,7 @@ def test_stack_X(
 
         with pytest.raises(
             ValueError,
-            match="X has no exogenous variables and `series_id_values` is None.",
+            match="Series ID values needs to be passed in X column values or as a set with the `series_id_values` parameter.",
         ):
             stack_X(X, "series_id", "date", starting_index=starting_index)
 

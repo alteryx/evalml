@@ -1490,7 +1490,8 @@ def stack_X(X, series_id_name, time_index, starting_index=None, series_id_values
         starting_index (int): The starting index to use for the stacked DataFrame. If None, the starting index
             will match that of the input data. Defaults to None.
         series_id_values (set): The unique values of a series ID, used to generate the index. If None, values will
-            be generated from X column values. Defaults to None.
+            be generated from X column values. Required if X only has time index values and no exogenous values.
+            Defaults to None.
 
     Returns:
         pd.DataFrame: The restacked features.
@@ -1507,7 +1508,7 @@ def stack_X(X, series_id_name, time_index, starting_index=None, series_id_values
 
     if len(series_ids) == 0:
         raise ValueError(
-            "X has no exogenous variables and `series_id_values` is None.",
+            "Series ID values needs to be passed in X column values or as a set with the `series_id_values` parameter.",
         )
 
     time_index_col = X[time_index].repeat(len(series_ids)).reset_index(drop=True)
