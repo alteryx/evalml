@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 from abc import abstractmethod
+from typing import Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -324,9 +325,9 @@ class Decomposer(Transformer):
     def plot_decomposition(
         self,
         X: pd.DataFrame,
-        y: pd.DataFrame,
+        y: Union[pd.Series, pd.DataFrame],
         show: bool = False,
-    ) -> tuple[plt.Figure, list]:
+    ) -> Union[tuple[plt.Figure, list], dict[str, tuple[plt.Figure]]]:
         """Plots the decomposition of the target signal.
 
         Args:
@@ -336,8 +337,10 @@ class Decomposer(Transformer):
             show (bool): Whether to display the plot or not. Defaults to False.
 
         Returns:
-            matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]: The figure and axes that have the decompositions
+            (Single series) matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]: The figure and axes that have the decompositions
                 plotted on them
+            (Multi series) dict[str, (matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes])]: A dictionary that maps the series id
+                to the figure and axes that have the decompositions plotted on them
 
         """
         if isinstance(y, pd.Series):

@@ -175,7 +175,6 @@ class STLDecomposer(Decomposer):
             self.logger.warning(
                 f"STLDecomposer may perform poorly on data with a high seasonal smoother ({self.seasonal_smoother}).",
             )
-        X, y = self._check_target(X, y)
 
         if isinstance(y, pd.Series):
             y = y.to_frame()
