@@ -69,6 +69,7 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         "plotly.graph_objects",
         error_msg="Cannot find dependency plotly.graph_objects",
     )
+
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
 
@@ -373,13 +374,13 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, X_train, y_train, da
     dates = infer_feature_types(dates)
     prediction = pipeline.predict_in_sample(X, y, X_train=X_train, y_train=y_train)
 
-    if pipeline.series_id is not None:
+    if pipeline.series_id is not None:  # change to if problemtype == multiseries later
         return pd.DataFrame(
             {
                 "dates": dates.reset_index(drop=True),
                 "target": y.reset_index(drop=True),
                 "prediction": prediction.reset_index(drop=True),
-                "series_id": X["series_id"],
+                "series_id": X[pipeline.series_id].reset_index(drop=True),
             },
         )
     else:
@@ -405,8 +406,8 @@ def graph_prediction_vs_actual_over_time(
 
     Args:
         pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
-        X (pd.DataFrame): Features used to generate new predictions.
-        y (pd.Series): Target values to compare predictions against.
+        X (pd.DataFrame): Features used to generate new predictions. If problem is multiseries, X should be stacked.
+        y (pd.Series): Target values to compare predictions against. If problem is multiseries, y should be stacked.
         X_train (pd.DataFrame): Data the pipeline was trained on.
         y_train (pd.Series): Target values for training data.
         dates (pd.Series): Dates corresponding to target values and predictions.
@@ -422,8 +423,14 @@ def graph_prediction_vs_actual_over_time(
         "plotly.graph_objects",
         error_msg="Cannot find dependency plotly.graph_objects",
     )
+    subplots = import_or_raise(
+        "plotly.subplots",
+        error_msg="Cannot find dependency plotly.graph_objects",
+    )
 
-    if pipeline.problem_type != ProblemTypes.TIME_SERIES_REGRESSION:
+    if (
+        pipeline.problem_type != ProblemTypes.TIME_SERIES_REGRESSION
+    ):  # remember to change this when problem types get updated
         raise ValueError(
             "graph_prediction_vs_actual_over_time only supports time series regression pipelines! "
             f"Received {str(pipeline.problem_type)}.",
@@ -437,62 +444,47 @@ def graph_prediction_vs_actual_over_time(
         y_train,
         dates,
     )
-    if single_series is not None:
-        single_data = data[data["series_id"] == single_series]
-        data = [
-            _go.Scatter(
-                x=single_data["dates"],
-                y=single_data["target"],
-                mode="lines+markers",
-                name=f"Series {single_series}: Target",
-                line=dict(color="#1f77b4"),
-            ),
-            _go.Scatter(
-                x=single_data["dates"],
-                y=single_data["prediction"],
-                mode="lines+markers",
-                name=f"Series {single_series}: Prediction",
-                line=dict(color="#d62728"),
-            ),
-        ]
-        # Let plotly pick the best date format.
-        layout = _go.Layout(
-            title={"text": "Prediction vs Target over time"},
-            xaxis={"title": "Time"},
-            yaxis={"title": "Target Values and Predictions"},
-        )
-        return _go.Figure(data=data, layout=layout)
 
-    elif pipeline.series_id is not None:
-        all_series_id = data["series_id"].unique()
-        temp_data = []
-        for id in all_series_id:
-            single_data = data[data["series_id"] == id]
-            temp_data.append(
-                _go.Scatter(
-                    x=single_data["dates"],
-                    y=single_data["target"],
-                    mode="lines+markers",
-                    name=f"Series {id}: Target",
-                    # line=dict(color="#1f77b4"),
-                ),
-            )
-            temp_data.append(
-                _go.Scatter(
-                    x=single_data["dates"],
-                    y=single_data["prediction"],
-                    mode="lines+markers",
-                    name=f"Series {id}: Prediction",
-                    # line=dict(color="#d62728"),
-                ),
-            )
-        # Let plotly pick the best date format.
-        layout = _go.Layout(
-            title={"text": "Prediction vs Target over time"},
-            xaxis={"title": "Time"},
-            yaxis={"title": "Target Values and Predictions"},
+    if pipeline.series_id is not None:  # change to if problemtype == multiseries later
+        id_list = (
+            [single_series] if single_series is not None else data["series_id"].unique()
         )
-        return _go.Figure(data=temp_data, layout=layout)
+        fig = subplots.make_subplots(rows=len(id_list), cols=1)
+        for curr_count, id in enumerate(id_list):
+            curr_df = data[data["series_id"] == id]
+            fig.append_trace(
+                _go.Scatter(
+                    x=curr_df["dates"],
+                    y=curr_df["target"],
+                    mode="lines+markers",
+                    name=f"Series {id} Target",
+                ),
+                row=curr_count + 1,
+                col=1,
+            )
+            fig.append_trace(
+                _go.Scatter(
+                    x=curr_df["dates"],
+                    y=curr_df["prediction"],
+                    mode="lines+markers",
+                    name=f"Series {id} Prediction",
+                ),
+                row=curr_count + 1,
+                col=1,
+            )
+        if single_series is not None:
+            fig.update_layout(
+                height=600,
+                width=1000,
+                title_text=f"Graph for Series {single_series}",
+            )
+        else:
+            fig.update_layout(
+                height=500 + (len(id_list)) * 100,
+                width=1000,
+                title_text="Graph for Multiseries",
+            )
+        return fig
 
     data = [
         _go.Scatter(
