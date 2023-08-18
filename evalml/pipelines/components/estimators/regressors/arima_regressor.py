@@ -229,8 +229,9 @@ class ARIMARegressor(Estimator):
         y_pred_intervals: pd.DataFrame,
         conf_int: float,
     ) -> Tuple[pd.Series, pd.Series]:
-        preds_lower = y_pred_intervals.loc(axis=1)[("Coverage", conf_int, "lower")]
-        preds_upper = y_pred_intervals.loc(axis=1)[("Coverage", conf_int, "upper")]
+        coverage_name = y_pred_intervals.columns[0][0]
+        preds_lower = y_pred_intervals.loc(axis=1)[(coverage_name, conf_int, "lower")]
+        preds_upper = y_pred_intervals.loc(axis=1)[(coverage_name, conf_int, "upper")]
         preds_lower.name = None
         preds_upper.name = None
         return preds_lower, preds_upper
