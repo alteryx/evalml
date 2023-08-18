@@ -37,6 +37,40 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_state, infer_feature_types
 
 
+@pytest.fixture(scope="module")
+def component_graph_multiseries():
+    return {
+        "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
+        "Baseline Multiseries": [
+            "Multiseries Time Series Baseline Regressor",
+            "Time Series Featurizer.x",
+            "y",
+        ],
+    }
+
+
+@pytest.fixture(scope="module")
+def pipeline_parameters_multiseries():
+    return {
+        "pipeline": {
+            "time_index": "date",
+            "max_delay": 10,
+            "forecast_horizon": 7,
+            "gap": 0,
+            "series_id": "series_id",
+        },
+        "Time Series Featurizer": {
+            "time_index": "date",
+            "max_delay": 10,
+            "forecast_horizon": 7,
+            "gap": 0,
+            "delay_features": False,
+            "delay_target": True,
+        },
+        "Baseline Multiseries": {"gap": 0, "forecast_horizon": 7},
+    }
+
+
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_cost_benefit_matrix_vs_threshold(
     data_type,
@@ -350,6 +384,8 @@ def test_get_prediction_vs_actual_over_time_data(ts_data):
 
 def test_get_prediction_vs_actual_over_time_data_multiseries(
     multiseries_ts_data_stacked,
+    component_graph_multiseries,
+    pipeline_parameters_multiseries,
 ):
     X, y = multiseries_ts_data_stacked
     X_train, _, y_train, _ = split_multiseries_data(
@@ -358,33 +394,10 @@ def test_get_prediction_vs_actual_over_time_data_multiseries(
         "series_id",
         "date",
     )
-    component_graph = {
-        "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
-        "Baseline Multiseries": [
-            "Multiseries Time Series Baseline Regressor",
-            "Time Series Featurizer.x",
-            "y",
-        ],
-    }
-    pipeline_parameters = {
-        "pipeline": {
-            "time_index": "date",
-            "max_delay": 10,
-            "forecast_horizon": 7,
-            "gap": 0,
-            "series_id": "series_id",
-        },
-        "Time Series Featurizer": {
-            "time_index": "date",
-            "max_delay": 10,
-            "forecast_horizon": 7,
-            "gap": 0,
-            "delay_features": False,
-            "delay_target": True,
-        },
-        "Baseline Multiseries": {"gap": 0, "forecast_horizon": 7},
-    }
-    pipeline = MultiseriesRegressionPipeline(component_graph, pipeline_parameters)
+    pipeline = MultiseriesRegressionPipeline(
+        component_graph_multiseries,
+        pipeline_parameters_multiseries,
+    )
     pipeline.fit(X_train, y_train)
     results = get_prediction_vs_actual_over_time_data(
         pipeline,
@@ -462,6 +475,8 @@ def test_graph_prediction_vs_actual_over_time_value_error():
 def test_graph_prediction_vs_actual_over_time_multiseries_single(
     multiseries_ts_data_stacked,
     go,
+    component_graph_multiseries,
+    pipeline_parameters_multiseries,
 ):
     X, y = multiseries_ts_data_stacked
     X_train, _, y_train, _ = split_multiseries_data(
@@ -470,33 +485,10 @@ def test_graph_prediction_vs_actual_over_time_multiseries_single(
         "series_id",
         "date",
     )
-    component_graph = {
-        "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
-        "Baseline Multiseries": [
-            "Multiseries Time Series Baseline Regressor",
-            "Time Series Featurizer.x",
-            "y",
-        ],
-    }
-    pipeline_parameters = {
-        "pipeline": {
-            "time_index": "date",
-            "max_delay": 10,
-            "forecast_horizon": 7,
-            "gap": 0,
-            "series_id": "series_id",
-        },
-        "Time Series Featurizer": {
-            "time_index": "date",
-            "max_delay": 10,
-            "forecast_horizon": 7,
-            "gap": 0,
-            "delay_features": False,
-            "delay_target": True,
-        },
-        "Baseline Multiseries": {"gap": 0, "forecast_horizon": 7},
-    }
-    pipeline = MultiseriesRegressionPipeline(component_graph, pipeline_parameters)
+    pipeline = MultiseriesRegressionPipeline(
+        component_graph_multiseries,
+        pipeline_parameters_multiseries,
+    )
     pipeline.fit(X_train, y_train)
     fig = graph_prediction_vs_actual_over_time(
         pipeline,
@@ -510,20 +502,16 @@ def test_graph_prediction_vs_actual_over_time_multiseries_single(
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
 
-    assert fig_dict["layout"]["title"]["text"] == "Prediction vs Target over time"
+    assert fig_dict["layout"]["title"]["text"] == "Graph for Series 1"
     assert fig_dict["layout"]["xaxis"]["title"]["text"] == "Time"
-    assert (
-        fig_dict["layout"]["yaxis"]["title"]["text"] == "Target Values and Predictions"
-    )
+    assert fig_dict["layout"]["yaxis"]["title"]["text"] == "target"
     assert len(fig_dict["data"]) == 2
 
-    assert fig_dict["data"][0]["line"]["color"] == "#1f77b4"
     assert len(fig_dict["data"][0]["x"]) == len(X["date"].unique())
     assert len(fig_dict["data"][0]["y"]) == len(X["date"].unique())
     assert not np.isnan(fig_dict["data"][0]["y"]).all()
     assert fig_dict["data"][0]["name"] == "Series 1: Target"
 
-    assert fig_dict["data"][1]["line"]["color"] == "#d62728"
     assert len(fig_dict["data"][1]["x"]) == len(X["date"].unique())
     assert len(fig_dict["data"][1]["y"]) == len(X["date"].unique())
     assert not np.isnan(fig_dict["data"][1]["y"]).all()
@@ -533,6 +521,8 @@ def test_graph_prediction_vs_actual_over_time_multiseries_single(
 def test_graph_prediction_vs_actual_over_time_multiseries(
     multiseries_ts_data_stacked,
     go,
+    component_graph_multiseries,
+    pipeline_parameters_multiseries,
 ):
     X, y = multiseries_ts_data_stacked
     X_train, _, y_train, _ = split_multiseries_data(
@@ -541,33 +531,10 @@ def test_graph_prediction_vs_actual_over_time_multiseries(
         "series_id",
         "date",
     )
-    component_graph = {
-        "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
-        "Baseline Multiseries": [
-            "Multiseries Time Series Baseline Regressor",
-            "Time Series Featurizer.x",
-            "y",
-        ],
-    }
-    pipeline_parameters = {
-        "pipeline": {
-            "time_index": "date",
-            "max_delay": 10,
-            "forecast_horizon": 7,
-            "gap": 0,
-            "series_id": "series_id",
-        },
-        "Time Series Featurizer": {
-            "time_index": "date",
-            "max_delay": 10,
-            "forecast_horizon": 7,
-            "gap": 0,
-            "delay_features": False,
-            "delay_target": True,
-        },
-        "Baseline Multiseries": {"gap": 0, "forecast_horizon": 7},
-    }
-    pipeline = MultiseriesRegressionPipeline(component_graph, pipeline_parameters)
+    pipeline = MultiseriesRegressionPipeline(
+        component_graph_multiseries,
+        pipeline_parameters_multiseries,
+    )
     pipeline.fit(X_train, y_train)
     fig = graph_prediction_vs_actual_over_time(
         pipeline,
@@ -580,11 +547,10 @@ def test_graph_prediction_vs_actual_over_time_multiseries(
     assert isinstance(fig, go.Figure)
 
     fig_dict = fig.to_dict()
-    assert fig_dict["layout"]["title"]["text"] == "Prediction vs Target over time"
+    assert fig_dict["layout"]["title"]["text"] == "Graph for Multiseries"
     assert fig_dict["layout"]["xaxis"]["title"]["text"] == "Time"
-    assert (
-        fig_dict["layout"]["yaxis"]["title"]["text"] == "Target Values and Predictions"
-    )
+    assert fig_dict["layout"]["yaxis"]["title"]["text"] == "target"
+
     # there's 5 series, and each series has two lines (one each for target/prediction)
     assert len(fig_dict["data"]) == 10
 
