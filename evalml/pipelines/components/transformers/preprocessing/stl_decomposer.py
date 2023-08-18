@@ -250,6 +250,11 @@ class STLDecomposer(Decomposer):
 
         if isinstance(y, pd.Series):
             y = y.to_frame()
+
+        original_index = y.index
+        X, y = self._check_target(X, y)
+        self._check_oos_past(y)
+
         detrending_list = []
         # Iterate through each id group
         for id in y.columns:
@@ -265,10 +270,6 @@ class STLDecomposer(Decomposer):
                 trend = list(self.trends.values())[0]
                 residual = list(self.residuals.values())[0]
                 period = list(self.periods.values())[0]
-
-            original_index = series_y.index
-            X, series_y = self._check_target(X, series_y)
-            self._check_oos_past(series_y)
 
             y_in_sample = pd.Series([])
             y_out_of_sample = pd.Series([])
@@ -542,11 +543,11 @@ class STLDecomposer(Decomposer):
         if coverage is None:
             coverage = [0.95]
 
+        self._check_oos_past(y)
         series_results = {}
         for id in y.columns:
             y_series = y[id]
 
-            self._check_oos_past(y_series)
             alphas = [1 - val for val in coverage]
 
             if len(y.columns) > 1:
