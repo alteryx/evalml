@@ -5,6 +5,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Removed erroneous warnings from Data Checks User Guide page and removed ``tqdm`` warning in all notebooks :pr:`4274`
     * Testing Changes
 
 .. warning::
