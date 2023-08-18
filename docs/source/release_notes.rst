@@ -6,6 +6,7 @@ Release Notes
     * Changes
         * Updated ``ARIMARegressor`` to be compatible with sktime v0.22.0 and beyond :pr:`4283`
     * Documentation Changes
+        * Removed erroneous warnings from Data Checks User Guide page and removed ``tqdm`` warning in all notebooks :pr:`4274`
     * Testing Changes
 
 .. warning::
