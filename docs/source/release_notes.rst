@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Updated ``ARIMARegressor`` to be compatible with sktime v0.22.0 and beyond :pr:`4283`
     * Documentation Changes
     * Testing Changes
 
