@@ -27,6 +27,8 @@ class ExponentialSmoothingRegressor(Estimator):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
+    _N_REPETITIONS = 400
+
     name = "Exponential Smoothing Regressor"
     hyperparameter_ranges = {
         "trend": [None, "additive"],
@@ -167,7 +169,7 @@ class ExponentialSmoothingRegressor(Estimator):
         # anchor represents where the simulations should start from (forecasting is done from the "end")
         y_pred = self._component_obj._fitted_forecaster.simulate(
             nsimulations=X.shape[0],
-            repetitions=400,
+            repetitions=self._N_REPETITIONS,
             anchor="end",
             random_state=self.parameters["random_state"],
         )

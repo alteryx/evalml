@@ -391,8 +391,10 @@ def test_arima_regressor_respects_use_covariates(mock_predict, mock_fit, ts_data
 
 
 @pytest.mark.parametrize("no_features", [True, False])
-def test_arima_regressor_prediction_intervals(no_features, ts_data):
+@pytest.mark.parametrize("y_name", [None, "y"])
+def test_arima_regressor_prediction_intervals(no_features, ts_data, y_name):
     X_train, X_test, y_train = ts_data(no_features=no_features)
+    y_train.name = y_name
 
     clf = ARIMARegressor(use_covariates=not no_features)
 
