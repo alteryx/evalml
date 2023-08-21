@@ -70,7 +70,6 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         "plotly.graph_objects",
         error_msg="Cannot find dependency plotly.graph_objects",
     )
-
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
 
@@ -485,8 +484,6 @@ def graph_prediction_vs_actual_over_time(
                 height=600,
                 width=1000,
                 title_text=f"Graph for Series {single_series}",
-                xaxis_title="Time",
-                yaxis_title=y.name,
             )
         else:
             fig.update_layout(
