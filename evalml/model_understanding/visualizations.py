@@ -411,7 +411,7 @@ def graph_prediction_vs_actual_over_time(
         X_train (pd.DataFrame): Data the pipeline was trained on.
         y_train (pd.Series): Target values for training data.
         dates (pd.Series): Dates corresponding to target values and predictions.
-        single_series (str): The single series that will be plotted from multiseries. Defaults to None
+        single_series (str): A single series id value to plot just one series in a multiseries dataset. Defaults to None.
 
     Returns:
         plotly.Figure: Showing the prediction vs actual over time.
