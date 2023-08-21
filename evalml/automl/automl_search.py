@@ -65,6 +65,7 @@ from evalml.problem_types import (
     handle_problem_types,
     is_binary,
     is_classification,
+    is_multiseries,
     is_time_series,
 )
 from evalml.tuners import SKOptTuner
@@ -403,6 +404,7 @@ class AutoMLSearch:
 
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
+            For multiseries time series problems, the values passed in should also include the name of a series_id column.
 
         train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
@@ -650,6 +652,14 @@ class AutoMLSearch:
                 self.logger.info(
                     f"Dataset size is too small to create holdout set. Minimum dataset size is {self._HOLDOUT_SET_MIN_ROWS} rows, X_train has {len(X_train)} rows. Holdout set evaluation is disabled.",
                 )
+
+        # For multiseries problems, we need to make sure that the data is primarily ordered by the time_index rather than the series_id
+        if is_multiseries(self.problem_type):
+            time_index = self.problem_configuration.get("time_index")
+            series_id = self.problem_configuration.get("series_id")
+            X_train = X_train.sort_values([time_index, series_id])
+            y_train = y_train[X_train.index].reset_index(drop=True)
+            X_train = X_train.reset_index(drop=True)
 
         # Set holdout data in AutoML search if provided as parameter
         self.X_train = infer_feature_types(X_train)
@@ -1053,6 +1063,13 @@ class AutoMLSearch:
             is_valid, msg = contains_all_ts_parameters(problem_configuration)
             if not is_valid:
                 raise ValueError(msg)
+            if (
+                is_multiseries(self.problem_type)
+                and "series_id" not in problem_configuration
+            ):
+                raise ValueError(
+                    "Must provide 'series_id' column in problem_configuration for multiseries time series problems.",
+                )
         return problem_configuration or {}
 
     def _handle_keyboard_interrupt(self):
@@ -1355,6 +1372,7 @@ class AutoMLSearch:
             gap = self.problem_configuration["gap"]
             forecast_horizon = self.problem_configuration["forecast_horizon"]
             time_index = self.problem_configuration["time_index"]
+            series_id = self.problem_configuration.get("series_id", None)
             exclude_timeseries_featurizer = (
                 "TimeSeriesFeaturizer" in self.exclude_featurizers
             )
@@ -1364,6 +1382,7 @@ class AutoMLSearch:
                 forecast_horizon,
                 time_index,
                 exclude_timeseries_featurizer,
+                series_id,
             )
         return baseline
 

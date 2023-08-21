@@ -48,10 +48,9 @@ class VARMAXRegressor(Estimator):
         "trend": Categorical(['n', 'c', 't', 'ct']),
     }"""
     model_family = ModelFamily.VARMAX
-    is_multiseries = True
     """ModelFamily.VARMAX"""
-    supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
-    """[ProblemTypes.TIME_SERIES_REGRESSION]"""
+    supported_problem_types = [ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION]
+    """[ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION]"""
 
     def __init__(
         self,
@@ -61,7 +60,7 @@ class VARMAXRegressor(Estimator):
         trend: Optional[str] = "c",
         random_seed: Union[int, float] = 0,
         maxiter: int = 10,
-        use_covariates: bool = True,
+        use_covariates: bool = False,
         **kwargs,
     ):
         self.preds_95_upper = None
@@ -84,6 +83,7 @@ class VARMAXRegressor(Estimator):
 
         parameters["use_covariates"] = use_covariates
         parameters["time_index"] = time_index
+        parameters.update({"p": p, "q": q})
 
         self.use_covariates = use_covariates
         self.time_index = time_index
@@ -133,13 +133,13 @@ class VARMAXRegressor(Estimator):
 
         if y is None:
             raise ValueError("VARMAX Regressor requires y as input.")
+        y = convert_bool_to_double(y, include_ints=True)
 
         if X is not None and self.use_covariates:
             self.last_X_index = X.index[-1]
             X = X.ww.select(exclude=["Datetime"])
 
             X = convert_bool_to_double(X)
-            y = convert_bool_to_double(y)
             X, y = match_indices(X, y)
 
             if not X.empty:

@@ -27,6 +27,7 @@ def test_estimators_feature_name_with_random_ascii(
             "ARIMARegressor",
             "ExponentialSmoothingRegressor",
             "ProphetRegressor",
+            "VARMAXRegressor",
         ]:
             continue
         supported_problem_types = [
@@ -182,7 +183,11 @@ def test_estimator_predict_output_type(X_y_binary, helper_functions):
 
     for component_class in _all_estimators_used_in_search():
         for X, y, X_cols_expected, y_cols_expected, time_series in datatype_combos:
-            if component_class.name in ["ARIMA Regressor", "Prophet Regressor"]:
+            if component_class.name in [
+                "ARIMA Regressor",
+                "Prophet Regressor",
+                "VARMAX Regressor",
+            ]:
                 continue
             print(
                 'Checking output of predict for estimator "{}" on X type {} cols {}, y type {} name {}'.format(

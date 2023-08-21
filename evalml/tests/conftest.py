@@ -1960,6 +1960,7 @@ class _AutoMLTestEnv:
             ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesRegressionPipeline",
             ProblemTypes.TIME_SERIES_MULTICLASS: "evalml.pipelines.TimeSeriesMulticlassClassificationPipeline",
             ProblemTypes.TIME_SERIES_BINARY: "evalml.pipelines.TimeSeriesBinaryClassificationPipeline",
+            ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION: "evalml.pipelines.MultiseriesRegressionPipeline",
         }[self.problem_type]
 
     def _patch_method(self, method, side_effect, return_value, pipeline_class_str=None):

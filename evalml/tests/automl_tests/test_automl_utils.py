@@ -20,7 +20,7 @@ from evalml.pipelines import (
     RegressionPipeline,
 )
 from evalml.preprocessing.data_splitters import TimeSeriesSplit, TrainingValidationSplit
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, is_multiseries, is_time_series
 from evalml.utils.woodwork_utils import infer_feature_types
 
 
@@ -75,19 +75,18 @@ def test_make_data_splitter_default(problem_type, large_data):
     if large_data:
         n = _LARGE_DATA_ROW_THRESHOLD + 1
     X = pd.DataFrame({"col_0": list(range(n)), "target": list(range(n))})
+    if is_multiseries(problem_type):
+        X["series_id"] = pd.Series(range(n)) % 2
     y = X.pop("target")
 
     problem_configuration = None
-    if problem_type in [
-        ProblemTypes.TIME_SERIES_REGRESSION,
-        ProblemTypes.TIME_SERIES_BINARY,
-        ProblemTypes.TIME_SERIES_MULTICLASS,
-    ]:
+    if is_time_series(problem_type):
         problem_configuration = {
             "gap": 1,
             "max_delay": 7,
             "time_index": "foo",
             "forecast_horizon": 4,
+            "series_id": "series_id" if is_multiseries(problem_type) else None,
         }
 
     data_splitter = make_data_splitter(
@@ -127,6 +126,7 @@ def test_make_data_splitter_default(problem_type, large_data):
         ProblemTypes.TIME_SERIES_REGRESSION,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     ]:
         assert isinstance(data_splitter, TimeSeriesSplit)
         assert data_splitter.n_splits == 3
@@ -135,6 +135,10 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.forecast_horizon == 4
         assert data_splitter.time_index == "foo"
         assert data_splitter.is_cv
+        if is_multiseries(problem_type):
+            assert data_splitter._splitter.test_size == 8
+        else:
+            assert data_splitter._splitter.test_size == 4
 
 
 @pytest.mark.parametrize(

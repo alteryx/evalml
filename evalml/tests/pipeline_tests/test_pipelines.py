@@ -114,9 +114,9 @@ def test_all_estimators(
     is_using_conda,
 ):
     if is_using_conda:
-        n_estimators = 13
-    else:
         n_estimators = 14
+    else:
+        n_estimators = 15
     assert len(_all_estimators_used_in_search()) == n_estimators
 
 
@@ -2037,6 +2037,8 @@ def test_predict_has_input_target_name(
     time_series_binary_classification_pipeline_class,
     time_series_multiclass_classification_pipeline_class,
 ):
+    if problem_type == ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION:
+        pytest.skip("Multiseries time series regression case tested elsewhere")
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         clf = logistic_regression_binary_pipeline
