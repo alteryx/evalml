@@ -72,12 +72,22 @@ def split_multiseries_data(X, y, series_id, time_index, **kwargs):
         X_unstacked, y_unstacked, problem_type="time series regression", **kwargs
     )
 
-    X_train = stack_X(X_train_unstacked, series_id, time_index)
+    # Get unique series value from X if there is only the time_index column
+    # Otherwise, this information is generated in `stack_X` from the column values
+    series_id_values = set(X[series_id]) if len(X_unstacked.columns) == 1 else None
+
+    X_train = stack_X(
+        X_train_unstacked,
+        series_id,
+        time_index,
+        series_id_values=series_id_values,
+    )
     X_holdout = stack_X(
         X_holdout_unstacked,
         series_id,
         time_index,
         starting_index=X_train.index[-1] + 1,
+        series_id_values=series_id_values,
     )
     y_train = stack_data(y_train_unstacked)
     y_holdout = stack_data(y_holdout_unstacked, starting_index=y_train.index[-1] + 1)
