@@ -23,7 +23,7 @@ from evalml.pipelines.components import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.problem_types import ProblemTypes, is_time_series
+from evalml.problem_types import ProblemTypes, is_multiseries, is_time_series
 
 
 @pytest.fixture
@@ -65,22 +65,46 @@ def dummy_binary_pipeline_classes():
     return _method
 
 
+@pytest.mark.parametrize(
+    "problem_type",
+    ["binary", "multiseries time series regression"],
+)
 def test_iterative_algorithm_init(
+    problem_type,
     X_y_binary,
+    multiseries_ts_data_stacked,
 ):
-    X, y = X_y_binary
-    algo = IterativeAlgorithm(X=X, y=y, problem_type="binary")
+    X, y = X_y_binary if problem_type == "binary" else multiseries_ts_data_stacked
+
+    search_parameters = {
+        "pipeline": {
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 3,
+            "delay_features": False,
+            "forecast_horizon": 10,
+            "series_id": "series_id",
+        },
+    }
+
+    algo = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type=problem_type,
+        search_parameters=search_parameters,
+    )
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
     assert algo.default_max_batches == 1
-    estimators = get_estimators("binary")
+    estimators = get_estimators(problem_type)
     assert len(algo.allowed_pipelines) == len(
         [
             make_pipeline(
                 X,
                 y,
                 estimator,
-                "binary",
+                problem_type,
+                parameters=search_parameters,
             )
             for estimator in estimators
         ],
@@ -1079,6 +1103,8 @@ def test_exclude_featurizers_iterative_algorithm(
             "max_delay": 1,
             "forecast_horizon": 3,
         }
+        if is_multiseries(problem_type):
+            parameters["series_id"] = "series_id"
 
     X, y = get_test_data_from_configuration(
         input_type,

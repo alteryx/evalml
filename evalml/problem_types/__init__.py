@@ -6,6 +6,7 @@ from evalml.problem_types.utils import (
     is_regression,
     is_binary,
     is_multiclass,
+    is_multiseries,
     is_classification,
     is_time_series,
 )

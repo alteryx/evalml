@@ -2,6 +2,8 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added support for prediction intervals for VARMAX regressor :pr:`4267`
+        * Integrated multiseries time series into AutoMLSearch :pr:`4270`
     * Fixes
     * Changes
         * Updated ``ARIMARegressor`` to be compatible with sktime v0.22.0 and beyond :pr:`4283`
@@ -21,7 +23,6 @@ Release Notes
         * Added stacking and unstacking utility functions to work with multiseries data :pr:`4250`
         * Added multiseries regression pipeline class :pr:`4256`
         * Added multiseries VARMAX regressor :pr:`4238`
-        * Added support for prediction intervals for VARMAX regressor :pr:`4267`
     * Fixes
         * Added support for pandas 2 :pr:`4216`
         * Fixed bug where time series pipelines would fail due to MASE needing `y_train` when scoring :pr:`4258`

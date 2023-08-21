@@ -6,7 +6,7 @@ from evalml.automl import AutoMLSearch
 from evalml.pipelines import RegressionPipeline
 from evalml.pipelines.components import EmailFeaturizer, Imputer, URLFeaturizer
 from evalml.pipelines.components.transformers import ReplaceNullableTypes
-from evalml.problem_types import ProblemTypes, is_time_series
+from evalml.problem_types import ProblemTypes, is_multiseries, is_time_series
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -41,6 +41,7 @@ def test_nullable_types_builds_pipelines(
             "gap": 1,
             "max_delay": 1,
             "forecast_horizon": 3,
+            "series_id": "series_id" if is_multiseries(problem_type) else None,
         }
 
     X, y = get_test_data_from_configuration(
@@ -49,6 +50,8 @@ def test_nullable_types_builds_pipelines(
         column_names=column_names,
         nullable_target=True if "nullable target" in test_description else False,
     )
+    if is_multiseries(problem_type):
+        X["series_id"] = pd.Series([0] * len(X))
 
     automl = AutoMLSearch(
         X_train=X,
@@ -60,8 +63,9 @@ def test_nullable_types_builds_pipelines(
     if automl_algorithm == "iterative":
         pipelines = [pl.name for pl in automl.allowed_pipelines]
     elif automl_algorithm == "default":
+        n_batches = 1 if is_multiseries(problem_type) else 2
         # TODO: Upon resolution of GH Issue #3186, increase the num of batches.
-        for _ in range(2):
+        for _ in range(n_batches):
             pipelines = [pl.name for pl in automl.automl_algorithm.next_batch()]
 
     # A check to make sure we actually retrieve constructed pipelines from the algo.
@@ -129,6 +133,7 @@ def test_automl_search_with_nullable_types(
     elif (
         problem_type == ProblemTypes.REGRESSION
         or problem_type == ProblemTypes.TIME_SERIES_REGRESSION
+        or problem_type == ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION
     ):
         y = nullable_type_target(ltype="IntegerNullable", has_nans=False)
 
@@ -139,7 +144,10 @@ def test_automl_search_with_nullable_types(
             "gap": 1,
             "max_delay": 1,
             "forecast_horizon": 3,
+            "series_id": "series_id" if is_multiseries(problem_type) else None,
         }
+        if is_multiseries(problem_type):
+            X["series_id"] = pd.Series([0] * len(X))
 
     automl = AutoMLSearch(
         X_train=X,

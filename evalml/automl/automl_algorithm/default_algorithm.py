@@ -25,7 +25,7 @@ from evalml.pipelines.utils import (
     _make_pipeline_from_multiple_graphs,
     make_pipeline,
 )
-from evalml.problem_types import is_regression, is_time_series
+from evalml.problem_types import is_multiseries, is_regression, is_time_series
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
@@ -170,6 +170,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         """Returns the number of max batches AutoMLSearch should run by default."""
         if self.ensembling:
             return 3
+        elif is_multiseries(self.problem_type):
+            return 1
         else:
             return 2
 
@@ -472,11 +474,17 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 )
         # this logic needs to be updated once time series also supports ensembling
         elif is_time_series(self.problem_type):
-            if self._batch_number == 0:
+            # Skip the naive batch for multiseries time series
+            batch = (
+                self._batch_number
+                if not is_multiseries(self.problem_type)
+                else self._batch_number + 1
+            )
+            if batch == 0:
                 next_batch = self._create_naive_pipelines()
-            elif self._batch_number == 1:
+            elif batch == 1:
                 next_batch = self._create_fast_final()
-            elif self.batch_number == 2:
+            elif batch == 2:
                 next_batch = self._create_long_exploration(n=self.top_n)
             else:
                 next_batch = self._create_n_pipelines(

@@ -12,6 +12,7 @@ from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
 from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     ComponentGraph,
+    MultiseriesRegressionPipeline,
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline,
@@ -66,6 +67,7 @@ from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
+    is_multiseries,
     is_regression,
     is_time_series,
 )
@@ -289,6 +291,9 @@ def _get_preprocessing_components(
     Returns:
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
+    if is_multiseries(problem_type):
+        return []
+
     if is_time_series(problem_type):
         components_functions = [
             _get_label_encoder,
@@ -361,8 +366,10 @@ def _get_pipeline_base_class(problem_type):
         return TimeSeriesRegressionPipeline
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
         return TimeSeriesBinaryClassificationPipeline
-    else:
+    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         return TimeSeriesMulticlassClassificationPipeline
+    else:
+        return MultiseriesRegressionPipeline
 
 
 def _make_pipeline_time_series(
@@ -1204,6 +1211,7 @@ def make_timeseries_baseline_pipeline(
     forecast_horizon,
     time_index,
     exclude_featurizer=False,
+    series_id=None,
 ):
     """Make a baseline pipeline for time series regression problems.
 
@@ -1214,6 +1222,7 @@ def make_timeseries_baseline_pipeline(
         time_index (str): Column name of time_index parameter.
         exclude_featurizer (bool): Whether or not to exclude the TimeSeriesFeaturizer from
             the baseline graph. Defaults to False.
+        series_id (str): Column name of series_id parameter. Only used for multiseries time series. Defaults to None.
 
     Returns:
         TimeSeriesPipelineBase, a time series pipeline corresponding to the problem type.
@@ -1232,8 +1241,17 @@ def make_timeseries_baseline_pipeline(
             TimeSeriesBinaryClassificationPipeline,
             "Time Series Baseline Binary Pipeline",
         ),
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION: (
+            MultiseriesRegressionPipeline,
+            "Multiseries Time Series Baseline Pipeline",
+        ),
     }[problem_type]
-    component_graph = ["Time Series Baseline Estimator"]
+    baseline_estimator_name = (
+        "Multiseries Time Series Baseline Regressor"
+        if is_multiseries(problem_type)
+        else "Time Series Baseline Estimator"
+    )
+    component_graph = [baseline_estimator_name]
     parameters = {
         "pipeline": {
             "time_index": time_index,
@@ -1241,11 +1259,13 @@ def make_timeseries_baseline_pipeline(
             "max_delay": 0,
             "forecast_horizon": forecast_horizon,
         },
-        "Time Series Baseline Estimator": {
+        baseline_estimator_name: {
             "gap": gap,
             "forecast_horizon": forecast_horizon,
         },
     }
+    if is_multiseries(problem_type):
+        parameters["pipeline"]["series_id"] = series_id
     if not exclude_featurizer:
         component_graph = ["Time Series Featurizer"] + component_graph
         parameters["Time Series Featurizer"] = {
