@@ -472,57 +472,13 @@ def test_graph_prediction_vs_actual_over_time_value_error():
         )
 
 
-def test_graph_prediction_vs_actual_over_time_multiseries_single(
-    multiseries_ts_data_stacked,
-    go,
-    component_graph_multiseries,
-    pipeline_parameters_multiseries,
-):
-    X, y = multiseries_ts_data_stacked
-    X_train, _, y_train, _ = split_multiseries_data(
-        X,
-        y,
-        "series_id",
-        "date",
-    )
-    pipeline = MultiseriesRegressionPipeline(
-        component_graph_multiseries,
-        pipeline_parameters_multiseries,
-    )
-    pipeline.fit(X_train, y_train)
-    fig = graph_prediction_vs_actual_over_time(
-        pipeline,
-        X,
-        y,
-        X_train,
-        y_train,
-        X["date"],
-        "1",
-    )
-    assert isinstance(fig, go.Figure)
-    fig_dict = fig.to_dict()
-
-    assert fig_dict["layout"]["title"]["text"] == "Graph for Series 1"
-    assert fig_dict["layout"]["xaxis"]["title"]["text"] == "Time"
-    assert fig_dict["layout"]["yaxis"]["title"]["text"] == "target"
-    assert len(fig_dict["data"]) == 2
-
-    assert len(fig_dict["data"][0]["x"]) == len(X["date"].unique())
-    assert len(fig_dict["data"][0]["y"]) == len(X["date"].unique())
-    assert not np.isnan(fig_dict["data"][0]["y"]).all()
-    assert fig_dict["data"][0]["name"] == "Series 1: Target"
-
-    assert len(fig_dict["data"][1]["x"]) == len(X["date"].unique())
-    assert len(fig_dict["data"][1]["y"]) == len(X["date"].unique())
-    assert not np.isnan(fig_dict["data"][1]["y"]).all()
-    assert fig_dict["data"][1]["name"] == "Series 1: Prediction"
-
-
+@pytest.mark.parametrize("single_series", ["0", None])
 def test_graph_prediction_vs_actual_over_time_multiseries(
     multiseries_ts_data_stacked,
     go,
     component_graph_multiseries,
     pipeline_parameters_multiseries,
+    single_series,
 ):
     X, y = multiseries_ts_data_stacked
     X_train, _, y_train, _ = split_multiseries_data(
@@ -543,16 +499,22 @@ def test_graph_prediction_vs_actual_over_time_multiseries(
         X_train,
         y_train,
         X["date"],
+        single_series=single_series,
     )
     assert isinstance(fig, go.Figure)
 
     fig_dict = fig.to_dict()
-    assert fig_dict["layout"]["title"]["text"] == "Graph for Multiseries"
+
+    if single_series is not None:
+        assert fig_dict["layout"]["title"]["text"] == "Graph for Series 0"
+        assert len(fig_dict["data"]) == 2
+    else:
+        assert fig_dict["layout"]["title"]["text"] == "Graph for Multiseries"
+        # there's 5 series, and each series has two lines (one each for target/prediction)
+        assert len(fig_dict["data"]) == 10
+
     assert fig_dict["layout"]["xaxis"]["title"]["text"] == "Time"
     assert fig_dict["layout"]["yaxis"]["title"]["text"] == "target"
-
-    # there's 5 series, and each series has two lines (one each for target/prediction)
-    assert len(fig_dict["data"]) == 10
 
     curr_series = 0
     for i in range(len(fig_dict["data"])):

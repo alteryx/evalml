@@ -41,3 +41,4 @@ from evalml.utils.nullable_type_utils import (
     _determine_downcast_type,
     _get_incompatible_nullable_types,
 )
+from evalml.utils.lazy_loader import LazyLoader

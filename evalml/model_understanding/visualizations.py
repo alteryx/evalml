@@ -446,6 +446,7 @@ def graph_prediction_vs_actual_over_time(
         dates,
     )
 
+    fig = None
     if is_multiseries(pipeline.problem_type):
         id_list = (
             [single_series] if single_series is not None else data["series_id"].unique()
@@ -481,8 +482,6 @@ def graph_prediction_vs_actual_over_time(
             fig.update_yaxes(title_text=y.name)
         if single_series is not None:
             fig.update_layout(
-                height=600,
-                width=1000,
                 title_text=f"Graph for Series {single_series}",
             )
         else:
@@ -491,32 +490,32 @@ def graph_prediction_vs_actual_over_time(
                 width=1500,
                 title_text="Graph for Multiseries",
             )
-        return fig
+    else:
+        data = [
+            _go.Scatter(
+                x=data["dates"],
+                y=data["target"],
+                mode="lines+markers",
+                name="Target",
+                line=dict(color="#1f77b4"),
+            ),
+            _go.Scatter(
+                x=data["dates"],
+                y=data["prediction"],
+                mode="lines+markers",
+                name="Prediction",
+                line=dict(color="#d62728"),
+            ),
+        ]
+        # Let plotly pick the best date format.
+        layout = _go.Layout(
+            title={"text": "Prediction vs Target over time"},
+            xaxis={"title": "Time"},
+            yaxis={"title": "Target Values and Predictions"},
+        )
 
-    data = [
-        _go.Scatter(
-            x=data["dates"],
-            y=data["target"],
-            mode="lines+markers",
-            name="Target",
-            line=dict(color="#1f77b4"),
-        ),
-        _go.Scatter(
-            x=data["dates"],
-            y=data["prediction"],
-            mode="lines+markers",
-            name="Prediction",
-            line=dict(color="#d62728"),
-        ),
-    ]
-    # Let plotly pick the best date format.
-    layout = _go.Layout(
-        title={"text": "Prediction vs Target over time"},
-        xaxis={"title": "Time"},
-        yaxis={"title": "Target Values and Predictions"},
-    )
-
-    return _go.Figure(data=data, layout=layout)
+        fig = _go.Figure(data=data, layout=layout)
+    return fig
 
 
 def get_linear_coefficients(estimator, features=None):
