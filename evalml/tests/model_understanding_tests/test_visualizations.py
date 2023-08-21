@@ -28,11 +28,47 @@ from evalml.pipelines import (
     ElasticNetRegressor,
     LinearRegressor,
     MulticlassClassificationPipeline,
+    MultiseriesRegressionPipeline,
     RegressionPipeline,
     TimeSeriesRegressionPipeline,
 )
+from evalml.preprocessing import split_multiseries_data
 from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_state, infer_feature_types
+
+
+@pytest.fixture(scope="module")
+def component_graph_multiseries():
+    return {
+        "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
+        "Baseline Multiseries": [
+            "Multiseries Time Series Baseline Regressor",
+            "Time Series Featurizer.x",
+            "y",
+        ],
+    }
+
+
+@pytest.fixture(scope="module")
+def pipeline_parameters_multiseries():
+    return {
+        "pipeline": {
+            "time_index": "date",
+            "max_delay": 10,
+            "forecast_horizon": 7,
+            "gap": 0,
+            "series_id": "series_id",
+        },
+        "Time Series Featurizer": {
+            "time_index": "date",
+            "max_delay": 10,
+            "forecast_horizon": 7,
+            "gap": 0,
+            "delay_features": False,
+            "delay_target": True,
+        },
+        "Baseline Multiseries": {"gap": 0, "forecast_horizon": 7},
+    }
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
@@ -346,6 +382,35 @@ def test_get_prediction_vs_actual_over_time_data(ts_data):
     assert list(results.columns) == ["dates", "target", "prediction"]
 
 
+def test_get_prediction_vs_actual_over_time_data_multiseries(
+    multiseries_ts_data_stacked,
+    component_graph_multiseries,
+    pipeline_parameters_multiseries,
+):
+    X, y = multiseries_ts_data_stacked
+    X_train, _, y_train, _ = split_multiseries_data(
+        X,
+        y,
+        "series_id",
+        "date",
+    )
+    pipeline = MultiseriesRegressionPipeline(
+        component_graph_multiseries,
+        pipeline_parameters_multiseries,
+    )
+    pipeline.fit(X_train, y_train)
+    results = get_prediction_vs_actual_over_time_data(
+        pipeline,
+        X,
+        y,
+        X_train,
+        y_train,
+        pd.Series(X["date"]),
+    )
+    assert isinstance(results, pd.DataFrame)
+    assert list(results.columns) == ["dates", "target", "prediction", "series_id"]
+
+
 def test_graph_prediction_vs_actual_over_time(ts_data, go):
     X, _, y = ts_data()
     X_train, y_train = X.iloc[:30], y.iloc[:30]
@@ -405,6 +470,63 @@ def test_graph_prediction_vs_actual_over_time_value_error():
             None,
             None,
         )
+
+
+@pytest.mark.parametrize("single_series", ["0", None])
+def test_graph_prediction_vs_actual_over_time_multiseries(
+    multiseries_ts_data_stacked,
+    go,
+    component_graph_multiseries,
+    pipeline_parameters_multiseries,
+    single_series,
+):
+    X, y = multiseries_ts_data_stacked
+    X_train, _, y_train, _ = split_multiseries_data(
+        X,
+        y,
+        "series_id",
+        "date",
+    )
+    pipeline = MultiseriesRegressionPipeline(
+        component_graph_multiseries,
+        pipeline_parameters_multiseries,
+    )
+    pipeline.fit(X_train, y_train)
+    fig = graph_prediction_vs_actual_over_time(
+        pipeline,
+        X,
+        y,
+        X_train,
+        y_train,
+        X["date"],
+        single_series=single_series,
+    )
+    assert isinstance(fig, go.Figure)
+
+    fig_dict = fig.to_dict()
+
+    if single_series is not None:
+        assert fig_dict["layout"]["title"]["text"] == "Graph for Series 0"
+        assert len(fig_dict["data"]) == 2
+    else:
+        assert fig_dict["layout"]["title"]["text"] == "Graph for Multiseries"
+        # there's 5 series, and each series has two lines (one each for target/prediction)
+        assert len(fig_dict["data"]) == 10
+
+    assert fig_dict["layout"]["xaxis"]["title"]["text"] == "Time"
+    assert fig_dict["layout"]["yaxis"]["title"]["text"] == "target"
+
+    curr_series = 0
+    for i in range(len(fig_dict["data"])):
+        assert len(fig_dict["data"][i]["x"]) == len(X["date"].unique())
+        assert len(fig_dict["data"][i]["y"]) == len(X["date"].unique())
+        assert not np.isnan(fig_dict["data"][i]["y"]).all()
+
+        if i % 2 == 0:
+            assert fig_dict["data"][i]["name"] == f"Series {curr_series}: Target"
+        else:
+            assert fig_dict["data"][i]["name"] == f"Series {curr_series}: Prediction"
+            curr_series += 1
 
 
 def test_decision_tree_data_from_estimator_not_fitted(tree_estimators):

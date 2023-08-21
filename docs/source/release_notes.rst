@@ -8,6 +8,7 @@ Release Notes
         * Fixed error when stacking data with no exogenous variables :pr:`4275`
     * Changes
         * Updated ``ARIMARegressor`` to be compatible with sktime v0.22.0 and beyond :pr:`4283`
+        * Updated ``graph_prediction_vs_actual_over_time()`` to be compatible with multiseries time series :pr:`4284`
     * Documentation Changes
         * Removed erroneous warnings from Data Checks User Guide page and removed ``tqdm`` warning in all notebooks :pr:`4274`
     * Testing Changes

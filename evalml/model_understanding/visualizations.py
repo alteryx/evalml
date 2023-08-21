@@ -12,6 +12,7 @@ from sklearn.tree import export_graphviz
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes
+from evalml.problem_types.utils import is_multiseries
 from evalml.utils import import_or_raise, infer_feature_types, jupyter_check
 
 
@@ -373,25 +374,44 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, X_train, y_train, da
     dates = infer_feature_types(dates)
     prediction = pipeline.predict_in_sample(X, y, X_train=X_train, y_train=y_train)
 
-    return pd.DataFrame(
-        {
-            "dates": dates.reset_index(drop=True),
-            "target": y.reset_index(drop=True),
-            "prediction": prediction.reset_index(drop=True),
-        },
-    )
+    if is_multiseries(pipeline.problem_type):
+        return pd.DataFrame(
+            {
+                "dates": dates.reset_index(drop=True),
+                "target": y.reset_index(drop=True),
+                "prediction": prediction.reset_index(drop=True),
+                "series_id": X[pipeline.series_id].reset_index(drop=True),
+            },
+        )
+    else:
+        return pd.DataFrame(
+            {
+                "dates": dates.reset_index(drop=True),
+                "target": y.reset_index(drop=True),
+                "prediction": prediction.reset_index(drop=True),
+            },
+        )
 
 
-def graph_prediction_vs_actual_over_time(pipeline, X, y, X_train, y_train, dates):
+def graph_prediction_vs_actual_over_time(
+    pipeline,
+    X,
+    y,
+    X_train,
+    y_train,
+    dates,
+    single_series=None,
+):
     """Plot the target values and predictions against time on the x-axis.
 
     Args:
         pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
-        X (pd.DataFrame): Features used to generate new predictions.
-        y (pd.Series): Target values to compare predictions against.
+        X (pd.DataFrame): Features used to generate new predictions. If problem is multiseries, X should be stacked.
+        y (pd.Series): Target values to compare predictions against. If problem is multiseries, y should be stacked.
         X_train (pd.DataFrame): Data the pipeline was trained on.
         y_train (pd.Series): Target values for training data.
         dates (pd.Series): Dates corresponding to target values and predictions.
+        single_series (str): A single series id value to plot just one series in a multiseries dataset. Defaults to None.
 
     Returns:
         plotly.Figure: Showing the prediction vs actual over time.
@@ -403,8 +423,15 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, X_train, y_train, dates
         "plotly.graph_objects",
         error_msg="Cannot find dependency plotly.graph_objects",
     )
+    subplots = import_or_raise(
+        "plotly.subplots",
+        error_msg="Cannot find dependency plotly.subplots",
+    )
 
-    if pipeline.problem_type != ProblemTypes.TIME_SERIES_REGRESSION:
+    if (
+        pipeline.problem_type != ProblemTypes.TIME_SERIES_REGRESSION
+        and pipeline.problem_type != ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION
+    ):
         raise ValueError(
             "graph_prediction_vs_actual_over_time only supports time series regression pipelines! "
             f"Received {str(pipeline.problem_type)}.",
@@ -419,30 +446,76 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, X_train, y_train, dates
         dates,
     )
 
-    data = [
-        _go.Scatter(
-            x=data["dates"],
-            y=data["target"],
-            mode="lines+markers",
-            name="Target",
-            line=dict(color="#1f77b4"),
-        ),
-        _go.Scatter(
-            x=data["dates"],
-            y=data["prediction"],
-            mode="lines+markers",
-            name="Prediction",
-            line=dict(color="#d62728"),
-        ),
-    ]
-    # Let plotly pick the best date format.
-    layout = _go.Layout(
-        title={"text": "Prediction vs Target over time"},
-        xaxis={"title": "Time"},
-        yaxis={"title": "Target Values and Predictions"},
-    )
+    fig = None
+    if is_multiseries(pipeline.problem_type):
+        id_list = (
+            [single_series] if single_series is not None else data["series_id"].unique()
+        )
+        fig = subplots.make_subplots(
+            rows=len(id_list),
+            cols=1,
+            subplot_titles=[f"Series: {id}" for id in id_list],
+        )
+        for curr_count, id in enumerate(id_list):
+            curr_df = data[data["series_id"] == id]
+            fig.append_trace(
+                _go.Scatter(
+                    x=curr_df["dates"],
+                    y=curr_df["target"],
+                    mode="lines+markers",
+                    name=f"Series {id}: Target",
+                ),
+                row=curr_count + 1,
+                col=1,
+            )
+            fig.append_trace(
+                _go.Scatter(
+                    x=curr_df["dates"],
+                    y=curr_df["prediction"],
+                    mode="lines+markers",
+                    name=f"Series {id}: Prediction",
+                ),
+                row=curr_count + 1,
+                col=1,
+            )
+            fig.update_xaxes(title_text="Time")
+            fig.update_yaxes(title_text=y.name)
+        if single_series is not None:
+            fig.update_layout(
+                title_text=f"Graph for Series {single_series}",
+            )
+        else:
+            fig.update_layout(
+                height=600 + (len(id_list)) * 200,
+                width=1500,
+                title_text="Graph for Multiseries",
+            )
+    else:
+        data = [
+            _go.Scatter(
+                x=data["dates"],
+                y=data["target"],
+                mode="lines+markers",
+                name="Target",
+                line=dict(color="#1f77b4"),
+            ),
+            _go.Scatter(
+                x=data["dates"],
+                y=data["prediction"],
+                mode="lines+markers",
+                name="Prediction",
+                line=dict(color="#d62728"),
+            ),
+        ]
+        # Let plotly pick the best date format.
+        layout = _go.Layout(
+            title={"text": "Prediction vs Target over time"},
+            xaxis={"title": "Time"},
+            yaxis={"title": "Target Values and Predictions"},
+        )
 
-    return _go.Figure(data=data, layout=layout)
+        fig = _go.Figure(data=data, layout=layout)
+    return fig
 
 
 def get_linear_coefficients(estimator, features=None):
