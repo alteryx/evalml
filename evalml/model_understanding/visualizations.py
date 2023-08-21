@@ -12,6 +12,7 @@ from sklearn.tree import export_graphviz
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes
+from evalml.problem_types.utils import is_multiseries
 from evalml.utils import import_or_raise, infer_feature_types, jupyter_check
 
 
@@ -374,7 +375,7 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, X_train, y_train, da
     dates = infer_feature_types(dates)
     prediction = pipeline.predict_in_sample(X, y, X_train=X_train, y_train=y_train)
 
-    if pipeline.series_id is not None:  # change to if problemtype == multiseries later
+    if is_multiseries(pipeline.problem_type):
         return pd.DataFrame(
             {
                 "dates": dates.reset_index(drop=True),
@@ -430,7 +431,8 @@ def graph_prediction_vs_actual_over_time(
 
     if (
         pipeline.problem_type != ProblemTypes.TIME_SERIES_REGRESSION
-    ):  # remember to change this when problem types get updated
+        and pipeline.problem_type != ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION
+    ):
         raise ValueError(
             "graph_prediction_vs_actual_over_time only supports time series regression pipelines! "
             f"Received {str(pipeline.problem_type)}.",
@@ -445,7 +447,7 @@ def graph_prediction_vs_actual_over_time(
         dates,
     )
 
-    if pipeline.series_id is not None:  # change to if ismultiseries() later
+    if is_multiseries(pipeline.problem_type):
         id_list = (
             [single_series] if single_series is not None else data["series_id"].unique()
         )
