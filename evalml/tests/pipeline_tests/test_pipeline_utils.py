@@ -1472,9 +1472,13 @@ def test_stack_data_noop():
     pd.testing.assert_series_equal(stack_data(series_y), series_y)
 
 
+@pytest.mark.parametrize("series_id_values_type", [set, list])
+@pytest.mark.parametrize("no_features", [True, False])
 @pytest.mark.parametrize("starting_index", [None, 1, 132])
 def test_stack_X(
     starting_index,
+    no_features,
+    series_id_values_type,
     multiseries_ts_data_stacked,
     multiseries_ts_data_unstacked,
 ):
@@ -1484,7 +1488,28 @@ def test_stack_X(
     if starting_index is not None:
         X_expected.index = X_expected.index + starting_index
 
-    X_transformed = stack_X(X, "series_id", "date", starting_index=starting_index)
+    if no_features:
+        series_id_values = series_id_values_type(str(i) for i in range(0, 5))
+        X = pd.DataFrame(X["date"])
+        X_expected = X_expected[["date", "series_id"]]
+
+        with pytest.raises(
+            ValueError,
+            match="Series ID values need to be passed in X column values or as a set with the `series_id_values` parameter.",
+        ):
+            stack_X(X, "series_id", "date", starting_index=starting_index)
+
+        X_transformed = stack_X(
+            X,
+            "series_id",
+            "date",
+            starting_index=starting_index,
+            series_id_values=series_id_values,
+        )
+
+    else:
+        X_transformed = stack_X(X, "series_id", "date", starting_index=starting_index)
+
     pd.testing.assert_frame_equal(
         X_expected.sort_index(axis=1),
         X_transformed.sort_index(axis=1),

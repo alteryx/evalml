@@ -5,6 +5,7 @@ Release Notes
         * Added support for prediction intervals for VARMAX regressor :pr:`4267`
         * Integrated multiseries time series into AutoMLSearch :pr:`4270`
     * Fixes
+        * Fixed error when stacking data with no exogenous variables :pr:`4275`
     * Changes
         * Updated ``ARIMARegressor`` to be compatible with sktime v0.22.0 and beyond :pr:`4283`
         * Updated ``graph_prediction_vs_actual_over_time()`` to be compatible with multiseries time series :pr:`4284`
