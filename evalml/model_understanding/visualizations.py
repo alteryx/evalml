@@ -425,7 +425,7 @@ def graph_prediction_vs_actual_over_time(
     )
     subplots = import_or_raise(
         "plotly.subplots",
-        error_msg="Cannot find dependency plotly.graph_objects",
+        error_msg="Cannot find dependency plotly.subplots",
     )
 
     if (
