@@ -190,34 +190,6 @@ class Decomposer(Transformer):
         relative_maxima = _get_rel_max_from_acf(y_detrended)
         return relative_maxima
 
-    # def set_period(
-    #     self,
-    #     X: pd.DataFrame,
-    #     y: pd.Series,
-    #     acf_threshold: float = 0.01,
-    #     rel_max_order: int = 5,
-    # ):
-    #     """Function to set the component's seasonal period based on the target's seasonality.
-
-    #     Args:
-    #         X (pandas.DataFrame): The feature data of the time series problem.
-    #         y (pandas.Series): The target data of a time series problem.
-    #         acf_threshold (float) : The threshold for the autocorrelation function to determine the period. Any values below
-    #             the threshold are considered to be 0 and will not be considered for the period. Defaults to 0.01.
-    #         rel_max_order (int) : The order of the relative maximum to determine the period. Defaults to 5.
-
-    #     """
-    #     self.periods = {}
-    #     if len(y.columns) == 1:
-    #         self.period = self.determine_periodicity(X, y, acf_threshold, rel_max_order)
-    #         self.update_parameters({"period": self.period})
-    #         self.periods[id] = self.period
-    #         return
-    #     else:
-    #         for id in y.columns:
-    #             self.periods[id] = self.determine_periodicity(X, y[id], acf_threshold, rel_max_order)
-    #     self.update_parameters({"periods": self.periods})
-
     def set_period(
         self,
         X: pd.DataFrame,

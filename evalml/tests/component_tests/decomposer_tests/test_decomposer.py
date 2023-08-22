@@ -442,50 +442,6 @@ def test_decomposer_projected_seasonality_integer_and_datetime(
     "decomposer_child_class",
     decomposer_list,
 )
-@pytest.mark.parametrize(
-    "variateness",
-    [
-        "univariate",
-        "multivariate",
-    ],
-)
-def test_decomposer_get_trend_dataframe_raises_errors(
-    decomposer_child_class,
-    ts_data,
-    ts_multiseries_data,
-    variateness,
-):
-    if variateness == "univariate":
-        X, _, y = ts_data()
-    elif variateness == "multivariate":
-        if isinstance(decomposer_child_class(), PolynomialDecomposer):
-            pytest.skip(
-                "Skipping Decomposer because multiseries is not implemented for Polynomial Decomposer",
-            )
-        X, _, y = ts_multiseries_data()
-
-    dec = decomposer_child_class()
-    dec.fit_transform(X, y)
-
-    with pytest.raises(
-        TypeError,
-        match="Provided X should have datetimes in the index.",
-    ):
-        X_int_index = X.reset_index()
-        dec.get_trend_dataframe(X_int_index, y)
-
-    with pytest.raises(
-        ValueError,
-        match="Provided DatetimeIndex of X should have an inferred frequency.",
-    ):
-        X.index.freq = None
-        dec.get_trend_dataframe(X, y)
-
-
-@pytest.mark.parametrize(
-    "decomposer_child_class",
-    decomposer_list,
-)
 @pytest.mark.parametrize("period", [7, 30, 365])
 def test_decomposer_set_period(decomposer_child_class, period, generate_seasonal_data):
     X, y = generate_seasonal_data(real_or_synthetic="synthetic")(period)

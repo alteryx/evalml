@@ -447,6 +447,7 @@ def test_unsupported_frequencies(
     """This test exists to highlight that even though the underlying statsmodels STL component won't work
     for minute or annual frequencies, we can still run these frequencies with automatic period detection.
     """
+    # period = 7 if variateness == "univariate" else {}
     X, y = generate_seasonal_data(
         real_or_synthetic="synthetic",
         univariate_or_multivariate=variateness,
@@ -457,7 +458,38 @@ def test_unsupported_frequencies(
 
     stl = STLDecomposer()
     X_t, y_t = stl.fit_transform(X, y)
-    assert stl.period is not None
+    if variateness == "univariate":
+        assert stl.period is not None
+    else:
+        assert stl.periods is not None
+
+
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
+def test_init_periods(
+    generate_seasonal_data,
+    variateness,
+):
+    """This test exists to highlight that even though the underlying statsmodels STL component won't work
+    for minute or annual frequencies, we can still run these frequencies with automatic period detection.
+    """
+    period = 7
+    X, y = generate_seasonal_data(
+        real_or_synthetic="synthetic",
+        univariate_or_multivariate=variateness,
+    )(period)
+    periods = {id: 8 for id in y.columns} if variateness == "multivariate" else None
+    stl = STLDecomposer(period=period, periods=periods)
+    X_t, y_t = stl.fit_transform(X, y)
+    if variateness == "univariate":
+        assert stl.period == period
+    else:
+        assert stl.periods == periods
 
 
 @pytest.mark.parametrize(

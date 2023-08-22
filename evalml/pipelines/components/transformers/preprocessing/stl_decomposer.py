@@ -195,26 +195,27 @@ class STLDecomposer(Decomposer):
         self.seasonalities = {}
         self.trends = {}
         self.residuals = {}
-        self.periods = {}
-
-        # # Determine the period of the seasonal component
-        # # Set the period if it is single series and period is given
-        # if self.period is not None and len(y.columns) == 1:
-        #     self.periods = {0: self.period}
-        # # Set periods if it is single series and period is
-        # if self.periods is None or self.period is None:
-        #     self.set_period(X, y)
-
-        # if self.period is None:
-        #     self.set_period(X, y)
+        if self.periods is None:
+            self.periods = {}
 
         for id in y.columns:
             series_y = y[id]
 
             # Determine the period of the seasonal component
-            if id not in self.periods or self.period is None:
-                self.set_period(X, series_y)
-                self.periods[id] = self.period
+            if id not in self.periods:
+                period = self.determine_periodicity(
+                    X,
+                    series_y,
+                    acf_threshold=0.01,
+                    rel_max_order=5,
+                )
+                if self.period is None and len(y.columns) == 1:
+                    self.period = period
+                    self.update_parameters({"period": self.period})
+                elif self.period is not None and len(y.columns) == 1:
+                    period = self.period
+                self.periods[id] = period
+                self.update_parameters({"periods": self.periods})
 
             stl = STL(
                 series_y,
@@ -463,7 +464,8 @@ class STLDecomposer(Decomposer):
         # in ForecastingHorizon during decomposition.
         if not isinstance(y.index, pd.DatetimeIndex):
             y = self._set_time_index(X, y)
-
+        if not isinstance(X.index, pd.DatetimeIndex):
+            X.index = y.index
         self._check_oos_past(y)
 
         def _decompose_target(X, y, fh, trend, seasonal, residual, period, id):
@@ -495,13 +497,6 @@ class STLDecomposer(Decomposer):
         # Iterate through each series id
         for id in y.columns:
             result_dfs = []
-            if not isinstance(X.index, pd.DatetimeIndex):
-                raise TypeError("Provided X should have datetimes in the index.")
-            if X.index.freq is None:
-                raise ValueError(
-                    "Provided DatetimeIndex of X should have an inferred frequency.",
-                )
-
             if len(y.columns) > 1:
                 seasonal = self.seasonals[id]
                 trend = self.trends[id]
