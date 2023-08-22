@@ -623,6 +623,6 @@ def test_stl_decomposer_unstack_series_id(
 ):
     X, y = multiseries_ts_data_stacked
 
-    dec = STLDecomposer(time_index="date", series_id="series_id")
-    X_t, y_t = dec.fit_transform(X, y)
-    assert len(y_t) == len(y["series_id"])
+    dec = STLDecomposer(series_id="series_id", time_index="date")
+    X_output, y_output = dec.fit_transform(X, y)
+    assert len(y_output.columns) == X["series_id"].nunique()

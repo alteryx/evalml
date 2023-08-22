@@ -11,7 +11,6 @@ from statsmodels.tsa.forecasting.stl import STLForecast
 from statsmodels.tsa.seasonal import STL
 
 from evalml.pipelines.components.transformers.preprocessing.decomposer import Decomposer
-from evalml.pipelines.utils import unstack_multiseries
 from evalml.utils import infer_feature_types
 
 
@@ -174,6 +173,8 @@ class STLDecomposer(Decomposer):
             ValueError: If y is None.
             ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
+        from evalml.pipelines.utils import unstack_multiseries
+
         # Warn for poor decomposition use with higher seasonal smoothers
         if self.seasonal_smoother > 14:
             self.logger.warning(
@@ -182,7 +183,7 @@ class STLDecomposer(Decomposer):
 
         # If y is a stacked pd.Series, unstack it
         if self.series_id is not None and isinstance(y, pd.Series):
-            X, y = unstack_multiseries(X, y, self.series_id)
+            X, y = unstack_multiseries(X, y, self.series_id, self.time_index, y.name)
 
         if isinstance(y, pd.Series):
             y = y.to_frame()
@@ -266,8 +267,14 @@ class STLDecomposer(Decomposer):
         Raises:
             ValueError: If target data doesn't have DatetimeIndex AND no Datetime features in features data
         """
+        from evalml.pipelines.utils import unstack_multiseries
+
         if y is None:
             return X, y
+
+        # If y is a stacked pd.Series, unstack it
+        if self.series_id is not None and isinstance(y, pd.Series):
+            X, y = unstack_multiseries(X, y, self.series_id, self.time_index, y.name)
 
         if isinstance(y, pd.Series):
             y = y.to_frame()
@@ -472,7 +479,6 @@ class STLDecomposer(Decomposer):
         if not isinstance(X.index, pd.DatetimeIndex):
             X.index = y.index
         self._check_oos_past(y)
-        trend = 0
 
         def _decompose_target(X, y, fh, trend, seasonal, residual):
             """Function to generate a single DataFrame with trend, seasonality and residual components."""
