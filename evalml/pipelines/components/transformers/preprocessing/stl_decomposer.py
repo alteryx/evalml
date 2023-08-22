@@ -12,6 +12,7 @@ from statsmodels.tsa.seasonal import STL
 
 from evalml.pipelines.components.transformers.preprocessing.decomposer import Decomposer
 from evalml.utils import infer_feature_types
+from pipelines.utils import unstack_multiseries
 
 
 class STLDecomposer(Decomposer):
@@ -178,6 +179,10 @@ class STLDecomposer(Decomposer):
             self.logger.warning(
                 f"STLDecomposer may perform poorly on data with a high seasonal smoother ({self.seasonal_smoother}).",
             )
+
+        # If y is a stacked pd.Series, unstack it
+        if self.series_id is not None and isinstance(y, pd.Series):
+            X, y = unstack_multiseries(X, y, self.series_id)
 
         if isinstance(y, pd.Series):
             y = y.to_frame()

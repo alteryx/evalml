@@ -616,3 +616,13 @@ def test_stl_decomposer_plot_decomposition(
             assert isinstance(fig, matplotlib.pyplot.Figure)
             assert isinstance(axs, np.ndarray)
             assert all([isinstance(ax, matplotlib.pyplot.Axes) for ax in axs])
+
+
+def test_stl_decomposer_unstack_series_id(
+    multiseries_ts_data_stacked,
+):
+    X, y = multiseries_ts_data_stacked
+
+    dec = STLDecomposer(time_index="date", series_id="series_id")
+    X_t, y_t = dec.fit_transform(X, y)
+    assert len(y_t) == len(y["series_id"])
