@@ -12,6 +12,7 @@ from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
 from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     ComponentGraph,
+    MultiseriesRegressionPipeline,
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline,
@@ -66,6 +67,7 @@ from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
+    is_multiseries,
     is_regression,
     is_time_series,
 )
@@ -289,6 +291,9 @@ def _get_preprocessing_components(
     Returns:
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
+    if is_multiseries(problem_type):
+        return []
+
     if is_time_series(problem_type):
         components_functions = [
             _get_label_encoder,
@@ -361,8 +366,10 @@ def _get_pipeline_base_class(problem_type):
         return TimeSeriesRegressionPipeline
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
         return TimeSeriesBinaryClassificationPipeline
-    else:
+    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         return TimeSeriesMulticlassClassificationPipeline
+    else:
+        return MultiseriesRegressionPipeline
 
 
 def _make_pipeline_time_series(
@@ -1204,6 +1211,7 @@ def make_timeseries_baseline_pipeline(
     forecast_horizon,
     time_index,
     exclude_featurizer=False,
+    series_id=None,
 ):
     """Make a baseline pipeline for time series regression problems.
 
@@ -1214,6 +1222,7 @@ def make_timeseries_baseline_pipeline(
         time_index (str): Column name of time_index parameter.
         exclude_featurizer (bool): Whether or not to exclude the TimeSeriesFeaturizer from
             the baseline graph. Defaults to False.
+        series_id (str): Column name of series_id parameter. Only used for multiseries time series. Defaults to None.
 
     Returns:
         TimeSeriesPipelineBase, a time series pipeline corresponding to the problem type.
@@ -1232,8 +1241,17 @@ def make_timeseries_baseline_pipeline(
             TimeSeriesBinaryClassificationPipeline,
             "Time Series Baseline Binary Pipeline",
         ),
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION: (
+            MultiseriesRegressionPipeline,
+            "Multiseries Time Series Baseline Pipeline",
+        ),
     }[problem_type]
-    component_graph = ["Time Series Baseline Estimator"]
+    baseline_estimator_name = (
+        "Multiseries Time Series Baseline Regressor"
+        if is_multiseries(problem_type)
+        else "Time Series Baseline Estimator"
+    )
+    component_graph = [baseline_estimator_name]
     parameters = {
         "pipeline": {
             "time_index": time_index,
@@ -1241,11 +1259,13 @@ def make_timeseries_baseline_pipeline(
             "max_delay": 0,
             "forecast_horizon": forecast_horizon,
         },
-        "Time Series Baseline Estimator": {
+        baseline_estimator_name: {
             "gap": gap,
             "forecast_horizon": forecast_horizon,
         },
     }
+    if is_multiseries(problem_type):
+        parameters["pipeline"]["series_id"] = series_id
     if not exclude_featurizer:
         component_graph = ["Time Series Featurizer"] + component_graph
         parameters["Time Series Featurizer"] = {
@@ -1397,8 +1417,11 @@ def unstack_multiseries(
                 X_unstacked_cols.append(new_column)
 
     # Concatenate all the single series to reform dataframes
-    X_unstacked = pd.concat(X_unstacked_cols, axis=1)
     y_unstacked = pd.concat(y_unstacked_cols, axis=1)
+    if len(X_unstacked_cols) == 0:
+        X_unstacked = pd.DataFrame(index=y_unstacked.index)
+    else:
+        X_unstacked = pd.concat(X_unstacked_cols, axis=1)
 
     # Reset the axes now that they've been unstacked, keep time info in X
     X_unstacked = X_unstacked.reset_index()
@@ -1457,7 +1480,7 @@ def stack_data(data, include_series_id=False, series_id_name=None, starting_inde
     return stacked_series
 
 
-def stack_X(X, series_id_name, time_index, starting_index=None):
+def stack_X(X, series_id_name, time_index, starting_index=None, series_id_values=None):
     """Restacks the unstacked features into a single DataFrame.
 
     Args:
@@ -1466,37 +1489,61 @@ def stack_X(X, series_id_name, time_index, starting_index=None):
         time_index (str): The name of the time index column.
         starting_index (int): The starting index to use for the stacked DataFrame. If None, the starting index
             will match that of the input data. Defaults to None.
+        series_id_values (set, list): The unique values of a series ID, used to generate the index. If None, values will
+            be generated from X column values. Required if X only has time index values and no exogenous values.
+            Defaults to None.
 
     Returns:
         pd.DataFrame: The restacked features.
     """
     original_columns = set()
-    series_ids = set()
-    for col in X.columns:
-        if col == time_index:
-            continue
-        separated_name = col.split("_")
-        original_columns.add("_".join(separated_name[:-1]))
-        series_ids.add(separated_name[-1])
+    series_ids = series_id_values or set()
+    if series_id_values is None:
+        for col in X.columns:
+            if col == time_index:
+                continue
+            separated_name = col.split("_")
+            original_columns.add("_".join(separated_name[:-1]))
+            series_ids.add(separated_name[-1])
 
-    restacked_X = []
-
-    for i, original_col in enumerate(original_columns):
-        # Only include the series id once (for the first column)
-        include_series_id = i == 0
-        subset_X = [col for col in X.columns if original_col in col]
-        restacked_X.append(
-            stack_data(
-                X[subset_X],
-                include_series_id=include_series_id,
-                series_id_name=series_id_name,
-                starting_index=starting_index,
-            ),
+    if len(series_ids) == 0:
+        raise ValueError(
+            "Series ID values need to be passed in X column values or as a set with the `series_id_values` parameter.",
         )
-    restacked_X = pd.concat(restacked_X, axis=1)
 
     time_index_col = X[time_index].repeat(len(series_ids)).reset_index(drop=True)
-    time_index_col.index = restacked_X.index
-    restacked_X[time_index] = time_index_col
+
+    if len(original_columns) == 0:
+        start_index = starting_index or X.index[0]
+        stacked_index = pd.RangeIndex(
+            start=start_index,
+            stop=start_index + len(time_index_col),
+        )
+        time_index_col.index = stacked_index
+        restacked_X = pd.DataFrame(
+            {
+                time_index: time_index_col,
+                series_id_name: sorted(list(series_ids)) * len(X),
+            },
+            index=stacked_index,
+        )
+    else:
+        restacked_X = []
+        for i, original_col in enumerate(original_columns):
+            # Only include the series id once (for the first column)
+            include_series_id = i == 0
+            subset_X = [col for col in X.columns if original_col in col]
+            restacked_X.append(
+                stack_data(
+                    X[subset_X],
+                    include_series_id=include_series_id,
+                    series_id_name=series_id_name,
+                    starting_index=starting_index,
+                ),
+            )
+
+        restacked_X = pd.concat(restacked_X, axis=1)
+        time_index_col.index = restacked_X.index
+        restacked_X[time_index] = time_index_col
 
     return restacked_X

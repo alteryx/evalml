@@ -2,10 +2,14 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added support for prediction intervals for VARMAX regressor :pr:`4267`
+        * Integrated multiseries time series into AutoMLSearch :pr:`4270`
         * Extended STLDecomposer to Support Multiseries :pr:`4253`
     * Fixes
+        * Fixed error when stacking data with no exogenous variables :pr:`4275`
     * Changes
         * Updated ``ARIMARegressor`` to be compatible with sktime v0.22.0 and beyond :pr:`4283`
+        * Updated ``graph_prediction_vs_actual_over_time()`` to be compatible with multiseries time series :pr:`4284`
     * Documentation Changes
         * Removed erroneous warnings from Data Checks User Guide page and removed ``tqdm`` warning in all notebooks :pr:`4274`
     * Testing Changes
@@ -22,7 +26,6 @@ Release Notes
         * Added stacking and unstacking utility functions to work with multiseries data :pr:`4250`
         * Added multiseries regression pipeline class :pr:`4256`
         * Added multiseries VARMAX regressor :pr:`4238`
-        * Added support for prediction intervals for VARMAX regressor :pr:`4267`
     * Fixes
         * Added support for pandas 2 :pr:`4216`
         * Fixed bug where time series pipelines would fail due to MASE needing `y_train` when scoring :pr:`4258`

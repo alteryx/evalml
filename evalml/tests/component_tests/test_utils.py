@@ -186,6 +186,7 @@ def test_scikit_learn_wrapper(X_y_binary, X_y_multi, X_y_regression):
                 ProblemTypes.TIME_SERIES_REGRESSION,
                 ProblemTypes.TIME_SERIES_MULTICLASS,
                 ProblemTypes.TIME_SERIES_BINARY,
+                ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
             ]:
                 continue
 

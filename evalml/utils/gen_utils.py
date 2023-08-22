@@ -216,7 +216,6 @@ _not_used_in_automl = {
     "SVMClassifier",
     "SVMRegressor",
     "LinearRegressor",
-    "VARMAXRegressor",
     "VowpalWabbitBinaryClassifier",
     "VowpalWabbitMulticlassClassifier",
     "VowpalWabbitRegressor",

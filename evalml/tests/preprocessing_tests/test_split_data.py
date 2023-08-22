@@ -127,8 +127,12 @@ def test_split_data_ts(test, X_y_regression):
     assert len(y_test) == test_size
 
 
-def test_split_multiseries_data(multiseries_ts_data_stacked):
+@pytest.mark.parametrize("no_features", [True, False])
+def test_split_multiseries_data(no_features, multiseries_ts_data_stacked):
     X, y = multiseries_ts_data_stacked
+
+    if no_features:
+        X = X[["date", "series_id"]]
 
     X_train_expected, X_holdout_expected = X[:-10], X[-10:]
     y_train_expected, y_holdout_expected = y[:-10], y[-10:]

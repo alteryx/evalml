@@ -20,7 +20,7 @@ def test_model_family():
 
 def test_problem_types():
     assert set(VARMAXRegressor.supported_problem_types) == {
-        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     }
 
 
@@ -48,7 +48,7 @@ def test_remove_datetime_feature(
         datetime_feature=True,
     )
 
-    clf = VARMAXRegressor()
+    clf = VARMAXRegressor(use_covariates=True)
     clf.fit(X_train, y_train)
 
     assert "date" not in mock_fit.call_args.kwargs["X"]
@@ -95,6 +95,7 @@ def test_feature_importance(ts_multiseries_data):
         (False, True, True, False, False, True),
     ],
 )
+@pytest.mark.parametrize("use_covariates", [True, False])
 def test_fit_predict(
     train_features_index_dt,
     train_target_index_dt,
@@ -102,6 +103,7 @@ def test_fit_predict(
     no_features,
     datetime_feature,
     test_features_index_dt,
+    use_covariates,
     ts_multiseries_data,
 ):
     from sktime.forecasting.base import ForecastingHorizon
@@ -119,10 +121,14 @@ def test_fit_predict(
     fh_ = ForecastingHorizon([i + 1 for i in range(len(X_test))], is_relative=True)
 
     a_clf = VARMAX(maxiter=10)
-    clf = a_clf.fit(X=X_train, y=y_train)
-    y_pred_sk = clf.predict(fh=fh_, X=X_test)
+    if use_covariates:
+        clf = a_clf.fit(X=X_train, y=y_train)
+        y_pred_sk = clf.predict(fh=fh_, X=X_test)
+    else:
+        clf = a_clf.fit(y=y_train)
+        y_pred_sk = clf.predict(fh=fh_)
 
-    m_clf = VARMAXRegressor(maxiter=10)
+    m_clf = VARMAXRegressor(maxiter=10, use_covariates=use_covariates)
     m_clf.fit(X=X_train, y=y_train)
     y_pred = m_clf.predict(X=X_test)
     np.testing.assert_almost_equal(y_pred_sk.values, y_pred.values)
@@ -178,10 +184,12 @@ def test_fit_predict_sk_failure(
 
 @pytest.mark.parametrize("freq_num", ["1", "2"])
 @pytest.mark.parametrize("freq_str", ["T", "M", "Y"])
+@pytest.mark.parametrize("use_covariates", [True, False])
 def test_different_time_units_out_of_sample(
     freq_str,
     freq_num,
     ts_multiseries_data,
+    use_covariates,
 ):
     from sktime.forecasting.base import ForecastingHorizon
     from sktime.forecasting.varmax import VARMAX
@@ -190,10 +198,14 @@ def test_different_time_units_out_of_sample(
     fh_ = ForecastingHorizon([i + 1 for i in range(len(y[15:]))], is_relative=True)
 
     a_clf = VARMAX(maxiter=10)
-    clf = a_clf.fit(X=X[:15], y=y[:15])
-    y_pred_sk = clf.predict(fh=fh_, X=X[15:])
+    if use_covariates:
+        clf = a_clf.fit(X=X[:15], y=y[:15])
+        y_pred_sk = clf.predict(fh=fh_, X=X[15:])
+    else:
+        clf = a_clf.fit(y=y[:15])
+        y_pred_sk = clf.predict(fh=fh_)
 
-    m_clf = VARMAXRegressor()
+    m_clf = VARMAXRegressor(use_covariates=use_covariates)
     m_clf.fit(X=X[:15], y=y[:15])
     y_pred = m_clf.predict(X=X[15:])
 
@@ -218,7 +230,7 @@ def test_varmax_supports_boolean_features():
     X.ww.init()
     y = pd.DataFrame({"target_1": np.random.rand(10), "target_2": np.random.rand(10)})
 
-    vx = VARMAXRegressor(time_index="dates")
+    vx = VARMAXRegressor(time_index="dates", use_covariates=True)
 
     with patch.object(VARMAX, "fit") as mock_fit:
         vx.fit(X, y)
@@ -258,6 +270,18 @@ def test_varmax_regressor_respects_use_covariates(
     assert "y" in mock_fit.call_args.kwargs
     mock_predict.assert_called_once()
     assert "X" not in mock_predict.call_args.kwargs
+
+
+@patch("sktime.forecasting.varmax.VARMAX.fit")
+def test_varmax_regressor_X_datetime_only(mock_fit, multiseries_ts_data_unstacked):
+    X, y = multiseries_ts_data_unstacked
+    X.ww.init()
+    X = X.ww.select(include=["Datetime"])
+
+    clf = VARMAXRegressor(use_covariates=True)
+    clf.fit(X, y)
+
+    assert "X" not in mock_fit.call_args.kwargs
 
 
 def test_varmax_regressor_can_forecast_arbitrary_dates_no_covariates(

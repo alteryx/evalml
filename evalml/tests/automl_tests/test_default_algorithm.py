@@ -23,7 +23,7 @@ from evalml.pipelines.components import (
     TimeSeriesFeaturizer,
     URLFeaturizer,
 )
-from evalml.problem_types import ProblemTypes, is_time_series
+from evalml.problem_types import ProblemTypes, is_multiseries, is_time_series
 
 
 def test_default_algorithm_init(X_y_binary):
@@ -60,6 +60,15 @@ def test_default_algorithm_init(X_y_binary):
         ensembling=True,
     )
     assert algo.default_max_batches == 3
+
+    algo = DefaultAlgorithm(
+        X,
+        y,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
+        sampler_name,
+        verbose=True,
+    )
+    assert algo.default_max_batches == 1
 
 
 def test_default_algorithm_search_parameters_error(X_y_binary):
@@ -634,6 +643,46 @@ def test_default_algorithm_time_series(
     assert len(long_estimators) == 3
 
 
+def test_default_algorithm_multiseries_time_series(
+    multiseries_ts_data_stacked,
+):
+    X, y = multiseries_ts_data_stacked
+    problem_type = "multiseries time series regression"
+    sampler_name = None
+
+    search_parameters = {
+        "pipeline": {
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 3,
+            "delay_features": False,
+            "forecast_horizon": 10,
+            "series_id": "series_id",
+        },
+    }
+
+    algo = DefaultAlgorithm(
+        X,
+        y,
+        problem_type,
+        sampler_name,
+        search_parameters=search_parameters,
+    )
+
+    first_batch = algo.next_batch()
+    assert len(first_batch) == 1
+    pipeline = first_batch[0]
+    assert pipeline.model_family == ModelFamily.VARMAX
+    assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
+
+    add_result(algo, first_batch)
+
+    long_explore = algo.next_batch()
+    long_estimators = set([pipeline.estimator.name for pipeline in long_explore])
+    assert len(long_explore) == 50
+    assert len(long_estimators) == 1
+
+
 @pytest.mark.parametrize(
     "problem_type",
     [
@@ -804,6 +853,7 @@ def test_default_algorithm_accept_features(
             "max_delay": 3,
             "delay_features": False,
             "forecast_horizon": 10,
+            "series_id": "series_id" if is_multiseries(problem_type) else None,
         }
 
     algo = DefaultAlgorithm(
@@ -987,6 +1037,8 @@ def test_exclude_featurizers_default_algorithm(
             "max_delay": 1,
             "forecast_horizon": 3,
         }
+        if is_multiseries(problem_type):
+            parameters["series_id"] = "series_id"
 
     X, y = get_test_data_from_configuration(
         input_type,
