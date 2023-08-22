@@ -11,8 +11,8 @@ from statsmodels.tsa.forecasting.stl import STLForecast
 from statsmodels.tsa.seasonal import STL
 
 from evalml.pipelines.components.transformers.preprocessing.decomposer import Decomposer
+from evalml.pipelines.utils import unstack_multiseries
 from evalml.utils import infer_feature_types
-from pipelines.utils import unstack_multiseries
 
 
 class STLDecomposer(Decomposer):
@@ -472,8 +472,9 @@ class STLDecomposer(Decomposer):
         if not isinstance(X.index, pd.DatetimeIndex):
             X.index = y.index
         self._check_oos_past(y)
+        trend = 0
 
-        def _decompose_target(X, y, fh, trend, seasonal, residual, period, id):
+        def _decompose_target(X, y, fh, trend, seasonal, residual):
             """Function to generate a single DataFrame with trend, seasonality and residual components."""
             if len(y.index) != len(trend.index) or not all(
                 y.index == trend.index,
@@ -523,8 +524,6 @@ class STLDecomposer(Decomposer):
                         trend,
                         seasonal,
                         residual,
-                        period,
-                        id,
                     ),
                 )
 
