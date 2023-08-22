@@ -2520,21 +2520,9 @@ def generate_seasonal_data():
             y = y.set_axis(dts)
         return X, y
 
-    def _return_proper_func(real_or_synthetic):
-        if real_or_synthetic == "synthetic":
-            return generate_synthetic_data
-        elif real_or_synthetic == "real":
-            return generate_real_data
-
-    return _return_proper_func
-
-
-@pytest.fixture
-def generate_multiseries_seasonal_data():
-    """Function that returns data with a linear trend and a seasonal signal with specified period for multiseries."""
-
-    def generate_synthetic_data(
+    def generate_multiseries_synthetic_data(
         period,
+        step=None,
         num_periods=20,
         scale=1,
         seasonal_scale=1,
@@ -2589,9 +2577,16 @@ def generate_multiseries_seasonal_data():
         y_ms = pd.DataFrame(y_ms_list).T
         return X, y_ms
 
-    def _return_proper_func(real_or_synthetic):
-        if real_or_synthetic == "synthetic":
+    def _return_proper_func(real_or_synthetic, univariate_or_multivariate="univariate"):
+        if (
+            real_or_synthetic == "synthetic"
+            and univariate_or_multivariate == "univariate"
+        ):
             return generate_synthetic_data
+        elif real_or_synthetic == "real" and univariate_or_multivariate == "univariate":
+            return generate_real_data
+        if univariate_or_multivariate == "multivariate":
+            return generate_multiseries_synthetic_data
 
     return _return_proper_func
 

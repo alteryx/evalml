@@ -45,12 +45,14 @@ class STLDecomposer(Decomposer):
         series_id: str = None,
         degree: int = 1,  # Currently unused.
         period: int = None,
+        periods: dict = None,
         seasonal_smoother: int = 7,
         random_seed: int = 0,
         **kwargs,
     ):
         self.logger = logging.getLogger(__name__)
         self.series_id = series_id
+        self.periods = periods
         # Programmatically adjust seasonal_smoother to fit underlying STL requirements,
         # that seasonal_smoother must be odd.
         if seasonal_smoother % 2 == 0:
@@ -64,6 +66,7 @@ class STLDecomposer(Decomposer):
         parameters = {
             "degree": degree,
             "period": period,
+            "periods": periods,
             "seasonal_smoother": seasonal_smoother,
             "time_index": time_index,
             "series_id": series_id,
@@ -189,10 +192,22 @@ class STLDecomposer(Decomposer):
         self.frequency = y.index.freqstr or pd.infer_freq(y.index)
         # Iterate through each id group
         self.seasonals = {}
-        self.periods = {}
         self.seasonalities = {}
         self.trends = {}
         self.residuals = {}
+        self.periods = {}
+
+        # # Determine the period of the seasonal component
+        # # Set the period if it is single series and period is given
+        # if self.period is not None and len(y.columns) == 1:
+        #     self.periods = {0: self.period}
+        # # Set periods if it is single series and period is
+        # if self.periods is None or self.period is None:
+        #     self.set_period(X, y)
+
+        # if self.period is None:
+        #     self.set_period(X, y)
+
         for id in y.columns:
             series_y = y[id]
 
@@ -347,13 +362,12 @@ class STLDecomposer(Decomposer):
         if isinstance(y_t, pd.Series):
             y_t = y_t.to_frame()
 
+        index = self._choose_proper_index(y_t)
         y = []
         for id in y_t.columns:
             y_in_sample = pd.Series([])
             y_out_of_sample = pd.Series([])
             series_y = y_t[id]
-
-            index = self._choose_proper_index(series_y)
 
             if len(y_t.columns) > 1:
                 old_trend = self.trends[id]
@@ -454,13 +468,9 @@ class STLDecomposer(Decomposer):
 
         def _decompose_target(X, y, fh, trend, seasonal, residual, period, id):
             """Function to generate a single DataFrame with trend, seasonality and residual components."""
-            if len(y.index) == len(trend.index) and all(
+            if len(y.index) != len(trend.index) or not all(
                 y.index == trend.index,
             ):
-                trend = trend
-                seasonal = seasonal
-                residual = residual
-            else:
                 # TODO: Do a better job cloning.
                 decomposer = STLDecomposer(
                     seasonal_smoother=self.seasonal_smoother,
