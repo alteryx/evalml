@@ -359,7 +359,7 @@ class AutoMLSearch:
         allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
             model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
             to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
-            this parameter will be ignored.
+            this parameter will be ignored. For default algorithm, this only applies to estimators in the non-naive batches.
 
         features (list)[FeatureBase]: List of features to run DFS on AutoML pipelines. Defaults to None.
             Features will only be computed if the columns used by the feature exist in the search input
@@ -442,7 +442,7 @@ class AutoMLSearch:
         exclude_featurizers (list[str]): A list of featurizer components to exclude from the pipelines built by search.
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
 
-        excluded_model_families (list[ModelFamily]): A list of model families to exclude from the estimators used when building pipelines. For default algorithm, this only excludes estimators in the non-naive batches.
+        excluded_model_families (list(str, ModelFamily)): A list of model families to exclude from the estimators used when building pipelines. For default algorithm, this only excludes estimators in the non-naive batches.
 
         holdout_set_size (float): The size of the holdout set that AutoML search will take for datasets larger than 500 rows. If set to 0, holdout set will not be taken regardless of number of rows. Must be between 0 and 1, exclusive. Defaults to 0.1.
 
@@ -864,9 +864,12 @@ class AutoMLSearch:
                 raise ValueError(
                     "`excluded_model_families` must be passed in the form of a list.",
                 )
-            if not all(isinstance(x, ModelFamily) for x in excluded_model_families):
+            if not all(
+                isinstance(x, ModelFamily) or isinstance(x, str)
+                for x in excluded_model_families
+            ):
                 raise ValueError(
-                    "All values in `excluded_model_families` must be of type `ModelFamily`.",
+                    "All values in `excluded_model_families` must be of type `ModelFamily` or `str`.",
                 )
 
         self.excluded_model_families = excluded_model_families

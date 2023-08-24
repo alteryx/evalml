@@ -79,8 +79,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             Valid options are "DatetimeFeaturizer", "EmailFeaturizer", "URLFeaturizer", "NaturalLanguageFeaturizer", "TimeSeriesFeaturizer"
         allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
             model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
-            to `multiclass` or `regression` depending on the problem type.
-        excluded_model_families (list[ModelFamily]): A list of model families to exclude from the estimators used when building pipelines. For default algorithm, this only excludes estimators in the non-naive batches.
+            to `multiclass` or `regression` depending on the problem type. For default algorithm, this only applies to estimators in the non-naive batches.
+        excluded_model_families (list(str, ModelFamily)): A list of model families to exclude from the estimators used when building pipelines. For default algorithm, this only excludes estimators in the non-naive batches.
     """
 
     def __init__(

@@ -67,8 +67,8 @@ def get_estimators(
 
     Args:
         problem_type (ProblemTypes or str): Problem type to filter for.
-        model_families (list[ModelFamily] or list[str]): Model families to filter for.
-        excluded_model_families (list[ModelFamily]): A list of model families to exclude from the results.
+        model_families (list(str, ModelFamily)): Model families to filter for.
+        excluded_model_families (list(str, ModelFamily)): A list of model families to exclude from the results.
 
     Returns:
         list[class]: A list of estimator subclasses.
