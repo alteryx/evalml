@@ -209,19 +209,13 @@ class STLDecomposer(Decomposer):
 
             # Determine the period of the seasonal component
             if id not in self.periods:
-                period = self.determine_periodicity(
-                    X,
-                    series_y,
-                    acf_threshold=0.01,
-                    rel_max_order=5,
+                # If the user provides a period for single series, use that
+                period = (
+                    self.period
+                    if len(y.columns) == 1 and self.period is not None
+                    else self.determine_periodicity(X, series_y)
                 )
-                if self.period is None and len(y.columns) == 1:
-                    self.period = period
-                    self.update_parameters({"period": self.period})
-                elif self.period is not None and len(y.columns) == 1:
-                    period = self.period
                 self.periods[id] = period
-                self.update_parameters({"periods": self.periods})
 
             stl = STL(
                 series_y,
@@ -240,6 +234,7 @@ class STLDecomposer(Decomposer):
             self.seasonalities[id] = seasonality
             self.trends[id] = res.trend
             self.residuals[id] = res.resid
+        self.update_parameters({"periods": self.periods})
 
         return self
 
@@ -471,7 +466,11 @@ class STLDecomposer(Decomposer):
 
         """
         X = infer_feature_types(X)
-
+        if not isinstance(X.index, pd.DatetimeIndex) and not isinstance(
+            y.index,
+            pd.DatetimeIndex,
+        ):
+            raise TypeError("Provided X or y should have datetimes in the index.")
         # Change the y index to a matching datetimeindex or else we get a failure
         # in ForecastingHorizon during decomposition.
         if not isinstance(y.index, pd.DatetimeIndex):

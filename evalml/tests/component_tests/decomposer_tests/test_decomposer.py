@@ -580,7 +580,6 @@ def test_decomposer_get_trend_dataframe_error_not_fit(
     decomposer_child_class,
     ts_data,
     ts_multiseries_data,
-    multiseries_ts_data_unstacked,
     variateness,
     fit_before_decompose,
 ):
@@ -592,7 +591,6 @@ def test_decomposer_get_trend_dataframe_error_not_fit(
                 "Skipping Decomposer because multiseries is not implemented for Polynomial Decomposer",
             )
         X, _, y = ts_multiseries_data()
-        # X, y = multiseries_ts_data_unstacked
     dec = decomposer_child_class(time_index="date")
     if fit_before_decompose:
         dec.fit_transform(X, y)

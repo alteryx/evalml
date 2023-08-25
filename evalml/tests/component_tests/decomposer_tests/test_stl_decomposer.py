@@ -76,20 +76,34 @@ def test_stl_raises_warning_high_smoother(
         (40, "M"),
     ],
 )
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
 def test_stl_sets_determined_period(
     period,
     freq,
     generate_seasonal_data,
+    variateness,
 ):
-    X, y = generate_seasonal_data(real_or_synthetic="synthetic")(
+    X, y = generate_seasonal_data(
+        real_or_synthetic="synthetic",
+        univariate_or_multivariate=variateness,
+    )(
         period,
         freq_str=freq,
     )
 
     stl = STLDecomposer()
     stl.fit(X, y)
+    if isinstance(y, pd.Series):
+        y = y.to_frame()
     # Allow for a slight margin of error with detection
-    assert period * 0.99 <= stl.period <= period * 1.01
+    for id in y.columns:
+        assert period * 0.99 <= stl.periods[id] <= period * 1.01
 
 
 @pytest.mark.parametrize(
@@ -397,7 +411,77 @@ def test_stl_decomposer_get_trend_dataframe(
         "multivariate",
     ],
 )
-def test_stl_decomposer_get_trend_dataframe_sets_time_index_internally(
+def test_stl_decomposer_get_trend_dataframe_raises_errors(
+    variateness,
+    generate_seasonal_data,
+):
+    X, y = generate_seasonal_data(
+        real_or_synthetic="synthetic",
+        univariate_or_multivariate=variateness,
+    )(
+        period=7,
+        set_time_index=False,
+    )
+
+    stl = STLDecomposer()
+    stl.fit_transform(X, y)
+
+    with pytest.raises(
+        TypeError,
+        match="Provided X or y should have datetimes in the index.",
+    ):
+        X_int_index = X.reset_index()
+        y_int_index = y.reset_index()
+        stl.get_trend_dataframe(X_int_index, y_int_index)
+
+
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
+def test_stl_decomposer_get_trend_dataframe_sets_X_index_internally(
+    variateness,
+    generate_seasonal_data,
+):
+    X, y = generate_seasonal_data(
+        real_or_synthetic="synthetic",
+        univariate_or_multivariate=variateness,
+    )(
+        period=7,
+        set_time_index=False,
+    )
+
+    X = X.reset_index()
+    assert not isinstance(X.index, pd.DatetimeIndex)
+
+    stl = STLDecomposer()
+    stl.fit(X, y)
+    result_dfs = stl.get_trend_dataframe(X, y)
+
+    if variateness == "univariate":
+        assert isinstance(result_dfs, list)
+        assert all(isinstance(x, pd.DataFrame) for x in result_dfs)
+        assert all(get_trend_dataframe_format_correct(x) for x in result_dfs)
+    elif variateness == "multivariate":
+        assert isinstance(result_dfs, dict)
+        assert all(isinstance(result_dfs[x], list) for x in result_dfs)
+        assert all(
+            all(isinstance(x, pd.DataFrame) for x in result_dfs[df])
+            for df in result_dfs
+        )
+
+
+@pytest.mark.parametrize(
+    "variateness",
+    [
+        "univariate",
+        "multivariate",
+    ],
+)
+def test_stl_decomposer_get_trend_dataframe_sets_y_index_internally(
     generate_seasonal_data,
     variateness,
 ):
@@ -447,7 +531,6 @@ def test_unsupported_frequencies(
     """This test exists to highlight that even though the underlying statsmodels STL component won't work
     for minute or annual frequencies, we can still run these frequencies with automatic period detection.
     """
-    # period = 7 if variateness == "univariate" else {}
     X, y = generate_seasonal_data(
         real_or_synthetic="synthetic",
         univariate_or_multivariate=variateness,
@@ -458,10 +541,7 @@ def test_unsupported_frequencies(
 
     stl = STLDecomposer()
     X_t, y_t = stl.fit_transform(X, y)
-    if variateness == "univariate":
-        assert stl.period is not None
-    else:
-        assert stl.periods is not None
+    assert stl.periods is not None
 
 
 @pytest.mark.parametrize(
