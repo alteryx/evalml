@@ -479,65 +479,47 @@ class STLDecomposer(Decomposer):
             X.index = y.index
         self._check_oos_past(y)
 
-        def _decompose_target(X, y, fh, trend, seasonal, residual):
+        def _decompose_target(X, y, fh):
             """Function to generate a single DataFrame with trend, seasonality and residual components."""
-            if len(y.index) != len(trend.index) or not all(
-                y.index == trend.index,
+            if isinstance(y, pd.Series):
+                y = y.to_frame()
+            if all(
+                len(y.index) == len(self.trends[id].index)
+                and all(
+                    y.index == self.trends[id].index,
+                )
+                for id in y.columns
             ):
                 # TODO: Do a better job cloning.
                 decomposer = STLDecomposer(
                     seasonal_smoother=self.seasonal_smoother,
-                    period=period,
+                    periods=self.periods,
                 )
                 decomposer.fit(X, y)
-                trend = decomposer.trends[id]
-                seasonal = decomposer.seasonals[id]
-                residual = decomposer.residuals[id]
-            return pd.DataFrame(
-                {
-                    "signal": y,
-                    "trend": trend,
-                    "seasonality": seasonal,
-                    "residual": residual,
-                },
-            )
-
-        if isinstance(y, pd.Series):
-            y = y.to_frame()
-        series_results = {}
-        # Iterate through each series id
-        for id in y.columns:
-            result_dfs = []
-            if len(y.columns) > 1:
-                seasonal = self.seasonals[id]
-                trend = self.trends[id]
-                residual = self.residuals[id]
-                period = self.periods[id]
+                trend = decomposer.trends
+                seasonal = decomposer.seasonals
+                residual = decomposer.residuals
             else:
-                seasonal = list(self.seasonals.values())[0]
-                trend = list(self.trends.values())[0]
-                residual = list(self.residuals.values())[0]
-                period = list(self.periods.values())[0]
-
-            series_y = y[id]
-            if isinstance(series_y, pd.Series):
-                result_dfs.append(
-                    _decompose_target(
-                        X,
-                        series_y,
-                        None,
-                        trend,
-                        seasonal,
-                        residual,
-                    ),
+                trend = self.trends
+                seasonal = self.seasonals
+                residual = self.residuals
+            result_dict = {}
+            for id in y.columns:
+                df = pd.DataFrame(
+                    {
+                        "signal": y[id],
+                        "trend": trend[id],
+                        "seasonality": seasonal[id],
+                        "residual": residual[id],
+                    },
                 )
+                if len(y.columns) == 1:
+                    return [df]
+                else:
+                    result_dict[id] = df
+            return result_dict
 
-            series_results[id] = result_dfs
-
-            # only return the dictionary if single series
-            if len(y.columns) <= 1:
-                return result_dfs
-        return series_results
+        return _decompose_target(X, y, None)
 
     def get_trend_prediction_intervals(self, y, coverage=None):
         """Calculate the prediction intervals for the trend data.

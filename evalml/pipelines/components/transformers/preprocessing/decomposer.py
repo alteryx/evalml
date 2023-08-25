@@ -359,14 +359,14 @@ class Decomposer(Transformer):
             if len(y.columns) > 1:
                 results = decomposition_results[id]
             else:
-                results = decomposition_results
-            axs[0].plot(results[0]["signal"], "r")
+                results = decomposition_results[0]
+            axs[0].plot(results["signal"], "r")
             axs[0].set_title("signal")
-            axs[1].plot(results[0]["trend"], "b")
+            axs[1].plot(results["trend"], "b")
             axs[1].set_title("trend")
-            axs[2].plot(results[0]["seasonality"], "g")
+            axs[2].plot(results["seasonality"], "g")
             axs[2].set_title("seasonality")
-            axs[3].plot(results[0]["residual"], "y")
+            axs[3].plot(results["residual"], "y")
             axs[3].set_title("residual")
 
             # If multiseries, return a dictionary of tuples
