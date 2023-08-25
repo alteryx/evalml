@@ -444,16 +444,11 @@ def test_stl_decomposer_get_trend_dataframe_raises_errors(
 )
 def test_stl_decomposer_get_trend_dataframe_sets_X_index_internally(
     variateness,
-    generate_seasonal_data,
+    ts_data,
+    ts_multiseries_data,
 ):
-    X, y = generate_seasonal_data(
-        real_or_synthetic="synthetic",
-        univariate_or_multivariate=variateness,
-    )(
-        period=7,
-        set_time_index=False,
-    )
-
+    X, _, y = ts_data() if variateness == "univariate" else ts_multiseries_data()
+    assert isinstance(y.index, pd.DatetimeIndex)
     X = X.reset_index()
     assert not isinstance(X.index, pd.DatetimeIndex)
 
