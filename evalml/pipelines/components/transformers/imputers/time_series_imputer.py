@@ -93,6 +93,7 @@ class TimeSeriesImputer(Transformer):
         self._backwards_cols = None
         self._interpolate_cols = None
         self._impute_target = None
+        self._y_all_null_cols = None
         super().__init__(
             parameters=parameters,
             component_obj=None,
@@ -137,11 +138,17 @@ class TimeSeriesImputer(Transformer):
         self._backwards_cols = _filter_cols("backwards_fill", X)
         self._interpolate_cols = _filter_cols("interpolate", X)
 
-        if y is not None:
+        if isinstance(y, pd.Series):
             y = infer_feature_types(y)
             if y.isnull().any():
                 self._impute_target = self.parameters["target_impute_strategy"]
 
+        elif isinstance(y, pd.DataFrame):
+            y = infer_feature_types(y)
+            y_nan_ratio = X.isna().sum() / X.shape[0]
+            self._y_all_null_cols = y_nan_ratio[nan_ratio == 1].index.tolist()
+            if y.isnull().values.any():
+                self._impute_target = self.parameters["target_impute_strategy"]
         return self
 
     def transform(self, X, y=None):
@@ -212,19 +219,33 @@ class TimeSeriesImputer(Transformer):
             new_ltypes.update(new_int_ltypes)
         X_not_all_null.ww.init(schema=original_schema, logical_types=new_ltypes)
 
-        y_imputed = pd.Series(y)
+        y_imputed = (
+            y.ww.drop(self._y_all_null_cols)
+            if isinstance(y, pd.DataFrame)
+            else pd.Series(y)
+        )
         if y is not None and len(y) > 0:
             if self._impute_target == "forwards_fill":
-                y_imputed = y.pad()
+                y_imputed = y_imputed.pad()
                 y_imputed.bfill(inplace=True)
             elif self._impute_target == "backwards_fill":
-                y_imputed = y.bfill()
+                y_imputed = y_imputed.bfill()
                 y_imputed.pad(inplace=True)
             elif self._impute_target == "interpolate":
-                y_imputed = y.interpolate()
+                y_imputed = y_imputed.interpolate()
                 y_imputed.bfill(inplace=True)
             # Re-initialize woodwork with the downcast logical type
-            y_imputed = ww.init_series(y_imputed, logical_type=y.ww.logical_type)
+            if isinstance(y, pd.Series):
+                y_imputed = ww.init_series(y_imputed, logical_type=y.ww.logical_type)
+            else:
+                y_original_schema = y.ww.schema.get_subset_schema(
+                    list(y_imputed.columns),
+                )
+                y_new_ltypes = {
+                    col: _determine_non_nullable_equivalent(ltype)
+                    for col, ltype in y_original_schema.logical_types.items()
+                }
+                y_imputed.ww.init(schema=y_original_schema, logical_types=y_new_ltypes)
 
         return X_not_all_null, y_imputed
 
@@ -242,10 +263,12 @@ class TimeSeriesImputer(Transformer):
         if self._impute_target == "interpolate":
             # For BooleanNullable, we have to avoid Categorical columns
             # since the category dtype also has incompatibilities with linear interpolate, which is expected
-            if isinstance(y.ww.logical_type, BooleanNullable):
-                y = ww.init_series(y, Double)
-            else:
-                _, y = super()._handle_nullable_types(None, y)
+            # TODO: Avoid categorical columns for multiseries when multiseries timeseries supports categorical
+            if isinstance(y, pd.Series):
+                if isinstance(y.ww.logical_type, BooleanNullable):
+                    y = ww.init_series(y, Double)
+                else:
+                    _, y = super()._handle_nullable_types(None, y)
         if self._interpolate_cols is not None:
             X, _ = super()._handle_nullable_types(X, None)
 
