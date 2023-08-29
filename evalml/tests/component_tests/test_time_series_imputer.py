@@ -722,3 +722,40 @@ def test_time_series_imputer_nullable_type_incompatibility(
         _, nullable_series = imputer._handle_nullable_types(None, nullable_series)
 
     nullable_series.interpolate()
+
+
+@pytest.mark.parametrize(
+    "nans_present",
+    [True, False],
+)
+def test_time_series_imputer_multiseries(multiseries_ts_data_unstacked, nans_present):
+    X, y = multiseries_ts_data_unstacked
+    imputer = TimeSeriesImputer(target_impute_strategy="interpolate")
+    if nans_present:
+        c = 1
+        for x in y:
+            y[x][c] = np.nan
+            c += 1
+    imputer.fit(X, y)
+    assert imputer._y_all_null_cols == []
+    _, y_imputed = imputer.transform(X, y)
+    assert isinstance(y_imputed, pd.DataFrame)
+    y_expected = pd.DataFrame({f"target_{i}": range(i, 100, 5) for i in range(5)})
+    assert_frame_equal(y_imputed, y_expected, check_dtype=False)
+
+
+def test_imputer_multiseries_drops_columns_with_all_nan(multiseries_ts_data_unstacked):
+    X, y = multiseries_ts_data_unstacked
+    for col in y:
+        y[col] = np.nan
+    imputer = TimeSeriesImputer(target_impute_strategy="interpolate")
+    imputer.fit(X, y)
+    assert imputer._y_all_null_cols == y.columns.tolist()
+    _, y_imputed = imputer.transform(X, y)
+    expected = y.drop(y.columns.tolist(), axis=1)
+    assert_frame_equal(
+        y_imputed,
+        expected,
+        check_column_type=False,
+        check_index_type=False,
+    )
