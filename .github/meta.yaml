@@ -72,7 +72,7 @@ outputs:
         - python-kaleido >=0.1.0
         - matplotlib-base >=3.3.3
         - seaborn >=0.11.1
-        - ipywidgets >=7.5, <8.0.5
+        - ipywidgets >=7.5
         - xgboost >=1.7.0
         - catboost >=1.1.1
         - lightgbm >=4.0.0
