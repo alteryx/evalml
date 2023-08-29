@@ -3,6 +3,7 @@ import copy
 from abc import ABC, abstractmethod
 
 import cloudpickle
+import pandas as pd
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
@@ -256,7 +257,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         Args:
             X (pd.DataFrame, optional): Input data to a component of shape [n_samples, n_features].
                 May contain nullable types.
-            y (pd.Series, optional): The target of length [n_samples]. May contain nullable types.
+            y (pd.Series or pd.DataFrame, optional): The target of length [n_samples] or the unstacked target for a multiseries problem.
+                May contain nullable types.
 
         Returns:
             X, y with any incompatible nullable types downcasted to compatible equivalents.
@@ -273,10 +275,17 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         y_bool_incompatible = "y" in self._boolean_nullable_incompatibilities
         y_int_incompatible = "y" in self._integer_nullable_incompatibilities
         if y is not None and (y_bool_incompatible or y_int_incompatible):
-            y = _downcast_nullable_y(
-                y,
-                handle_boolean_nullable=y_bool_incompatible,
-                handle_integer_nullable=y_int_incompatible,
-            )
-
+            if isinstance(y, pd.Series):
+                y = _downcast_nullable_y(
+                    y,
+                    handle_boolean_nullable=y_bool_incompatible,
+                    handle_integer_nullable=y_int_incompatible,
+                )
+            # if y is a dataframe (from unstacked multiseries) use _downcast_nullable_X since downcast_nullable_y is for series
+            else:
+                y = _downcast_nullable_X(
+                    y,
+                    handle_boolean_nullable=y_bool_incompatible,
+                    handle_integer_nullable=y_int_incompatible,
+                )
         return X, y

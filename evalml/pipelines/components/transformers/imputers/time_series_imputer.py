@@ -145,8 +145,8 @@ class TimeSeriesImputer(Transformer):
 
         elif isinstance(y, pd.DataFrame):
             y = infer_feature_types(y)
-            y_nan_ratio = X.isna().sum() / X.shape[0]
-            self._y_all_null_cols = y_nan_ratio[nan_ratio == 1].index.tolist()
+            y_nan_ratio = y.isna().sum() / y.shape[0]
+            self._y_all_null_cols = y_nan_ratio[y_nan_ratio == 1].index.tolist()
             if y.isnull().values.any():
                 self._impute_target = self.parameters["target_impute_strategy"]
         return self
@@ -255,7 +255,8 @@ class TimeSeriesImputer(Transformer):
         Args:
             X (pd.DataFrame, optional): Input data to a component of shape [n_samples, n_features].
                 May contain nullable types.
-            y (pd.Series, optional): The target of length [n_samples]. May contain nullable types.
+            y (pd.Series or pd.DataFrame, optional): The target of length [n_samples] or the unstacked target for a multiseries problem.
+                May contain nullable types.
 
         Returns:
             X, y with any incompatible nullable types downcasted to compatible equivalents when interpolate is used. Is NoOp otherwise.
@@ -263,12 +264,15 @@ class TimeSeriesImputer(Transformer):
         if self._impute_target == "interpolate":
             # For BooleanNullable, we have to avoid Categorical columns
             # since the category dtype also has incompatibilities with linear interpolate, which is expected
-            # TODO: Avoid categorical columns for multiseries when multiseries timeseries supports categorical
-            if isinstance(y, pd.Series):
-                if isinstance(y.ww.logical_type, BooleanNullable):
-                    y = ww.init_series(y, Double)
-                else:
-                    _, y = super()._handle_nullable_types(None, y)
+            # TODO: Avoid categorical columns for BooleanNullable in multiseries when
+            #       multiseries timeseries supports categorical
+            if isinstance(y, pd.Series) and isinstance(
+                y.ww.logical_type,
+                BooleanNullable,
+            ):
+                y = ww.init_series(y, Double)
+            else:
+                _, y = super()._handle_nullable_types(None, y)
         if self._interpolate_cols is not None:
             X, _ = super()._handle_nullable_types(X, None)
 
