@@ -725,17 +725,23 @@ def test_time_series_imputer_nullable_type_incompatibility(
 
 
 @pytest.mark.parametrize(
-    "nans_present",
-    [True, False],
+    "nans_present, nan_in_every_col",
+    [(True, True), (True, False), (False, False)],
 )
-def test_time_series_imputer_multiseries(multiseries_ts_data_unstacked, nans_present):
+def test_time_series_imputer_multiseries(
+    multiseries_ts_data_unstacked,
+    nans_present,
+    nan_in_every_col,
+):
     X, y = multiseries_ts_data_unstacked
     imputer = TimeSeriesImputer(target_impute_strategy="interpolate")
     if nans_present:
-        c = 1
+        counter = 1
         for x in y:
-            y[x][c] = np.nan
-            c += 1
+            y[x][counter] = np.nan
+            counter += 1
+            if not nan_in_every_col and counter > 3:
+                break
     imputer.fit(X, y)
     assert imputer._y_all_null_cols == []
     _, y_imputed = imputer.transform(X, y)
