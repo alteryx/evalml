@@ -516,7 +516,7 @@ class STLDecomposer(Decomposer):
                 if len(y.columns) == 1:
                     return [df]
                 else:
-                    result_dict[id] = df
+                    result_dict[id] = [df]
             return result_dict
 
         return _decompose_target(X, y, None)

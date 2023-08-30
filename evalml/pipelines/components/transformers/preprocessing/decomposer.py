@@ -357,7 +357,7 @@ class Decomposer(Transformer):
             fig.set_size_inches(18.5, 14.5)
 
             if len(y.columns) > 1:
-                results = decomposition_results[id]
+                results = decomposition_results[id][0]
             else:
                 results = decomposition_results[0]
             axs[0].plot(results["signal"], "r")

@@ -342,12 +342,13 @@ def test_stl_decomposer_get_trend_dataframe(
 
         elif variateness == "multivariate":
             assert isinstance(result_dfs, dict)
-            assert all(isinstance(result_dfs[x], pd.DataFrame) for x in result_dfs)
+            assert all(isinstance(result_dfs[x], list) for x in result_dfs)
+            assert all(isinstance(result_dfs[x][0], pd.DataFrame) for x in result_dfs)
             assert all(
-                get_trend_dataframe_format_correct(result_dfs[x]) for x in result_dfs
+                get_trend_dataframe_format_correct(result_dfs[x][0]) for x in result_dfs
             )
             assert len(result_dfs) == 2
-            [get_trend_dataframe_format_correct(result_dfs[x]) for x in result_dfs]
+            [get_trend_dataframe_format_correct(result_dfs[x][0]) for x in result_dfs]
 
     elif transformer_fit_on_data != "in-sample":
         y_t_new = build_test_target(
@@ -384,13 +385,19 @@ def test_stl_decomposer_get_trend_dataframe(
                 [get_trend_dataframe_format_correct(x) for x in result_dfs]
             elif variateness == "multivariate":
                 assert isinstance(result_dfs, dict)
-                assert all(isinstance(result_dfs[x], pd.DataFrame) for x in result_dfs)
+                assert all(isinstance(result_dfs[x], list) for x in result_dfs)
                 assert all(
-                    get_trend_dataframe_format_correct(result_dfs[x])
+                    isinstance(result_dfs[x][0], pd.DataFrame) for x in result_dfs
+                )
+                assert all(
+                    get_trend_dataframe_format_correct(result_dfs[x][0])
                     for x in result_dfs
                 )
                 assert len(result_dfs) == 2
-                [get_trend_dataframe_format_correct(result_dfs[x]) for x in result_dfs]
+                [
+                    get_trend_dataframe_format_correct(result_dfs[x][0])
+                    for x in result_dfs
+                ]
 
 
 @pytest.mark.parametrize(
@@ -451,12 +458,13 @@ def test_stl_decomposer_get_trend_dataframe_sets_X_index_internally(
         assert all(get_trend_dataframe_format_correct(x) for x in result_dfs)
     elif variateness == "multivariate":
         assert isinstance(result_dfs, dict)
-        assert all(isinstance(result_dfs[x], pd.DataFrame) for x in result_dfs)
+        assert all(isinstance(result_dfs[x], list) for x in result_dfs)
+        assert all(isinstance(result_dfs[x][0], pd.DataFrame) for x in result_dfs)
         assert all(
-            get_trend_dataframe_format_correct(result_dfs[x]) for x in result_dfs
+            get_trend_dataframe_format_correct(result_dfs[x][0]) for x in result_dfs
         )
         assert len(result_dfs) == 2
-        [get_trend_dataframe_format_correct(result_dfs[x]) for x in result_dfs]
+        [get_trend_dataframe_format_correct(result_dfs[x][0]) for x in result_dfs]
 
 
 @pytest.mark.parametrize(
@@ -490,12 +498,13 @@ def test_stl_decomposer_get_trend_dataframe_sets_y_index_internally(
         assert all(get_trend_dataframe_format_correct(x) for x in result_dfs)
     elif variateness == "multivariate":
         assert isinstance(result_dfs, dict)
-        assert all(isinstance(result_dfs[x], pd.DataFrame) for x in result_dfs)
+        assert all(isinstance(result_dfs[x], list) for x in result_dfs)
+        assert all(isinstance(result_dfs[x][0], pd.DataFrame) for x in result_dfs)
         assert all(
-            get_trend_dataframe_format_correct(result_dfs[x]) for x in result_dfs
+            get_trend_dataframe_format_correct(result_dfs[x][0]) for x in result_dfs
         )
         assert len(result_dfs) == 2
-        [get_trend_dataframe_format_correct(result_dfs[x]) for x in result_dfs]
+        [get_trend_dataframe_format_correct(result_dfs[x][0]) for x in result_dfs]
 
 
 @pytest.mark.parametrize(
