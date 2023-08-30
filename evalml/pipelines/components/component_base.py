@@ -282,7 +282,6 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
                     handle_boolean_nullable=y_bool_incompatible,
                     handle_integer_nullable=y_int_incompatible,
                 )
-            # if y is a dataframe (from unstacked multiseries) use _downcast_nullable_X since downcast_nullable_y is for series
             else:
                 y = _downcast_nullable_y(
                     y,
