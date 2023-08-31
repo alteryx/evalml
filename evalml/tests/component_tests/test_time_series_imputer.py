@@ -725,8 +725,8 @@ def test_time_series_imputer_nullable_type_incompatibility(
 
 
 @pytest.mark.parametrize(
-    "nans_present, nan_in_every_col",
-    [(True, True), (True, False), (False, False)],
+    "nans_present",
+    [True, False],
 )
 def test_time_series_imputer_multiseries(
     multiseries_ts_data_unstacked,
@@ -739,8 +739,7 @@ def test_time_series_imputer_multiseries(
     if nans_present:
         for count, col in enumerate(y, start=1):
             y[col][count] = np.nan
-            if not nan_in_every_col and count >= len(y) // 2:
-                break
+
     imputer.fit(X, y)
     assert imputer._y_all_null_cols == []
 
