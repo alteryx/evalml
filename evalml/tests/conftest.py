@@ -2521,11 +2521,73 @@ def generate_seasonal_data():
             y = y.set_axis(dts)
         return X, y
 
-    def _return_proper_func(real_or_synthetic):
-        if real_or_synthetic == "synthetic":
+    def generate_multiseries_synthetic_data(
+        period,
+        step=None,
+        num_periods=20,
+        scale=1,
+        seasonal_scale=1,
+        trend_degree=1,
+        freq_str="D",
+        set_time_index=False,
+    ):
+        """Function to generate a sinusoidal signal with a polynomial trend.
+
+        Args:
+            period: The length, in units, of the seasonal signal.
+            num_periods: How many periods of the seasonal signal to generate.
+            scale: The relative scale of the trend.  Setting it higher increases
+                the comparative strength of the trend.
+            seasonal_scale: The relative scale of the sinusoidal seasonality.
+                Setting it higher increases the comparative strength of the
+                trend.
+            trend_degree: The degree of the polynomial trend. 1 = linear, 2 =
+                quadratic, 3 = cubic.  Specific functional forms defined
+                below.
+            freq_str: The pandas frequency string used to define the unit of
+                time in the series time index.
+            set_time_index: Whether to set the time index with a pandas.
+                DatetimeIndex.
+
+        Returns:
+            X (pandas.DateFrame): A placeholder feature matrix.
+            y (pandas.Series): A synthetic, time series target Series.
+
+        """
+        freq = 2 * np.pi / period
+        x = np.arange(0, period * num_periods, 1)
+        dts = pd.date_range(datetime.today(), periods=len(x), freq=freq_str)
+        X = pd.DataFrame({"x": x})
+        X = X.set_index(dts)
+
+        y_ms_list = []
+        for i in range(2):
+            for j in range(5):
+                if trend_degree == 1:
+                    y_trend = pd.Series(scale * minmax_scale(x + 2))
+                elif trend_degree == 2:
+                    y_trend = pd.Series(scale * minmax_scale(x**2))
+                elif trend_degree == 3:
+                    y_trend = pd.Series(scale * minmax_scale((x - 5) ** 3 + x**2))
+                if period is not None:
+                    y_seasonal = pd.Series(seasonal_scale * np.sin(freq * x))
+                y = y_trend + y_seasonal
+                if set_time_index:
+                    y = y.set_axis(dts)
+            y_ms_list.append(y)
+        y_ms = pd.DataFrame(y_ms_list).T
+        return X, y_ms
+
+    def _return_proper_func(real_or_synthetic, univariate_or_multivariate="univariate"):
+        if (
+            real_or_synthetic == "synthetic"
+            and univariate_or_multivariate == "univariate"
+        ):
             return generate_synthetic_data
-        elif real_or_synthetic == "real":
+        elif real_or_synthetic == "real" and univariate_or_multivariate == "univariate":
             return generate_real_data
+        if univariate_or_multivariate == "multivariate":
+            return generate_multiseries_synthetic_data
 
     return _return_proper_func
 
