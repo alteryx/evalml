@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Extended STLDecomposer to Support Multiseries :pr:`4253`
     * Fixes
     * Changes
     * Documentation Changes

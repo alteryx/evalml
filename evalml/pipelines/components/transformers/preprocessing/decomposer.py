@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 from abc import abstractmethod
+from typing import Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -324,9 +325,9 @@ class Decomposer(Transformer):
     def plot_decomposition(
         self,
         X: pd.DataFrame,
-        y: pd.Series,
+        y: Union[pd.Series, pd.DataFrame],
         show: bool = False,
-    ) -> tuple[plt.Figure, list]:
+    ) -> Union[tuple[plt.Figure, list], dict[str, tuple[plt.Figure]]]:
         """Plots the decomposition of the target signal.
 
         Args:
@@ -336,24 +337,49 @@ class Decomposer(Transformer):
             show (bool): Whether to display the plot or not. Defaults to False.
 
         Returns:
-            matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]: The figure and axes that have the decompositions
+            (Single series) matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes]: The figure and axes that have the decompositions
                 plotted on them
+            (Multi series) dict[str, (matplotlib.pyplot.Figure, list[matplotlib.pyplot.Axes])]: A dictionary that maps the series id
+                to the figure and axes that have the decompositions plotted on them
 
         """
+        if isinstance(y, pd.Series):
+            y = y.to_frame()
+
+        plot_info = {}
+        if self.frequency and self.time_index and len(y.columns) > 1:
+            X.index = pd.DatetimeIndex(X[self.time_index], freq=self.frequency)
         decomposition_results = self.get_trend_dataframe(X, y)
-        fig, axs = plt.subplots(4)
-        fig.set_size_inches(18.5, 14.5)
-        axs[0].plot(decomposition_results[0]["signal"], "r")
-        axs[0].set_title("signal")
-        axs[1].plot(decomposition_results[0]["trend"], "b")
-        axs[1].set_title("trend")
-        axs[2].plot(decomposition_results[0]["seasonality"], "g")
-        axs[2].set_title("seasonality")
-        axs[3].plot(decomposition_results[0]["residual"], "y")
-        axs[3].set_title("residual")
-        if show:  # pragma: no cover
-            plt.show()
-        return fig, axs
+
+        # Iterate through each series id
+        for id in y.columns:
+            fig, axs = plt.subplots(4)
+            fig.set_size_inches(18.5, 14.5)
+
+            if len(y.columns) > 1:
+                results = decomposition_results[id][0]
+            else:
+                results = decomposition_results[0]
+            axs[0].plot(results["signal"], "r")
+            axs[0].set_title("signal")
+            axs[1].plot(results["trend"], "b")
+            axs[1].set_title("trend")
+            axs[2].plot(results["seasonality"], "g")
+            axs[2].set_title("seasonality")
+            axs[3].plot(results["residual"], "y")
+            axs[3].set_title("residual")
+
+            # If multiseries, return a dictionary of tuples
+            if len(y.columns) > 1:
+                fig.suptitle("Decomposition for Series {}".format(id))
+                plot_info[id] = (fig, axs)
+            else:
+                plot_info = (fig, axs)
+
+            if show:  # pragma: no cover
+                plt.show()
+
+        return plot_info
 
     def _check_target(self, X: pd.DataFrame, y: pd.Series):
         """Function to ensure target is not None and has a pandas.DatetimeIndex."""
