@@ -735,18 +735,43 @@ def test_time_series_imputer_multiseries(
 ):
     X, y = multiseries_ts_data_unstacked
     imputer = TimeSeriesImputer(target_impute_strategy="interpolate")
+
     if nans_present:
-        counter = 1
-        for x in y:
-            y[x][counter] = np.nan
-            counter += 1
-            if not nan_in_every_col and counter > 3:
+        for count, col in enumerate(y, start=1):
+            y[col][count] = np.nan
+            if not nan_in_every_col and count > len(y) // 2:
                 break
     imputer.fit(X, y)
     assert imputer._y_all_null_cols == []
+
     _, y_imputed = imputer.transform(X, y)
     assert isinstance(y_imputed, pd.DataFrame)
+
     y_expected = pd.DataFrame({f"target_{i}": range(i, 100, 5) for i in range(5)})
+    assert_frame_equal(y_imputed, y_expected, check_dtype=False)
+
+
+@pytest.mark.parametrize(
+    "num_nan_cols",
+    [1, 2, 3],
+)
+def test_time_series_imputer_multiseries_some_columns_all_nan(
+    multiseries_ts_data_unstacked,
+    num_nan_cols,
+):
+    X, y = multiseries_ts_data_unstacked
+    imputer = TimeSeriesImputer(target_impute_strategy="interpolate")
+
+    for count, col in enumerate(y, start=1):
+        y[col] = np.nan
+        if count == num_nan_cols:
+            break
+    imputer.fit(X, y)
+    _, y_imputed = imputer.transform(X, y)
+
+    y_expected = pd.DataFrame(
+        {f"target_{i}": range(i, 100, 5) for i in range(num_nan_cols, 5)},
+    )
     assert_frame_equal(y_imputed, y_expected, check_dtype=False)
 
 
