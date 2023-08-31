@@ -731,7 +731,6 @@ def test_time_series_imputer_nullable_type_incompatibility(
 def test_time_series_imputer_multiseries(
     multiseries_ts_data_unstacked,
     nans_present,
-    nan_in_every_col,
 ):
     X, y = multiseries_ts_data_unstacked
     imputer = TimeSeriesImputer(target_impute_strategy="interpolate")
