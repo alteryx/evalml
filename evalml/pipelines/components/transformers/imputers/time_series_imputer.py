@@ -255,7 +255,8 @@ class TimeSeriesImputer(Transformer):
         Args:
             X (pd.DataFrame, optional): Input data to a component of shape [n_samples, n_features].
                 May contain nullable types.
-            y (pd.Series or pd.DataFrame, optional): The target of length [n_samples] or the unstacked target for a multiseries problem.
+            y (pd.Series or pd.DataFrame, optional): The target of length [n_samples] or the
+                unstacked target for a multiseries problem of length [n_samples, n_features*n_series].
                 May contain nullable types.
 
         Returns:
