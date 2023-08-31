@@ -739,7 +739,7 @@ def test_time_series_imputer_multiseries(
     if nans_present:
         for count, col in enumerate(y, start=1):
             y[col][count] = np.nan
-            if not nan_in_every_col and count > len(y) // 2:
+            if not nan_in_every_col and count >= len(y) // 2:
                 break
     imputer.fit(X, y)
     assert imputer._y_all_null_cols == []
@@ -755,17 +755,26 @@ def test_time_series_imputer_multiseries(
     "num_nan_cols",
     [1, 2, 3],
 )
+@pytest.mark.parametrize(
+    "nan_in_other_cols",
+    [True, False],
+)
 def test_time_series_imputer_multiseries_some_columns_all_nan(
     multiseries_ts_data_unstacked,
     num_nan_cols,
+    nan_in_other_cols,
 ):
     X, y = multiseries_ts_data_unstacked
     imputer = TimeSeriesImputer(target_impute_strategy="interpolate")
 
     for count, col in enumerate(y, start=1):
-        y[col] = np.nan
-        if count == num_nan_cols:
+        if count <= num_nan_cols:
+            y[col] = np.nan
+        if count == num_nan_cols and not nan_in_other_cols:
             break
+        else:
+            y[col][count] = np.nan
+
     imputer.fit(X, y)
     _, y_imputed = imputer.transform(X, y)
 
