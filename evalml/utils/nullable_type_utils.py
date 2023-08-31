@@ -1,5 +1,4 @@
 import pandas as pd
-import woodwork as ww
 from woodwork.logical_types import AgeNullable, BooleanNullable, IntegerNullable
 
 DOWNCAST_TYPE_DICT = {
@@ -58,10 +57,7 @@ def _downcast_nullable_y(y, handle_boolean_nullable=True, handle_integer_nullabl
         y with any incompatible nullable types downcasted to compatible equivalents.
     """
     if y.ww.schema is None:
-        if isinstance(y, pd.DataFrame):
-            y.ww.init()
-        else:
-            y = ww.init_series(y)
+        y.ww.init()
 
     incompatible_logical_types = _get_incompatible_nullable_types(
         handle_boolean_nullable,
@@ -69,15 +65,7 @@ def _downcast_nullable_y(y, handle_boolean_nullable=True, handle_integer_nullabl
     )
 
     if isinstance(y, pd.DataFrame):
-        data_to_downcast = y.ww.select(incompatible_logical_types)
-        # If no incompatible types are present, no downcasting is needed
-        if not len(data_to_downcast.columns):
-            return y
-        new_ltypes = {
-            col: _determine_downcast_type(data_to_downcast.ww[col])
-            for col in data_to_downcast.columns
-        }
-        y.ww.set_types(logical_types=new_ltypes)
+        y = _downcast_nullable_X(y)
 
     else:
         if isinstance(y.ww.logical_type, tuple(incompatible_logical_types)):
