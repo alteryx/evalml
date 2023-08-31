@@ -98,3 +98,26 @@ def test_polynomial_decomposer_needs_monotonic_index(ts_data):
         decomposer.fit_transform(X, y_shuffled)
     expected_errors = ["monotonically", "X must be in an sktime compatible format"]
     assert any([error in str(exec_info.value) for error in expected_errors])
+
+
+def test_polynomial_decomposer_get_trend_dataframe_raises_errors(
+    ts_data,
+):
+    X, _, y = ts_data()
+
+    dec = PolynomialDecomposer()
+    dec.fit_transform(X, y)
+
+    with pytest.raises(
+        TypeError,
+        match="Provided X should have datetimes in the index.",
+    ):
+        X_int_index = X.reset_index()
+        dec.get_trend_dataframe(X_int_index, y)
+
+    with pytest.raises(
+        ValueError,
+        match="Provided DatetimeIndex of X should have an inferred frequency.",
+    ):
+        X.index.freq = None
+        dec.get_trend_dataframe(X, y)
