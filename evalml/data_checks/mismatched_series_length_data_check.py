@@ -1,5 +1,6 @@
 """Data check that checks if one or more unique series in a multiseres data is a different length than the others."""
 
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckMessageCode,
@@ -49,7 +50,7 @@ class MismatchedSeriesLengthDataCheck(DataCheck):
             ... )
             >>> X = X.drop(labels=0, axis=0)
             >>> mismatched_series_length_check = MismatchedSeriesLengthDataCheck("series_id")
-            >>> xd = [
+            >>> assert mismatched_series_length_check.validate(X) == [
             ...      {
             ...         "message": "Series ID ['0'] do not match the majority length of the other series, which is 20",
             ...         "data_check_name": "MismatchedSeriesLengthDataCheck",
@@ -60,7 +61,7 @@ class MismatchedSeriesLengthDataCheck(DataCheck):
             ...             "series_id": ['0'],
             ...             "majority_length": 20
             ...         },
-            ...         "message_code": "MISMATCHED_SERIES_LENGTH",
+            ...         "code": "MISMATCHED_SERIES_LENGTH",
             ...         "action_options": [],
             ...     }
             ... ]
