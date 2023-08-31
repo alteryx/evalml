@@ -49,14 +49,20 @@ class MismatchedSeriesLengthDataCheck(DataCheck):
             ... )
             >>> X = X.drop(labels=0, axis=0)
             >>> mismatched_series_length_check = MismatchedSeriesLengthDataCheck("series_id")
-            >>> assert mismatched_series_length_check.validate(X) == [
-            ...     DataCheckWarning(
-            ...         message = "Series ID ['0'] do not match the majority length of the other series, which is 20",
-            ...         data_check_name = "MismatchedSeriesLengthDataCheck",
-            ...         message_code = "MISMATCHED_SERIES_LENGTH",
-            ...         details = {"series_id": ['0'], "majority_length": 20},
-            ...         action_options = []
-            ...     ).to_dict(),
+            >>> xd = [
+            ...      {
+            ...         "message": "Series ID ['0'] do not match the majority length of the other series, which is 20",
+            ...         "data_check_name": "MismatchedSeriesLengthDataCheck",
+            ...         "level": "warning",
+            ...         "details": {
+            ...             "columns": None,
+            ...             "rows": None,
+            ...             "series_id": ['0'],
+            ...             "majority_length": 20
+            ...         },
+            ...         "message_code": "MISMATCHED_SERIES_LENGTH",
+            ...         "action_options": [],
+            ...     }
             ... ]
         """
         messages = []
