@@ -28,11 +28,11 @@ class MismatchedSeriesLengthDataCheck(DataCheck):
         Currently works specifically on stacked data
 
         Args:
-            X (pd.DataFrame, np.ndarray): The input features to check.
+            X (pd.DataFrame, np.ndarray): The input features to check. Must have a series_id column.
             y (pd.Series): The target. Defaults to None. Ignored.
 
         Returns:
-            dict: A dictionary of features with column name or index and their probability of being ID columns
+            dict: Dictionary with DataCheckWarning if there are mismatch series length in the datasets
 
         Examples:
             >>> import pandas as pd
