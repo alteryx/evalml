@@ -4,7 +4,7 @@ Release Notes
     * Enhancements
         * Added support for prediction intervals for VARMAX regressor :pr:`4267`
         * Integrated multiseries time series into AutoMLSearch :pr:`4270`
-        * Added new datacheck to check for mismatched series length in multiseries :pr:`4296`
+        * Added datacheck to check for mismatched series length in multiseries :pr:`4296`
     * Fixes
         * Fixed error when stacking data with no exogenous variables :pr:`4275`
     * Changes
