@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.80.0 Aug. 30, 2023**
+    * Enhancements
         * Added support for prediction intervals for VARMAX regressor :pr:`4267`
         * Integrated multiseries time series into AutoMLSearch :pr:`4270`
         * Extended STLDecomposer to Support Multiseries :pr:`4253`
@@ -10,6 +22,7 @@ Release Notes
     * Changes
         * Updated ``ARIMARegressor`` to be compatible with sktime v0.22.0 and beyond :pr:`4283`
         * Updated ``graph_prediction_vs_actual_over_time()`` to be compatible with multiseries time series :pr:`4284`
+        * Updated ``excluded_model_families`` to take in a list of both ``str`` and ``ModelFamily`` data types :pr:`4287`
         * Unpinned ipywidgets :pr:`4288`
     * Documentation Changes
         * Removed erroneous warnings from Data Checks User Guide page and removed ``tqdm`` warning in all notebooks :pr:`4274`

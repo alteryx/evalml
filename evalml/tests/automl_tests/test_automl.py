@@ -70,6 +70,7 @@ from evalml.pipelines.components import (
     ARIMARegressor,
     DateTimeFeaturizer,
     EmailFeaturizer,
+    LinearRegressor,
     NaturalLanguageFeaturizer,
     RandomForestClassifier,
     SelectColumns,
@@ -5356,7 +5357,7 @@ def test_excluded_model_families(
         y_train=y,
         problem_type=ProblemTypes.BINARY,
         automl_algorithm=automl_algorithm,
-        excluded_model_families=[ModelFamily.RANDOM_FOREST],
+        excluded_model_families=[ModelFamily.RANDOM_FOREST, "linear_model"],
     )
 
     env = AutoMLTestEnv(ProblemTypes.BINARY)
@@ -5377,6 +5378,7 @@ def test_excluded_model_families(
             assert SelectColumns.name not in pl.component_graph.compute_order
         else:
             assert RandomForestClassifier.name not in pl.component_graph.compute_order
+            assert LinearRegressor.name not in pl.component_graph.compute_order
 
 
 def test_excluded_model_families_error(
@@ -5396,9 +5398,7 @@ def test_excluded_model_families_error(
             excluded_model_families=ModelFamily.RANDOM_FOREST,
         )
 
-    match_text = (
-        "All values in `excluded_model_families` must be of type `ModelFamily`."
-    )
+    match_text = "All values in `excluded_model_families` must be of type `ModelFamily` or `str`."
     with pytest.raises(
         ValueError,
         match=match_text,
@@ -5407,7 +5407,7 @@ def test_excluded_model_families_error(
             X_train=X,
             y_train=y,
             problem_type=ProblemTypes.BINARY,
-            excluded_model_families=[ModelFamily.RANDOM_FOREST, "XGBoost"],
+            excluded_model_families=[ModelFamily.RANDOM_FOREST, "XGBoost", 0],
         )
 
 
