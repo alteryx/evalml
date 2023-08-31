@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.80.0 Aug. 30, 2023**
+    * Enhancements
         * Added support for prediction intervals for VARMAX regressor :pr:`4267`
         * Integrated multiseries time series into AutoMLSearch :pr:`4270`
         * Added datacheck to check for mismatched series length in multiseries :pr:`4296`
