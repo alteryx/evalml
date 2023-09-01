@@ -3,6 +3,7 @@
 
 from evalml.data_checks import (
     DataCheck,
+    DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
 )
@@ -32,13 +33,14 @@ class MismatchedSeriesLengthDataCheck(DataCheck):
             y (pd.Series): The target. Defaults to None. Ignored.
 
         Returns:
-            dict: Dictionary with DataCheckWarning if there are mismatch series length in the datasets
+            dict (DataCheckWarning, DataCheckError): List with DataCheckWarning if there are mismatch series length in the datasets
+                  or list with DataCheckError if the given series_id is not in the dataset
 
         Examples:
             >>> import pandas as pd
 
             For multiseries time series datasets, each seriesID should ideally have the same number of datetime entries as
-            each other. If they don't, then a warning will be raised denoting which seriesID have mismatched lengths
+            each other. If they don't, then a warning will be raised denoting which seriesID have mismatched lengths.
 
             >>> X = pd.DataFrame(
             ...     {
@@ -65,12 +67,45 @@ class MismatchedSeriesLengthDataCheck(DataCheck):
             ...         "action_options": [],
             ...     }
             ... ]
+
+            If MismatchedSeriesLengthDataCheck is passed in an invalid series_id column name, then an error will be raised.
+
+            >>> X = pd.DataFrame(
+            ...     {
+            ...         "date": pd.date_range(start="1/1/2018", periods=20).repeat(5),
+            ...         "series_id": pd.Series(list(range(5)) * 20, dtype="str"),
+            ...         "feature_a": range(100),
+            ...         "feature_b": reversed(range(100)),
+            ...     },
+            ... )
+            >>> X = X.drop(labels=0, axis=0)
+            >>> mismatched_series_length_check = MismatchedSeriesLengthDataCheck("not_series_id")
+            >>> assert mismatched_series_length_check.validate(X) == [
+            ...      {
+            ...         "message": "series_id 'not_series_id' does not match the series_id column of the dataset.",
+            ...         "data_check_name": "MismatchedSeriesLengthDataCheck",
+            ...         "level": "error",
+            ...         "details": {
+            ...             "columns": None,
+            ...             "rows": None,
+            ...             "series_id": "not_series_id",
+            ...         },
+            ...         "code": "MULTISERIES_TIMESERIES_SERIES_ID_NOT_IN_COL",
+            ...         "action_options": [],
+            ...     }
+            ... ]
         """
         messages = []
         if self.series_id not in X:
-            raise ValueError(
-                f"""series_id "{self.series_id}" doesn't match the series_id column of the dataset.""",
+            messages.append(
+                DataCheckError(
+                    message=f"""series_id '{self.series_id}' does not match the series_id column of the dataset.""",
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.MULTISERIES_TIMESERIES_SERIES_ID_NOT_IN_COL,
+                    details={"series_id": self.series_id},
+                ).to_dict(),
             )
+            return messages
 
         # gets all the number of entries per series_id
         series_id_len = {}

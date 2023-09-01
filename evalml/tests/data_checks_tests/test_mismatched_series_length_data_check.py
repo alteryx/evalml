@@ -1,6 +1,7 @@
 import pytest
 
 from evalml.data_checks import (
+    DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
     MismatchedSeriesLengthDataCheck,
@@ -18,13 +19,23 @@ def test_mismatched_series_length_data_check_raises_value_error(
     ):
         MismatchedSeriesLengthDataCheck(None)
 
+
+def test_mistmatched_series_length_data_check_data_check_error(
+    multiseries_ts_data_stacked,
+):
     X, _ = multiseries_ts_data_stacked
     dc = MismatchedSeriesLengthDataCheck("not_series_id")
-    with pytest.raises(
-        ValueError,
-        match="""series_id "not_series_id" doesn't match the series_id column of the dataset.""",
-    ):
-        dc.validate(X)
+    messages = dc.validate(X)
+    assert len(messages) == 1
+    assert messages == [
+        DataCheckError(
+            message="""series_id 'not_series_id' does not match the series_id column of the dataset.""",
+            data_check_name=mismatch_series_length_dc_name,
+            message_code=DataCheckMessageCode.MULTISERIES_TIMESERIES_SERIES_ID_NOT_IN_COL,
+            details={"series_id": "not_series_id"},
+            action_options=[],
+        ).to_dict(),
+    ]
 
 
 @pytest.mark.parametrize(
