@@ -292,9 +292,12 @@ def _get_preprocessing_components(
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
     if is_multiseries(problem_type):
-        return []
+        if include_decomposer:
+            components_functions = [_get_decomposer]
+        else:
+            return []
 
-    if is_time_series(problem_type):
+    elif is_time_series(problem_type):
         components_functions = [
             _get_label_encoder,
             _get_drop_all_null,

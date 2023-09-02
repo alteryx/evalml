@@ -679,7 +679,8 @@ def get_time_index(X: pd.DataFrame, y: pd.Series, time_index_name: str):
                 raise ValueError(
                     f"Too many Datetime features provided in data and provided time_index column {time_index_name} not present in data.",
                 )
-
+    if dt_col.duplicated().any():
+        dt_col = dt_col.drop_duplicates()
     if not isinstance(dt_col, pd.DatetimeIndex) or dt_col.freq is None:
         dt_col = pd.DatetimeIndex(dt_col, freq="infer")
     time_index = dt_col.rename(y.index.name)
