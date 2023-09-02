@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Extended STLDecomposer to Support Multiseries :pr:`4253`
+        * Added STLDecomposer to multiseries pipelines :pr:`4299`
     * Fixes
     * Changes
     * Documentation Changes
