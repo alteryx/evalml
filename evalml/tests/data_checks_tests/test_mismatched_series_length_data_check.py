@@ -80,3 +80,11 @@ def test_mismatched_series_length_data_check_all(multiseries_ts_data_stacked):
             action_options=[],
         ).to_dict(),
     ]
+
+
+def test_mismatched_series_length_data_check_no_mismatch(multiseries_ts_data_stacked):
+    X, _ = multiseries_ts_data_stacked
+    mismatch_series_length_dc = MismatchedSeriesLengthDataCheck("series_id")
+    messages = mismatch_series_length_dc.validate(X)
+    assert len(messages) == 0
+    assert messages == []
