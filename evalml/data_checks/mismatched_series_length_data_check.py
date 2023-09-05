@@ -83,7 +83,7 @@ class MismatchedSeriesLengthDataCheck(DataCheck):
             >>> mismatched_series_length_check = MismatchedSeriesLengthDataCheck("not_series_id")
             >>> assert mismatched_series_length_check.validate(X) == [
             ...      {
-            ...         "message": "series_id 'not_series_id' does not match the series_id column of the dataset.",
+            ...         "message": "series_id 'not_series_id' is not in the dataset.",
             ...         "data_check_name": "MismatchedSeriesLengthDataCheck",
             ...         "level": "error",
             ...         "details": {
@@ -92,6 +92,34 @@ class MismatchedSeriesLengthDataCheck(DataCheck):
             ...             "series_id": "not_series_id",
             ...         },
             ...         "code": "INVALID_SERIES_ID_COL",
+            ...         "action_options": [],
+            ...     }
+            ... ]
+
+            If there are multiple lengths that have the same number of series (e.g. two series have length 20 and two series have length 19),
+            this datacheck will consider the higher length to be the majority length (e.g. from the previous example length 20 would be the majority length)
+            >>> X = pd.DataFrame(
+            ...     {
+            ...         "date": pd.date_range(start="1/1/2018", periods=20).repeat(4),
+            ...         "series_id": pd.Series(list(range(4)) * 20, dtype="str"),
+            ...         "feature_a": range(80),
+            ...         "feature_b": reversed(range(80)),
+            ...     },
+            ... )
+            >>> X = X.drop(labels=[0, 1], axis=0)
+            >>> mismatched_series_length_check = MismatchedSeriesLengthDataCheck("series_id")
+            >>> assert mismatched_series_length_check.validate(X) == [
+            ...      {
+            ...         "message": "Series ID ['0', '1'] do not match the majority length of the other series, which is 20",
+            ...         "data_check_name": "MismatchedSeriesLengthDataCheck",
+            ...         "level": "warning",
+            ...         "details": {
+            ...             "columns": None,
+            ...             "rows": None,
+            ...             "series_id": ['0', '1'],
+            ...             "majority_length": 20
+            ...         },
+            ...         "code": "MISMATCHED_SERIES_LENGTH",
             ...         "action_options": [],
             ...     }
             ... ]
@@ -113,6 +141,7 @@ class MismatchedSeriesLengthDataCheck(DataCheck):
             id: len(X[X[self.series_id] == id]) for id in X[self.series_id].unique()
         }
 
+        # dictionary where {length: number of series with that length}
         tracker = {}
         for series_length in series_id_len.values():
             if series_length not in tracker:
@@ -123,7 +152,6 @@ class MismatchedSeriesLengthDataCheck(DataCheck):
         if len(tracker) == 1:
             return messages
 
-        # get the majority length
         majority_len = max(tracker, key=tracker.get)
 
         # get the series_id's that aren't the majority length
