@@ -1,4 +1,4 @@
-import woodwork as ww
+import pandas as pd
 from woodwork.logical_types import AgeNullable, BooleanNullable, IntegerNullable
 
 DOWNCAST_TYPE_DICT = {
@@ -48,7 +48,7 @@ def _downcast_nullable_y(y, handle_boolean_nullable=True, handle_integer_nullabl
         to other dtypes via Woodwork logical type transformations.
 
     Args:
-        y (pd.Series): Target data of shape [n_samples] whose nullable types will be changed.
+        y (pd.Series or pd.DataFrame): Target data of shape [n_samples] or [n_samples, n_features*n_series] whose nullable types will be changed.
         handle_boolean_nullable (bool, optional): Whether or not to downcast data with BooleanNullable logical types.
         handle_integer_nullable (bool, optional): Whether or not to downcast data with IntegerNullable or AgeNullable logical types.
 
@@ -57,16 +57,20 @@ def _downcast_nullable_y(y, handle_boolean_nullable=True, handle_integer_nullabl
         y with any incompatible nullable types downcasted to compatible equivalents.
     """
     if y.ww.schema is None:
-        y = ww.init_series(y)
+        y.ww.init()
 
     incompatible_logical_types = _get_incompatible_nullable_types(
         handle_boolean_nullable,
         handle_integer_nullable,
     )
 
-    if isinstance(y.ww.logical_type, tuple(incompatible_logical_types)):
-        new_ltype = _determine_downcast_type(y)
-        return y.ww.set_logical_type(new_ltype)
+    if isinstance(y, pd.DataFrame):
+        y = _downcast_nullable_X(y)
+
+    else:
+        if isinstance(y.ww.logical_type, tuple(incompatible_logical_types)):
+            new_ltype = _determine_downcast_type(y)
+            return y.ww.set_logical_type(new_ltype)
 
     return y
 

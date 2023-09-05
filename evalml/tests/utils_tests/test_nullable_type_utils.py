@@ -53,11 +53,24 @@ def test_determine_downcast_type(nullable_type_target, nullable_ltype, has_nans)
 
 
 @pytest.mark.parametrize(
-    "downcast_util, data_type",
-    [(_downcast_nullable_X, "X"), (_downcast_nullable_y, "y")],
+    "downcast_util, data_type, y_type",
+    [
+        (_downcast_nullable_X, "X", "series"),
+        (_downcast_nullable_y, "y", "series"),
+        (_downcast_nullable_y, "y", "dataframe"),
+    ],
 )
-def test_downcast_utils_handle_woodwork_not_init(X_y_binary, downcast_util, data_type):
-    X, y = X_y_binary
+def test_downcast_utils_handle_woodwork_not_init(
+    X_y_binary,
+    multiseries_ts_data_unstacked,
+    downcast_util,
+    data_type,
+    y_type,
+):
+    if y_type == "series":
+        X, y = X_y_binary
+    else:
+        X, y = multiseries_ts_data_unstacked
     # Remove woodwork types
     if data_type == "X":
         data = X.copy()
