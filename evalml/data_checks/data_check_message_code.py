@@ -146,7 +146,5 @@ class DataCheckMessageCode(Enum):
     MISMATCHED_SERIES_LENGTH = "mismatched_series_length"
     """Message code for when one or more unique series in a multiseries dataset is of a different length than the others"""
 
-    MULTISERIES_TIMESERIES_SERIES_ID_NOT_IN_COL = (
-        "multiseries_timeseries_series_id_not_in_col"
-    )
-    """Message code for when given series_id is not in the dataset"""
+    INVALID_SERIES_ID_COL = "INVALID_SERIES_ID_COL"
+    """Message code for when given series_id is invalid"""

@@ -29,9 +29,9 @@ def test_mistmatched_series_length_data_check_data_check_error(
     assert len(messages) == 1
     assert messages == [
         DataCheckError(
-            message="""series_id 'not_series_id' does not match the series_id column of the dataset.""",
+            message="""series_id 'not_series_id' is not in the dataset.""",
             data_check_name=mismatch_series_length_dc_name,
-            message_code=DataCheckMessageCode.MULTISERIES_TIMESERIES_SERIES_ID_NOT_IN_COL,
+            message_code=DataCheckMessageCode.INVALID_SERIES_ID_COL,
             details={"series_id": "not_series_id"},
             action_options=[],
         ).to_dict(),

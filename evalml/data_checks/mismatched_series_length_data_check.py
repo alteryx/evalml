@@ -1,6 +1,5 @@
 """Data check that checks if one or more unique series in a multiseres data is a different length than the others."""
 
-
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
@@ -11,6 +10,8 @@ from evalml.data_checks import (
 
 class MismatchedSeriesLengthDataCheck(DataCheck):
     """Check if one or more unique series in a multiseries dataset is of a different length than the others.
+
+    Currently works specifically on stacked data
 
     Args:
         series_id (str): The name of the series_id column for the dataset.
@@ -90,7 +91,7 @@ class MismatchedSeriesLengthDataCheck(DataCheck):
             ...             "rows": None,
             ...             "series_id": "not_series_id",
             ...         },
-            ...         "code": "MULTISERIES_TIMESERIES_SERIES_ID_NOT_IN_COL",
+            ...         "code": "INVALID_SERIES_ID_COL",
             ...         "action_options": [],
             ...     }
             ... ]
@@ -99,33 +100,34 @@ class MismatchedSeriesLengthDataCheck(DataCheck):
         if self.series_id not in X:
             messages.append(
                 DataCheckError(
-                    message=f"""series_id '{self.series_id}' does not match the series_id column of the dataset.""",
+                    message=f"""series_id '{self.series_id}' is not in the dataset.""",
                     data_check_name=self.name,
-                    message_code=DataCheckMessageCode.MULTISERIES_TIMESERIES_SERIES_ID_NOT_IN_COL,
+                    message_code=DataCheckMessageCode.INVALID_SERIES_ID_COL,
                     details={"series_id": self.series_id},
                 ).to_dict(),
             )
             return messages
 
         # gets all the number of entries per series_id
-        series_id_len = {}
-        for id in X[self.series_id].unique():
-            series_id_len[id] = len(X[X[self.series_id] == id])
+        series_id_len = {
+            id: len(X[X[self.series_id] == id]) for id in X[self.series_id].unique()
+        }
+
+        tracker = {}
+        for series_length in series_id_len.values():
+            if series_length not in tracker:
+                tracker[series_length] = 0
+            else:
+                tracker[series_length] += 1
+
+        if len(tracker) == 1:
+            return messages
 
         # get the majority length
-        tracker = {}
-        for _, v in series_id_len.items():
-            if v not in tracker:
-                tracker[v] = 0
-            else:
-                tracker[v] += 1
         majority_len = max(tracker, key=tracker.get)
 
         # get the series_id's that aren't the majority length
-        not_majority = []
-        for id in series_id_len:
-            if series_id_len[id] != majority_len:
-                not_majority.append(id)
+        not_majority = [id for id in series_id_len if series_id_len[id] != majority_len]
 
         if len(not_majority) > 0 and len(not_majority) < len(series_id_len) - 1:
             warning_msg = f"Series ID {not_majority} do not match the majority length of the other series, which is {majority_len}"
