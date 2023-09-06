@@ -170,7 +170,7 @@ def test_make_pipeline(
 
             if is_time_series(problem_type):
                 if is_multiseries(problem_type):
-                    expected_components = dfs + [estimator_class]
+                    expected_components = dfs + decomposer + [estimator_class]
                 else:
                     expected_components = (
                         dfs
