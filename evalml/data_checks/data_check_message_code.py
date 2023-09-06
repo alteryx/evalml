@@ -142,3 +142,9 @@ class DataCheckMessageCode(Enum):
         "timeseries_target_not_compatible_with_split"
     )
     """Message code when any training and validation split of the time series target doesn't contain all classes."""
+
+    MISMATCHED_SERIES_LENGTH = "mismatched_series_length"
+    """Message code for when one or more unique series in a multiseries dataset is of a different length than the others"""
+
+    INVALID_SERIES_ID_COL = "invalid_series_id_col"
+    """Message code for when given series_id is invalid"""

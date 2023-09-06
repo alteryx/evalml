@@ -256,7 +256,9 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         Args:
             X (pd.DataFrame, optional): Input data to a component of shape [n_samples, n_features].
                 May contain nullable types.
-            y (pd.Series, optional): The target of length [n_samples]. May contain nullable types.
+            y (pd.Series or pd.DataFrame, optional): The target of length [n_samples] or the
+                unstacked target for a multiseries problem of length [n_samples, n_features*n_series].
+                May contain nullable types.
 
         Returns:
             X, y with any incompatible nullable types downcasted to compatible equivalents.
@@ -278,5 +280,4 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
                 handle_boolean_nullable=y_bool_incompatible,
                 handle_integer_nullable=y_int_incompatible,
             )
-
         return X, y
