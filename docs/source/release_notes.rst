@@ -2,10 +2,10 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Extended STLDecomposer to Support Multiseries :pr:`4253`
-        * Extended TimeSeriesImputer to handle multiseries :pr:`4291`
+        * Extended STLDecomposer to support Multiseries :pr:`4253`
+        * Extended TimeSeriesImputer to support multiseries :pr:`4291`
         * Added datacheck to check for mismatched series length in multiseries :pr:`4296`
-        * Extended DateTimeFormatCheck data check to handle multiseries :pr:`4300`
+        * Extended DateTimeFormatCheck data check to support multiseries :pr:`4300`
     * Fixes
     * Changes
     * Documentation Changes
