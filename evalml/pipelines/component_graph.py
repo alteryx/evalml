@@ -806,10 +806,11 @@ class ComponentGraph:
                     [
                         key + " : " + "{:0.2f}".format(val)
                         if (isinstance(val, float))
-                        else key + " : " + str(val)
+                        else key + " : " + str(val).replace("{", "").replace("}", "")
                         for key, val in component_class.parameters.items()
                     ],
                 )  # noqa: W605
+
                 label = "%s |%s\l" % (component_name, parameters)  # noqa: W605
             graph.node(component_name, shape="record", label=label, nodesep="0.03")
 
