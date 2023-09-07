@@ -442,6 +442,7 @@ class STLDecomposer(Decomposer):
             y.append(y_series)
         y_df = pd.DataFrame(y).T
         y_df.index = original_index
+        y_df.columns = y_t.columns
         return y_df
 
     def get_trend_dataframe(self, X, y):

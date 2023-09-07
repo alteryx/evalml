@@ -265,6 +265,11 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             calculating_residuals=calculating_residuals,
         )
         predictions = self._estimator_predict(features)
+        if len(predictions.columns) == len(y.columns):
+            # predictions.columns = y.columns
+            predictions = predictions.ww.rename(
+                dict(zip(predictions.columns, y.columns)),
+            )
         if len(predictions) == len(y):
             predictions.index = y.index
         predictions = self.inverse_transform(predictions)

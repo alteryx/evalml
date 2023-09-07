@@ -681,9 +681,9 @@ def get_time_index(X: pd.DataFrame, y: pd.Series, time_index_name: str):
                 )
     if not isinstance(dt_col, pd.DatetimeIndex) or dt_col.freq is None:
         dt_col = pd.DatetimeIndex(dt_col, freq="infer")
-    if dt_col.duplicated().any():
-        temp_dt_col = pd.DatetimeIndex(dt_col.copy().drop_duplicates(), freq="infer")
-        dt_col.freq = temp_dt_col.freq
+    # if dt_col.duplicated().any():
+    #     temp_dt_col = pd.DatetimeIndex(dt_col.copy().drop_duplicates(), freq="infer")
+    #     dt_col.freq = temp_dt_col.freq
     time_index = dt_col.rename(y.index.name)
     return time_index
 
