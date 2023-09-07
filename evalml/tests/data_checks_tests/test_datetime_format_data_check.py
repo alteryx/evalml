@@ -18,9 +18,12 @@ WINDOW_LENGTH = 4
 THRESHOLD = 0.4
 
 
-def get_uneven_error(col_name, ww_payload):
+def get_uneven_error(col_name, ww_payload, series=None):
+    series_message = f"A frequency was detected in column '{col_name}' for series '{series}', but there are faulty datetime values that need to be addressed."
     error = DataCheckError(
-        message=f"A frequency was detected in column '{col_name}', but there are faulty datetime values that need to be addressed.",
+        message=f"A frequency was detected in column '{col_name}', but there are faulty datetime values that need to be addressed."
+        if series is None
+        else series_message,
         data_check_name=datetime_format_check_name,
         message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
         action_options=[
@@ -541,3 +544,141 @@ def test_datetime_many_duplicates_and_nans():
     result = dc.validate(X, y)
 
     assert result[2]["code"] == "DATETIME_NO_FREQUENCY_INFERRED"
+
+
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
+@pytest.mark.parametrize(
+    "issue",
+    ["redundant", "missing", "uneven", "type_errors", None],
+)
+@pytest.mark.parametrize("datetime_loc", [1, "X_index"])
+def test_datetime_format_data_check_typeerror_uneven_intervals_multiseries(
+    issue,
+    input_type,
+    datetime_loc,
+):
+    # there's 60 entries in the dataframe (30 per series)
+    X, y = pd.DataFrame({"features": range(60)}), pd.Series(range(60))
+    X["series_id"] = pd.Series(list(range(2)) * 30, dtype="str")
+
+    if issue == "type_errors":
+        dates = range(60)
+    else:
+        dates = pd.date_range("2021-01-01", periods=60)
+
+    if issue == "missing":
+        # Skips 2021-01-25 and starts again at 2021-01-27, skipping a date and triggering the error
+        dates = (pd.date_range("2021-01-01", periods=25).repeat(2)).append(
+            (pd.date_range("2021-01-27", periods=5).repeat(2)),
+        )
+
+    if issue == "uneven":
+        dates_1 = pd.date_range("2015-01-01", periods=5, freq="D").repeat(2)
+        dates_2 = pd.date_range("2015-01-08", periods=3, freq="D").repeat(2)
+        dates_3 = pd.DatetimeIndex(["2015-01-12"]).repeat(2)
+        dates_4 = pd.date_range("2015-01-15", periods=5, freq="D").repeat(2)
+        dates_5 = pd.date_range("2015-01-22", periods=5, freq="D").repeat(2)
+        dates_6 = pd.date_range("2015-01-29", periods=11, freq="M").repeat(2)
+
+        dates = (
+            dates_1.append(dates_2)
+            .append(dates_3)
+            .append(dates_4)
+            .append(dates_5)
+            .append(dates_6)
+        )
+    if issue == "redundant":
+        # 2021-01-25 repeats twice which triggers an error
+        dates = (pd.date_range("2021-01-01", periods=25).repeat(2)).append(
+            (pd.date_range("2021-01-25", periods=5).repeat(2)),
+        )
+    datetime_column = "index"
+
+    if datetime_loc == 1:
+        X[datetime_loc] = dates
+        datetime_column = datetime_loc
+    else:
+        X.index = dates
+
+    if input_type == "ww":
+        X.ww.init()
+        y.ww.init()
+
+    datetime_format_check = DateTimeFormatDataCheck(
+        datetime_column=datetime_column,
+        series_id="series_id",
+    )
+
+    messages = []
+    for series in X["series_id"].unique():
+        if issue == "type_errors":
+            # type error only has 1 message regardless of how many series there are
+            if len(messages) == 0:
+                messages.append(
+                    DataCheckError(
+                        message="Datetime information could not be found in the data, or was not in a supported datetime format.",
+                        data_check_name=datetime_format_check_name,
+                        message_code=DataCheckMessageCode.DATETIME_INFORMATION_NOT_FOUND,
+                    ).to_dict(),
+                )
+        else:
+            # separates the datetimes so it only displays the dates that correspond to the current series
+            if input_type == "ww":
+                # ww makes the series_id into ints so need to cast
+                if datetime_loc == "X_index":
+                    dates = pd.Series(
+                        X[X[datetime_format_check.series_id] == int(series)].index,
+                    )
+                else:
+                    dates = X[X[datetime_format_check.series_id] == int(series)][
+                        datetime_column
+                    ]
+            elif datetime_loc == "X_index":
+                dates = pd.Series(X[X[datetime_format_check.series_id] == series].index)
+            else:
+                dates = X[X[datetime_format_check.series_id] == series][datetime_column]
+
+            ww_payload = infer_frequency(
+                dates.reset_index(drop=True),
+                debug=True,
+                window_length=WINDOW_LENGTH,
+                threshold=THRESHOLD,
+            )
+
+            col_name = datetime_loc if datetime_loc == 1 else "either index"
+            if issue is None:
+                break
+            elif issue == "missing":
+                messages.append(
+                    DataCheckError(
+                        message=f"Column '{col_name}' for series '{series}' has datetime values missing between start and end date.",
+                        data_check_name=datetime_format_check_name,
+                        message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
+                    ).to_dict(),
+                )
+                messages.append(
+                    get_uneven_error(col_name, ww_payload, series),
+                )
+            elif issue == "redundant":
+                messages.append(
+                    DataCheckError(
+                        message=f"Column '{col_name}' for series '{series}' has more than one row with the same datetime value.",
+                        data_check_name=datetime_format_check_name,
+                        message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
+                    ).to_dict(),
+                )
+                messages.append(
+                    get_uneven_error(col_name, ww_payload, series),
+                )
+            else:
+                messages.append(
+                    DataCheckError(
+                        message=f"No frequency could be detected in column '{col_name}' for series '{series}', possibly due to uneven intervals or too many duplicate/missing values.",
+                        data_check_name=datetime_format_check_name,
+                        message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_INFERRED,
+                    ).to_dict(),
+                )
+    if issue is None:
+        assert datetime_format_check.validate(X, y) == []
+    else:
+        assert datetime_format_check.validate(X, y) == messages

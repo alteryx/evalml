@@ -319,6 +319,11 @@ class DateTimeFormatDataCheck(DataCheck):
         is_multiseries = self.series_id is not None
         no_dt_found = False
 
+        if self.series_id is not None and self.series_id not in X:
+            raise ValueError(
+                f"""series_id "{self.series_id}" is not in the dataset.""",
+            )
+
         if self.datetime_column != "index":
             datetime_values = X[self.datetime_column]
         else:
@@ -332,10 +337,7 @@ class DateTimeFormatDataCheck(DataCheck):
             inferred_freq = pd.infer_freq(datetime_values)
         except TypeError:
             no_dt_found = True
-        if self.series_id is not None and self.series_id not in X:
-            raise ValueError(
-                f"""series_id "{self.series_id}" is not in the dataset.""",
-            )
+
         if no_dt_found:
             messages.append(
                 DataCheckError(
@@ -356,7 +358,7 @@ class DateTimeFormatDataCheck(DataCheck):
                 if self.datetime_column != "index":
                     datetime_values = X[X[self.series_id] == series][
                         self.datetime_column
-                    ]
+                    ].reset_index(drop=True)
                 else:
                     datetime_values = X[X[self.series_id] == series].index
 
@@ -376,7 +378,6 @@ class DateTimeFormatDataCheck(DataCheck):
                 if self.datetime_column != "index"
                 else "either index"
             )
-
             ww_payload = infer_frequency(
                 pd.Series(datetime_values),
                 debug=True,
@@ -452,7 +453,7 @@ class DateTimeFormatDataCheck(DataCheck):
             if debug_object["estimated_freq"] is None or len(
                 datetime_values_no_nans_duplicates,
             ) <= self.nan_duplicate_threshold * len(datetime_values):
-                series_message = f"No frequency could be detected in column '{col_name} for series '{series}', possibly due to uneven intervals or too many duplicate/missing values."
+                series_message = f"No frequency could be detected in column '{col_name}' for series '{series}', possibly due to uneven intervals or too many duplicate/missing values."
                 messages.append(
                     DataCheckError(
                         message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals or too many duplicate/missing values."
@@ -463,9 +464,7 @@ class DateTimeFormatDataCheck(DataCheck):
                     ).to_dict(),
                 )
             else:
-                series_message = (
-                    f"A frequency was detected in column '{col_name}' for series '{series}', but there are faulty datetime values that need to be addressed.",
-                )
+                series_message = f"A frequency was detected in column '{col_name}' for series '{series}', but there are faulty datetime values that need to be addressed."
                 messages.append(
                     DataCheckError(
                         message=f"A frequency was detected in column '{col_name}', but there are faulty datetime values that need to be addressed."
