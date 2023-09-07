@@ -310,7 +310,61 @@ class DateTimeFormatDataCheck(DataCheck):
             ...         ]
             ...     }
             ... ]
-            ...
+
+            For multiseries, the datacheck will go through each series and perform checks on them similar to the single series case
+            To denote that the datacheck is checking a multiseries, pass in the name of the series_id column to the datacheck
+
+            >>> X = pd.DataFrame(
+            ...     {
+            ...         "date": pd.date_range("2021-01-01", periods=15).repeat(2),
+            ...         "series_id": pd.Series(list(range(2)) * 15, dtype="str")
+            ...     }
+            ... )
+            >>> X = X.drop([15])
+            >>> dc = DateTimeFormatDataCheck(datetime_column="date", series_id="series_id")
+            >>> ww_payload_expected_series1 = infer_frequency((X[X["series_id"] == "1"]["date"].reset_index(drop=True)), debug=True, window_length=4, threshold=0.4)
+            >>> xd = dc.validate(X,y)
+            >>> assert dc.validate(X, y) == [
+            ...     {
+            ...         "message": "Column 'date' for series '1' has datetime values missing between start and end date.",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "details": {"columns": None, "rows": None},
+            ...         "code": "DATETIME_IS_MISSING_VALUES",
+            ...         "action_options": []
+            ...      },
+            ...     {
+            ...         "message": "A frequency was detected in column 'date' for series '1', but there are faulty datetime values that need to be addressed.",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "code": "DATETIME_HAS_UNEVEN_INTERVALS",
+            ...         "details": {'columns': None, 'rows': None},
+            ...         "action_options": [
+            ...             {
+            ...                 'code': 'REGULARIZE_AND_IMPUTE_DATASET',
+            ...                 'data_check_name': 'DateTimeFormatDataCheck',
+            ...                 'metadata': {
+            ...                         'columns': None,
+            ...                         'is_target': True,
+            ...                         'rows': None
+            ...                 },
+            ...                 'parameters': {
+            ...                         'time_index': {
+            ...                             'default_value': 'date',
+            ...                             'parameter_type': 'global',
+            ...                             'type': 'str'
+            ...                         },
+            ...                         'frequency_payload': {
+            ...                             'default_value': ww_payload_expected_series1,
+            ...                             'parameter_type': 'global',
+            ...                             'type': 'tuple'
+            ...                         }
+            ...                 }
+            ...             }
+            ...         ]
+            ...     }
+            ... ]
+
         """
         messages = []
 
