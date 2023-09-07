@@ -352,7 +352,6 @@ class DateTimeFormatDataCheck(DataCheck):
             [datetime_values] if self.series_id is None else X[self.series_id].unique()
         )
         for series in series_datetime:
-
             # if multiseries only select the datetimes corresponding to one series
             if is_multiseries:
                 if self.datetime_column != "index":
@@ -433,9 +432,7 @@ class DateTimeFormatDataCheck(DataCheck):
 
             # Check for dates that don't line up with the frequency
             if len(debug_object["extra_values"]) > 0:
-                series_message = (
-                    f"Column '{col_name}' for series '{series}' has datetime values that do not align with the inferred frequency.",
-                )
+                series_message = f"Column '{col_name}' for series '{series}' has datetime values that do not align with the inferred frequency."
                 messages.append(
                     DataCheckError(
                         message=f"Column '{col_name}' has datetime values that do not align with the inferred frequency."
