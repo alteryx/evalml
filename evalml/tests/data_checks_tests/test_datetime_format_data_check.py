@@ -528,7 +528,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals_multiseries(
     input_type,
     datetime_loc,
 ):
-    # there's 60 entries in the dataframe (30 per series)
+    # there's 60 entries in the dataframe (30 entries per series)
     X, y = pd.DataFrame({"features": range(60)}), pd.Series(range(60))
     X["series_id"] = pd.Series(list(range(2)) * 30, dtype="str")
 
@@ -609,7 +609,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals_multiseries(
             else:
                 dates = X[X[datetime_format_check.series_id] == series][datetime_column]
 
-            ww_payload = infer_frequency(
+            ww_payload_expected = infer_frequency(
                 dates.reset_index(drop=True),
                 debug=True,
                 window_length=WINDOW_LENGTH,
@@ -627,7 +627,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals_multiseries(
                             data_check_name=datetime_format_check_name,
                             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
                         ).to_dict(),
-                        get_uneven_error(col_name, ww_payload, series),
+                        get_uneven_error(col_name, ww_payload_expected, series),
                     ],
                 )
             elif issue == "redundant":
@@ -638,7 +638,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals_multiseries(
                             data_check_name=datetime_format_check_name,
                             message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
                         ).to_dict(),
-                        get_uneven_error(col_name, ww_payload, series),
+                        get_uneven_error(col_name, ww_payload_expected, series),
                     ],
                 )
             else:
@@ -681,8 +681,6 @@ def test_datetime_format_data_check_multiple_missing_multiseries(n_missing):
         dates = dates.append(pd.date_range("2021-01-17", periods=36).repeat(2)).drop(
             "2021-01-22",
         )
-        # print(dates)
-        # assert 1 == 0
     elif n_missing == 5:
         # A chunk of 5 missing days in a row
         dates = dates.append(pd.date_range("2021-01-21", periods=35).repeat(2))
@@ -703,7 +701,7 @@ def test_datetime_format_data_check_multiple_missing_multiseries(n_missing):
 
     messages = []
     for series in X["series_id"].unique():
-        ww_payload = infer_frequency(
+        ww_payload_expected = infer_frequency(
             X[X["series_id"] == series]["dates"].reset_index(drop=True),
             debug=True,
             window_length=WINDOW_LENGTH,
@@ -716,7 +714,7 @@ def test_datetime_format_data_check_multiple_missing_multiseries(n_missing):
                     data_check_name=datetime_format_check_name,
                     message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
                 ).to_dict(),
-                get_uneven_error("dates", ww_payload, series),
+                get_uneven_error("dates", ww_payload_expected, series),
             ],
         )
     assert len(messages) == 4
@@ -736,7 +734,7 @@ def test_datetime_format_data_check_nan_multiseries(nans):
 
     messages = []
     for series in X["series_id"].unique():
-        ww_payload = infer_frequency(
+        ww_payload_expected = infer_frequency(
             X[X["series_id"] == series]["date"].reset_index(drop=True),
             debug=True,
             window_length=WINDOW_LENGTH,
@@ -750,7 +748,7 @@ def test_datetime_format_data_check_nan_multiseries(nans):
                         data_check_name=DateTimeFormatDataCheck.name,
                         message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
                     ).to_dict(),
-                    get_uneven_error("date", ww_payload, series),
+                    get_uneven_error("date", ww_payload_expected, series),
                 ],
             )
 
@@ -778,7 +776,7 @@ def test_datetime_format_data_check_multiseries_not_aligned_frequency():
 
     messages = []
     for series in X["series_id"].unique():
-        ww_payload = infer_frequency(
+        ww_payload_expected = infer_frequency(
             X[X["series_id"] == series]["dates"].reset_index(drop=True),
             debug=True,
             window_length=WINDOW_LENGTH,
@@ -797,7 +795,7 @@ def test_datetime_format_data_check_multiseries_not_aligned_frequency():
                     data_check_name=datetime_format_check_name,
                     message_code=DataCheckMessageCode.DATETIME_HAS_MISALIGNED_VALUES,
                 ).to_dict(),
-                get_uneven_error("dates", ww_payload, series),
+                get_uneven_error("dates", ww_payload_expected, series),
             ],
         )
     assert datetime_format_check.validate(X, pd.Series(dtype="float64")) == messages
