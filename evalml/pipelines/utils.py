@@ -233,21 +233,27 @@ def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_nam
 def _get_decomposer(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
     if is_time_series(problem_type) and is_regression(problem_type):
-        time_index = get_time_index(X, y, None)
-        # If the time index frequency is uninferrable, STL will fail
-        if time_index.freq is None:
-            return components
-        freq = time_index.freq.name
-        if STLDecomposer.is_freq_valid(freq):
-            # Make sure there's a seasonal period
-            order = 3 if "Q" in freq else 5
-            seasonal_period = STLDecomposer.determine_periodicity(
-                X,
-                y,
-                rel_max_order=order,
-            )
-            if seasonal_period is not None and seasonal_period <= DECOMPOSER_PERIOD_CAP:
-                components.append(STLDecomposer)
+        if is_multiseries(problem_type):
+            components.append(STLDecomposer)
+        else:
+            time_index = get_time_index(X, y, None)
+            # If the time index frequency is uninferrable, STL will fail
+            if time_index.freq is None:
+                return components
+            freq = time_index.freq.name
+            if STLDecomposer.is_freq_valid(freq):
+                # Make sure there's a seasonal period
+                order = 3 if "Q" in freq else 5
+                seasonal_period = STLDecomposer.determine_periodicity(
+                    X,
+                    y,
+                    rel_max_order=order,
+                )
+                if (
+                    seasonal_period is not None
+                    and seasonal_period <= DECOMPOSER_PERIOD_CAP
+                ):
+                    components.append(STLDecomposer)
     return components
 
 
@@ -292,9 +298,12 @@ def _get_preprocessing_components(
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
     if is_multiseries(problem_type):
-        return []
+        if include_decomposer:
+            components_functions = [_get_decomposer]
+        else:
+            return []
 
-    if is_time_series(problem_type):
+    elif is_time_series(problem_type):
         components_functions = [
             _get_label_encoder,
             _get_drop_all_null,
