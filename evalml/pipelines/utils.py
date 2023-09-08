@@ -233,19 +233,19 @@ def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_nam
 def _get_decomposer(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
     if is_time_series(problem_type) and is_regression(problem_type):
-        time_index = get_time_index(X, y, None)
-        if time_index.freq is not None:
-            order = 3 if "Q" in time_index.freq.name else 5
-        else:
-            order = 5
-        # Make sure there's a seasonal period
-        seasonal_period = STLDecomposer.determine_periodicity(
-            X,
-            y,
-            rel_max_order=order,
-        )
-        if seasonal_period is not None and seasonal_period <= DECOMPOSER_PERIOD_CAP:
+        if is_multiseries(problem_type):
             components.append(STLDecomposer)
+        else:
+            time_index = get_time_index(X, y, None)
+            order = 3 if "Q" in time_index.freq.name else 5
+            # Make sure there's a seasonal period
+            seasonal_period = STLDecomposer.determine_periodicity(
+                X,
+                y,
+                rel_max_order=order,
+            )
+            if seasonal_period is not None and seasonal_period <= DECOMPOSER_PERIOD_CAP:
+                components.append(STLDecomposer)
     return components
 
 
