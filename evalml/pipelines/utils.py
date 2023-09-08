@@ -234,14 +234,10 @@ def _get_decomposer(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
     if is_time_series(problem_type) and is_regression(problem_type):
         time_index = get_time_index(X, y, None)
-        # If the time index frequency is uninferrable, STL will fail
-        # if time_index.freq is None:
-        #     return components
         if time_index.freq is not None:
             order = 3 if "Q" in time_index.freq.name else 5
         else:
             order = 5
-        # if STLDecomposer.is_freq_valid(freq):
         # Make sure there's a seasonal period
         seasonal_period = STLDecomposer.determine_periodicity(
             X,
