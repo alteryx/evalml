@@ -265,11 +265,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             calculating_residuals=calculating_residuals,
         )
         predictions = self._estimator_predict(features)
-        if isinstance(predictions, pd.Series) and len(predictions) == len(y):
+        if isinstance(predictions, pd.Series):
             predictions = predictions.rename(self.input_target_name)
-        elif isinstance(predictions, pd.DataFrame) and len(predictions.columns) == len(
-            y.columns,
-        ):
+        elif isinstance(predictions, pd.DataFrame):
             predictions = predictions.ww.rename(
                 dict(zip(predictions.columns, y.columns)),
             )
