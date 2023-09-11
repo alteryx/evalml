@@ -54,31 +54,49 @@ def get_uneven_error(col_name, ww_payload, series=None):
     "issue",
     ["redundant", "missing", "uneven", "type_errors", None],
 )
-@pytest.mark.parametrize("datetime_loc", [1, "X_index", "y_index"])
+@pytest.mark.parametrize(
+    "datetime_loc, is_multiseries, repeat",
+    [
+        (1, True, 2),
+        (1, False, 1),
+        ("X_index", True, 2),
+        ("X_index", False, 1),
+        ("y_index", False, 1),
+    ],
+)
 def test_datetime_format_data_check_typeerror_uneven_intervals(
     issue,
     input_type,
     datetime_loc,
+    is_multiseries,
+    repeat,
 ):
-    X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
+    if is_multiseries:
+        time_length = 60
+    else:
+        time_length = 30
+
+    X, y = pd.DataFrame({"features": range(time_length)}), pd.Series(range(time_length))
+    if is_multiseries:
+        X["series_id"] = pd.Series(list(range(2)) * 30, dtype="str")
 
     if issue == "type_errors":
-        dates = range(30)
+        dates = range(time_length)
     else:
-        dates = pd.date_range("2021-01-01", periods=30)
+        dates = pd.date_range("2021-01-01", periods=time_length)
 
     if issue == "missing":
         # Skips 2021-01-25 and starts again at 2021-01-27, skipping a date and triggering the error
-        dates = pd.date_range("2021-01-01", periods=25).append(
-            pd.date_range("2021-01-27", periods=5),
+        dates = (pd.date_range("2021-01-01", periods=25).repeat(repeat)).append(
+            (pd.date_range("2021-01-27", periods=5).repeat(repeat)),
         )
     if issue == "uneven":
-        dates_1 = pd.date_range("2015-01-01", periods=5, freq="D")
-        dates_2 = pd.date_range("2015-01-08", periods=3, freq="D")
-        dates_3 = pd.DatetimeIndex(["2015-01-12"])
-        dates_4 = pd.date_range("2015-01-15", periods=5, freq="D")
-        dates_5 = pd.date_range("2015-01-22", periods=5, freq="D")
-        dates_6 = pd.date_range("2015-01-29", periods=11, freq="M")
+        dates_1 = pd.date_range("2015-01-01", periods=5, freq="D").repeat(repeat)
+        dates_2 = pd.date_range("2015-01-08", periods=3, freq="D").repeat(repeat)
+        dates_3 = pd.DatetimeIndex(["2015-01-12"]).repeat(repeat)
+        dates_4 = pd.date_range("2015-01-15", periods=5, freq="D").repeat(repeat)
+        dates_5 = pd.date_range("2015-01-22", periods=5, freq="D").repeat(repeat)
+        dates_6 = pd.date_range("2015-01-29", periods=11, freq="M").repeat(repeat)
 
         dates = (
             dates_1.append(dates_2)
@@ -88,11 +106,12 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
             .append(dates_6)
         )
     if issue == "redundant":
-        dates = pd.date_range("2021-01-01", periods=29).append(
-            pd.date_range("2021-01-29", periods=1),
+        dates = (pd.date_range("2021-01-01", periods=29).repeat(repeat)).append(
+            (pd.date_range("2021-01-29", periods=1).repeat(repeat)),
         )
 
     datetime_column = "index"
+
     if datetime_loc == 1:
         X[datetime_loc] = dates
         datetime_column = datetime_loc
@@ -105,59 +124,125 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
         X.ww.init()
         y.ww.init()
 
-    datetime_format_check = DateTimeFormatDataCheck(datetime_column=datetime_column)
-
-    if issue == "type_errors":
-        assert datetime_format_check.validate(X, y) == [
-            DataCheckError(
-                message="Datetime information could not be found in the data, or was not in a supported datetime format.",
-                data_check_name=datetime_format_check_name,
-                message_code=DataCheckMessageCode.DATETIME_INFORMATION_NOT_FOUND,
-            ).to_dict(),
-        ]
-    else:
-        if datetime_loc == "X_index":
-            dates = pd.Series(X.index)
-        elif datetime_loc == "y_index":
-            dates = pd.Series(y.index)
-        else:
-            dates = X[datetime_column]
-        ww_payload = infer_frequency(
-            dates,
-            debug=True,
-            window_length=WINDOW_LENGTH,
-            threshold=THRESHOLD,
+    if is_multiseries:
+        datetime_format_check = DateTimeFormatDataCheck(
+            datetime_column=datetime_column,
+            series_id="series_id",
         )
+    else:
+        datetime_format_check = DateTimeFormatDataCheck(datetime_column=datetime_column)
 
-        col_name = datetime_loc if datetime_loc == 1 else "either index"
-        if issue is None:
-            assert datetime_format_check.validate(X, y) == []
-        elif issue == "missing":
-            assert datetime_format_check.validate(X, y) == [
-                DataCheckError(
-                    message=f"Column '{col_name}' has datetime values missing between start and end date.",
-                    data_check_name=datetime_format_check_name,
-                    message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
-                ).to_dict(),
-                get_uneven_error(col_name, ww_payload),
-            ]
-        elif issue == "redundant":
-            assert datetime_format_check.validate(X, y) == [
-                DataCheckError(
-                    message=f"Column '{col_name}' has more than one row with the same datetime value.",
-                    data_check_name=datetime_format_check_name,
-                    message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
-                ).to_dict(),
-                get_uneven_error(col_name, ww_payload),
-            ]
+    all_series = X["series_id"].unique() if is_multiseries else [0]
+    messages = []
+
+    for series in all_series:
+        if issue == "type_errors":
+            if len(messages) == 0:
+                # type error only gives 1 message regardless of how many series there are
+                messages.append(
+                    DataCheckError(
+                        message="Datetime information could not be found in the data, or was not in a supported datetime format.",
+                        data_check_name=datetime_format_check_name,
+                        message_code=DataCheckMessageCode.DATETIME_INFORMATION_NOT_FOUND,
+                    ).to_dict(),
+                )
         else:
-            assert datetime_format_check.validate(X, y) == [
-                DataCheckError(
-                    message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals or too many duplicate/missing values.",
-                    data_check_name=datetime_format_check_name,
-                    message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_INFERRED,
-                ).to_dict(),
-            ]
+            if is_multiseries:
+                curr_series_df = X[X[datetime_format_check.series_id] == series]
+
+            # separates the datetimes so it only displays the dates that correspond to the current series
+            if input_type == "ww" and is_multiseries:
+                # ww makes the series_id into ints so need to cast series into ints
+                if datetime_loc == "X_index":
+                    dates = pd.Series(
+                        X[X[datetime_format_check.series_id] == int(series)].index,
+                    )
+                else:
+                    dates = X[X[datetime_format_check.series_id] == int(series)][
+                        datetime_column
+                    ]
+            elif datetime_loc == "X_index":
+                if is_multiseries:
+                    dates = pd.Series(curr_series_df.index)
+                else:
+                    dates = pd.Series(X.index)
+            elif datetime_loc == "y_index":
+                dates = pd.Series(y.index)
+            else:
+                if is_multiseries:
+                    dates = pd.Series(curr_series_df[datetime_column])
+                else:
+                    dates = X[datetime_column]
+            ww_payload_expected = infer_frequency(
+                # this part might cause issues
+                dates.reset_index(drop=True),
+                debug=True,
+                window_length=WINDOW_LENGTH,
+                threshold=THRESHOLD,
+            )
+
+            col_name = datetime_loc if datetime_loc == 1 else "either index"
+            if issue is None:
+                break
+            elif issue == "missing":
+                if is_multiseries:
+                    message = f"Column '{col_name}' for series '{series}' has datetime values missing between start and end date."
+                    uneven_error = get_uneven_error(
+                        col_name,
+                        ww_payload_expected,
+                        series,
+                    )
+                else:
+                    message = f"Column '{col_name}' has datetime values missing between start and end date."
+                    uneven_error = get_uneven_error(col_name, ww_payload_expected)
+                messages.extend(
+                    [
+                        DataCheckError(
+                            message=message,
+                            data_check_name=datetime_format_check_name,
+                            message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
+                        ).to_dict(),
+                        uneven_error,
+                    ],
+                )
+            elif issue == "redundant":
+                if is_multiseries:
+                    message = f"Column '{col_name}' for series '{series}' has more than one row with the same datetime value."
+                    uneven_error = get_uneven_error(
+                        col_name,
+                        ww_payload_expected,
+                        series,
+                    )
+                else:
+                    message = f"Column '{col_name}' has more than one row with the same datetime value."
+                    uneven_error = get_uneven_error(col_name, ww_payload_expected)
+                messages.extend(
+                    [
+                        DataCheckError(
+                            message=message,
+                            data_check_name=datetime_format_check_name,
+                            message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
+                        ).to_dict(),
+                        uneven_error,
+                    ],
+                )
+            else:
+                if is_multiseries:
+                    message = f"No frequency could be detected in column '{col_name}' for series '{series}', possibly due to uneven intervals or too many duplicate/missing values."
+                else:
+                    message = f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals or too many duplicate/missing values."
+
+                messages.append(
+                    DataCheckError(
+                        message=message,
+                        data_check_name=datetime_format_check_name,
+                        message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_INFERRED,
+                    ).to_dict(),
+                )
+    if issue is None:
+        assert datetime_format_check.validate(X, y) == []
+    else:
+        assert datetime_format_check.validate(X, y) == messages
 
 
 @pytest.mark.parametrize("sort_order", ["increasing", "decreasing", "mixed"])
@@ -205,40 +290,89 @@ def test_datetime_format_data_check_monotonic(datetime_loc, sort_order):
 
 
 @pytest.mark.parametrize("n_missing", [2, 5, 7])
-def test_datetime_format_data_check_multiple_missing(n_missing):
+@pytest.mark.parametrize("is_multiseries, repeat", [(True, 2), (False, 1)])
+def test_datetime_format_data_check_multiple_missing(n_missing, is_multiseries, repeat):
     X, y = pd.DataFrame({"features": range(100)}), pd.Series(range(100))
+    if is_multiseries:
+        X["series_id"] = pd.Series(list(range(2)) * 50, dtype="str")
 
-    dates = pd.date_range("2021-01-01", periods=15)
+    dates = pd.date_range("2021-01-01", periods=15).repeat(repeat)
     if n_missing == 2:
         # Two missing dates in separate spots
-        dates = dates.append(pd.date_range("2021-01-17", periods=86)).drop("2021-01-22")
+        if is_multiseries:
+            dates = dates.append(
+                pd.date_range("2021-01-17", periods=36).repeat(2),
+            ).drop(
+                "2021-01-22",
+            )
+        else:
+            dates = dates.append(pd.date_range("2021-01-17", periods=86)).drop(
+                "2021-01-22",
+            )
     elif n_missing == 5:
         # A chunk of 5 missing days in a row
-        dates = dates.append(pd.date_range("2021-01-21", periods=85))
+        if is_multiseries:
+            dates = dates.append(pd.date_range("2021-01-21", periods=35).repeat(2))
+        else:
+            dates = dates.append(pd.date_range("2021-01-21", periods=85))
     else:
         # Some chunks missing and some alone missing
-        dates = dates.append(pd.date_range("2021-01-20", periods=88)).drop("2021-01-27")
+        if is_multiseries:
+            dates = dates.append(
+                pd.date_range("2021-01-19", periods=39).repeat(2),
+            ).drop(
+                "2021-01-27",
+            )
+            dates = dates.drop("2021-01-20")
+        else:
+            dates = dates.append(pd.date_range("2021-01-20", periods=88)).drop(
+                "2021-01-27",
+            )
         dates = dates.drop("2021-02-22")
         dates = dates.drop("2021-01-11")
 
     X["dates"] = dates
-    datetime_format_check = DateTimeFormatDataCheck(datetime_column="dates")
 
-    ww_payload = infer_frequency(
-        X["dates"],
-        debug=True,
-        window_length=WINDOW_LENGTH,
-        threshold=THRESHOLD,
-    )
+    if is_multiseries:
+        datetime_format_check = DateTimeFormatDataCheck(
+            datetime_column="dates",
+            series_id="series_id",
+        )
+    else:
+        datetime_format_check = DateTimeFormatDataCheck(datetime_column="dates")
 
-    assert datetime_format_check.validate(X, y) == [
-        DataCheckError(
-            message="Column 'dates' has datetime values missing between start and end date.",
-            data_check_name=datetime_format_check_name,
-            message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
-        ).to_dict(),
-        get_uneven_error("dates", ww_payload),
-    ]
+    messages = []
+    series_list = X["series_id"].unique() if is_multiseries else [0]
+
+    for series in series_list:
+        observed_ts = (
+            X[X["series_id"] == series]["dates"].reset_index(drop=True)
+            if is_multiseries
+            else X["dates"]
+        )
+        ww_payload_expected = infer_frequency(
+            observed_ts,
+            debug=True,
+            window_length=WINDOW_LENGTH,
+            threshold=THRESHOLD,
+        )
+        if is_multiseries:
+            message = f"""Column 'dates' for series '{series}' has datetime values missing between start and end date."""
+            uneven_error = get_uneven_error("dates", ww_payload_expected, series)
+        else:
+            message = """Column 'dates' has datetime values missing between start and end date."""
+            uneven_error = get_uneven_error("dates", ww_payload_expected)
+        messages.extend(
+            [
+                DataCheckError(
+                    message=message,
+                    data_check_name=datetime_format_check_name,
+                    message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
+                ).to_dict(),
+                uneven_error,
+            ],
+        )
+    assert datetime_format_check.validate(X, y) == messages
 
 
 def test_datetime_format_data_check_multiple_errors():
@@ -517,144 +651,6 @@ def test_datetime_many_duplicates_and_nans():
     assert result[2]["code"] == "DATETIME_NO_FREQUENCY_INFERRED"
 
 
-@pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize(
-    "issue",
-    ["redundant", "missing", "uneven", "type_errors", None],
-)
-@pytest.mark.parametrize("datetime_loc", [1, "X_index"])
-def test_datetime_format_data_check_typeerror_uneven_intervals_multiseries(
-    issue,
-    input_type,
-    datetime_loc,
-):
-    # there's 60 entries in the dataframe (30 entries per series)
-    X, y = pd.DataFrame({"features": range(60)}), pd.Series(range(60))
-    X["series_id"] = pd.Series(list(range(2)) * 30, dtype="str")
-
-    if issue == "type_errors":
-        dates = range(60)
-    else:
-        dates = pd.date_range("2021-01-01", periods=60)
-
-    if issue == "missing":
-        # Skips 2021-01-25 and starts again at 2021-01-27, skipping a date and triggering the error
-        dates = (pd.date_range("2021-01-01", periods=25).repeat(2)).append(
-            (pd.date_range("2021-01-27", periods=5).repeat(2)),
-        )
-
-    if issue == "uneven":
-        dates_1 = pd.date_range("2015-01-01", periods=5, freq="D").repeat(2)
-        dates_2 = pd.date_range("2015-01-08", periods=3, freq="D").repeat(2)
-        dates_3 = pd.DatetimeIndex(["2015-01-12"]).repeat(2)
-        dates_4 = pd.date_range("2015-01-15", periods=5, freq="D").repeat(2)
-        dates_5 = pd.date_range("2015-01-22", periods=5, freq="D").repeat(2)
-        dates_6 = pd.date_range("2015-01-29", periods=11, freq="M").repeat(2)
-
-        dates = (
-            dates_1.append(dates_2)
-            .append(dates_3)
-            .append(dates_4)
-            .append(dates_5)
-            .append(dates_6)
-        )
-    if issue == "redundant":
-        # 2021-01-25 repeats twice which triggers an error
-        dates = (pd.date_range("2021-01-01", periods=25).repeat(2)).append(
-            (pd.date_range("2021-01-25", periods=5).repeat(2)),
-        )
-    datetime_column = "index"
-
-    if datetime_loc == 1:
-        X[datetime_loc] = dates
-        datetime_column = datetime_loc
-    else:
-        X.index = dates
-
-    if input_type == "ww":
-        X.ww.init()
-        y.ww.init()
-
-    datetime_format_check = DateTimeFormatDataCheck(
-        datetime_column=datetime_column,
-        series_id="series_id",
-    )
-
-    messages = []
-    for series in X["series_id"].unique():
-        if issue == "type_errors":
-            # type error only has 1 message regardless of how many series there are
-            if len(messages) == 0:
-                messages.append(
-                    DataCheckError(
-                        message="Datetime information could not be found in the data, or was not in a supported datetime format.",
-                        data_check_name=datetime_format_check_name,
-                        message_code=DataCheckMessageCode.DATETIME_INFORMATION_NOT_FOUND,
-                    ).to_dict(),
-                )
-        else:
-            # separates the datetimes so it only displays the dates that correspond to the current series
-            if input_type == "ww":
-                # ww makes the series_id into ints so need to cast
-                if datetime_loc == "X_index":
-                    dates = pd.Series(
-                        X[X[datetime_format_check.series_id] == int(series)].index,
-                    )
-                else:
-                    dates = X[X[datetime_format_check.series_id] == int(series)][
-                        datetime_column
-                    ]
-            elif datetime_loc == "X_index":
-                dates = pd.Series(X[X[datetime_format_check.series_id] == series].index)
-            else:
-                dates = X[X[datetime_format_check.series_id] == series][datetime_column]
-
-            ww_payload_expected = infer_frequency(
-                dates.reset_index(drop=True),
-                debug=True,
-                window_length=WINDOW_LENGTH,
-                threshold=THRESHOLD,
-            )
-
-            col_name = datetime_loc if datetime_loc == 1 else "either index"
-            if issue is None:
-                break
-            elif issue == "missing":
-                messages.extend(
-                    [
-                        DataCheckError(
-                            message=f"Column '{col_name}' for series '{series}' has datetime values missing between start and end date.",
-                            data_check_name=datetime_format_check_name,
-                            message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
-                        ).to_dict(),
-                        get_uneven_error(col_name, ww_payload_expected, series),
-                    ],
-                )
-            elif issue == "redundant":
-                messages.extend(
-                    [
-                        DataCheckError(
-                            message=f"Column '{col_name}' for series '{series}' has more than one row with the same datetime value.",
-                            data_check_name=datetime_format_check_name,
-                            message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
-                        ).to_dict(),
-                        get_uneven_error(col_name, ww_payload_expected, series),
-                    ],
-                )
-            else:
-                messages.append(
-                    DataCheckError(
-                        message=f"No frequency could be detected in column '{col_name}' for series '{series}', possibly due to uneven intervals or too many duplicate/missing values.",
-                        data_check_name=datetime_format_check_name,
-                        message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_INFERRED,
-                    ).to_dict(),
-                )
-    if issue is None:
-        assert datetime_format_check.validate(X, y) == []
-    else:
-        assert datetime_format_check.validate(X, y) == messages
-
-
 def test_datetime_format_data_check_invalid_seriesid_multiseries(
     multiseries_ts_data_stacked,
 ):
@@ -668,57 +664,6 @@ def test_datetime_format_data_check_invalid_seriesid_multiseries(
         match="""series_id "not_series_id" is not in the dataset.""",
     ):
         datetime_format_check.validate(X, y)
-
-
-@pytest.mark.parametrize("n_missing", [2, 5, 7])
-def test_datetime_format_data_check_multiple_missing_multiseries(n_missing):
-    X, y = pd.DataFrame({"features": range(100)}), pd.Series(range(100))
-    X["series_id"] = pd.Series(list(range(2)) * 50, dtype="str")
-
-    dates = pd.date_range("2021-01-01", periods=15).repeat(2)
-    if n_missing == 2:
-        # Two missing dates in separate spots
-        dates = dates.append(pd.date_range("2021-01-17", periods=36).repeat(2)).drop(
-            "2021-01-22",
-        )
-    elif n_missing == 5:
-        # A chunk of 5 missing days in a row
-        dates = dates.append(pd.date_range("2021-01-21", periods=35).repeat(2))
-    else:
-        # Some chunks missing and some alone missing
-        dates = dates.append(pd.date_range("2021-01-19", periods=39).repeat(2)).drop(
-            "2021-01-27",
-        )
-        dates = dates.drop("2021-02-22")
-        dates = dates.drop("2021-01-11")
-        dates = dates.drop("2021-01-20")
-
-    X["dates"] = dates
-    datetime_format_check = DateTimeFormatDataCheck(
-        datetime_column="dates",
-        series_id="series_id",
-    )
-
-    messages = []
-    for series in X["series_id"].unique():
-        ww_payload_expected = infer_frequency(
-            X[X["series_id"] == series]["dates"].reset_index(drop=True),
-            debug=True,
-            window_length=WINDOW_LENGTH,
-            threshold=THRESHOLD,
-        )
-        messages.extend(
-            [
-                DataCheckError(
-                    message=f"""Column 'dates' for series '{series}' has datetime values missing between start and end date.""",
-                    data_check_name=datetime_format_check_name,
-                    message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
-                ).to_dict(),
-                get_uneven_error("dates", ww_payload_expected, series),
-            ],
-        )
-    assert len(messages) == 4
-    assert datetime_format_check.validate(X, y) == messages
 
 
 @pytest.mark.parametrize("nans", [0, 1, 2])

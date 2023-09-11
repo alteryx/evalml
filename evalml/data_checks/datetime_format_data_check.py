@@ -402,18 +402,17 @@ class DateTimeFormatDataCheck(DataCheck):
             )
             return messages
 
-        series_datetime = (
-            [datetime_values] if self.series_id is None else X[self.series_id].unique()
-        )
+        series_datetime = [0] if self.series_id is None else X[self.series_id].unique()
         for series in series_datetime:
             # if multiseries only select the datetimes corresponding to one series
             if is_multiseries:
+                curr_series_df = X[X[self.series_id] == series]
                 if self.datetime_column != "index":
-                    datetime_values = X[X[self.series_id] == series][
-                        self.datetime_column
-                    ].reset_index(drop=True)
+                    datetime_values = curr_series_df[self.datetime_column].reset_index(
+                        drop=True,
+                    )
                 else:
-                    datetime_values = X[X[self.series_id] == series].index
+                    datetime_values = curr_series_df.index
 
             # Check if the data is monotonically increasing
             no_nan_datetime_values = datetime_values.dropna()
@@ -439,11 +438,10 @@ class DateTimeFormatDataCheck(DataCheck):
             )
             inferred_freq = ww_payload[0]
             debug_object = ww_payload[1]
-            if inferred_freq is not None:
-                if is_multiseries:
-                    continue
-                else:
-                    return messages
+            if inferred_freq is not None and is_multiseries:
+                continue
+            elif inferred_freq is not None:
+                return messages
 
             # Check for NaN values
             if len(debug_object["nan_values"]) > 0:
