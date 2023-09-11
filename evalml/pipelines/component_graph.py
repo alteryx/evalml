@@ -802,14 +802,16 @@ class ComponentGraph:
         for component_name, component_class in self.component_instances.items():
             label = "%s\l" % (component_name)  # noqa: W605
             if isinstance(component_class, ComponentBase):
+                # Reformat labels for nodes: cast values as strings, reformat floats to 2 decimal points and remove brackets from dictionary values so Digraph can parse it
                 parameters = "\\l".join(
                     [
                         key + " : " + "{:0.2f}".format(val)
                         if (isinstance(val, float))
-                        else key + " : " + str(val)
+                        else key + " : " + str(val).replace("{", "").replace("}", "")
                         for key, val in component_class.parameters.items()
                     ],
                 )  # noqa: W605
+
                 label = "%s |%s\l" % (component_name, parameters)  # noqa: W605
             graph.node(component_name, shape="record", label=label, nodesep="0.03")
 

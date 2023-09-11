@@ -18,11 +18,12 @@ from evalml.pipelines.components import (
     DateTimeFeaturizer,
     EmailFeaturizer,
     NaturalLanguageFeaturizer,
+    STLDecomposer,
     TimeSeriesFeaturizer,
     URLFeaturizer,
 )
 from evalml.pipelines.components.utils import get_estimators
-from evalml.pipelines.utils import make_pipeline
+from evalml.pipelines.utils import is_regression, make_pipeline
 from evalml.problem_types import ProblemTypes, is_multiseries, is_time_series
 
 
@@ -97,6 +98,7 @@ def test_iterative_algorithm_init(
     assert algo.batch_number == 0
     assert algo.default_max_batches == 1
     estimators = get_estimators(problem_type)
+    decomposer = [STLDecomposer] if is_regression(problem_type) else []
     assert len(algo.allowed_pipelines) == len(
         [
             make_pipeline(
@@ -107,7 +109,8 @@ def test_iterative_algorithm_init(
                 parameters=search_parameters,
             )
             for estimator in estimators
-        ],
+        ]
+        + decomposer,
     )
 
 
