@@ -16,7 +16,7 @@ from evalml.utils import infer_feature_types
 class DateTimeFormatDataCheck(DataCheck):
     """Check if the datetime column has equally spaced intervals and is monotonically increasing or decreasing in order to be supported by time series estimators.
 
-    If used for multiseries problem, works specifically on stacked datasets
+    If used for multiseries problem, works specifically on stacked datasets.
 
     Args:
         datetime_column (str, int): The name of the datetime column. If the datetime values are in the index, then pass "index".
