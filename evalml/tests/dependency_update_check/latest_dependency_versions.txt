@@ -12,9 +12,9 @@ holidays==0.20
 imbalanced-learn==0.11.0
 ipywidgets==8.1.0
 kaleido==0.2.1
-lightgbm==4.0.0
+lightgbm==4.1.0
 lime==0.2.0.1
-matplotlib==3.7.2
+matplotlib==3.7.3
 matplotlib-inline==0.1.6
 networkx==3.1
 nlp-primitives==2.11.0
@@ -35,4 +35,4 @@ texttable==1.6.7
 tomli==2.0.1
 vowpalwabbit==9.9.0
 woodwork==0.26.0
-xgboost==1.7.6
+xgboost==2.0.0
