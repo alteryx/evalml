@@ -325,3 +325,36 @@ def test_ts_regularizer_uneven(
 
     error_dict = ts_regularizer.error_dict
     assert_features_and_length_equal(X, y, X_output, y_output, error_dict)
+
+
+@pytest.mark.parametrize(
+    "missing",
+    [[], [10], [10, 11], [10, 11, 15]],
+)
+def test_ts_regularizer_multiseries(multiseries_ts_data_unstacked, missing):
+    X, y = multiseries_ts_data_unstacked
+    ts_regularizer = TimeSeriesRegularizer(time_index="date")
+    X_reg, y_reg = ts_regularizer.fit_transform(X, y)
+
+    assert ts_regularizer.inferred_freq is not None
+    assert len(ts_regularizer.error_dict) == 0
+    pd.testing.assert_frame_equal(X, X_reg)
+    pd.testing.assert_frame_equal(y, y_reg)
+
+    X = X.drop(missing)
+    y = y.drop(missing)
+
+    X_reg, y_reg = ts_regularizer.fit_transform(X, y)
+
+    for curr_missing in missing:
+        nan = np.full(len(y_reg.columns) - 1, pd.NA)
+        nan = np.insert(nan, 0, y_reg.iloc[curr_missing]["date"])
+        expected = pd.Series(nan, index=y_reg.columns, name=curr_missing)
+        pd.testing.assert_series_equal(y_reg.iloc[curr_missing], expected)
+
+    y = y.drop([0])
+    with pytest.raises(
+        ValueError,
+        match="If y has been passed, then it must be the same length as X.",
+    ):
+        ts_regularizer.fit(X, y)

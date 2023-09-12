@@ -24,6 +24,8 @@ class TimeSeriesRegularizer(Transformer):
     This Transformer should be used before the `TimeSeriesImputer` in order to impute the missing values that were
     added to X and y (if passed).
 
+    If used on multiseries dataset, works specifically on unstacked datasets.
+
     Args:
         time_index (string): Name of the column containing the datetime information used to order the data, required. Defaults to None.
         frequency_payload (tuple): Payload returned from Woodwork's infer_frequency function where debug is True. Defaults to None.
