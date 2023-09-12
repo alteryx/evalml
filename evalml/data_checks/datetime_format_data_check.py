@@ -41,7 +41,7 @@ class DateTimeFormatDataCheck(DataCheck):
         Will return DataCheckError(s) if the data is not a datetime type, is not increasing, has redundant or missing row(s),
         contains invalid (NaN or None) values, or has values that don't align with the assumed frequency.
 
-        If used for multiseries problem, works specifically on stacked datasets
+        If used for multiseries problem, works specifically on stacked datasets.
 
         Args:
             X (pd.DataFrame, np.ndarray): Features.
