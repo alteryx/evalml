@@ -320,6 +320,10 @@ class TimeSeriesRegularizer(Transformer):
         if cleaned_y is not None:
             if isinstance(y, pd.Series):
                 cleaned_y = cleaned_y["target"]
+            elif isinstance(y, pd.DataFrame):
+                # remove date time column from unstacked y
+                cleaned_y = cleaned_y.drop(columns=self.time_index, axis=1)
+
             cleaned_y.ww.init()
 
         cleaned_x.ww.init()
