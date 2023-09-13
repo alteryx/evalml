@@ -312,7 +312,7 @@ class TimeSeriesRegularizer(Transformer):
             cleaned_x.loc[
                 cleaned_x[self.time_index] == values["correct"]
             ] = to_replace.values
-            if y is not None:
+            if y is not None and isinstance(y, pd.Series):
                 cleaned_y.loc[cleaned_y[self.time_index] == values["correct"]] = y.iloc[
                     index
                 ]
@@ -323,5 +323,4 @@ class TimeSeriesRegularizer(Transformer):
             cleaned_y.ww.init()
 
         cleaned_x.ww.init()
-
         return cleaned_x, cleaned_y
