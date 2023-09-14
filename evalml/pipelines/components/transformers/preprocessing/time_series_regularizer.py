@@ -1,6 +1,5 @@
 """Transformer that regularizes a dataset with an uninferrable offset frequency for time series problems."""
 import pandas as pd
-import woodwork as ww
 from woodwork.logical_types import Datetime
 from woodwork.statistics_utils import infer_frequency
 
@@ -24,6 +23,8 @@ class TimeSeriesRegularizer(Transformer):
 
     This Transformer should be used before the `TimeSeriesImputer` in order to impute the missing values that were
     added to X and y (if passed).
+
+    If used on multiseries dataset, works specifically on unstacked datasets.
 
     Args:
         time_index (string): Name of the column containing the datetime information used to order the data, required. Defaults to None.
@@ -295,7 +296,13 @@ class TimeSeriesRegularizer(Transformer):
 
         cleaned_y = None
         if y is not None:
-            y_dates = pd.DataFrame({self.time_index: X[self.time_index], "target": y})
+            if isinstance(y, pd.Series):
+                y_dates = pd.DataFrame(
+                    {self.time_index: X[self.time_index], "target": y},
+                )
+            else:
+                y_dates = y
+                y_dates[self.time_index] = X[self.time_index]
             cleaned_y = cleaned_df.merge(y_dates, on=[self.time_index], how="left")
             cleaned_y = cleaned_y.groupby(self.time_index).first().reset_index()
 
@@ -305,15 +312,19 @@ class TimeSeriesRegularizer(Transformer):
             cleaned_x.loc[
                 cleaned_x[self.time_index] == values["correct"]
             ] = to_replace.values
-            if y is not None:
+            if y is not None and isinstance(y, pd.Series):
                 cleaned_y.loc[cleaned_y[self.time_index] == values["correct"]] = y.iloc[
                     index
                 ]
 
         if cleaned_y is not None:
-            cleaned_y = cleaned_y["target"]
-            cleaned_y = ww.init_series(cleaned_y)
+            if isinstance(y, pd.Series):
+                cleaned_y = cleaned_y["target"]
+            elif isinstance(y, pd.DataFrame):
+                # remove date time column from unstacked y
+                cleaned_y = cleaned_y.drop(columns=self.time_index, axis=1)
+
+            cleaned_y.ww.init()
 
         cleaned_x.ww.init()
-
         return cleaned_x, cleaned_y
