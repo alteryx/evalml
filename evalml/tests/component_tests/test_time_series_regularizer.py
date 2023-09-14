@@ -87,6 +87,36 @@ def assert_features_and_length_equal(
         )
 
 
+def check(is_multiseries, X, y, X_output, y_output, error_dict):
+    if is_multiseries:
+        # put date column into the y dataframes for testing purposes
+        y["dates"] = X["dates"]
+        y_output["dates"] = X_output["dates"]
+
+        assert_features_and_length_equal(
+            X,
+            y,
+            X_output,
+            y_output,
+            error_dict,
+            has_target=False,
+            check_dtype=False,
+        )
+
+        # the function only really checks what's passed into "X" so passed in "y" as X in order to have it check y
+        assert_features_and_length_equal(
+            y,
+            X,
+            y_output,
+            X_output,
+            error_dict,
+            has_target=False,
+            check_dtype=False,
+        )
+    else:
+        assert_features_and_length_equal(X, y, X_output, y_output, error_dict)
+
+
 def test_ts_regularizer_init():
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
 
@@ -292,33 +322,7 @@ def test_ts_regularizer_duplicate(
     X_output, y_output = ts_regularizer.fit_transform(X, y)
 
     error_dict = ts_regularizer.error_dict
-    if is_multiseries:
-        # put date column into the y dataframes for testing purposes
-        y["dates"] = X["dates"]
-        y_output["dates"] = X_output["dates"]
-
-        assert_features_and_length_equal(
-            X,
-            y,
-            X_output,
-            y_output,
-            error_dict,
-            has_target=False,
-            check_dtype=False,
-        )
-
-        # the function only really checks what's passed into "X" so passed in "y" as X in order to have it check y
-        assert_features_and_length_equal(
-            y,
-            X,
-            y_output,
-            X_output,
-            error_dict,
-            has_target=False,
-            check_dtype=False,
-        )
-    else:
-        assert_features_and_length_equal(X, y, X_output, y_output, error_dict)
+    check(is_multiseries, X, y, X_output, y_output, error_dict)
 
 
 @pytest.mark.parametrize("is_multiseries", [True, False])
@@ -355,30 +359,7 @@ def test_ts_regularizer_missing(
     X_output, y_output = ts_regularizer.fit_transform(X, y)
 
     error_dict = ts_regularizer.error_dict
-    if is_multiseries:
-        y["dates"] = X["dates"]
-        y_output["dates"] = X_output["dates"]
-
-        assert_features_and_length_equal(
-            X,
-            y,
-            X_output,
-            y_output,
-            error_dict,
-            has_target=False,
-            check_dtype=False,
-        )
-        assert_features_and_length_equal(
-            y,
-            X,
-            y_output,
-            X_output,
-            error_dict,
-            has_target=False,
-            check_dtype=False,
-        )
-    else:
-        assert_features_and_length_equal(X, y, X_output, y_output, error_dict)
+    check(is_multiseries, X, y, X_output, y_output, error_dict)
 
 
 @pytest.mark.parametrize("is_multiseries", [True, False])
@@ -417,29 +398,8 @@ def test_ts_regularizer_uneven(
     X_output, y_output = ts_regularizer.fit_transform(X, y)
     error_dict = ts_regularizer.error_dict
 
-    if is_multiseries:
-        y["dates"] = X["dates"]
-        y_output["dates"] = X_output["dates"]
-
-        assert_features_and_length_equal(
-            X,
-            y,
-            X_output,
-            y_output,
-            error_dict,
-            has_target=False,
-            check_dtype=False,
-        )
-        assert_features_and_length_equal(
-            y,
-            X,
-            y_output,
-            X_output,
-            error_dict,
-            has_target=False,
-            check_dtype=False,
-        )
-    else:
+    check(is_multiseries, X, y, X_output, y_output, error_dict)
+    if not is_multiseries:
         if uneven_type == "beginning":
             assert X.iloc[0]["dates"] not in X_output["dates"]
             assert X.iloc[1]["dates"] not in X_output["dates"]
@@ -448,4 +408,3 @@ def test_ts_regularizer_uneven(
         elif uneven_type == "end":
             assert X.iloc[-1]["dates"] not in X_output["dates"]
             assert y.iloc[-1] not in y_output.values
-        assert_features_and_length_equal(X, y, X_output, y_output, error_dict)
