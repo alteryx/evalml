@@ -108,6 +108,7 @@ class LightGBMClassifier(Estimator):
             "n_jobs": n_jobs,
             "bagging_freq": bagging_freq,
             "bagging_fraction": bagging_fraction,
+            "verbose": -1,
         }
         parameters.update(kwargs)
         lg_parameters = copy.copy(parameters)
