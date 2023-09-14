@@ -7,6 +7,7 @@ Release Notes
         * Added datacheck to check for mismatched series length in multiseries :pr:`4296`
         * Added STLDecomposer to multiseries pipelines :pr:`4299`
         * Extended DateTimeFormatCheck data check to support multiseries :pr:`4300`
+        * Extended TimeSeriesRegularizer to support multiseries :pr:`4303`
     * Fixes
     * Changes
     * Documentation Changes

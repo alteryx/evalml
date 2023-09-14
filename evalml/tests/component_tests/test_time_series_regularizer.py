@@ -10,7 +10,7 @@ def get_df(dates):
     reg_X = pd.DataFrame()
 
     reg_X["dates"] = dates
-    reg_X["ints"] = [int(i) for i in range(len(dates))]
+    reg_X["ints"] = list(range(len(dates)))
     reg_X["doubles"] = [i / 0.25 ** (i / 100) for i in range(len(dates))]
     reg_X["bools"] = [bool(min(1, i % 3)) for i in range(len(dates))]
     reg_X["cats"] = np.random.choice(
@@ -23,6 +23,21 @@ def get_df(dates):
     return reg_X, reg_y
 
 
+def get_unstacked_df(dates):
+    reg_X = pd.DataFrame()
+
+    reg_X["dates"] = dates
+    reg_X["feature_a_0"] = list(range(len(dates)))
+    reg_X["feature_a_1"] = list(range(len(dates), 0, -1))
+    reg_X["feature_b_0"] = list(range(len(dates) * 2, 0, -2))
+    reg_X["feature_b_1"] = list(range(0, len(dates) * 2, 2))
+
+    reg_y = pd.DataFrame()
+    reg_y["target_0"] = list(range(len(dates)))
+    reg_y["target_1"] = list(range(len(dates), 0, -1))
+    return reg_X, reg_y
+
+
 def assert_features_and_length_equal(
     X,
     y,
@@ -30,6 +45,7 @@ def assert_features_and_length_equal(
     y_output,
     error_dict,
     has_target=True,
+    check_dtype=True,
 ):
     ww_payload = infer_frequency(X["dates"], debug=True, window_length=4, threshold=0.4)
 
@@ -60,14 +76,45 @@ def assert_features_and_length_equal(
             X["dates"] == each_date,
             list(set(X.columns) - {"dates"}),
         ].iloc[0]
-        outout_feat = non_nan_X.loc[
+        output_feat = non_nan_X.loc[
             non_nan_X["dates"] == each_date,
             list(set(non_nan_X.columns) - {"dates"}),
         ].iloc[0]
         pd.testing.assert_series_equal(
             pd.Series(input_feat.values),
-            pd.Series(outout_feat.values),
+            pd.Series(output_feat.values),
+            check_dtype=check_dtype,
         )
+
+
+def check_x_and_y_output(is_multiseries, X, y, X_output, y_output, error_dict):
+    if is_multiseries:
+        # put date column into the y dataframes for testing purposes
+        y["dates"] = X["dates"]
+        y_output["dates"] = X_output["dates"]
+
+        assert_features_and_length_equal(
+            X,
+            y,
+            X_output,
+            y_output,
+            error_dict,
+            has_target=False,
+            check_dtype=False,
+        )
+
+        # the function only really checks what's passed into "X" so passed in "y" as X in order to have it check y
+        assert_features_and_length_equal(
+            y,
+            X,
+            y_output,
+            X_output,
+            error_dict,
+            has_target=False,
+            check_dtype=False,
+        )
+    else:
+        assert_features_and_length_equal(X, y, X_output, y_output, error_dict)
 
 
 def test_ts_regularizer_init():
@@ -130,9 +177,14 @@ def test_ts_regularizer_time_index_is_None(duplicate_beginning):
         ts_regularizer.fit(X, y)
 
 
-def test_ts_regularizer_mismatch_target_length(duplicate_beginning):
-    X, _ = get_df(duplicate_beginning)
-    y = pd.Series([i for i in range(25)])
+@pytest.mark.parametrize("is_multiseries", [True, False])
+def test_ts_regularizer_mismatch_target_length(duplicate_beginning, is_multiseries):
+    if is_multiseries:
+        X, y = get_unstacked_df(duplicate_beginning)
+        y = y.drop(10)
+    else:
+        X, _ = get_df(duplicate_beginning)
+        y = pd.Series([i for i in range(25)])
 
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
     with pytest.raises(
@@ -142,7 +194,8 @@ def test_ts_regularizer_mismatch_target_length(duplicate_beginning):
         ts_regularizer.fit(X, y)
 
 
-def test_ts_regularizer_no_freq():
+@pytest.mark.parametrize("is_multiseries", [True, False])
+def test_ts_regularizer_no_freq(is_multiseries):
     dates_1 = pd.date_range("2015-01-01", periods=5, freq="D")
     dates_2 = pd.date_range("2015-01-08", periods=3, freq="D")
     dates_3 = pd.DatetimeIndex(["2015-01-12"])
@@ -158,7 +211,10 @@ def test_ts_regularizer_no_freq():
         .append(dates_6)
     )
 
-    X, y = get_df(dates)
+    if is_multiseries:
+        X, y = get_unstacked_df(dates)
+    else:
+        X, y = get_df(dates)
 
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
     with pytest.raises(
@@ -168,8 +224,16 @@ def test_ts_regularizer_no_freq():
         ts_regularizer.fit(X, y)
 
 
-def test_ts_regularizer_no_issues(ts_data):
-    X, _, y = ts_data()
+@pytest.mark.parametrize("is_multiseries", [True, False])
+def test_ts_regularizer_no_issues(
+    ts_data,
+    is_multiseries,
+    multiseries_ts_data_unstacked,
+):
+    if is_multiseries:
+        X, y = multiseries_ts_data_unstacked
+    else:
+        X, _, y = ts_data()
 
     ts_regularizer = TimeSeriesRegularizer(time_index="date")
     X_output, y_output = ts_regularizer.fit_transform(X, y)
@@ -177,7 +241,11 @@ def test_ts_regularizer_no_issues(ts_data):
     assert ts_regularizer.inferred_freq is not None
     assert len(ts_regularizer.error_dict) == 0
     pd.testing.assert_frame_equal(X, X_output)
-    pd.testing.assert_series_equal(y, y_output)
+
+    if is_multiseries:
+        pd.testing.assert_frame_equal(y, y_output)
+    else:
+        pd.testing.assert_series_equal(y, y_output)
 
 
 @pytest.mark.parametrize("y_passed", [True, False])
@@ -220,6 +288,7 @@ def test_ts_regularizer_X_only_equal_payload(y_passed, combination_of_faulty_dat
         pd.testing.assert_series_equal(y_output, y_output_payload)
 
 
+@pytest.mark.parametrize("is_multiseries", [True, False])
 @pytest.mark.parametrize(
     "duplicate_location",
     ["beginning", "middle", "end", "scattered", "continuous"],
@@ -231,6 +300,7 @@ def test_ts_regularizer_duplicate(
     duplicate_end,
     duplicate_scattered,
     duplicate_continuous,
+    is_multiseries,
 ):
     if duplicate_location == "beginning":
         dates = duplicate_beginning
@@ -243,15 +313,19 @@ def test_ts_regularizer_duplicate(
     else:
         dates = duplicate_continuous
 
-    X, y = get_df(dates)
+    if is_multiseries:
+        X, y = get_unstacked_df(dates)
+    else:
+        X, y = get_df(dates)
 
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
     X_output, y_output = ts_regularizer.fit_transform(X, y)
 
     error_dict = ts_regularizer.error_dict
-    assert_features_and_length_equal(X, y, X_output, y_output, error_dict)
+    check_x_and_y_output(is_multiseries, X, y, X_output, y_output, error_dict)
 
 
+@pytest.mark.parametrize("is_multiseries", [True, False])
 @pytest.mark.parametrize(
     "missing_location",
     ["beginning", "middle", "end", "scattered", "continuous"],
@@ -263,6 +337,7 @@ def test_ts_regularizer_missing(
     missing_end,
     missing_scattered,
     missing_continuous,
+    is_multiseries,
 ):
     if missing_location == "beginning":
         dates = missing_beginning
@@ -275,15 +350,19 @@ def test_ts_regularizer_missing(
     else:
         dates = missing_continuous
 
-    X, y = get_df(dates)
+    if is_multiseries:
+        X, y = get_unstacked_df(dates)
+    else:
+        X, y = get_df(dates)
 
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
     X_output, y_output = ts_regularizer.fit_transform(X, y)
 
     error_dict = ts_regularizer.error_dict
-    assert_features_and_length_equal(X, y, X_output, y_output, error_dict)
+    check_x_and_y_output(is_multiseries, X, y, X_output, y_output, error_dict)
 
 
+@pytest.mark.parametrize("is_multiseries", [True, False])
 @pytest.mark.parametrize(
     "uneven_type",
     ["beginning", "middle", "end", "scattered", "continuous", "work week"],
@@ -296,6 +375,7 @@ def test_ts_regularizer_uneven(
     uneven_scattered,
     uneven_continuous,
     uneven_work_week,
+    is_multiseries,
 ):
     if uneven_type == "beginning":
         dates = uneven_beginning
@@ -310,18 +390,21 @@ def test_ts_regularizer_uneven(
     else:
         dates = uneven_work_week
 
-    X, y = get_df(dates)
+    if is_multiseries:
+        X, y = get_unstacked_df(dates)
+    else:
+        X, y = get_df(dates)
     ts_regularizer = TimeSeriesRegularizer(time_index="dates")
     X_output, y_output = ts_regularizer.fit_transform(X, y)
-
-    if uneven_type == "beginning":
-        assert X.iloc[0]["dates"] not in X_output["dates"]
-        assert X.iloc[1]["dates"] not in X_output["dates"]
-        assert y.iloc[0] not in y_output.values
-        assert y.iloc[1] not in y_output.values
-    elif uneven_type == "end":
-        assert X.iloc[-1]["dates"] not in X_output["dates"]
-        assert y.iloc[-1] not in y_output.values
-
     error_dict = ts_regularizer.error_dict
-    assert_features_and_length_equal(X, y, X_output, y_output, error_dict)
+
+    check_x_and_y_output(is_multiseries, X, y, X_output, y_output, error_dict)
+    if not is_multiseries:
+        if uneven_type == "beginning":
+            assert X.iloc[0]["dates"] not in X_output["dates"]
+            assert X.iloc[1]["dates"] not in X_output["dates"]
+            assert y.iloc[0] not in y_output.values
+            assert y.iloc[1] not in y_output.values
+        elif uneven_type == "end":
+            assert X.iloc[-1]["dates"] not in X_output["dates"]
+            assert y.iloc[-1] not in y_output.values
