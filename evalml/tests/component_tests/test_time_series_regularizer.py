@@ -10,7 +10,7 @@ def get_df(dates):
     reg_X = pd.DataFrame()
 
     reg_X["dates"] = dates
-    reg_X["ints"] = [int(i) for i in range(len(dates))]
+    reg_X["ints"] = list(range(len(dates)))
     reg_X["doubles"] = [i / 0.25 ** (i / 100) for i in range(len(dates))]
     reg_X["bools"] = [bool(min(1, i % 3)) for i in range(len(dates))]
     reg_X["cats"] = np.random.choice(
@@ -27,14 +27,14 @@ def get_unstacked_df(dates):
     reg_X = pd.DataFrame()
 
     reg_X["dates"] = dates
-    reg_X["feature_a_0"] = [int(i) for i in range(len(dates))]
-    reg_X["feature_a_1"] = [int(i) for i in range(len(dates), 0, -1)]
-    reg_X["feature_b_0"] = [int(i) for i in range(len(dates) * 2, 0, -2)]
-    reg_X["feature_b_1"] = [int(i) for i in range(0, len(dates) * 2, 2)]
+    reg_X["feature_a_0"] = list(range(len(dates)))
+    reg_X["feature_a_1"] = list(range(len(dates), 0, -1))
+    reg_X["feature_b_0"] = list(range(len(dates) * 2, 0, -2))
+    reg_X["feature_b_1"] = list(range(0, len(dates) * 2, 2))
 
     reg_y = pd.DataFrame()
-    reg_y["target_0"] = [int(i) for i in range(len(dates))]
-    reg_y["target_1"] = [int(i) for i in range(len(dates), 0, -1)]
+    reg_y["target_0"] = list(range(len(dates)))
+    reg_y["target_1"] = list(range(len(dates), 0, -1))
     return reg_X, reg_y
 
 
@@ -87,7 +87,7 @@ def assert_features_and_length_equal(
         )
 
 
-def check(is_multiseries, X, y, X_output, y_output, error_dict):
+def check_x_and_y_output(is_multiseries, X, y, X_output, y_output, error_dict):
     if is_multiseries:
         # put date column into the y dataframes for testing purposes
         y["dates"] = X["dates"]
@@ -322,7 +322,7 @@ def test_ts_regularizer_duplicate(
     X_output, y_output = ts_regularizer.fit_transform(X, y)
 
     error_dict = ts_regularizer.error_dict
-    check(is_multiseries, X, y, X_output, y_output, error_dict)
+    check_x_and_y_output(is_multiseries, X, y, X_output, y_output, error_dict)
 
 
 @pytest.mark.parametrize("is_multiseries", [True, False])
@@ -359,7 +359,7 @@ def test_ts_regularizer_missing(
     X_output, y_output = ts_regularizer.fit_transform(X, y)
 
     error_dict = ts_regularizer.error_dict
-    check(is_multiseries, X, y, X_output, y_output, error_dict)
+    check_x_and_y_output(is_multiseries, X, y, X_output, y_output, error_dict)
 
 
 @pytest.mark.parametrize("is_multiseries", [True, False])
@@ -398,7 +398,7 @@ def test_ts_regularizer_uneven(
     X_output, y_output = ts_regularizer.fit_transform(X, y)
     error_dict = ts_regularizer.error_dict
 
-    check(is_multiseries, X, y, X_output, y_output, error_dict)
+    check_x_and_y_output(is_multiseries, X, y, X_output, y_output, error_dict)
     if not is_multiseries:
         if uneven_type == "beginning":
             assert X.iloc[0]["dates"] not in X_output["dates"]
