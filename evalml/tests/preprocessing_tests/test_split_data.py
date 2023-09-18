@@ -6,6 +6,7 @@ from evalml.problem_types import (
     ProblemTypes,
     is_binary,
     is_multiclass,
+    is_multiseries,
     is_regression,
     is_time_series,
 )
@@ -29,6 +30,8 @@ def test_split_data(
         X, y = X_y_regression
     problem_configuration = None
     if is_time_series(problem_type):
+        if is_multiseries(problem_type):
+            pytest.skip("Multiseries time series is tested separately")
         problem_configuration = {"gap": 1, "max_delay": 7, "time_index": "date"}
 
     X = make_data_type(data_type, X)
@@ -70,6 +73,8 @@ def test_split_data_defaults(problem_type, data_type, get_test_data_from_configu
 
     problem_configuration = None
     if is_time_series(problem_type):
+        if is_multiseries(problem_type):
+            pytest.skip("Multiseries time series is tested separately")
         problem_configuration = {"gap": 1, "max_delay": 7, "time_index": "date"}
         test_pct = 0.1
     else:
@@ -127,8 +132,27 @@ def test_split_data_ts(test, X_y_regression):
     assert len(y_test) == test_size
 
 
+def test_split_data_calls_multiseries_error(multiseries_ts_data_stacked):
+    X, y = multiseries_ts_data_stacked
+    match_str = (
+        "needs both series_id and time_index values in the problem_configuration"
+    )
+    with pytest.raises(ValueError, match=match_str):
+        split_data(
+            X,
+            y,
+            problem_type="multiseries time series regression",
+            problem_configuration={"time_index": "date"},
+        )
+
+
 @pytest.mark.parametrize("no_features", [True, False])
-def test_split_multiseries_data(no_features, multiseries_ts_data_stacked):
+@pytest.mark.parametrize("splitting_function", ["split_data", "split_multiseries_data"])
+def test_split_multiseries_data(
+    no_features,
+    splitting_function,
+    multiseries_ts_data_stacked,
+):
     X, y = multiseries_ts_data_stacked
 
     if no_features:
@@ -137,12 +161,22 @@ def test_split_multiseries_data(no_features, multiseries_ts_data_stacked):
     X_train_expected, X_holdout_expected = X[:-10], X[-10:]
     y_train_expected, y_holdout_expected = y[:-10], y[-10:]
 
-    X_train, X_holdout, y_train, y_holdout = split_multiseries_data(
-        X,
-        y,
-        "series_id",
-        "date",
-    )
+    # Results should be identical whether split_multiseries_data is called through
+    # split_data or directly
+    if splitting_function == "split_data":
+        X_train, X_holdout, y_train, y_holdout = split_data(
+            X,
+            y,
+            problem_type="multiseries time series regression",
+            problem_configuration={"time_index": "date", "series_id": "series_id"},
+        )
+    else:
+        X_train, X_holdout, y_train, y_holdout = split_multiseries_data(
+            X,
+            y,
+            "series_id",
+            "date",
+        )
 
     pd.testing.assert_frame_equal(
         X_train.sort_index(axis=1),

@@ -4,7 +4,12 @@ from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
 from evalml.pipelines.utils import stack_data, stack_X, unstack_multiseries
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
-from evalml.problem_types import is_classification, is_regression, is_time_series
+from evalml.problem_types import (
+    is_classification,
+    is_multiseries,
+    is_regression,
+    is_time_series,
+)
 from evalml.utils import infer_feature_types
 
 
@@ -144,6 +149,23 @@ def split_data(
         1    9
         dtype: int64
     """
+    if is_multiseries(problem_type) and isinstance(y, pd.Series):
+        series_id = problem_configuration.get("series_id")
+        time_index = problem_configuration.get("time_index")
+        if series_id is None or time_index is None:
+            raise ValueError(
+                "split_data needs both series_id and time_index values in the problem_configuration to split multiseries data",
+            )
+        return split_multiseries_data(
+            X,
+            y,
+            series_id,
+            time_index,
+            problem_configuration=problem_configuration,
+            test_size=test_size,
+            random_seed=random_seed,
+        )
+
     X = infer_feature_types(X)
     y = infer_feature_types(y)
 
