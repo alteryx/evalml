@@ -4,7 +4,12 @@ from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
 from evalml.pipelines.utils import stack_data, stack_X, unstack_multiseries
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
-from evalml.problem_types import is_classification, is_regression, is_time_series
+from evalml.problem_types import (
+    is_classification,
+    is_multiseries,
+    is_regression,
+    is_time_series,
+)
 from evalml.utils import infer_feature_types
 
 
@@ -118,6 +123,9 @@ def split_data(
     Returns:
         pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and test sets.
 
+    Raises:
+        ValueError: If the problem_configuration is missing or does not contain both a time_index and series_id for multiseries problems.
+
     Examples:
         >>> X = pd.DataFrame([1, 2, 3, 4, 5, 6], columns=["First"])
         >>> y = pd.Series([8, 9, 10, 11, 12, 13])
@@ -144,6 +152,27 @@ def split_data(
         1    9
         dtype: int64
     """
+    if is_multiseries(problem_type) and isinstance(y, pd.Series):
+        if problem_configuration is None:
+            raise ValueError(
+                "split_data requires problem_configuration for multiseries problems",
+            )
+        series_id = problem_configuration.get("series_id")
+        time_index = problem_configuration.get("time_index")
+        if series_id is None or time_index is None:
+            raise ValueError(
+                "split_data needs both series_id and time_index values in the problem_configuration to split multiseries data",
+            )
+        return split_multiseries_data(
+            X,
+            y,
+            series_id,
+            time_index,
+            problem_configuration=problem_configuration,
+            test_size=test_size,
+            random_seed=random_seed,
+        )
+
     X = infer_feature_types(X)
     y = infer_feature_types(y)
 

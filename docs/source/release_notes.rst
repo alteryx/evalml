@@ -10,7 +10,9 @@ Release Notes
         * Extended TimeSeriesRegularizer to support multiseries :pr:`4303`
     * Fixes
     * Changes
+        * Updated ``split_data`` to call ``split_multiseries_data`` when passed stacked multiseries data :pr:`4312`
     * Documentation Changes
+        * Removed LightGBM's excessive amount of warnings :pr:`4308`
     * Testing Changes
 
 .. warning::
