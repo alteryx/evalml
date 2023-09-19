@@ -14,6 +14,7 @@ Release Notes
     * Documentation Changes
         * Removed LightGBM's excessive amount of warnings :pr:`4308`
     * Testing Changes
+        * Removed old performance testing workflow :pr:`4318`
 
 .. warning::
 
