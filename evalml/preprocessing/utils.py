@@ -123,6 +123,9 @@ def split_data(
     Returns:
         pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and test sets.
 
+    Raises:
+        ValueError: If the problem_configuration is missing or does not contain both a time_index and series_id for multiseries problems.
+
     Examples:
         >>> X = pd.DataFrame([1, 2, 3, 4, 5, 6], columns=["First"])
         >>> y = pd.Series([8, 9, 10, 11, 12, 13])
@@ -150,6 +153,10 @@ def split_data(
         dtype: int64
     """
     if is_multiseries(problem_type) and isinstance(y, pd.Series):
+        if problem_configuration is None:
+            raise ValueError(
+                "split_data requires problem_configuration for multiseries problems",
+            )
         series_id = problem_configuration.get("series_id")
         time_index = problem_configuration.get("time_index")
         if series_id is None or time_index is None:

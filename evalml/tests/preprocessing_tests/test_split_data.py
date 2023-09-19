@@ -20,6 +20,7 @@ def test_split_data(
     X_y_binary,
     X_y_multi,
     X_y_regression,
+    multiseries_ts_data_unstacked,
     make_data_type,
 ):
     if is_binary(problem_type):
@@ -30,9 +31,9 @@ def test_split_data(
         X, y = X_y_regression
     problem_configuration = None
     if is_time_series(problem_type):
-        if is_multiseries(problem_type):
-            pytest.skip("Multiseries time series is tested separately")
         problem_configuration = {"gap": 1, "max_delay": 7, "time_index": "date"}
+        if is_multiseries(problem_type):
+            X, y = multiseries_ts_data_unstacked
 
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
@@ -53,17 +54,28 @@ def test_split_data(
     assert len(y_test) == test_size
     assert isinstance(X_train, pd.DataFrame)
     assert isinstance(X_test, pd.DataFrame)
-    assert isinstance(y_train, pd.Series)
-    assert isinstance(y_test, pd.Series)
+    if not is_multiseries(problem_type):
+        assert isinstance(y_train, pd.Series)
+        assert isinstance(y_test, pd.Series)
+    else:
+        assert isinstance(y_train, pd.DataFrame)
+        assert isinstance(y_test, pd.DataFrame)
+        pd.testing.assert_frame_equal(X_test, X[int(train_size) :], check_dtype=False)
+        pd.testing.assert_frame_equal(y_test, y[int(train_size) :], check_dtype=False)
 
-    if is_time_series(problem_type):
+    if is_time_series(problem_type) and not is_multiseries(problem_type):
         pd.testing.assert_frame_equal(X_test, X[int(train_size) :], check_dtype=False)
         pd.testing.assert_series_equal(y_test, y[int(train_size) :], check_dtype=False)
 
 
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-def test_split_data_defaults(problem_type, data_type, get_test_data_from_configuration):
+def test_split_data_defaults(
+    problem_type,
+    data_type,
+    get_test_data_from_configuration,
+    multiseries_ts_data_unstacked,
+):
     X, y = get_test_data_from_configuration(
         data_type,
         problem_type,
@@ -73,9 +85,9 @@ def test_split_data_defaults(problem_type, data_type, get_test_data_from_configu
 
     problem_configuration = None
     if is_time_series(problem_type):
-        if is_multiseries(problem_type):
-            pytest.skip("Multiseries time series is tested separately")
         problem_configuration = {"gap": 1, "max_delay": 7, "time_index": "date"}
+        if is_multiseries(problem_type):
+            X, y = multiseries_ts_data_unstacked
         test_pct = 0.1
     else:
         test_pct = 0.2
@@ -97,7 +109,18 @@ def test_split_data_defaults(problem_type, data_type, get_test_data_from_configu
             X = pd.DataFrame(X)
             y = pd.Series(y)
         pd.testing.assert_frame_equal(X_test, X[int(train_size) :], check_dtype=False)
-        pd.testing.assert_series_equal(y_test, y[int(train_size) :], check_dtype=False)
+        if not is_multiseries(problem_type):
+            pd.testing.assert_series_equal(
+                y_test,
+                y[int(train_size) :],
+                check_dtype=False,
+            )
+        else:
+            pd.testing.assert_frame_equal(
+                y_test,
+                y[int(train_size) :],
+                check_dtype=False,
+            )
 
 
 @pytest.mark.parametrize("test", ["fh_limitation", "no_fh_limitation"])
@@ -134,10 +157,16 @@ def test_split_data_ts(test, X_y_regression):
 
 def test_split_data_calls_multiseries_error(multiseries_ts_data_stacked):
     X, y = multiseries_ts_data_stacked
-    match_str = (
-        "needs both series_id and time_index values in the problem_configuration"
-    )
-    with pytest.raises(ValueError, match=match_str):
+    with pytest.raises(
+        ValueError,
+        match="requires problem_configuration for multiseries",
+    ):
+        split_data(X, y, problem_type="multiseries time series regression")
+
+    with pytest.raises(
+        ValueError,
+        match="needs both series_id and time_index values in the problem_configuration",
+    ):
         split_data(
             X,
             y,
