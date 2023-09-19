@@ -11,6 +11,7 @@ Release Notes
     * Fixes
     * Changes
         * Updated ``split_data`` to call ``split_multiseries_data`` when passed stacked multiseries data :pr:`4312`
+        * Pinned pandas version under 2.1.0 :pr:`4315`
     * Documentation Changes
         * Removed LightGBM's excessive amount of warnings :pr:`4308`
     * Testing Changes
