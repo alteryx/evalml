@@ -11,6 +11,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Removed LightGBM's excessive amount of warnings :pr:`4308`
     * Testing Changes
 
 .. warning::
