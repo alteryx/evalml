@@ -206,6 +206,17 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             MethodPropertyNotFoundError: If the estimator does not support Time Series Regression as a problem type.
         """
         X_no_datetime, y_no_datetime = self._drop_time_index(X, y)
+        if self.problem_type == ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION:
+            from evalml.pipelines.utils import unstack_multiseries
+
+            X_no_datetime, y_no_datetime = unstack_multiseries(
+                X_train,
+                y_train,
+                self.series_id,
+                self.time_index,
+                self.input_target_name,
+            )
+
         estimator_input = self.transform_all_but_final(
             X_no_datetime,
             y_no_datetime,
