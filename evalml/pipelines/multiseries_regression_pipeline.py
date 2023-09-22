@@ -1,4 +1,5 @@
 """Pipeline base class for time series regression problems."""
+import pandas as pd
 from woodwork.statistics_utils import infer_frequency
 
 from evalml.pipelines.time_series_regression_pipeline import (
@@ -137,3 +138,39 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
         # Index will start at the unstacked index, so we need to reset it to the original index
         stacked_predictions.index = X.index
         return stacked_predictions
+
+    def get_forecast_period(self, X):
+        """Generates all possible forecasting time points based on latest data point in X.
+
+        For the multiseries case, each time stamp is duplicated for each unique value in `X`'s `series_id` column.
+
+        Args:
+            X (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures].
+
+        Raises:
+            ValueError: If pipeline is not trained.
+
+        Returns:
+            pd.DataFrame: Dataframe containing a column with datetime periods from `gap` to `forecast_horizon + gap`
+            per unique `series_id` value.
+        """
+        dates = super().get_forecast_period(X)
+        dates.name = self.time_index
+        series_id_values = X[self.series_id].unique()
+
+        new_period_df = dates.to_frame().merge(
+            pd.Series(series_id_values, name=self.series_id),
+            how="cross",
+        )
+
+        # Generate new numeric index
+        num_idx = pd.Series(
+            range(
+                dates.index[0] + (self.gap * len(series_id_values)),
+                dates.index[0]
+                + (self.gap * len(series_id_values))
+                + len(new_period_df),
+            ),
+        )
+        new_period_df.index = num_idx
+        return new_period_df
