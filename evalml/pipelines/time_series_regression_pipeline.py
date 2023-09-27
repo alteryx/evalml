@@ -205,24 +205,6 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         Raises:
             MethodPropertyNotFoundError: If the estimator does not support Time Series Regression as a problem type.
         """
-        X_no_datetime, y_no_datetime = self._drop_time_index(X, y)
-        if self.problem_type == ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION:
-            from evalml.pipelines.utils import unstack_multiseries
-
-            X_no_datetime, y_no_datetime = unstack_multiseries(
-                X_train,
-                y_train,
-                self.series_id,
-                self.time_index,
-                self.input_target_name,
-            )
-
-        estimator_input = self.transform_all_but_final(
-            X_no_datetime,
-            y_no_datetime,
-            X_train=X_train,
-            y_train=y_train,
-        )
         has_stl = STLDecomposer.name in list(
             self.component_graph.component_instances.keys(),
         )
@@ -230,6 +212,24 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             coverage = [0.95]
 
         if self.estimator.model_family in self.NO_PREDS_PI_ESTIMATORS and has_stl:
+            X_no_datetime, y_no_datetime = self._drop_time_index(X, y)
+            if self.problem_type == ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION:
+                from evalml.pipelines.utils import unstack_multiseries
+
+                X_no_datetime, y_no_datetime = unstack_multiseries(
+                    X_train,
+                    y_train,
+                    self.series_id,
+                    self.time_index,
+                    self.input_target_name,
+                )
+
+            estimator_input = self.transform_all_but_final(
+                X_no_datetime,
+                y_no_datetime,
+                X_train=X_train,
+                y_train=y_train,
+            )
             pred_intervals = self.estimator.get_prediction_intervals(
                 X=estimator_input,
                 y=y,
@@ -251,6 +251,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
                 )
             return trans_pred_intervals
         else:
+            print(X)
             future_vals = self.predict(
                 X=X,
                 X_train=X_train,
