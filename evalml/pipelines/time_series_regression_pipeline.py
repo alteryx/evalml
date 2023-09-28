@@ -212,17 +212,17 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             coverage = [0.95]
 
         if self.estimator.model_family in self.NO_PREDS_PI_ESTIMATORS and has_stl:
-            X_no_datetime, y_no_datetime = self._drop_time_index(X, y)
             if self.problem_type == ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION:
-                from evalml.pipelines.utils import unstack_multiseries
+                from evalml.pipelines.utils import stack_data, unstack_multiseries
 
-                X_no_datetime, y_no_datetime = unstack_multiseries(
-                    X_train,
-                    y_train,
+                X, y = unstack_multiseries(
+                    X,
+                    y,
                     self.series_id,
                     self.time_index,
                     self.input_target_name,
                 )
+            X_no_datetime, y_no_datetime = self._drop_time_index(X, y)
 
             estimator_input = self.transform_all_but_final(
                 X_no_datetime,
@@ -235,23 +235,54 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
                 y=y,
                 coverage=coverage,
             )
-            trans_pred_intervals = {}
+            intervals_labels = list(list(pred_intervals.values())[0].keys())
+            interval_series_pred_intervals = {
+                interval: {} for interval in intervals_labels
+            }
             residuals = self.estimator.predict(
                 estimator_input,
             )  # Get residual values
-            trend_pred_intervals = self.get_component(
-                "STL Decomposer",
-            ).get_trend_prediction_intervals(y, coverage=coverage)
-            for key, orig_pi_values in pred_intervals.items():
-                trans_pred_intervals[key] = pd.Series(
-                    (orig_pi_values.values - residuals.values)
-                    + trend_pred_intervals[key].values
-                    + y.values,
-                    index=orig_pi_values.index,
-                )
+            trans_pred_intervals = {}
+            if self.problem_type == ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION:
+                trend_pred_intervals = self.get_component(
+                    "STL Decomposer",
+                ).get_trend_prediction_intervals(y_no_datetime, coverage=coverage)
+                for series_id, intervals in pred_intervals.items():
+                    for key, orig_pi_values in intervals.items():
+                        series_id_target_name = (
+                            self.input_target_name + "_" + str(series_id)
+                        )
+                        interval_series_pred_intervals[key][
+                            series_id_target_name
+                        ] = pd.Series(
+                            (orig_pi_values.values - residuals[series_id].values)
+                            + trend_pred_intervals[series_id_target_name][key].values
+                            + y[series_id_target_name].values,
+                            index=orig_pi_values.index,
+                        )
+                for interval in intervals_labels:
+                    series_id_df = pd.DataFrame(
+                        interval_series_pred_intervals[interval],
+                    )
+                    stacked_pred_interval = stack_data(
+                        data=series_id_df,
+                        series_id_name=self.series_id,
+                    )
+                    trans_pred_intervals[interval] = stacked_pred_interval
+
+            else:
+                trend_pred_intervals = self.get_component(
+                    "STL Decomposer",
+                ).get_trend_prediction_intervals(y, coverage=coverage)
+                for key, orig_pi_values in pred_intervals.items():
+                    trans_pred_intervals[key] = pd.Series(
+                        (orig_pi_values.values - residuals.values)
+                        + trend_pred_intervals[key].values
+                        + y.values,
+                        index=orig_pi_values.index,
+                    )
             return trans_pred_intervals
         else:
-            print(X)
             future_vals = self.predict(
                 X=X,
                 X_train=X_train,
