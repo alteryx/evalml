@@ -222,6 +222,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
                     self.time_index,
                     self.input_target_name,
                 )
+
             X_no_datetime, y_no_datetime = self._drop_time_index(X, y)
 
             estimator_input = self.transform_all_but_final(
@@ -241,7 +242,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             }
             residuals = self.estimator.predict(
                 estimator_input,
-            )  # Get residual values
+            )
             trans_pred_intervals = {}
             if self.problem_type == ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION:
                 trend_pred_intervals = self.get_component(

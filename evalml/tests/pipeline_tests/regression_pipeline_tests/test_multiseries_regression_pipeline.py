@@ -247,16 +247,11 @@ def test_time_series_get_forecast_predictions(
 @pytest.mark.parametrize("set_coverage", [True, False])
 @pytest.mark.parametrize("add_decomposer", [True, False])
 @pytest.mark.parametrize("ts_native_estimator", [True, False])
-# @patch(
-#     "evalml.pipelines.components.transformers.preprocessing.stl_decomposer.STLDecomposer.transform"
-# )
 def test_time_series_pipeline_get_prediction_intervals(
-    # mock_transform,
     ts_native_estimator,
     add_decomposer,
     set_coverage,
     multiseries_ts_data_stacked,
-    generate_seasonal_data,
 ):
     X, y = multiseries_ts_data_stacked
     y = pd.Series(np.random.rand(100), name="target")
@@ -323,63 +318,6 @@ def test_time_series_pipeline_get_prediction_intervals(
 
     if set_coverage is False:
         coverage = [0.95]
-
-    # # The time series native estimators are handled separately when they have
-    # # a decomposer in the pipeline
-    # if ts_native_estimator and add_decomposer:
-    #     predictions = pipeline.predict_in_sample(
-    #         X_validation,
-    #         y_validation,
-    #         X_train,
-    #         y_train,
-    #     )
-    #     X_validation, y_validation = pipeline._drop_time_index(
-    #         X_validation,
-    #         y_validation,
-    #     )
-    #     X_validation_unstacked, y_validation_unstacked = unstack_multiseries(
-    #         X_validation,
-    #         y_validation,
-    #         "series_id",
-    #         "date",
-    #         "target",
-    #     )
-    #     features = pipeline.transform_all_but_final(
-    #         X_validation_unstacked,
-    #         y_validation_unstacked,
-    #         X_train,
-    #         y_train,
-    #     )
-    #     est_intervals = pipeline.estimator.get_prediction_intervals(
-    #         X=features,
-    #         y=y_validation_unstacked,
-    #         predictions=predictions,
-    #         coverage=coverage,
-    #     )
-    #
-    #     trend_pred_intervals = pipeline.get_component(
-    #         "STL Decomposer",
-    #     ).get_trend_prediction_intervals(y_validation, coverage=coverage)
-    #     residuals = pipeline.estimator.predict(features)
-    #
-    #     for cover_value in coverage:
-    #         for key in [f"{cover_value}_lower", f"{cover_value}_upper"]:
-    #             pl_interval = pl_intervals[key]
-    #             residual_dict = {
-    #                 series_id: {} for series_id in X_train["series_id"].unique()
-    #             }
-    #             for series_id in X_train["series_id"].unique():
-    #                 residual_dict[series_id] = (
-    #                     est_intervals[int(series_id)][key] - residuals[int(series_id)]
-    #                 )
-    #             residual_df = stack_data(pd.DataFrame(residual_dict))
-    #             expected_res = pd.Series(
-    #                 residual_df.values
-    #                 + trend_pred_intervals[key].values
-    #                 + y_validation.values,
-    #                 index=trend_pred_intervals[key].index,
-    #             )
-    #             assert_series_equal(expected_res, pl_interval)
 
     if set_coverage:
         pairs = [(0.75, 0.85), (0.85, 0.95)]
