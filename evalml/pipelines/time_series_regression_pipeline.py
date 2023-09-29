@@ -6,7 +6,7 @@ from woodwork.statistics_utils import infer_frequency
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import STLDecomposer
 from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, is_multiseries
 from evalml.utils.woodwork_utils import infer_feature_types
 
 
@@ -212,6 +212,18 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             coverage = [0.95]
 
         if self.estimator.model_family in self.NO_PREDS_PI_ESTIMATORS and has_stl:
+
+            def _get_series_intervals(intervals, residuals, trend_pred_intervals, y):
+                return_intervals = {}
+                for key, orig_pi_values in intervals.items():
+                    return_intervals[key] = pd.Series(
+                        (orig_pi_values.values - residuals.values)
+                        + trend_pred_intervals[key].values
+                        + y.values,
+                        index=orig_pi_values.index,
+                    )
+                return return_intervals
+
             if self.problem_type == ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION:
                 from evalml.pipelines.utils import stack_data, unstack_multiseries
 
@@ -236,31 +248,33 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
                 y=y,
                 coverage=coverage,
             )
-            intervals_labels = list(list(pred_intervals.values())[0].keys())
-            interval_series_pred_intervals = {
-                interval: {} for interval in intervals_labels
-            }
             residuals = self.estimator.predict(
                 estimator_input,
             )
             trans_pred_intervals = {}
-            if self.problem_type == ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION:
-                trend_pred_intervals = self.get_component(
-                    "STL Decomposer",
-                ).get_trend_prediction_intervals(y_no_datetime, coverage=coverage)
-                for series_id, intervals in pred_intervals.items():
-                    for key, orig_pi_values in intervals.items():
-                        series_id_target_name = (
-                            self.input_target_name + "_" + str(series_id)
-                        )
-                        interval_series_pred_intervals[key][
+            trend_pred_intervals = self.get_component(
+                "STL Decomposer",
+            ).get_trend_prediction_intervals(y, coverage=coverage)
+
+            if is_multiseries(self.problem_type):
+                intervals_labels = list(list(pred_intervals.values())[0].keys())
+                interval_series_pred_intervals = {
+                    interval: {} for interval in intervals_labels
+                }
+                for series_id, series_intervals in pred_intervals.items():
+                    series_id_target_name = (
+                        self.input_target_name + "_" + str(series_id)
+                    )
+                    series_id_interval_result = _get_series_intervals(
+                        series_intervals,
+                        residuals[series_id],
+                        trend_pred_intervals[series_id_target_name],
+                        y[series_id_target_name],
+                    )
+                    for interval, interval_data in series_id_interval_result.items():
+                        interval_series_pred_intervals[interval][
                             series_id_target_name
-                        ] = pd.Series(
-                            (orig_pi_values.values - residuals[series_id].values)
-                            + trend_pred_intervals[series_id_target_name][key].values
-                            + y[series_id_target_name].values,
-                            index=orig_pi_values.index,
-                        )
+                        ] = interval_data
                 for interval in intervals_labels:
                     series_id_df = pd.DataFrame(
                         interval_series_pred_intervals[interval],
@@ -270,18 +284,13 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
                         series_id_name=self.series_id,
                     )
                     trans_pred_intervals[interval] = stacked_pred_interval
-
             else:
-                trend_pred_intervals = self.get_component(
-                    "STL Decomposer",
-                ).get_trend_prediction_intervals(y, coverage=coverage)
-                for key, orig_pi_values in pred_intervals.items():
-                    trans_pred_intervals[key] = pd.Series(
-                        (orig_pi_values.values - residuals.values)
-                        + trend_pred_intervals[key].values
-                        + y.values,
-                        index=orig_pi_values.index,
-                    )
+                trans_pred_intervals = _get_series_intervals(
+                    pred_intervals,
+                    residuals,
+                    trend_pred_intervals,
+                    y,
+                )
             return trans_pred_intervals
         else:
             future_vals = self.predict(
