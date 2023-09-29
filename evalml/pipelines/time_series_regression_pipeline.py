@@ -251,47 +251,57 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             residuals = self.estimator.predict(
                 estimator_input,
             )
-            trans_pred_intervals = {}
+            transformed_pred_intervals = {}
             trend_pred_intervals = self.get_component(
                 "STL Decomposer",
             ).get_trend_prediction_intervals(y, coverage=coverage)
 
             if is_multiseries(self.problem_type):
-                intervals_labels = list(list(pred_intervals.values())[0].keys())
+                # Coverage label is label for each prediction interval limit(e.g. "0.95_lower")
+                coverage_labels = list(list(pred_intervals.values())[0].keys())
+
+                # Store prediction interval data in {coverage_label: {series_id: bound_value}}
                 interval_series_pred_intervals = {
-                    interval: {} for interval in intervals_labels
+                    coverage_label: {} for coverage_label in coverage_labels
                 }
+
+                # `pred_intervals` are in {series_id: {coverage_label: bound_value}} form
                 for series_id, series_intervals in pred_intervals.items():
                     series_id_target_name = (
                         self.input_target_name + "_" + str(series_id)
                     )
-                    series_id_interval_result = _get_series_intervals(
+                    series_id_prediction_intervals = _get_series_intervals(
                         series_intervals,
                         residuals[series_id],
                         trend_pred_intervals[series_id_target_name],
                         y[series_id_target_name],
                     )
-                    for interval, interval_data in series_id_interval_result.items():
-                        interval_series_pred_intervals[interval][
+                    # Store `series_id_prediction_intervals` data in `interval_series_pred_intervals` format
+                    for (
+                        coverage_label,
+                        bound_value,
+                    ) in series_id_prediction_intervals.items():
+                        interval_series_pred_intervals[coverage_label][
                             series_id_target_name
-                        ] = interval_data
-                for interval in intervals_labels:
-                    series_id_df = pd.DataFrame(
-                        interval_series_pred_intervals[interval],
+                        ] = bound_value
+                # Stack bound data for each coverage label so each bound has a single pd.Series
+                for coverage_label in coverage_labels:
+                    series_id_interval_df = pd.DataFrame(
+                        interval_series_pred_intervals[coverage_label],
                     )
                     stacked_pred_interval = stack_data(
-                        data=series_id_df,
+                        data=series_id_interval_df,
                         series_id_name=self.series_id,
                     )
-                    trans_pred_intervals[interval] = stacked_pred_interval
+                    transformed_pred_intervals[coverage_label] = stacked_pred_interval
             else:
-                trans_pred_intervals = _get_series_intervals(
+                transformed_pred_intervals = _get_series_intervals(
                     pred_intervals,
                     residuals,
                     trend_pred_intervals,
                     y,
                 )
-            return trans_pred_intervals
+            return transformed_pred_intervals
         else:
             future_vals = self.predict(
                 X=X,
