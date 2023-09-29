@@ -6,7 +6,7 @@ from woodwork.statistics_utils import infer_frequency
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import STLDecomposer
 from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, is_multiseries
 from evalml.utils.woodwork_utils import infer_feature_types
 
 
@@ -205,13 +205,6 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         Raises:
             MethodPropertyNotFoundError: If the estimator does not support Time Series Regression as a problem type.
         """
-        X_no_datetime, y_no_datetime = self._drop_time_index(X, y)
-        estimator_input = self.transform_all_but_final(
-            X_no_datetime,
-            y_no_datetime,
-            X_train=X_train,
-            y_train=y_train,
-        )
         has_stl = STLDecomposer.name in list(
             self.component_graph.component_instances.keys(),
         )
@@ -219,26 +212,96 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             coverage = [0.95]
 
         if self.estimator.model_family in self.NO_PREDS_PI_ESTIMATORS and has_stl:
+
+            def _get_series_intervals(intervals, residuals, trend_pred_intervals, y):
+                return_intervals = {}
+                for key, orig_pi_values in intervals.items():
+                    return_intervals[key] = pd.Series(
+                        (orig_pi_values.values - residuals.values)
+                        + trend_pred_intervals[key].values
+                        + y.values,
+                        index=orig_pi_values.index,
+                    )
+                return return_intervals
+
+            if self.problem_type == ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION:
+                from evalml.pipelines.utils import stack_data, unstack_multiseries
+
+                X, y = unstack_multiseries(
+                    X,
+                    y,
+                    self.series_id,
+                    self.time_index,
+                    self.input_target_name,
+                )
+
+            X_no_datetime, y_no_datetime = self._drop_time_index(X, y)
+
+            estimator_input = self.transform_all_but_final(
+                X_no_datetime,
+                y_no_datetime,
+                X_train=X_train,
+                y_train=y_train,
+            )
             pred_intervals = self.estimator.get_prediction_intervals(
                 X=estimator_input,
                 y=y,
                 coverage=coverage,
             )
-            trans_pred_intervals = {}
             residuals = self.estimator.predict(
                 estimator_input,
-            )  # Get residual values
+            )
+            transformed_pred_intervals = {}
             trend_pred_intervals = self.get_component(
                 "STL Decomposer",
             ).get_trend_prediction_intervals(y, coverage=coverage)
-            for key, orig_pi_values in pred_intervals.items():
-                trans_pred_intervals[key] = pd.Series(
-                    (orig_pi_values.values - residuals.values)
-                    + trend_pred_intervals[key].values
-                    + y.values,
-                    index=orig_pi_values.index,
+
+            if is_multiseries(self.problem_type):
+                # Coverage label is label for each prediction interval limit(e.g. "0.95_lower")
+                coverage_labels = list(list(pred_intervals.values())[0].keys())
+
+                # Store prediction interval data in {coverage_label: {series_id: bound_value}}
+                interval_series_pred_intervals = {
+                    coverage_label: {} for coverage_label in coverage_labels
+                }
+
+                # `pred_intervals` are in {series_id: {coverage_label: bound_value}} form
+                for series_id, series_intervals in pred_intervals.items():
+                    series_id_target_name = (
+                        self.input_target_name + "_" + str(series_id)
+                    )
+                    series_id_prediction_intervals = _get_series_intervals(
+                        series_intervals,
+                        residuals[series_id],
+                        trend_pred_intervals[series_id_target_name],
+                        y[series_id_target_name],
+                    )
+                    # Store `series_id_prediction_intervals` data in `interval_series_pred_intervals` format
+                    for (
+                        coverage_label,
+                        bound_value,
+                    ) in series_id_prediction_intervals.items():
+                        interval_series_pred_intervals[coverage_label][
+                            series_id_target_name
+                        ] = bound_value
+                # Stack bound data for each coverage label so each bound has a single pd.Series
+                for coverage_label in coverage_labels:
+                    series_id_interval_df = pd.DataFrame(
+                        interval_series_pred_intervals[coverage_label],
+                    )
+                    stacked_pred_interval = stack_data(
+                        data=series_id_interval_df,
+                        series_id_name=self.series_id,
+                    )
+                    transformed_pred_intervals[coverage_label] = stacked_pred_interval
+            else:
+                transformed_pred_intervals = _get_series_intervals(
+                    pred_intervals,
+                    residuals,
+                    trend_pred_intervals,
+                    y,
                 )
-            return trans_pred_intervals
+            return transformed_pred_intervals
         else:
             future_vals = self.predict(
                 X=X,
