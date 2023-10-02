@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.81.0 Oct 3, 2023**
+    * Enhancements
         * Extended STLDecomposer to support multiseries :pr:`4253`
         * Extended TimeSeriesImputer to support multiseries :pr:`4291`
         * Added datacheck to check for mismatched series length in multiseries :pr:`4296`
