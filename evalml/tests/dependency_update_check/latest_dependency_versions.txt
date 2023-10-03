@@ -31,7 +31,7 @@ seaborn==0.13.0
 shap==0.42.1
 sktime==0.23.0
 statsmodels==0.14.0
-texttable==1.6.7
+texttable==1.7.0
 tomli==2.0.1
 vowpalwabbit==9.9.0
 woodwork==0.26.0
