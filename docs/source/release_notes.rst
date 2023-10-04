@@ -10,6 +10,7 @@ Release Notes
         * Extended TimeSeriesRegularizer to support multiseries :pr:`4303`
     * Fixes
         * Fixed forecast period generation function for multiseries :pr:`4320`
+        * Fixed bug in ``STLDecomposer.inverse_transform`` causing incorrect seasonality projections :pr:`4328`
     * Changes
         * Updated ``split_data`` to call ``split_multiseries_data`` when passed stacked multiseries data :pr:`4312`
         * Pinned pandas version under 2.1.0 :pr:`4315`
