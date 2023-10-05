@@ -12,7 +12,7 @@ Release Notes
     **Breaking Changes**
 
 
-**v0.81.0 Oct 3, 2023**
+**v0.81.0 Oct 5, 2023**
     * Enhancements
         * Extended STLDecomposer to support multiseries :pr:`4253`
         * Extended TimeSeriesImputer to support multiseries :pr:`4291`
