@@ -3,7 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-         * Fixed bug related to pypi release #4330
+         * Fixed bug related to pypi release :pr:`4330`
     * Changes
     * Documentation Changes
     * Testing Changes
