@@ -18,3 +18,5 @@ jobs:
         PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         TEST_PYPI_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
         TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
+      with:
+        tag_name: ${{ github.event.release.tag_name }}
