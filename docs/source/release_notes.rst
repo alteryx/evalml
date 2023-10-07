@@ -13,6 +13,19 @@ Release Notes
     **Breaking Changes**
 
 
+**v0.81.1 Oct 6, 2023**
+    * Enhancements
+    * Fixes
+         * Fixed bug related to pypi release github action failing :pr:`4330`
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
 **v0.81.0 Oct 5, 2023**
     * Enhancements
         * Extended STLDecomposer to support multiseries :pr:`4253`
