@@ -380,10 +380,12 @@ class STLDecomposer(Decomposer):
             if len(y_t.columns) > 1:
                 old_trend = self.trends[id]
                 old_seasonal = self.seasonals[id]
+                old_seasonality = self.seasonalities[id]
                 period = self.periods[id]
             else:
                 old_trend = list(self.trends.values())[0]
                 old_seasonal = list(self.seasonals.values())[0]
+                old_seasonality = list(self.seasonalities.values())[0]
                 period = list(self.periods.values())[0]
             # For partially and wholly in-sample data, retrieve stored results.
             if index[0] <= series_y.index[0] <= index[-1]:
@@ -423,7 +425,7 @@ class STLDecomposer(Decomposer):
                 ) = self._project_trend_and_seasonality(
                     truncated_y_t,
                     old_trend,
-                    old_seasonal,
+                    old_seasonality,
                     period,
                 )
 

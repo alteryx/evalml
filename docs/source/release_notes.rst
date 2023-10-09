@@ -2,6 +2,19 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+         * Fixed bug related to pypi release :pr:`4330`
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.81.0 Oct 5, 2023**
+    * Enhancements
         * Extended STLDecomposer to support multiseries :pr:`4253`
         * Extended TimeSeriesImputer to support multiseries :pr:`4291`
         * Added datacheck to check for mismatched series length in multiseries :pr:`4296`
@@ -10,6 +23,7 @@ Release Notes
         * Extended TimeSeriesRegularizer to support multiseries :pr:`4303`
     * Fixes
         * Fixed forecast period generation function for multiseries :pr:`4320`
+        * Fixed bug in ``STLDecomposer.inverse_transform`` causing incorrect seasonality projections :pr:`4328`
     * Changes
         * Updated ``split_data`` to call ``split_multiseries_data`` when passed stacked multiseries data :pr:`4312`
         * Pinned pandas version under 2.1.0 :pr:`4315`
