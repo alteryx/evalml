@@ -7,6 +7,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+         * Updated reviewers for latest dependency updates :pr:`4309`
 
 .. warning::
 
