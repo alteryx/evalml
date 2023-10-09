@@ -13,7 +13,7 @@ Release Notes
     **Breaking Changes**
 
 
-**v0.81.1 Oct 6, 2023**
+**v0.81.1 Oct 9, 2023**
     * Enhancements
     * Fixes
          * Fixed bug related to pypi release github action failing :pr:`4330`
