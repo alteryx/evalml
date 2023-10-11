@@ -3,7 +3,19 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-         * Fixed bug related to pypi release :pr:`4330`
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.81.1 Oct 11, 2023**
+    * Enhancements
+    * Fixes
+         * Fixed bug related to pypi release github action failing :pr:`4330`
     * Changes
     * Documentation Changes
     * Testing Changes
