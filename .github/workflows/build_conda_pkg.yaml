@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - MichaelFu512-fix-conda-out-of-space
   pull_request:
     types: [ opened, synchronize ]
     paths:
