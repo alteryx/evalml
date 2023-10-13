@@ -16,7 +16,7 @@ Release Notes
     * Enhancements
     * Fixes
          * Fixed bug related to pypi release github action failing :pr:`4330`
-         * Fixed bug related to conda build github action :pr:`4335` :pr:`4337`, :pr:`4338`
+         * Fixed bug related to conda build github action :pr:`4335` :pr:`4337`, :pr:`4338`, :pr:`4340`
     * Changes
     * Documentation Changes
     * Testing Changes
