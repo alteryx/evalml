@@ -23,4 +23,4 @@ with warnings.catch_warnings():
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-__version__ = "0.81.1"
+__version__ = "0.81.1rcN.devM"
