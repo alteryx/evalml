@@ -5,6 +5,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+      * Update release guide :pr:`4346`
     * Testing Changes
 
 .. warning::
