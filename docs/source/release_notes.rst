@@ -11,12 +11,22 @@ Release Notes
 
     **Breaking Changes**
 
+**v0.81.2 Oct 11, 2023**
+    * Enhancements
+    * Fixes
+         * Fixed bug related to conda build github action :pr:`4338`, :pr:`4340`
+    * Changes
+    * Documentation Changes
+    * Testing Changes
 
-**v0.81.1 Oct 16, 2023**
+.. warning::
+
+
+**v0.81.1 Oct 11, 2023**
     * Enhancements
     * Fixes
          * Fixed bug related to pypi release github action failing :pr:`4330`
-         * Fixed bug related to conda build github action :pr:`4335` :pr:`4337`, :pr:`4338`, :pr:`4340`
+         * Fixed bug related to conda build github action :pr:`4335` :pr:`4337`
     * Changes
     * Documentation Changes
     * Testing Changes
