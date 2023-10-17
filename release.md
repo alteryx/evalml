@@ -104,8 +104,9 @@ For help on how to push changes to the bot's PR please read this [document.](htt
 You may need to make other changes to the bot's PR. For example, there is a CI check called "Check conda versions/check_versions" that
 verifies whether the dependency versions of the conda update PR match the versions of the recipe used in
 `build_conda_pkg` (located in `.github/meta.yaml`). If the check is red, modify the dependencies so they match those in `.github/meta.yaml`.
+* An example of these dependency updates would be this [PR](https://github.com/conda-forge/evalml-core-feedstock/pull/147/files)
 
-After you make the necessary changes and merge the PR, our latest package will be deployed to conda-forge! To verify, run this in a fresh conda environment:
+After you make the necessary changes, merge the PR, and it passed the checks in main, our latest package will be deployed to conda-forge! To verify, check the [conda website](https://anaconda.org/conda-forge/evalml) to see if it says the latest version and run the following in a fresh conda environment:
 
 ```shell
 conda install -c conda-forge evalml
