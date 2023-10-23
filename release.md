@@ -129,7 +129,7 @@ Per the instructions [here](https://conda-forge.org/docs/maintainer/updating_pkg
 
 ## Troubleshooting failed Github actions
 
-If some Github actions are failing and they aren't automatically ran in the PR request, to easily test them without having to push to main:
+If some Github actions are failing and they don't automatically run in the PR's automated tests, to easily test them without having to push to main:
 1. In your local branch, find the workflow file for the Github action (most likey in `.github/workflow` folder)
 2. In the `.yaml` file for the github action, change it so that on push for your local branch it runs the github actions. For example, lines 4-7 of [`build_conda_pkg.yaml`](https://github.com/alteryx/evalml/blob/main/.github/workflows/build_conda_pkg.yaml) should look like the following:
 ```
