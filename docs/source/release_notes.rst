@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Pinned networkx version below 3.2 for Python version compatibility :pr:`4351`
     * Documentation Changes
       * Update release guide :pr:`4346`
     * Testing Changes
