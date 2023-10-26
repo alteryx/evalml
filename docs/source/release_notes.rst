@@ -6,6 +6,7 @@ Release Notes
     * Changes
         * Pinned networkx version below 3.2 for Python version compatibility :pr:`4351`
     * Documentation Changes
+        * Added multiseries time series section to user guide in documentation :pr:`4355`
       * Updated release guide to include an FAQ section about fixing github actions :pr:`4346`
     * Testing Changes
 
