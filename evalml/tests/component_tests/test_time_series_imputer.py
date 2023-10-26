@@ -11,6 +11,7 @@ from woodwork.logical_types import (
 )
 
 from evalml.pipelines.components import TimeSeriesImputer
+from evalml.pipelines.utils import MULTISERIES_SEPARATOR_SYMBOL
 
 
 def test_invalid_strategy_parameters():
@@ -745,7 +746,12 @@ def test_time_series_imputer_multiseries(
     _, y_imputed = imputer.transform(X, y)
     assert isinstance(y_imputed, pd.DataFrame)
 
-    y_expected = pd.DataFrame({f"target_{i}": range(i, 100, 5) for i in range(5)})
+    y_expected = pd.DataFrame(
+        {
+            f"target{MULTISERIES_SEPARATOR_SYMBOL}{i}": range(i, 100, 5)
+            for i in range(5)
+        },
+    )
     assert_frame_equal(y_imputed, y_expected, check_dtype=False)
 
 
@@ -777,7 +783,10 @@ def test_time_series_imputer_multiseries_some_columns_all_nan(
     _, y_imputed = imputer.transform(X, y)
 
     y_expected = pd.DataFrame(
-        {f"target_{i}": range(i, 100, 5) for i in range(num_nan_cols, 5)},
+        {
+            f"target{MULTISERIES_SEPARATOR_SYMBOL}{i}": range(i, 100, 5)
+            for i in range(num_nan_cols, 5)
+        },
     )
     assert_frame_equal(y_imputed, y_expected, check_dtype=False)
 

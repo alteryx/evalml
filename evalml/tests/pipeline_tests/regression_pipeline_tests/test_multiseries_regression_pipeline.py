@@ -90,7 +90,9 @@ def test_multiseries_pipeline_fit(
     assert pipeline.frequency is not None
 
 
+@pytest.mark.parametrize("include_series_id", [True, False])
 def test_multiseries_pipeline_predict_in_sample(
+    include_series_id,
     multiseries_ts_data_stacked,
     component_graph,
     pipeline_parameters,
@@ -111,6 +113,7 @@ def test_multiseries_pipeline_predict_in_sample(
         y_holdout,
         X_train=X_train,
         y_train=y_train,
+        include_series_id=include_series_id,
     )
     expected = pd.Series(
         range(55, 65),
@@ -118,7 +121,11 @@ def test_multiseries_pipeline_predict_in_sample(
         name="target",
         dtype="float64",
     )
-    pd.testing.assert_series_equal(y_pred, expected)
+    if include_series_id:
+        expected = pd.concat([X_holdout["series_id"], expected], axis=1)
+        pd.testing.assert_frame_equal(y_pred, expected)
+    else:
+        pd.testing.assert_series_equal(y_pred, expected)
 
 
 @pytest.mark.parametrize("forecast_horizon", [1, 7])

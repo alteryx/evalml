@@ -76,6 +76,7 @@ from evalml.utils.cli_utils import get_evalml_black_config
 from evalml.utils.gen_utils import contains_all_ts_parameters
 
 DECOMPOSER_PERIOD_CAP = 1000
+MULTISERIES_SEPARATOR_SYMBOL = "|"
 
 
 def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None):
@@ -1418,7 +1419,7 @@ def unstack_multiseries(
         for column_name in full_dataset.columns.drop([time_index, series_id]):
             new_column = single_series[column_name]
             new_column.index = new_time_index
-            new_column.name = f"{column_name}_{s_id}"
+            new_column.name = f"{column_name}{MULTISERIES_SEPARATOR_SYMBOL}{s_id}"
 
             if column_name == target_name:
                 y_unstacked_cols.append(new_column)
@@ -1435,11 +1436,15 @@ def unstack_multiseries(
     # Reset the axes now that they've been unstacked, keep time info in X
     X_unstacked = X_unstacked.reset_index()
     y_unstacked = y_unstacked.reset_index(drop=True)
-
     return X_unstacked, y_unstacked
 
 
-def stack_data(data, include_series_id=False, series_id_name=None, starting_index=None):
+def stack_data(
+    data,
+    include_series_id=False,
+    series_id_name=None,
+    starting_index=None,
+):
     """Stacks the given DataFrame back into a single Series, or a DataFrame if include_series_id is True.
 
     Should only be used for data that is expected to be a single series. To stack multiple unstacked columns,
@@ -1464,7 +1469,9 @@ def stack_data(data, include_series_id=False, series_id_name=None, starting_inde
 
     # Extract the original column name
     series_id_with_name = stacked_series.index.droplevel()
-    stacked_series.name = "_".join(series_id_with_name[0].split("_")[:-1])
+    stacked_series.name = "".join(
+        series_id_with_name[0].split(MULTISERIES_SEPARATOR_SYMBOL)[:-1],
+    )
 
     # If the index is the time index, keep it
     if not data.index.is_numeric() and starting_index is None:
@@ -1481,11 +1488,14 @@ def stack_data(data, include_series_id=False, series_id_name=None, starting_inde
     # Pull out the series id information, if requested
     if include_series_id:
         series_id_col = pd.Series(
-            series_id_with_name.map(lambda col_name: col_name.split("_")[-1]),
+            series_id_with_name.map(
+                lambda col_name: col_name.split(MULTISERIES_SEPARATOR_SYMBOL)[-1],
+            ),
             name=series_id_name or "series_id",
             index=stacked_series.index,
         )
         stacked_series = pd.concat([series_id_col, stacked_series], axis=1)
+
     return stacked_series
 
 
@@ -1511,8 +1521,8 @@ def stack_X(X, series_id_name, time_index, starting_index=None, series_id_values
         for col in X.columns:
             if col == time_index:
                 continue
-            separated_name = col.split("_")
-            original_columns.add("_".join(separated_name[:-1]))
+            separated_name = col.split(MULTISERIES_SEPARATOR_SYMBOL)
+            original_columns.add(MULTISERIES_SEPARATOR_SYMBOL.join(separated_name[:-1]))
             series_ids.add(separated_name[-1])
 
     if len(series_ids) == 0:

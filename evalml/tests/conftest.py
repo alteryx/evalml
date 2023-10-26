@@ -1094,12 +1094,27 @@ def multiseries_ts_data_stacked():
 
 @pytest.fixture
 def multiseries_ts_data_unstacked():
-    feature_a = pd.DataFrame({f"feature_a_{i}": range(i, 100, 5) for i in range(5)})
+    from evalml.pipelines.utils import MULTISERIES_SEPARATOR_SYMBOL
+
+    feature_a = pd.DataFrame(
+        {
+            f"feature_a{MULTISERIES_SEPARATOR_SYMBOL}{i}": range(i, 100, 5)
+            for i in range(5)
+        },
+    )
     feature_b = pd.DataFrame(
-        {f"feature_b_{i}": range(99 - i, -1, -5) for i in range(5)},
+        {
+            f"feature_b{MULTISERIES_SEPARATOR_SYMBOL}{i}": range(99 - i, -1, -5)
+            for i in range(5)
+        },
     )
     X = pd.concat([feature_a, feature_b], axis=1)
-    y = pd.DataFrame({f"target_{i}": range(i, 100, 5) for i in range(5)})
+    y = pd.DataFrame(
+        {
+            f"target{MULTISERIES_SEPARATOR_SYMBOL}{i}": range(i, 100, 5)
+            for i in range(5)
+        },
+    )
 
     X["date"] = pd.date_range(start="1/1/2018", periods=20)
     return X, y

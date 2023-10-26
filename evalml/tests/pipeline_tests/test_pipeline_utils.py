@@ -43,6 +43,7 @@ from evalml.pipelines.components.utils import (
     handle_component_class,
 )
 from evalml.pipelines.utils import (
+    MULTISERIES_SEPARATOR_SYMBOL,
     _get_pipeline_base_class,
     _get_preprocessing_components,
     _make_pipeline_from_multiple_graphs,
@@ -1404,7 +1405,8 @@ def test_unstack_multiseries(
     X_unstacked, y_unstacked = multiseries_ts_data_unstacked
     y.name = target_name
     y_unstacked.columns = [
-        f"{target_name}_{i}" for i in range(len(y_unstacked.columns))
+        f"{target_name}{MULTISERIES_SEPARATOR_SYMBOL}{i}"
+        for i in range(len(y_unstacked.columns))
     ]
 
     X_unstacked_transformed, y_unstacked_transformed = unstack_multiseries(
