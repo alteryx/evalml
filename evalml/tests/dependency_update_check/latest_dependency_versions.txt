@@ -6,7 +6,7 @@ cloudpickle==3.0.0
 colorama==0.4.6
 dask==2023.5.0
 distributed==2023.5.0
-featuretools==1.27.0
+featuretools==1.28.0
 graphviz==0.20.1
 holidays==0.20
 imbalanced-learn==0.11.0
