@@ -161,17 +161,15 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
             objective,
             calculating_residuals,
         )
-        if include_series_id:
-            stacked_predictions = stack_data(
-                unstacked_predictions,
-                include_series_id=True,
-                series_id_name=self.series_id,
-            )
-        else:
-            stacked_predictions = stack_data(unstacked_predictions)
+        stacked_predictions = stack_data(
+            unstacked_predictions,
+            include_series_id=include_series_id,
+            series_id_name=self.series_id,
+        )
 
         # Index will start at the unstacked index, so we need to reset it to the original index
         stacked_predictions.index = X.index
+        stacked_predictions = infer_feature_types(stacked_predictions)
         return stacked_predictions
 
     def get_forecast_period(self, X):
