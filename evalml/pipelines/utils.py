@@ -1469,7 +1469,7 @@ def stack_data(
 
     # Extract the original column name
     series_id_with_name = stacked_series.index.droplevel()
-    stacked_series.name = "".join(
+    stacked_series.name = MULTISERIES_SEPARATOR_SYMBOL.join(
         series_id_with_name[0].split(MULTISERIES_SEPARATOR_SYMBOL)[:-1],
     )
 
