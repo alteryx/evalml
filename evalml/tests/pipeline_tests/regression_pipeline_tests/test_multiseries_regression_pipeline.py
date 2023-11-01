@@ -8,6 +8,7 @@ from pandas._testing import assert_series_equal
 from evalml.pipelines import MultiseriesRegressionPipeline
 from evalml.pipelines.utils import unstack_multiseries
 from evalml.preprocessing import split_multiseries_data
+from evalml.utils import infer_feature_types
 
 
 @pytest.fixture(scope="module")
@@ -123,6 +124,7 @@ def test_multiseries_pipeline_predict_in_sample(
     )
     if include_series_id:
         expected = pd.concat([X_holdout["series_id"], expected], axis=1)
+        expected = infer_feature_types(expected)
         pd.testing.assert_frame_equal(y_pred, expected)
     else:
         pd.testing.assert_series_equal(y_pred, expected)

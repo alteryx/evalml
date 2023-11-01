@@ -128,7 +128,9 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
             self.time_index,
             self.input_target_name,
         )
+
         # Order series columns to be same as expected input feature names
+        # and filter to only include features in `X_unstacked`.
         input_features = list(self.input_feature_names.values())[0]
         X_unstacked = X_unstacked[
             [feature for feature in input_features if feature in X_unstacked.columns]
