@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Changed target name/series ID divider and added ability to return series ID column with predictions :pr:`4357`
     * Fixes
     * Changes
         * Pinned networkx version below 3.2 for Python version compatibility :pr:`4351`

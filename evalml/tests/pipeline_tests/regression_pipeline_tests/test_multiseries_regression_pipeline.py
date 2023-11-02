@@ -8,6 +8,7 @@ from pandas._testing import assert_series_equal
 from evalml.pipelines import MultiseriesRegressionPipeline
 from evalml.pipelines.utils import unstack_multiseries
 from evalml.preprocessing import split_multiseries_data
+from evalml.utils import infer_feature_types
 
 
 @pytest.fixture(scope="module")
@@ -90,7 +91,9 @@ def test_multiseries_pipeline_fit(
     assert pipeline.frequency is not None
 
 
+@pytest.mark.parametrize("include_series_id", [True, False])
 def test_multiseries_pipeline_predict_in_sample(
+    include_series_id,
     multiseries_ts_data_stacked,
     component_graph,
     pipeline_parameters,
@@ -111,6 +114,7 @@ def test_multiseries_pipeline_predict_in_sample(
         y_holdout,
         X_train=X_train,
         y_train=y_train,
+        include_series_id=include_series_id,
     )
     expected = pd.Series(
         range(55, 65),
@@ -118,7 +122,61 @@ def test_multiseries_pipeline_predict_in_sample(
         name="target",
         dtype="float64",
     )
-    pd.testing.assert_series_equal(y_pred, expected)
+    if include_series_id:
+        expected = pd.concat([X_holdout["series_id"], expected], axis=1)
+        expected = infer_feature_types(expected)
+        pd.testing.assert_frame_equal(y_pred, expected)
+    else:
+        pd.testing.assert_series_equal(y_pred, expected)
+
+
+@pytest.mark.parametrize("include_series_id", [True, False])
+def test_multiseries_pipeline_predict_in_sample_series_out_of_order(
+    include_series_id,
+    multiseries_ts_data_stacked,
+    component_graph,
+    pipeline_parameters,
+):
+    X, y = multiseries_ts_data_stacked
+    X_train, X_holdout, y_train, y_holdout = split_multiseries_data(
+        X,
+        y,
+        "series_id",
+        "date",
+    )
+
+    # Reorder rows but keep ordered by date
+    # Store ordered series ID values to compare to output later
+    X_holdout_series_id = X_holdout["series_id"]
+    X_index = X_holdout.index
+    X_holdout = X_holdout.sample(frac=1).sort_values(by="date")
+    y_holdout = y_holdout.reindex(X_holdout.index)
+
+    X_holdout.index = X_index
+    y_holdout.index = X_index
+
+    pipeline = MultiseriesRegressionPipeline(component_graph, pipeline_parameters)
+    pipeline.fit(X_train, y_train)
+
+    y_pred = pipeline.predict_in_sample(
+        X_holdout,
+        y_holdout,
+        X_train=X_train,
+        y_train=y_train,
+        include_series_id=include_series_id,
+    )
+    expected = pd.Series(
+        range(55, 65),
+        index=range(90, 100),
+        name="target",
+        dtype="float64",
+    )
+    if include_series_id:
+        expected = pd.concat([X_holdout_series_id, expected], axis=1)
+        expected = infer_feature_types(expected)
+        pd.testing.assert_frame_equal(y_pred, expected)
+    else:
+        pd.testing.assert_series_equal(y_pred, expected)
 
 
 @pytest.mark.parametrize("forecast_horizon", [1, 7])

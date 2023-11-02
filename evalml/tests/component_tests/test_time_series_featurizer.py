@@ -15,6 +15,7 @@ from woodwork.logical_types import (
 )
 
 from evalml.pipelines import TimeSeriesFeaturizer
+from evalml.pipelines.utils import MULTISERIES_SEPARATOR_SYMBOL
 
 ROLLING_TRANSFORM_METHOD_NAME = "_compute_rolling_transforms"
 DELAYED_FEATURES_METHOD_NAME = "_compute_delays"
@@ -991,7 +992,9 @@ def test_featurizer_y_dataframe(multiseries_ts_data_unstacked):
 
     assert featurizer.statistically_significant_lags == [6]
 
-    expected_y_cols = [f"target_{i}_delay_6" for i in range(y.shape[1])]
+    expected_y_cols = [
+        f"target{MULTISERIES_SEPARATOR_SYMBOL}{i}_delay_6" for i in range(y.shape[1])
+    ]
     X_t = featurizer.transform(X, y)
     for expected_y_col in expected_y_cols:
         assert expected_y_col in X_t.columns

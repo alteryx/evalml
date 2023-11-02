@@ -6,6 +6,7 @@ from evalml.pipelines.time_series_regression_pipeline import (
     TimeSeriesRegressionPipeline,
 )
 from evalml.problem_types import ProblemTypes
+from evalml.utils import infer_feature_types
 
 
 class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
@@ -91,6 +92,7 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
         y_train,
         objective=None,
         calculating_residuals=False,
+        include_series_id=False,
     ):
         """Predict on future data where the target is known, e.g. cross validation.
 
@@ -102,6 +104,7 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
             objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
             calculating_residuals (bool): Whether we're calling predict_in_sample to calculate the residuals.  This means
                 the X and y arguments are not future data, but actually the train data.
+            include_series_id (bool): If true, include the series ID value in the prediction results
 
         Returns:
             pd.Series: Estimated labels.
@@ -125,6 +128,33 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
             self.time_index,
             self.input_target_name,
         )
+
+        # Order series columns to be same as expected input feature names
+        # and filter to only include features in `X_unstacked`.
+        input_features = list(self.input_feature_names.values())[0]
+        X_unstacked = X_unstacked[
+            [feature for feature in input_features if feature in X_unstacked.columns]
+        ]
+        X_train_unstacked = X_train_unstacked[
+            [
+                feature
+                for feature in input_features
+                if feature in X_train_unstacked.columns
+            ]
+        ]
+        y_overlapping_features = [
+            feature
+            for feature in y_train_unstacked.columns
+            if feature in y_unstacked.columns
+        ]
+        y_unstacked = y_unstacked[y_overlapping_features]
+        y_train_unstacked = y_train_unstacked[y_overlapping_features]
+
+        X_train_unstacked = infer_feature_types(X_train_unstacked)
+        y_train_unstacked = infer_feature_types(y_train_unstacked)
+        X_unstacked = infer_feature_types(X_unstacked)
+        y_unstacked = infer_feature_types(y_unstacked)
+
         unstacked_predictions = super().predict_in_sample(
             X_unstacked,
             y_unstacked,
@@ -133,10 +163,15 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
             objective,
             calculating_residuals,
         )
-        stacked_predictions = stack_data(unstacked_predictions)
+        stacked_predictions = stack_data(
+            unstacked_predictions,
+            include_series_id=include_series_id,
+            series_id_name=self.series_id,
+        )
 
         # Index will start at the unstacked index, so we need to reset it to the original index
         stacked_predictions.index = X.index
+        stacked_predictions = infer_feature_types(stacked_predictions)
         return stacked_predictions
 
     def get_forecast_period(self, X):
