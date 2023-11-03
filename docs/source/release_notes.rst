@@ -2,13 +2,25 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.82.0 Nov 3, 2023**
+    * Enhancements
         * Changed target name/series ID divider and added ability to return series ID column with predictions :pr:`4357`
     * Fixes
     * Changes
         * Pinned networkx version below 3.2 for Python version compatibility :pr:`4351`
     * Documentation Changes
         * Added multiseries time series section to user guide in documentation :pr:`4355`
-      * Updated release guide to include an FAQ section about fixing github actions :pr:`4346`
+        * Updated release guide to include an FAQ section about fixing github actions :pr:`4346`
     * Testing Changes
 
 .. warning::
