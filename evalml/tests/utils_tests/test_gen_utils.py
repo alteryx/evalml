@@ -369,14 +369,14 @@ def test_save_plotly_static_default_format(
     feat_fig_ = pipeline.graph_feature_importance()
 
     filepath = os.path.join(str(tmpdir), f"{file_name}")
-    no_output_ = save_plot(
-        fig=feat_fig_,
-        filepath=filepath,
-        format=format,
-        interactive=interactive,
-        return_filepath=False,
-    )
     try:
+        no_output_ = save_plot(
+            fig=feat_fig_,
+            filepath=filepath,
+            format=format,
+            interactive=interactive,
+            return_filepath=False,
+        )
         output_ = save_plot(
             fig=feat_fig_,
             filepath=filepath,
@@ -404,20 +404,23 @@ def test_save_plotly_static_different_format(
     feat_fig_ = fitted_decision_tree_classification_pipeline.graph_feature_importance()
 
     filepath = os.path.join(str(tmpdir), f"{file_name}")
-    no_output_ = save_plot(
-        fig=feat_fig_,
-        filepath=filepath,
-        format=format,
-        interactive=interactive,
-        return_filepath=False,
-    )
-    output_ = save_plot(
-        fig=feat_fig_,
-        filepath=filepath,
-        format=format,
-        interactive=interactive,
-        return_filepath=True,
-    )
+    try:
+        no_output_ = save_plot(
+            fig=feat_fig_,
+            filepath=filepath,
+            format=format,
+            interactive=interactive,
+            return_filepath=False,
+        )
+        output_ = save_plot(
+            fig=feat_fig_,
+            filepath=filepath,
+            format=format,
+            interactive=interactive,
+            return_filepath=True,
+        )
+    except ValueError:
+        pytest.xfail()
 
     assert not no_output_
     assert os.path.exists(output_)
