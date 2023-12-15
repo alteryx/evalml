@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed bug in `_downcast_nullable_y` causing woodwork initialization issues :pr:`4369`
     * Changes
     * Documentation Changes
     * Testing Changes
