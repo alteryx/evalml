@@ -35,4 +35,4 @@ texttable==1.7.0
 tomli==2.0.1
 vowpalwabbit==9.9.0
 woodwork==0.27.0
-xgboost==2.0.2
+xgboost==2.0.3
