@@ -50,7 +50,7 @@ dependencies = [
     "plotly >= 5.0.0",
     "kaleido == 0.1.0",
     "ipywidgets >= 7.5",
-    "xgboost >= 1.7.0",
+    "xgboost >= 1.7.0.post0",
     "catboost >= 1.1.1",
     "lightgbm >= 4.0.0",
     "matplotlib >= 3.3.3",
