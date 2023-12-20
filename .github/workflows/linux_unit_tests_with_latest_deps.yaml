@@ -67,7 +67,7 @@ jobs:
           source test_python/bin/activate
           make ${{matrix.command}}
       - name: Upload pytest duration artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pytest-duration-report
           path: test-reports/${{matrix.command}}-junit.xml
