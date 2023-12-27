@@ -340,6 +340,7 @@ class STLDecomposer(Decomposer):
         # Convert the list to a DataFrame
         # For multiseries, return tuple[pd.DataFrame, pd.Dataframe] where each column is a series_id
         detrending_df = pd.DataFrame(detrending_list).T
+        detrending_df.columns = y.columns
         return X, detrending_df
 
     def inverse_transform(

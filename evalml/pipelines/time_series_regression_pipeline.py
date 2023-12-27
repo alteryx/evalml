@@ -226,7 +226,6 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
 
             if self.problem_type == ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION:
                 from evalml.pipelines.utils import (
-                    MULTISERIES_SEPARATOR_SYMBOL,
                     stack_data,
                     unstack_multiseries,
                 )
@@ -271,11 +270,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
 
                 # `pred_intervals` are in {series_id: {coverage_label: bound_value}} form
                 for series_id, series_intervals in pred_intervals.items():
-                    series_id_target_name = (
-                        self.input_target_name
-                        + MULTISERIES_SEPARATOR_SYMBOL
-                        + str(series_id)
-                    )
+                    series_id_target_name = str(series_id)
                     series_id_prediction_intervals = _get_series_intervals(
                         series_intervals,
                         residuals[series_id],
