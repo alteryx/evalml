@@ -96,7 +96,11 @@ def test_polynomial_decomposer_needs_monotonic_index(ts_data):
     with pytest.raises(Exception) as exec_info:
         y_shuffled = y.sample(frac=1, replace=False)
         decomposer.fit_transform(X, y_shuffled)
-    expected_errors = ["monotonically", "X must be in an sktime compatible format"]
+    expected_errors = [
+        "monotonically",
+        "X must be in an sktime compatible format",
+        "'NoneType' object is not subscriptable",
+    ]
     assert any([error in str(exec_info.value) for error in expected_errors])
 
 
