@@ -462,7 +462,7 @@ class ComponentGraph:
             )
             if not _schema_is_equal(X_schema, self._input_types):
                 raise PipelineError(
-                    "Input X data types are different from the input types the pipeline was fitted on.",
+                    f"Input X data types are different from the input types the pipeline was fitted on. Input is {self._input_types} while expecting {X_schema}.",
                     code=PipelineErrorCodeEnum.PREDICT_INPUT_SCHEMA_UNEQUAL,
                     details={
                         "input_features_types": X_schema.types,

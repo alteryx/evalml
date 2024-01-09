@@ -132,6 +132,7 @@ def _get_datetime(X, y, problem_type, estimator_class, sampler_name=None):
     if add_datetime_featurizer and estimator_class.model_family not in [
         ModelFamily.ARIMA,
         ModelFamily.PROPHET,
+        ModelFamily.VARMAX,
     ]:
         components.append(DateTimeFeaturizer)
     return components
@@ -300,9 +301,18 @@ def _get_preprocessing_components(
     """
     if is_multiseries(problem_type):
         if include_decomposer:
-            components_functions = [_get_decomposer]
+            components_functions = [
+                _get_time_series_featurizer,
+                _get_decomposer,
+                _get_datetime,
+                _get_drop_nan_rows_transformer,
+            ]
         else:
-            return []
+            components_functions = [
+                _get_time_series_featurizer,
+                _get_datetime,
+                _get_drop_nan_rows_transformer,
+            ]
 
     elif is_time_series(problem_type):
         components_functions = [
@@ -1516,14 +1526,20 @@ def stack_X(X, series_id_name, time_index, starting_index=None, series_id_values
         pd.DataFrame: The restacked features.
     """
     original_columns = set()
-    series_ids = series_id_values or set()
-    if series_id_values is None:
+    if series_id_values is not None:
+        series_ids = series_id_values
+    else:
+        # Using list to maintain order (vs. a set)
+        series_ids = list()
         for col in X.columns:
             if col == time_index:
                 continue
             separated_name = col.split(MULTISERIES_SEPARATOR_SYMBOL)
             original_columns.add(MULTISERIES_SEPARATOR_SYMBOL.join(separated_name[:-1]))
             series_ids.add(separated_name[-1])
+        # Remove duplicates
+        seen = set()
+        series_ids = [val for val in series_ids if not (val in seen or seen.add(val))]
 
     if len(series_ids) == 0:
         raise ValueError(
@@ -1542,7 +1558,7 @@ def stack_X(X, series_id_name, time_index, starting_index=None, series_id_values
         restacked_X = pd.DataFrame(
             {
                 time_index: time_index_col,
-                series_id_name: sorted(list(series_ids)) * len(X),
+                series_id_name: list(series_ids) * len(X),
             },
             index=stacked_index,
         )

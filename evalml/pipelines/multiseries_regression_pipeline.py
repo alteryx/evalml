@@ -83,6 +83,7 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
 
         self.component_graph.fit(X_unstacked, y_unstacked)
         self.input_feature_names = self.component_graph.input_feature_names
+        self.series_id_target_names = y_unstacked.columns
 
     def predict_in_sample(
         self,
@@ -114,6 +115,9 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
         """
         from evalml.pipelines.utils import stack_data, unstack_multiseries
 
+        print("PinSin_X", X)
+        print("PinSin_y", y)
+
         X_unstacked, y_unstacked = unstack_multiseries(
             X,
             y,
@@ -144,7 +148,7 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
         ]
         y_overlapping_features = [
             feature
-            for feature in y_train_unstacked.columns
+            for feature in self.series_id_target_names
             if feature in y_unstacked.columns
         ]
         y_unstacked = y_unstacked[y_overlapping_features]
@@ -154,7 +158,8 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
         y_train_unstacked = infer_feature_types(y_train_unstacked)
         X_unstacked = infer_feature_types(X_unstacked)
         y_unstacked = infer_feature_types(y_unstacked)
-
+        print("PinSX", X_unstacked)
+        print("PinSy", y_unstacked)
         unstacked_predictions = super().predict_in_sample(
             X_unstacked,
             y_unstacked,
@@ -163,16 +168,46 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
             objective,
             calculating_residuals,
         )
+        unstacked_predictions = unstacked_predictions[
+            [
+                series_id_target
+                for series_id_target in y_train_unstacked.columns
+                if series_id_target in unstacked_predictions.columns
+            ]
+        ]
+        unstacked_predictions.index = X_unstacked[self.time_index]
         stacked_predictions = stack_data(
             unstacked_predictions,
-            include_series_id=include_series_id,
+            include_series_id=True,
             series_id_name=self.series_id,
         )
+        stacked_predictions = stacked_predictions.reset_index()
+        sp_dtypes = {
+            self.time_index: X[self.time_index].dtype,
+            self.series_id: X[self.series_id].dtype,
+            self.input_target_name: y.dtype,
+        }
+        stacked_predictions = stacked_predictions.astype(sp_dtypes)
 
+        # Order prediction based on input (date, series_id)
+        output_cols = (
+            [self.series_id, self.input_target_name]
+            if include_series_id
+            else [self.input_target_name]
+        )
+        stacked_predictions = pd.merge(
+            X,
+            stacked_predictions,
+            on=[self.time_index, self.series_id],
+        )[output_cols]
         # Index will start at the unstacked index, so we need to reset it to the original index
         stacked_predictions.index = X.index
         stacked_predictions = infer_feature_types(stacked_predictions)
-        return stacked_predictions
+
+        if not include_series_id:
+            return stacked_predictions[self.input_target_name]
+        else:
+            return stacked_predictions
 
     def get_forecast_period(self, X):
         """Generates all possible forecasting time points based on latest data point in X.

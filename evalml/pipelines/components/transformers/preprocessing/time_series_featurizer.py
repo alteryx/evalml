@@ -129,7 +129,16 @@ class TimeSeriesFeaturizer(Transformer):
 
         # For the multiseries case, where we only want the start delay lag for the baseline
         if isinstance(y, pd.DataFrame):
-            self.statistically_significant_lags = [self.start_delay]
+            self.statistically_significant_lags = {}
+            for column in y.columns:
+                self.statistically_significant_lags[
+                    column
+                ] = self._find_significant_lags(
+                    y[column],
+                    conf_level=self.conf_level,
+                    start_delay=self.start_delay,
+                    max_delay=self.max_delay,
+                )
         else:
             self.statistically_significant_lags = self._find_significant_lags(
                 y,
@@ -234,7 +243,7 @@ class TimeSeriesFeaturizer(Transformer):
             col = data[col_name]
             if categorical_columns and col_name in categorical_columns:
                 col = X_categorical[col_name]
-            for t in self.statistically_significant_lags:
+            for t in self.statistically_significant_lags[col_name]:
                 lagged_features[self.df_colname_prefix.format(col_name, t)] = col.shift(
                     t,
                 )
