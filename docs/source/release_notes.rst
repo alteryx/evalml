@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Fixed bug in `_downcast_nullable_y` causing woodwork initialization issues :pr:`4369`
+        * Fixed multiseries prediction interval labels :pr:`4377`
     * Changes
     * Documentation Changes
     * Testing Changes
