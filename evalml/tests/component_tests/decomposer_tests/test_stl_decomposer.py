@@ -148,7 +148,14 @@ def test_stl_fit_transform_in_sample(
 
     stl = STLDecomposer(period=period)
 
+    series_id_columns = ["series_1", "series_2"]
+    if variateness == "multivariate":
+        y.columns = series_id_columns
+
     X_t, y_t = stl.fit_transform(X, y)
+
+    if variateness == "multivariate":
+        assert all(y_t.columns == series_id_columns)
 
     # If y_t is a pd.Series, give it columns
     if isinstance(y_t, pd.Series):
@@ -179,7 +186,11 @@ def test_stl_fit_transform_in_sample(
         # Check the trend to make sure STL worked properly
         pd.testing.assert_series_equal(
             pd.Series(expected_trend),
-            pd.Series(stl.trends[0]),
+            pd.Series(
+                stl.trends["series_1"]
+                if variateness == "multivariate"
+                else stl.trends[0],
+            ),
             check_exact=False,
             check_index=False,
             check_names=False,

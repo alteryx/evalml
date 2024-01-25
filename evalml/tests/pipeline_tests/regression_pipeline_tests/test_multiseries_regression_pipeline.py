@@ -347,7 +347,7 @@ def test_time_series_pipeline_get_prediction_intervals(
     )
     X_train, y_train = X[:65], y[:65]
     X_validation, y_validation = X[65:], y[65:]
-    mock_X, _ = unstack_multiseries(
+    mock_X, mock_y = unstack_multiseries(
         X_train,
         y_train,
         series_id="series_id",
@@ -356,7 +356,7 @@ def test_time_series_pipeline_get_prediction_intervals(
     )
     mock_transform_return_value = (
         mock_X,
-        pd.DataFrame(np.random.rand(13, 5)),
+        mock_y,
     )
     with patch(
         "evalml.pipelines.components.transformers.preprocessing.stl_decomposer.STLDecomposer.transform",
