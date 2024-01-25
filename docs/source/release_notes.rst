@@ -5,6 +5,7 @@ Release Notes
     * Fixes
         * Fixed bug in `_downcast_nullable_y` causing woodwork initialization issues :pr:`4369`
     * Changes
+        * Pinned scipy version to under 1.12.0 :pr:`4380`
     * Documentation Changes
     * Testing Changes
 
