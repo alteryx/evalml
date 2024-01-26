@@ -115,9 +115,6 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
         """
         from evalml.pipelines.utils import stack_data, unstack_multiseries
 
-        print("PinSin_X", X)
-        print("PinSin_y", y)
-
         X_unstacked, y_unstacked = unstack_multiseries(
             X,
             y,
@@ -158,8 +155,6 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
         y_train_unstacked = infer_feature_types(y_train_unstacked)
         X_unstacked = infer_feature_types(X_unstacked)
         y_unstacked = infer_feature_types(y_unstacked)
-        print("PinSX", X_unstacked)
-        print("PinSy", y_unstacked)
         unstacked_predictions = super().predict_in_sample(
             X_unstacked,
             y_unstacked,

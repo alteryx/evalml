@@ -146,7 +146,7 @@ def test_make_pipeline(
             datetime = (
                 [DateTimeFeaturizer]
                 if estimator_class.model_family
-                not in [ModelFamily.ARIMA, ModelFamily.PROPHET]
+                not in [ModelFamily.ARIMA, ModelFamily.PROPHET, ModelFamily.VARMAX]
                 and "dates" in column_names
                 else []
             )
@@ -170,25 +170,22 @@ def test_make_pipeline(
             )
 
             if is_time_series(problem_type):
-                if is_multiseries(problem_type):
-                    expected_components = dfs + decomposer + [estimator_class]
-                else:
-                    expected_components = (
-                        dfs
-                        + label_encoder
-                        + email_featurizer
-                        + url_featurizer
-                        + drop_null
-                        + natural_language_featurizer
-                        + imputer
-                        + delayed_features
-                        + decomposer
-                        + datetime
-                        + ohe
-                        + drop_nan_rows_transformer
-                        + standard_scaler
-                        + [estimator_class]
-                    )
+                expected_components = (
+                    dfs
+                    + label_encoder
+                    + email_featurizer
+                    + url_featurizer
+                    + drop_null
+                    + natural_language_featurizer
+                    + imputer
+                    + delayed_features
+                    + decomposer
+                    + datetime
+                    + ohe
+                    + drop_nan_rows_transformer
+                    + standard_scaler
+                    + [estimator_class]
+                )
             else:
                 expected_components = (
                     dfs
@@ -624,7 +621,7 @@ def test_get_estimators():
                 problem_type=ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
             ),
         )
-        == 1
+        == 5
     )
 
     assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[])) == 0
@@ -1474,13 +1471,11 @@ def test_stack_data_noop():
     pd.testing.assert_series_equal(stack_data(series_y), series_y)
 
 
-@pytest.mark.parametrize("series_id_values_type", [set, list])
 @pytest.mark.parametrize("no_features", [True, False])
 @pytest.mark.parametrize("starting_index", [None, 1, 132])
 def test_stack_X(
     starting_index,
     no_features,
-    series_id_values_type,
     multiseries_ts_data_stacked,
     multiseries_ts_data_unstacked,
 ):
@@ -1491,7 +1486,7 @@ def test_stack_X(
         X_expected.index = X_expected.index + starting_index
 
     if no_features:
-        series_id_values = series_id_values_type(str(i) for i in range(0, 5))
+        series_id_values = list(str(i) for i in range(0, 5))
         X = pd.DataFrame(X["date"])
         X_expected = X_expected[["date", "series_id"]]
 

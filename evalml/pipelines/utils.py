@@ -299,22 +299,7 @@ def _get_preprocessing_components(
     Returns:
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
-    if is_multiseries(problem_type):
-        if include_decomposer:
-            components_functions = [
-                _get_time_series_featurizer,
-                _get_decomposer,
-                _get_datetime,
-                _get_drop_nan_rows_transformer,
-            ]
-        else:
-            components_functions = [
-                _get_time_series_featurizer,
-                _get_datetime,
-                _get_drop_nan_rows_transformer,
-            ]
-
-    elif is_time_series(problem_type):
+    if is_time_series(problem_type):
         components_functions = [
             _get_label_encoder,
             _get_drop_all_null,
@@ -1518,7 +1503,7 @@ def stack_X(X, series_id_name, time_index, starting_index=None, series_id_values
         time_index (str): The name of the time index column.
         starting_index (int): The starting index to use for the stacked DataFrame. If None, the starting index
             will match that of the input data. Defaults to None.
-        series_id_values (set, list): The unique values of a series ID, used to generate the index. If None, values will
+        series_id_values (list): The unique values of a series ID, used to generate the index. If None, values will
             be generated from X column values. Required if X only has time index values and no exogenous values.
             Defaults to None.
 
@@ -1536,7 +1521,7 @@ def stack_X(X, series_id_name, time_index, starting_index=None, series_id_values
                 continue
             separated_name = col.split(MULTISERIES_SEPARATOR_SYMBOL)
             original_columns.add(MULTISERIES_SEPARATOR_SYMBOL.join(separated_name[:-1]))
-            series_ids.add(separated_name[-1])
+            series_ids.append(separated_name[-1])
         # Remove duplicates
         seen = set()
         series_ids = [val for val in series_ids if not (val in seen or seen.add(val))]

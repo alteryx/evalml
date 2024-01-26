@@ -243,7 +243,25 @@ class TimeSeriesFeaturizer(Transformer):
             col = data[col_name]
             if categorical_columns and col_name in categorical_columns:
                 col = X_categorical[col_name]
-            for t in self.statistically_significant_lags[col_name]:
+            # Lags are stored in a dict for multiseries problems
+            # Returns the lags corresponding to the series ID value
+            if isinstance(self.statistically_significant_lags, dict):
+                from evalml.pipelines.utils import MULTISERIES_SEPARATOR_SYMBOL
+
+                col_series_id = (
+                    MULTISERIES_SEPARATOR_SYMBOL
+                    + col_name.split(MULTISERIES_SEPARATOR_SYMBOL)[-1]
+                )
+                for (
+                    series_id_target_name,
+                    lag_list,
+                ) in self.statistically_significant_lags.items():
+                    if series_id_target_name.endswith(col_series_id):
+                        lags = lag_list
+                        break
+            else:
+                lags = self.statistically_significant_lags
+            for t in lags:
                 lagged_features[self.df_colname_prefix.format(col_name, t)] = col.shift(
                     t,
                 )

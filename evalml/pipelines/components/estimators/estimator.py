@@ -114,7 +114,6 @@ class Estimator(ComponentBase):
         try:
             X = infer_feature_types(X)
             X = _handle_column_names_for_scikit(X)
-            print("input feat:", X.columns, X)
             predictions = self._component_obj.predict(X)
         except AttributeError:
             raise MethodPropertyNotFoundError(
