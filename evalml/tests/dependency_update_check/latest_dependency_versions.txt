@@ -1,4 +1,4 @@
-black==23.12.1
+black==24.1.0
 catboost==1.2.2
 category-encoders==2.5.1.post0
 click==8.1.7
@@ -12,7 +12,7 @@ holidays==0.20
 imbalanced-learn==0.12.0
 ipywidgets==8.1.1
 kaleido==0.1.0
-lightgbm==4.2.0
+lightgbm==4.3.0
 lime==0.2.0.1
 matplotlib==3.7.4
 matplotlib-inline==0.1.6
@@ -29,7 +29,7 @@ scikit-optimize==0.9.0
 scipy==1.10.1
 seaborn==0.13.2
 shap==0.44.1
-sktime==0.25.0
+sktime==0.25.1
 statsmodels==0.14.1
 texttable==1.7.0
 tomli==2.0.1
