@@ -260,8 +260,6 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             ).get_trend_prediction_intervals(y, coverage=coverage)
 
             if is_multiseries(self.problem_type):
-                from evalml.pipelines.utils import MULTISERIES_SEPARATOR_SYMBOL
-
                 # Coverage label is label for each prediction interval limit(e.g. "0.95_lower")
                 coverage_labels = list(list(pred_intervals.values())[0].keys())
 
@@ -272,11 +270,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
 
                 # `pred_intervals` are in {series_id: {coverage_label: bound_value}} form
                 for series_id, series_intervals in pred_intervals.items():
-                    series_id_target_name = (
-                        self.input_target_name
-                        + MULTISERIES_SEPARATOR_SYMBOL
-                        + str(series_id)
-                    )
+                    series_id_target_name = str(series_id)
                     series_id_prediction_intervals = _get_series_intervals(
                         series_intervals,
                         residuals[series_id],
