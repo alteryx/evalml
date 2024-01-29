@@ -197,12 +197,11 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
         )[output_cols]
         # Index will start at the unstacked index, so we need to reset it to the original index
         stacked_predictions.index = X.index
-        stacked_predictions = infer_feature_types(stacked_predictions)
 
         if not include_series_id:
-            return stacked_predictions[self.input_target_name]
+            return infer_feature_types(stacked_predictions[self.input_target_name])
         else:
-            return stacked_predictions
+            return infer_feature_types(stacked_predictions)
 
     def get_forecast_period(self, X):
         """Generates all possible forecasting time points based on latest data point in X.
