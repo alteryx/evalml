@@ -127,7 +127,7 @@ class TimeSeriesFeaturizer(Transformer):
         if self.time_index is None:
             raise ValueError("time_index cannot be None!")
 
-        # For the multiseries case, where we only want the start delay lag for the baseline
+        # For the multiseries case, each series ID has individualized lag values
         if isinstance(y, pd.DataFrame):
             self.statistically_significant_lags = {}
             for column in y.columns:

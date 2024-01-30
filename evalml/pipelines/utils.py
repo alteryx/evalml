@@ -1522,7 +1522,7 @@ def stack_X(X, series_id_name, time_index, starting_index=None, series_id_values
             separated_name = col.split(MULTISERIES_SEPARATOR_SYMBOL)
             original_columns.add(MULTISERIES_SEPARATOR_SYMBOL.join(separated_name[:-1]))
             series_ids.append(separated_name[-1])
-        # Remove duplicates
+        # Remove duplicates while maintaining insertion order
         seen = set()
         series_ids = [val for val in series_ids if not (val in seen or seen.add(val))]
 
