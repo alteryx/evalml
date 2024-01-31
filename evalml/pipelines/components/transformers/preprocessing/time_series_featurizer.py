@@ -135,8 +135,9 @@ class TimeSeriesFeaturizer(Transformer):
             )
         else:
             # For the multiseries case, each series ID has individualized lag values
-            if isinstance(y, pd.Series):
-                y = y.to_frame()
+            if isinstance(y, pd.Series) or isinstance(y, np.ndarray):
+                y = pd.DataFrame(y)
+
             self.statistically_significant_lags = {}
             for column in y.columns:
                 self.statistically_significant_lags[
