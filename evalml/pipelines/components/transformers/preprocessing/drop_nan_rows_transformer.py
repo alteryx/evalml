@@ -49,10 +49,9 @@ class DropNaNRowsTransformer(Transformer):
         if y_t is not None:
             if isinstance(y_t, pd.DataFrame):
                 y_t_logical = y_t.ww.logical_types
-                y_t_semantic = y_t.ww.semantic_tags
             else:
                 y_t_logical = y_t.ww.logical_type
-                y_t_semantic = y_t.ww.semantic_tags
+            y_t_semantic = y_t.ww.semantic_tags
 
         X_t, y_t = drop_rows_with_nans(X_t, y_t)
         X_t.ww.init_with_full_schema(X_t_schema)

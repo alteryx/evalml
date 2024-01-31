@@ -77,7 +77,7 @@ def split_multiseries_data(X, y, series_id, time_index, **kwargs):
         X_unstacked, y_unstacked, problem_type="time series regression", **kwargs
     )
 
-    # Get unique series value from X if there is only the time_index column
+    # Get unique series values (as a list to maintain order) from X if there is only the time_index column
     # Otherwise, this information is generated in `stack_X` from the column values
     series_id_values = X[series_id].unique() if len(X_unstacked.columns) == 1 else None
 
