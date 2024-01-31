@@ -990,7 +990,7 @@ def test_featurizer_y_dataframe(multiseries_ts_data_unstacked):
     featurizer = TimeSeriesFeaturizer(time_index="date", gap=1, forecast_horizon=5)
     featurizer.fit(X, y)
 
-    assert featurizer.statistically_significant_lags == [6]
+    assert featurizer.statistically_significant_lags == {col: [6] for col in y.columns}
 
     expected_y_cols = [
         f"target{MULTISERIES_SEPARATOR_SYMBOL}{i}_delay_6" for i in range(y.shape[1])

@@ -670,7 +670,7 @@ def test_default_algorithm_multiseries_time_series(
     )
 
     first_batch = algo.next_batch()
-    assert len(first_batch) == 2
+    assert len(first_batch) == 8
     pipeline = first_batch[0]
     assert pipeline.model_family == ModelFamily.VARMAX
     assert pipeline.parameters["pipeline"] == search_parameters["pipeline"]
@@ -679,8 +679,8 @@ def test_default_algorithm_multiseries_time_series(
 
     long_explore = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long_explore])
-    assert len(long_explore) == 100
-    assert len(long_estimators) == 1
+    assert len(long_explore) == 300
+    assert len(long_estimators) == 3
 
 
 @pytest.mark.parametrize(

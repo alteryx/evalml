@@ -1,4 +1,5 @@
 """Transformer to drop rows specified by row indices."""
+import pandas as pd
 from woodwork import init_series
 
 from evalml.pipelines.components.transformers import Transformer
@@ -43,12 +44,24 @@ class DropNaNRowsTransformer(Transformer):
         y_t = infer_feature_types(y) if y is not None else None
 
         X_t_schema = X_t.ww.schema
+        y_t_logical = None
+        y_t_semantic = None
         if y_t is not None:
-            y_t_logical = y_t.ww.logical_type
+            if isinstance(y_t, pd.DataFrame):
+                y_t_logical = y_t.ww.logical_types
+            else:
+                y_t_logical = y_t.ww.logical_type
             y_t_semantic = y_t.ww.semantic_tags
 
         X_t, y_t = drop_rows_with_nans(X_t, y_t)
         X_t.ww.init_with_full_schema(X_t_schema)
         if y_t is not None:
-            y_t = init_series(y_t, logical_type=y_t_logical, semantic_tags=y_t_semantic)
+            if isinstance(y_t, pd.DataFrame):
+                y_t.ww.init(logical_types=y_t_logical, semantic_tags=y_t_semantic)
+            else:
+                y_t = init_series(
+                    y_t,
+                    logical_type=y_t_logical,
+                    semantic_tags=y_t_semantic,
+                )
         return X_t, y_t

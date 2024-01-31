@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added support for additional estimators for multiseries datasets :pr:`4385`
     * Fixes
         * Fixed bug in `_downcast_nullable_y` causing woodwork initialization issues :pr:`4369`
         * Fixed multiseries prediction interval labels :pr:`4377`

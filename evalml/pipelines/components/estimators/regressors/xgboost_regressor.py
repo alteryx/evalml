@@ -40,10 +40,12 @@ class XGBoostRegressor(Estimator):
     supported_problem_types = [
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     ]
     """[
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     ]"""
 
     # xgboost supports seeds from -2**31 to 2**31 - 1 inclusive. these limits ensure the random seed generated below

@@ -55,10 +55,12 @@ class DecisionTreeRegressor(Estimator):
     supported_problem_types = [
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     ]
     """[
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     ]"""
 
     def __init__(

@@ -120,7 +120,7 @@ def test_multiseries_pipeline_predict_in_sample(
         range(55, 65),
         index=range(90, 100),
         name="target",
-        dtype="float64",
+        dtype="int64",
     )
     if include_series_id:
         expected = pd.concat([X_holdout["series_id"], expected], axis=1)
@@ -147,7 +147,6 @@ def test_multiseries_pipeline_predict_in_sample_series_out_of_order(
 
     # Reorder rows but keep ordered by date
     # Store ordered series ID values to compare to output later
-    X_holdout_series_id = X_holdout["series_id"]
     X_index = X_holdout.index
     X_holdout = X_holdout.sample(frac=1).sort_values(by="date")
     y_holdout = y_holdout.reindex(X_holdout.index)
@@ -165,17 +164,39 @@ def test_multiseries_pipeline_predict_in_sample_series_out_of_order(
         y_train=y_train,
         include_series_id=include_series_id,
     )
+
     expected = pd.Series(
         range(55, 65),
         index=range(90, 100),
         name="target",
-        dtype="float64",
+        dtype="int64",
     )
+    expected = pd.concat(
+        [
+            X_holdout["date"],
+            pd.Series(
+                [0, 1, 2, 3, 4] * 2,
+                name="series_id",
+                dtype=int,
+                index=range(90, 100),
+            ),
+            expected,
+        ],
+        axis=1,
+    )
+    expected = pd.merge(
+        infer_feature_types(X_holdout[["date", "series_id"]]),
+        expected,
+        on=["date", "series_id"],
+    )
+    expected = expected.drop("date", axis=1)
+    expected.index = range(90, 100)
+
     if include_series_id:
-        expected = pd.concat([X_holdout_series_id, expected], axis=1)
         expected = infer_feature_types(expected)
         pd.testing.assert_frame_equal(y_pred, expected)
     else:
+        expected = expected["target"]
         pd.testing.assert_series_equal(y_pred, expected)
 
 
@@ -209,7 +230,7 @@ def test_multiseries_pipeline_predict(
             range(55, 65),
             index=range(90, 100),
             name="target",
-            dtype="float64",
+            dtype="int64",
         )
     # Only the first predicted value is present in the delayed features
     else:
@@ -217,7 +238,7 @@ def test_multiseries_pipeline_predict(
             [85, 86, 87, 88, 89, 0, 0, 0, 0, 0],
             index=range(90, 100),
             name="target",
-            dtype="float64",
+            dtype="int64",
         )
     pd.testing.assert_series_equal(y_pred, expected)
 

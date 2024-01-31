@@ -68,7 +68,10 @@ class LightGBMRegressor(Estimator):
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]
-    """[ProblemTypes.REGRESSION]"""
+    """[
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ]"""
 
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound

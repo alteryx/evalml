@@ -127,16 +127,32 @@ class TimeSeriesFeaturizer(Transformer):
         if self.time_index is None:
             raise ValueError("time_index cannot be None!")
 
-        # For the multiseries case, where we only want the start delay lag for the baseline
-        if isinstance(y, pd.DataFrame):
-            self.statistically_significant_lags = [self.start_delay]
-        else:
-            self.statistically_significant_lags = self._find_significant_lags(
-                y,
-                conf_level=self.conf_level,
-                start_delay=self.start_delay,
-                max_delay=self.max_delay,
+        if y is None:
+            # Set lags to all possible lag values
+            self.statistically_significant_lags = np.arange(
+                self.start_delay,
+                self.start_delay + self.max_delay + 1,
             )
+        else:
+            # For the multiseries case, each series ID has individualized lag values
+            if isinstance(y, pd.Series) or isinstance(y, np.ndarray):
+                y = pd.DataFrame(y)
+
+            self.statistically_significant_lags = {}
+            for column in y.columns:
+                self.statistically_significant_lags[
+                    column
+                ] = self._find_significant_lags(
+                    y[column],
+                    conf_level=self.conf_level,
+                    start_delay=self.start_delay,
+                    max_delay=self.max_delay,
+                )
+                if len(y.columns) == 1:
+                    self.statistically_significant_lags = (
+                        self.statistically_significant_lags[column]
+                    )
+                    return self
         return self
 
     @staticmethod
@@ -160,31 +176,28 @@ class TimeSeriesFeaturizer(Transformer):
     @staticmethod
     def _find_significant_lags(y, conf_level, start_delay, max_delay):
         all_lags = np.arange(start_delay, start_delay + max_delay + 1)
-        if y is not None:
-            # Compute the acf and find its peaks
-            acf_values, ci_intervals = acf(
-                y,
-                nlags=len(y) - 1,
-                fft=True,
-                alpha=conf_level,
-            )
-            peaks, _ = find_peaks(acf_values)
-            # Significant lags are the union of:
-            # 1. the peaks (local maxima) that are significant
-            # 2. The significant lags among the first 10 lags.
-            # We then filter the list to be in the range [start_delay, start_delay + max_delay]
-            index = np.arange(len(acf_values))
-            significant = np.logical_or(ci_intervals[:, 0] > 0, ci_intervals[:, 1] < 0)
-            first_significant_10 = index[:10][significant[:10]]
-            significant_lags = (
-                set(index[significant]).intersection(peaks).union(first_significant_10)
-            )
-            # If no lags are significant get the first lag
-            significant_lags = sorted(significant_lags.intersection(all_lags)) or [
-                start_delay,
-            ]
-        else:
-            significant_lags = all_lags
+        # Compute the acf and find its peaks
+        acf_values, ci_intervals = acf(
+            y,
+            nlags=len(y) - 1,
+            fft=True,
+            alpha=conf_level,
+        )
+        peaks, _ = find_peaks(acf_values)
+        # Significant lags are the union of:
+        # 1. the peaks (local maxima) that are significant
+        # 2. The significant lags among the first 10 lags.
+        # We then filter the list to be in the range [start_delay, start_delay + max_delay]
+        index = np.arange(len(acf_values))
+        significant = np.logical_or(ci_intervals[:, 0] > 0, ci_intervals[:, 1] < 0)
+        first_significant_10 = index[:10][significant[:10]]
+        significant_lags = (
+            set(index[significant]).intersection(peaks).union(first_significant_10)
+        )
+        # If no lags are significant get the first lag
+        significant_lags = sorted(significant_lags.intersection(all_lags)) or [
+            start_delay,
+        ]
         return significant_lags
 
     def _compute_rolling_transforms(self, X, y, original_features):
@@ -234,7 +247,25 @@ class TimeSeriesFeaturizer(Transformer):
             col = data[col_name]
             if categorical_columns and col_name in categorical_columns:
                 col = X_categorical[col_name]
-            for t in self.statistically_significant_lags:
+            # Lags are stored in a dict for multiseries problems
+            # Returns the lags corresponding to the series ID value
+            if isinstance(self.statistically_significant_lags, dict):
+                from evalml.pipelines.utils import MULTISERIES_SEPARATOR_SYMBOL
+
+                col_series_id = (
+                    MULTISERIES_SEPARATOR_SYMBOL
+                    + col_name.split(MULTISERIES_SEPARATOR_SYMBOL)[-1]
+                )
+                for (
+                    series_id_target_name,
+                    lag_list,
+                ) in self.statistically_significant_lags.items():
+                    if series_id_target_name.endswith(col_series_id):
+                        lags = lag_list
+                        break
+            else:
+                lags = self.statistically_significant_lags
+            for t in lags:
                 lagged_features[self.df_colname_prefix.format(col_name, t)] = col.shift(
                     t,
                 )

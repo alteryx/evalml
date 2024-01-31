@@ -987,6 +987,7 @@ def X_y_based_on_pipeline_or_problem_type(X_y_binary, X_y_multi, X_y_regression)
             ProblemTypes.TIME_SERIES_BINARY: "binary",
             ProblemTypes.TIME_SERIES_MULTICLASS: "multiclass",
             ProblemTypes.TIME_SERIES_REGRESSION: "regression",
+            ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION: "regression",
         }
         pipeline_classes = {
             BinaryClassificationPipeline: "binary",

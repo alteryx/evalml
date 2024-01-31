@@ -24,6 +24,7 @@ def test_problem_types():
     assert set(ElasticNetRegressor.supported_problem_types) == {
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.MULTISERIES_TIME_SERIES_REGRESSION,
     }
 
 
