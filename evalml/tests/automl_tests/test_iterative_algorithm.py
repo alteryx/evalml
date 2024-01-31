@@ -108,6 +108,7 @@ def test_iterative_algorithm_init(
                 parameters=search_parameters,
             )
             for estimator in estimators
+            # Generate both decomposer and non-decomposer pipelines when problem type is multiseries time series reg.
             for include_decomposer in (
                 [True, False] if is_regression(problem_type) else [False]
             )

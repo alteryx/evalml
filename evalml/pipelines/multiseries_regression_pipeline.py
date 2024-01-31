@@ -166,17 +166,21 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
         unstacked_predictions = unstacked_predictions[
             [
                 series_id_target
-                for series_id_target in y_train_unstacked.columns
+                for series_id_target in self.series_id_target_names
                 if series_id_target in unstacked_predictions.columns
             ]
         ]
+
+        # Add `time_index` column to index for generating stacked datetime column in `stack_data()`
         unstacked_predictions.index = X_unstacked[self.time_index]
         stacked_predictions = stack_data(
             unstacked_predictions,
             include_series_id=True,
             series_id_name=self.series_id,
         )
-        stacked_predictions = stacked_predictions.reset_index()
+        # Move datetime index into separate date column to use when merging later
+        stacked_predictions = stacked_predictions.reset_index(drop=False)
+
         sp_dtypes = {
             self.time_index: X[self.time_index].dtype,
             self.series_id: X[self.series_id].dtype,
@@ -195,6 +199,7 @@ class MultiseriesRegressionPipeline(TimeSeriesRegressionPipeline):
             stacked_predictions,
             on=[self.time_index, self.series_id],
         )[output_cols]
+
         # Index will start at the unstacked index, so we need to reset it to the original index
         stacked_predictions.index = X.index
 
