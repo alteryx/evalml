@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.83.0 Feb 2, 2024**
+    * Enhancements
         * Added support for additional estimators for multiseries datasets :pr:`4385`
     * Fixes
         * Fixed bug in `_downcast_nullable_y` causing woodwork initialization issues :pr:`4369`
