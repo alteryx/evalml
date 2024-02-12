@@ -6,6 +6,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Run airflow tests in Python 3.9 :pr:`4391`
 
 .. warning::
 
