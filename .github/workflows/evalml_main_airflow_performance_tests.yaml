@@ -44,7 +44,7 @@ jobs:
                       "holdout-size": 0.5,
                       "pred-vs-actual": false
                   },
-                  "python_version": "3.8",
+                  "python_version": "3.9",
                   "scenarios_yaml": "release.yaml",
                   "evalml_branch_previous": "${{ env.PREVIOUS_HASH }}",
                   "evalml_branch_new": "${{ env.CURRENT_HASH }}",
@@ -75,7 +75,7 @@ jobs:
                       "holdout-size": 0.5,
                       "pred-vs-actual": false
                   },
-                  "python_version": "3.8",
+                  "python_version": "3.9",
                   "scenarios_yaml": "release.yaml",
                   "evalml_branch_previous": "${{ env.PREVIOUS_HASH }}",
                   "evalml_branch_new": "${{ env.CURRENT_HASH }}",
