@@ -1,4 +1,5 @@
 """Transformer to drop rows specified by row indices."""
+
 import pandas as pd
 from woodwork import init_series
 

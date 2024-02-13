@@ -1,4 +1,5 @@
 """Elastic Net Classifier. Uses Logistic Regression with elasticnet penalty as the base estimator."""
+
 import warnings
 
 import numpy as np

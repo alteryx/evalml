@@ -1,4 +1,5 @@
 """Random Search Optimizer."""
+
 from skopt import Space
 
 from evalml.tuners import NoParamsException, Tuner

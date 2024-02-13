@@ -1,4 +1,5 @@
 """Component that applies a log transformation to the target data."""
+
 import numpy as np
 import pandas as pd
 

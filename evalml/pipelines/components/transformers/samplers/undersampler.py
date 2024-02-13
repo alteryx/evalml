@@ -1,4 +1,5 @@
 """An undersampling transformer to downsample the majority classes in the dataset."""
+
 import numpy as np
 import pandas as pd
 

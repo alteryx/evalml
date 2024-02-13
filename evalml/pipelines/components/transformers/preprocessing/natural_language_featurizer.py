@@ -1,4 +1,5 @@
 """Transformer that can automatically featurize text columns using featuretools' nlp_primitives."""
+
 import string
 
 import featuretools as ft

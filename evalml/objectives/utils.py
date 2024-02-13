@@ -1,4 +1,5 @@
 """Utility methods for EvalML objectives."""
+
 from evalml import objectives
 from evalml.exceptions import ObjectiveCreationError, ObjectiveNotFoundError
 from evalml.objectives.objective_base import ObjectiveBase

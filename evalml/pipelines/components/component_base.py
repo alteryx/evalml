@@ -1,4 +1,5 @@
 """Base class for all components."""
+
 import copy
 from abc import ABC, abstractmethod
 

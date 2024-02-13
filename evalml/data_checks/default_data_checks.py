@@ -1,4 +1,5 @@
 """A default set of data checks that can be used for a variety of datasets."""
+
 from evalml.data_checks.class_imbalance_data_check import ClassImbalanceDataCheck
 from evalml.data_checks.data_checks import DataChecks
 from evalml.data_checks.datetime_format_data_check import DateTimeFormatDataCheck

@@ -1,4 +1,5 @@
 """Data check to check if any set features are likely to be multicollinear."""
+
 from evalml.data_checks import DataCheck, DataCheckMessageCode, DataCheckWarning
 from evalml.utils import infer_feature_types
 

@@ -1,4 +1,5 @@
 """AutoML algorithms that power EvalML."""
+
 from evalml.automl.automl_algorithm.automl_algorithm import (
     AutoMLAlgorithm,
     AutoMLAlgorithmException,

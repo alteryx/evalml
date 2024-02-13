@@ -1,4 +1,5 @@
 """Pipeline base class for time-series problems."""
+
 import pandas as pd
 import woodwork as ww
 

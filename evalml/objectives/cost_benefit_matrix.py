@@ -1,4 +1,5 @@
 """Cost-benefit matrix objective."""
+
 import numpy as np
 
 import evalml

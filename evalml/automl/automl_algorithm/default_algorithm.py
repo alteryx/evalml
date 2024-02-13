@@ -1,4 +1,5 @@
 """An automl algorithm that consists of two modes: fast and long, where fast is a subset of long."""
+
 import logging
 
 import numpy as np

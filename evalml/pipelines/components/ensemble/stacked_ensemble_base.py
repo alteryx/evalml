@@ -1,4 +1,5 @@
 """Stacked Ensemble Base."""
+
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
 from evalml.utils import classproperty

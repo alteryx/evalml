@@ -1,4 +1,5 @@
 """Recommended action returned by a DataCheck."""
+
 from enum import Enum
 
 from evalml.data_checks.data_check_action import DataCheckAction
@@ -124,12 +125,14 @@ class DataCheckActionOption:
         return DataCheckActionOption(
             action_code=DataCheckActionCode._all_values[action_dict["code"]],
             metadata=action_dict["metadata"],
-            data_check_name=action_dict["data_check_name"]
-            if "data_check_name" in action_dict
-            else None,
-            parameters=action_dict["parameters"]
-            if "parameters" in action_dict
-            else None,
+            data_check_name=(
+                action_dict["data_check_name"]
+                if "data_check_name" in action_dict
+                else None
+            ),
+            parameters=(
+                action_dict["parameters"] if "parameters" in action_dict else None
+            ),
         )
 
     def _validate_parameters(self):

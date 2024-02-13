@@ -1,4 +1,5 @@
 """Metaclass that overrides creating a new component or pipeline by wrapping methods with validators and setters."""
+
 from abc import ABCMeta
 from functools import wraps
 

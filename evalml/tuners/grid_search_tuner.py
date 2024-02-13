@@ -1,4 +1,5 @@
 """Grid Search Optimizer, which generates all of the possible points to search for using a grid."""
+
 import itertools
 
 from skopt.space import Integer, Real

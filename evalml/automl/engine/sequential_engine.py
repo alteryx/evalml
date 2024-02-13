@@ -1,4 +1,5 @@
 """A Future-like api for jobs created by the SequentialEngine, an Engine that sequentially computes the submitted jobs."""
+
 from evalml.automl.engine.engine_base import (
     EngineBase,
     EngineComputation,

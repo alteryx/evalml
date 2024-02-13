@@ -1,4 +1,5 @@
 """Load the churn dataset, which can be used for binary classification problems."""
+
 import evalml
 from evalml.preprocessing import load_data
 

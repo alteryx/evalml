@@ -1,4 +1,5 @@
 """Data check that checks whether the time series training and validation splits have adequate class representation."""
+
 from sklearn.model_selection import TimeSeriesSplit as SkTimeSeriesSplit
 
 from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode

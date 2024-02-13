@@ -1,4 +1,5 @@
 """A transformer that encodes categorical features in a one-hot numeric array."""
+
 import numpy as np
 import pandas as pd
 import woodwork as ww

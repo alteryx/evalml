@@ -178,8 +178,10 @@ def _get_new_logical_types_for_imputed_data(
         return original_schema.logical_types
 
     return {
-        col: _determine_fractional_type(ltype)
-        if isinstance(ltype, (AgeNullable, IntegerNullable))
-        else ltype
+        col: (
+            _determine_fractional_type(ltype)
+            if isinstance(ltype, (AgeNullable, IntegerNullable))
+            else ltype
+        )
         for col, ltype in original_schema.logical_types.items()
     }

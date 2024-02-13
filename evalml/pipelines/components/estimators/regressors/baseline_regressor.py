@@ -1,4 +1,5 @@
 """Baseline regressor that uses a simple strategy to make predictions. This is useful as a simple baseline regressor to compare with other regressors."""
+
 import numpy as np
 import pandas as pd
 

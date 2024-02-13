@@ -1,4 +1,5 @@
 """Data check that checks if there are any columns with sparsely populated values in the input."""
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckActionCode,

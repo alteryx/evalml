@@ -1,4 +1,5 @@
 """Standard metrics used for model understanding."""
+
 import warnings
 
 import numpy as np
@@ -115,9 +116,11 @@ def graph_confusion_matrix(
 
     title = "Confusion matrix{}{}".format(
         "" if title_addition is None else (" " + title_addition),
-        ""
-        if normalize_method is None
-        else (', normalized using method "' + normalize_method + '"'),
+        (
+            ""
+            if normalize_method is None
+            else (', normalized using method "' + normalize_method + '"')
+        ),
     )
     z_data, custom_data = (
         (conf_mat, conf_mat_normalized)

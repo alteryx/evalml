@@ -1,4 +1,5 @@
 """Data check that checks if there are any columns in the input that are either too unique for classification problems or not unique enough for regression problems."""
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckActionCode,

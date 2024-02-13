@@ -867,11 +867,9 @@ def test_classification_pipeline_encodes_targets(
             {"negative": y, "positive": y, "neither": y},
         )
         y_encoded = y.map(
-            lambda label: "positive"
-            if label == 1
-            else "neither"
-            if label == 2
-            else "negative",
+            lambda label: (
+                "positive" if label == 1 else "neither" if label == 2 else "negative"
+            ),
         ).astype("category")
     else:
         df = pd.DataFrame({"negative": y, "positive": y})
@@ -1955,9 +1953,11 @@ def test_time_series_pipeline_get_prediction_intervals(
                 "y",
             ],
             "Regressor": [
-                "Exponential Smoothing Regressor"
-                if ts_native_estimator
-                else "Linear Regressor",
+                (
+                    "Exponential Smoothing Regressor"
+                    if ts_native_estimator
+                    else "Linear Regressor"
+                ),
                 "Drop NaN Rows Transformer.x",
                 "Drop NaN Rows Transformer.y",
             ],
@@ -1991,9 +1991,11 @@ def test_time_series_pipeline_get_prediction_intervals(
                 "y",
             ],
             "Regressor": [
-                "Exponential Smoothing Regressor"
-                if ts_native_estimator
-                else "Linear Regressor",
+                (
+                    "Exponential Smoothing Regressor"
+                    if ts_native_estimator
+                    else "Linear Regressor"
+                ),
                 "Drop NaN Rows Transformer.x",
                 "Drop NaN Rows Transformer.y",
             ],

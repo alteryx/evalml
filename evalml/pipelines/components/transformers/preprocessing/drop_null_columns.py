@@ -1,4 +1,5 @@
 """Transformer to drop features whose percentage of NaN values exceeds a specified threshold."""
+
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
 

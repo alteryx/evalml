@@ -21,9 +21,11 @@ THRESHOLD = 0.4
 def get_uneven_error(col_name, ww_payload, series=None):
     series_message = f"A frequency was detected in column '{col_name}' for series '{series}', but there are faulty datetime values that need to be addressed."
     error = DataCheckError(
-        message=f"A frequency was detected in column '{col_name}', but there are faulty datetime values that need to be addressed."
-        if series is None
-        else series_message,
+        message=(
+            f"A frequency was detected in column '{col_name}', but there are faulty datetime values that need to be addressed."
+            if series is None
+            else series_message
+        ),
         data_check_name=datetime_format_check_name,
         message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
         action_options=[

@@ -1,4 +1,5 @@
 """Messages returned by a DataCheck, tagged by name."""
+
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 
 

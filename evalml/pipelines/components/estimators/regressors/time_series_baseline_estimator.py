@@ -1,4 +1,5 @@
 """Time series estimator that predicts using the naive forecasting approach."""
+
 import numpy as np
 
 from evalml.model_family import ModelFamily

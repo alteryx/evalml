@@ -1,4 +1,5 @@
 """Classification model components."""
+
 from evalml.pipelines.components.estimators.classifiers.logistic_regression_classifier import (
     LogisticRegressionClassifier,
 )

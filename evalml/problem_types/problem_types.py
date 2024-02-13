@@ -1,4 +1,5 @@
 """Enum defining the supported types of machine learning problems."""
+
 from enum import Enum
 
 from evalml.utils import classproperty

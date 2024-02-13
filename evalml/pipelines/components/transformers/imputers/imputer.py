@@ -1,4 +1,5 @@
 """Component that imputes missing data according to a specified imputation strategy."""
+
 import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer

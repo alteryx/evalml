@@ -1,4 +1,5 @@
 """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance."""
+
 import logging
 import warnings
 from operator import itemgetter

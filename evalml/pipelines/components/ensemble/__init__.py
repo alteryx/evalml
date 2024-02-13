@@ -1,4 +1,5 @@
 """Ensemble components."""
+
 from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
     StackedEnsembleBase,
 )

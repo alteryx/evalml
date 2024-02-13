@@ -1,4 +1,5 @@
 """Data check that checks if there are any highly-null columns and rows in the input."""
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckActionCode,

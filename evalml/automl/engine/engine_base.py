@@ -1,4 +1,5 @@
 """Base class for EvalML engines."""
+
 import sys
 import time
 import traceback

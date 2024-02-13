@@ -1,4 +1,5 @@
 """AutoMLSearch and related modules."""
+
 from evalml.automl.automl_search import AutoMLSearch, search_iterative, search
 from evalml.automl.utils import (
     get_default_primary_search_objective,

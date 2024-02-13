@@ -1,4 +1,5 @@
 """Exceptions used in EvalML."""
+
 from enum import Enum
 
 

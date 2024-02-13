@@ -1,4 +1,5 @@
 """Component that selects top features based on importance weights using a Random Forest regresor."""
+
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from sklearn.feature_selection import SelectFromModel as SkSelect
 from skopt.space import Real

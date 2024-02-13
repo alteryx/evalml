@@ -1,4 +1,5 @@
 """Vowpal Wabbit Classifiers."""
+
 from abc import abstractmethod
 
 from skopt.space import Integer, Real

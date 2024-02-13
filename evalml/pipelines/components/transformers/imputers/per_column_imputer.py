@@ -1,4 +1,5 @@
 """Component that imputes missing data according to a specified imputation strategy per column."""
+
 import warnings
 
 from evalml.pipelines.components.transformers import Transformer

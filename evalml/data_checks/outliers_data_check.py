@@ -1,4 +1,5 @@
 """Data check that checks if there are any outliers in input data by using IQR to determine score anomalies."""
+
 import numpy as np
 from scipy.stats import gamma
 

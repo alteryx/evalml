@@ -1,4 +1,5 @@
 """Transformer to drop rows specified by row indices."""
+
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
 

@@ -1,4 +1,5 @@
 """Component that removes trends and seasonality from time series using STL."""
+
 from __future__ import annotations
 
 import logging

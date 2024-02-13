@@ -1,4 +1,5 @@
 """Component that selects top features based on importance weights."""
+
 import pandas as pd
 
 from evalml.exceptions import MethodPropertyNotFoundError

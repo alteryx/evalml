@@ -1,4 +1,5 @@
 """Progress abstraction holding stopping criteria and progress information."""
+
 import logging
 import time
 

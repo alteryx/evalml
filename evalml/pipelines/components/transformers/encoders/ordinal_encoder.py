@@ -1,4 +1,5 @@
 """A transformer that encodes ordinal features as an array of ordinal integers representing the relative order of categories."""
+
 import numpy as np
 import pandas as pd
 import woodwork as ww

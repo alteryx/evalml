@@ -1,4 +1,5 @@
 """Featuretools DFS component that generates features for the input features."""
+
 from typing import List, Optional
 
 from featuretools import EntitySet, calculate_feature_matrix, dfs
@@ -157,7 +158,9 @@ class DFSTransformer(Transformer):
             if (
                 dfs_features is None
                 or not DFSTransformer.contains_pre_existing_features(
-                    dfs_features, list(X.columns), target
+                    dfs_features,
+                    list(X.columns),
+                    target,
                 )
             ):
                 raise ValueError(

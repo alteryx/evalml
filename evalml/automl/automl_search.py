@@ -1,4 +1,5 @@
 """EvalML's core AutoML object."""
+
 import copy
 import logging
 import pickle

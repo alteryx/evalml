@@ -1,4 +1,5 @@
 """Force plots."""
+
 import numpy as np
 import shap
 from shap import initjs

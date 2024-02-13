@@ -1,4 +1,5 @@
 """Lead scoring objective."""
+
 import math
 
 from evalml.objectives.binary_classification_objective import (
