@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Reformatted files with updated black version :pr:`4395`
     * Fixes
     * Changes
     * Documentation Changes
