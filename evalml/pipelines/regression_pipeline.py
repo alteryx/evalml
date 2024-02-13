@@ -1,4 +1,5 @@
 """Pipeline subclass for all regression pipelines."""
+
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types

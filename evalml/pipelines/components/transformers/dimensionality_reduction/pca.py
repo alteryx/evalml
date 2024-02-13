@@ -1,4 +1,5 @@
 """Component that reduces the number of features by using Principal Component Analysis (PCA)."""
+
 import pandas as pd
 from sklearn.decomposition import PCA as SkPCA
 from skopt.space import Real

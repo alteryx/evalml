@@ -1,4 +1,5 @@
 """Components that select top features based on recursive feature elimination with a Random Forest model."""
+
 from abc import abstractmethod
 
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier

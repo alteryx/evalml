@@ -1,4 +1,5 @@
 """Empty Data Splitter class."""
+
 import numpy as np
 from sklearn.model_selection._split import BaseCrossValidator
 

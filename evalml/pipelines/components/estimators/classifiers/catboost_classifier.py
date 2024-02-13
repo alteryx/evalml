@@ -1,4 +1,5 @@
 """CatBoost Classifier, a classifier that uses gradient-boosting on decision trees. CatBoost is an open-source library and natively supports categorical features."""
+
 import copy
 import warnings
 

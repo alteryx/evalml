@@ -1,4 +1,5 @@
 """Vowpal Wabbit Regressor."""
+
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily

@@ -1,4 +1,5 @@
 """Baseline classifier."""
+
 import numpy as np
 import pandas as pd
 

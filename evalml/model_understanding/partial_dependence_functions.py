@@ -1,4 +1,5 @@
 """Top level functions for running partial dependence."""
+
 import warnings
 
 import numpy as np
@@ -503,9 +504,11 @@ def graph_partial_dependence(
             )
             xrange = _calculate_axis_range(x_scale_df) if not is_categorical else None
             yrange = _calculate_axis_range(
-                ice_data.drop("class_label", axis=1)
-                if ice_data is not None
-                else part_dep["partial_dependence"],
+                (
+                    ice_data.drop("class_label", axis=1)
+                    if ice_data is not None
+                    else part_dep["partial_dependence"]
+                ),
             )
             fig.update_xaxes(title=title, range=xrange)
             fig.update_yaxes(range=yrange)

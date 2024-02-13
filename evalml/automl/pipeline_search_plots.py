@@ -1,4 +1,5 @@
 """Plots displayed during pipeline search."""
+
 from evalml.utils import import_or_raise, jupyter_check
 
 

@@ -1,4 +1,5 @@
 """Base class for all binary classification objectives."""
+
 import numpy as np
 from scipy.optimize import differential_evolution
 

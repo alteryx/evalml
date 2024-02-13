@@ -754,12 +754,16 @@ def test_invalid_target_data_check_action_for_data_with_null(
                         "impute_strategy": {
                             "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "category",
-                            "categories": ["mean", "most_frequent"]
-                            if is_regression(problem_type)
-                            else ["most_frequent"],
-                            "default_value": "mean"
-                            if is_regression(problem_type)
-                            else "most_frequent",
+                            "categories": (
+                                ["mean", "most_frequent"]
+                                if is_regression(problem_type)
+                                else ["most_frequent"]
+                            ),
+                            "default_value": (
+                                "mean"
+                                if is_regression(problem_type)
+                                else "most_frequent"
+                            ),
                         },
                     },
                     metadata={"is_target": True},

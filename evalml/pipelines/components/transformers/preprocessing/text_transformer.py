@@ -1,4 +1,5 @@
 """Base class for all transformers working with text features."""
+
 from evalml.pipelines.components.transformers import Transformer
 
 

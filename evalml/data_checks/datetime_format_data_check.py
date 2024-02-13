@@ -1,4 +1,5 @@
 """Data check that checks if the datetime column has equally spaced intervals and is monotonically increasing or decreasing in order to be supported by time series estimators."""
+
 import pandas as pd
 from woodwork.statistics_utils import infer_frequency
 
@@ -448,9 +449,11 @@ class DateTimeFormatDataCheck(DataCheck):
                 series_message = f"Input datetime column '{col_name}' for series '{series}' contains NaN values. Please impute NaN values or drop these rows."
                 messages.append(
                     DataCheckError(
-                        message=f"Input datetime column '{col_name}' contains NaN values. Please impute NaN values or drop these rows."
-                        if not is_multiseries
-                        else series_message,
+                        message=(
+                            f"Input datetime column '{col_name}' contains NaN values. Please impute NaN values or drop these rows."
+                            if not is_multiseries
+                            else series_message
+                        ),
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
                     ).to_dict(),
@@ -461,9 +464,11 @@ class DateTimeFormatDataCheck(DataCheck):
                 series_message = f"Column '{col_name}' for series '{series}' has more than one row with the same datetime value."
                 messages.append(
                     DataCheckError(
-                        message=f"Column '{col_name}' has more than one row with the same datetime value."
-                        if not is_multiseries
-                        else series_message,
+                        message=(
+                            f"Column '{col_name}' has more than one row with the same datetime value."
+                            if not is_multiseries
+                            else series_message
+                        ),
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
                     ).to_dict(),
@@ -474,9 +479,11 @@ class DateTimeFormatDataCheck(DataCheck):
                 series_message = f"Column '{col_name}' for series '{series}' has datetime values missing between start and end date."
                 messages.append(
                     DataCheckError(
-                        message=f"Column '{col_name}' has datetime values missing between start and end date."
-                        if not is_multiseries
-                        else series_message,
+                        message=(
+                            f"Column '{col_name}' has datetime values missing between start and end date."
+                            if not is_multiseries
+                            else series_message
+                        ),
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
                     ).to_dict(),
@@ -487,9 +494,11 @@ class DateTimeFormatDataCheck(DataCheck):
                 series_message = f"Column '{col_name}' for series '{series}' has datetime values that do not align with the inferred frequency."
                 messages.append(
                     DataCheckError(
-                        message=f"Column '{col_name}' has datetime values that do not align with the inferred frequency."
-                        if not is_multiseries
-                        else series_message,
+                        message=(
+                            f"Column '{col_name}' has datetime values that do not align with the inferred frequency."
+                            if not is_multiseries
+                            else series_message
+                        ),
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.DATETIME_HAS_MISALIGNED_VALUES,
                     ).to_dict(),
@@ -505,9 +514,11 @@ class DateTimeFormatDataCheck(DataCheck):
                 series_message = f"No frequency could be detected in column '{col_name}' for series '{series}', possibly due to uneven intervals or too many duplicate/missing values."
                 messages.append(
                     DataCheckError(
-                        message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals or too many duplicate/missing values."
-                        if not is_multiseries
-                        else series_message,
+                        message=(
+                            f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals or too many duplicate/missing values."
+                            if not is_multiseries
+                            else series_message
+                        ),
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.DATETIME_NO_FREQUENCY_INFERRED,
                     ).to_dict(),
@@ -516,9 +527,11 @@ class DateTimeFormatDataCheck(DataCheck):
                 series_message = f"A frequency was detected in column '{col_name}' for series '{series}', but there are faulty datetime values that need to be addressed."
                 messages.append(
                     DataCheckError(
-                        message=f"A frequency was detected in column '{col_name}', but there are faulty datetime values that need to be addressed."
-                        if not is_multiseries
-                        else series_message,
+                        message=(
+                            f"A frequency was detected in column '{col_name}', but there are faulty datetime values that need to be addressed."
+                            if not is_multiseries
+                            else series_message
+                        ),
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
                         action_options=[

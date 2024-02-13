@@ -1,4 +1,5 @@
 """A collection of data checks."""
+
 import inspect
 
 from evalml.data_checks import DataCheck

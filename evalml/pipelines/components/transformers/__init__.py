@@ -1,4 +1,5 @@
 """Components that transform data."""
+
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.pipelines.components.transformers.encoders import (
     OneHotEncoder,

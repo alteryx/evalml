@@ -1,4 +1,5 @@
 """Component that imputes missing data according to a specified timeseries-specific imputation strategy."""
+
 import pandas as pd
 import woodwork as ww
 from woodwork.logical_types import (

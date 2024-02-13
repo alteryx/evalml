@@ -1,4 +1,5 @@
 """Utility methods for EvalML components."""
+
 import inspect
 from typing import Dict, List, Tuple, Union
 

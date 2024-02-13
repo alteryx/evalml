@@ -1,4 +1,5 @@
 """Utility methods for EvalML's model families."""
+
 from evalml.model_family.model_family import ModelFamily
 
 

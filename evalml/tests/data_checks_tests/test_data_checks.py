@@ -536,9 +536,9 @@ def test_default_data_checks_across_problem_types(problem_type):
         for check in DefaultDataChecks(
             problem_type,
             get_default_primary_search_objective(problem_type),
-            problem_configuration=problem_config
-            if is_time_series(problem_type)
-            else None,
+            problem_configuration=(
+                problem_config if is_time_series(problem_type) else None
+            ),
         ).data_checks
     ]
 

@@ -4,6 +4,7 @@ Implementation borrows from sklearn "brute" calculation but with our
 own modification to better handle mixed data types in the grid
 as well as EvalML pipelines.
 """
+
 import numpy as np
 import pandas as pd
 import woodwork as ww

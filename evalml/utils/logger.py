@@ -1,4 +1,5 @@
 """Logging functions."""
+
 import logging
 import sys
 import time

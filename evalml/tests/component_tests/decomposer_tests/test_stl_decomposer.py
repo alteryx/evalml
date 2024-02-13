@@ -187,9 +187,11 @@ def test_stl_fit_transform_in_sample(
         pd.testing.assert_series_equal(
             pd.Series(expected_trend),
             pd.Series(
-                stl.trends["series_1"]
-                if variateness == "multivariate"
-                else stl.trends[0],
+                (
+                    stl.trends["series_1"]
+                    if variateness == "multivariate"
+                    else stl.trends[0]
+                ),
             ),
             check_exact=False,
             check_index=False,

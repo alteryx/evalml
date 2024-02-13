@@ -1,4 +1,5 @@
 """Utility methods for the ProblemTypes enum in EvalML."""
+
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 

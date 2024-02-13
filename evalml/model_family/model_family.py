@@ -1,4 +1,5 @@
 """Enum for family of machine learning models."""
+
 from enum import Enum
 
 

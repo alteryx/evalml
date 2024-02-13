@@ -1,4 +1,5 @@
 """CLI functions."""
+
 import locale
 import os
 import pathlib

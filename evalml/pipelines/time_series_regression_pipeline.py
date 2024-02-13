@@ -1,4 +1,5 @@
 """Pipeline base class for time series regression problems."""
+
 import numpy as np
 import pandas as pd
 from woodwork.statistics_utils import infer_frequency

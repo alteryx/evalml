@@ -1,4 +1,5 @@
 """Component that removes trends from time series by fitting a polynomial to the data."""
+
 from __future__ import annotations
 
 import logging

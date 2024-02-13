@@ -1,4 +1,5 @@
 """Base class for the AutoML algorithms which power EvalML."""
+
 import inspect
 from abc import ABC, abstractmethod
 

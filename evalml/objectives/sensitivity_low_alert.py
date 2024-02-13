@@ -1,4 +1,5 @@
 """Sensitivity at Low Alert Rates objective."""
+
 import logging
 
 import numpy as np

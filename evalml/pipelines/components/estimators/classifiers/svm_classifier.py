@@ -1,4 +1,5 @@
 """Support Vector Machine Classifier."""
+
 import numpy as np
 from sklearn.svm import SVC
 from skopt.space import Real

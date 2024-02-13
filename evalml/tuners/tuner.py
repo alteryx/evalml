@@ -1,4 +1,5 @@
 """Base Tuner class."""
+
 from abc import ABC, abstractmethod
 
 from skopt.space import Categorical, Integer, Real

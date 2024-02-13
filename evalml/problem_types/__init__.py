@@ -1,4 +1,5 @@
 """The supported types of machine learning problems."""
+
 from evalml.problem_types.problem_types import ProblemTypes
 from evalml.problem_types.utils import (
     handle_problem_types,

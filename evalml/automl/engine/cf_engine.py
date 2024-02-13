@@ -1,4 +1,5 @@
 """Custom CFClient API to match Dask's CFClient and allow context management."""
+
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 from evalml.automl.engine.engine_base import (

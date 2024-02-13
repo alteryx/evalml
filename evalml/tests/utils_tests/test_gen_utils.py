@@ -162,9 +162,11 @@ def test_get_random_seed_int():
     def make_expected_values(vals, min_bound, max_bound):
         return np.array(
             [
-                i
-                if (min_bound <= i and i < max_bound)
-                else ((i - min_bound) % (max_bound - min_bound)) + min_bound
+                (
+                    i
+                    if (min_bound <= i and i < max_bound)
+                    else ((i - min_bound) % (max_bound - min_bound)) + min_bound
+                )
                 for i in vals
             ],
         )

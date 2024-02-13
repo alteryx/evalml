@@ -1,4 +1,5 @@
 """EvalML component classes."""
+
 from evalml.pipelines.components.component_base import ComponentBase, ComponentBaseMeta
 from evalml.pipelines.components.estimators import (
     Estimator,

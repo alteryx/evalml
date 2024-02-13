@@ -1,4 +1,5 @@
 """A transformer that encodes categorical features into target encodings."""
+
 import warnings
 
 import pandas as pd

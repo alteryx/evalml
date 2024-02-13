@@ -1,4 +1,5 @@
 """Component that imputes missing target data according to a specified imputation strategy."""
+
 from functools import wraps
 
 import pandas as pd

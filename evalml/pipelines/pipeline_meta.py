@@ -1,4 +1,5 @@
 """Metaclass that overrides creating a new pipeline by wrapping methods with validators and setters."""
+
 from functools import wraps
 
 from evalml.exceptions import PipelineNotYetFittedError

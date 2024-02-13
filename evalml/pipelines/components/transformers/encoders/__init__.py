@@ -1,4 +1,5 @@
 """Components used to encode the input data."""
+
 from evalml.pipelines.components.transformers.encoders.onehot_encoder import (
     OneHotEncoder,
 )

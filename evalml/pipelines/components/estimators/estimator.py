@@ -1,4 +1,5 @@
 """A component that fits and predicts given data."""
+
 from abc import abstractmethod
 from typing import Dict, List, Optional, Tuple, Type, Union
 

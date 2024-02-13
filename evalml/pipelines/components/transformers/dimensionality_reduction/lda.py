@@ -1,4 +1,5 @@
 """Component that reduces the number of features by using Linear Discriminant Analysis."""
+
 import pandas as pd
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as SkLDA
 

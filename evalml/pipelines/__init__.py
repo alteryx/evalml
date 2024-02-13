@@ -1,4 +1,5 @@
 """EvalML pipelines."""
+
 from evalml.pipelines.components import (
     Estimator,
     OneHotEncoder,

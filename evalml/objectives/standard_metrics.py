@@ -1,4 +1,5 @@
 """Standard machine learning objective functions."""
+
 import warnings
 
 import numpy as np

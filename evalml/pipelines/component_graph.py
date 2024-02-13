@@ -1,4 +1,5 @@
 """Component graph for a pipeline as a directed acyclic graph (DAG)."""
+
 import inspect
 import warnings
 
@@ -805,9 +806,13 @@ class ComponentGraph:
                 # Reformat labels for nodes: cast values as strings, reformat floats to 2 decimal points and remove brackets from dictionary values so Digraph can parse it
                 parameters = "\\l".join(
                     [
-                        key + " : " + "{:0.2f}".format(val)
-                        if (isinstance(val, float))
-                        else key + " : " + str(val).replace("{", "").replace("}", "")
+                        (
+                            key + " : " + "{:0.2f}".format(val)
+                            if (isinstance(val, float))
+                            else key
+                            + " : "
+                            + str(val).replace("{", "").replace("}", "")
+                        )
                         for key, val in component_class.parameters.items()
                     ],
                 )  # noqa: W605

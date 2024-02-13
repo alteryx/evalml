@@ -1,4 +1,5 @@
 """Bayesian Optimizer."""
+
 import logging
 import warnings
 

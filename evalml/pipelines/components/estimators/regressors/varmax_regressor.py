@@ -1,4 +1,5 @@
 """Vector Autoregressive Moving Average with eXogenous regressors model. The two parameters (p, q) are the AR order and the MA order. More information here: https://www.statsmodels.org/stable/generated/statsmodels.tsa.statespace.varmax.VARMAX.html."""
+
 from typing import Dict, Hashable, List, Optional, Union
 
 import numpy as np

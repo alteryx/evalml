@@ -1,4 +1,5 @@
 """Callbacks available to pass to AutoML."""
+
 import logging
 
 from evalml.exceptions import PipelineScoreError

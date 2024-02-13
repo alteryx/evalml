@@ -1,4 +1,5 @@
 """Base class for all multiclass classification objectives."""
+
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.problem_types import ProblemTypes
 

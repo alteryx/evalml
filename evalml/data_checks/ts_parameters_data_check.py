@@ -1,4 +1,5 @@
 """Data check that checks whether the time series parameters are compatible with the data size."""
+
 from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode
 from evalml.utils.gen_utils import (
     are_ts_parameters_valid_for_split,

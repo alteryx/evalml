@@ -114,9 +114,9 @@ def test_make_pipeline(
                         "gap": 1,
                         "max_delay": 1,
                         "forecast_horizon": 3,
-                        "series_id": "series_id"
-                        if is_multiseries(problem_type)
-                        else None,
+                        "series_id": (
+                            "series_id" if is_multiseries(problem_type) else None
+                        ),
                     },
                 }
 

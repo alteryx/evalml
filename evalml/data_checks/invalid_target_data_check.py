@@ -1,4 +1,5 @@
 """Data check that checks if the target data contains missing or invalid values."""
+
 import woodwork as ww
 
 from evalml.data_checks import (
@@ -262,12 +263,16 @@ class InvalidTargetDataCheck(DataCheck):
                     "impute_strategy": {
                         "parameter_type": DCAOParameterType.GLOBAL,
                         "type": "category",
-                        "categories": ["mean", "most_frequent"]
-                        if is_regression(self.problem_type)
-                        else ["most_frequent"],
-                        "default_value": "mean"
-                        if is_regression(self.problem_type)
-                        else "most_frequent",
+                        "categories": (
+                            ["mean", "most_frequent"]
+                            if is_regression(self.problem_type)
+                            else ["most_frequent"]
+                        ),
+                        "default_value": (
+                            "mean"
+                            if is_regression(self.problem_type)
+                            else "most_frequent"
+                        ),
                     },
                 },
                 metadata={"is_target": True},

@@ -1,4 +1,5 @@
 """Transformer that regularizes a dataset with an uninferrable offset frequency for time series problems."""
+
 import pandas as pd
 from woodwork.logical_types import Datetime
 from woodwork.statistics_utils import infer_frequency

@@ -1,4 +1,5 @@
 """Random Forest Regressor."""
+
 from typing import Dict, List, Optional, Union
 
 import pandas as pd

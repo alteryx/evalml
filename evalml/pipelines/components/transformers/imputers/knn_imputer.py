@@ -1,4 +1,5 @@
 """Component that imputes missing data according to a specified imputation strategy."""
+
 import numpy as np
 import pandas as pd
 import woodwork

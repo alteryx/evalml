@@ -1,4 +1,5 @@
 """Utility methods."""
+
 from evalml.utils.logger import get_logger, log_subtitle, log_title
 from evalml.utils.gen_utils import (
     classproperty,

@@ -1,4 +1,5 @@
 """Enum for data check action code."""
+
 from enum import Enum
 
 from evalml.utils import classproperty
