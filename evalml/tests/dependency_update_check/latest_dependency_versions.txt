@@ -1,5 +1,5 @@
 black==24.2.0
-catboost==1.2.2
+catboost==1.2.3
 category-encoders==2.5.1.post0
 click==8.1.7
 cloudpickle==3.0.0
