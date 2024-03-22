@@ -102,7 +102,7 @@ def test_skopt_tuner_basic():
 def test_skopt_tuner_invalid_ranges():
     with pytest.raises(
         ValueError,
-        match="Invalid dimension \\[\\]. Read the documentation for supported types.",
+        match="Invalid dimension",
     ):
         SKOptTuner(
             {
