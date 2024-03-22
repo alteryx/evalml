@@ -346,9 +346,9 @@ def train_and_score_pipeline(
             and stored_pipeline is not None
             and stored_pipeline.threshold is not None
         ):
-            evaluation_entry[
-                "binary_classification_threshold"
-            ] = stored_pipeline.threshold
+            evaluation_entry["binary_classification_threshold"] = (
+                stored_pipeline.threshold
+            )
         cv_data.append(evaluation_entry)
     cv_scores = pd.Series([fold["mean_cv_score"] for fold in cv_data])
     cv_score_mean = cv_scores.mean()

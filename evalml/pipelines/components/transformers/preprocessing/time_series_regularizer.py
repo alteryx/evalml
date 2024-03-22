@@ -203,9 +203,9 @@ class TimeSeriesRegularizer(Transformer):
 
         for each_duplicate in duplicates:
             for each_range in range(each_duplicate["range"]):
-                error_dict["duplicate"][
-                    each_duplicate["idx"] + each_range
-                ] = pd.to_datetime(each_duplicate["dt"])
+                error_dict["duplicate"][each_duplicate["idx"] + each_range] = (
+                    pd.to_datetime(each_duplicate["dt"])
+                )
 
         for each_extra in extra:
             for each_range in range(each_extra["range"]):
@@ -310,9 +310,9 @@ class TimeSeriesRegularizer(Transformer):
         for index, values in self.error_dict["misaligned"].items():
             to_replace = X.iloc[index]
             to_replace[self.time_index] = values["correct"]
-            cleaned_x.loc[
-                cleaned_x[self.time_index] == values["correct"]
-            ] = to_replace.values
+            cleaned_x.loc[cleaned_x[self.time_index] == values["correct"]] = (
+                to_replace.values
+            )
             if y is not None and isinstance(y, pd.Series):
                 cleaned_y.loc[cleaned_y[self.time_index] == values["correct"]] = y.iloc[
                     index
