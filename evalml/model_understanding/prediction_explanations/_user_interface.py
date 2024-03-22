@@ -955,14 +955,14 @@ class _ReportMaker:
             if self.heading_maker:
                 section["rank"] = self.heading_maker.make_dict(rank)
             if self.make_predicted_values_maker:
-                section[
-                    "predicted_values"
-                ] = self.make_predicted_values_maker.make_dict(
-                    index,
-                    data.y_pred,
-                    data.y_true,
-                    data.errors,
-                    pd.Series(data.pipeline_features.index),
+                section["predicted_values"] = (
+                    self.make_predicted_values_maker.make_dict(
+                        index,
+                        data.y_pred,
+                        data.y_true,
+                        data.errors,
+                        pd.Series(data.pipeline_features.index),
+                    )
                 )
             section["explanations"] = self.table_maker.make_dict(
                 index,
@@ -993,9 +993,9 @@ class _ReportMaker:
                 for key, value in heading.items():
                     if key == "probabilities":
                         for class_name, probability in value.items():
-                            explanation_table[
-                                f"label_{class_name}_probability"
-                            ] = probability
+                            explanation_table[f"label_{class_name}_probability"] = (
+                                probability
+                            )
                     else:
                         explanation_table[key] = value
             if self.heading_maker:

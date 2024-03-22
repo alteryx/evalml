@@ -141,13 +141,13 @@ class TimeSeriesFeaturizer(Transformer):
 
             self.statistically_significant_lags = {}
             for column in y.columns:
-                self.statistically_significant_lags[
-                    column
-                ] = self._find_significant_lags(
-                    y[column],
-                    conf_level=self.conf_level,
-                    start_delay=self.start_delay,
-                    max_delay=self.max_delay,
+                self.statistically_significant_lags[column] = (
+                    self._find_significant_lags(
+                        y[column],
+                        conf_level=self.conf_level,
+                        start_delay=self.start_delay,
+                        max_delay=self.max_delay,
+                    )
                 )
                 if len(y.columns) == 1:
                     self.statistically_significant_lags = (
