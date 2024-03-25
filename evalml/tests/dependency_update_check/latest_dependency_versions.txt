@@ -29,7 +29,7 @@ scikit-optimize==0.10.1
 scipy==1.10.1
 seaborn==0.13.2
 shap==0.44.1
-sktime==0.27.0
+sktime==0.27.1
 statsmodels==0.14.1
 texttable==1.7.0
 tomli==2.0.1
