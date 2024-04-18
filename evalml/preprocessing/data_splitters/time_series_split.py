@@ -21,20 +21,6 @@ class TimeSeriesSplit(BaseCrossValidator):
                                     ensures the data is split based on the time order.
         n_series (int, optional): Number of series if the dataset includes multiple time series.
         n_splits (int): Number of splits to generate.
-
-    Examples:
-        >>> import pandas as pd
-        >>> import numpy as np
-        >>> X = pd.DataFrame([i for i in range(10)], columns=["value"])
-        >>> y = pd.Series([i for i in range(10)])
-        >>> ts_split = TimeSeriesSplit(n_splits=4, forecast_horizon=2)
-        >>> for train_index, test_index in ts_split.split(X, y):
-        ...     print("TRAIN:", train_index, "TEST:", test_index)
-        ...
-        TRAIN: [0 1] TEST: [2 3]
-        TRAIN: [0 1 2 3] TEST: [4 5]
-        TRAIN: [0 1 2 3 4 5] TEST: [6 7]
-        TRAIN: [0 1 2 3 4 5 6 7] TEST: [8 9]
     """
 
     def __init__(self, max_delay=0, gap=0, forecast_horizon=None, time_index=None, n_series=None, n_splits=3):
