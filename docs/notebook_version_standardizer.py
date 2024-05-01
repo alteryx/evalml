@@ -13,7 +13,7 @@ def _get_python_version(notebook):
     return version
 
 
-def _standardize_python_version(notebook, desired_version="3.8.6"):
+def _standardize_python_version(notebook, desired_version="3.9.6"):
     with open(notebook, "r") as f:
         source = json.load(f)
         source["metadata"]["language_info"]["version"] = desired_version
@@ -32,7 +32,7 @@ def _get_ipython_notebooks(docs_source):
     return notebooks
 
 
-def _get_notebooks_with_different_versions(notebooks, desired_version="3.8.6"):
+def _get_notebooks_with_different_versions(notebooks, desired_version="3.9.6"):
     different_versions = []
     for notebook in notebooks:
         version = _get_python_version(notebook)
@@ -41,7 +41,7 @@ def _get_notebooks_with_different_versions(notebooks, desired_version="3.8.6"):
     return different_versions
 
 
-def _standardize_versions(notebooks, desired_version="3.8.6"):
+def _standardize_versions(notebooks, desired_version="3.9.6"):
     for notebook in notebooks:
         _standardize_python_version(notebook, desired_version)
 
@@ -115,7 +115,7 @@ def cli():
 @cli.command()
 @click.option(
     "--desired-version",
-    default="3.8.6",
+    default="3.9.6",
     help="python version that all notebooks should match",
 )
 def check_versions(desired_version):
@@ -136,7 +136,7 @@ def check_versions(desired_version):
 @cli.command()
 @click.option(
     "--desired-version",
-    default="3.8.6",
+    default="3.9.6",
     help="python version that all notebooks should match",
 )
 def standardize(desired_version):

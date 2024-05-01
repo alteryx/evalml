@@ -15,10 +15,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python_version: ["3.8", "3.9", "3.10"]
+        python_version: ["3.9", "3.10"]
         exclude: 
           - os: macos-latest
-            python-version: "3.8"
+            python-version: "3.9"
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
