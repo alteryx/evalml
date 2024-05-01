@@ -105,7 +105,7 @@ docs = [
     "sphinx-autoapi",
     "sphinx-inline-tabs == 2022.1.2b11",
     "sphinx-copybutton == 0.5.0",
-    "myst-parser == 0.16.1",
+    "myst-parser == 0.18.0",
 ]
 prophet = [
     "prophet >= 1.1.2",
