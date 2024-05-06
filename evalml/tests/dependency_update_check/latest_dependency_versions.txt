@@ -1,4 +1,4 @@
-black==24.4.2
+black==24.4.1
 catboost==1.2.5
 category-encoders==2.5.1.post0
 click==8.1.7
