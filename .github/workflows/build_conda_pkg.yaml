@@ -15,7 +15,7 @@ jobs:
   build_conda_pkg:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
           python-version: 3.9
