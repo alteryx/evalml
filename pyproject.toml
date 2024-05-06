@@ -59,7 +59,7 @@ dependencies = [
     "category-encoders >= 2.2.2, <= 2.5.1.post0",
     "imbalanced-learn >= 0.11.0",
     "pmdarima >= 1.8.5",
-    "sktime == 0.27.1",
+    "sktime == 0.28.1",
     "lime >= 0.2.0.1",
     "vowpalwabbit >= 8.11.0",
     "tomli >= 2.0.1",
