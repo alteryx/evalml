@@ -20,7 +20,7 @@ outputs:
     script: build_script.sh
     requirements:
       host:
-        - python >=3.9, <3.11
+        - python >=3.9
         - pip
         - setuptools ==58.0.4
       run:
