@@ -18,8 +18,6 @@ jobs:
           - python_version: "3.9"
             command: 'git-test-automl'
           - python_version: "3.9"
-            command: 'git-test-automl'
-          - python_version: "3.9"
             command: 'git-test-prophet'
           - python_version: "3.9"
             command: 'git-test-modelunderstanding'

@@ -20,7 +20,7 @@ outputs:
     script: build_script.sh
     requirements:
       host:
-        - python >=3.9
+        - python >=3.9, <3.11
         - pip
         - setuptools ==58.0.4
       run:
@@ -39,7 +39,7 @@ outputs:
         - woodwork >=0.22.0
         - featuretools>=1.16.0
         - nlp-primitives>=2.9.0
-        - python >=3.9.*
+        - python >=3.9.*, <3.11
         - networkx >=2.6, <3.2
         - category_encoders >=2.2.2, <=2.5.1.post0
         - python-graphviz >=0.13
@@ -77,7 +77,7 @@ outputs:
         - catboost >=1.1.1
         - lightgbm >=4.0.0
         - lime >=0.2.0.1
-        - python >=3.9.*
+        - python >=3.9.*, <3.11
         - imbalanced-learn >=0.11.0
         - sktime >=0.21.0, <0.29.0
         - pmdarima >=1.8.5
