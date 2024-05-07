@@ -81,7 +81,7 @@ outputs:
         - imbalanced-learn >=0.11.0
         - sktime >=0.21.0, <0.29.0
         - pmdarima >=1.8.5
-        - vowpalwabbit == 9.8.0
+        - vowpalwabbit ==9.8.0
     test:
       imports:
         - evalml
