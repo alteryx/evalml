@@ -39,7 +39,7 @@ outputs:
         - woodwork >=0.22.0
         - featuretools>=1.16.0
         - nlp-primitives>=2.9.0
-        - python >=3.9.*, <3.11
+        - python >=3.9.*
         - networkx >=2.6, <3.2
         - category_encoders >=2.2.2, <=2.5.1.post0
         - python-graphviz >=0.13
