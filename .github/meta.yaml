@@ -69,7 +69,7 @@ outputs:
       run:
         - '{{ pin_subpackage("evalml-core", max_pin="x.x.x.x") }}'
         - plotly >=5.0.0
-        - python-kaleido ==0.1.0
+        - python-kaleido ==0.2.0
         - matplotlib-base >=3.3.3
         - seaborn >=0.11.1
         - ipywidgets >=7.5
@@ -81,7 +81,7 @@ outputs:
         - imbalanced-learn >=0.11.0
         - sktime >=0.21.0, <0.29.0
         - pmdarima >=1.8.5
-        - vowpalwabbit >=8.11.0
+        - vowpalwabbit == 9.8.0
     test:
       imports:
         - evalml
