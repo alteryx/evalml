@@ -54,6 +54,7 @@ jobs:
           conda activate curr_py
           conda config --add channels conda-forge
           conda install -q -y -c conda-forge python-graphviz graphviz
+          conda install -q -y -c conda-forge xorg-libxrender xorg-libxpm
       - name: Install numba (for shap)
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
