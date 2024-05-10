@@ -60,7 +60,7 @@ dependencies = [
     "pmdarima >= 1.8.5",
     "sktime >= 0.21.0, < 0.29.0",
     "lime >= 0.2.0.1",
-    "vowpalwabbit == 9.8.0",
+    "vowpalwabbit >= 8.11.0",
     "tomli >= 2.0.1",
     "packaging >= 23.0",
     "black[jupyter] >= 22.3.0",
@@ -83,7 +83,7 @@ test = [
     "pytest-cov == 2.10.1",
     "nbval == 0.9.3",
     "IPython >= 8.10.0, <8.12.1",
-    "PyYAML == 6.0.1",
+    "PyYAML == 5.4",
     "coverage[toml] >= 6.4",
 ]
 dev = [
