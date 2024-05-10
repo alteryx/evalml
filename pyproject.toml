@@ -100,12 +100,12 @@ docs = [
     "pydata-sphinx-theme >= 0.3.1",
     "astroid <= 2.6.6",
     "Sphinx >= 5.0.0",
-    "nbconvert >= 6.4.5",
+    "nbconvert >= 6.5.0",
     "nbsphinx >= 0.8.5, < 0.9.0",
     "sphinx-autoapi",
     "sphinx-inline-tabs == 2022.1.2b11",
     "sphinx-copybutton == 0.4.0",
-    "myst-parser == 0.16.1",
+    "myst-parser == 0.18.0",
 ]
 prophet = [
     "prophet >= 1.1.2",
