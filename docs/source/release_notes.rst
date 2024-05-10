@@ -8,6 +8,7 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Run airflow tests in Python 3.9 :pr:`4391`
+        * Update GH actions to improve handling of potentially unsafe variables :pr:`4417`
 
 .. warning::
 
