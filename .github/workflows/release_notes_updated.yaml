@@ -15,24 +15,28 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Debug PR type
+        env:
+          REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          if [[ $(expr match "${{ github.event.pull_request.head.ref }}" "release_v[0-9.]\+") -gt 0 ]]; then
+          if [[ $(expr match "$REF" "release_v[0-9.]\+") -gt 0 ]]; then
             echo This is a release PR;
-          elif [[ $(expr match "${{ github.event.pull_request.head.ref }}" "latest-dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
+          elif [[ $(expr match "$REF" "latest-dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
             echo This is a latest dependency update PR;
-          elif [[ $(expr match "${{ github.event.pull_request.head.ref }}" "min-dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
+          elif [[ $(expr match "$REF" "min-dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
             echo This is a minimum dependency update PR;
           else
             echo This is a regular PR;
           fi
             echo "PR #: ${{ github.event.number }}"
       - name: Release notes added
+        env:
+          REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          if [[ $(expr match "${{ github.event.pull_request.head.ref }}" "release_v[0-9.]\+") -gt 0 ]]; then
+          if [[ $(expr match "$REF" "release_v[0-9.]\+") -gt 0 ]]; then
             exit 0;
-          elif [[ $(expr match "${{ github.event.pull_request.head.ref }}" "latest-dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
+          elif [[ $(expr match "$REF" "latest-dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
             exit 0;
-          elif [[ $(expr match "${{ github.event.pull_request.head.ref }}" "min-dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
+          elif [[ $(expr match "$REF" "min-dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
             exit 0;
           fi
           cat docs/source/release_notes.rst | grep ":pr:\`${{ github.event.number }}\`"
