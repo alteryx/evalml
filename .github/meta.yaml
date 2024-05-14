@@ -24,7 +24,7 @@ outputs:
         - pip
         - setuptools >=58.0.4
       run:
-        - numpy >=1.22.0
+        - numpy >=1.22.0, <2.1.0
         - pandas >=1.5.0
         - dask >=2022.2.0, !=2022.10.1
         - scipy >=1.5.0, <1.12.0
@@ -40,7 +40,7 @@ outputs:
         - featuretools>=1.16.0
         - nlp-primitives>=2.9.0
         - python >=3.9.*
-        - networkx >=2.6
+        - networkx >=2.6, <3.2
         - category_encoders >=2.2.2, <=2.5.1.post0
         - python-graphviz >=0.13
         - tomli >=2.0.1
