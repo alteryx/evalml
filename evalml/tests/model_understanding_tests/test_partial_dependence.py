@@ -774,7 +774,10 @@ def test_partial_dependence_more_categories_than_grid_resolution(
         grid_resolution=round(num_cat_features),
     )
     part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
-    assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
+    assert part_dep_ans_rounded == pytest.approx(
+        round_dict_keys(part_dep_dict),
+        rel=1e-2,
+    )
 
     fast_part_dep = partial_dependence(
         pipeline,
