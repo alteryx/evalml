@@ -60,7 +60,7 @@ dependencies = [
     "pmdarima >= 1.8.5",
     "sktime >= 0.21.0, < 0.29.0",
     "lime >= 0.2.0.1",
-    "vowpalwabbit == 9.8.0",
+    "vowpalwabbit >= 8.11.0",
     "tomli >= 2.0.1",
     "packaging >= 23.0",
     "black[jupyter] >= 22.3.0",
