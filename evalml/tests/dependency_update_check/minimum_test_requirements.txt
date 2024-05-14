@@ -19,7 +19,7 @@ lightgbm==4.0.0
 lime==0.2.0.1
 matplotlib==3.3.3
 nbval==0.9.3
-networkx==2.6
+networkx==2.7
 nlp-primitives==2.9.0
 numpy==1.22.0
 packaging==23.0
