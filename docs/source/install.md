@@ -110,6 +110,9 @@ If you are using `pip` to install EvalML on Windows, it is recommended you first
 
 The [XGBoost](https://pypi.org/project/xgboost/) library may not be pip-installable in some Windows environments. If you are encountering installation issues, please try installing XGBoost from [Github](https://xgboost.readthedocs.io/en/latest/build.html) before installing EvalML or install evalml with conda.
 
+Note: there are two graphviz, `python-graphviz` and `graphviz`. If you run into issues, ensure that `python-graphviz` version is >= 0.20.3. If there are still
+issues related to `graphviz`, you can try `conda install -c conda-forge graphviz` where `graphviz` version >= 9.0.0
+
 ## Mac Additional Requirements & Troubleshooting
 
 In order to run on Mac, [LightGBM](https://pypi.org/project/lightgbm/) requires the `OpenMP` library to be installed, which can be done with [HomeBrew](https://brew.sh/) by running:
