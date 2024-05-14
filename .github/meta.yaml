@@ -24,7 +24,7 @@ outputs:
         - pip
         - setuptools >=58.0.4
       run:
-        - numpy >=1.22.0, 
+        - numpy >=1.22.0 
         - pandas >=1.5.0, <2.1.0
         - dask >=2022.2.0, !=2022.10.1
         - scipy >=1.5.0, <1.12.0
