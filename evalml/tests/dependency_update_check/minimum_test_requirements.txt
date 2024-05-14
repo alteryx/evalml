@@ -1,5 +1,5 @@
 IPython==8.10.0
-PyYAML==5.4
+PyYAML==6.1
 black[jupyter]==22.3.0
 catboost==1.1.1
 category-encoders==2.2.2
