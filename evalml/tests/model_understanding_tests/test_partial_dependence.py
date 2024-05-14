@@ -722,8 +722,8 @@ def test_partial_dependence_more_categories_than_grid_resolution(
         return dictionary_rounded
 
     def check_dicts_approx_equal(part_dep_ans, part_dep_dict, rel=1e-3):
-        keys_part_dep_ans = part_dep_ans.keys()
-        keys_part_dep_dict = part_dep_dict.keys()
+        keys_part_dep_ans = list(part_dep_ans.keys())
+        keys_part_dep_dict = list(part_dep_dict.keys())
         keys_part_dep_ans.sort()
         keys_part_dep_dict.sort()
 
