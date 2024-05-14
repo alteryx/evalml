@@ -713,7 +713,7 @@ def test_partial_dependence_more_categories_than_grid_resolution(
     fraud_local,
     logistic_regression_binary_pipeline,
 ):
-    def round_dict_keys(dictionary, places=6):
+    def round_dict_keys(dictionary, places=3):
         """Function to round all keys of a dictionary that has floats as keys."""
         dictionary_rounded = {}
         for key in dictionary:
@@ -753,10 +753,8 @@ def test_partial_dependence_more_categories_than_grid_resolution(
         grid_resolution=round(num_cat_features / 2),
     )
     part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
-    assert part_dep_ans_rounded == pytest.approx(
-        round_dict_keys(part_dep_dict),
-        rel=1e-2,
-    )
+    assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
+
     fast_part_dep = partial_dependence(
         pipeline,
         X,
@@ -776,10 +774,7 @@ def test_partial_dependence_more_categories_than_grid_resolution(
         grid_resolution=round(num_cat_features),
     )
     part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
-    assert part_dep_ans_rounded == pytest.approx(
-        round_dict_keys(part_dep_dict),
-        rel=1e-2,
-    )
+    assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
 
     fast_part_dep = partial_dependence(
         pipeline,
@@ -800,10 +795,8 @@ def test_partial_dependence_more_categories_than_grid_resolution(
         grid_resolution=round(num_cat_features * 2),
     )
     part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
-    assert part_dep_ans_rounded == pytest.approx(
-        round_dict_keys(part_dep_dict),
-        rel=1e-2,
-    )
+    assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
+
     fast_part_dep = partial_dependence(
         pipeline,
         X,
