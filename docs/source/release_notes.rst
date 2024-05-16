@@ -5,6 +5,7 @@ Release Notes
         * Reformatted files with updated black version :pr:`4395`
     * Fixes
     * Changes
+        * Dropped support for Python 3.8 :pr:`4414`
     * Documentation Changes
     * Testing Changes
         * Run airflow tests in Python 3.9 :pr:`4391`
@@ -13,6 +14,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Dropped support for Python 3.7 :pr:`3291`
 
 
 **v0.83.0 Feb 2, 2024**

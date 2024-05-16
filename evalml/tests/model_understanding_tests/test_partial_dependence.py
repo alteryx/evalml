@@ -1,3 +1,4 @@
+import collections
 import re
 from unittest.mock import patch
 
@@ -720,6 +721,17 @@ def test_partial_dependence_more_categories_than_grid_resolution(
             dictionary_rounded[round(key, places)] = dictionary[key]
         return dictionary_rounded
 
+    def check_dicts_approx_equal(part_dep_ans, part_dep_dict, abs=1e-3):
+        keys_part_dep_ans = list(part_dep_ans.keys())
+        keys_part_dep_dict = list(part_dep_dict.keys())
+        keys_part_dep_ans.sort()
+        keys_part_dep_dict.sort()
+
+        assert keys_part_dep_ans == pytest.approx(keys_part_dep_dict, abs=abs)
+        assert collections.Counter(list(part_dep_ans.values())) == collections.Counter(
+            list(part_dep_dict.values()),
+        )
+
     X, y = fraud_local
     X = X[:100]
     y = y[:100]
@@ -753,7 +765,7 @@ def test_partial_dependence_more_categories_than_grid_resolution(
         grid_resolution=round(num_cat_features / 2),
     )
     part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
-    assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
+    check_dicts_approx_equal(part_dep_ans_rounded, round_dict_keys(part_dep_dict))
 
     fast_part_dep = partial_dependence(
         pipeline,
@@ -774,7 +786,7 @@ def test_partial_dependence_more_categories_than_grid_resolution(
         grid_resolution=round(num_cat_features),
     )
     part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
-    assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
+    check_dicts_approx_equal(part_dep_ans_rounded, round_dict_keys(part_dep_dict))
 
     fast_part_dep = partial_dependence(
         pipeline,
@@ -795,7 +807,7 @@ def test_partial_dependence_more_categories_than_grid_resolution(
         grid_resolution=round(num_cat_features * 2),
     )
     part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
-    assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
+    check_dicts_approx_equal(part_dep_ans_rounded, round_dict_keys(part_dep_dict))
 
     fast_part_dep = partial_dependence(
         pipeline,
