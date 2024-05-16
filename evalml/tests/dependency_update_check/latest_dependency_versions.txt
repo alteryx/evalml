@@ -15,7 +15,7 @@ ipywidgets==8.1.2
 kaleido==0.1.0
 lightgbm==4.3.0
 lime==0.2.0.1
-matplotlib==3.8.4
+matplotlib==3.9.0
 matplotlib-inline==0.1.7
 networkx==3.2.1
 numpy==1.26.4
