@@ -48,7 +48,7 @@ dependencies = [
     "nlp-primitives >= 2.9.0",
     "networkx >= 2.7",
     "plotly >= 5.0.0",
-    "kaleido == 0.1.0",
+    "kaleido == 0.2.0",
     "ipywidgets >= 7.5",
     "xgboost >= 1.7.0.post0",
     "catboost >= 1.1.1",
