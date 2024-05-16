@@ -16,9 +16,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python_version: ["3.9", "3.10", "3.11"]
-        exclude: 
-          - os: macos-latest
-            python-version: "3.8"
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
