@@ -34,6 +34,11 @@ jobs:
         with:
           path: ${{ env.pythonLocation }} 
           key: ${{ matrix.os- }}-${{ matrix.python_version }}-install-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+      - name: Set up cmake and libomp
+        run: brew install cmake libomp
       - name: Build evalml package
         run: make package
       - name: Install evalml from sdist (not using cache)
