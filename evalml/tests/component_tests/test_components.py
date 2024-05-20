@@ -944,7 +944,7 @@ def test_components_can_be_used_for_partial_dependence_fast_mode(prophet):
         for cls in all_native_components
         if not cls._can_be_used_for_fast_partial_dependence
     ]
-    if not prophet:
+    if not prophet and ProphetRegressor in all_native_components:
         all_native_components.remove(ProphetRegressor)
 
     num_valid_for_pd_fast_mode = len(
