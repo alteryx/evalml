@@ -933,17 +933,20 @@ def test_default_parameters_raise_no_warnings(cls):
         assert len(w) == 0
 
 
-def test_components_can_be_used_for_partial_dependence_fast_mode():
+@pytest.mark.parametrize("prophet", [True, False])
+def test_components_can_be_used_for_partial_dependence_fast_mode(prophet):
     """This test is intended to fail when new components are added to remind developers
     to decide whether or not partial dependence fast mode should be allowed for the new component.
     """
     all_native_components = all_components()
-
     invalid_for_pd_fast_mode = [
         cls.name
         for cls in all_native_components
         if not cls._can_be_used_for_fast_partial_dependence
     ]
+    if not prophet:
+        all_native_components.remove(ProphetRegressor)
+
     num_valid_for_pd_fast_mode = len(
         [
             cls.name
@@ -951,7 +954,6 @@ def test_components_can_be_used_for_partial_dependence_fast_mode():
             if cls._can_be_used_for_fast_partial_dependence
         ],
     )
-
     assert invalid_for_pd_fast_mode == [
         "Stacked Ensemble Regressor",
         "Stacked Ensemble Classifier",
