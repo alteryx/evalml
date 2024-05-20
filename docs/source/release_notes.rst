@@ -6,6 +6,7 @@ Release Notes
     * Fixes
     * Changes
         * Dropped support for Python 3.8 :pr:`4414`
+        * Uncapped holidays :pr:`4428`
     * Documentation Changes
     * Testing Changes
         * Run airflow tests in Python 3.9 :pr:`4391`
