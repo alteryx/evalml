@@ -961,9 +961,9 @@ def test_components_can_be_used_for_partial_dependence_fast_mode():
     # Expected number is hardcoded so that this test will fail when new components are added
     # It should be len(all_native_components) - num_invalid_for_pd_fast_mode
     if ProphetRegressor not in all_native_components:
-        expected_num_valid_for_pd_fast_mode = 65
+        expected_num_valid_for_pd_fast_mode = 62
     else:
-        expected_num_valid_for_pd_fast_mode = 66
+        expected_num_valid_for_pd_fast_mode = 63
     assert num_valid_for_pd_fast_mode == expected_num_valid_for_pd_fast_mode
 
 
