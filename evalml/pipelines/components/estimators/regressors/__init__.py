@@ -46,6 +46,3 @@ from evalml.pipelines.components.estimators.regressors.arima_regressor import (
 from evalml.pipelines.components.estimators.regressors.varmax_regressor import (
     VARMAXRegressor,
 )
-from evalml.pipelines.components.estimators.regressors.vowpal_wabbit_regressor import (
-    VowpalWabbitRegressor,
-)

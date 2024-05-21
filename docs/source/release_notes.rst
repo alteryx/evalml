@@ -6,6 +6,7 @@ Release Notes
     * Fixes
     * Changes
         * Dropped support for Python 3.8 :pr:`4414`
+        * Removed vowpalwabbit :pr:`4427`
         * Uncapped holidays :pr:`4428`
     * Documentation Changes
     * Testing Changes
@@ -18,6 +19,7 @@ Release Notes
 
     **Breaking Changes**
         * Dropped support for Python 3.7 :pr:`3291`
+        * Removed vowpalwabbit :pr:`4427`
 
 
 **v0.83.0 Feb 2, 2024**

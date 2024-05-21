@@ -13,8 +13,6 @@ from evalml.pipelines.components.estimators.classifiers import (
     DecisionTreeClassifier,
     KNeighborsClassifier,
     SVMClassifier,
-    VowpalWabbitBinaryClassifier,
-    VowpalWabbitMulticlassClassifier,
 )
 from evalml.pipelines.components.estimators.regressors import (
     LinearRegressor,
@@ -33,5 +31,4 @@ from evalml.pipelines.components.estimators.regressors import (
     ARIMARegressor,
     VARMAXRegressor,
     ProphetRegressor,
-    VowpalWabbitRegressor,
 )

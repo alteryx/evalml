@@ -89,13 +89,6 @@ def lgbm():
 
 
 @pytest.fixture(scope="session")
-def vw():
-    from vowpalwabbit import sklearn_vw as vw
-
-    return vw
-
-
-@pytest.fixture(scope="session")
 def graphviz():
     import graphviz
 
