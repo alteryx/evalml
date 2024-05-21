@@ -18,6 +18,7 @@ Release Notes
 
     **Breaking Changes**
         * Dropped support for Python 3.7 :pr:`3291`
+        * Removed vowpalwabbit :pr:`4427`
 
 
 **v0.83.0 Feb 2, 2024**
