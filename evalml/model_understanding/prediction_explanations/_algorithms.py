@@ -144,15 +144,6 @@ def _compute_shap_values(pipeline, features, training_data=None):
         if ws:
             logger.debug(f"_compute_shap_values TreeExplainer: {ws[0].message}")
         shap_values = explainer.shap_values(features, check_additivity=False)
-        # shap only outputs values for positive class for Catboost/Xgboost binary estimators.
-        # this modifies the output to match the output format of other binary estimators.
-        # Ok to fill values of negative class with zeros since the negative class will get dropped
-        # in the UI anyways.
-        if estimator.model_family in {
-            ModelFamily.CATBOOST,
-            ModelFamily.XGBOOST,
-        } and is_binary(pipeline.problem_type):
-            shap_values = [np.zeros(shap_values.shape), shap_values]
     else:
         if training_data is None:
             raise ValueError(
@@ -189,16 +180,30 @@ def _compute_shap_values(pipeline, features, training_data=None):
         except IndexError:
             expected_value = explainer.expected_value
 
-    # classification problem
-    if isinstance(shap_values, list):
-        mappings = []
-        for class_shap_values in shap_values:
-            mappings.append(_create_dictionary(class_shap_values, feature_names))
-        return (mappings, expected_value)
     # regression problem
-    elif isinstance(shap_values, np.ndarray):
+    if is_regression(pipeline.problem_type):
         dic = _create_dictionary(shap_values, feature_names)
         return (dic, expected_value)
+
+    # classification problem
+    if len(shap_values.shape) == 3:
+        mappings = []
+        for class_shap_values in shap_values.T:
+            mappings.append(_create_dictionary(class_shap_values.T, feature_names))
+        return (mappings, expected_value)
+    # shap only outputs values for positive class for boosted binary estimators.
+    # this modifies the output to match the output format of other binary estimators.
+    # Ok to fill values of negative class with the positive class since the negative class
+    # will get dropped in the UI anyways.
+    if estimator.model_family in {
+        ModelFamily.CATBOOST,
+        ModelFamily.XGBOOST,
+        ModelFamily.LIGHTGBM,
+    } and is_binary(pipeline.problem_type):
+        mappings = []
+        for _ in range(2):
+            mappings.append(_create_dictionary(shap_values, feature_names))
+        return (mappings, expected_value)
     else:
         raise ValueError(f"Unknown shap_values datatype {str(type(shap_values))}!")
 

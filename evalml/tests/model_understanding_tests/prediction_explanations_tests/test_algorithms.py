@@ -332,7 +332,7 @@ def test_compute_shap_values_catches_shap_tree_warnings(
     def raise_warning_from_shap(estimator, feature_perturbation):
         warnings.warn("Shap raised a warning!")
         mock = MagicMock()
-        mock.shap_values.return_value = np.zeros(10)
+        mock.shap_values.return_value = np.zeros((1, 10, 2))
         return mock
 
     mock_tree_explainer.side_effect = raise_warning_from_shap
