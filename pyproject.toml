@@ -78,9 +78,9 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "pytest == 7.1.2",
-    "pytest-xdist >= 2.1.0",
-    "pytest-timeout >= 1.4.2",
-    "pytest-cov >= 2.10.1",
+    "pytest-xdist == 2.1.0",
+    "pytest-timeout == 1.4.2",
+    "pytest-cov == 2.10.1",
     "nbval == 0.9.3",
     "IPython >= 8.10.0, <8.12.1",
     "PyYAML == 6.0.1",
