@@ -34,8 +34,8 @@ from evalml.utils.gen_utils import (
 def in_container_arm64():
     """Helper fixture to run chromium as a single process for kaleido.
 
-    The env var is set in the Dockerfile.arm for the purposes of local
-    testing in a container on a mac M1, otherwise it's a noop.
+    Useful as kaleido > 0.1.0 on windows seems to plotly.write_image to hang indefinitely.
+    Makes tests that use plotly not hang and thus pass.
     """
     import plotly.io as pio
 
