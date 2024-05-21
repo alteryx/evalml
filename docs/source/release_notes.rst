@@ -17,7 +17,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
-        * Dropped support for Python 3.7 :pr:`3291`
+        * Dropped support for Python 3.8 :pr:`4414`
         * Removed vowpalwabbit :pr:`4427`
 
 
