@@ -37,14 +37,14 @@ def in_container_arm64():
     The env var is set in the Dockerfile.arm for the purposes of local
     testing in a container on a mac M1, otherwise it's a noop.
     """
-    # if os.getenv("DOCKER_ARM", None):
-    import plotly.io as pio
+    if os.getenv("DOCKER_ARM", None):
+        import plotly.io as pio
 
-    pio.kaleido.scope.chromium_args += (
-        "--single-process",
-        "--headless",
-        "--disable-gpu",
-    )
+        pio.kaleido.scope.chromium_args += (
+            "--single-process",
+            "--headless",
+            "--disable-gpu",
+        )
 
 
 @patch("importlib.import_module")
