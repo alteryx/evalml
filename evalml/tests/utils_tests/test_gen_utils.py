@@ -40,7 +40,11 @@ def in_container_arm64():
     if os.getenv("DOCKER_ARM", None):
         import plotly.io as pio
 
-        pio.kaleido.scope.chromium_args += ("--single-process",)
+        pio.kaleido.scope.chromium_args += (
+            "--single-process",
+            "--headless",
+            "--disable-gpu",
+        )
 
 
 @patch("importlib.import_module")
