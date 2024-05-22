@@ -19,7 +19,7 @@ networkx==2.7
 nlp-primitives==2.9.0
 numpy==1.22.0
 packaging==23.0
-pandas==1.5.0
+pandas==2.2.0
 plotly==5.0.0
 pmdarima==1.8.5
 pyzmq==20.0.0
