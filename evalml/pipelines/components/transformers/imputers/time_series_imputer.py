@@ -211,11 +211,22 @@ class TimeSeriesImputer(Transformer):
         X_not_all_null.ww.init(schema=original_schema, logical_types=new_ltypes)
 
         y_imputed = (
-            y.ww.drop(self._y_all_null_cols)
-            if isinstance(y, pd.DataFrame)
-            else pd.Series(y)
+            y.ww.drop(self._y_all_null_cols) if isinstance(y, pd.DataFrame) else y
         )
-        if y is not None and len(y) > 0:
+
+        if y is not None and not y_imputed.empty:
+            # Repeat the same type checking process as for X with y
+            y_original_schema = y_imputed.ww.schema
+            if isinstance(y, pd.Series):
+                new_ltype = _determine_non_nullable_equivalent(
+                    y_original_schema.logical_type,
+                )
+            else:
+                new_ltypes = {
+                    col: _determine_non_nullable_equivalent(ltype)
+                    for col, ltype in y_original_schema.logical_types.items()
+                }
+
             if self._impute_target == "forwards_fill":
                 y_imputed = y_imputed.pad()
                 y_imputed.bfill(inplace=True)
@@ -225,17 +236,26 @@ class TimeSeriesImputer(Transformer):
             elif self._impute_target == "interpolate":
                 y_imputed = y_imputed.interpolate()
                 y_imputed.bfill(inplace=True)
+
+                if isinstance(y, pd.Series):
+                    new_ltype = _determine_fractional_type(
+                        y_original_schema.logical_type,
+                    )
+                else:
+                    int_cols_to_update = y_original_schema._filter_cols(
+                        include=["IntegerNullable", "AgeNullable"],
+                    )
+                    new_int_ltypes = {
+                        col: _determine_fractional_type(ltype)
+                        for col, ltype in y_original_schema.logical_types.items()
+                        if col in int_cols_to_update
+                    }
+                    new_ltypes.update(new_int_ltypes)
+
             # Re-initialize woodwork with the downcast logical type
             if isinstance(y, pd.Series):
-                y_imputed = ww.init_series(y_imputed, logical_type=y.ww.logical_type)
+                y_imputed = ww.init_series(y_imputed, logical_type=new_ltype)
             else:
-                y_original_schema = y.ww.schema.get_subset_schema(
-                    list(y_imputed.columns),
-                )
-                y_new_ltypes = {
-                    col: _determine_non_nullable_equivalent(ltype)
-                    for col, ltype in y_original_schema.logical_types.items()
-                }
-                y_imputed.ww.init(schema=y_original_schema, logical_types=y_new_ltypes)
+                y_imputed.ww.init(schema=y_original_schema, logical_types=new_ltypes)
 
         return X_not_all_null, y_imputed
