@@ -41,7 +41,7 @@ jobs:
         run: brew install cmake libomp
       - name: Build evalml package
         run: make package
-      - name: Install evalml from sdist (not using cache)
+      - name: Install evalml from sdist
         run: |
           python -m pip install "unpacked_sdist/."
       - name: Test by importing packages

@@ -34,7 +34,7 @@ from evalml.utils.gen_utils import (
 def in_container_arm64():
     """Helper fixture to run chromium as a single process for kaleido.
 
-    Useful as kaleido > 0.1.0 on windows seems to plotly.write_image to hang indefinitely.
+    Useful as kaleido > 0.1.0 can cause plotly.write_image to hang indefinitely.
     Makes tests that use plotly not hang and thus pass.
     """
     import plotly.io as pio
