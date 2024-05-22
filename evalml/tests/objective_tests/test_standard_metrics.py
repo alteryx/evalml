@@ -1,3 +1,4 @@
+import warnings
 from itertools import product
 
 import numpy as np
@@ -708,7 +709,7 @@ def test_mse_linear_model():
 def test_mcc_catches_warnings():
     y_true = [1, 0, 1, 1]
     y_predicted = [0, 0, 0, 0]
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings(record=True) as record:
         MCCBinary().objective_function(y_true, y_predicted)
         MCCMulticlass().objective_function(y_true, y_predicted)
         assert len(record) == 0
