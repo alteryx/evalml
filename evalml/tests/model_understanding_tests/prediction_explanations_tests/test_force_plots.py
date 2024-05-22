@@ -1,4 +1,3 @@
-import warnings
 from itertools import product
 from unittest.mock import patch
 
@@ -80,7 +79,7 @@ def test_force_plot_binary(
     else:
         # Code chunk to test where initjs is called if jupyter is recognized
         jupyter_check.return_value = False
-        with warnings.catch_warnings(record=True) as graph_valid:
+        with pytest.warns(None) as graph_valid:
             results = graph_force_plot(
                 pipeline,
                 rows_to_explain=rows_to_explain,
@@ -89,11 +88,11 @@ def test_force_plot_binary(
                 matplotlib=False,
             )
             assert not initjs.called
-            warnings_deprecated = set([str(gv) for gv in graph_valid.list])
-            assert all(["DeprecationWarning" in w for w in warnings_deprecated])
+            warnings = set([str(gv) for gv in graph_valid])
+            assert all(["DeprecationWarning" in w for w in warnings])
 
         jupyter_check.return_value = True
-        with warnings.catch_warnings(record=True) as graph_valid:
+        with pytest.warns(None) as graph_valid:
             results = graph_force_plot(
                 pipeline,
                 rows_to_explain=rows_to_explain,
@@ -102,8 +101,8 @@ def test_force_plot_binary(
                 matplotlib=False,
             )
             assert initjs.called
-            warnings_deprecated = set([str(gv) for gv in graph_valid.list])
-            assert all(["DeprecationWarning" in w for w in warnings_deprecated])
+            warnings = set([str(gv) for gv in graph_valid])
+            assert all(["DeprecationWarning" in w for w in warnings])
 
     # Should have a result per row to explain.
     assert len(results) == len(rows_to_explain)
