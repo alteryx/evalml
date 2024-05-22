@@ -16,9 +16,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python_version: ["3.9", "3.10", "3.11"]
-        exclude: 
-          - os: macos-latest
-            python-version: "3.8"
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -37,16 +34,16 @@ jobs:
         with:
           path: ${{ env.pythonLocation }} 
           key: ${{ matrix.os- }}-${{ matrix.python_version }}-install-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+      - name: Set up cmake and libomp
+        run: brew install cmake libomp
       - name: Build evalml package
         run: make package
-      - name: Install evalml from sdist (not using cache)
-        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Install evalml from sdist
         run: |
           python -m pip install "unpacked_sdist/."
-      - name: Install evalml from sdist (using cache)
-        if: steps.cache.outputs.cache-hit == 'true'
-        run: |
-          python -m pip install "unpacked_sdist/." --no-deps
       - name: Test by importing packages
         run: |
           python -c "import evalml"

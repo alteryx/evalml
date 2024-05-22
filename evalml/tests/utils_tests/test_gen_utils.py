@@ -34,13 +34,16 @@ from evalml.utils.gen_utils import (
 def in_container_arm64():
     """Helper fixture to run chromium as a single process for kaleido.
 
-    The env var is set in the Dockerfile.arm for the purposes of local
-    testing in a container on a mac M1, otherwise it's a noop.
+    Useful as kaleido > 0.1.0 can cause plotly.write_image to hang indefinitely.
+    Makes tests that use plotly not hang and thus pass.
     """
-    if os.getenv("DOCKER_ARM", None):
-        import plotly.io as pio
+    import plotly.io as pio
 
-        pio.kaleido.scope.chromium_args += ("--single-process",)
+    pio.kaleido.scope.chromium_args += (
+        "--single-process",
+        "--headless",
+        "--disable-gpu",
+    )
 
 
 @patch("importlib.import_module")
