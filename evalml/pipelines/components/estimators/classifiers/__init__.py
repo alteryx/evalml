@@ -33,7 +33,3 @@ from evalml.pipelines.components.estimators.classifiers.kneighbors_classifier im
 from evalml.pipelines.components.estimators.classifiers.svm_classifier import (
     SVMClassifier,
 )
-from evalml.pipelines.components.estimators.classifiers.vowpal_wabbit_classifiers import (
-    VowpalWabbitBinaryClassifier,
-    VowpalWabbitMulticlassClassifier,
-)

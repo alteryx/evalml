@@ -76,13 +76,6 @@ from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )
-from evalml.pipelines.components.estimators.classifiers.vowpal_wabbit_classifiers import (
-    VowpalWabbitBinaryClassifier,
-    VowpalWabbitMulticlassClassifier,
-)
-from evalml.pipelines.components.estimators.regressors.vowpal_wabbit_regressor import (
-    VowpalWabbitRegressor,
-)
 from evalml.pipelines.components.transformers.encoders.label_encoder import LabelEncoder
 from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
     LogTransformer,
@@ -525,56 +518,6 @@ def test_describe_component():
         }
     except ImportError:
         pass
-    vw_binary_classifier = VowpalWabbitBinaryClassifier(
-        loss_function="classic",
-        learning_rate=0.1,
-        decay_learning_rate=1.0,
-        power_t=0.1,
-        passes=1,
-    )
-    vw_multi_classifier = VowpalWabbitMulticlassClassifier(
-        loss_function="classic",
-        learning_rate=0.1,
-        decay_learning_rate=1.0,
-        power_t=0.1,
-        passes=1,
-    )
-    vw_regressor = VowpalWabbitRegressor(
-        learning_rate=0.1,
-        decay_learning_rate=1.0,
-        power_t=0.1,
-        passes=1,
-    )
-
-    assert vw_binary_classifier.describe(return_dict=True) == {
-        "name": "Vowpal Wabbit Binary Classifier",
-        "parameters": {
-            "loss_function": "classic",
-            "learning_rate": 0.1,
-            "decay_learning_rate": 1.0,
-            "power_t": 0.1,
-            "passes": 1,
-        },
-    }
-    assert vw_multi_classifier.describe(return_dict=True) == {
-        "name": "Vowpal Wabbit Multiclass Classifier",
-        "parameters": {
-            "loss_function": "classic",
-            "learning_rate": 0.1,
-            "decay_learning_rate": 1.0,
-            "power_t": 0.1,
-            "passes": 1,
-        },
-    }
-    assert vw_regressor.describe(return_dict=True) == {
-        "name": "Vowpal Wabbit Regressor",
-        "parameters": {
-            "learning_rate": 0.1,
-            "decay_learning_rate": 1.0,
-            "power_t": 0.1,
-            "passes": 1,
-        },
-    }
 
 
 def test_update_parameters(X_y_binary):
@@ -990,17 +933,20 @@ def test_default_parameters_raise_no_warnings(cls):
         assert len(w) == 0
 
 
-def test_components_can_be_used_for_partial_dependence_fast_mode():
+@pytest.mark.parametrize("prophet", [True, False])
+def test_components_can_be_used_for_partial_dependence_fast_mode(prophet):
     """This test is intended to fail when new components are added to remind developers
     to decide whether or not partial dependence fast mode should be allowed for the new component.
     """
     all_native_components = all_components()
-
     invalid_for_pd_fast_mode = [
         cls.name
         for cls in all_native_components
         if not cls._can_be_used_for_fast_partial_dependence
     ]
+    if not prophet and ProphetRegressor in all_native_components:
+        all_native_components.remove(ProphetRegressor)
+
     num_valid_for_pd_fast_mode = len(
         [
             cls.name
@@ -1008,7 +954,6 @@ def test_components_can_be_used_for_partial_dependence_fast_mode():
             if cls._can_be_used_for_fast_partial_dependence
         ],
     )
-
     assert invalid_for_pd_fast_mode == [
         "Stacked Ensemble Regressor",
         "Stacked Ensemble Classifier",
@@ -1018,9 +963,9 @@ def test_components_can_be_used_for_partial_dependence_fast_mode():
     # Expected number is hardcoded so that this test will fail when new components are added
     # It should be len(all_native_components) - num_invalid_for_pd_fast_mode
     if ProphetRegressor not in all_native_components:
-        expected_num_valid_for_pd_fast_mode = 65
+        expected_num_valid_for_pd_fast_mode = 62
     else:
-        expected_num_valid_for_pd_fast_mode = 66
+        expected_num_valid_for_pd_fast_mode = 63
     assert num_valid_for_pd_fast_mode == expected_num_valid_for_pd_fast_mode
 
 
@@ -1215,9 +1160,6 @@ def test_all_estimators_check_fit(
             StackedEnsembleRegressor,
             TimeSeriesBaselineEstimator,
             MultiseriesTimeSeriesBaselineRegressor,
-            VowpalWabbitBinaryClassifier,
-            VowpalWabbitMulticlassClassifier,
-            VowpalWabbitRegressor,
         ]
     ] + [test_estimator_needs_fitting_false]
     for component_class in estimators_to_check:
@@ -1399,9 +1341,6 @@ def test_serialization(
                 (
                     StackedEnsembleClassifier,
                     StackedEnsembleRegressor,
-                    VowpalWabbitBinaryClassifier,
-                    VowpalWabbitMulticlassClassifier,
-                    VowpalWabbitRegressor,
                     TimeSeriesBaselineEstimator,
                 ),
             )

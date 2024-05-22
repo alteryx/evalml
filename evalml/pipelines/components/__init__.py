@@ -30,9 +30,6 @@ from evalml.pipelines.components.estimators import (
     ExponentialSmoothingRegressor,
     ARIMARegressor,
     VARMAXRegressor,
-    VowpalWabbitBinaryClassifier,
-    VowpalWabbitMulticlassClassifier,
-    VowpalWabbitRegressor,
 )
 from evalml.pipelines.components.transformers import (
     Transformer,
