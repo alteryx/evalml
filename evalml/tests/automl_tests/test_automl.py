@@ -1530,7 +1530,7 @@ def test_results_getter(AutoMLTestEnv, X_y_binary):
 
     assert automl.results["pipeline_results"][0]["mean_cv_score"] == 1.0
 
-    with pytest.raises(AttributeError, match="set attribute"):
+    with pytest.raises(AttributeError, match="has no setter"):
         automl.results = 2.0
 
     automl.results["pipeline_results"][0]["mean_cv_score"] = 2.0
