@@ -9,12 +9,13 @@ Release Notes
         * Removed vowpalwabbit :pr:`4427`
         * Uncapped holidays :pr:`4428`
         * Unpinned kaleido :pr:`4423`
+        * Unpinned shap and scipy :pr:`4436`
     * Documentation Changes
     * Testing Changes
-        * Run airflow tests in Python 3.9 :pr:`4391`
-        * Remove iterative test from airflow runs :pr:`4424`
-        * Update GH actions to improve handling of potentially unsafe variables :pr:`4417`
-        * Fix install test :pr:`4423`
+        * Added ability to run airflow tests in Python 3.9 :pr:`4391`
+        * Removed iterative test from airflow runs :pr:`4424`
+        * Updated GH actions to improve handling of potentially unsafe variables :pr:`4417`
+        * Fixed install test :pr:`4423`
 
 .. warning::
 
