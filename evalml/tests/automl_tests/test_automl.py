@@ -4850,7 +4850,7 @@ def test_search_parameters_held_automl(
         max_batches=batches,
     )
     aml.search()
-    estimator_args = inspect.getargspec(RandomForestClassifier)
+    estimator_args = inspect.getfullargspec(RandomForestClassifier)
     # estimator_args[0] gives the parameter names, while [3] gives the associated values
     # estimator_args[0][i + 1] to skip 'self' in the estimator
     # we do len - 1 in order to skip the random seed, which isn't present in the row['parameters']
