@@ -161,6 +161,6 @@ def _detect_log_distribution_helper(y):
 
     # If the p-value of the log transformed target is greater than or equal to the p-value of the original target
     # with outliers dropped, then it would imply that the log transformed target has more of a normal distribution
-    if norm_test_log.pvalue >= norm_test_og.pvalue:
+    if round(norm_test_log.pvalue, 6) >= round(norm_test_og.pvalue, 6):
         return True, normalization_test_string, norm_test_og
     return False, normalization_test_string, norm_test_og
