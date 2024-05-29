@@ -147,7 +147,8 @@ def _detect_log_distribution_helper(y):
     normalization_test = shapiro if len(y) <= 5000 else jarque_bera
     normalization_test_string = "shapiro" if len(y) <= 5000 else "jarque_bera"
     # Check if a normal distribution is detected with p-value above 0.05
-    if normalization_test(y).pvalue >= 0.05:
+    pvalue = normalization_test(y).pvalue
+    if pvalue >= 0.05 or np.isnan(pvalue):
         return False, normalization_test_string, None
 
     y_new = round(y, 6)
