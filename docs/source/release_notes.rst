@@ -9,7 +9,7 @@ Release Notes
         * Removed vowpalwabbit :pr:`4427`
         * Uncapped holidays :pr:`4428`
         * Unpinned kaleido :pr:`4423`
-        * Unpinned pinned dependencies under project.optional-dependencies :pr:`4431`
+        * Unpinned most pinned dependencies under project.optional-dependencies :pr:`4431`
     * Documentation Changes
     * Testing Changes
         * Run airflow tests in Python 3.9 :pr:`4391`
