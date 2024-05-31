@@ -14,17 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - python_version: "3.9"
-            command: 'git-test-automl'
-          - python_version: "3.9"
-            command: 'git-test-prophet'
-          - python_version: "3.9"
-            command: 'git-test-modelunderstanding'
-          - python_version: "3.9"
-            command: 'git-test-other'
-          - python_version: "3.9"
-            command: 'git-test-parallel'
+        python_version: ['3.9']
+        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-parallel', 'git-test-prophet', 'git-test-other']
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v4

@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         python_version: ['3.9']
-        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-parallel', 'git-test-prophet']
+        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-parallel', 'git-test-prophet-no-parallel-cpu', 'git-test-other-no-parallel-cpu']
     steps:
       - name: Download Miniconda
         shell: pwsh
