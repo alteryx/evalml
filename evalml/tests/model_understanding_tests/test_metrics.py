@@ -611,22 +611,22 @@ def test_jupyter_graph_check(
     y = y.ww.iloc[:20]
     logistic_regression_binary_pipeline.fit(X, y)
     jupyter_check.return_value = False
-    with pytest.warns(None) as graph_valid:
+    with warnings.catch_warnings(record=True) as graph_valid:
         graph_confusion_matrix(y, y)
         assert len(graph_valid) == 0
 
     jupyter_check.return_value = True
-    with pytest.warns(None) as graph_valid:
+    with warnings.catch_warnings(record=True) as graph_valid:
         rs = get_random_state(42)
         y_pred_proba = y * rs.random(y.shape)
         graph_precision_recall_curve(y, y_pred_proba)
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
-    with pytest.warns(None) as graph_valid:
+    with warnings.catch_warnings(record=True) as graph_valid:
         graph_confusion_matrix(y, y)
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
-    with pytest.warns(None) as graph_valid:
+    with warnings.catch_warnings(record=True) as graph_valid:
         rs = get_random_state(42)
         y_pred_proba = y * rs.random(y.shape)
         graph_roc_curve(y, y_pred_proba)

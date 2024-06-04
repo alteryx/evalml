@@ -1,4 +1,5 @@
 import os
+import warnings
 from collections import OrderedDict
 from unittest.mock import patch
 
@@ -236,7 +237,7 @@ def test_jupyter_graph_check(
         false_negative=-2,
     )
     jupyter_check.return_value = True
-    with pytest.warns(None) as graph_valid:
+    with warnings.catch_warnings(record=True) as graph_valid:
         graph_binary_objective_vs_threshold(
             logistic_regression_binary_pipeline,
             X,
@@ -248,7 +249,7 @@ def test_jupyter_graph_check(
         import_check.assert_called_with("ipywidgets", warning=True)
 
     Xr, yr = X_y_regression
-    with pytest.warns(None) as graph_valid:
+    with warnings.catch_warnings(record=True) as graph_valid:
         rs = get_random_state(42)
         y_preds = yr * rs.random(yr.shape)
         graph_prediction_vs_actual(yr, y_preds)

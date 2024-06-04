@@ -52,7 +52,7 @@ outputs:
       imports:
         - evalml
       requires:
-        - pytest ==6.2.5
+        - pytest >=6.2.5
         - nbval >=0.9.3
       source_files:
         - evalml/*
@@ -85,7 +85,7 @@ outputs:
       imports:
         - evalml
       requires:
-        - pytest ==6.2.5
+        - pytest >=6.2.5
         - nbval >=0.9.3
         - python-graphviz >=0.8.4
         - category_encoders >=2.0.0, <=2.5.1.post0

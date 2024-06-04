@@ -3849,13 +3849,13 @@ def test_score_batch_before_fitting_yields_error_nan_scores(
 def test_high_cv_check_no_warning_for_divide_by_zero(X_y_binary, dummy_binary_pipeline):
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
-    with pytest.warns(None) as warnings:
+    with warnings.catch_warnings(record=True) as automl_warnings:
         # mean is 0 but std is not
         automl._check_for_high_variance(
             dummy_binary_pipeline,
             cv_scores=[0.0, 1.0, -1.0],
         )
-    assert len(warnings) == 0
+    assert len(automl_warnings) == 0
 
 
 @pytest.mark.parametrize(
@@ -4370,7 +4370,7 @@ def test_component_and_pipeline_warnings_surface_in_search(
     mock_get_preprocessing_components.side_effect = (
         dummy_mock_get_preprocessing_components
     )
-    with pytest.warns(None) as warnings_logged:
+    with warnings.catch_warnings(record=True) as warnings_logged:
         automl = AutoMLSearch(
             X_train=X,
             y_train=y,

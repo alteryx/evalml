@@ -1,3 +1,4 @@
+import warnings
 from unittest.mock import PropertyMock, patch
 
 import numpy as np
@@ -923,7 +924,7 @@ def test_jupyter_graph_check(
     y = y.ww.iloc[:20]
     logistic_regression_binary_pipeline.fit(X, y)
     jupyter_check.return_value = False
-    with pytest.warns(None) as graph_valid:
+    with warnings.catch_warnings(record=True) as graph_valid:
         graph_permutation_importance(
             logistic_regression_binary_pipeline,
             X,
@@ -933,7 +934,7 @@ def test_jupyter_graph_check(
         assert len(graph_valid) == 0
 
     jupyter_check.return_value = True
-    with pytest.warns(None) as graph_valid:
+    with warnings.catch_warnings(record=True) as graph_valid:
         graph_permutation_importance(
             logistic_regression_binary_pipeline,
             X,

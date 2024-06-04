@@ -1,5 +1,6 @@
 import collections
 import re
+import warnings
 from unittest.mock import patch
 
 import featuretools as ft
@@ -2465,7 +2466,7 @@ def test_partial_dependence_jupyter_graph_check(
     logistic_regression_binary_pipeline.fit(X, y)
 
     jupyter_check.return_value = True
-    with pytest.warns(None) as graph_valid:
+    with warnings.catch_warnings(record=True) as graph_valid:
         graph_partial_dependence(
             logistic_regression_binary_pipeline,
             X,

@@ -1,7 +1,7 @@
+import warnings
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
-import pytest
 
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
 
@@ -53,12 +53,12 @@ def test_jupyter(import_check, jupyter_check):
     mock_data = MagicMock()
 
     jupyter_check.return_value = True
-    with pytest.warns(None) as graph_valid:
+    with warnings.catch_warnings(record=True) as graph_valid:
         SearchIterationPlot(mock_data.results, mock_data.objective)
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
 
     jupyter_check.return_value = False
-    with pytest.warns(None) as graph_valid:
+    with warnings.catch_warnings(record=True) as graph_valid:
         SearchIterationPlot(mock_data.results, mock_data.objective)
         assert len(graph_valid) == 0

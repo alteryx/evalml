@@ -1,4 +1,5 @@
 import os
+import warnings
 from unittest.mock import patch
 
 import numpy as np
@@ -157,12 +158,12 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipel
     clf = test_pipeline
     clf.fit(X, y)
     jupyter_check.return_value = False
-    with pytest.warns(None) as graph_valid:
+    with warnings.catch_warnings(record=True) as graph_valid:
         clf.graph_feature_importance()
         assert len(graph_valid) == 0
 
     jupyter_check.return_value = True
-    with pytest.warns(None) as graph_valid:
+    with warnings.catch_warnings(record=True) as graph_valid:
         clf.graph_feature_importance()
         import_check.assert_called_with("ipywidgets", warning=True)
 
