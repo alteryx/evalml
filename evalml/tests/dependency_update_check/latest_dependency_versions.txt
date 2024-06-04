@@ -27,9 +27,9 @@ pmdarima==2.0.4
 pyzmq==26.0.3
 scikit-learn==1.4.2
 scikit-optimize==0.10.1
-scipy==1.11.4
+scipy==1.13.1
 seaborn==0.13.2
-shap==0.44.1
+shap==0.45.1
 sktime==0.28.1
 statsmodels==0.14.2
 texttable==1.7.0

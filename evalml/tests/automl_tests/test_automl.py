@@ -1530,9 +1530,12 @@ def test_results_getter(AutoMLTestEnv, X_y_binary):
 
     assert automl.results["pipeline_results"][0]["mean_cv_score"] == 1.0
 
-    with pytest.raises(AttributeError, match="set attribute"):
+    with pytest.raises(AttributeError) as atr_error:
         automl.results = 2.0
 
+    assert "set attribute" in str(atr_error.value) or "has no setter" in str(
+        atr_error.value,
+    )
     automl.results["pipeline_results"][0]["mean_cv_score"] = 2.0
     assert automl.results["pipeline_results"][0]["mean_cv_score"] == 1.0
 
@@ -4850,7 +4853,7 @@ def test_search_parameters_held_automl(
         max_batches=batches,
     )
     aml.search()
-    estimator_args = inspect.getargspec(RandomForestClassifier)
+    estimator_args = inspect.getfullargspec(RandomForestClassifier)
     # estimator_args[0] gives the parameter names, while [3] gives the associated values
     # estimator_args[0][i + 1] to skip 'self' in the estimator
     # we do len - 1 in order to skip the random seed, which isn't present in the row['parameters']
