@@ -10,8 +10,6 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
-        * Dropped support for Python 3.8 :pr:`4414`
-        * Removed vowpalwabbit :pr:`4427`
 
 
 **v0.84.0 Jun 6, 2024**
