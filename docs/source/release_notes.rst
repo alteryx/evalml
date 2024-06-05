@@ -2,18 +2,6 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-    * Fixes
-    * Changes
-    * Documentation Changes
-    * Testing Changes
-
-.. warning::
-
-    **Breaking Changes**
-
-
-**v0.84.0 Jun 5, 2024**
-    * Enhancements
         * Reformatted files with updated black version :pr:`4395`
     * Fixes
         * Fixed token issues related to pypi release github action failing :pr:`4446`
