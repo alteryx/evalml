@@ -24,4 +24,3 @@ jobs:
       run: python -m build
     - name: Publish package distributions to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-    - name: Run workflow to create feedstock pull req
