@@ -2,20 +2,9 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-    * Fixes
-    * Changes
-    * Documentation Changes
-    * Testing Changes
-
-.. warning::
-
-    **Breaking Changes**
-
-
-**v0.84.0 Jun 5, 2024**
-    * Enhancements
         * Reformatted files with updated black version :pr:`4395`
     * Fixes
+        * Fixed token issues related to pypi release github action failing :pr:`4446`
     * Changes
         * Dropped support for Python 3.8 :pr:`4414`
         * Removed vowpalwabbit :pr:`4427`
