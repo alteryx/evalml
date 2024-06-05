@@ -16,6 +16,7 @@ Release Notes
     * Enhancements
         * Reformatted files with updated black version :pr:`4395`
     * Fixes
+        * Fixed token issues related to pypi release github action failing :pr:`4446`
     * Changes
         * Dropped support for Python 3.8 :pr:`4414`
         * Removed vowpalwabbit :pr:`4427`
