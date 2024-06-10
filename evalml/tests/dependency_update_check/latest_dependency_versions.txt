@@ -20,7 +20,7 @@ matplotlib-inline==0.1.7
 networkx==3.2.1
 nlp-primitives==2.13.0
 numpy==1.26.4
-packaging==24.0
+packaging==24.1
 pandas==2.0.3
 plotly==5.22.0
 pmdarima==2.0.4
