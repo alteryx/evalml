@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Updated sktime and scikit-learn latest dependency version :pr:`4449`
     * Changes
     * Documentation Changes
     * Testing Changes
