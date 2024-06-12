@@ -27,7 +27,7 @@ maintainers = [
 ]
 keywords = ["data science", "machine learning", "optimization", "automl"]
 license = {file = "LICENSE"}
-requires-python = ">=3.9,<=3.11"
+requires-python = ">=3.9,<4"
 dependencies = [
     "numpy >= 1.22.0",
     "pandas >= 1.5.0, <2.1.0",
