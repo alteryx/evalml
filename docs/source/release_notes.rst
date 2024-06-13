@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Switched windows nightly tests to run serially instead of in parallel :pr:`4452`
     * Changes
     * Documentation Changes
     * Testing Changes
