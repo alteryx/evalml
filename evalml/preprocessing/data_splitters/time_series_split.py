@@ -1,149 +1,83 @@
-"""Rolling Origin Cross Validation for time series problems."""
-
 from sklearn.model_selection import TimeSeriesSplit as SkTimeSeriesSplit
 from sklearn.model_selection._split import BaseCrossValidator
 
 from evalml.utils.gen_utils import are_ts_parameters_valid_for_split
 
-
 class TimeSeriesSplit(BaseCrossValidator):
-    """Rolling Origin Cross Validation for time series problems.
+    """Rolling Origin Cross Validation specifically designed for time series data.
 
-    The max_delay, gap, and forecast_horizon parameters are only used to validate that the requested split size
-    is not too small given these parameters.
+    This splitter adjusts the training and testing indices based on the max_delay and forecast_horizon
+    to avoid data leakage and ensure that predictions are realistic given the temporal nature of the data.
 
-    Args:
-        max_delay (int): Max delay value for feature engineering. Time series pipelines create delayed features
-            from existing features. This process will introduce NaNs into the first max_delay number of rows. The
-            splitter uses the last max_delay number of rows from the previous split as the first max_delay number
-            of rows of the current split to avoid "throwing out" more data than in necessary. Defaults to 0.
-        gap (int): Number of time units separating the data used to generate features and the data to forecast on.
-            Defaults to 0.
-        forecast_horizon (int, None): Number of time units to forecast. Used for parameter validation. If an integer,
-            will set the size of the cv splits. Defaults to None.
-        time_index (str): Name of the column containing the datetime information used to order the data. Defaults to None.
-        n_splits (int): number of data splits to make. Defaults to 3.
-
-    Example:
-        >>> import numpy as np
-        >>> import pandas as pd
-        ...
-        >>> X = pd.DataFrame([i for i in range(10)], columns=["First"])
-        >>> y = pd.Series([i for i in range(10)])
-        ...
-        >>> ts_split = TimeSeriesSplit(n_splits=4)
-        >>> generator_ = ts_split.split(X, y)
-        ...
-        >>> first_split = next(generator_)
-        >>> assert (first_split[0] == np.array([0, 1])).all()
-        >>> assert (first_split[1] == np.array([2, 3])).all()
-        ...
-        ...
-        >>> second_split = next(generator_)
-        >>> assert (second_split[0] == np.array([0, 1, 2, 3])).all()
-        >>> assert (second_split[1] == np.array([4, 5])).all()
-        ...
-        ...
-        >>> third_split = next(generator_)
-        >>> assert (third_split[0] == np.array([0, 1, 2, 3, 4, 5])).all()
-        >>> assert (third_split[1] == np.array([6, 7])).all()
-        ...
-        ...
-        >>> fourth_split = next(generator_)
-        >>> assert (fourth_split[0] == np.array([0, 1, 2, 3, 4, 5, 6, 7])).all()
-        >>> assert (fourth_split[1] == np.array([8, 9])).all()
+    Parameters:
+        max_delay (int): Maximum delay used in feature engineering which creates lagged features,
+                         potentially introducing NaNs in the process. The splitter recycles the last
+                         `max_delay` rows from the previous split as the start of the current split.
+        gap (int): The interval between the end of the data used to create the features and the start of
+                   the data used for prediction, ensuring no overlap and future data leakage.
+        forecast_horizon (int): Specifies the number of time units to forecast which directly affects the
+                                size of each test set in the splits.
+        time_index (str, optional): Column name of the datetime series used to sort the data. If provided,
+                                    ensures the data is split based on the time order.
+        n_series (int, optional): Number of series if the dataset includes multiple time series.
+        n_splits (int): Number of splits to generate.
     """
 
-    def __init__(
-        self,
-        max_delay=0,
-        gap=0,
-        forecast_horizon=None,
-        time_index=None,
-        n_series=None,
-        n_splits=3,
-    ):
+    def __init__(self, max_delay=0, gap=0, forecast_horizon=None, time_index=None, n_series=None, n_splits=3):
         self.max_delay = max_delay
         self.gap = gap
-        self.forecast_horizon = forecast_horizon if forecast_horizon else 1
+        self.forecast_horizon = forecast_horizon or 1  # Default to 1 if None to ensure at least one in forecast
         self.time_index = time_index
-        self.n_splits = n_splits
         self.n_series = n_series
+        self.n_splits = n_splits
 
-        test_size = forecast_horizon
-        if self.n_series is not None:
-            test_size = forecast_horizon * self.n_series
+        # Calculate test size based on forecast_horizon and number of series
+        test_size = self.forecast_horizon * n_series if n_series else self.forecast_horizon
 
-        self._splitter = SkTimeSeriesSplit(
-            n_splits=n_splits,
-            test_size=test_size,
-        )
+        # Initialize SkTimeSeriesSplit with calculated test size
+        self._splitter = SkTimeSeriesSplit(n_splits=self.n_splits, test_size=test_size)
 
     def get_n_splits(self, X=None, y=None, groups=None):
-        """Get the number of data splits.
-
-        Args:
-            X (pd.DataFrame, None): Features to split.
-            y (pd.DataFrame, None): Target variable to split. Defaults to None.
-            groups: Ignored but kept for compatibility with sklearn API. Defaults to None.
-
-        Returns:
-            Number of splits.
-        """
-        return self._splitter.n_splits
+        """Returns the number of data splits defined by the initializer."""
+        return self.n_splits
 
     @staticmethod
     def _check_if_empty(data):
+        """Check if the dataframe is None or empty."""
         return data is None or data.empty
 
     @property
     def is_cv(self):
-        """Returns whether or not the data splitter is a cross-validation data splitter.
-
-        Returns:
-            bool: If the splitter is a cross-validation data splitter
-        """
-        return self._splitter.n_splits > 1
+        """Check if this splitter instance performs cross-validation."""
+        return self.n_splits > 1
 
     def split(self, X, y=None, groups=None):
-        """Get the time series splits.
+        """Generates indices to split data into training and test set.
 
-        X and y are assumed to be sorted in ascending time order.
-        This method can handle passing in empty or None X and y data but note that X and y cannot be None or empty
-        at the same time.
+        Takes into consideration max_delay and gap to adjust the training and testing indices.
 
         Args:
-            X (pd.DataFrame, None): Features to split.
-            y (pd.DataFrame, None): Target variable to split. Defaults to None.
-            groups: Ignored but kept for compatibility with sklearn API. Defaults to None.
+            X (pd.DataFrame): The data containing features.
+            y (pd.Series): The target variable series.
+            groups (ignored): Only kept for compatibility with the sklearn API.
 
         Yields:
-            Iterator of (train, test) indices tuples.
-
+            train (np.ndarray): The indices of the training data.
+            test (np.ndarray): The indices of the testing data.
+        
         Raises:
-            ValueError: If one of the proposed splits would be empty.
+            ValueError: If validation checks fail or both X and y are empty.
         """
-        # Sklearn splitters always assume a valid X is passed but we need to support the
-        # TimeSeriesPipeline convention of being able to pass in empty X dataframes
-        # We'll do this by passing X=y if X is empty
         if self._check_if_empty(X) and self._check_if_empty(y):
-            raise ValueError(
-                "Both X and y cannot be None or empty in TimeSeriesSplit.split",
-            )
-        elif self._check_if_empty(X) and not self._check_if_empty(y):
-            split_kwargs = dict(X=y, groups=groups)
-        else:
-            split_kwargs = dict(X=X, y=y, groups=groups)
+            raise ValueError("Both X and y cannot be None or empty in TimeSeriesSplit.split")
+        X_to_use = y if self._check_if_empty(X) else X
 
-        result = are_ts_parameters_valid_for_split(
-            self.gap,
-            self.max_delay,
-            self.forecast_horizon,
-            X.shape[0],
-            self.n_splits,
-        )
-        if not result.is_valid:
-            raise ValueError(result.msg)
+        # Validation of time series parameters
+        validation_result = are_ts_parameters_valid_for_split(
+            self.gap, self.max_delay, self.forecast_horizon, X_to_use.shape[0], self.n_splits)
+        if not validation_result.is_valid:
+            raise ValueError(validation_result.msg)
 
-        for train, test in self._splitter.split(**split_kwargs):
+        # Generate splits
+        for train, test in self._splitter.split(X_to_use, y, groups):
             yield train, test
