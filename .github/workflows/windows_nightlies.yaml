@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         python_version: ['3.9', '3.10', '3.11']
-        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-parallel', 'git-test-prophet']
+        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other-no-parallel-cpu', 'git-test-parallel', 'git-test-prophet-no-parallel-cpu']
     steps:
       - name: Download Miniconda
         shell: pwsh
@@ -57,7 +57,7 @@ jobs:
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate curr_py
           conda install numba -q -y
-      - if: ${{ matrix.command == 'git-test-prophet' }}
+      - if: ${{ matrix.command == 'git-test-prophet-no-parallel-cpu' }}
         name: Install EvalML with test requirements and prophet
         shell: pwsh
         run: |
@@ -67,7 +67,7 @@ jobs:
           python -m pip install .[test]
           python -m pip install .[prophet]
           pip freeze
-      - if: ${{ matrix.command != 'git-test-prophet' }}
+      - if: ${{ matrix.command != 'git-test-prophet-no-parallel-cpu' }}
         name: Install EvalML with test requirements
         shell: pwsh
         run: |
