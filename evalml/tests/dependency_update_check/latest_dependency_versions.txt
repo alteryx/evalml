@@ -9,7 +9,7 @@ dask-expr==1.1.3
 distributed==2024.6.0
 featuretools==1.31.0
 graphviz==0.20.3
-holidays==0.50
+holidays==0.51
 imbalanced-learn==0.12.3
 ipywidgets==8.1.3
 kaleido==0.2.1
