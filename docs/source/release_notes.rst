@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Updated sktime and scikit-learn latest dependency version :pr:`4449`
         * Switched windows nightly tests to run serially instead of in parallel :pr:`4452`
     * Changes
     * Documentation Changes
