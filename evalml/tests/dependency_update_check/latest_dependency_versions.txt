@@ -4,9 +4,9 @@ category-encoders==2.5.1.post0
 click==8.1.7
 cloudpickle==3.0.0
 colorama==0.4.6
-dask==2024.6.1
-dask-expr==1.1.4
-distributed==2024.6.1
+dask==2024.6.2
+dask-expr==1.1.6
+distributed==2024.6.2
 featuretools==1.31.0
 graphviz==0.20.3
 holidays==0.51
