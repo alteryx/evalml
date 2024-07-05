@@ -95,7 +95,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         y = y.to_frame()
 
         # Return early if all the columns are bool dtype, which will never have null values
-        if (y.dtypes == bool).all():
+        if (y.dtypes is bool).all():
             return y
 
         self._component_obj.fit(y)
@@ -119,7 +119,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         y_df = y_ww.ww.to_frame()
 
         # Return early if all the columns are bool dtype, which will never have null values
-        if (y_df.dtypes == bool).all():
+        if (y_df.dtypes is bool).all():
             return X, y_ww
 
         transformed = self._component_obj.transform(y_df)

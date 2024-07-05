@@ -7,7 +7,6 @@ import pandas as pd
 import scipy.stats as st
 
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
@@ -37,9 +36,6 @@ class Estimator(ComponentBase):
         component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
-
-    model_family = ModelFamily.NONE
-    """ModelFamily.NONE"""
 
     modifies_features = True
     modifies_target = False
