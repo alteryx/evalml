@@ -1230,7 +1230,7 @@ def test_time_series_pipeline_parameter_warnings(
             automl.search()
 
     # We throw a warning about time series being in beta
-    assert w[0].category == UserWarning
+    assert w[0].category is UserWarning
     if len(w) > 1:
         assert w[1].message.components == set_values
 

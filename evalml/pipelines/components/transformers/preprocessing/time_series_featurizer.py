@@ -304,7 +304,7 @@ class TimeSeriesFeaturizer(Transformer):
             if isinstance(y, pd.DataFrame):
                 lagged_features.update(self._delay_df(y, y.columns))
             else:
-                if type(y.ww.logical_type) == logical_types.Categorical:
+                if type(y.ww.logical_type) is logical_types.Categorical:
                     y = self._encode_y_while_preserving_index(y)
                 for t in self.statistically_significant_lags:
                     lagged_features[self.target_colname_prefix.format(t)] = y.shift(t)
