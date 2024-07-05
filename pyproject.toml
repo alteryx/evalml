@@ -163,7 +163,7 @@ lint.select = [
     # isort
     "I001"
 ]
-lint.ignore = ["E501", "D107", "D401"]
+lint.ignore = ["E501", "D107", "D401", "E721"]
 src = ["evalml"]
 
 [tool.ruff.lint.per-file-ignores]
