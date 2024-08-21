@@ -63,7 +63,6 @@ dependencies = [
     "lime >= 0.2.0.1",
     "tomli >= 2.0.1",
     "packaging >= 23.0",
-    "black[jupyter] >= 22.3.0",
     "holidays >= 0.13"
 ]
 
@@ -171,7 +170,7 @@ src = ["evalml"]
 "evalml/tests/**" = ["D"]
 "evalml/utils/**" = ["D"]
 ".github/**" = ["D"]
-"docs/**" = ["D"]
+"docs/**" = ["D", "I001", "E402", "F811", "F401"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["evalml"]
