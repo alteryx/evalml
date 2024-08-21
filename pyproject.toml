@@ -63,6 +63,7 @@ dependencies = [
     "lime >= 0.2.0.1",
     "tomli >= 2.0.1",
     "packaging >= 23.0",
+    "black[jupyter] >= 22.3.0",
     "holidays >= 0.13"
 ]
 
