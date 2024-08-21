@@ -262,9 +262,9 @@ def test_target_imputer_woodwork_custom_overrides_returned_by_components(
         _, y_t = imputer.transform(None, y)
 
         if impute_strategy_to_use == "most_frequent" or not has_nan:
-            assert type(y_t.ww.logical_type) == logical_type
+            assert type(y_t.ww.logical_type) is logical_type
         else:
-            assert type(y_t.ww.logical_type) == Double
+            assert type(y_t.ww.logical_type) is Double
 
 
 @pytest.mark.parametrize("impute_strategy", ["mean", "median", "most_frequent"])

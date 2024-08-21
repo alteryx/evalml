@@ -14,13 +14,13 @@ lint:
 	python docs/notebook_version_standardizer.py check-versions
 	python docs/notebook_version_standardizer.py check-execution
 	black . --check --config=./pyproject.toml
-	ruff . --config=./pyproject.toml
+	ruff check . --config=./pyproject.toml
 
 .PHONY: lint-fix
 lint-fix:
 	python docs/notebook_version_standardizer.py standardize
 	black . --config=./pyproject.toml
-	ruff . --config=./pyproject.toml --fix
+	ruff check . --config=./pyproject.toml --fix
 
 .PHONY: test
 test:
