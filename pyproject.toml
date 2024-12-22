@@ -1,5 +1,5 @@
 [project]
-name = "evalml"
+name = "eh-evalml"
 readme = "README.md"
 description = "an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions"
 dynamic = ["version"]
