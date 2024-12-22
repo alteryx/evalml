@@ -948,7 +948,7 @@ wheels = [
 ]
 
 [[package]]
-name = "evalml"
+name = "eh-evalml"
 version = "0.84.0"
 source = { editable = "." }
 dependencies = [
@@ -1068,8 +1068,8 @@ requires-dist = [
     { name = "dask", specifier = ">=2022.2.0,!=2022.10.1" },
     { name = "distributed", specifier = ">=2022.2.0,!=2022.10.1" },
     { name = "docutils", marker = "extra == 'docs'", specifier = ">=0.15.2,<0.17" },
-    { name = "evalml", extras = ["docs", "test"], marker = "extra == 'dev'" },
-    { name = "evalml", extras = ["prophet", "updater"], marker = "extra == 'complete'" },
+    { name = "eh-evalml", extras = ["docs", "test"], marker = "extra == 'dev'" },
+    { name = "eh-evalml", extras = ["prophet", "updater"], marker = "extra == 'complete'" },
     { name = "featuretools", extras = ["dask"], specifier = ">=1.16.0" },
     { name = "graphviz", marker = "sys_platform != 'win32'", specifier = ">=0.13" },
     { name = "holidays", specifier = ">=0.13" },

@@ -90,7 +90,7 @@ dev = [
     "ruff >= 0.0.228",
     "darglint >= 1.8.0",
     "pre-commit >= 2.20.0",
-    "evalml[docs,test]",
+    "eh-evalml[docs,test]",
 ]
 updater = [
     "alteryx-open-src-update-checker >= 2.1.0"
@@ -111,7 +111,7 @@ prophet = [
     "prophet >= 1.1.2",
 ]
 complete = [
-    "evalml[prophet,updater]",
+    "eh-evalml[prophet,updater]",
 ]
 
 [tool.setuptools]
