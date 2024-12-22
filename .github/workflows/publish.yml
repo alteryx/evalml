@@ -1,0 +1,20 @@
+name: Publish Package
+
+on:
+  release:
+    types: [ published ]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - run: uv python install 3.11
+      - run: uv sync --all-extras
+      - run: make test
+      - run: uv build
+      - run: uv publish --token  ${{ secrets.PYPI_API_TOKEN }}
