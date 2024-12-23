@@ -26,7 +26,7 @@ maintainers = [
     {name="Alteryx, Inc.", email="open_source_support@alteryx.com"}
 ]
 keywords = ["data science", "machine learning", "optimization", "automl"]
-license = {file = "LICENSE"}
+license = {text = "BSD 3-Clause License"}
 requires-python = ">=3.9,<4"
 dependencies = [
     "numpy >= 1.22.0",
@@ -144,8 +144,8 @@ namespaces = true
     "docs/*"
 ]
 
-[tool.setuptools.dynamic]
-version = {attr = "evalml.__version__"}
+#[tool.setuptools.dynamic]
+#version = {attr = "evalml.__version__"}
 
 [tool.black]
 line-length = 88
