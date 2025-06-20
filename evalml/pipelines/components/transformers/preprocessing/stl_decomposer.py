@@ -479,7 +479,8 @@ class STLDecomposer(Decomposer):
         # Change the y index to a matching datetimeindex or else we get a failure
         # in ForecastingHorizon during decomposition.
         if not isinstance(y.index, pd.DatetimeIndex):
-            y = self._set_time_index(X, y)
+            y = super()._set_index(X, y)
+            
         if not isinstance(X.index, pd.DatetimeIndex):
             X.index = y.index
         self._check_oos_past(y)

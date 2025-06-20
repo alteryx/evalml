@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 from scipy.signal import argrelextrema
+from pandas import DatetimeIndex
 
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import get_time_index, infer_feature_types
@@ -80,6 +81,28 @@ class Decomposer(Transformer):
                     f"Parameter {var_name} must be an integer!: Received {type(var_value).__name__}",
                 )
         return var_value
+    
+    def _set_index(self, X: pd.DataFrame, y:pd.Series) -> pd.Series:
+        """Ensure y has a DatatimeIndex drawn from X.index or X[self.time_index] columns"""
+        
+        # case 1: X.index is already a DatetimeIndex:
+        if isinstance(X.index, DatetimeIndex):
+            y.index = X.index
+            
+        # case 2: user provided a time_index column in X
+        elif self.time_index and self.time_index in X.columns:
+            y.index = pd.to_datetime(X[self.time_index])
+            
+        # case 3 : Neither-error out:
+        else:
+            raise ValueError(
+                f"Could not find a datatime index in X; "
+                f" either set the index of X to a pandas.DatetimeIndex or provide a time_index column in X named {self.time_index}."   
+            )
+            
+        return y
+    
+            
 
     def _set_time_index(self, X: pd.DataFrame, y: pd.Series):
         """Ensures that target data has a pandas.DatetimeIndex that matches feature data."""
