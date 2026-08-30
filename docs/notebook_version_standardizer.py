@@ -107,6 +107,20 @@ def _remove_notebook_empty_last_cell(notebooks):
         _check_delete_empty_cell(notebook, delete=True)
 
 
+def _remove_empty_attachments(notebooks):
+    for notebook in notebooks:
+        with open(notebook, "r") as f:
+            source = json.load(f)
+        modified = False
+        for cell in source["cells"]:
+            if cell.get("attachments") == {}:
+                del cell["attachments"]
+                modified = True
+        if modified:
+            with open(notebook, "w") as f:
+                json.dump(source, f, ensure_ascii=False, indent=1)
+
+
 @click.group()
 def cli():
     """no-op."""
@@ -141,6 +155,7 @@ def check_versions(desired_version):
 )
 def standardize(desired_version):
     notebooks = _get_ipython_notebooks(DOCS_PATH)
+    _remove_empty_attachments(notebooks)
     different_versions = _get_notebooks_with_different_versions(
         notebooks,
         desired_version,
